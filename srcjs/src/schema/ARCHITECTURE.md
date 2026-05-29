@@ -91,8 +91,28 @@ The resolver topo-sorts; descendants always render after ancestors.
 
 An `OptionSpec` is one knob the editor surfaces. It declares its
 control kind, default, validation hints, optional visibility, and
-the "kind" discriminator (`core` vs `styling`) that lets the editor
-group it appropriately.
+the `kind` discriminator that classifies it on two axes simultaneously:
+editor grouping AND theme-side policy.
+
+**`kind` is a required contract** (Sprint 1 PR 4). The drift gate
+fails on any concrete option that doesn't declare it. Three values:
+
+- **`"core"`** — data shape / behavior. Changes what the column
+  *computes* (decimals, scale, format string, slot field, thresholds).
+  Spec authors set these. Theme-side surfaces (Sprint 3+
+  `theme.column_defaults`) MUST NOT touch `core` options — they
+  belong to the author of the spec.
+- **`"styling"`** — per-row visual override. MappedValue<T>
+  references (bold/italic/color/bg/token), palette/color knobs.
+  Themes may set defaults.
+- **`"editor"`** — UI-only knob. Header text, visibility toggles,
+  layout density, "show value label" checkboxes. Themes may set
+  defaults.
+
+The distinction is presentational AND policy. Editor groups core
+options in the main flow and styling/editor knobs separately.
+Sprint 3 will reject `theme.column_defaults` writes against
+`kind: "core"` options at construction time.
 
 Wire location is via `at`:
 - `"bucket"` (default) → `column.options[bucket][key]`

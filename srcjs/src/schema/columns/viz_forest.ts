@@ -39,13 +39,12 @@ export const VIZ_FOREST_SCHEMA: ColumnSchema = {
   ],
   options: [
     {
-      // Multi-effect: array of EffectForest objects. The custom
-      // control will let users add / order / configure effects in
-      // Phase 7; for now the schema declares the option exists.
+      // Multi-effect: array of EffectForest objects.
       key: "effects",
       label: "Effects",
       control: "custom",
       default: null,
+      kind: "core",
       customComponent: "EffectForestList",
       hint: "Multiple overlaid effects; use slots above for a single effect",
     },

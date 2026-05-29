@@ -52,21 +52,34 @@ export type ControlKind =
 export type WireAt = "bucket" | "top" | "fixed";
 
 /**
- * Option category — affects editor grouping/visual treatment but not
- * wire shape.
+ * Option category — affects editor grouping/visual treatment AND the
+ * theme-side surface that may touch the option (Sprint 3+):
  *
- * - `"core"` (default): the option controls *what* the column does —
- *   data slots, format precision, behavioral toggles, layout. Lives
- *   in the main accordion flow.
- * - `"styling"`: pure visual override — bold/italic/color/bg/token/
- *   stroke/fill. The editor groups these separately (own sub-section
+ * - `"core"`: data-shape / behavior. The option changes *what* the
+ *   column computes — decimals, scale, format string, slot field,
+ *   thresholds. Theme-side surfaces (`theme.column_defaults` in
+ *   Sprint 3) MUST NOT set core options; they belong to the spec
+ *   author. Lives in the main accordion flow.
+ * - `"styling"`: per-row visual override — bold/italic/color/bg/
+ *   token/stroke/fill, MappedValue<T> references. Themes may set
+ *   defaults. The editor groups these separately (own sub-section
  *   per layer, or a dedicated "Styling" panel) so authors can edit
  *   appearance without scrolling through formatting knobs.
+ * - `"editor"`: UI-only knob. Showing/hiding axis ticks, picker
+ *   affordances, segmented-control choices that don't change the
+ *   rendered cell behavior. Themes may set defaults (e.g.
+ *   "compact theme defaults to abbreviate numbers").
  *
- * Distinction is purely presentational. Both kinds use the same
- * OptionSpec shape and the same primitives.
+ * Sprint 1 PR 4 promoted this from advisory to enforced: every
+ * concrete `OptionSpec` must carry an explicit `kind`. The drift
+ * gate (`drift.test.ts`) enforces this on every new option. Future
+ * theme-side enforcement (Sprint 3): `theme.column_defaults` will
+ * reject writes against `kind: "core"` options.
+ *
+ * The distinction is presentational AND policy: same OptionSpec
+ * shape, same primitives; what differs is who can author the value.
  */
-export type OptionKind = "core" | "styling";
+export type OptionKind = "core" | "styling" | "editor";
 
 /** Generic option metadata; control-specific extras live in optional fields. */
 export interface OptionSpec<T = unknown> {
@@ -78,7 +91,13 @@ export interface OptionSpec<T = unknown> {
   control: ControlKind;
   /** Default value. `null` means "no value set"; `undefined` for never-set. */
   default: T | null;
-  /** "core" (default) vs "styling" — affects editor grouping only. */
+  /**
+   * Option category — `"core"` (data/behavior, author-only),
+   * `"styling"` (visual override, theme-defaultable), `"editor"`
+   * (UI-only knob, theme-defaultable). Required on every concrete
+   * option (drift gate enforces). Optional in the type to keep
+   * inherited definitions ergonomic; the drift gate fills the gap.
+   */
   kind?: OptionKind;
   /** Inline hint shown next to / under the field. */
   hint?: string;

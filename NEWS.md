@@ -1,5 +1,36 @@
 # tabviz (development)
 
+## Theme sprint Phase 1d — OptionKind enforcement
+
+`OptionKind` is promoted from advisory (3 of 169 options tagged) to an
+enforced contract. Every concrete schema option must now declare its
+kind explicitly; the schema drift gate fails on un-annotated options
+with no grandfather list.
+
+* **Extended** `OptionKind` from `"core" | "styling"` to `"core" |
+  "styling" | "editor"` (`srcjs/src/schema/types.ts`):
+  - **`core`** — data shape / behavior (decimals, scale, format
+    string, slot field, thresholds). Author-only; theme-side surfaces
+    will refuse writes (Sprint 3).
+  - **`styling`** — per-row visual override (MappedValue refs,
+    palette/color knobs). Themes may set defaults.
+  - **`editor`** — UI-only knob (header text, visibility toggles,
+    layout density). Themes may set defaults.
+* **Backfilled** every option across 27 schema files
+  (`srcjs/src/schema/columns/*.ts`) with explicit `kind`. ~170
+  options classified by hand.
+* **Extended** the drift gate (`drift.test.ts`) with a new test
+  `every option declares kind explicitly` — no grandfather list.
+  Adding a new option without `kind` now fails CI.
+* **Documented** the contract in
+  `srcjs/src/schema/ARCHITECTURE.md` §2 (Option) — including the
+  Sprint 3+ enforcement boundary for `theme.column_defaults`.
+
+No runtime behavior change. No wire-format change. No R-side change
+(R-side `web_col()` styling args don't have a parallel kind concept
+yet; that's a Sprint 3 follow-up alongside the
+`theme.column_defaults` surface).
+
 ## Theme sprint Phase 1c — FirstColumn variant naming alignment
 
 The default first-column variant is now keyed as `default` on both R

@@ -23,6 +23,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       label: "Max value",
       control: "number",
       default: 100,
+      kind: "core",
       hint: "Track 100% reference",
     },
     {
@@ -30,6 +31,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       label: "Scale",
       control: "segmented",
       default: "linear",
+      kind: "core",
       segments: [
         { value: "linear", label: "Linear" },
         { value: "log",    label: "Log" },
@@ -41,12 +43,14 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       label: "Show value",
       control: "toggle",
       default: true,
+      kind: "editor",
     },
     {
       key: "color",
       label: "Fill color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme primary by default",
     },
   ],

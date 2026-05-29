@@ -50,6 +50,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Variants",
       control: "custom",
       default: null,
+      kind: "core",
       customComponent: "BadgeVariantMap",
       hint: 'e.g. {published: "success", draft: "warning"}',
     },
@@ -59,6 +60,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Custom colors",
       control: "custom",
       default: null,
+      kind: "styling",
       customComponent: "BadgeColorMap",
     },
     {
@@ -66,6 +68,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Numeric thresholds",
       control: "custom",
       default: null,
+      kind: "core",
       customComponent: "ThresholdList",
       hint: "Bin numeric values into colored badges",
     },
@@ -74,6 +77,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Size",
       control: "segmented",
       default: "base",
+      kind: "editor",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -84,6 +88,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Shape",
       control: "segmented",
       default: "pill",
+      kind: "editor",
       segments: [
         { value: "pill",   label: "Pill" },
         { value: "circle", label: "Circle" },
@@ -95,6 +100,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Outline",
       control: "toggle",
       default: false,
+      kind: "editor",
       hint: "Transparent fill, colored border",
     },
   ],

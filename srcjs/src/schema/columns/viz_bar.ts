@@ -21,6 +21,7 @@ export const VIZ_BAR_SCHEMA: ColumnSchema = {
       label: "Effects",
       control: "custom",
       default: [],
+      kind: "core",
       customComponent: "EffectBarList",
       hint: "One or more value series",
     },
@@ -29,6 +30,7 @@ export const VIZ_BAR_SCHEMA: ColumnSchema = {
       label: "Bar width",
       control: "integer",
       default: null,
+      kind: "editor",
       min: 1,
     },
     {
@@ -36,6 +38,7 @@ export const VIZ_BAR_SCHEMA: ColumnSchema = {
       label: "Bar gap",
       control: "integer",
       default: null,
+      kind: "editor",
       min: 0,
     },
     {
@@ -43,6 +46,7 @@ export const VIZ_BAR_SCHEMA: ColumnSchema = {
       label: "Orientation",
       control: "segmented",
       default: "horizontal",
+      kind: "core",
       segments: [
         { value: "horizontal", label: "Horizontal" },
         { value: "vertical",   label: "Vertical" },

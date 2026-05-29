@@ -29,6 +29,7 @@ export const PERCENT_SCHEMA: ColumnSchema = {
       label: "Multiply ×100",
       control: "toggle",
       default: true,
+      kind: "core",
       hint: "Off if the source field is already a percentage",
     },
     {
@@ -36,6 +37,7 @@ export const PERCENT_SCHEMA: ColumnSchema = {
       label: 'Show "%"',
       control: "toggle",
       default: true,
+      kind: "core",
     },
   ],
 };
