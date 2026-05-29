@@ -23,7 +23,11 @@ row-group L1 band). NA = not set.}
 \item{\code{mode}}{"light" or "dark". Inverts neutral ramp direction.}
 
 \item{\code{neutral_tint}}{"untinted" | "brand" | "accent" | "decorative" | hex.
-Optional small tint blend into low-chroma ramp ends.}
+Optional tint blend into low-chroma ramp ends.}
+
+\item{\code{neutral_tint_strength}}{Numeric in \verb{[0, 1]}. Default \code{0.04} (subtle
+clinical hint). \code{~1.0} makes the tint hex effectively
+the paper color (editorial-strong).}
 
 \item{\code{categorical}}{Named data scheme reference (Okabe-Ito default).}
 

@@ -91,7 +91,7 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
   const decorative = inputs.decorative ?? null;
 
   const tintHex = resolveNeutralTintHex(inputs, accent, decorative);
-  const tintAmount = tintHex !== null ? 0.04 : 0;
+  const tintAmount = tintHex !== null ? (inputs.neutral_tint_strength ?? 0.04) : 0;
 
   const neutral = oklchRamp(NEUTRAL_SEED, {
     mode,

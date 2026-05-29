@@ -34,17 +34,18 @@ theme_inputs_to_json <- function(inputs) {
   }
 
   out <- list(
-    brand        = inputs@brand,
-    accent       = na_to_null(inputs@accent),
-    decorative   = na_to_null(inputs@decorative),
-    mode         = inputs@mode,
-    neutral_tint = neutral_tint_out,
-    categorical  = inputs@categorical,
-    sequential   = inputs@sequential,
-    diverging    = inputs@diverging,
-    status       = if (length(status) > 0L) status else NULL,
-    fonts        = if (length(fonts)  > 0L) fonts  else NULL,
-    density      = inputs@density
+    brand                 = inputs@brand,
+    accent                = na_to_null(inputs@accent),
+    decorative            = na_to_null(inputs@decorative),
+    mode                  = inputs@mode,
+    neutral_tint          = neutral_tint_out,
+    neutral_tint_strength = inputs@neutral_tint_strength,
+    categorical           = inputs@categorical,
+    sequential            = inputs@sequential,
+    diverging             = inputs@diverging,
+    status                = if (length(status) > 0L) status else NULL,
+    fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
+    density               = inputs@density
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -74,6 +75,9 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #' @param mode `"light"` or `"dark"`. Default `"light"`.
 #' @param neutral_tint `"untinted"`, `"brand"`, `"accent"`, `"decorative"`,
 #'   or a hex string. Default `"untinted"`.
+#' @param neutral_tint_strength Numeric in `[0, 1]`. Default `0.04` (subtle
+#'   hint). Push toward `~1.0` for editorial paper colors (literary cream,
+#'   sepia, newsprint). Ignored when `neutral_tint = "untinted"`.
 #' @param categorical Named data scheme reference (Okabe-Ito default).
 #' @param sequential Named sequential scheme reference.
 #' @param diverging Named diverging scheme reference.
@@ -92,6 +96,7 @@ web_theme <- function(
     decorative = NULL,
     mode = "light",
     neutral_tint = "untinted",
+    neutral_tint_strength = 0.04,
     categorical = "okabe_ito",
     sequential = "viridis",
     diverging = "rdbu",
@@ -110,6 +115,7 @@ web_theme <- function(
   checkmate::assert_string(decorative, null.ok = TRUE)
   checkmate::assert_choice(mode, c("light", "dark"))
   checkmate::assert_string(neutral_tint)
+  checkmate::assert_number(neutral_tint_strength, lower = 0, upper = 1)
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_string(name)
@@ -120,6 +126,7 @@ web_theme <- function(
     decorative = if (is.null(decorative)) NA_character_ else decorative,
     mode = mode,
     neutral_tint = neutral_tint,
+    neutral_tint_strength = neutral_tint_strength,
     categorical = categorical,
     sequential = sequential,
     diverging = diverging,
@@ -214,6 +221,25 @@ set_categorical <- function(theme, scheme) {
   checkmate::assert_string(scheme)
   inputs <- theme@inputs
   inputs@categorical <- scheme
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the neutral tint strength and re-resolve.
+#'
+#' Span `0.04` (subtle clinical-journal hint) to `~1.0` (paper takes the
+#' tint hex as its essential color — editorial cream, sepia, newsprint).
+#'
+#' @param theme A [WebTheme].
+#' @param strength Numeric in `[0, 1]`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_neutral_tint_strength <- function(theme, strength) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_number(strength, lower = 0, upper = 1)
+  inputs <- theme@inputs
+  inputs@neutral_tint_strength <- strength
   resolve_from_inputs(inputs, name = theme@name)
 }
 

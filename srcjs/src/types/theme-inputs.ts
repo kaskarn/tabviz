@@ -42,6 +42,12 @@ export interface ThemeInputs {
   /** Neutral ramp tinting. Default `"untinted"`. */
   neutral_tint?: NeutralTint;
 
+  /** Strength of the neutral tint blend, in `[0, 1]`. Default `0.04`
+   *  (subtle clinical-journal hint). `~1.0` makes the tint hex effectively
+   *  the paper color (editorial-strong: literary cream, sepia, newsprint).
+   *  Ignored when `neutral_tint = "untinted"`. */
+  neutral_tint_strength?: number;
+
   /** Data palette scheme references — PR E wires the registry. */
   categorical?: SchemeName;
   sequential?: SchemeName;

@@ -10,6 +10,7 @@ web_theme(
   decorative = NULL,
   mode = "light",
   neutral_tint = "untinted",
+  neutral_tint_strength = 0.04,
   categorical = "okabe_ito",
   sequential = "viridis",
   diverging = "rdbu",
@@ -37,6 +38,10 @@ row-group L1 band). Default: NULL.}
 
 \item{neutral_tint}{\code{"untinted"}, \code{"brand"}, \code{"accent"}, \code{"decorative"},
 or a hex string. Default \code{"untinted"}.}
+
+\item{neutral_tint_strength}{Numeric in \verb{[0, 1]}. Default \code{0.04} (subtle
+hint). Push toward \code{~1.0} for editorial paper colors (literary cream,
+sepia, newsprint). Ignored when \code{neutral_tint = "untinted"}.}
 
 \item{categorical}{Named data scheme reference (Okabe-Ito default).}
 

@@ -42,7 +42,10 @@ make_color_validator <- function(slots) {
 #'                       row-group L1 band). NA = not set.
 #' @field mode           "light" or "dark". Inverts neutral ramp direction.
 #' @field neutral_tint   "untinted" | "brand" | "accent" | "decorative" | hex.
-#'                       Optional small tint blend into low-chroma ramp ends.
+#'                       Optional tint blend into low-chroma ramp ends.
+#' @field neutral_tint_strength  Numeric in `[0, 1]`. Default `0.04` (subtle
+#'                       clinical hint). `~1.0` makes the tint hex effectively
+#'                       the paper color (editorial-strong).
 #' @field categorical    Named data scheme reference (Okabe-Ito default).
 #' @field sequential     Named sequential scheme (viridis default).
 #' @field diverging      Named diverging scheme (rdbu default).
@@ -65,6 +68,7 @@ ThemeInputs <- new_class(
     decorative      = new_property(class_character, default = NA_character_),
     mode            = new_property(class_character, default = "light"),
     neutral_tint    = new_property(class_character, default = "untinted"),
+    neutral_tint_strength = new_property(class_numeric, default = 0.04),
 
     categorical     = new_property(class_character, default = "okabe_ito"),
     sequential      = new_property(class_character, default = "viridis"),
@@ -106,6 +110,10 @@ ThemeInputs <- new_class(
     }
     if (!self@density %in% c("compact", "comfortable", "spacious")) {
       return("density must be 'compact', 'comfortable', or 'spacious'")
+    }
+    s <- self@neutral_tint_strength
+    if (length(s) != 1L || is.na(s) || s < 0 || s > 1) {
+      return("neutral_tint_strength must be a number in [0, 1]")
     }
     NULL
   }
