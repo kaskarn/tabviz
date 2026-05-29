@@ -1,7 +1,7 @@
 <script lang="ts">
   // Tokens tab — power-user surface for editing the semantic-token bundles
   // that the painter UI applies. Five tokens map to RowSemantic bundles on
-  // theme.tokens.row.{token}; one of them (fill) reads its default bg from the
+  // theme.row.{token}; one of them (fill) reads its default bg from the
   // Tier-2 theme.semantic.fill named color.
   //
   // Layout: top section edits the two named token colors; below, an
@@ -53,13 +53,11 @@
 
   // ── theme.semantic.fill cascade helper ─────────────────────────────
   // Editing the Tier-2 named color also updates the fill RowSemantic
-  // bundle's bg by default — unless the user has pinned
-  // theme.tokens.row.fill.bg separately. Mirrors the R-side resolver
-  // behavior on the wire. Sprint 1 PR 5 moved paint tokens from
-  // theme.row.{token} → theme.tokens.row.{token}.
+  // bundle's bg by default — unless the user has pinned theme.row.fill.bg
+  // separately. Mirrors the R-side resolver behavior on the wire.
   function setSemanticFill(hex: string) {
     setPath(["semantic", "fill"], hex);
-    setDerived(["tokens", "row", "fill", "bg"], hex);
+    setDerived(["row", "fill", "bg"], hex);
   }
   function resetSemanticFill() {
     clearOver(["semantic", "fill"]);
@@ -67,7 +65,7 @@
     const lightest = (theme?.inputs?.neutral as string[] | undefined)?.[0] ?? "#FFFFFF";
     const value = oklchMix(accent, lightest, 0.80);
     setDerived(["semantic", "fill"], value);
-    setDerived(["tokens", "row", "fill", "bg"], value);
+    setDerived(["row", "fill", "bg"], value);
   }
 
   // ── Per-token editors ───────────────────────────────────────────────
@@ -86,10 +84,10 @@
   }
 
   function setToken(token: TokenName, field: string, value: unknown) {
-    store.setThemeField(["tokens", "row", token, field], value);
+    store.setThemeField(["row", token, field], value);
   }
   function tokenField(token: TokenName, field: string) {
-    const bundle = (theme?.tokens?.row as unknown as Record<string, Record<string, unknown>> | undefined)?.[token];
+    const bundle = (theme?.row as unknown as Record<string, Record<string, unknown>> | undefined)?.[token];
     return bundle?.[field];
   }
 </script>

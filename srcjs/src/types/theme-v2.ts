@@ -279,32 +279,15 @@ export interface RowClusterV2 {
   alt: RowStateV2;
   hover: RowStateV2;
   selected: RowStateV2;
-  /** Parsed banding spec — R's `serialize_banding` emits `{mode, level}`. */
-  banding: BandingV2;
-  selectedEdgeWidth: number;
-  borderWidth: number;
-}
-
-/**
- * Row-level paint-token bundles. The five tokens are the painter UI's
- * vocabulary: emphasis / muted / accent / bold / fill. Renamed from
- * `theme.row.{token}` to `theme.tokens.row.{token}` in Sprint 1 PR 5
- * to reserve "token" for this paint-tool meaning (vs the overloaded
- * usage on T2 chrome derivations like `accent.muted`).
- */
-export interface RowTokensV2 {
   emphasis: RowSemanticV2;
   muted: RowSemanticV2;
   accent: RowSemanticV2;
   bold: RowSemanticV2;
   fill: RowSemanticV2;
-}
-
-/** Top-level `theme.tokens` namespace. Today carries `row`; future
- *  surfaces (cell-level paint tokens, semantic column ornaments) will
- *  add siblings under the same umbrella. */
-export interface ThemeTokensV2 {
-  row: RowTokensV2;
+  /** Parsed banding spec — R's `serialize_banding` emits `{mode, level}`. */
+  banding: BandingV2;
+  selectedEdgeWidth: number;
+  borderWidth: number;
 }
 
 export interface CellClusterV2 {
@@ -465,9 +448,6 @@ export interface WebThemeV2 {
   columnGroup: ColumnGroupClusterV2;
   rowGroup: RowGroupClusterV2;
   row: RowClusterV2;
-  /** Paint-token bundles. See `ThemeTokensV2`. Sprint 1 PR 5 moved
-   *  the 5 paint tokens here from `row.{emphasis,muted,accent,bold,fill}`. */
-  tokens: ThemeTokensV2;
   cell: CellClusterV2;
   firstColumn: FirstColumnClusterV2;
   plot: PlotScaffoldV2;

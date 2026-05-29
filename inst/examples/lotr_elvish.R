@@ -35,7 +35,7 @@ forest_plot(
   point = "vote_for", lower = "vote_lo", upper = "vote_hi",
   label = "delegate",
   # Map `row_accent` data column to the row.accent semantic — picks up
-  # theme.tokens.row.accent (= accent.default = twilight gold here).
+  # theme.row.accent (= accent.default = twilight gold here).
   row_accent = "row_accent",
   columns = list(
     # Race as plain text — five arbitrary categories don't fit the

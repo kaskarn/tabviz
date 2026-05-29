@@ -595,10 +595,12 @@ RowSemantic <- new_class(
 #' Banding mode lives here ("none", "row", "group", "group-N"); selected-edge
 #' width controls the accent bar on selected rows.
 #'
-#' Paint-token bundles (emphasis/muted/accent/bold/fill) moved to
-#' [RowTokens] in Sprint 1 PR 5 so the word "token" no longer
-#' overloads with T2 chrome roles (`accent.muted`, `surface.muted`,
-#' …). See `theme@tokens@row`.
+#' Semantic-token bundles (emphasis/muted/accent/bold/fill) are
+#' RowSemantic visual presets. The painter UI applies one of them to a row
+#' or cell at a time; data columns (`row_emphasis_col`, `row_bold_col`, ...)
+#' do the same per-row from the data. Each bundle is a flat list of visual
+#' overrides -- bg / fg / border / marker_fill / font_weight / font_style --
+#' that the renderer paints when the row's flag fires.
 #'
 #' @usage NULL
 #' @export
@@ -609,6 +611,13 @@ RowCluster <- new_class(
     alt       = new_property(RowState,    default = RowState()),
     hover     = new_property(RowState,    default = RowState()),
     selected  = new_property(RowState,    default = RowState()),
+    # Semantic visual presets (RowSemantic bundles). The painter and any
+    # data-column flags pick whichever bundle is active per row or cell.
+    emphasis  = new_property(RowSemantic, default = RowSemantic()),
+    muted     = new_property(RowSemantic, default = RowSemantic()),
+    accent    = new_property(RowSemantic, default = RowSemantic()),
+    bold      = new_property(RowSemantic, default = RowSemantic()),
+    fill      = new_property(RowSemantic, default = RowSemantic()),
     banding             = new_property(class_character, default = "group"),
     selected_edge_width = new_property(class_numeric,   default = 2),
     border_width        = new_property(class_numeric,   default = 1)
@@ -621,45 +630,6 @@ RowCluster <- new_class(
     if (!is.null(err)) return(err)
     NULL
   }
-)
-
-#' RowTokens: paint-token bundles applied to rows.
-#'
-#' The five tokens are the painter UI's vocabulary: emphasis, muted,
-#' accent, bold, fill. Each is a [RowSemantic] visual preset that the
-#' renderer applies when the row's flag fires (via the painter UI or
-#' data columns like `row_emphasis_col`, `row_bold_col`, …).
-#'
-#' Renamed from `RowCluster.{emphasis,muted,accent,bold,fill}` in
-#' Sprint 1 PR 5 so the word "token" is reserved for paint-tool
-#' semantics (not the overloaded T2 chrome roles like `accent.muted`).
-#'
-#' @usage NULL
-#' @export
-RowTokens <- new_class(
-  "RowTokens",
-  properties = list(
-    emphasis = new_property(RowSemantic, default = RowSemantic()),
-    muted    = new_property(RowSemantic, default = RowSemantic()),
-    accent   = new_property(RowSemantic, default = RowSemantic()),
-    bold     = new_property(RowSemantic, default = RowSemantic()),
-    fill     = new_property(RowSemantic, default = RowSemantic())
-  )
-)
-
-#' ThemeTokens: top-level paint-token namespace.
-#'
-#' Today carries `row` (the 5 paint-token bundles). Future surfaces
-#' (per-cell paint tokens, semantic column ornaments) will add
-#' siblings under the same umbrella.
-#'
-#' @usage NULL
-#' @export
-ThemeTokens <- new_class(
-  "ThemeTokens",
-  properties = list(
-    row = new_property(RowTokens, default = RowTokens())
-  )
 )
 
 #' CellCluster: cell-level bindings.
@@ -918,8 +888,6 @@ WebTheme <- new_class(
     column_group = new_property(ColumnGroupCluster, default = ColumnGroupCluster()),
     row_group    = new_property(RowGroupCluster,   default = RowGroupCluster()),
     row          = new_property(RowCluster,        default = RowCluster()),
-    # Sprint 1 PR 5: paint-token bundles live under their own namespace.
-    tokens       = new_property(ThemeTokens,       default = ThemeTokens()),
     cell         = new_property(CellCluster,       default = CellCluster()),
     first_column = new_property(FirstColumnCluster, default = FirstColumnCluster()),
     plot         = new_property(PlotScaffold,      default = PlotScaffold()),

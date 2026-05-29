@@ -9,7 +9,7 @@ export interface RowStyle {
   type?: "data" | "header" | "summary" | "spacer";
   // `bold` doubles as a styling primitive (from row_bold_col) AND as the
   // "bold" semantic token applied by the painter. Both pathways set the
-  // flag; the renderer applies theme.tokens.row.bold when set.
+  // flag; the renderer applies theme.row.bold when set.
   bold?: boolean;
   italic?: boolean;
   color?: string | null;
@@ -706,11 +706,10 @@ export interface SemanticBundle {
 
 /**
  * Per-token bundle map. Keys match the boolean flags on `RowStyle` /
- * `CellStyle` — `row.style.fill === true` ⇒ look up `theme.tokens.row.fill`.
+ * `CellStyle` — `row.style.fill === true` ⇒ look up `theme.row.fill`.
  *
- * On v2 wire shapes the bundles live at `theme.tokens.row.{token}` (see
- * RowTokens in R/classes-theme.R; renamed from `theme.row.{token}` in
- * Sprint 1 PR 5). The dedicated `theme.semantics` block was a v1
+ * On v2 wire shapes the bundles live at `theme.row.{token}` (see RowCluster
+ * in R/classes-theme.R). The dedicated `theme.semantics` block was a v1
  * carry-over that's no longer emitted.
  */
 export type SemanticToken =
@@ -1318,8 +1317,6 @@ export type {
   RowClusterV2,
   RowStateV2,
   RowSemanticV2,
-  RowTokensV2,
-  ThemeTokensV2,
   CellClusterV2,
   FirstColumnClusterV2,
   FirstColumnVariantV2,

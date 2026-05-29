@@ -8,8 +8,10 @@ Banding mode lives here ("none", "row", "group", "group-N"); selected-edge
 width controls the accent bar on selected rows.
 }
 \details{
-Paint-token bundles (emphasis/muted/accent/bold/fill) moved to
-\link{RowTokens} in Sprint 1 PR 5 so the word "token" no longer
-overloads with T2 chrome roles (\code{accent.muted}, \code{surface.muted},
-…). See \code{theme@tokens@row}.
+Semantic-token bundles (emphasis/muted/accent/bold/fill) are
+RowSemantic visual presets. The painter UI applies one of them to a row
+or cell at a time; data columns (\code{row_emphasis_col}, \code{row_bold_col}, ...)
+do the same per-row from the data. Each bundle is a flat list of visual
+overrides -- bg / fg / border / marker_fill / font_weight / font_style --
+that the renderer paints when the row's flag fires.
 }

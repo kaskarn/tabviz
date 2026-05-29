@@ -77,21 +77,17 @@ test_that("first_column cluster carries both variants", {
   expect_equal(out$firstColumn$bold$weight, 600)
 })
 
-test_that("row cluster has all states + banding (paint tokens moved out PR 5)", {
+test_that("row cluster has all states + semantic bundles + banding", {
   out <- serialize_theme(WebTheme())
   expect_named(out$row, c("base", "alt", "hover", "selected",
+                          "emphasis", "muted", "accent",
+                          "bold", "fill",
                           "banding", "selectedEdgeWidth", "borderWidth"))
   expect_named(out$row$base, c("bg", "fg"))
+  expect_named(out$row$emphasis,
+               c("bg", "fg", "border", "markerFill", "markerStroke", "fontWeight", "fontStyle"))
   # Banding emits the parsed shape.
   expect_named(out$row$banding, c("mode", "level"))
-})
-
-test_that("tokens block emits 5 paint-token RowSemantic bundles", {
-  out <- serialize_theme(WebTheme())
-  expect_named(out$tokens, "row")
-  expect_named(out$tokens$row, c("emphasis", "muted", "accent", "bold", "fill"))
-  expect_named(out$tokens$row$emphasis,
-               c("bg", "fg", "border", "markerFill", "markerStroke", "fontWeight", "fontStyle"))
 })
 
 test_that("plot scaffolding serializes label TextRoles", {
