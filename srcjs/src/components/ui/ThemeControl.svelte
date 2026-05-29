@@ -128,7 +128,7 @@
   // step so the tooltip stays single-line. Sourced from theme-resolve's
   // resolveToken switch.
   const NEUTRAL_USAGE: Record<number, string> = {
-    1: "paper_raised", 2: "paper", 3: "paper_alt", 4: "paper_sunken",
+    1: "paper", 2: "paper_alt", 3: "paper_sunken",
     6: "(reserve)", 7: "(reserve)", 8: "ink_disabled",
     10: "ink_subtle", 11: "ink_muted", 12: "ink",
   };
@@ -179,6 +179,7 @@
   const T2_PATHS: Record<string, (string | number)[][]> = {
     paper: [
       ["surface", "base"],
+      ["surface", "raised"],
       ["header", "light", "bg"],
       ["columnGroup", "light", "bg"],
       ["row", "base", "bg"],
@@ -189,7 +190,6 @@
       ["firstColumn", "bold", "bg"],
     ],
     paper_sunken: [["surface", "muted"]],
-    paper_raised: [["surface", "raised"]],
     ink: [
       ["content", "primary"],
       ["header", "light", "fg"],
@@ -537,13 +537,6 @@
         onreset={() => clearT2("paper_sunken")}>
         <ColorField label="" value={theme.surface?.muted ?? "#ececec"}
           onchange={(v) => pinT2("paper_sunken", v)}
-          swatches={neutralSwatches} />
-      </Field>
-      <Field label="paper_raised" hint="Lifted surface"
-        pinned={isT2Pinned("paper_raised")}
-        onreset={() => clearT2("paper_raised")}>
-        <ColorField label="" value={theme.surface?.raised ?? "#fafafa"}
-          onchange={(v) => pinT2("paper_raised", v)}
           swatches={neutralSwatches} />
       </Field>
 

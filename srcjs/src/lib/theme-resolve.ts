@@ -147,11 +147,16 @@ export function resolveToken(
   ramps: TokenRamps,
 ): string {
   switch (name) {
-    // Surfaces — map to neutral ramp steps
+    // Surfaces — map to neutral ramp steps. paper sits on step 1 (the
+    // lightest in light mode / darkest in dark mode) because most themes
+    // want the body bg to be the brightest possible page surface. The
+    // older `paper_raised` concept folded into paper — both resolve to
+    // step 1. Themes that want a more "off-white" paper override the
+    // step assignment via T2 pinning.
     case "paper_raised":   return rampStep(ramps.neutral, 1);
-    case "paper":          return rampStep(ramps.neutral, 2);
-    case "paper_alt":      return rampStep(ramps.neutral, 3);
-    case "paper_sunken":   return rampStep(ramps.neutral, 4);
+    case "paper":          return rampStep(ramps.neutral, 1);
+    case "paper_alt":      return rampStep(ramps.neutral, 2);
+    case "paper_sunken":   return rampStep(ramps.neutral, 3);
 
     // Ink — high end of the neutral ramp
     case "ink":            return rampStep(ramps.neutral, 12);

@@ -336,21 +336,27 @@ export function pickInkOnBg(
 
 /** Per-step OKLCH L values in light mode (step 1..12, 0-indexed array).
  *
+ * Step assignments (see theme-resolve.ts::resolveToken):
+ *   step 1 → paper + paper_raised (the brightest body surface; most
+ *           themes want this as default page background)
+ *   step 2 → paper_alt (subtle banding partner — ΔL 0.020 from paper,
+ *           visible at row scale but no individual stripe feels heavy)
+ *   step 3 → paper_sunken (lifted-but-recessed surface)
+ *   step 12 → ink; 11 → ink_muted; 10 → ink_subtle; 8 → ink_disabled
+ *
  * Tuning history (light-mode neutral surfaces):
- *   - 0.987/0.972/0.952/0.918 → paper read as too glaring; band step
- *     (ΔL 0.020) felt sharp on top of glaring paper
- *   - 0.987/0.967/0.954/0.918 → no perceptible change in paper
- *   - 0.980/0.945/0.936/0.910 → overcorrected; paper read as clinical
- *     gray and band step (ΔL 0.009) disappeared into it
- *   - current → Radix-like subtle-bg target. Paper is clearly off-white
- *     against page-white but reads as "page background," not "panel."
- *     Band ΔL 0.019 from paper: visible alternation, no individual
- *     stripe feels heavy. */
+ *   - paper at step 2 (L 0.972) read as too glaring; consistently
+ *     pushed darker through 0.967 and 0.945 before pulling back
+ *   - paper at step 2 (L 0.945) read as clinical gray; banding gap
+ *     too tight to be useful
+ *   - landed on paper = step 1 (was paper_raised's slot), paper_alt
+ *     stepping down to step 2. Δ stays 0.020 which is the established
+ *     Radix-like subtle-bg cadence. */
 const LIGHT_RAMP_L = [
-  0.987, // 1 — app bg / paper_raised (near-white; sits above paper)
-  0.967, // 2 — subtle bg / paper (off-white, Radix-step-2 territory)
-  0.948, // 3 — UI idle / paper_alt (ΔL 0.019 from paper — subtle band)
-  0.918, // 4 — UI hover / paper_sunken
+  0.987, // 1 — paper (near-white body bg)
+  0.967, // 2 — paper_alt (subtle band, ΔL 0.020)
+  0.948, // 3 — paper_sunken
+  0.918, // 4 — UI hover
   0.870, // 5 — UI active / selected
   0.804, // 6 — subtle border / rule_subtle
   0.728, // 7 — UI border / rule_strong / focus
