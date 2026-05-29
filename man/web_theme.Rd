@@ -2,47 +2,65 @@
 % Please edit documentation in R/themes-api.R
 \name{web_theme}
 \alias{web_theme}
-\title{Build a custom v2 theme from Tier 1 inputs and Tier 3 overrides.}
+\title{Build a theme from inputs.}
 \usage{
 web_theme(
-  name = "custom",
-  inputs = NULL,
-  variants = NULL,
+  brand = "#0099CC",
+  accent = NULL,
+  decorative = NULL,
+  mode = "light",
+  neutral_tint = "untinted",
+  categorical = "okabe_ito",
+  sequential = "viridis",
+  diverging = "rdbu",
+  status_positive = NULL,
+  status_negative = NULL,
+  status_warning = NULL,
+  status_info = NULL,
+  font_body = NULL,
+  font_display = NULL,
+  font_mono = NULL,
+  density = "comfortable",
   web_fonts = NULL,
-  base_theme = web_theme_bmj(),
-  .validate = TRUE
+  name = "custom"
 )
 }
 \arguments{
+\item{brand}{Required hex brand seed.}
+
+\item{accent}{Engagement seed (hover/selected/callouts). Default: mirrors brand.}
+
+\item{decorative}{Optional second color (alt-row tint, divider hue,
+row-group L1 band). Default: NULL.}
+
+\item{mode}{\code{"light"} or \code{"dark"}. Default \code{"light"}.}
+
+\item{neutral_tint}{\code{"untinted"}, \code{"brand"}, \code{"accent"}, \code{"decorative"},
+or a hex string. Default \code{"untinted"}.}
+
+\item{categorical}{Named data scheme reference (Okabe-Ito default).}
+
+\item{sequential}{Named sequential scheme reference.}
+
+\item{diverging}{Named diverging scheme reference.}
+
+\item{status_positive, status_negative, status_warning, status_info}{Optional status color overrides.}
+
+\item{font_body, font_display, font_mono}{Font stacks. font_display NA
+mirrors font_body.}
+
+\item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
+
+\item{web_fonts}{Optional list of \code{\link[=web_font]{web_font()}} declarations to embed.}
+
 \item{name}{Theme name (string).}
-
-\item{inputs}{Named list of \link{ThemeInputs} property overrides
-(\code{primary}, \code{secondary}, \code{accent}, \code{neutral},
-\code{series_anchors}, etc.). Identity is a 2-tier mirror chain: \code{primary}
-plus optional \code{secondary}; NA secondary mirrors primary. \code{accent} is
-orthogonal — it never enters the identity chain.}
-
-\item{variants}{Named list of \link{ThemeVariants} property overrides
-(\code{density}, \code{header_style}, \code{first_column_style}).}
-
-\item{web_fonts}{Optional list of web-font specs to embed in the rendered
-widget. Each entry is a list with \code{family} and \code{url} (and optionally
-\code{weights}, \code{style}); \code{NULL} (default) keeps the base theme's fonts.}
-
-\item{base_theme}{Base theme to start from before applying overrides.
-Defaults to the v2 default preset.}
-
-\item{.validate}{Whether to run construction-time contrast validation
-on the resolved theme. Default \code{TRUE}. Set to \code{FALSE} only for tests
-that intentionally use synthetic high-saturation colors to verify
-cascade mechanics — production callers should leave validation on.}
 }
 \value{
-A fully resolved \link{WebTheme}.
+A fully-resolved \link{WebTheme}.
 }
 \description{
-All Tier 1 inputs are passed by name; pass them as a named list via
-\code{inputs = list(primary = "...", neutral = c(...))}. Variants are similarly
-a named list. Tier 3 overrides target individual cluster fields via
-\code{\link[=set_theme_field]{set_theme_field()}} after construction.
+The user-authoring surface. Pass a brand seed; everything else
+derives. Optional \code{accent} (engagement), \code{decorative} (second color
+for editorial two-color themes), \code{mode}, \code{categorical} (data scheme),
+fonts, and \code{density}.
 }

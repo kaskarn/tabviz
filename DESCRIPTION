@@ -24,7 +24,6 @@ Collate:
     'classes-core.R'
     'utils-banding.R'
     'classes-theme.R'
-    'classes-theme-v3.R'
     'classes-annotations.R'
     'glyph-registry.R'
     'v8-bridge.R'

@@ -4,11 +4,11 @@ import {
   resolveSeriesColor, sampleScheme,
   OKABE_ITO, TABLEAU_10, SET2, CATEGORICAL_SCHEMES,
   SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES,
-} from "./data-schemes-v3";
-import { buildRamps } from "./theme-resolve-v3";
-import type { ThemeInputsV3 } from "../types/theme-v3";
+} from "./data-schemes";
+import { buildRamps } from "./theme-resolve";
+import type { ThemeInputs } from "../types/theme-inputs";
 
-const COCHRANE: ThemeInputsV3 = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
 
 describe("categorical schemes — fixed palettes", () => {
   it("Okabe-Ito has 8 colors", () => {

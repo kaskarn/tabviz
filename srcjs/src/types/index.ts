@@ -746,15 +746,8 @@ export interface GroupHeaderStyles {
   indentPerLevel: number;
 }
 
-/**
- * WebTheme is the v2 wire shape. R emits the cascaded result on every
- * spec.theme. Renamed from the v1 `WebTheme` (colors/typography/...)
- * in Phase 0c-C5 step 2. The v1 shape types (ColorPalette, Typography,
- * Spacing v1, Shapes, GroupHeaderStyles, Semantics v1) remain defined
- * above for the JS-side `theme-presets.ts` static-fallback path, which
- * migrates to v2 incrementally.
- */
-export type WebTheme = import("./theme-v2").WebThemeV2;
+/** Resolved theme — the wire shape R emits on every spec.theme. */
+export type { WebTheme } from "./theme-resolved";
 
 // ============================================================================
 // Interaction Types
@@ -1292,39 +1285,39 @@ export interface WidgetInstance {
 // v2 theme wire shape — the source-of-truth mirror of
 // R/utils-serialize-resolved.R::serialize_theme. The current `WebTheme`
 // (above) still carries the v1 shape with v2 fields tacked on as optional;
-// migration to `WebThemeV2` is tracked under Phase 0c-C5 / Phase 1.x.
-// See `./theme-v2.ts` for the full v2 type tree.
+// migration to `WebTheme` is tracked under Phase 0c-C5 / Phase 1.x.
+// See `./theme-resolved.ts` for the full v2 type tree.
 export type {
-  WebThemeV2,
-  ThemeInputsV2,
-  ThemeVariantsV2,
-  SurfacesV2,
-  ContentV2,
-  DividersV2,
-  AccentRolesV2,
-  StatusColorsV2,
-  SemanticsV2,
-  SlotRoleV2,
-  TextRoleV2,
-  TextRolesV2,
-  SpacingTokensV2,
-  AnnotationClusterV2,
-  HeaderClusterV2,
-  HeaderVariantV2,
-  ColumnGroupClusterV2,
-  RowGroupClusterV2,
-  RowGroupTierV2,
-  RowClusterV2,
-  RowStateV2,
-  RowSemanticV2,
-  CellClusterV2,
-  FirstColumnClusterV2,
-  FirstColumnVariantV2,
-  PlotScaffoldV2,
-  MarksRecipesV2,
-  MarkRecipeV2,
-  AxisConfigV2,
-  LayoutV2,
-  BandingV2,
-  WebFontV2,
-} from "./theme-v2";
+  WebTheme,
+  ResolvedInputs,
+  ThemeVariants,
+  Surfaces,
+  Content,
+  Dividers,
+  AccentRoles,
+  StatusColors,
+  Semantics,
+  SlotRole,
+  TextRole,
+  TextRoles,
+  SpacingTokens,
+  AnnotationCluster,
+  HeaderCluster,
+  HeaderVariant,
+  ColumnGroupCluster,
+  RowGroupCluster,
+  RowGroupTier,
+  RowCluster,
+  RowState,
+  RowSemantic,
+  CellCluster,
+  FirstColumnCluster,
+  FirstColumnVariant,
+  PlotScaffold,
+  MarksRecipes,
+  MarkRecipe,
+  AxisConfig,
+  Layout,
+  Banding,
+  WebFont,
+} from "./theme-resolved";

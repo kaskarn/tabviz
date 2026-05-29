@@ -26,13 +26,11 @@ editorial_data <- data.frame(
 # Cormorant Garamond body. Two webfont declarations — the widget appends
 # <link> tags on mount to load them from Google Fonts.
 rivendell <- web_theme(
-  name = "rivendell",
-  inputs = list(
-    primary      = "#0f1626",
-    accent       = "#d4a955",
-    font_body    = "'Cormorant Garamond', Georgia, serif",
-    font_display = "'Cinzel', Georgia, serif"
-  ),
+  name         = "rivendell",
+  brand        = "#0f1626",
+  accent       = "#d4a955",
+  font_body    = "'Cormorant Garamond', Georgia, serif",
+  font_display = "'Cinzel', Georgia, serif",
   web_fonts = list(
     web_font("Cinzel",
              "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap"),

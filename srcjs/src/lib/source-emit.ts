@@ -22,7 +22,7 @@
  */
 
 import type { WebSpec, ColumnDef, ColumnSpec, ColumnGroup } from "../types";
-import type { WebThemeV2 } from "../types/theme-v2";
+import type { WebTheme } from "../types/theme-resolved";
 import { THEME_PRESETS, THEME_NAMES, type ThemeName } from "./theme-presets";
 import { dispatchForColumn } from "../schema/dispatch";
 // Side-effect: register built-in `emitSource` behaviors so the
@@ -133,24 +133,23 @@ function emitTypeSpecificArgs(col: ColumnSpec): { name: string; typeArgs: Record
 // Theme — name-string match against snapshots, else webTheme({...})
 // ────────────────────────────────────────────────────────────────────
 
-function emitTheme(theme: WebThemeV2 | unknown): string {
-  // Try to match the resolved theme against each preset snapshot.
-  // Use the `name` field as a cheap first cut, then verify with structural
-  // equality if available — but the cheap path covers the common case.
+function emitTheme(theme: WebTheme | unknown): string {
+  // Match the resolved theme against a preset by name + brand seed.
   const name = (theme as { name?: string })?.name;
   if (name && (THEME_NAMES as readonly string[]).includes(name)) {
-    const preset = THEME_PRESETS[name as ThemeName] as unknown as WebThemeV2;
-    // Cheap check: does the input's `inputs.primary` match the preset's?
-    const inputPrim = (theme as WebThemeV2).inputs?.primary;
+    const preset = THEME_PRESETS[name as ThemeName] as unknown as WebTheme;
+    const inputPrim = (theme as WebTheme).inputs?.primary;
     const presetPrim = preset.inputs?.primary;
     if (inputPrim === presetPrim) {
       return JSON.stringify(name);
     }
   }
-  // Custom theme — emit a webTheme() call with inputs only (rest derives).
-  const inputs = (theme as WebThemeV2).inputs;
+  // Custom theme — emit a webTheme() call (brand + accent).
+  const inputs = (theme as WebTheme).inputs;
   if (inputs) {
-    return `webTheme({ name: ${JSON.stringify(name ?? "custom")}, inputs: ${jsLit({ primary: inputs.primary, accent: inputs.accent, neutral: inputs.neutral })} })`;
+    const args: Record<string, string> = { name: name ?? "custom", brand: inputs.primary };
+    if (inputs.accent && inputs.accent !== inputs.primary) args.accent = inputs.accent;
+    return `webTheme(${jsLit(args)})`;
   }
   return "/* custom theme — see spec.theme */ undefined";
 }

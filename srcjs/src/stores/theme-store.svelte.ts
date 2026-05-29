@@ -1,31 +1,31 @@
-// V3 theme store — reactive wrapper around ThemeWireV3.
+// Theme store — reactive wrapper around ThemeWire.
 //
 // Foundation that future settings-panel UI components hook into. Holds
 // a wire (`inputs + pins + overrides`) as reactive state; the resolved
 // theme is a `$derived` that automatically recomputes on any wire edit.
 //
 // Full panel UI rewrite is incremental — individual controls migrate
-// off the V2 store one at a time, each hooked into this store via
+// off the old store one at a time, each hooked into this store via
 // inputField() / clusterField() / pinField() accessors.
 
-import type { WebThemeV3, ThemeInputsV3, ColorRefV3 } from "../types/theme-v3";
-import type { ThemeWireV3, Provenance } from "../lib/theme-wire-v3";
+import type { ThemeStructure, ThemeInputs, ColorRef } from "../types/theme-inputs";
+import type { ThemeWire, Provenance } from "../lib/theme-wire";
 import {
   emptyWire, pin, release, isPinned, resolveWire, inspectLeaf,
-} from "../lib/theme-wire-v3";
+} from "../lib/theme-wire";
 
-export interface ThemeStoreV3 {
+export interface ThemeStore {
   /** Current wire (inputs + pins + overrides). */
-  readonly wire: ThemeWireV3;
+  readonly wire: ThemeWire;
   /** Fully-resolved theme (derived from wire). */
-  readonly theme: WebThemeV3;
+  readonly theme: ThemeStructure;
   /** Provenance map (path → input/derived/pin/override). */
   readonly provenance: Record<string, Provenance>;
 
   /** Update an input field (e.g., brand, mode, categorical). */
-  setInput<K extends keyof ThemeInputsV3>(key: K, value: ThemeInputsV3[K]): void;
+  setInput<K extends keyof ThemeInputs>(key: K, value: ThemeInputs[K]): void;
   /** Pin a path to a value (e.g., `clusters.cell.fg = ref("ink_muted")`). */
-  pinPath(path: string, value: ColorRefV3 | string | number | boolean | null): void;
+  pinPath(path: string, value: ColorRef | string | number | boolean | null): void;
   /** Release a pinned path (reset to derived). */
   releasePath(path: string): void;
   /** True if `path` is pinned. */
@@ -34,16 +34,16 @@ export interface ThemeStoreV3 {
   inspect(path: string): ReturnType<typeof inspectLeaf>;
 
   /** Load a wire (e.g., from a preset). Replaces all current state. */
-  load(wire: ThemeWireV3): void;
+  load(wire: ThemeWire): void;
   /** Reset to an empty wire (only inputs, no pins/overrides). */
-  reset(inputs: ThemeInputsV3, name?: string): void;
+  reset(inputs: ThemeInputs, name?: string): void;
 }
 
-export function createThemeStoreV3(
-  initialInputs: ThemeInputsV3,
+export function createThemeStore(
+  initialInputs: ThemeInputs,
   initialName = "custom",
-): ThemeStoreV3 {
-  let wire = $state<ThemeWireV3>(emptyWire(initialInputs, initialName));
+): ThemeStore {
+  let wire = $state<ThemeWire>(emptyWire(initialInputs, initialName));
   const resolved = $derived.by(() => resolveWire(wire));
 
   return {

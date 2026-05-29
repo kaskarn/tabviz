@@ -18,7 +18,7 @@
  * The public alias `getThemeCSS` is what consumers should call.
  */
 
-import type { WebThemeV2 } from "../types/theme-v2";
+import type { WebTheme } from "../types/theme-resolved";
 import { activeHeaderVariant } from "./header-variant";
 import { VIZ_MARGIN } from "./axis-utils";
 import {
@@ -35,7 +35,7 @@ import {
 // produces a fresh object identity per resolution). Once a theme reaches
 // here, its identity persists until the user changes inputs/variants, at
 // which point a new theme object arrives and the old cache entry GCs.
-const _themeCSSCache = new WeakMap<WebThemeV2, string>();
+const _themeCSSCache = new WeakMap<WebTheme, string>();
 
 // ─────────────────────────────────────────────────────────────────────────
 // Widget-instance context
@@ -74,7 +74,7 @@ export interface WidgetCSSContext {
  *
  * Memoized by theme reference identity.
  */
-export function buildThemeCSS(theme: WebThemeV2): string {
+export function buildThemeCSS(theme: WebTheme): string {
   const hit = _themeCSSCache.get(theme);
   if (hit !== undefined) return hit;
   const built = _buildThemeCSSImpl(theme);
@@ -91,7 +91,7 @@ export const getThemeCSS = buildThemeCSS;
  * dimensions, zoom).
  */
 export function buildWidgetCSS(
-  theme: WebThemeV2 | null | undefined,
+  theme: WebTheme | null | undefined,
   ctx: WidgetCSSContext
 ): string {
   if (!theme) return "";
@@ -102,7 +102,7 @@ export function buildWidgetCSS(
 // Implementation
 // ─────────────────────────────────────────────────────────────────────────
 
-function _buildThemeCSSImpl(theme: WebThemeV2): string {
+function _buildThemeCSSImpl(theme: WebTheme): string {
   const headerVariant = activeHeaderVariant(theme);
   const firstColBold = theme.variants?.firstColumnStyle === "bold";
   // Accept legacy `plain` key on input for one minor version (Sprint 1 PR 3).

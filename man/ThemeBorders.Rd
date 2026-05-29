@@ -6,6 +6,6 @@
 \description{
 \code{layout} controls \emph{where} dividers appear; the three named types
 (\code{major} / \code{minor} / \code{table}) control \emph{how} they look. See the TS
-shape \code{ThemeBordersV2} in \code{srcjs/src/types/theme-v2.ts} for the
+shape \code{ThemeBorders} in \code{srcjs/src/types/theme-resolved.ts} for the
 wire-side mirror.
 }

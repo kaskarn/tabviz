@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_swiss}
 \alias{web_theme_swiss}
-\title{Swiss / International Style theme (design)}
+\title{Swiss theme — red brand on neutral grid; black accent.}
 \usage{
 web_theme_swiss()
 }
@@ -10,12 +10,5 @@ web_theme_swiss()
 A \link{WebTheme}.
 }
 \description{
-Mono-with-accent: near-black primary, mid-gray secondary, Swiss red as
-the single chromatic note. Comfortable density with subtle dividers and
-no alt-row banding — grid rigor through restraint. Helvetica system
-stack; no \code{web_fonts} needed.
-}
-\details{
-Distinct from JAMA: JAMA is mono + ultra-compact + black-rule identity;
-Swiss is mono-with-accent + comfortable + dividerless restraint.
+Swiss theme — red brand on neutral grid; black accent.
 }

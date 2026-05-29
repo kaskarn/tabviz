@@ -34,12 +34,8 @@ full_monty <- tibble(
   badge = c("Lead", NA, "Pivotal", NA, NA, NA, "Fast Track")
 )
 
-# Custom theme
-monty_theme <- web_theme_dark() |>
-  set_inputs(primary = "#f59e0b") |>
-  set_spacing(row_height = 38) |>
-  set_theme_field(c("axis", "gridlines"), TRUE) |>
-  set_theme_field(c("axis", "gridline_style"), "dotted")
+# Custom theme — amber brand on dark mode, spacious density
+monty_theme <- web_theme(brand = "#f59e0b", mode = "dark", density = "spacious")
 
 tabviz(
   full_monty,

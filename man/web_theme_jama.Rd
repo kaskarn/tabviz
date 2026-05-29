@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_jama}
 \alias{web_theme_jama}
-\title{JAMA theme (v2)}
+\title{JAMA theme — black-and-white print-ready.}
 \usage{
 web_theme_jama()
 }
@@ -10,7 +10,6 @@ web_theme_jama()
 A \link{WebTheme}.
 }
 \description{
-All-black-and-white, ultra-compact density, Arial typography. Strong
-black dividers throughout — the visual identity IS the rule structure.
-Print-ready for medical-journal submissions.
+Pure black brand; brand_mono categorical for distinct grayscale series.
+Ultra-compact density. Arial typography.
 }

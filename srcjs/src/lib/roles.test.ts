@@ -1,17 +1,17 @@
 import { describe, it, expect } from "bun:test";
-import { buildTheme } from "./theme-resolve-v3";
+import { buildThemeStructure } from "./theme-resolve";
 import {
   resolveRole, resolveRoleRecipe, activeRole, resolveActiveRole,
   roleMarkOpacity, bundleIsActive,
-} from "./roles-v3";
-import type { ThemeInputsV3 } from "../types/theme-v3";
-import { ref } from "../types/theme-v3";
+} from "./roles";
+import type { ThemeInputs } from "../types/theme-inputs";
+import { ref } from "../types/theme-inputs";
 
-const COCHRANE: ThemeInputsV3 = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
 
 describe("resolveRole — recipe → hex bundle", () => {
   it("emphasis: fg resolves to ink token + weight 600", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const b = resolveRole("emphasis", t);
     expect(b.fg).toBe(t.tokens.ink);
     expect(b.markerFill).toBe(t.tokens.ink);
@@ -20,7 +20,7 @@ describe("resolveRole — recipe → hex bundle", () => {
   });
 
   it("accent: fg resolves to accent token (engagement, distinct from emphasis)", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const b = resolveRole("accent", t);
     expect(b.fg).toBe(t.tokens.accent);
     expect(b.markerFill).toBe(t.tokens.accent);
@@ -28,14 +28,14 @@ describe("resolveRole — recipe → hex bundle", () => {
   });
 
   it("emphasis and accent resolve to DIFFERENT colors", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const emp = resolveRole("emphasis", t);
     const acc = resolveRole("accent", t);
     expect(emp.fg).not.toBe(acc.fg);
   });
 
   it("bold: weight only, no color override", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const b = resolveRole("bold", t);
     expect(b.fg).toBeNull();
     expect(b.bg).toBeNull();
@@ -44,13 +44,13 @@ describe("resolveRole — recipe → hex bundle", () => {
   });
 
   it("fill: pale tinted bg", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const b = resolveRole("fill", t);
     expect(b.bg).toBe(t.tokens.accent_subtle);
   });
 
   it("status roles: fg + markerFill only, no bg (Tufte-minimal)", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     for (const role of ["positive", "negative", "warning", "info"] as const) {
       const b = resolveRole(role, t);
       expect(b.bg).toBeNull();
@@ -91,12 +91,12 @@ describe("resolveActiveRole — end-to-end", () => {
   });
 
   it("returns null when no flag active", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     expect(resolveActiveRole({}, t)).toBeNull();
   });
 
   it("returns resolved bundle for active role", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const b = resolveActiveRole({ accent: true }, t);
     expect(b).not.toBeNull();
     expect(b!.fg).toBe(t.tokens.accent);
@@ -146,7 +146,7 @@ describe("roleMarkOpacity", () => {
 
 describe("custom role recipes — theme overrides recipes, vocabulary fixed", () => {
   it("theme can redefine recipe to use different refs", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     // Theme overrides accent recipe to use brand instead of accent (e.g. brand-coupled emphasis variant)
     t.roles.accent = { fg: ref("brand"), markerFill: ref("brand"), fontWeight: 700 };
     const b = resolveRole("accent", t);
@@ -156,7 +156,7 @@ describe("custom role recipes — theme overrides recipes, vocabulary fixed", ()
   });
 
   it("resolveRoleRecipe accepts any recipe directly", () => {
-    const t = buildTheme(COCHRANE);
+    const t = buildThemeStructure(COCHRANE);
     const custom = { fg: ref("ink_muted"), fontWeight: 400 };
     const b = resolveRoleRecipe(custom, t.ramps);
     expect(b.fg).toBe(t.tokens.ink_muted);

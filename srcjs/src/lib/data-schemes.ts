@@ -1,4 +1,4 @@
-// V3 data palette registry — categorical / sequential / diverging
+// Data palette registry — categorical / sequential / diverging
 // schemes for data series.
 //
 // Per the locked design: data palettes live in their own namespace,
@@ -11,7 +11,7 @@
 //   sequential:  viridis    (perceptually uniform; standard scientific)
 //   diverging:   rdbu       (colorblind-safe; ColorBrewer canon)
 
-import type { TokenRampsV3 } from "../types/theme-v3";
+import type { TokenRamps } from "../types/theme-inputs";
 import { rampStep } from "./oklch";
 
 // ────────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export const WONG: readonly string[] = [
   "#F0E442", "#0072B2", "#D55E00", "#CC79A7",
 ];
 
-/** Registry. Names match the strings accepted in `ThemeInputsV3.categorical`. */
+/** Registry. Names match the strings accepted in `ThemeInputs.categorical`. */
 export const CATEGORICAL_SCHEMES: Readonly<Record<string, readonly string[]>> = {
   okabe_ito: OKABE_ITO,
   tableau10: TABLEAU_10,
@@ -80,7 +80,7 @@ export const CATEGORICAL_SCHEMES: Readonly<Record<string, readonly string[]>> = 
 /** Resolve a categorical scheme name to its color array. Unknown → Okabe-Ito. */
 export function resolveCategorical(
   name: string,
-  ramps?: TokenRampsV3,
+  ramps?: TokenRamps,
 ): readonly string[] {
   // Special: brand-monochrome derives from the brand ramp.
   if (name === "brand_mono" && ramps) {
@@ -246,7 +246,7 @@ export function resolveSeriesColor(
   index: number,
   schemeName: string,
   seriesAnchors: ReadonlyArray<string | null> | undefined,
-  ramps?: TokenRampsV3,
+  ramps?: TokenRamps,
 ): string {
   if (seriesAnchors && seriesAnchors[index]) {
     return seriesAnchors[index]!;

@@ -1,23 +1,23 @@
 import { describe, it, expect } from "bun:test";
-import { buildTheme } from "./theme-resolve-v3";
-import { buildThemeCssV3 } from "./theme-css-v3";
-import type { ThemeInputsV3 } from "../types/theme-v3";
+import { buildThemeStructure } from "./theme-resolve";
+import { buildThemeCssFromInputs } from "./theme-inputs-css";
+import type { ThemeInputs } from "../types/theme-inputs";
 
-const COCHRANE: ThemeInputsV3 = { brand: "#0099CC", accent: "#C8553D" };
-const LANCET:   ThemeInputsV3 = { brand: "#00407A", accent: "#A6792A", decorative: "#A6792A" };
-const DARK:     ThemeInputsV3 = { brand: "#89B4FA", mode: "dark" };
+const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+const LANCET:   ThemeInputs = { brand: "#00407A", accent: "#A6792A", decorative: "#A6792A" };
+const DARK:     ThemeInputs = { brand: "#89B4FA", mode: "dark" };
 
-describe("buildThemeCssV3 — full CSS variable emission", () => {
+describe("buildThemeCssFromInputs — full CSS variable emission", () => {
   it("emits :root block with --tv-* variables", () => {
-    const t = buildTheme(COCHRANE);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(COCHRANE);
+    const css = buildThemeCssFromInputs(t);
     expect(css).toMatch(/^:root \{/);
     expect(css).toMatch(/\}$/m);
   });
 
   it("emits all T2 token vars (snake_case → kebab-case)", () => {
-    const t = buildTheme(COCHRANE);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(COCHRANE);
+    const css = buildThemeCssFromInputs(t);
     expect(css).toContain("--tv-paper:");
     expect(css).toContain("--tv-paper-alt:");
     expect(css).toContain("--tv-ink:");
@@ -31,8 +31,8 @@ describe("buildThemeCssV3 — full CSS variable emission", () => {
   });
 
   it("emits cluster-level shorthand vars", () => {
-    const t = buildTheme(COCHRANE);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(COCHRANE);
+    const css = buildThemeCssFromInputs(t);
     expect(css).toContain("--tv-row-bg:");
     expect(css).toContain("--tv-cell-fg:");
     expect(css).toContain("--tv-header-bold-bg:");
@@ -41,8 +41,8 @@ describe("buildThemeCssV3 — full CSS variable emission", () => {
   });
 
   it("emits paint role vars", () => {
-    const t = buildTheme(COCHRANE);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(COCHRANE);
+    const css = buildThemeCssFromInputs(t);
     expect(css).toContain("--tv-role-emphasis-fg:");
     expect(css).toContain("--tv-role-emphasis-weight: 600;");
     expect(css).toContain("--tv-role-accent-fg:");
@@ -52,8 +52,8 @@ describe("buildThemeCssV3 — full CSS variable emission", () => {
   });
 
   it("cluster-resolved header.bold uses brand_ink (APCA-pair)", () => {
-    const t = buildTheme(COCHRANE);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(COCHRANE);
+    const css = buildThemeCssFromInputs(t);
     const bgMatch = css.match(/--tv-header-bold-bg: (#[0-9A-Fa-f]+);/);
     const fgMatch = css.match(/--tv-header-bold-fg: (#[0-9A-Fa-f]+);/);
     expect(bgMatch).not.toBeNull();
@@ -63,22 +63,22 @@ describe("buildThemeCssV3 — full CSS variable emission", () => {
   });
 
   it("dark mode produces dark paper", () => {
-    const t = buildTheme(DARK);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(DARK);
+    const css = buildThemeCssFromInputs(t);
     // Paper should be a dark hex (low lightness perceptually)
     expect(css).toContain(`--tv-paper: ${t.tokens.paper};`);
     expect(css).toContain(`--tv-ink: ${t.tokens.ink};`);
   });
 
   it("Lancet decorative chrome flows into columnGroup tint", () => {
-    const t = buildTheme(LANCET);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(LANCET);
+    const css = buildThemeCssFromInputs(t);
     expect(css).toContain(`--tv-decorative-chrome: ${t.tokens.decorative_chrome};`);
   });
 
   it("all values are hex or special CSS values", () => {
-    const t = buildTheme(COCHRANE);
-    const css = buildThemeCssV3(t);
+    const t = buildThemeStructure(COCHRANE);
+    const css = buildThemeCssFromInputs(t);
     // CSS vars only: `--tv-name: value;` (not the :root opening)
     const re = /--tv-[a-z0-9-]+:\s*([^;]+);/g;
     let m;

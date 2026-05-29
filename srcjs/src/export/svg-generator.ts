@@ -3262,7 +3262,7 @@ function renderReferenceLine(
 // Border helpers — Phase 11 layout × type border model
 // ============================================================================
 
-import type { BorderSpecV2 } from "$types/theme-v2";
+import type { BorderSpec } from "$types/theme-resolved";
 
 /**
  * Emit one SVG line obeying a BorderSpec. `single` → one stroke;
@@ -3271,7 +3271,7 @@ import type { BorderSpecV2 } from "$types/theme-v2";
  * `thickness <= 0` (the caller can append unconditionally).
  */
 function borderLineSvg(
-  x1: number, y1: number, x2: number, y2: number, spec: BorderSpecV2,
+  x1: number, y1: number, x2: number, y2: number, spec: BorderSpec,
 ): string {
   if (!spec || spec.thickness <= 0) return "";
   if (spec.style === "double") {

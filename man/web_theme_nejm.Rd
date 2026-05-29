@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_nejm}
 \alias{web_theme_nejm}
-\title{NEJM theme (v2)}
+\title{NEJM theme — crimson brand on cream.}
 \usage{
 web_theme_nejm()
 }
@@ -10,15 +10,5 @@ web_theme_nejm()
 A \link{WebTheme}.
 }
 \description{
-New England Journal of Medicine interpretation: deep navy primary
-(slightly darker than Lancet, to keep the two siblings visually
-distinct), muted crimson accent for emphasis, Source Serif Pro body
-and display. Comfortable density; no alt-row banding — classic
-medical-journal page feel.
-}
-\details{
-Distinct from Lancet: NEJM uses a darker navy with crimson accents
-(vs Lancet's old-gold), and Source Serif Pro instead of Georgia.
-
-Loads \verb{Source Serif Pro} from Google Fonts via the WebTheme \code{web_fonts} slot.
+NEJM theme — crimson brand on cream.
 }

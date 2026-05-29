@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_nature}
 \alias{web_theme_nature}
-\title{Nature theme (v2)}
+\title{Nature theme — teal-deep with amber accent.}
 \usage{
 web_theme_nature()
 }
@@ -10,15 +10,5 @@ web_theme_nature()
 A \link{WebTheme}.
 }
 \description{
-Nature journal interpretation: deep red primary (the journal's
-instantly-recognizable brand color), charcoal secondary, sky-blue
-accent for emphasis. PT Serif body with system-sans display —
-modern editorial register rather than classical-medical.
-}
-\details{
-Distinct from JAMA/Lancet/NEJM: bold red identity instead of
-navy/black, serif body but sans display (vs all-serif Lancet/NEJM),
-chromatic accent (sky-blue) instead of muted complements.
-
-Loads \verb{PT Serif} from Google Fonts via the WebTheme \code{web_fonts} slot.
+Nature theme — teal-deep with amber accent.
 }

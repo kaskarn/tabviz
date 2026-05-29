@@ -2,11 +2,11 @@ import { describe, it, expect } from "bun:test";
 import {
   emptyWire, pin, release, isPinned,
   resolveWire, inspectLeaf,
-} from "./theme-wire-v3";
-import { ref, lit } from "../types/theme-v3";
-import type { ThemeInputsV3 } from "../types/theme-v3";
+} from "./theme-wire";
+import { ref, lit } from "../types/theme-inputs";
+import type { ThemeInputs } from "../types/theme-inputs";
 
-const COCHRANE: ThemeInputsV3 = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
 
 describe("emptyWire — initial state", () => {
   it("has empty pins and overrides", () => {
@@ -52,7 +52,7 @@ describe("pin / release / isPinned", () => {
 });
 
 describe("resolveWire — full build at consumption", () => {
-  it("returns a WebThemeV3 from empty wire", () => {
+  it("returns a ThemeStructure from empty wire", () => {
     const { theme } = resolveWire(emptyWire(COCHRANE, "cochrane"));
     expect(theme.schemaVersion).toBe(3);
     expect(theme.name).toBe("cochrane");

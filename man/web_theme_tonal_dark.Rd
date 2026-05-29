@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tonal_dark}
 \alias{web_theme_tonal_dark}
-\title{Tonal dark theme (design)}
+\title{Tonal theme (dark) — M3-inspired tonal palette.}
 \usage{
 web_theme_tonal_dark()
 }
@@ -10,7 +10,5 @@ web_theme_tonal_dark()
 A \link{WebTheme}.
 }
 \description{
-Dark counterpart to \code{\link[=web_theme_tonal]{web_theme_tonal()}}. Same seed (primary +
-accent); dark canvas tinted toward primary at low chroma. Pairs with
-\code{\link[=web_theme_tonal]{web_theme_tonal()}} via the \code{light_dark_pair} field.
+Tonal theme (dark) — M3-inspired tonal palette.
 }

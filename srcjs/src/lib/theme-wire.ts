@@ -1,6 +1,6 @@
-// V3 wire format — inputs + pins + overrides.
+// Wire format — inputs + pins + overrides.
 //
-// Replaces the V2 resolved-blob wire shape. New wire carries:
+// Resolves paint roles from inputs to flat values for the renderer.
 //   - schemaVersion: 3
 //   - inputs (T1)
 //   - pins: dotted-path strings the user has explicitly authored
@@ -14,28 +14,28 @@
 // "pin", "override", or "derived" so consumers can introspect.
 
 import type {
-  ThemeInputsV3,
-  WebThemeV3,
-  ColorRefV3,
-} from "../types/theme-v3";
-import { buildTheme, resolveRef } from "./theme-resolve-v3";
+  ThemeInputs,
+  ThemeStructure,
+  ColorRef,
+} from "../types/theme-inputs";
+import { buildThemeStructure, resolveRef } from "./theme-resolve";
 
 // ────────────────────────────────────────────────────────────────────
 // Wire shape
 // ────────────────────────────────────────────────────────────────────
 
-export interface ThemeWireV3 {
+export interface ThemeWire {
   schemaVersion: 3;
   name: string;
-  inputs: ThemeInputsV3;
+  inputs: ThemeInputs;
   /** Dotted-path strings the user has explicitly authored. */
   pins: string[];
   /** Map of dotted-path -> override value. */
-  overrides: Record<string, ColorRefV3 | string | number | boolean | null>;
+  overrides: Record<string, ColorRef | string | number | boolean | null>;
 }
 
 /** Construct an empty wire from inputs. */
-export function emptyWire(inputs: ThemeInputsV3, name = "custom"): ThemeWireV3 {
+export function emptyWire(inputs: ThemeInputs, name = "custom"): ThemeWire {
   return {
     schemaVersion: 3,
     name,
@@ -51,10 +51,10 @@ export function emptyWire(inputs: ThemeInputsV3, name = "custom"): ThemeWireV3 {
 
 /** Add a pin + override to the wire. */
 export function pin(
-  wire: ThemeWireV3,
+  wire: ThemeWire,
   path: string,
-  value: ColorRefV3 | string | number | boolean | null,
-): ThemeWireV3 {
+  value: ColorRef | string | number | boolean | null,
+): ThemeWire {
   const pins = wire.pins.includes(path) ? wire.pins : [...wire.pins, path];
   return {
     ...wire,
@@ -64,7 +64,7 @@ export function pin(
 }
 
 /** Remove a pin (release back to derived). */
-export function release(wire: ThemeWireV3, path: string): ThemeWireV3 {
+export function release(wire: ThemeWire, path: string): ThemeWire {
   if (!wire.pins.includes(path)) return wire;
   const pins = wire.pins.filter((p) => p !== path);
   const { [path]: _removed, ...rest } = wire.overrides;
@@ -73,7 +73,7 @@ export function release(wire: ThemeWireV3, path: string): ThemeWireV3 {
 }
 
 /** True if a path is pinned. */
-export function isPinned(wire: ThemeWireV3, path: string): boolean {
+export function isPinned(wire: ThemeWire, path: string): boolean {
   return wire.pins.includes(path);
 }
 
@@ -107,19 +107,19 @@ function applyOverrideToPath(
 }
 
 /**
- * Resolve a wire to a fully-built WebThemeV3 at consumption time.
+ * Resolve a wire to a fully-built ThemeStructure at consumption time.
  *
  * Steps:
- *   1. buildTheme(inputs) → base theme
+ *   1. buildThemeStructure(inputs) → base theme
  *   2. Apply overrides into the theme by dotted path
  *
- * Returns the WebThemeV3 + a provenance map computed from pins.
+ * Returns the ThemeStructure + a provenance map computed from pins.
  */
-export function resolveWire(wire: ThemeWireV3): {
-  theme: WebThemeV3;
+export function resolveWire(wire: ThemeWire): {
+  theme: ThemeStructure;
   provenance: Record<string, Provenance>;
 } {
-  const base = buildTheme(wire.inputs, wire.name);
+  const base = buildThemeStructure(wire.inputs, wire.name);
   // Walk overrides; apply each into the theme.
   const themeAny = base as unknown as Record<string, unknown>;
   for (const path of Object.keys(wire.overrides)) {
@@ -141,7 +141,7 @@ export function resolveWire(wire: ThemeWireV3): {
 
 /** Inspect a specific leaf path. Returns the resolved hex (if a color) + provenance. */
 export function inspectLeaf(
-  wire: ThemeWireV3,
+  wire: ThemeWire,
   path: string,
 ): { value: unknown; provenance: Provenance; resolved?: string | null } {
   const { theme, provenance } = resolveWire(wire);
@@ -160,7 +160,7 @@ export function inspectLeaf(
     (typeof cursor === "string" ||
       (typeof cursor === "object" && ("ref" in cursor || "hex" in cursor)))
   ) {
-    resolved = resolveRef(cursor as ColorRefV3 | string, theme.ramps);
+    resolved = resolveRef(cursor as ColorRef | string, theme.ramps);
   }
   return {
     value: cursor,

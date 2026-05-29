@@ -1,27 +1,27 @@
-// V3 CSS variable emission.
+// CSS variable emission from theme inputs.
 //
-// Emits `--tv-*` CSS custom properties from a WebThemeV3. Token names
+// Emits `--tv-*` CSS custom properties from a ThemeStructure. Token names
 // become CSS variable names directly: `ink` → `--tv-ink`, `brand_ink`
 // → `--tv-brand-ink`, `rule_subtle` → `--tv-rule-subtle`, etc.
 //
 // Lives alongside the legacy theme-css.ts during the rationalization arc.
 // PR I retires the legacy module.
 
-import type { WebThemeV3, TokenNameV3, RoleNameV3 } from "../types/theme-v3";
-import { resolveRef } from "./theme-resolve-v3";
+import type { ThemeStructure, TokenName, RoleName } from "../types/theme-inputs";
+import { resolveRef } from "./theme-resolve";
 
 /** Token name → CSS variable name. `brand_ink` → `--tv-brand-ink`. */
-function tokenToVar(token: TokenNameV3): string {
+function tokenToVar(token: TokenName): string {
   return `--tv-${token.replace(/_/g, "-")}`;
 }
 
-/** Build the full `--tv-*` CSS variable block from a WebThemeV3. */
-export function buildThemeCssV3(theme: WebThemeV3): string {
+/** Build the full `--tv-*` CSS variable block from a ThemeStructure. */
+export function buildThemeCssFromInputs(theme: ThemeStructure): string {
   const lines: string[] = [];
 
   // ── T2 tokens ────────────────────────────────────────────────────
   for (const [token, hex] of Object.entries(theme.tokens)) {
-    lines.push(`  ${tokenToVar(token as TokenNameV3)}: ${hex};`);
+    lines.push(`  ${tokenToVar(token as TokenName)}: ${hex};`);
   }
 
   // ── Cluster-resolved CSS variables (chrome the renderer consumes) ─
@@ -81,7 +81,7 @@ export function buildThemeCssV3(theme: WebThemeV3): string {
 
   // Paint roles — emit fg/bg vars per role for renderer-side CSS classes
   const roles = theme.roles;
-  for (const roleName of Object.keys(roles) as RoleNameV3[]) {
+  for (const roleName of Object.keys(roles) as RoleName[]) {
     const r = roles[roleName];
     const fg = resolveRef(r.fg ?? undefined, ramps);
     const bg = resolveRef(r.bg ?? undefined, ramps);
@@ -96,6 +96,6 @@ export function buildThemeCssV3(theme: WebThemeV3): string {
 }
 
 /** Build the full :root block + a stable hash of theme inputs (for caching). */
-export function buildThemeCssBlockV3(theme: WebThemeV3): { css: string } {
-  return { css: buildThemeCssV3(theme) };
+export function buildThemeCssBlockFromInputs(theme: ThemeStructure): { css: string } {
+  return { css: buildThemeCssFromInputs(theme) };
 }

@@ -1,29 +1,29 @@
-// Plain-runtime mirror of theme-store-v3.svelte.ts — for bun test.
+// Plain-runtime mirror of theme-store.svelte.ts — for bun test.
 // (bun can't run .svelte.ts files directly; this file provides the same
 // shape using manual reactivity for testing.)
 
-import type { WebThemeV3, ThemeInputsV3, ColorRefV3 } from "../types/theme-v3";
-import type { ThemeWireV3, Provenance } from "../lib/theme-wire-v3";
+import type { ThemeStructure, ThemeInputs, ColorRef } from "../types/theme-inputs";
+import type { ThemeWire, Provenance } from "../lib/theme-wire";
 import {
   emptyWire, pin, release, isPinned, resolveWire, inspectLeaf,
-} from "../lib/theme-wire-v3";
+} from "../lib/theme-wire";
 
 export interface ThemeStoreV3Plain {
-  wire: ThemeWireV3;
-  theme: WebThemeV3;
+  wire: ThemeWire;
+  theme: ThemeStructure;
   provenance: Record<string, Provenance>;
 
-  setInput<K extends keyof ThemeInputsV3>(key: K, value: ThemeInputsV3[K]): void;
-  pinPath(path: string, value: ColorRefV3 | string | number | boolean | null): void;
+  setInput<K extends keyof ThemeInputs>(key: K, value: ThemeInputs[K]): void;
+  pinPath(path: string, value: ColorRef | string | number | boolean | null): void;
   releasePath(path: string): void;
   isPinned(path: string): boolean;
   inspect(path: string): ReturnType<typeof inspectLeaf>;
-  load(wire: ThemeWireV3): void;
-  reset(inputs: ThemeInputsV3, name?: string): void;
+  load(wire: ThemeWire): void;
+  reset(inputs: ThemeInputs, name?: string): void;
 }
 
 export function createThemeStoreV3Plain(
-  initialInputs: ThemeInputsV3,
+  initialInputs: ThemeInputs,
   initialName = "custom",
 ): ThemeStoreV3Plain {
   let wire = emptyWire(initialInputs, initialName);

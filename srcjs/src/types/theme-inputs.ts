@@ -1,14 +1,10 @@
-// Theme V3 types — the rationalized theme surface.
-//
-// Lives alongside the legacy V2 types during the rationalization arc
-// (PRs A–I). PR I deletes V2 and drops the V3 suffix. See
-// `~/.claude/plans/theme-rationalization.md`.
+// Theme authoring-input types — the rationalized theme surface.
 //
 // Layers (defined here):
-//   T1 — ThemeInputsV3       (the entire user-authoring surface)
-//   T0 — TokenRampsV3        (12-step ramps generated from T1 inputs)
-//   T2 — token vocabulary    (addressable names; resolved from T0)
-//   T3+ — paint roles, clusters, data layer  (defined in later PRs)
+//   T1 — ThemeInputs    (the entire user-authoring surface)
+//   T0 — TokenRamps     (12-step ramps generated from T1 inputs)
+//   T2 — token vocabulary (addressable names; resolved from T0)
+//   T3+ — paint roles, clusters, data layer
 
 // ────────────────────────────────────────────────────────────────────
 // T1 — Identity inputs (what the user authors)
@@ -18,7 +14,7 @@
 export type ThemeMode = "light" | "dark";
 
 /** Optional tint for the neutral ramp — blends a small fraction of a hue into low-chroma ends. */
-export type NeutralTintV3 =
+export type NeutralTint =
   | "untinted"        // pure achromatic ramp
   | "brand"           // tint with brand hue
   | "accent"          // tint with accent hue
@@ -26,9 +22,9 @@ export type NeutralTintV3 =
   | { hex: string };  // explicit hex tint
 
 /** Name of a registered data palette scheme. PR E adds the full registry. */
-export type SchemeNameV3 = string;
+export type SchemeName = string;
 
-export interface ThemeInputsV3 {
+export interface ThemeInputs {
   /** Required. Brand color seed; powers the brand ramp and identity tokens. */
   brand: string;
 
@@ -44,12 +40,12 @@ export interface ThemeInputsV3 {
   mode?: ThemeMode;
 
   /** Neutral ramp tinting. Default `"untinted"`. */
-  neutral_tint?: NeutralTintV3;
+  neutral_tint?: NeutralTint;
 
   /** Data palette scheme references — PR E wires the registry. */
-  categorical?: SchemeNameV3;
-  sequential?: SchemeNameV3;
-  diverging?: SchemeNameV3;
+  categorical?: SchemeName;
+  sequential?: SchemeName;
+  diverging?: SchemeName;
 
   /** Status palette seeds. Defaults curated semantic colors. */
   status?: {
@@ -77,7 +73,7 @@ export interface ThemeInputsV3 {
 // Each ramp is a 12-element hex array. Index i = Radix step (i+1).
 // Use `rampStep(ramp, n)` (from `lib/oklch`) for 1-indexed access.
 
-export interface TokenRampsV3 {
+export interface TokenRamps {
   /** 12-step neutral ramp; optionally tinted. */
   neutral: string[];
   /** 12-step brand ramp. */
@@ -103,7 +99,7 @@ export interface TokenRampsV3 {
 // brand / brand_ink) to prove the model. PR B expands to the full
 // vocabulary listed in the rationalization plan.
 
-export type TokenNameV3 =
+export type TokenName =
   // Surfaces
   | "paper"
   | "paper_alt"
@@ -143,24 +139,24 @@ export type TokenNameV3 =
   | "info_ink";
 
 /** Numeric ramp-step references (programmatic addressability): `neutral.3`, `brand.9`, etc. */
-export type RampStepRefV3 =
+export type RampStepRef =
   | `neutral.${number}`
   | `brand.${number}`
   | `accent.${number}`
   | `decorative.${number}`;
 
 /** Color reference. Tagged-object form is canonical; plain string accepted by resolvers. */
-export type ColorRefV3 =
-  | { ref: TokenNameV3 | RampStepRefV3; alpha?: number }
+export type ColorRef =
+  | { ref: TokenName | RampStepRef; alpha?: number }
   | { hex: string; alpha?: number };
 
 /** Convenience constructor — `ref("ink_muted")` or `ref("brand.9")`. */
-export function ref(name: TokenNameV3 | RampStepRefV3, alpha?: number): ColorRefV3 {
+export function ref(name: TokenName | RampStepRef, alpha?: number): ColorRef {
   return alpha === undefined ? { ref: name } : { ref: name, alpha };
 }
 
 /** Hex literal as a tagged-object ref (rare — plain string usually works). */
-export function lit(hex: string, alpha?: number): ColorRefV3 {
+export function lit(hex: string, alpha?: number): ColorRef {
   return alpha === undefined ? { hex } : { hex, alpha };
 }
 
@@ -169,7 +165,7 @@ export function lit(hex: string, alpha?: number): ColorRefV3 {
 // ────────────────────────────────────────────────────────────────────
 
 /** Fixed canonical role vocabulary. Themes redefine recipes; cannot add roles. */
-export type RoleNameV3 =
+export type RoleName =
   | "emphasis"
   | "muted"
   | "accent"
@@ -181,133 +177,133 @@ export type RoleNameV3 =
   | "info";
 
 /** A paint-role recipe — how a role looks when applied to a target. */
-export interface PaintRoleV3 {
-  bg?: ColorRefV3 | string | null;
-  fg?: ColorRefV3 | string | null;
-  border?: ColorRefV3 | string | null;
-  markerFill?: ColorRefV3 | string | null;
-  markerStroke?: ColorRefV3 | string | null;
+export interface PaintRole {
+  bg?: ColorRef | string | null;
+  fg?: ColorRef | string | null;
+  border?: ColorRef | string | null;
+  markerFill?: ColorRef | string | null;
+  markerStroke?: ColorRef | string | null;
   fontWeight?: number | null;
   fontStyle?: "normal" | "italic" | null;
 }
 
-export type ThemeRolesV3 = Record<RoleNameV3, PaintRoleV3>;
+export type ThemeRoles = Record<RoleName, PaintRole>;
 
 // ────────────────────────────────────────────────────────────────────
 // T4 — Component clusters (low-level bindings; reference T2 via refs)
 // ────────────────────────────────────────────────────────────────────
 
-export interface RowStateV3 {
-  bg: ColorRefV3 | string | null;
-  fg: ColorRefV3 | string | null;
+export interface RowStateInputs {
+  bg: ColorRef | string | null;
+  fg: ColorRef | string | null;
 }
 
-export interface HeaderVariantV3 {
-  bg: ColorRefV3 | string | null;
-  fg: ColorRefV3 | string | null;
-  rule: ColorRefV3 | string | null;
+export interface HeaderVariantInputs {
+  bg: ColorRef | string | null;
+  fg: ColorRef | string | null;
+  rule: ColorRef | string | null;
 }
 
-export interface HeaderClusterV3 {
-  light: HeaderVariantV3;
-  tint: HeaderVariantV3;
-  bold: HeaderVariantV3;
+export interface HeaderClusterInputs {
+  light: HeaderVariantInputs;
+  tint: HeaderVariantInputs;
+  bold: HeaderVariantInputs;
 }
 
-export type ColumnGroupClusterV3 = HeaderClusterV3;
+export type ColumnGroupClusterInputs = HeaderClusterInputs;
 
-export interface RowGroupTierV3 {
-  bg: ColorRefV3 | string | null;
-  fg: ColorRefV3 | string | null;
-  rule: ColorRefV3 | string | null;
+export interface RowGroupTierInputs {
+  bg: ColorRef | string | null;
+  fg: ColorRef | string | null;
+  rule: ColorRef | string | null;
   fontWeight: number | null;
 }
 
-export interface RowGroupClusterV3 {
-  L1: RowGroupTierV3;
-  L2: RowGroupTierV3;
-  L3: RowGroupTierV3;
+export interface RowGroupClusterInputs {
+  L1: RowGroupTierInputs;
+  L2: RowGroupTierInputs;
+  L3: RowGroupTierInputs;
 }
 
-export interface RowClusterV3 {
-  base: RowStateV3;
-  alt: RowStateV3;
-  hover: RowStateV3;
-  selected: RowStateV3;
+export interface RowClusterInputs {
+  base: RowStateInputs;
+  alt: RowStateInputs;
+  hover: RowStateInputs;
+  selected: RowStateInputs;
   banding: "none" | "row" | "group" | string;
   selectedEdgeWidth: number;
   borderWidth: number;
 }
 
-export interface CellClusterV3 {
-  bg: ColorRefV3 | string | null;
-  fg: ColorRefV3 | string | null;
-  border: ColorRefV3 | string | null;
+export interface CellClusterInputs {
+  bg: ColorRef | string | null;
+  fg: ColorRef | string | null;
+  border: ColorRef | string | null;
 }
 
-export interface FirstColumnVariantV3 {
-  bg: ColorRefV3 | string | null;
-  fg: ColorRefV3 | string | null;
-  rule: ColorRefV3 | string | null;
+export interface FirstColumnVariantInputs {
+  bg: ColorRef | string | null;
+  fg: ColorRef | string | null;
+  rule: ColorRef | string | null;
   weight: number | null;
 }
 
-export interface FirstColumnClusterV3 {
-  default: FirstColumnVariantV3;
-  bold: FirstColumnVariantV3;
+export interface FirstColumnClusterInputs {
+  default: FirstColumnVariantInputs;
+  bold: FirstColumnVariantInputs;
 }
 
-export interface PlotScaffoldV3 {
-  bg: ColorRefV3 | string | null;
-  axisLine: ColorRefV3 | string | null;
-  tickMark: ColorRefV3 | string | null;
-  gridline: ColorRefV3 | string | null;
-  reference: ColorRefV3 | string | null;
+export interface PlotScaffoldInputs {
+  bg: ColorRef | string | null;
+  axisLine: ColorRef | string | null;
+  tickMark: ColorRef | string | null;
+  gridline: ColorRef | string | null;
+  reference: ColorRef | string | null;
   tickMarkLength: number;
   lineWidth: number;
   pointSize: number;
 }
 
-export interface MarkRecipeV3 {
+export interface MarkRecipeInputs {
   body: string;       // slot-bundle field name
   outline: string;
   line: string;
 }
 
-export interface MarksRecipesV3 {
-  forest: MarkRecipeV3;
-  summary: MarkRecipeV3;
-  bar: MarkRecipeV3;
-  box: MarkRecipeV3;
-  violin: MarkRecipeV3;
-  lollipop: MarkRecipeV3;
+export interface MarksRecipesInputs {
+  forest: MarkRecipeInputs;
+  summary: MarkRecipeInputs;
+  bar: MarkRecipeInputs;
+  box: MarkRecipeInputs;
+  violin: MarkRecipeInputs;
+  lollipop: MarkRecipeInputs;
 }
 
-export interface ClustersV3 {
-  header: HeaderClusterV3;
-  columnGroup: ColumnGroupClusterV3;
-  rowGroup: RowGroupClusterV3;
-  row: RowClusterV3;
-  cell: CellClusterV3;
-  firstColumn: FirstColumnClusterV3;
-  plot: PlotScaffoldV3;
-  marks: MarksRecipesV3;
+export interface ClustersInputs {
+  header: HeaderClusterInputs;
+  columnGroup: ColumnGroupClusterInputs;
+  rowGroup: RowGroupClusterInputs;
+  row: RowClusterInputs;
+  cell: CellClusterInputs;
+  firstColumn: FirstColumnClusterInputs;
+  plot: PlotScaffoldInputs;
+  marks: MarksRecipesInputs;
 }
 
 // ────────────────────────────────────────────────────────────────────
 // Resolved theme — what render-time consumers see
 // ────────────────────────────────────────────────────────────────────
 
-export interface WebThemeV3 {
+export interface ThemeStructure {
   schemaVersion: 3;
   name: string;
-  inputs: ThemeInputsV3;
+  inputs: ThemeInputs;
   /** Resolved T0 ramps. */
-  ramps: TokenRampsV3;
+  ramps: TokenRamps;
   /** Resolved T2 token map (every token name → hex). */
-  tokens: Record<TokenNameV3, string>;
+  tokens: Record<TokenName, string>;
   /** Paint role recipes (refs not yet dereferenced — render-time picks per role). */
-  roles: ThemeRolesV3;
+  roles: ThemeRoles;
   /** Component cluster bindings (refs not yet dereferenced). */
-  clusters: ClustersV3;
+  clusters: ClustersInputs;
 }

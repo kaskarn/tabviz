@@ -1,19 +1,19 @@
-// V3 paint-role resolver.
+// Paint-role resolver.
 //
 // Translates an active role name into a resolved SemanticBundle (hex
-// values, refs dereferenced) for the renderer. Replaces the V2
+// values, refs dereferenced) for the renderer. Resolves paint roles from inputs to flat values for the renderer.
 // semantic-styling.ts read path; consumer cutover lands in PR I.
 
 import type {
-  WebThemeV3,
-  RoleNameV3,
-  PaintRoleV3,
-  TokenRampsV3,
-} from "../types/theme-v3";
-import { resolveRef } from "./theme-resolve-v3";
+  ThemeStructure,
+  RoleName,
+  PaintRole,
+  TokenRamps,
+} from "../types/theme-inputs";
+import { resolveRef } from "./theme-resolve";
 
 /** Canonical role precedence: loud → quiet. */
-export const ROLE_PRECEDENCE: ReadonlyArray<RoleNameV3> = [
+export const ROLE_PRECEDENCE: ReadonlyArray<RoleName> = [
   // Status roles outrank generic emphasis — they're explicit semantic intent.
   "negative",
   "positive",
@@ -40,17 +40,17 @@ export interface ResolvedRoleBundle {
 
 /** Resolve a single paint role to a hex bundle against the theme's ramps. */
 export function resolveRole(
-  roleName: RoleNameV3,
-  theme: WebThemeV3,
+  roleName: RoleName,
+  theme: ThemeStructure,
 ): ResolvedRoleBundle {
-  const role: PaintRoleV3 = theme.roles[roleName];
+  const role: PaintRole = theme.roles[roleName];
   return resolveRoleRecipe(role, theme.ramps);
 }
 
 /** Resolve any role recipe against ramps. */
 export function resolveRoleRecipe(
-  role: PaintRoleV3,
-  ramps: TokenRampsV3,
+  role: PaintRole,
+  ramps: TokenRamps,
 ): ResolvedRoleBundle {
   return {
     bg: resolveRef(role.bg ?? null, ramps),
@@ -79,8 +79,8 @@ export function bundleIsActive(b: ResolvedRoleBundle | null): boolean {
 
 /** Pick the active role from a flag map, respecting precedence. */
 export function activeRole(
-  flags: Partial<Record<RoleNameV3, boolean>> | null | undefined,
-): RoleNameV3 | null {
+  flags: Partial<Record<RoleName, boolean>> | null | undefined,
+): RoleName | null {
   if (!flags) return null;
   for (const role of ROLE_PRECEDENCE) {
     if (flags[role]) return role;
@@ -93,8 +93,8 @@ export function activeRole(
  * Returns null when no role is flagged active.
  */
 export function resolveActiveRole(
-  flags: Partial<Record<RoleNameV3, boolean>> | null | undefined,
-  theme: WebThemeV3 | null | undefined,
+  flags: Partial<Record<RoleName, boolean>> | null | undefined,
+  theme: ThemeStructure | null | undefined,
 ): ResolvedRoleBundle | null {
   if (!theme) return null;
   const role = activeRole(flags);
@@ -108,7 +108,7 @@ export function resolveActiveRole(
  * status roles + emphasis/accent promote visibility, not reduce.
  */
 export function roleMarkOpacity(
-  flags: Partial<Record<RoleNameV3, boolean>> | null | undefined,
+  flags: Partial<Record<RoleName, boolean>> | null | undefined,
 ): { fill: number; stroke: number } | null {
   return activeRole(flags) === "muted"
     ? { fill: 0.4, stroke: 0.8 }

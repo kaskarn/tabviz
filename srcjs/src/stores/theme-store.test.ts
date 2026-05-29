@@ -1,11 +1,11 @@
 import { describe, it, expect } from "bun:test";
-import { createThemeStoreV3Plain } from "./theme-store-v3.runes";
-import { COCHRANE_V3, LANCET_V3 } from "../lib/theme-presets-v3";
-import { ref, lit } from "../types/theme-v3";
+import { createThemeStoreV3Plain } from "./theme-store.plain";
+import { COCHRANE, LANCET } from "../lib/theme-presets-inputs";
+import { ref, lit } from "../types/theme-inputs";
 
-describe("ThemeStoreV3 — reactive theme store", () => {
+describe("ThemeStore — reactive theme store", () => {
   it("initializes from inputs", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3, "cochrane");
+    const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
     expect(s.wire.name).toBe("cochrane");
     expect(s.wire.inputs.brand).toBe("#0099CC");
     expect(s.theme.schemaVersion).toBe(3);
@@ -13,7 +13,7 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 
   it("setInput updates the resolved theme", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     const before = s.theme.tokens.brand;
     s.setInput("brand", "#FF0000");
     const after = s.theme.tokens.brand;
@@ -21,7 +21,7 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 
   it("mode toggle inverts paper/ink", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     const paperLight = s.theme.tokens.paper;
     s.setInput("mode", "dark");
     const paperDark = s.theme.tokens.paper;
@@ -29,7 +29,7 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 
   it("pinPath + releasePath round-trip", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     const beforeFg = s.theme.clusters.cell.fg;
 
     s.pinPath("clusters.cell.fg", lit("#FF00FF"));
@@ -42,7 +42,7 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 
   it("inspect returns provenance + resolved hex", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     s.pinPath("clusters.cell.fg", ref("ink_muted"));
     const info = s.inspect("clusters.cell.fg");
     expect(info.provenance.source).toBe("pin");
@@ -50,8 +50,8 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 
   it("load swaps to a different wire", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3, "cochrane");
-    s.reset(LANCET_V3, "lancet");
+    const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
+    s.reset(LANCET, "lancet");
     expect(s.wire.name).toBe("lancet");
     expect(s.wire.inputs.brand).toBe("#00407A");
     expect(s.wire.inputs.decorative).toBe("#A6792A");
@@ -59,7 +59,7 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 
   it("reset clears pins + overrides while keeping inputs", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     s.pinPath("clusters.cell.fg", lit("#FF00FF"));
     expect(s.wire.pins.length).toBe(1);
     s.reset(s.wire.inputs);
@@ -68,9 +68,9 @@ describe("ThemeStoreV3 — reactive theme store", () => {
   });
 });
 
-describe("ThemeStoreV3 — input changes propagate to derived clusters", () => {
+describe("ThemeStore — input changes propagate to derived clusters", () => {
   it("changing brand changes header.bold bg", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     const before = s.inspect("clusters.header.bold.bg").resolved;
     s.setInput("brand", "#FF0000");
     const after = s.inspect("clusters.header.bold.bg").resolved;
@@ -84,14 +84,14 @@ describe("ThemeStoreV3 — input changes propagate to derived clusters", () => {
     // remains at step 9's L (still mid), so brand_ink also stays dark.
     // This test confirms the invariant holds rather than that brand_ink
     // changes when brand input changes nominally.
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     const lightNeutral = s.theme.ramps.neutral[0]!;
     const darkNeutral = s.theme.ramps.neutral[11]!;
     expect([lightNeutral, darkNeutral]).toContain(s.theme.tokens.brand_ink);
   });
 
   it("adding decorative produces decorative ramp", () => {
-    const s = createThemeStoreV3Plain(COCHRANE_V3);
+    const s = createThemeStoreV3Plain(COCHRANE);
     expect(s.theme.ramps.decorative).toBeNull();
     s.setInput("decorative", "#A6792A");
     expect(s.theme.ramps.decorative).not.toBeNull();

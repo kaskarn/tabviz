@@ -10,7 +10,7 @@
 // Rationalization gain: ~180 LOC of cascade work moves out of the
 // component so the Svelte file can focus on layout + wiring.
 
-import type { WebTheme, ThemeInputsV2 as ThemeInputs } from "$types";
+import type { WebTheme, ResolvedInputs as ThemeInputs } from "$types";
 import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
 export type ThemePath = (string | number)[];
