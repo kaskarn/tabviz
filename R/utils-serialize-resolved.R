@@ -289,14 +289,19 @@ serialize_theme <- function(theme) {
       alt       = serialize_row_state(theme@row@alt),
       hover     = serialize_row_state(theme@row@hover),
       selected  = serialize_row_state(theme@row@selected),
-      emphasis  = serialize_row_semantic(theme@row@emphasis),
-      muted     = serialize_row_semantic(theme@row@muted),
-      accent    = serialize_row_semantic(theme@row@accent),
-      bold      = serialize_row_semantic(theme@row@bold),
-      fill      = serialize_row_semantic(theme@row@fill),
       banding   = serialize_banding(theme@row@banding),
       selectedEdgeWidth = theme@row@selected_edge_width,
       borderWidth       = theme@row@border_width
+    ),
+    # Sprint 1 PR 5: paint-token bundles live under their own namespace.
+    tokens = list(
+      row = list(
+        emphasis = serialize_row_semantic(theme@tokens@row@emphasis),
+        muted    = serialize_row_semantic(theme@tokens@row@muted),
+        accent   = serialize_row_semantic(theme@tokens@row@accent),
+        bold     = serialize_row_semantic(theme@tokens@row@bold),
+        fill     = serialize_row_semantic(theme@tokens@row@fill)
+      )
     ),
     cell = list(
       bg     = na_to_null(theme@cell@bg),

@@ -228,10 +228,10 @@ test_that("row states resolve from surface and accent", {
 
 test_that("row semantics resolve to recognizable values", {
   t <- resolved_default()
-  expect_equal(t@row@emphasis@font_weight, 600)
-  expect_equal(t@row@emphasis@marker_fill, t@content@primary)
-  expect_equal(t@row@muted@marker_fill, t@content@muted)
-  expect_equal(t@row@accent@marker_fill, t@accent@default)
+  expect_equal(t@tokens@row@emphasis@font_weight, 600)
+  expect_equal(t@tokens@row@emphasis@marker_fill, t@content@primary)
+  expect_equal(t@tokens@row@muted@marker_fill, t@content@muted)
+  expect_equal(t@tokens@row@accent@marker_fill, t@accent@default)
 })
 
 test_that("first column bold variant is emphasized", {

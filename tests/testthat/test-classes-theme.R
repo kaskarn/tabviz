@@ -109,16 +109,28 @@ test_that("RowGroupCluster has L1/L2/L3 tiers", {
   expect_true(is.na(rg@indent_per_level))
 })
 
-test_that("RowCluster carries states + semantic bundles + banding", {
+test_that("RowCluster carries states + banding (paint tokens moved to ThemeTokens PR 5)", {
   rc <- RowCluster()
   expect_s7_class(rc@base,     "RowState")
   expect_s7_class(rc@hover,    "RowState")
   expect_s7_class(rc@selected, "RowState")
-  expect_s7_class(rc@emphasis, "RowSemantic")
-  expect_s7_class(rc@muted,    "RowSemantic")
-  expect_s7_class(rc@accent,   "RowSemantic")
   expect_equal(rc@banding, "group")
   expect_error(RowCluster(banding = "checkerboard"))
+})
+
+test_that("RowTokens carries the 5 paint-token RowSemantic bundles", {
+  rt <- RowTokens()
+  expect_s7_class(rt@emphasis, "RowSemantic")
+  expect_s7_class(rt@muted,    "RowSemantic")
+  expect_s7_class(rt@accent,   "RowSemantic")
+  expect_s7_class(rt@bold,     "RowSemantic")
+  expect_s7_class(rt@fill,     "RowSemantic")
+})
+
+test_that("WebTheme exposes ThemeTokens at @tokens", {
+  t <- WebTheme()
+  expect_s7_class(t@tokens, "ThemeTokens")
+  expect_s7_class(t@tokens@row, "RowTokens")
 })
 
 test_that("RowSemantic validates marker_fill and font_style", {

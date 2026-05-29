@@ -175,12 +175,15 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
       --tv-interval-line: ${theme.series?.[0]?.stroke ?? theme.accent.default};
       --tv-summary-fill: ${theme.series?.[0]?.fill ?? theme.accent.default};
       --tv-summary-border: ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-semantic-emphasis-fg: ${theme.row.emphasis?.fg ?? theme.content.primary};
-      --tv-semantic-muted-fg:    ${theme.row.muted?.fg    ?? theme.content.muted};
-      --tv-semantic-accent-fg:   ${theme.row.accent?.fg   ?? theme.accent.default};
-      --tv-semantic-emphasis-bg: ${theme.row.emphasis?.bg ?? "transparent"};
-      --tv-semantic-muted-bg:    ${theme.row.muted?.bg    ?? "transparent"};
-      --tv-semantic-accent-bg:   ${theme.row.accent?.bg   ?? "transparent"};
+      /* Paint-token bundles. Sprint 1 PR 5 moved canonical home from
+         theme.row.{token} to theme.tokens.row.{token}; the fallback
+         here keeps legacy wire blobs renderable for one minor version. */
+      --tv-semantic-emphasis-fg: ${theme.tokens?.row?.emphasis?.fg ?? (theme.row as { emphasis?: { fg?: string } }).emphasis?.fg ?? theme.content.primary};
+      --tv-semantic-muted-fg:    ${theme.tokens?.row?.muted?.fg    ?? (theme.row as { muted?: { fg?: string } }).muted?.fg    ?? theme.content.muted};
+      --tv-semantic-accent-fg:   ${theme.tokens?.row?.accent?.fg   ?? (theme.row as { accent?: { fg?: string } }).accent?.fg   ?? theme.accent.default};
+      --tv-semantic-emphasis-bg: ${theme.tokens?.row?.emphasis?.bg ?? (theme.row as { emphasis?: { bg?: string } }).emphasis?.bg ?? "transparent"};
+      --tv-semantic-muted-bg:    ${theme.tokens?.row?.muted?.bg    ?? (theme.row as { muted?: { bg?: string } }).muted?.bg    ?? "transparent"};
+      --tv-semantic-accent-bg:   ${theme.tokens?.row?.accent?.bg   ?? (theme.row as { accent?: { bg?: string } }).accent?.bg   ?? "transparent"};
       /* Status colors. --tv-status-* are the semantic names any column
          type can reference (col_ring thresholds, col_pictogram fills,
          col_badge scales). --tv-badge-* are the historical badge-variant

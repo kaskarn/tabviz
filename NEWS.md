@@ -1,5 +1,34 @@
 # tabviz (development)
 
+## Theme sprint Phase 1e — paint-token namespace migration
+
+Paint-token bundles (`emphasis`, `muted`, `accent`, `bold`, `fill`)
+moved from `theme.row.{token}` to `theme.tokens.row.{token}` on both
+R and TS. The word "token" is now reserved for paint-tool semantics
+and no longer overloads with T2 chrome roles (`accent.muted`,
+`surface.muted`, `divider.muted`, …).
+
+* **TS**: new `RowTokensV2` + `ThemeTokensV2` interfaces in
+  `srcjs/src/types/theme-v2.ts`. `WebThemeV2.tokens` is the canonical
+  home. `RowClusterV2` lost its five paint-token fields.
+  `resolveTheme` now produces `theme.tokens.row.*`; `theme-css.ts`
+  reads from there. `TokensControl.svelte` edits via
+  `["tokens", "row", token, field]`.
+* **R**: new `RowTokens` + `ThemeTokens` S7 classes in
+  `R/classes-theme.R`. `WebTheme` gained a `tokens` slot.
+  `RowCluster` lost its five paint-token properties.
+  `serialize_theme()` emits `tokens.row.*`; the deserializer falls
+  back to the legacy `row.{token}` location for one minor version.
+* **Migration shims**: both sides accept legacy inputs at
+  `overrides.row.{emphasis,…}` / wire `row.{token}`. New output is
+  always at `theme.tokens.row.*`. Inputs accepted at
+  `overrides.tokens.row.{token}` (canonical) or the legacy location.
+* `theme-presets-v2.json` regenerated.
+
+Paint-tool semantics are unchanged; the painter UI and data columns
+(`row_emphasis_col`, `row_bold_col`, …) work identically. Only the
+*addressing path* for the token bundles changed.
+
 ## Theme sprint Phase 1d — OptionKind enforcement
 
 `OptionKind` is promoted from advisory (3 of 169 options tagged) to an

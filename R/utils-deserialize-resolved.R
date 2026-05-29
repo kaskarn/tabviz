@@ -295,14 +295,24 @@ deserialize_resolved_theme <- function(x) {
     alt                 = deserialize_row_state(r$alt),
     hover               = deserialize_row_state(r$hover),
     selected            = deserialize_row_state(r$selected),
-    emphasis            = deserialize_row_semantic(r$emphasis),
-    muted               = deserialize_row_semantic(r$muted),
-    accent              = deserialize_row_semantic(r$accent),
-    bold                = deserialize_row_semantic(r$bold),
-    fill                = deserialize_row_semantic(r$fill),
     banding             = .coerce_banding(r$banding),
     selected_edge_width = if (is.null(r$selectedEdgeWidth)) 2 else as.numeric(r$selectedEdgeWidth),
     border_width        = if (is.null(r$borderWidth)) 1 else as.numeric(r$borderWidth)
+  )
+
+  # Sprint 1 PR 5: paint tokens live at theme.tokens.row.*. Legacy
+  # wire blobs may still carry them at theme.row.{token}; fall back
+  # for one minor version so older snapshots keep deserializing.
+  tk <- x$tokens %||% list()
+  tk_row <- tk$row %||% list()
+  tokens <- ThemeTokens(
+    row = RowTokens(
+      emphasis = deserialize_row_semantic(tk_row$emphasis %||% r$emphasis),
+      muted    = deserialize_row_semantic(tk_row$muted    %||% r$muted),
+      accent   = deserialize_row_semantic(tk_row$accent   %||% r$accent),
+      bold     = deserialize_row_semantic(tk_row$bold     %||% r$bold),
+      fill     = deserialize_row_semantic(tk_row$fill     %||% r$fill)
+    )
   )
 
   ce <- x$cell %||% list()
@@ -404,6 +414,7 @@ deserialize_resolved_theme <- function(x) {
     column_group    = column_group,
     row_group       = row_group,
     row             = row,
+    tokens          = tokens,
     cell            = cell,
     first_column    = first_column,
     plot            = plot,
@@ -641,17 +652,26 @@ deserialize_resolved_theme <- function(x) {
     alt = .ov_row_state(r@alt),
     hover = .ov_row_state(r@hover),
     selected = .ov_row_state(r@selected),
-    emphasis = .ov_row_semantic(r@emphasis),
-    muted = .ov_row_semantic(r@muted),
-    accent = .ov_row_semantic(r@accent),
-    bold = .ov_row_semantic(r@bold),
-    fill = .ov_row_semantic(r@fill),
     banding = if (identical(r@banding, "group")) NULL else r@banding,
     selectedEdgeWidth = if (identical(r@selected_edge_width, 2)) NULL else r@selected_edge_width,
     borderWidth = if (identical(r@border_width, 1)) NULL else r@border_width
   )
   out <- out[vapply(out, function(x) length(x) > 0, logical(1))]
   out
+}
+
+.ov_tokens <- function(tk) {
+  # tk: ThemeTokens
+  row_out <- list(
+    emphasis = .ov_row_semantic(tk@row@emphasis),
+    muted    = .ov_row_semantic(tk@row@muted),
+    accent   = .ov_row_semantic(tk@row@accent),
+    bold     = .ov_row_semantic(tk@row@bold),
+    fill     = .ov_row_semantic(tk@row@fill)
+  )
+  row_out <- row_out[vapply(row_out, function(x) length(x) > 0, logical(1))]
+  if (length(row_out) == 0) return(NULL)
+  list(row = row_out)
 }
 
 .ov_cell <- function(c) {
@@ -734,6 +754,7 @@ webtheme_to_resolve_draft <- function(theme) {
     columnGroup = .ov_header_cluster(theme@column_group),
     rowGroup   = .ov_row_group(theme@row_group),
     row        = .ov_row(theme@row),
+    tokens     = .ov_tokens(theme@tokens),
     cell       = .ov_cell(theme@cell),
     firstColumn = .ov_first_column(theme@first_column),
     plot       = .ov_plot(theme@plot),

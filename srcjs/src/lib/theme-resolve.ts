@@ -89,6 +89,8 @@ export interface ThemeOverrides {
     alt?: Partial<RowStateV2>;
     hover?: Partial<RowStateV2>;
     selected?: Partial<RowStateV2>;
+    /** Legacy paint-token slots (Sprint 1 PR 5 moved canonical home to
+     *  `tokens.row.{token}`). Accepted as input for one minor version. */
     emphasis?: Partial<RowSemanticV2>;
     muted?: Partial<RowSemanticV2>;
     accent?: Partial<RowSemanticV2>;
@@ -97,6 +99,17 @@ export interface ThemeOverrides {
     banding?: BandingV2 | string;
     selectedEdgeWidth?: number;
     borderWidth?: number;
+  };
+  /** Paint-token bundles (Sprint 1 PR 5 canonical home). Legacy
+   *  `overrides.row.{token}` paths still accepted as a migration shim. */
+  tokens?: {
+    row?: {
+      emphasis?: Partial<RowSemanticV2>;
+      muted?: Partial<RowSemanticV2>;
+      accent?: Partial<RowSemanticV2>;
+      bold?: Partial<RowSemanticV2>;
+      fill?: Partial<RowSemanticV2>;
+    };
   };
   cell?: {
     bg?: string | null;
@@ -668,7 +681,7 @@ function resolveRowGroup(args: ResolveComponentsArgs): RowGroupClusterV2 {
 }
 
 function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
-  const { surface, content, accent, semantic, inputs } = args;
+  const { surface, content, accent } = args;
   const o = args.overrides.row ?? {};
 
   const bandingRaw = o.banding ?? "group";
@@ -695,7 +708,32 @@ function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
     fg: o.selected?.fg ?? content.primary,
   };
 
-  const emphasis: RowSemanticV2 = fillNull(o.emphasis ?? {}, {
+  return {
+    base, alt, hover, selected,
+    banding,
+    selectedEdgeWidth: o.selectedEdgeWidth ?? 2,
+    borderWidth: o.borderWidth ?? 1,
+  };
+}
+
+/**
+ * Resolve `theme.tokens.row` paint-token bundles. Migration shim:
+ * legacy `overrides.row.{emphasis,muted,accent,bold,fill}` is honored
+ * here as a fallback so older specs / preset overrides keep working
+ * for one minor version. Canonical home is `overrides.tokens.row.*`.
+ */
+function resolveRowTokens(args: ResolveComponentsArgs): {
+  emphasis: RowSemanticV2;
+  muted: RowSemanticV2;
+  accent: RowSemanticV2;
+  bold: RowSemanticV2;
+  fill: RowSemanticV2;
+} {
+  const { content, accent, semantic, inputs } = args;
+  const legacy = args.overrides.row ?? {};
+  const o = args.overrides.tokens?.row ?? {};
+
+  const emphasis: RowSemanticV2 = fillNull(o.emphasis ?? legacy.emphasis ?? {}, {
     bg: null,
     fg: content.primary,
     border: null,
@@ -705,7 +743,7 @@ function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
     fontStyle: null,
   });
 
-  const muted: RowSemanticV2 = fillNull(o.muted ?? {}, {
+  const muted: RowSemanticV2 = fillNull(o.muted ?? legacy.muted ?? {}, {
     bg: null,
     fg: content.muted,
     border: null,
@@ -715,7 +753,7 @@ function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
     fontStyle: null,
   });
 
-  const accentRow: RowSemanticV2 = fillNull(o.accent ?? {}, {
+  const accentRow: RowSemanticV2 = fillNull(o.accent ?? legacy.accent ?? {}, {
     bg: null,
     fg: accent.default,
     border: null,
@@ -725,7 +763,7 @@ function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
     fontStyle: null,
   });
 
-  const bold: RowSemanticV2 = fillNull(o.bold ?? {}, {
+  const bold: RowSemanticV2 = fillNull(o.bold ?? legacy.bold ?? {}, {
     bg: null,
     fg: null,
     border: null,
@@ -735,7 +773,7 @@ function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
     fontStyle: null,
   });
 
-  const fill: RowSemanticV2 = fillNull(o.fill ?? {}, {
+  const fill: RowSemanticV2 = fillNull(o.fill ?? legacy.fill ?? {}, {
     bg: semantic.fill,
     fg: null,
     border: null,
@@ -745,13 +783,7 @@ function resolveRow(args: ResolveComponentsArgs): RowClusterV2 {
     fontStyle: null,
   });
 
-  return {
-    base, alt, hover, selected,
-    emphasis, muted, accent: accentRow, bold, fill,
-    banding,
-    selectedEdgeWidth: o.selectedEdgeWidth ?? 2,
-    borderWidth: o.borderWidth ?? 1,
-  };
+  return { emphasis, muted, accent: accentRow, bold, fill };
 }
 
 function resolveCell(args: ResolveComponentsArgs): CellClusterV2 {
@@ -879,6 +911,7 @@ export function resolveTheme(draft: ResolveDraft, options: ResolveOptions = {}):
   );
   const rowGroup = resolveRowGroup(compArgs);
   const row = resolveRow(compArgs);
+  const tokens = { row: resolveRowTokens(compArgs) };
   const cell = resolveCell(compArgs);
   const firstColumn = resolveFirstColumn(compArgs);
   const plot = resolvePlot(compArgs);
@@ -909,6 +942,7 @@ export function resolveTheme(draft: ResolveDraft, options: ResolveOptions = {}):
     columnGroup,
     rowGroup,
     row,
+    tokens,
     cell,
     firstColumn,
     plot,
