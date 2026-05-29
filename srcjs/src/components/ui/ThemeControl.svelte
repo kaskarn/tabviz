@@ -310,6 +310,106 @@
       </Field>
     </Accordion>
 
+    <div class="zone-ornament">⌘</div>
+
+    <!-- ── Advanced overrides ──────────────────────────────────────
+         T2 token pins. Each pin overrides the cascade-derived value at
+         a specific path. Pins survive authoring rebuilds (brand swap,
+         mode toggle); Reset reverts to derived. -->
+    <Accordion title="Advanced — overrides" hint="Pin individual chrome colors. Pins survive brand/mode changes." open={false}>
+      <!-- Surfaces (paper family) -->
+      <Field label="paper" hint="Background"
+        pinned={store.isOverridden(["surface", "base"])}
+        onreset={() => store.clearOverride(["surface", "base"])}>
+        <ColorField label="" value={theme.surface?.base ?? "#ffffff"}
+          onchange={(v) => store.setThemeField(["surface", "base"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="paper_alt" hint="Alternating-row tint"
+        pinned={store.isOverridden(["row", "alt", "bg"])}
+        onreset={() => store.clearOverride(["row", "alt", "bg"])}>
+        <ColorField label="" value={(theme.row?.alt?.bg as string | undefined) ?? theme.surface?.muted ?? "#f6f6f6"}
+          onchange={(v) => store.setThemeField(["row", "alt", "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="paper_sunken" hint="Muted surface"
+        pinned={store.isOverridden(["surface", "muted"])}
+        onreset={() => store.clearOverride(["surface", "muted"])}>
+        <ColorField label="" value={theme.surface?.muted ?? "#ececec"}
+          onchange={(v) => store.setThemeField(["surface", "muted"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="paper_raised" hint="Lifted surface"
+        pinned={store.isOverridden(["surface", "raised"])}
+        onreset={() => store.clearOverride(["surface", "raised"])}>
+        <ColorField label="" value={theme.surface?.raised ?? "#fafafa"}
+          onchange={(v) => store.setThemeField(["surface", "raised"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+
+      <!-- Ink (content) -->
+      <Field label="ink" hint="Primary text / cell fg"
+        pinned={store.isOverridden(["content", "primary"])}
+        onreset={() => store.clearOverride(["content", "primary"])}>
+        <ColorField label="" value={theme.content?.primary ?? "#1f1f1f"}
+          onchange={(v) => store.setThemeField(["content", "primary"], v)}
+          swatches={colors(INK_SWATCHES)} />
+      </Field>
+      <Field label="ink_muted" hint="Muted text"
+        pinned={store.isOverridden(["content", "muted"])}
+        onreset={() => store.clearOverride(["content", "muted"])}>
+        <ColorField label="" value={theme.content?.muted ?? "#4a4a4a"}
+          onchange={(v) => store.setThemeField(["content", "muted"], v)}
+          swatches={colors(INK_SWATCHES)} />
+      </Field>
+      <Field label="ink_subtle" hint="Subtle text / ticks"
+        pinned={store.isOverridden(["content", "secondary"])}
+        onreset={() => store.clearOverride(["content", "secondary"])}>
+        <ColorField label="" value={theme.content?.secondary ?? "#6e6e6e"}
+          onchange={(v) => store.setThemeField(["content", "secondary"], v)}
+          swatches={colors(INK_SWATCHES)} />
+      </Field>
+
+      <!-- Rules (dividers) -->
+      <Field label="rule_subtle" hint="Cell hairlines"
+        pinned={store.isOverridden(["divider", "subtle"])}
+        onreset={() => store.clearOverride(["divider", "subtle"])}>
+        <ColorField label="" value={theme.divider?.subtle ?? "#e0e0e0"}
+          onchange={(v) => {
+            store.setThemeField(["divider", "subtle"], v);
+            store.setThemeField(["cell", "border"], v);
+          }}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+      <Field label="rule_strong" hint="Header rule, axis line"
+        pinned={store.isOverridden(["divider", "strong"])}
+        onreset={() => store.clearOverride(["divider", "strong"])}>
+        <ColorField label="" value={theme.divider?.strong ?? "#808080"}
+          onchange={(v) => store.setThemeField(["divider", "strong"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+
+      <!-- Accent roles -->
+      <Field label="accent" hint="Engagement default"
+        pinned={store.isOverridden(["accent", "default"])}
+        onreset={() => store.clearOverride(["accent", "default"])}>
+        <ColorField label="" value={theme.accent?.default ?? "#c8553d"}
+          onchange={(v) => store.setThemeField(["accent", "default"], v)}
+          swatches={colors(ACCENT_SWATCHES)} />
+      </Field>
+      <Field label="accent_subtle" hint="Hover/selected tint"
+        pinned={store.isOverridden(["accent", "muted"])}
+        onreset={() => store.clearOverride(["accent", "muted"])}>
+        <ColorField label="" value={theme.accent?.muted ?? "#f0ddd9"}
+          onchange={(v) => {
+            store.setThemeField(["accent", "muted"], v);
+            store.setThemeField(["row", "hover", "bg"], v);
+            store.setThemeField(["row", "selected", "bg"], v);
+          }}
+          swatches={colors(ACCENT_SWATCHES)} />
+      </Field>
+    </Accordion>
+
   </div>
 {:else if theme}
   <!-- Legacy theme without V3 authoring inputs round-trip; the engine
