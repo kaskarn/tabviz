@@ -336,10 +336,10 @@ export function pickInkOnBg(
 
 /** Per-step OKLCH L values in light mode (step 1..12, 0-indexed array). */
 const LIGHT_RAMP_L = [
-  0.987, // 1 — app bg / paper_raised
-  0.967, // 2 — subtle bg / paper (was 0.972 — softer, less near-white)
-  0.954, // 3 — UI idle / paper_alt (was 0.952 — tighter step from paper for subtler banding)
-  0.918, // 4 — UI hover
+  0.980, // 1 — app bg / paper_raised (was 0.987 — was effectively pure-white)
+  0.945, // 2 — subtle bg / paper (was 0.972 — clearly off-white, Radix-like)
+  0.936, // 3 — UI idle / paper_alt (ΔL ≈ 0.009 from paper — gentle band)
+  0.910, // 4 — UI hover
   0.870, // 5 — UI active / selected
   0.804, // 6 — subtle border / rule_subtle
   0.728, // 7 — UI border / rule_strong / focus
@@ -401,9 +401,15 @@ export function oklchRamp(seed: string, options: RampOptions = {}): string[] {
       H: seedLch.H,
     });
     if (options.tintHex !== undefined && options.tintAmount && options.tintAmount > 0) {
-      // Tint blends into low-chroma steps only (the ends — far from the
-      // chroma peak). Strength tapers from each end toward the center.
-      const distFromCenter = Math.abs(i - 8) / 8; // 0 at peak, 1 at ends
+      // Tint blends into low-chroma steps at BOTH ends symmetrically.
+      // Previously distance was measured from the chroma peak (index 8),
+      // which made the light end (step 1, distance 1.0) take ~10× more
+      // tint than the dark end (step 12, distance 0.375) — paper went
+      // strongly brand-tinted while ink stayed neutral. Measuring from
+      // the perceptual midpoint (5.5) gives both ends matching distance
+      // and matching tint strength, so brand mixes coherently into both
+      // paper and ink at any tint_strength setting.
+      const distFromCenter = Math.abs(i - 5.5) / 5.5; // 0 at center, 1 at ends
       const strength = options.tintAmount * Math.max(0, distFromCenter - 0.3);
       if (strength > 0) hex = oklchMix(hex, options.tintHex, strength);
     }
