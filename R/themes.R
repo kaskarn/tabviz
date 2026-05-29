@@ -1,14 +1,17 @@
 # Built-in preset constructors — journals + dark mode.
 #
-# Each preset is a thin wrapper around web_theme() with the inputs that
-# define the theme's identity. All cascade semantics live in the TS
-# resolver (srcjs/src/lib/theme-resolve.ts); these constructors just
-# pin the brand, accent, decorative (when set), mode, fonts, and density.
+# Each preset is a thin wrapper around web_theme(). All cascade semantics
+# live in the TS adapter (`srcjs/src/lib/theme-adapter.ts`); these
+# constructors set per-preset identity inputs — brand, accent, decorative,
+# fonts, density, and the neutral_tint + tint_strength that bleed brand
+# character into paper/ink so each preset reads as distinct chrome rather
+# than "white table with a different accent."
 
 #' Cochrane theme — package default.
 #'
-#' Cochrane heritage teal as brand; warm coral accent. Inter sans-serif.
-#' General-purpose; reads well in systematic-review tables.
+#' Cochrane heritage teal as brand; warm coral accent. Subtle teal-cast
+#' paper. Inter sans-serif. General-purpose; reads well in
+#' systematic-review tables.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -16,6 +19,8 @@ web_theme_cochrane <- function() {
   web_theme(
     brand = "#0099CC",
     accent = "#C8553D",
+    neutral_tint = "brand",
+    neutral_tint_strength = 0.10,
     font_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
     name = "cochrane"
   )
@@ -24,7 +29,8 @@ web_theme_cochrane <- function() {
 #' Lancet theme — two-color editorial (navy + gold).
 #'
 #' Lancet navy as brand identity; refined old-gold as decorative second
-#' color (carries chrome texture / row-group L1 band). Georgia serif.
+#' color (carries chrome texture / row-group L1 band). Warm-cream paper
+#' from decorative tint. Georgia serif.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -33,6 +39,8 @@ web_theme_lancet <- function() {
     brand = "#00407A",
     decorative = "#A6792A",
     accent = "#A6792A",
+    neutral_tint = "decorative",
+    neutral_tint_strength = 0.22,
     font_body = "Georgia, 'Times New Roman', serif",
     font_display = "Georgia, 'Times New Roman', serif",
     name = "lancet"
@@ -42,7 +50,8 @@ web_theme_lancet <- function() {
 #' JAMA theme — black-and-white print-ready.
 #'
 #' Pure black brand; brand_mono categorical for distinct grayscale series.
-#' Ultra-compact density. Arial typography.
+#' Ultra-compact density. Arial typography. Untinted paper — JAMA's
+#' identity is the absence of color.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -57,13 +66,15 @@ web_theme_jama <- function() {
   )
 }
 
-#' NEJM theme — crimson brand on cream.
+#' NEJM theme — crimson brand with subtle warm-paper cast.
 #' @return A [WebTheme].
 #' @export
 web_theme_nejm <- function() {
   web_theme(
     brand = "#BD2F2F",
     accent = "#1B5377",
+    neutral_tint = "brand",
+    neutral_tint_strength = 0.12,
     font_body = "Georgia, 'Times New Roman', serif",
     font_display = "Georgia, 'Times New Roman', serif",
     name = "nejm"
@@ -77,6 +88,8 @@ web_theme_nature <- function() {
   web_theme(
     brand = "#005A6C",
     accent = "#E8A427",
+    neutral_tint = "brand",
+    neutral_tint_strength = 0.10,
     name = "nature"
   )
 }
@@ -88,6 +101,8 @@ web_theme_bmj <- function() {
   web_theme(
     brand = "#2A6EBB",
     accent = "#E33B3B",
+    neutral_tint = "brand",
+    neutral_tint_strength = 0.08,
     name = "bmj"
   )
 }
@@ -100,6 +115,8 @@ web_theme_dark <- function() {
     brand = "#89B4FA",
     accent = "#F38BA8",
     mode = "dark",
+    neutral_tint = "brand",
+    neutral_tint_strength = 0.12,
     name = "dark"
   )
 }

@@ -49,6 +49,7 @@ web_theme_newsprint <- function() {
     accent = "#5C8A3F",
     neutral_tint = "decorative",
     font_body = "Georgia, 'Times New Roman', serif",
+    neutral_tint_strength = 0.28,
     name = "newsprint"
   )
 }
@@ -62,6 +63,7 @@ web_theme_solarized <- function() {
     accent = "#CB4B16",
     neutral_tint = "brand",
     categorical = "tableau10",
+    neutral_tint_strength = 0.30,
     name = "solarized"
   )
 }
@@ -76,6 +78,7 @@ web_theme_solarized_dark <- function() {
     mode = "dark",
     neutral_tint = "brand",
     categorical = "tableau10",
+    neutral_tint_strength = 0.20,
     name = "solarized_dark"
   )
 }
