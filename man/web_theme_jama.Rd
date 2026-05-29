@@ -11,5 +11,6 @@ A \link{WebTheme}.
 }
 \description{
 Pure black brand; brand_mono categorical for distinct grayscale series.
-Ultra-compact density. Arial typography.
+Ultra-compact density. Arial typography. Untinted paper — JAMA's
+identity is the absence of color.
 }

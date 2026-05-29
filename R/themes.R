@@ -1,17 +1,20 @@
 # Built-in preset constructors — journals + dark mode.
 #
-# Each preset is a thin wrapper around web_theme(). All cascade semantics
-# live in the TS adapter (`srcjs/src/lib/theme-adapter.ts`); these
-# constructors set per-preset identity inputs — brand, accent, decorative,
-# fonts, density, and the neutral_tint + tint_strength that bleed brand
-# character into paper/ink so each preset reads as distinct chrome rather
-# than "white table with a different accent."
+# Each preset is a thin wrapper around web_theme(). Identity rides on
+# four axes:
+#   1. brand / accent / decorative seeds (color)
+#   2. neutral_tint + tint_strength (chrome cast: hint vs cream)
+#   3. header_style (light / tint / bold)
+#   4. font_body / font_display (typography)
+#
+# Tint strengths are tuned so journal themes (clinical) read as "off-
+# white paper with a hint of brand" rather than "branded paper": values
+# in 0.03-0.06 are subtle, 0.10-0.15 are editorial, 0.18+ is strong.
 
-#' Cochrane theme — package default.
+#' Cochrane theme — heritage teal on subtly-tinted paper.
 #'
-#' Cochrane heritage teal as brand; warm coral accent. Subtle teal-cast
-#' paper. Inter sans-serif. General-purpose; reads well in
-#' systematic-review tables.
+#' Cochrane teal as brand; warm coral accent. Inter sans-serif.
+#' General-purpose; reads well in systematic-review tables.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -20,18 +23,13 @@ web_theme_cochrane <- function() {
     brand = "#0099CC",
     accent = "#C8553D",
     neutral_tint = "brand",
-    neutral_tint_strength = 0.10,
+    neutral_tint_strength = 0.04,
     font_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
     name = "cochrane"
   )
 }
 
-#' Lancet theme — two-color editorial (navy + gold).
-#'
-#' Lancet navy as brand identity; refined old-gold as decorative second
-#' color (carries chrome texture / row-group L1 band). Warm-cream paper
-#' from decorative tint. Georgia serif.
-#'
+#' Lancet theme — two-color editorial (navy + gold) with cream paper.
 #' @return A [WebTheme].
 #' @export
 web_theme_lancet <- function() {
@@ -40,7 +38,8 @@ web_theme_lancet <- function() {
     decorative = "#A6792A",
     accent = "#A6792A",
     neutral_tint = "decorative",
-    neutral_tint_strength = 0.22,
+    neutral_tint_strength = 0.12,
+    header_style = "tint",
     font_body = "Georgia, 'Times New Roman', serif",
     font_display = "Georgia, 'Times New Roman', serif",
     name = "lancet"
@@ -66,7 +65,7 @@ web_theme_jama <- function() {
   )
 }
 
-#' NEJM theme — crimson brand with subtle warm-paper cast.
+#' NEJM theme — crimson with subtle warm paper and tint headers.
 #' @return A [WebTheme].
 #' @export
 web_theme_nejm <- function() {
@@ -74,7 +73,8 @@ web_theme_nejm <- function() {
     brand = "#BD2F2F",
     accent = "#1B5377",
     neutral_tint = "brand",
-    neutral_tint_strength = 0.12,
+    neutral_tint_strength = 0.04,
+    header_style = "tint",
     font_body = "Georgia, 'Times New Roman', serif",
     font_display = "Georgia, 'Times New Roman', serif",
     name = "nejm"
@@ -89,7 +89,7 @@ web_theme_nature <- function() {
     brand = "#005A6C",
     accent = "#E8A427",
     neutral_tint = "brand",
-    neutral_tint_strength = 0.10,
+    neutral_tint_strength = 0.04,
     name = "nature"
   )
 }
@@ -102,7 +102,7 @@ web_theme_bmj <- function() {
     brand = "#2A6EBB",
     accent = "#E33B3B",
     neutral_tint = "brand",
-    neutral_tint_strength = 0.08,
+    neutral_tint_strength = 0.04,
     name = "bmj"
   )
 }
@@ -116,7 +116,7 @@ web_theme_dark <- function() {
     accent = "#F38BA8",
     mode = "dark",
     neutral_tint = "brand",
-    neutral_tint_strength = 0.12,
+    neutral_tint_strength = 0.06,
     name = "dark"
   )
 }

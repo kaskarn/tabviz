@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_swiss}
 \alias{web_theme_swiss}
-\title{Swiss theme — red brand on neutral grid; black accent.}
+\title{Swiss theme — red brand on neutral grid; bold header band.}
 \usage{
 web_theme_swiss()
 }
@@ -10,5 +10,5 @@ web_theme_swiss()
 A \link{WebTheme}.
 }
 \description{
-Swiss theme — red brand on neutral grid; black accent.
+Swiss theme — red brand on neutral grid; bold header band.
 }

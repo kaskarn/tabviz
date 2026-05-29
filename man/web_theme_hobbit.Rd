@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_hobbit}
 \alias{web_theme_hobbit}
-\title{Hobbit theme — warm earthen brand, foliage-green decorative.}
+\title{Hobbit theme — warm earthen brand, foliage-green decorative,
+tint header band.}
 \usage{
 web_theme_hobbit()
 }
@@ -10,5 +11,6 @@ web_theme_hobbit()
 A \link{WebTheme}.
 }
 \description{
-Hobbit theme — warm earthen brand, foliage-green decorative.
+Hobbit theme — warm earthen brand, foliage-green decorative,
+tint header band.
 }

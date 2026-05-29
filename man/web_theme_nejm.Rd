@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_nejm}
 \alias{web_theme_nejm}
-\title{NEJM theme — crimson brand on cream.}
+\title{NEJM theme — crimson with subtle warm paper and tint headers.}
 \usage{
 web_theme_nejm()
 }
@@ -10,5 +10,5 @@ web_theme_nejm()
 A \link{WebTheme}.
 }
 \description{
-NEJM theme — crimson brand on cream.
+NEJM theme — crimson with subtle warm paper and tint headers.
 }

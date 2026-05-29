@@ -108,6 +108,8 @@ web_theme <- function(
     font_display = NULL,
     font_mono = NULL,
     density = "comfortable",
+    header_style = "light",
+    first_column_style = "default",
     web_fonts = NULL,
     name = "custom") {
   checkmate::assert_string(brand)
@@ -118,6 +120,8 @@ web_theme <- function(
   checkmate::assert_number(neutral_tint_strength, lower = 0, upper = 1)
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
+  checkmate::assert_choice(header_style, c("light", "tint", "bold"))
+  checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
   checkmate::assert_string(name)
 
   inputs <- ThemeInputs(
@@ -140,6 +144,8 @@ web_theme <- function(
     density = density
   )
   theme <- resolve_from_inputs(inputs, name = name)
+  theme@header_style <- header_style
+  theme@first_column_style <- first_column_style
   if (!is.null(web_fonts)) theme@web_fonts <- web_fonts
   theme
 }

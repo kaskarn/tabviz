@@ -117,6 +117,13 @@ serialize_theme <- function(theme) {
   blob$name <- theme@name
   if (!is.na(theme@light_dark_pair)) blob$lightDarkPair <- theme@light_dark_pair
 
+  # Variants — adapter defaults are "light"/"default"; presets author
+  # different choices at construction time and we surface them here so
+  # the renderer reads the per-preset variant.
+  if (is.null(blob$variants)) blob$variants <- list()
+  blob$variants$headerStyle <- theme@header_style
+  blob$variants$firstColumnStyle <- theme@first_column_style
+
   if (length(theme@web_fonts) > 0L) {
     blob$webFonts <- lapply(theme@web_fonts, function(wf) list(family = wf$family, url = wf$url))
   }

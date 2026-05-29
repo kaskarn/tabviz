@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_bauhaus}
 \alias{web_theme_bauhaus}
-\title{Bauhaus theme — red brand, blue structural decorative, yellow accent.}
+\title{Bauhaus theme — red brand, blue structural decorative, yellow accent,
+bold header band.}
 \usage{
 web_theme_bauhaus()
 }
@@ -10,5 +11,6 @@ web_theme_bauhaus()
 A \link{WebTheme}.
 }
 \description{
-Bauhaus theme — red brand, blue structural decorative, yellow accent.
+Bauhaus theme — red brand, blue structural decorative, yellow accent,
+bold header band.
 }

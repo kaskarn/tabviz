@@ -798,6 +798,12 @@ WebTheme <- new_class(
     # Wire-only convention this round — the in-widget switcher's
     # `prefers-color-scheme` auto-mode is deferred to a follow-up.
     light_dark_pair = new_property(class_character, default = NA_character_),
+    # Variants — structural per-theme choices that live alongside the
+    # cascade. The TS adapter defaults headerStyle="light",
+    # firstColumnStyle="default"; presets override at construction time
+    # so theme identity can ride on more than just colors.
+    header_style       = new_property(class_character, default = "light"),
+    first_column_style = new_property(class_character, default = "default"),
     inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
 
     # Tier 2 (derived; NA until resolve_theme runs)

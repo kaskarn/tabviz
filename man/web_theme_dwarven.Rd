@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_dwarven}
 \alias{web_theme_dwarven}
-\title{Dwarven theme — hammered bronze brand, warm gold decorative.}
+\title{Dwarven theme — bronze brand, warm gold decorative, tint header band.}
 \usage{
 web_theme_dwarven()
 }
@@ -10,5 +10,5 @@ web_theme_dwarven()
 A \link{WebTheme}.
 }
 \description{
-Dwarven theme — hammered bronze brand, warm gold decorative.
+Dwarven theme — bronze brand, warm gold decorative, tint header band.
 }

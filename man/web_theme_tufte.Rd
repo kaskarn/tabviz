@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tufte}
 \alias{web_theme_tufte}
-\title{Tufte theme — minimal greys; compact density.}
+\title{Tufte theme — minimal greys; compact density. Untinted, light headers.}
 \usage{
 web_theme_tufte()
 }
@@ -10,5 +10,5 @@ web_theme_tufte()
 A \link{WebTheme}.
 }
 \description{
-Tufte theme — minimal greys; compact density.
+Tufte theme — minimal greys; compact density. Untinted, light headers.
 }

@@ -22,6 +22,8 @@ web_theme(
   font_display = NULL,
   font_mono = NULL,
   density = "comfortable",
+  header_style = "light",
+  first_column_style = "default",
   web_fonts = NULL,
   name = "custom"
 )
