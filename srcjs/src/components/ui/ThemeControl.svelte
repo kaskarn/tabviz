@@ -130,6 +130,108 @@
   const hVar = $derived(((theme?.header as unknown as Record<string, ClusterVariant> | undefined)?.[hStyle]) ?? null);
   const cgVar = $derived(((theme?.columnGroup as unknown as Record<string, ClusterVariant> | undefined)?.[hStyle]) ?? null);
   const fcVar = $derived(((theme?.firstColumn as unknown as Record<string, ClusterVariant> | undefined)?.[fcStyle]) ?? null);
+
+  // T2 token → set of resolved-blob paths it derives. Sourced from
+  // theme-adapter.ts: when the user pins a T2 token in the Advanced
+  // panel, the cascade-equivalent move is to write to *every* path the
+  // adapter wrote with that token. Otherwise pinning `paper` only
+  // recolors `surface.base` while `row.base.bg` (also derived from
+  // `paper`) stays the old hex — which is the bug Antoine saw with a
+  // partially-recolored table.
+  const T2_PATHS: Record<string, (string | number)[][]> = {
+    paper: [
+      ["surface", "base"],
+      ["header", "light", "bg"],
+      ["columnGroup", "light", "bg"],
+      ["row", "base", "bg"],
+    ],
+    paper_alt: [
+      ["row", "alt", "bg"],
+      ["rowGroup", "L2", "bg"],
+      ["firstColumn", "bold", "bg"],
+    ],
+    paper_sunken: [["surface", "muted"]],
+    paper_raised: [["surface", "raised"]],
+    ink: [
+      ["content", "primary"],
+      ["header", "light", "fg"],
+      ["header", "tint", "fg"],
+      ["columnGroup", "light", "fg"],
+      ["columnGroup", "tint", "fg"],
+      ["rowGroup", "L1", "fg"],
+      ["row", "base", "fg"],
+      ["row", "alt", "fg"],
+      ["row", "hover", "fg"],
+      ["row", "selected", "fg"],
+      ["cell", "fg"],
+      ["firstColumn", "bold", "fg"],
+      ["text", "title", "fg"],
+      ["text", "body", "fg"],
+      ["text", "cell", "fg"],
+      ["text", "numeric", "fg"],
+    ],
+    ink_muted: [
+      ["content", "muted"],
+      ["rowGroup", "L2", "fg"],
+      ["text", "subtitle", "fg"],
+      ["text", "label", "fg"],
+      ["text", "caption", "fg"],
+    ],
+    ink_subtle: [
+      ["content", "secondary"],
+      ["rowGroup", "L3", "fg"],
+      ["text", "tick", "fg"],
+      ["text", "footnote", "fg"],
+    ],
+    rule_subtle: [
+      ["divider", "subtle"],
+      ["cell", "border"],
+      ["rowGroup", "L2", "rule"],
+      ["firstColumn", "bold", "rule"],
+      ["plot", "gridline"],
+      ["borders", "minor", "color"],
+    ],
+    rule_strong: [
+      ["divider", "strong"],
+      ["header", "light", "rule"],
+      ["header", "tint", "rule"],
+      ["columnGroup", "light", "rule"],
+      ["columnGroup", "tint", "rule"],
+      ["columnGroup", "bold", "rule"],
+      ["rowGroup", "L1", "rule"],
+      ["plot", "axisLine"],
+      ["plot", "tickMark"],
+      ["plot", "reference"],
+      ["borders", "major", "color"],
+      ["borders", "table", "color"],
+    ],
+    accent: [["accent", "default"]],
+    accent_subtle: [
+      ["accent", "muted"],
+      ["accent", "tintSubtle"],
+      ["semantic", "fill"],
+      ["row", "hover", "bg"],
+      ["row", "selected", "bg"],
+      ["row", "fill", "bg"],
+    ],
+  };
+
+  function pinT2(token: string, value: string): void {
+    const paths = T2_PATHS[token];
+    if (!paths) return;
+    for (const p of paths) store.setThemeField(p, value);
+  }
+  function clearT2(token: string): void {
+    const paths = T2_PATHS[token];
+    if (!paths) return;
+    for (const p of paths) store.clearOverride(p);
+  }
+  // A T2 token reads as "pinned" if any of its derived paths is overridden.
+  function isT2Pinned(token: string): boolean {
+    const paths = T2_PATHS[token];
+    if (!paths) return false;
+    return paths.some((p) => store.isOverridden(p));
+  }
 </script>
 
 {#if theme && inputs}
@@ -329,93 +431,86 @@
     <Accordion title="Advanced — overrides" hint="Pin individual chrome colors. Pins survive brand/mode changes." open={false}>
       <!-- Surfaces (paper family) -->
       <Field label="paper" hint="Background"
-        pinned={store.isOverridden(["surface", "base"])}
-        onreset={() => store.clearOverride(["surface", "base"])}>
+        pinned={isT2Pinned("paper")}
+        onreset={() => clearT2("paper")}>
         <ColorField label="" value={theme.surface?.base ?? "#ffffff"}
-          onchange={(v) => store.setThemeField(["surface", "base"], v)}
+          onchange={(v) => pinT2("paper", v)}
           swatches={colors(PAPER_SWATCHES)} />
       </Field>
       <Field label="paper_alt" hint="Alternating-row tint"
-        pinned={store.isOverridden(["row", "alt", "bg"])}
-        onreset={() => store.clearOverride(["row", "alt", "bg"])}>
+        pinned={isT2Pinned("paper_alt")}
+        onreset={() => clearT2("paper_alt")}>
         <ColorField label="" value={(theme.row?.alt?.bg as string | undefined) ?? theme.surface?.muted ?? "#f6f6f6"}
-          onchange={(v) => store.setThemeField(["row", "alt", "bg"], v)}
+          onchange={(v) => pinT2("paper_alt", v)}
           swatches={colors(PAPER_SWATCHES)} />
       </Field>
       <Field label="paper_sunken" hint="Muted surface"
-        pinned={store.isOverridden(["surface", "muted"])}
-        onreset={() => store.clearOverride(["surface", "muted"])}>
+        pinned={isT2Pinned("paper_sunken")}
+        onreset={() => clearT2("paper_sunken")}>
         <ColorField label="" value={theme.surface?.muted ?? "#ececec"}
-          onchange={(v) => store.setThemeField(["surface", "muted"], v)}
+          onchange={(v) => pinT2("paper_sunken", v)}
           swatches={colors(PAPER_SWATCHES)} />
       </Field>
       <Field label="paper_raised" hint="Lifted surface"
-        pinned={store.isOverridden(["surface", "raised"])}
-        onreset={() => store.clearOverride(["surface", "raised"])}>
+        pinned={isT2Pinned("paper_raised")}
+        onreset={() => clearT2("paper_raised")}>
         <ColorField label="" value={theme.surface?.raised ?? "#fafafa"}
-          onchange={(v) => store.setThemeField(["surface", "raised"], v)}
+          onchange={(v) => pinT2("paper_raised", v)}
           swatches={colors(PAPER_SWATCHES)} />
       </Field>
 
       <!-- Ink (content) -->
       <Field label="ink" hint="Primary text / cell fg"
-        pinned={store.isOverridden(["content", "primary"])}
-        onreset={() => store.clearOverride(["content", "primary"])}>
+        pinned={isT2Pinned("ink")}
+        onreset={() => clearT2("ink")}>
         <ColorField label="" value={theme.content?.primary ?? "#1f1f1f"}
-          onchange={(v) => store.setThemeField(["content", "primary"], v)}
+          onchange={(v) => pinT2("ink", v)}
           swatches={colors(INK_SWATCHES)} />
       </Field>
       <Field label="ink_muted" hint="Muted text"
-        pinned={store.isOverridden(["content", "muted"])}
-        onreset={() => store.clearOverride(["content", "muted"])}>
+        pinned={isT2Pinned("ink_muted")}
+        onreset={() => clearT2("ink_muted")}>
         <ColorField label="" value={theme.content?.muted ?? "#4a4a4a"}
-          onchange={(v) => store.setThemeField(["content", "muted"], v)}
+          onchange={(v) => pinT2("ink_muted", v)}
           swatches={colors(INK_SWATCHES)} />
       </Field>
       <Field label="ink_subtle" hint="Subtle text / ticks"
-        pinned={store.isOverridden(["content", "secondary"])}
-        onreset={() => store.clearOverride(["content", "secondary"])}>
+        pinned={isT2Pinned("ink_subtle")}
+        onreset={() => clearT2("ink_subtle")}>
         <ColorField label="" value={theme.content?.secondary ?? "#6e6e6e"}
-          onchange={(v) => store.setThemeField(["content", "secondary"], v)}
+          onchange={(v) => pinT2("ink_subtle", v)}
           swatches={colors(INK_SWATCHES)} />
       </Field>
 
       <!-- Rules (dividers) -->
       <Field label="rule_subtle" hint="Cell hairlines"
-        pinned={store.isOverridden(["divider", "subtle"])}
-        onreset={() => store.clearOverride(["divider", "subtle"])}>
+        pinned={isT2Pinned("rule_subtle")}
+        onreset={() => clearT2("rule_subtle")}>
         <ColorField label="" value={theme.divider?.subtle ?? "#e0e0e0"}
-          onchange={(v) => {
-            store.setThemeField(["divider", "subtle"], v);
-            store.setThemeField(["cell", "border"], v);
-          }}
+          onchange={(v) => pinT2("rule_subtle", v)}
           swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
       <Field label="rule_strong" hint="Header rule, axis line"
-        pinned={store.isOverridden(["divider", "strong"])}
-        onreset={() => store.clearOverride(["divider", "strong"])}>
+        pinned={isT2Pinned("rule_strong")}
+        onreset={() => clearT2("rule_strong")}>
         <ColorField label="" value={theme.divider?.strong ?? "#808080"}
-          onchange={(v) => store.setThemeField(["divider", "strong"], v)}
+          onchange={(v) => pinT2("rule_strong", v)}
           swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
 
       <!-- Accent roles -->
       <Field label="accent" hint="Engagement default"
-        pinned={store.isOverridden(["accent", "default"])}
-        onreset={() => store.clearOverride(["accent", "default"])}>
+        pinned={isT2Pinned("accent")}
+        onreset={() => clearT2("accent")}>
         <ColorField label="" value={theme.accent?.default ?? "#c8553d"}
-          onchange={(v) => store.setThemeField(["accent", "default"], v)}
+          onchange={(v) => pinT2("accent", v)}
           swatches={colors(ACCENT_SWATCHES)} />
       </Field>
       <Field label="accent_subtle" hint="Hover/selected tint"
-        pinned={store.isOverridden(["accent", "muted"])}
-        onreset={() => store.clearOverride(["accent", "muted"])}>
+        pinned={isT2Pinned("accent_subtle")}
+        onreset={() => clearT2("accent_subtle")}>
         <ColorField label="" value={theme.accent?.muted ?? "#f0ddd9"}
-          onchange={(v) => {
-            store.setThemeField(["accent", "muted"], v);
-            store.setThemeField(["row", "hover", "bg"], v);
-            store.setThemeField(["row", "selected", "bg"], v);
-          }}
+          onchange={(v) => pinT2("accent_subtle", v)}
           swatches={colors(ACCENT_SWATCHES)} />
       </Field>
     </Accordion>
