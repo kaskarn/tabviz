@@ -12,10 +12,10 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 710,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 710,
   "headerHeight": 29,
   "labelWidth": 74,
   "plotHeight": 120,
@@ -81,7 +81,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     "rowHeight": 20,
   },
   "totalHeight": 207,
-  "totalWidth": 190,
+  "totalWidth": 800,
 }
 `;
 
@@ -97,10 +97,10 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 698,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 698,
   "headerHeight": 32,
   "labelWidth": 78,
   "plotHeight": 144,
@@ -166,7 +166,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     "rowHeight": 24,
   },
   "totalHeight": 250,
-  "totalWidth": 202,
+  "totalWidth": 800,
 }
 `;
 
@@ -182,10 +182,10 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 682,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 682,
   "headerHeight": 40,
   "labelWidth": 86,
   "plotHeight": 180,
@@ -251,7 +251,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     "rowHeight": 30,
   },
   "totalHeight": 312,
-  "totalWidth": 218,
+  "totalWidth": 800,
 }
 `;
 
@@ -267,10 +267,10 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 710,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 710,
   "headerHeight": 29,
   "labelWidth": 74,
   "plotHeight": 130,
@@ -328,7 +328,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     "rowHeight": 20,
   },
   "totalHeight": 217,
-  "totalWidth": 190,
+  "totalWidth": 800,
 }
 `;
 
@@ -344,10 +344,10 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 698,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 698,
   "headerHeight": 32,
   "labelWidth": 78,
   "plotHeight": 156,
@@ -405,7 +405,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     "rowHeight": 24,
   },
   "totalHeight": 262,
-  "totalWidth": 202,
+  "totalWidth": 800,
 }
 `;
 
@@ -421,10 +421,10 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 682,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 682,
   "headerHeight": 40,
   "labelWidth": 86,
   "plotHeight": 195,
@@ -482,7 +482,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     "rowHeight": 30,
   },
   "totalHeight": 327,
-  "totalWidth": 218,
+  "totalWidth": 800,
 }
 `;
 
@@ -498,10 +498,10 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 384,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 384,
   "headerHeight": 29,
   "labelWidth": 400,
   "plotHeight": 60,
@@ -543,7 +543,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     "rowHeight": 20,
   },
   "totalHeight": 147,
-  "totalWidth": 516,
+  "totalWidth": 800,
 }
 `;
 
@@ -559,10 +559,10 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 376,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 376,
   "headerHeight": 32,
   "labelWidth": 400,
   "plotHeight": 72,
@@ -604,7 +604,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
     "rowHeight": 24,
   },
   "totalHeight": 178,
-  "totalWidth": 524,
+  "totalWidth": 800,
 }
 `;
 
@@ -620,10 +620,10 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 368,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 368,
   "headerHeight": 40,
   "labelWidth": 400,
   "plotHeight": 90,
@@ -665,7 +665,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
     "rowHeight": 30,
   },
   "totalHeight": 222,
-  "totalWidth": 532,
+  "totalWidth": 800,
 }
 `;
 
@@ -681,10 +681,10 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 665,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 665,
   "headerHeight": 32,
   "labelWidth": 111,
   "plotHeight": 96,
@@ -734,7 +734,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     "rowHeight": 24,
   },
   "totalHeight": 202,
-  "totalWidth": 235,
+  "totalWidth": 800,
 }
 `;
 
@@ -750,10 +750,10 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 641,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 641,
   "headerHeight": 32,
   "labelWidth": 135,
   "plotHeight": 84,
@@ -803,7 +803,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     "rowHeight": 24,
   },
   "totalHeight": 190,
-  "totalWidth": 259,
+  "totalWidth": 800,
 }
 `;
 
@@ -819,10 +819,10 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 678,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 678,
   "headerHeight": 29,
   "labelWidth": 106,
   "plotHeight": 120,
@@ -888,7 +888,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     "rowHeight": 20,
   },
   "totalHeight": 207,
-  "totalWidth": 222,
+  "totalWidth": 800,
 }
 `;
 
@@ -904,10 +904,10 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 666,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 666,
   "headerHeight": 32,
   "labelWidth": 110,
   "plotHeight": 144,
@@ -973,7 +973,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     "rowHeight": 24,
   },
   "totalHeight": 250,
-  "totalWidth": 234,
+  "totalWidth": 800,
 }
 `;
 
@@ -989,10 +989,10 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 650,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 650,
   "headerHeight": 40,
   "labelWidth": 118,
   "plotHeight": 180,
@@ -1058,7 +1058,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     "rowHeight": 30,
   },
   "totalHeight": 312,
-  "totalWidth": 250,
+  "totalWidth": 800,
 }
 `;
 
@@ -1089,10 +1089,10 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     {
       "id": "est",
       "type": "forest",
-      "width": 0,
+      "width": 464,
     },
   ],
-  "forestWidth": 0,
+  "forestWidth": 464,
   "headerHeight": 32,
   "labelWidth": 78,
   "plotHeight": 120,
@@ -1150,6 +1150,6 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     "rowHeight": 24,
   },
   "totalHeight": 226,
-  "totalWidth": 436,
+  "totalWidth": 800,
 }
 `;

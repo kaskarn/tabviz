@@ -57,8 +57,11 @@ function col(id: string, type: string, header: string, extra: Partial<ColumnSpec
 
 const LABEL_COL = (extra: Partial<ColumnSpec> = {}) =>
   col("label", "text", "Study", { field: "label", ...extra });
+// `flex: true` mirrors the real authoring path — computeLayout only reserves
+// plot area for flex columns (svg-generator isFlexColumn), so without it a
+// forest column resolves to width 0.
 const FOREST_COL = () =>
-  ({ id: "est", type: "forest", field: "est", header: "Effect", options: { forest: {} } } as unknown as ColumnSpec);
+  ({ id: "est", type: "forest", field: "est", header: "Effect", flex: true, width: null, options: { forest: {} } } as unknown as ColumnSpec);
 
 function spec(parts: {
   density: Density;
@@ -76,6 +79,9 @@ function spec(parts: {
     },
     columns: parts.columns ?? [LABEL_COL(), FOREST_COL()],
     theme,
+    // `layout` is read by computeLayout's flex-width path (spec.layout.plotWidth);
+    // real specs always carry it. Empty object → "auto" forest width.
+    layout: {},
     labels: {},
   } as unknown as WebSpec;
 }
