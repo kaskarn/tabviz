@@ -1168,16 +1168,7 @@ function hasColumnGroups(columnDefs: ColumnDef[]): boolean {
 // `$lib/typography-layout.ts` so the live widget's layout engine and
 // the SVG exporter share the same derivations from theme typography.
 
-/** Calculate text X position and anchor based on alignment */
-function getTextPosition(
-  x: number,
-  width: number,
-  align: "left" | "center" | "right" | undefined
-): { textX: number; anchor: string } {
-  return getTextPositionPadded(x, width, align, SPACING.TEXT_PADDING);
-}
-
-/** Same as getTextPosition but with a caller-supplied horizontal padding. */
+/** Calculate text X position and anchor with a caller-supplied horizontal padding. */
 function getTextPositionPadded(
   x: number,
   width: number,
@@ -1563,7 +1554,8 @@ function renderGroupHeader(
 
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
-  const labelX = x + SPACING.TEXT_PADDING + indent;
+  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const labelX = x + cellPadX + indent;
   lines.push(`<text class="cell-text" dominant-baseline="central" x="${labelX}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
@@ -2722,6 +2714,7 @@ function renderUnifiedColumnHeaders(
   // All header cells use bold weight to match web view CSS.
   const fontWeight = theme.header?.text?.weight ?? 600;
   const boldWeight = 600;
+  const cellPadX = theme.spacing.cellPaddingX ?? 10;
   const hasGroups = hasColumnGroups(columnDefs);
 
   // Use row center - dominant-baseline:central handles vertical alignment
@@ -2736,7 +2729,7 @@ function renderUnifiedColumnHeaders(
 
     // Label column spans both rows
     if (showLabelHeader) {
-      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + cellPadX}" y="${getTextY(y, headerHeight)}"
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2768,7 +2761,7 @@ function renderUnifiedColumnHeaders(
         const width = getColWidth(col);
         const headerAlign = col.headerAlign ?? col.align;
         if (resolveShowHeader(col.showHeader, col.header)) {
-          const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+          const pad = isVizType(col.type) ? VIZ_MARGIN : cellPadX;
           const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
           const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
           lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y, headerHeight)}"
@@ -2799,7 +2792,7 @@ function renderUnifiedColumnHeaders(
             const width = getColWidth(sub);
             const headerAlign = sub.headerAlign ?? sub.align;
             if (resolveShowHeader(sub.showHeader, sub.header)) {
-              const pad = isVizType(sub.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+              const pad = isVizType(sub.type) ? VIZ_MARGIN : cellPadX;
               const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
               lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
                 font-family="${fontFamily}"
@@ -2820,7 +2813,7 @@ function renderUnifiedColumnHeaders(
     let currentX = x;
 
     if (showLabelHeader) {
-      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + cellPadX}" y="${getTextY(y, headerHeight)}"
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2834,7 +2827,7 @@ function renderUnifiedColumnHeaders(
       if (resolveShowHeader(col.showHeader, col.header)) {
         // Viz columns pad by VIZ_MARGIN so the header aligns with the plot
         // region's left/right edges (where the axis begins).
-        const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+        const pad = isVizType(col.type) ? VIZ_MARGIN : cellPadX;
         const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
         const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
 
@@ -2875,6 +2868,7 @@ function renderUnifiedTableRow(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
+  const cellPadX = theme.spacing.cellPaddingX ?? 10;
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
@@ -2902,7 +2896,7 @@ function renderUnifiedTableRow(
 
   // Don't truncate labels - they're the primary row identifier and the width
   // was already computed to fit them (either by browser measurement or SVG estimation)
-  lines.push(`<text class="cell-text" dominant-baseline="central" x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
+  lines.push(`<text class="cell-text" dominant-baseline="central" x="${x + cellPadX + indent}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
@@ -2916,7 +2910,7 @@ function renderUnifiedTableRow(
     const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
     // Use smart measurement for accurate label width
     const labelTextWidth = measureTextWidth(row.label, fontSize, theme.text.body.family, fontWeight);
-    const badgeX = x + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
+    const badgeX = x + cellPadX + indent + labelTextWidth + BADGE.GAP;
     const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
@@ -2943,7 +2937,7 @@ function renderUnifiedTableRow(
     }
 
     const value = getCellValue(row, col);
-    const { textX, anchor } = getTextPosition(currentX, width, col.align);
+    const { textX, anchor } = getTextPositionPadded(currentX, width, col.align, cellPadX);
 
     // ────────────────────────────────────────────────────────────────
     // Schema dispatch (Phase 7e.4b). Cells whose schema registers an

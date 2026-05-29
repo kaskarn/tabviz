@@ -59,10 +59,11 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   // Cell width budget: caller supplies ctx.cellWidth (the column width).
   // Bar area = cell width minus left+right padding minus label reservation.
   const cellWidth = ctx?.cellWidth ?? 100;
+  const cellPadX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
   const labelReserved = showLabel ? LABEL_RESERVED_WIDTH : 0;
-  const barAreaWidth = Math.max(0, cellWidth - SPACING.TEXT_PADDING * 2 - labelReserved);
+  const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
   const barWidth = Math.max(0, ratio * barAreaWidth);
-  const totalWidth = cellWidth - SPACING.TEXT_PADDING * 2;
+  const totalWidth = cellWidth - cellPadX * 2;
   const fontSize = parseFontSize(theme.text.body.size);
   const labelFontSize = fontSize * 0.9;
   const height = Math.max(BAR_HEIGHT, showLabel ? labelFontSize : BAR_HEIGHT);
