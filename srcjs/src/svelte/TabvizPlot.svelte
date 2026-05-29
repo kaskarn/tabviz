@@ -1903,9 +1903,9 @@
                     x={colScale(annotation.x)}
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
-                    fill={annotation.color ?? "var(--tv-text-muted)"}
-                    font-size="var(--tv-font-size-sm)"
-                    font-weight="500"
+                    fill={annotation.color ?? theme?.text?.label?.fg ?? "var(--tv-text-muted)"}
+                    font-size={theme?.text?.label?.size ?? "var(--tv-font-size-sm)"}
+                    font-weight={theme?.text?.label?.weight ?? 500}
                   >
                     {annotation.label}
                   </text>
@@ -1929,13 +1929,13 @@
                       {@const annX = markerX + offset}
                       {@const sz = 5 * (customAnn.size ?? 1)}
                       {#if customAnn.shape === "circle"}
-                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "square"}
-                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "triangle"}
-                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "star"}
-                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {/if}
                     {/if}
                   {/if}

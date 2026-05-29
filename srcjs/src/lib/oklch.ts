@@ -337,8 +337,8 @@ export function pickInkOnBg(
 /** Per-step OKLCH L values in light mode (step 1..12, 0-indexed array). */
 const LIGHT_RAMP_L = [
   0.987, // 1 — app bg / paper_raised
-  0.972, // 2 — subtle bg / paper / banding lightest
-  0.952, // 3 — UI idle / paper_alt
+  0.967, // 2 — subtle bg / paper (was 0.972 — softer, less near-white)
+  0.954, // 3 — UI idle / paper_alt (was 0.952 — tighter step from paper for subtler banding)
   0.918, // 4 — UI hover
   0.870, // 5 — UI active / selected
   0.804, // 6 — subtle border / rule_subtle

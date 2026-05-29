@@ -21,6 +21,7 @@
   import type { ThemeInputs } from "$types/theme-inputs";
   import { FONT_PRESETS } from "$lib/font-presets";
   import { CATEGORICAL_SCHEMES, SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES } from "$lib/data-schemes";
+  import { buildRamps } from "$lib/theme-resolve";
   import ColorField from "./ColorField.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
@@ -30,10 +31,7 @@
   import Pill from "$components/primitives/v2/Pill.svelte";
   import Picker from "$components/primitives/v2/Picker.svelte";
   import Knob from "$components/primitives/v2/Knob.svelte";
-  import {
-    PAPER_SWATCHES, INK_SWATCHES, ACCENT_SWATCHES,
-    NEUTRAL_SWATCHES, STATUS_SWATCHES, colors,
-  } from "./swatch-palettes";
+  import { ACCENT_SWATCHES, STATUS_SWATCHES, colors } from "./swatch-palettes";
 
   interface Props { store: TabvizStore; }
   let { store }: Props = $props();
@@ -120,6 +118,46 @@
   }
   const tintStrength = $derived(inputs?.neutral_tint_strength ?? 0.04);
   const tintActive   = $derived(neutralTintMode() !== "untinted");
+
+  // Live 12-step ramps for the visualization strips. Recomputed on every
+  // input change. T2 token → ramp step mapping comes from theme-resolve;
+  // when the user hovers a step we surface "what consumes this step" so
+  // designers can see the cascade flow at a glance.
+  const ramps = $derived(inputs ? buildRamps(inputs) : null);
+  // Step usage labels. Order matters — pick the most "anchoring" use per
+  // step so the tooltip stays single-line. Sourced from theme-resolve's
+  // resolveToken switch.
+  const NEUTRAL_USAGE: Record<number, string> = {
+    1: "paper_raised", 2: "paper", 3: "paper_alt", 4: "paper_sunken",
+    6: "(reserve)", 7: "(reserve)", 8: "ink_disabled",
+    10: "ink_subtle", 11: "ink_muted", 12: "ink",
+  };
+  const BRAND_USAGE: Record<number, string> = {
+    2: "brand_subtle", 5: "series[4]", 7: "series[2]",
+    9: "brand · series[0]", 10: "brand_hover", 11: "brand_active",
+  };
+  const ACCENT_USAGE: Record<number, string> = {
+    2: "accent_subtle", 7: "series[3]", 9: "accent · series[1]",
+    10: "accent_hover", 11: "accent_active",
+  };
+  const DECORATIVE_USAGE: Record<number, string> = {
+    2: "decorative_subtle", 9: "decorative", 11: "decorative_chrome",
+  };
+  function tipFor(usage: Record<number, string>, step: number, hex: string): string {
+    const u = usage[step];
+    return u ? `step ${step} · ${hex} → ${u}` : `step ${step} · ${hex}`;
+  }
+
+  // Live ramp arrays for color-picker swatches. Picking a neutral-ramp
+  // step for `paper` writes the current step's hex into the override —
+  // the field is still "frozen at that hex" not "bound to the ramp slot"
+  // (true ref-binding is tracked as a follow-up). What this delivers
+  // today: the swatch row exposes the cascade's own colors first, so
+  // designers don't have to enter hex by hand to stay on-palette.
+  const neutralSwatches = $derived(ramps?.neutral ?? []);
+  const brandSwatches   = $derived(ramps?.brand ?? []);
+  const accentSwatches  = $derived(ramps?.accent ?? []);
+  const decorativeSwatches = $derived(ramps?.decorative ?? null);
 
   // Active variant + bag for the cluster-pin Advanced section. Derived
   // up here because `{@const}` must be an immediate child of a control
@@ -293,6 +331,56 @@
           onchange={(v) => v != null && commit({ neutral_tint_strength: v })}
         />
       </Field>
+
+      <!-- Ramp visualization — hover a step for "step N · hex → consumer".
+           Shows the 12-step cascade source so designers see how brand and
+           neutral inputs map to UI elements without spelunking docs. -->
+      {#if ramps}
+        <div class="ramp-strips">
+          <div class="ramp-row">
+            <span class="ramp-label">neutral</span>
+            <div class="ramp" role="list">
+              {#each ramps.neutral as hex, i (i)}
+                <span class="ramp-step" role="listitem"
+                  style:background-color={hex}
+                  title={tipFor(NEUTRAL_USAGE, i + 1, hex)}></span>
+              {/each}
+            </div>
+          </div>
+          <div class="ramp-row">
+            <span class="ramp-label">brand</span>
+            <div class="ramp" role="list">
+              {#each ramps.brand as hex, i (i)}
+                <span class="ramp-step" role="listitem"
+                  style:background-color={hex}
+                  title={tipFor(BRAND_USAGE, i + 1, hex)}></span>
+              {/each}
+            </div>
+          </div>
+          <div class="ramp-row">
+            <span class="ramp-label">accent</span>
+            <div class="ramp" role="list">
+              {#each ramps.accent as hex, i (i)}
+                <span class="ramp-step" role="listitem"
+                  style:background-color={hex}
+                  title={tipFor(ACCENT_USAGE, i + 1, hex)}></span>
+              {/each}
+            </div>
+          </div>
+          {#if ramps.decorative}
+            <div class="ramp-row">
+              <span class="ramp-label">decorative</span>
+              <div class="ramp" role="list">
+                {#each ramps.decorative as hex, i (i)}
+                  <span class="ramp-step" role="listitem"
+                    style:background-color={hex}
+                    title={tipFor(DECORATIVE_USAGE, i + 1, hex)}></span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </div>
+      {/if}
     </Section>
 
     <!-- ── Structure ────────────────────────────────────────────────── -->
@@ -429,89 +517,89 @@
          a specific path. Pins survive authoring rebuilds (brand swap,
          mode toggle); Reset reverts to derived. -->
     <Accordion title="Advanced — overrides" hint="Pin individual chrome colors. Pins survive brand/mode changes." open={false}>
-      <!-- Surfaces (paper family) -->
+      <!-- Surfaces (paper family) — swatches come from the live neutral ramp. -->
       <Field label="paper" hint="Background"
         pinned={isT2Pinned("paper")}
         onreset={() => clearT2("paper")}>
         <ColorField label="" value={theme.surface?.base ?? "#ffffff"}
           onchange={(v) => pinT2("paper", v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="paper_alt" hint="Alternating-row tint"
         pinned={isT2Pinned("paper_alt")}
         onreset={() => clearT2("paper_alt")}>
         <ColorField label="" value={(theme.row?.alt?.bg as string | undefined) ?? theme.surface?.muted ?? "#f6f6f6"}
           onchange={(v) => pinT2("paper_alt", v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="paper_sunken" hint="Muted surface"
         pinned={isT2Pinned("paper_sunken")}
         onreset={() => clearT2("paper_sunken")}>
         <ColorField label="" value={theme.surface?.muted ?? "#ececec"}
           onchange={(v) => pinT2("paper_sunken", v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="paper_raised" hint="Lifted surface"
         pinned={isT2Pinned("paper_raised")}
         onreset={() => clearT2("paper_raised")}>
         <ColorField label="" value={theme.surface?.raised ?? "#fafafa"}
           onchange={(v) => pinT2("paper_raised", v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
-      <!-- Ink (content) -->
+      <!-- Ink (content) — also neutral ramp. -->
       <Field label="ink" hint="Primary text / cell fg"
         pinned={isT2Pinned("ink")}
         onreset={() => clearT2("ink")}>
         <ColorField label="" value={theme.content?.primary ?? "#1f1f1f"}
           onchange={(v) => pinT2("ink", v)}
-          swatches={colors(INK_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="ink_muted" hint="Muted text"
         pinned={isT2Pinned("ink_muted")}
         onreset={() => clearT2("ink_muted")}>
         <ColorField label="" value={theme.content?.muted ?? "#4a4a4a"}
           onchange={(v) => pinT2("ink_muted", v)}
-          swatches={colors(INK_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="ink_subtle" hint="Subtle text / ticks"
         pinned={isT2Pinned("ink_subtle")}
         onreset={() => clearT2("ink_subtle")}>
         <ColorField label="" value={theme.content?.secondary ?? "#6e6e6e"}
           onchange={(v) => pinT2("ink_subtle", v)}
-          swatches={colors(INK_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
-      <!-- Rules (dividers) -->
+      <!-- Rules (dividers) — neutral ramp. -->
       <Field label="rule_subtle" hint="Cell hairlines"
         pinned={isT2Pinned("rule_subtle")}
         onreset={() => clearT2("rule_subtle")}>
         <ColorField label="" value={theme.divider?.subtle ?? "#e0e0e0"}
           onchange={(v) => pinT2("rule_subtle", v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="rule_strong" hint="Header rule, axis line"
         pinned={isT2Pinned("rule_strong")}
         onreset={() => clearT2("rule_strong")}>
         <ColorField label="" value={theme.divider?.strong ?? "#808080"}
           onchange={(v) => pinT2("rule_strong", v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
-      <!-- Accent roles -->
+      <!-- Accent roles — swatches from the live accent ramp. -->
       <Field label="accent" hint="Engagement default"
         pinned={isT2Pinned("accent")}
         onreset={() => clearT2("accent")}>
         <ColorField label="" value={theme.accent?.default ?? "#c8553d"}
           onchange={(v) => pinT2("accent", v)}
-          swatches={colors(ACCENT_SWATCHES)} />
+          swatches={accentSwatches} />
       </Field>
       <Field label="accent_subtle" hint="Hover/selected tint"
         pinned={isT2Pinned("accent_subtle")}
         onreset={() => clearT2("accent_subtle")}>
         <ColorField label="" value={theme.accent?.muted ?? "#f0ddd9"}
           onchange={(v) => pinT2("accent_subtle", v)}
-          swatches={colors(ACCENT_SWATCHES)} />
+          swatches={accentSwatches} />
       </Field>
     </Accordion>
 
@@ -521,27 +609,34 @@
          brings up a different row set. Less visual noise than rendering
          all 9 cells of each cluster. -->
     <Accordion title="Advanced — cluster pins" hint="Pin individual cluster fields. Header / column group / first column show the active variant." open={false}>
+      <!-- Cluster pin swatches: header bold + columnGroup bold = brand
+           ramp (the variant's bg is brand step 9); other variants and
+           row group / plot scaffold = neutral. Active-variant routing
+           keeps the swatch set on-palette for the visible variant. -->
+      {@const headerSwatches = hStyle === "bold" ? brandSwatches : neutralSwatches}
+      {@const cgSwatches = hStyle === "bold" ? brandSwatches : neutralSwatches}
+
       <div class="advanced-subhead">Header — {hStyle}</div>
       <Field label="bg"
         pinned={store.isOverridden(["header", hStyle, "bg"])}
         onreset={() => store.clearOverride(["header", hStyle, "bg"])}>
         <ColorField label="" value={hVar?.bg ?? "#ffffff"}
           onchange={(v) => store.setThemeField(["header", hStyle, "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={headerSwatches} />
       </Field>
       <Field label="fg"
         pinned={store.isOverridden(["header", hStyle, "fg"])}
         onreset={() => store.clearOverride(["header", hStyle, "fg"])}>
         <ColorField label="" value={hVar?.fg ?? "#1f1f1f"}
           onchange={(v) => store.setThemeField(["header", hStyle, "fg"], v)}
-          swatches={colors(INK_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="rule"
         pinned={store.isOverridden(["header", hStyle, "rule"])}
         onreset={() => store.clearOverride(["header", hStyle, "rule"])}>
         <ColorField label="" value={hVar?.rule ?? "#808080"}
           onchange={(v) => store.setThemeField(["header", hStyle, "rule"], v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
       <div class="advanced-subhead">Column group — {hStyle}</div>
@@ -550,21 +645,21 @@
         onreset={() => store.clearOverride(["columnGroup", hStyle, "bg"])}>
         <ColorField label="" value={cgVar?.bg ?? "#ffffff"}
           onchange={(v) => store.setThemeField(["columnGroup", hStyle, "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={cgSwatches} />
       </Field>
       <Field label="fg"
         pinned={store.isOverridden(["columnGroup", hStyle, "fg"])}
         onreset={() => store.clearOverride(["columnGroup", hStyle, "fg"])}>
         <ColorField label="" value={cgVar?.fg ?? "#1f1f1f"}
           onchange={(v) => store.setThemeField(["columnGroup", hStyle, "fg"], v)}
-          swatches={colors(INK_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="rule"
         pinned={store.isOverridden(["columnGroup", hStyle, "rule"])}
         onreset={() => store.clearOverride(["columnGroup", hStyle, "rule"])}>
         <ColorField label="" value={cgVar?.rule ?? "#808080"}
           onchange={(v) => store.setThemeField(["columnGroup", hStyle, "rule"], v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
       <div class="advanced-subhead">First column — {fcStyle}</div>
@@ -573,37 +668,37 @@
         onreset={() => store.clearOverride(["firstColumn", fcStyle, "bg"])}>
         <ColorField label="" value={fcVar?.bg ?? "#ffffff"}
           onchange={(v) => store.setThemeField(["firstColumn", fcStyle, "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="fg"
         pinned={store.isOverridden(["firstColumn", fcStyle, "fg"])}
         onreset={() => store.clearOverride(["firstColumn", fcStyle, "fg"])}>
         <ColorField label="" value={fcVar?.fg ?? "#1f1f1f"}
           onchange={(v) => store.setThemeField(["firstColumn", fcStyle, "fg"], v)}
-          swatches={colors(INK_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
       <div class="advanced-subhead">Row group tiers</div>
-      <Field label="L1 bg" hint="Top-level group bar"
+      <Field label="L1 bg" hint="Top-level group bar (brand step 2 default)"
         pinned={store.isOverridden(["rowGroup", "L1", "bg"])}
         onreset={() => store.clearOverride(["rowGroup", "L1", "bg"])}>
         <ColorField label="" value={(theme.rowGroup?.L1?.bg as string | undefined) ?? "#e8e6e1"}
           onchange={(v) => store.setThemeField(["rowGroup", "L1", "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={brandSwatches} />
       </Field>
       <Field label="L2 bg"
         pinned={store.isOverridden(["rowGroup", "L2", "bg"])}
         onreset={() => store.clearOverride(["rowGroup", "L2", "bg"])}>
         <ColorField label="" value={(theme.rowGroup?.L2?.bg as string | undefined) ?? "#efedea"}
           onchange={(v) => store.setThemeField(["rowGroup", "L2", "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="L3 bg"
         pinned={store.isOverridden(["rowGroup", "L3", "bg"])}
         onreset={() => store.clearOverride(["rowGroup", "L3", "bg"])}>
         <ColorField label="" value={(theme.rowGroup?.L3?.bg as string | undefined) ?? "#f5f3f1"}
           onchange={(v) => store.setThemeField(["rowGroup", "L3", "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
 
       <div class="advanced-subhead">Row interactions</div>
@@ -612,14 +707,14 @@
         onreset={() => store.clearOverride(["row", "hover", "bg"])}>
         <ColorField label="" value={(theme.row?.hover?.bg as string | undefined) ?? "#f0ddd9"}
           onchange={(v) => store.setThemeField(["row", "hover", "bg"], v)}
-          swatches={colors(ACCENT_SWATCHES)} />
+          swatches={accentSwatches} />
       </Field>
       <Field label="selected bg"
         pinned={store.isOverridden(["row", "selected", "bg"])}
         onreset={() => store.clearOverride(["row", "selected", "bg"])}>
         <ColorField label="" value={(theme.row?.selected?.bg as string | undefined) ?? "#f0ddd9"}
           onchange={(v) => store.setThemeField(["row", "selected", "bg"], v)}
-          swatches={colors(ACCENT_SWATCHES)} />
+          swatches={accentSwatches} />
       </Field>
 
       <div class="advanced-subhead">Plot scaffold</div>
@@ -628,28 +723,28 @@
         onreset={() => store.clearOverride(["plot", "axisLine"])}>
         <ColorField label="" value={theme.plot?.axisLine ?? "#808080"}
           onchange={(v) => store.setThemeField(["plot", "axisLine"], v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="tick mark"
         pinned={store.isOverridden(["plot", "tickMark"])}
         onreset={() => store.clearOverride(["plot", "tickMark"])}>
         <ColorField label="" value={theme.plot?.tickMark ?? "#808080"}
           onchange={(v) => store.setThemeField(["plot", "tickMark"], v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="gridline"
         pinned={store.isOverridden(["plot", "gridline"])}
         onreset={() => store.clearOverride(["plot", "gridline"])}>
         <ColorField label="" value={theme.plot?.gridline ?? "#e0e0e0"}
           onchange={(v) => store.setThemeField(["plot", "gridline"], v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
       <Field label="reference"
         pinned={store.isOverridden(["plot", "reference"])}
         onreset={() => store.clearOverride(["plot", "reference"])}>
         <ColorField label="" value={theme.plot?.reference ?? "#808080"}
           onchange={(v) => store.setThemeField(["plot", "reference"], v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+          swatches={neutralSwatches} />
       </Field>
     </Accordion>
 
@@ -674,6 +769,50 @@
     color: var(--v2-ink-3, #8a8478);
     font-size: var(--v2-text-small, 10.5px);
     line-height: 1.4;
+  }
+
+  /* Ramp visualization strips — under Identity, one row per ramp. Each
+     row is `[label  step×12]`; cells are flush-stacked with a hairline
+     bottom border for legibility on near-white steps. */
+  .ramp-strips {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 0 4px 28px;
+  }
+  .ramp-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+  .ramp-label {
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: var(--v2-text-micro, 9.5px);
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: var(--v2-track-flag, 0.14em);
+    color: var(--v2-ink-3, #8a8478);
+    line-height: 1;
+  }
+  .ramp {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    height: 14px;
+    border: 1px solid var(--v2-rule-soft, #e6e0d1);
+    border-radius: var(--v2-r-hair, 2px);
+    overflow: hidden;
+  }
+  .ramp-step {
+    width: 100%;
+    height: 100%;
+    transition: transform 80ms var(--v2-ease, ease-out);
+    cursor: help;
+  }
+  .ramp-step:hover {
+    transform: scaleY(1.4);
+    z-index: 1;
+    position: relative;
   }
 
   /* Inline subheading inside the Advanced accordion — groups T3 cluster
