@@ -24,18 +24,20 @@ serialize_text_role <- function(role) {
   )
 }
 
-serialize_slot_bundle <- function(b) {
+serialize_slot_role <- function(b) {
   list(
-    fill           = na_to_null(b@fill),
-    stroke         = na_to_null(b@stroke),
-    fillMuted      = na_to_null(b@fill_muted),
-    strokeMuted    = na_to_null(b@stroke_muted),
-    fillEmphasis   = na_to_null(b@fill_emphasis),
-    strokeEmphasis = na_to_null(b@stroke_emphasis),
-    textFg         = na_to_null(b@text_fg),
-    shape          = na_to_null(b@shape)
+    fill       = na_to_null(b@fill),
+    stroke     = na_to_null(b@stroke),
+    fillDim    = na_to_null(b@fill_dim),
+    strokeDim  = na_to_null(b@stroke_dim),
+    fillHot    = na_to_null(b@fill_hot),
+    strokeHot  = na_to_null(b@stroke_hot),
+    textFg     = na_to_null(b@text_fg),
+    shape      = na_to_null(b@shape)
   )
 }
+# Deprecated alias — Sprint 1 PR 2 rename.
+serialize_slot_bundle <- serialize_slot_role
 
 serialize_row_state <- function(s) {
   list(
@@ -224,7 +226,7 @@ serialize_theme <- function(theme) {
       fill = theme@semantic@fill
     ),
 
-    series  = lapply(theme@series, serialize_slot_bundle),
+    series  = lapply(theme@series, serialize_slot_role),
 
     text = list(
       title    = serialize_text_role(theme@text@title),

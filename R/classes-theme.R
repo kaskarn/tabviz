@@ -92,7 +92,7 @@ ThemeInputs <- new_class(
     font_display = new_property(class_character, default = NA_character_),
     font_mono    = new_property(class_character, default = NA_character_),
 
-    # Slot rendering style -- how each SlotBundle's fill/stroke pair relate.
+    # Slot rendering style -- how each SlotRole's fill/stroke pair relate.
     # Centralizes a convention that previously lived implicitly inside
     # derive_slot_bundle().
     #   "fill_with_darker_stroke" (default): fill = anchor, stroke =
@@ -290,39 +290,46 @@ Semantics <- new_class(
 
 # -- Tier 2: data slot bundle --------------------------------------------
 
-#' SlotBundle: 7-field per-slot bundle for series and summary.
+#' SlotRole: 7-field per-slot role bundle for series and summary.
 #'
 #' Resolution fills NA fields from the slot's anchor via OKLCH:
-#'   fill            <- anchor
-#'   stroke          <- darken(anchor)
-#'   fill_muted      <- mix(anchor, surface.base)
-#'   stroke_muted    <- darken(fill_muted)
-#'   fill_emphasis   <- darken(anchor) + chroma boost
-#'   stroke_emphasis <- darken(anchor) further
-#'   text_fg         <- contrast-checked against typical row bg
+#'   fill      <- anchor
+#'   stroke    <- darken(anchor)
+#'   fill_dim  <- mix(anchor, surface.base)       (de-emphasized state)
+#'   stroke_dim<- darken(fill_dim)
+#'   fill_hot  <- darken(anchor) + chroma boost   (interactive highlight)
+#'   stroke_hot<- darken(anchor) further
+#'   text_fg   <- contrast-checked against typical row bg
+#'
+#' Renamed from `SlotBundle` (Sprint 1 PR 2). The fields previously
+#' called `fill_muted` / `stroke_muted` / `fill_emphasis` /
+#' `stroke_emphasis` are now `fill_dim` / `stroke_dim` / `fill_hot` /
+#' `stroke_hot` — `muted` and `emphasis` each carried multiple
+#' meanings across the theme system; `dim`/`hot` reserves them for the
+#' chrome roles and paint tokens.
 #'
 #' @usage NULL
 #' @export
-SlotBundle <- new_class(
-  "SlotBundle",
+SlotRole <- new_class(
+  "SlotRole",
   properties = list(
-    fill            = new_property(class_character, default = NA_character_),
-    stroke          = new_property(class_character, default = NA_character_),
-    fill_muted      = new_property(class_character, default = NA_character_),
-    stroke_muted    = new_property(class_character, default = NA_character_),
-    fill_emphasis   = new_property(class_character, default = NA_character_),
-    stroke_emphasis = new_property(class_character, default = NA_character_),
-    text_fg         = new_property(class_character, default = NA_character_),
+    fill       = new_property(class_character, default = NA_character_),
+    stroke     = new_property(class_character, default = NA_character_),
+    fill_dim   = new_property(class_character, default = NA_character_),
+    stroke_dim = new_property(class_character, default = NA_character_),
+    fill_hot   = new_property(class_character, default = NA_character_),
+    stroke_hot = new_property(class_character, default = NA_character_),
+    text_fg    = new_property(class_character, default = NA_character_),
     # Marker shape for forest points + similar viz marks. NA -> renderer
     # picks a default from a 4-shape rotation (circle / square / diamond
     # / triangle). Authors who want a fixed shape per slot pin one of
     # those four values.
-    shape           = new_property(class_character, default = NA_character_)
+    shape      = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
     color_err <- make_color_validator(
-      c("fill", "stroke", "fill_muted", "stroke_muted",
-        "fill_emphasis", "stroke_emphasis", "text_fg")
+      c("fill", "stroke", "fill_dim", "stroke_dim",
+        "fill_hot", "stroke_hot", "text_fg")
     )(self)
     if (!is.null(color_err)) return(color_err)
     valid_shapes <- c("square", "circle", "diamond", "triangle")
@@ -334,6 +341,16 @@ SlotBundle <- new_class(
     NULL
   }
 )
+
+#' SlotBundle (deprecated alias for SlotRole)
+#'
+#' Renamed to [SlotRole] in Sprint 1 PR 2. Kept as an alias for one
+#' minor version so existing user code that constructs `SlotBundle(...)`
+#' keeps working.
+#'
+#' @usage NULL
+#' @export
+SlotBundle <- SlotRole
 
 
 # -- Tier 2: typography roles --------------------------------------------
@@ -693,7 +710,7 @@ PlotScaffold <- new_class(
 
 #' MarkRecipe: how one mark type consumes slot-bundle fields.
 #'
-#' Each property names a slot-bundle key ("fill", "stroke", "fill_muted", ...)
+#' Each property names a slot-role key ("fill", "stroke", "fill_dim", ...)
 #' so the renderer can look up the actual hex when drawing each visual element.
 #' v1 wires forest + summary; bar/box/violin/lollipop default to passthrough.
 #'
@@ -879,10 +896,10 @@ WebTheme <- new_class(
     if (length(self@series) > 0L) {
       ok <- vapply(
         self@series,
-        function(x) inherits(x, "tabviz::SlotBundle") || S7::S7_inherits(x, SlotBundle),
+        function(x) inherits(x, "tabviz::SlotRole") || S7::S7_inherits(x, SlotRole),
         logical(1)
       )
-      if (!all(ok)) return("series must be a list of SlotBundle objects")
+      if (!all(ok)) return("series must be a list of SlotRole objects")
     }
     if (length(self@web_fonts) > 0L) {
       bad <- which(!vapply(self@web_fonts, function(x) {

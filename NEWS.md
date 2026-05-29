@@ -1,3 +1,71 @@
+# tabviz (development)
+
+## Theme sprint Phase 1b — SlotBundle → SlotRole rename
+
+`SlotBundle` is renamed to `SlotRole`, and four fields are renamed to
+disambiguate `muted` and `emphasis` (which carried 3+ meanings each
+across the theme system):
+
+* `fill_muted`      → `fill_dim`
+* `stroke_muted`    → `stroke_dim`
+* `fill_emphasis`   → `fill_hot`
+* `stroke_emphasis` → `stroke_hot`
+
+Wire JSON camelCase: `fillMuted`→`fillDim`, `strokeMuted`→`strokeDim`,
+`fillEmphasis`→`fillHot`, `strokeEmphasis`→`strokeHot`.
+
+`SlotBundle` is kept as a deprecated alias of `SlotRole` for one minor
+version. The TS resolver (`srcjs/src/lib/theme-resolve.ts`) and the
+R deserializer (`R/utils-deserialize-resolved.R`) both accept legacy
+camelCase field names on input so older wire snapshots continue to
+parse. Output is always the new shape.
+
+* **R**: `R/classes-theme.R` S7 class renamed; `R/utils-serialize-resolved.R`
+  emits new names; `R/utils-deserialize-resolved.R` reads both shapes.
+* **TS**: `SlotBundleV2` → `SlotRoleV2` (`srcjs/src/types/theme-v2.ts`);
+  `deriveSlotBundle` → `deriveSlotRole`; `theme-cascade.ts`,
+  `LayoutControl.svelte`, `MarksControl.svelte` updated. Migration
+  shim in `resolveTheme` normalizes legacy overrides.
+* **Settings panel** labels: "Fill (muted)" → "Fill (dim)"; "Fill
+  (emphasis)" → "Fill (hot)" (Marks control).
+* **`theme-presets-v2.json`** regenerated via
+  `scripts/regenerate-theme-presets.ts`.
+
+Reason: `muted` previously meant five distinct things (SlotBundle
+de-emphasized state, `surface.muted`, `accent.muted`, `divider.muted`,
+paint-tool token). `dim`/`hot` reserve `muted`/`emphasis` for the
+chrome roles and paint tokens.
+
+## Theme sprint Phase 1a — R cascade collapse to TS
+
+`resolve_theme()` now delegates to the TS resolver via V8 instead of
+running a parallel R-side cascade. R authors a `WebTheme` (S7), the
+bridge extracts inputs + variants + user-pinned overrides, ships them
+to `srcjs/src/lib/theme-resolve.ts::resolveTheme`, and reconstructs
+the S7 surface from the returned JSON. `theme@row@base@bg`-style
+access keeps working; cascade semantics now live in one place.
+
+* **Deleted** ~700 LOC of R-side derivation (`resolve_inputs_mirrors`,
+  `resolve_chrome`, `resolve_data`, `resolve_text`, `resolve_components`,
+  `derive_slot_bundle`, et al.) and the 125-LOC contrast validator
+  `R/utils-theme-validate.R`. TS owns the invariants now and runs
+  validation inside `resolveTheme(draft, { validate })`.
+* **Added** the V8-bridge round-trip in
+  `R/utils-deserialize-resolved.R`: `webtheme_to_resolve_draft()`
+  (WebTheme → ResolveDraft list) and `deserialize_resolved_theme()`
+  (resolved JSON → WebTheme S7). Inverse of `serialize_theme()`.
+* **Extended** the V8 dispatcher (`srcjs/src/export/v8-entry.ts`
+  `callBuilder` + `R/v8-bridge.R::ts_call`) to optionally accept a
+  second args slot, so two-argument builders like
+  `resolveTheme(draft, options)` route cleanly.
+* **Reframed** `tests/testthat/test-parity-themes.R`: post-collapse the
+  R and TS sides produce identical blobs by construction, so the
+  tests now serve as an integration check of the V8 round-trip
+  (covers bridge serializer, deserializer, and preset constructors).
+  Cascade semantics are tested in `srcjs/src/lib/theme-resolve.test.ts`.
+* `save_plot()`, `tabviz_theme_css()`, `inspect_resolved()`, and
+  preset constructors are unchanged from a caller perspective.
+
 # tabviz 0.36.0 / @tabviz/core 0.5.0
 
 ## Schema sprint phases 10–12

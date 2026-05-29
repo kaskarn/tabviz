@@ -1,13 +1,22 @@
-# R↔TS theme-builder parity tests.
+# R↔TS theme-builder round-trip tests.
 #
-# For each theme: build R-side via web_theme_X() → serialize to wire JSON,
-# build TS-side via ts_call("themeX", "{}") → wire JSON, compare key
-# fields. Drift detector for the theme cascade: if either side's resolver
-# changes output without the other being updated, parity fails here.
+# Originally a parity test (R-resolved vs TS-resolved). As of the
+# Sprint 1 cascade collapse the R-side cascade was deleted and
+# `resolve_theme()` delegates to TS via V8 — both paths now produce
+# the same blob by construction. These tests are kept as an
+# *integration* check: each preset's R authoring API survives the
+# round-trip through V8 + `deserialize_resolved_theme()`. Drift
+# detector for: (a) the v8-bridge wire shape, (b) the
+# webtheme_to_resolve_draft serializer, (c) the deserialize_resolved_theme
+# reconstructor, (d) preset constructors that override T2/T3 fields.
 #
-# Hex tolerance: OKLab precision gap (R `farver` vs TS Ottosson transform)
-# produces 0-25 channel drift on chroma-derived hex; structural fields
-# compare byte-exact, hex fields compare within tolerance.
+# Cascade semantics themselves are tested where they live —
+# `srcjs/src/lib/theme-resolve.test.ts`.
+#
+# Hex tolerance (`.hex_close`) is retained for now because farver-based
+# tests elsewhere occasionally produce sub-perceptual channel drift; it
+# is effectively a no-op for this file post-collapse (both sides
+# produce identical hex) but harmless and useful documentation.
 
 # Snake_case → camelCase builder symbol.
 .to_camel <- function(s) {

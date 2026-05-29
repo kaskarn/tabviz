@@ -136,29 +136,29 @@
     for (let i = 0; i < anchors.length; i++) {
       const anchor = anchors[i];
       if (!anchor) continue;
-      const fillMuted = oklchMix(anchor, surface, 0.65);
+      const fillDim = oklchMix(anchor, surface, 0.65);
       if (value === "flat_fill") {
-        const emphasis = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
-        setDerived(["series", i, "fill"],            anchor);
-        setDerived(["series", i, "stroke"],          anchor);
-        setDerived(["series", i, "fillMuted"],       fillMuted);
-        setDerived(["series", i, "strokeMuted"],     fillMuted);
-        setDerived(["series", i, "fillEmphasis"],    emphasis);
-        setDerived(["series", i, "strokeEmphasis"],  emphasis);
+        const hot = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
+        setDerived(["series", i, "fill"],       anchor);
+        setDerived(["series", i, "stroke"],     anchor);
+        setDerived(["series", i, "fillDim"],    fillDim);
+        setDerived(["series", i, "strokeDim"],  fillDim);
+        setDerived(["series", i, "fillHot"],    hot);
+        setDerived(["series", i, "strokeHot"],  hot);
       } else if (value === "outlined") {
-        setDerived(["series", i, "fill"],            oklchMix(anchor, surface, 0.15));
-        setDerived(["series", i, "stroke"],          anchor);
-        setDerived(["series", i, "fillMuted"],       oklchMix(anchor, surface, 0.08));
-        setDerived(["series", i, "strokeMuted"],     oklchDarken(fillMuted, 0.10));
-        setDerived(["series", i, "fillEmphasis"],    oklchMix(anchor, surface, 0.30));
-        setDerived(["series", i, "strokeEmphasis"],  oklchDarken(anchor, 0.20));
+        setDerived(["series", i, "fill"],       oklchMix(anchor, surface, 0.15));
+        setDerived(["series", i, "stroke"],     anchor);
+        setDerived(["series", i, "fillDim"],    oklchMix(anchor, surface, 0.08));
+        setDerived(["series", i, "strokeDim"],  oklchDarken(fillDim, 0.10));
+        setDerived(["series", i, "fillHot"],    oklchMix(anchor, surface, 0.30));
+        setDerived(["series", i, "strokeHot"],  oklchDarken(anchor, 0.20));
       } else {
-        setDerived(["series", i, "fill"],            anchor);
-        setDerived(["series", i, "stroke"],          oklchDarken(anchor, 0.10));
-        setDerived(["series", i, "fillMuted"],       fillMuted);
-        setDerived(["series", i, "strokeMuted"],     oklchDarken(fillMuted, 0.10));
-        setDerived(["series", i, "fillEmphasis"],    oklchChroma(oklchDarken(anchor, 0.05), 0.04));
-        setDerived(["series", i, "strokeEmphasis"],  oklchDarken(anchor, 0.20));
+        setDerived(["series", i, "fill"],       anchor);
+        setDerived(["series", i, "stroke"],     oklchDarken(anchor, 0.10));
+        setDerived(["series", i, "fillDim"],    fillDim);
+        setDerived(["series", i, "strokeDim"],  oklchDarken(fillDim, 0.10));
+        setDerived(["series", i, "fillHot"],    oklchChroma(oklchDarken(anchor, 0.05), 0.04));
+        setDerived(["series", i, "strokeHot"],  oklchDarken(anchor, 0.20));
       }
     }
   }

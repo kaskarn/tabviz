@@ -195,7 +195,7 @@
 
     // Theme effect defaults for multi-effect plots
     const themeEffectColors = theme?.series?.map(s => s.fill);
-    // Per-series marker shapes ride on the SlotBundle now: theme.series[i].shape
+    // Per-series marker shapes ride on the SlotRole now: theme.series[i].shape
     // (NA on the wire = null → fall through to the 4-shape rotation).
     const defaultShapes: MarkerShape[] = ["circle", "square", "diamond", "triangle"];
 

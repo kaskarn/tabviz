@@ -19,11 +19,18 @@ Status legend:
 
 ## Themes
 
+> **Sprint 1 Phase 1a — R cascade collapsed (2026-05-28).** R-side cascade
+> deleted; `resolve_theme()` delegates to TS via V8.
+> `R/utils-theme-validate.R` deleted. The "R↔TS theme parity" rows below
+> are retained as historical context — post-collapse, R and TS produce
+> identical blobs by construction (R *is* TS at runtime). See
+> `R/utils-deserialize-resolved.R` for the V8 round-trip glue.
+
 | R helper                          | Classification        | Notes |
 |-----------------------------------|-----------------------|-------|
-| `R/utils-oklch.R`                 | phase-2-candidate     | TS port at `srcjs/src/lib/oklch.ts` is faithful but ~1-25 channels of drift on chroma-related derivations vs `farver` near gamut boundaries (Ottosson coefficients are slightly different from farver's, and bisection amplifies the drift). Mitigation in Phase 1: tolerance-based parity test, R remains snapshot source of truth. Phase 2 options: (a) tune TS coefficients to match `farver`, (b) regenerate JSON snapshot from TS instead of R (cleanest long-term — makes TS canonical). |
-| `R/utils-theme-resolve.R`         | phase-2-candidate     | TS port at `srcjs/src/lib/theme-resolve.ts`. Same per-function structure (`resolve_inputs_mirrors`, `resolve_chrome`, `resolve_data`, `resolve_text`, `resolve_spacing`, `resolve_components`). Output passes JS-side tolerance parity against R snapshot for all 4 journal presets. **Suggested R-side streamline**: `fill_na` and `compose_text` are the same null-fallback iteration pattern (~7 lines each); could share a generic helper. Line 583's defensive `secondary_deep` re-mirror is redundant — `resolve_inputs_mirrors` should have already filled it. |
-| `R/utils-theme-validate.R`        | phase-2-candidate     | TS port at `srcjs/src/lib/theme-validate.ts`. 5 contrast invariants ported verbatim. `ThemeValidationError` carries the same path + cascade info as R's `cli::cli_abort` structured message. |
+| `R/utils-oklch.R`                 | phase-2-candidate     | TS port at `srcjs/src/lib/oklch.ts` is faithful but ~1-25 channels of drift on chroma-related derivations vs `farver` near gamut boundaries (Ottosson coefficients are slightly different from farver's, and bisection amplifies the drift). Used R-side by tests and standalone color math. Resolution now happens TS-side, so the drift no longer matters for cascade output. |
+| `R/utils-theme-resolve.R`         | **collapsed (Phase 1a)** | R helpers deleted; the file is now an 80-LOC shim around `ts_call("resolveTheme", draft, options)`. `DENSITY_PRESETS` reference value kept for tests. Cascade semantics tested in `srcjs/src/lib/theme-resolve.test.ts`. |
+| `R/utils-theme-validate.R`        | **deleted (Phase 1a)** | TS validates inside `resolveTheme(draft, { validate })`. Errors surface through V8 to R with the same `header bold band: ...` invariant names. |
 | `R/themes.R` (4 journal presets)  | thin-wrapper          | Pure Tier 1 input bundles + `resolve_theme()` call. TS mirrors at `srcjs/src/lib/theme-presets-inputs.ts`. Snapshot JSON at `theme-presets-v2.json` remains R-resolved truth (journal presets). |
 | `R/themes-lotr.R` (3 LOTR presets)| thin-wrapper          | Same shape as journals. TS mirrors at `theme-presets-inputs.ts`; resolved at JS module load (no R snapshot). Pre-release; may be removed before CRAN. |
 | `R/themes-api.R::web_theme`       | phase-2-candidate     | TS mirror at `srcjs/src/lib/theme-api.ts::webTheme`. **Suggested R-side streamline**: the `brand` / `tertiary` legacy migration check (lines 84-100) is duplicated verbatim in `set_inputs` (lines 158-173). Pull into a single `check_legacy_inputs(args)` helper. |

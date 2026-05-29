@@ -45,19 +45,25 @@ export interface TextRoleV2 {
 }
 
 /**
- * Series slot bundle — one entry per pooled effect "slot" used by the
- * forest, bar, box, violin, lollipop marks. R's `derive_slot_bundle` +
- * `fill_slot_bundle` ensure every color field is filled before
- * serialization. `shape` stays nullable — null means "renderer picks
- * a default from the 4-shape rotation."
+ * Per-series slot role — one entry per pooled effect "slot" used by the
+ * forest, bar, box, violin, lollipop marks. `dim` is the de-emphasized
+ * state (used by other-series during hover); `hot` is the boosted
+ * interactive-highlight state. Both are derived from the slot anchor
+ * via OKLCH math at resolve time. `shape` stays nullable — null means
+ * "renderer picks a default from the 4-shape rotation."
+ *
+ * Renamed from `SlotBundleV2` (Sprint 1 PR 2): `muted` and `emphasis`
+ * each carried 3+ meanings across the theme; `dim`/`hot` reserves
+ * `muted` for the chrome/role layer and the paint token, and reserves
+ * `emphasis` for the paint token + design intent.
  */
-export interface SlotBundleV2 {
+export interface SlotRoleV2 {
   fill: string;
   stroke: string;
-  fillMuted: string;
-  strokeMuted: string;
-  fillEmphasis: string;
-  strokeEmphasis: string;
+  fillDim: string;
+  strokeDim: string;
+  fillHot: string;
+  strokeHot: string;
   textFg: string;
   /** "square" | "circle" | "diamond" | "triangle" | null */
   shape: string | null;
@@ -427,7 +433,7 @@ export interface WebThemeV2 {
   status: StatusColorsV2;
   semantic: SemanticsV2;
   // Tier 2 — data
-  series: SlotBundleV2[];
+  series: SlotRoleV2[];
   // Tier 2 — typography + spacing
   text: TextRolesV2;
   spacing: SpacingTokensV2;

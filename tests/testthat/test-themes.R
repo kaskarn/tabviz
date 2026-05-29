@@ -25,10 +25,10 @@ for (preset_name in names(preset_constructors)) {
       # Series resolved.
       expect_gt(length(t@series), 0L)
       for (i in seq_along(t@series)) {
-        expect_s7(t@series[[i]], "SlotBundle")
+        expect_s7(t@series[[i]], "SlotRole")
         expect_match(t@series[[i]]@fill,   "^#")
         expect_match(t@series[[i]]@stroke, "^#")
-        expect_match(t@series[[i]]@fill_muted, "^#")
+        expect_match(t@series[[i]]@fill_dim, "^#")
       }
       # Spacing density-driven.
       expect_false(is.na(t@spacing@row_height))

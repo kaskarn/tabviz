@@ -38,10 +38,10 @@ test_that("resolve_theme expands series anchors into slot bundles", {
   inputs <- ThemeInputs(series_anchors = c("#1F3A5F", "#B08938"))
   t <- resolve_theme(WebTheme(inputs = inputs))
   expect_length(t@series, 2L)
-  expect_s7(t@series[[1]], "SlotBundle")
+  expect_s7(t@series[[1]], "SlotRole")
   expect_equal(toupper(t@series[[1]]@fill), "#1F3A5F")
   expect_match(t@series[[1]]@stroke, "^#")
-  expect_match(t@series[[1]]@fill_muted, "^#")
+  expect_match(t@series[[1]]@fill_dim, "^#")
   expect_match(t@series[[1]]@text_fg, "^#")
 })
 
@@ -62,7 +62,7 @@ test_that("slot_style flat_fill: stroke matches fill (no contrast pair)", {
     slot_style = "flat_fill"
   )))
   expect_equal(t@series[[1]]@fill, t@series[[1]]@stroke)
-  expect_equal(t@series[[1]]@fill_muted, t@series[[1]]@stroke_muted)
+  expect_equal(t@series[[1]]@fill_dim, t@series[[1]]@stroke_dim)
 })
 
 test_that("slot_style outlined: stroke carries anchor; fill leans surface", {
@@ -100,7 +100,7 @@ test_that("user-set fields survive resolution (idempotence + override)", {
   # fail contrast validation, but this test isn't about legibility.
   t <- WebTheme()
   t@surface@base <- "#FF00FF"
-  t@series <- list(SlotBundle(fill = "#ABCDEF"))
+  t@series <- list(SlotRole(fill = "#ABCDEF"))
   t@row@hover@bg <- "#123456"
 
   out <- resolve_theme(t, .validate = FALSE)
@@ -363,37 +363,18 @@ test_that("two-color theme: L1 row-group bg tracks secondary, not primary", {
   expect_equal(t@row_group@L1@bg, expected_l1)
 })
 
-test_that("resolve_chrome and resolve_data don't cross subsystems", {
-  # Chrome derivation should not look at series_anchors. resolve_chrome
-  # assumes resolve_inputs_mirrors() has run, so feed it mirrored inputs.
-  inp1 <- resolve_inputs_mirrors(ThemeInputs(series_anchors = c("#FF0000")))
-  inp2 <- resolve_inputs_mirrors(ThemeInputs(series_anchors = c("#00FF00")))
-  c1 <- resolve_chrome(inp1)
-  c2 <- resolve_chrome(inp2)
-  expect_equal(c1$surface@base,  c2$surface@base)
-  expect_equal(c1$accent@default, c2$accent@default)
-  expect_equal(c1$content@primary, c2$content@primary)
-})
-
-test_that("resolve_data is deterministic given the same inputs", {
-  surface_base <- "#F7F8FA"
-  content_primary <- "#2A2F38"
-  inp <- resolve_inputs_mirrors(
-    ThemeInputs(series_anchors = c("#1F3A5F"), primary = "#1F3A5F")
-  )
-  d1 <- resolve_data(inp, surface_base, content_primary, list())
-  d2 <- resolve_data(inp, surface_base, content_primary, list())
-  expect_equal(d1$series[[1]]@fill,   d2$series[[1]]@fill)
-  expect_equal(d1$series[[1]]@stroke, d2$series[[1]]@stroke)
-})
+# Subsystem-crossing + determinism invariants are now owned by TS; see
+# `srcjs/src/lib/theme-resolve.test.ts`. The R round-trip only verifies
+# that the V8 bridge preserves the user-set surface; the cascade rules
+# themselves are tested where they live.
 
 test_that("partial slot bundle overrides survive resolution", {
-  partial <- SlotBundle(fill = "#FF00FF")  # only fill set
+  partial <- SlotRole(fill = "#FF00FF")  # only fill set
   t <- WebTheme(series = list(partial))
   out <- resolve_theme(t)
   expect_equal(toupper(out@series[[1]]@fill), "#FF00FF")  # preserved
   expect_match(out@series[[1]]@stroke, "^#")               # derived
-  expect_match(out@series[[1]]@fill_muted, "^#")           # derived
+  expect_match(out@series[[1]]@fill_dim, "^#")             # derived
 })
 
 test_that("resolve_theme rejects non-WebTheme input", {

@@ -49,13 +49,20 @@ test_that("StatusColors defaults all-NA and validates hex", {
   expect_error(StatusColors(positive = "green"))
 })
 
-test_that("SlotBundle defaults all-NA and rejects bad hex", {
-  sb <- SlotBundle()
+test_that("SlotRole defaults all-NA and rejects bad hex", {
+  sb <- SlotRole()
   for (p in S7::prop_names(sb)) {
     expect_true(is.na(S7::prop(sb, p)))
   }
-  expect_error(SlotBundle(fill = "blue"))
-  expect_silent(SlotBundle(fill = "#1F3A5F", stroke = "#14273F"))
+  expect_error(SlotRole(fill = "blue"))
+  expect_silent(SlotRole(fill = "#1F3A5F", stroke = "#14273F"))
+})
+
+test_that("SlotBundle deprecated alias still works", {
+  # Sprint 1 PR 2 renamed SlotBundle → SlotRole; alias retained for one
+  # minor version.
+  sb <- SlotBundle(fill = "#1F3A5F")
+  expect_true(S7::S7_inherits(sb, SlotRole))
 })
 
 test_that("TextRole validates figures and fg", {
@@ -160,15 +167,15 @@ test_that("WebTheme constructs end-to-end with defaults", {
   expect_length(t@series, 0L)
 })
 
-test_that("WebTheme accepts a list of SlotBundle for series", {
+test_that("WebTheme accepts a list of SlotRole for series", {
   t <- WebTheme(series = list(
-    SlotBundle(fill = "#1F3A5F"),
-    SlotBundle(fill = "#B08938")
+    SlotRole(fill = "#1F3A5F"),
+    SlotRole(fill = "#B08938")
   ))
   expect_length(t@series, 2L)
-  expect_s7_class(t@series[[1]], "SlotBundle")
+  expect_s7_class(t@series[[1]], "SlotRole")
 })
 
-test_that("WebTheme rejects non-SlotBundle entries in series", {
-  expect_error(WebTheme(series = list(SlotBundle(), "not a bundle")))
+test_that("WebTheme rejects non-SlotRole entries in series", {
+  expect_error(WebTheme(series = list(SlotRole(), "not a role")))
 })

@@ -12,22 +12,22 @@ resolve_theme(theme, .validate = TRUE)
 \item{.validate}{Whether to run construction-time contrast validation
 on the resolved theme. Default \code{TRUE}. Set to \code{FALSE} only for tests
 that intentionally use synthetic high-saturation colors to verify
-cascade mechanics — production callers should leave validation on so
-broken overrides surface at construction rather than at render.}
+cascade mechanics — production callers should leave validation on
+so broken overrides surface at construction rather than at render.}
 }
 \value{
 A \link{WebTheme} object with NA fields populated.
 }
 \description{
-Idempotent and deterministic. Only writes into NA-valued fields, so
-user-set overrides survive re-resolution. Runs all derivations in OKLCH
-(perceptually uniform) and clips to sRGB at every step.
+Delegates to the TS resolver via V8. R extracts the user-pinned
+inputs + variants + overrides, ships them across the bridge, and
+reconstructs the S7 surface from the resolved JSON so
+\code{theme@row@base@bg} access keeps working R-side. Single source of
+truth for cascade semantics lives in
+\code{srcjs/src/lib/theme-resolve.ts::resolveTheme}.
 }
 \details{
-Resolution order: mirror Tier 1 NAs, derive Tier 2 chrome (surface,
-content, divider, accent), derive Tier 2 data (series slot bundles,
-summary, status), derive text roles, derive spacing from density preset,
-fill Tier 3 component clusters from the resolved Tier 2 tokens, then
-run construction-time contrast validation (internal
-\code{validate_resolved_theme()} — see \code{R/utils-theme-validate.R}).
+Idempotent and deterministic. Only writes into NA-valued fields, so
+user-set overrides survive re-resolution. Runs all derivations in
+OKLCH (perceptually uniform) and clips to sRGB at every step.
 }

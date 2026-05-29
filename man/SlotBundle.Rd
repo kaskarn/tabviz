@@ -2,14 +2,9 @@
 % Please edit documentation in R/classes-theme.R
 \name{SlotBundle}
 \alias{SlotBundle}
-\title{SlotBundle: 7-field per-slot bundle for series and summary.}
+\title{SlotBundle (deprecated alias for SlotRole)}
 \description{
-Resolution fills NA fields from the slot's anchor via OKLCH:
-fill            <- anchor
-stroke          <- darken(anchor)
-fill_muted      <- mix(anchor, surface.base)
-stroke_muted    <- darken(fill_muted)
-fill_emphasis   <- darken(anchor) + chroma boost
-stroke_emphasis <- darken(anchor) further
-text_fg         <- contrast-checked against typical row bg
+Renamed to \link{SlotRole} in Sprint 1 PR 2. Kept as an alias for one
+minor version so existing user code that constructs \code{SlotBundle(...)}
+keeps working.
 }

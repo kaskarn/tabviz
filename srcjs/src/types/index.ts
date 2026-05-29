@@ -1304,7 +1304,7 @@ export type {
   AccentRolesV2,
   StatusColorsV2,
   SemanticsV2,
-  SlotBundleV2,
+  SlotRoleV2,
   TextRoleV2,
   TextRolesV2,
   SpacingTokensV2,

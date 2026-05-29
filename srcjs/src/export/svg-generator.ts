@@ -1792,7 +1792,7 @@ function renderInterval(
 
     // Theme effect defaults for multi-effect plots
     const themeEffectColors = theme.series.map(s => s.fill);
-    // Per-series marker shapes ride on the SlotBundle (theme.series[i].shape).
+    // Per-series marker shapes ride on the SlotRole (theme.series[i].shape).
     // Null/undefined → fall through to the 4-shape rotation.
     const defaultShapes: MarkerShape[] = ["circle", "square", "diamond", "triangle"];
 

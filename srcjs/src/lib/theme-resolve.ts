@@ -34,7 +34,7 @@ import type {
   AccentRolesV2,
   StatusColorsV2,
   SemanticsV2,
-  SlotBundleV2,
+  SlotRoleV2,
   TextRoleV2,
   TextRolesV2,
   SpacingTokensV2,
@@ -72,7 +72,7 @@ export interface ThemeOverrides {
   accent?: Partial<AccentRolesV2>;
   status?: Partial<StatusColorsV2>;
   semantic?: Partial<SemanticsV2>;
-  series?: Partial<SlotBundleV2>[];
+  series?: Partial<SlotRoleV2>[];
   text?: { [K in keyof TextRolesV2]?: Partial<TextRoleV2> };
   spacing?: Partial<SpacingTokensV2>;
   annotation?: { [K in keyof AnnotationClusterV2]?: Partial<TextRoleV2> };
@@ -416,38 +416,52 @@ function resolveChrome(inputs: ThemeInputsV2): ChromeRoles {
 // Tier 2: data (series + status)
 // ────────────────────────────────────────────────────────────────────
 
-/** Derive a SlotBundle from an anchor color. Mirrors `derive_slot_bundle`. */
-function deriveSlotBundle(
+/** Migration shim: accept legacy fillMuted/etc. on input, normalize to
+ * the new fillDim/etc. shape. Sprint 1 PR 2 renamed the SlotRole field
+ * names; this absorbs old wire input for one minor version. */
+function normalizeLegacySlotRole(s: Partial<SlotRoleV2> & Record<string, unknown>): Partial<SlotRoleV2> {
+  const out: Partial<SlotRoleV2> & Record<string, unknown> = { ...s };
+  if (out.fillDim   == null && typeof out.fillMuted     === "string") out.fillDim   = out.fillMuted as string;
+  if (out.strokeDim == null && typeof out.strokeMuted   === "string") out.strokeDim = out.strokeMuted as string;
+  if (out.fillHot   == null && typeof out.fillEmphasis  === "string") out.fillHot   = out.fillEmphasis as string;
+  if (out.strokeHot == null && typeof out.strokeEmphasis === "string") out.strokeHot = out.strokeEmphasis as string;
+  delete out.fillMuted; delete out.strokeMuted;
+  delete out.fillEmphasis; delete out.strokeEmphasis;
+  return out as Partial<SlotRoleV2>;
+}
+
+/** Derive a SlotRole from an anchor color. */
+function deriveSlotRole(
   anchor: string,
   surfaceBase: string,
   contentPrimary: string,
   slotStyle: ThemeInputsV2["slotStyle"],
-): SlotBundleV2 {
-  const fillMuted = oklchMix(anchor, surfaceBase, 0.65);
+): SlotRoleV2 {
+  const fillDim = oklchMix(anchor, surfaceBase, 0.65);
 
   if (slotStyle === "flat_fill") {
-    const emphasis = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
+    const hot = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
     return {
       fill: anchor,
       stroke: anchor,
-      fillMuted: fillMuted,
-      strokeMuted: fillMuted,
-      fillEmphasis: emphasis,
-      strokeEmphasis: emphasis,
+      fillDim: fillDim,
+      strokeDim: fillDim,
+      fillHot: hot,
+      strokeHot: hot,
       textFg: contentPrimary,
       shape: null,
     };
   }
   if (slotStyle === "outlined") {
     const outlineFill = oklchMix(anchor, surfaceBase, 0.15);
-    const outlineFillMuted = oklchMix(anchor, surfaceBase, 0.08);
+    const outlineFillDim = oklchMix(anchor, surfaceBase, 0.08);
     return {
       fill: outlineFill,
       stroke: anchor,
-      fillMuted: outlineFillMuted,
-      strokeMuted: oklchDarken(fillMuted, 0.10),
-      fillEmphasis: oklchMix(anchor, surfaceBase, 0.30),
-      strokeEmphasis: oklchDarken(anchor, 0.20),
+      fillDim: outlineFillDim,
+      strokeDim: oklchDarken(fillDim, 0.10),
+      fillHot: oklchMix(anchor, surfaceBase, 0.30),
+      strokeHot: oklchDarken(anchor, 0.20),
       textFg: contentPrimary,
       shape: null,
     };
@@ -456,16 +470,16 @@ function deriveSlotBundle(
   return {
     fill: anchor,
     stroke: oklchDarken(anchor, 0.10),
-    fillMuted: fillMuted,
-    strokeMuted: oklchDarken(fillMuted, 0.10),
-    fillEmphasis: oklchChroma(oklchDarken(anchor, 0.05), 0.04),
-    strokeEmphasis: oklchDarken(anchor, 0.20),
+    fillDim: fillDim,
+    strokeDim: oklchDarken(fillDim, 0.10),
+    fillHot: oklchChroma(oklchDarken(anchor, 0.05), 0.04),
+    strokeHot: oklchDarken(anchor, 0.20),
     textFg: contentPrimary,
     shape: null,
   };
 }
 
-function fillSlotBundle(existing: Partial<SlotBundleV2>, derived: SlotBundleV2): SlotBundleV2 {
+function fillSlotRole(existing: Partial<SlotRoleV2>, derived: SlotRoleV2): SlotRoleV2 {
   return fillNull(existing, derived);
 }
 
@@ -473,13 +487,14 @@ function resolveData(
   inputs: ThemeInputsV2,
   surfaceBase: string,
   contentPrimary: string,
-  existingSeries: Partial<SlotBundleV2>[] | undefined,
-): { series: SlotBundleV2[]; status: StatusColorsV2 } {
+  existingSeries: Partial<SlotRoleV2>[] | undefined,
+): { series: SlotRoleV2[]; status: StatusColorsV2 } {
   const anchors = inputs.seriesAnchors;
-  const series: SlotBundleV2[] = anchors.map((anchor, i) => {
-    const derived = deriveSlotBundle(anchor, surfaceBase, contentPrimary, inputs.slotStyle);
-    const existing = existingSeries?.[i] ?? {};
-    return fillSlotBundle(existing, derived);
+  const series: SlotRoleV2[] = anchors.map((anchor, i) => {
+    const derived = deriveSlotRole(anchor, surfaceBase, contentPrimary, inputs.slotStyle);
+    const raw = existingSeries?.[i] ?? {};
+    const existing = normalizeLegacySlotRole(raw as Partial<SlotRoleV2> & Record<string, unknown>);
+    return fillSlotRole(existing, derived);
   });
   const status: StatusColorsV2 = {
     positive: inputs.statusPositive,

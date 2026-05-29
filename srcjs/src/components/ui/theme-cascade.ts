@@ -104,36 +104,36 @@ function accentTintMediumHex(ctx: CascadeCtx, accent: string): string {
   return oklchMix(accent, surfaceBaseline(ctx), 0.75);
 }
 
-// ── Per-anchor SlotBundle derivation ─────────────────────────────────
+// ── Per-anchor SlotRole derivation ─────────────────────────────────
 function currentSlotStyle(ctx: CascadeCtx): "fill_with_darker_stroke" | "flat_fill" | "outlined" {
   return ctx.inputs?.slotStyle ?? "fill_with_darker_stroke";
 }
-function deriveSlotBundle(ctx: CascadeCtx, anchor: string) {
+function deriveSlotRole(ctx: CascadeCtx, anchor: string) {
   const surface = surfaceBaseline(ctx);
-  const fillMuted = oklchMix(anchor, surface, 0.65);
+  const fillDim = oklchMix(anchor, surface, 0.65);
   const style = currentSlotStyle(ctx);
   if (style === "flat_fill") {
-    const emphasis = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
+    const hot = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
     return {
-      fill: anchor, stroke: anchor, fillMuted, strokeMuted: fillMuted,
-      fillEmphasis: emphasis, strokeEmphasis: emphasis,
+      fill: anchor, stroke: anchor, fillDim, strokeDim: fillDim,
+      fillHot: hot, strokeHot: hot,
     };
   }
   if (style === "outlined") {
     return {
       fill: oklchMix(anchor, surface, 0.15),
       stroke: anchor,
-      fillMuted: oklchMix(anchor, surface, 0.08),
-      strokeMuted: oklchDarken(fillMuted, 0.10),
-      fillEmphasis: oklchMix(anchor, surface, 0.30),
-      strokeEmphasis: oklchDarken(anchor, 0.20),
+      fillDim: oklchMix(anchor, surface, 0.08),
+      strokeDim: oklchDarken(fillDim, 0.10),
+      fillHot: oklchMix(anchor, surface, 0.30),
+      strokeHot: oklchDarken(anchor, 0.20),
     };
   }
   return {
     fill: anchor, stroke: oklchDarken(anchor, 0.10),
-    fillMuted, strokeMuted: oklchDarken(fillMuted, 0.10),
-    fillEmphasis: oklchChroma(oklchDarken(anchor, 0.05), 0.04),
-    strokeEmphasis: oklchDarken(anchor, 0.20),
+    fillDim, strokeDim: oklchDarken(fillDim, 0.10),
+    fillHot: oklchChroma(oklchDarken(anchor, 0.05), 0.04),
+    strokeHot: oklchDarken(anchor, 0.20),
   };
 }
 
@@ -164,13 +164,13 @@ export function applyPrimaryDeep(ctx: CascadeCtx, hex: string): void {
   }
 }
 function cascadePrimary(ctx: CascadeCtx, primary: string): void {
-  const bundle = deriveSlotBundle(ctx, primary);
-  ctx.setDerived(["series", 0, "fill"],            bundle.fill);
-  ctx.setDerived(["series", 0, "stroke"],          bundle.stroke);
-  ctx.setDerived(["series", 0, "fillMuted"],       bundle.fillMuted);
-  ctx.setDerived(["series", 0, "strokeMuted"],     bundle.strokeMuted);
-  ctx.setDerived(["series", 0, "fillEmphasis"],    bundle.fillEmphasis);
-  ctx.setDerived(["series", 0, "strokeEmphasis"],  bundle.strokeEmphasis);
+  const role = deriveSlotRole(ctx, primary);
+  ctx.setDerived(["series", 0, "fill"],       role.fill);
+  ctx.setDerived(["series", 0, "stroke"],     role.stroke);
+  ctx.setDerived(["series", 0, "fillDim"],    role.fillDim);
+  ctx.setDerived(["series", 0, "strokeDim"],  role.strokeDim);
+  ctx.setDerived(["series", 0, "fillHot"],    role.fillHot);
+  ctx.setDerived(["series", 0, "strokeHot"],  role.strokeHot);
   const anchors = (ctx.inputs?.seriesAnchors as string[] | undefined)?.slice() ?? [];
   if (anchors.length > 0 && anchors[0] !== primary) {
     anchors[0] = primary;
