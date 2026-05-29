@@ -120,6 +120,16 @@
   }
   const tintStrength = $derived(inputs?.neutral_tint_strength ?? 0.04);
   const tintActive   = $derived(neutralTintMode() !== "untinted");
+
+  // Active variant + bag for the cluster-pin Advanced section. Derived
+  // up here because `{@const}` must be an immediate child of a control
+  // tag in Svelte 5; putting them in the script gives flat markup.
+  const hStyle = $derived(((theme as { variants?: { headerStyle?: string } } | undefined)?.variants?.headerStyle ?? "light") as "light" | "tint" | "bold");
+  const fcStyle = $derived(((theme as { variants?: { firstColumnStyle?: string } } | undefined)?.variants?.firstColumnStyle ?? "default") as "default" | "bold");
+  type ClusterVariant = { bg?: string | null; fg?: string | null; rule?: string | null } | null;
+  const hVar = $derived(((theme?.header as unknown as Record<string, ClusterVariant> | undefined)?.[hStyle]) ?? null);
+  const cgVar = $derived(((theme?.columnGroup as unknown as Record<string, ClusterVariant> | undefined)?.[hStyle]) ?? null);
+  const fcVar = $derived(((theme?.firstColumn as unknown as Record<string, ClusterVariant> | undefined)?.[fcStyle]) ?? null);
 </script>
 
 {#if theme && inputs}
@@ -410,6 +420,144 @@
       </Field>
     </Accordion>
 
+    <!-- ── Cluster pins ─────────────────────────────────────────────
+         T3 cluster pins. Header / column group / first column show only
+         the currently-active variant — switching the variant in Structure
+         brings up a different row set. Less visual noise than rendering
+         all 9 cells of each cluster. -->
+    <Accordion title="Advanced — cluster pins" hint="Pin individual cluster fields. Header / column group / first column show the active variant." open={false}>
+      <div class="advanced-subhead">Header — {hStyle}</div>
+      <Field label="bg"
+        pinned={store.isOverridden(["header", hStyle, "bg"])}
+        onreset={() => store.clearOverride(["header", hStyle, "bg"])}>
+        <ColorField label="" value={hVar?.bg ?? "#ffffff"}
+          onchange={(v) => store.setThemeField(["header", hStyle, "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="fg"
+        pinned={store.isOverridden(["header", hStyle, "fg"])}
+        onreset={() => store.clearOverride(["header", hStyle, "fg"])}>
+        <ColorField label="" value={hVar?.fg ?? "#1f1f1f"}
+          onchange={(v) => store.setThemeField(["header", hStyle, "fg"], v)}
+          swatches={colors(INK_SWATCHES)} />
+      </Field>
+      <Field label="rule"
+        pinned={store.isOverridden(["header", hStyle, "rule"])}
+        onreset={() => store.clearOverride(["header", hStyle, "rule"])}>
+        <ColorField label="" value={hVar?.rule ?? "#808080"}
+          onchange={(v) => store.setThemeField(["header", hStyle, "rule"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+
+      <div class="advanced-subhead">Column group — {hStyle}</div>
+      <Field label="bg"
+        pinned={store.isOverridden(["columnGroup", hStyle, "bg"])}
+        onreset={() => store.clearOverride(["columnGroup", hStyle, "bg"])}>
+        <ColorField label="" value={cgVar?.bg ?? "#ffffff"}
+          onchange={(v) => store.setThemeField(["columnGroup", hStyle, "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="fg"
+        pinned={store.isOverridden(["columnGroup", hStyle, "fg"])}
+        onreset={() => store.clearOverride(["columnGroup", hStyle, "fg"])}>
+        <ColorField label="" value={cgVar?.fg ?? "#1f1f1f"}
+          onchange={(v) => store.setThemeField(["columnGroup", hStyle, "fg"], v)}
+          swatches={colors(INK_SWATCHES)} />
+      </Field>
+      <Field label="rule"
+        pinned={store.isOverridden(["columnGroup", hStyle, "rule"])}
+        onreset={() => store.clearOverride(["columnGroup", hStyle, "rule"])}>
+        <ColorField label="" value={cgVar?.rule ?? "#808080"}
+          onchange={(v) => store.setThemeField(["columnGroup", hStyle, "rule"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+
+      <div class="advanced-subhead">First column — {fcStyle}</div>
+      <Field label="bg"
+        pinned={store.isOverridden(["firstColumn", fcStyle, "bg"])}
+        onreset={() => store.clearOverride(["firstColumn", fcStyle, "bg"])}>
+        <ColorField label="" value={fcVar?.bg ?? "#ffffff"}
+          onchange={(v) => store.setThemeField(["firstColumn", fcStyle, "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="fg"
+        pinned={store.isOverridden(["firstColumn", fcStyle, "fg"])}
+        onreset={() => store.clearOverride(["firstColumn", fcStyle, "fg"])}>
+        <ColorField label="" value={fcVar?.fg ?? "#1f1f1f"}
+          onchange={(v) => store.setThemeField(["firstColumn", fcStyle, "fg"], v)}
+          swatches={colors(INK_SWATCHES)} />
+      </Field>
+
+      <div class="advanced-subhead">Row group tiers</div>
+      <Field label="L1 bg" hint="Top-level group bar"
+        pinned={store.isOverridden(["rowGroup", "L1", "bg"])}
+        onreset={() => store.clearOverride(["rowGroup", "L1", "bg"])}>
+        <ColorField label="" value={(theme.rowGroup?.L1?.bg as string | undefined) ?? "#e8e6e1"}
+          onchange={(v) => store.setThemeField(["rowGroup", "L1", "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="L2 bg"
+        pinned={store.isOverridden(["rowGroup", "L2", "bg"])}
+        onreset={() => store.clearOverride(["rowGroup", "L2", "bg"])}>
+        <ColorField label="" value={(theme.rowGroup?.L2?.bg as string | undefined) ?? "#efedea"}
+          onchange={(v) => store.setThemeField(["rowGroup", "L2", "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+      <Field label="L3 bg"
+        pinned={store.isOverridden(["rowGroup", "L3", "bg"])}
+        onreset={() => store.clearOverride(["rowGroup", "L3", "bg"])}>
+        <ColorField label="" value={(theme.rowGroup?.L3?.bg as string | undefined) ?? "#f5f3f1"}
+          onchange={(v) => store.setThemeField(["rowGroup", "L3", "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
+      </Field>
+
+      <div class="advanced-subhead">Row interactions</div>
+      <Field label="hover bg"
+        pinned={store.isOverridden(["row", "hover", "bg"])}
+        onreset={() => store.clearOverride(["row", "hover", "bg"])}>
+        <ColorField label="" value={(theme.row?.hover?.bg as string | undefined) ?? "#f0ddd9"}
+          onchange={(v) => store.setThemeField(["row", "hover", "bg"], v)}
+          swatches={colors(ACCENT_SWATCHES)} />
+      </Field>
+      <Field label="selected bg"
+        pinned={store.isOverridden(["row", "selected", "bg"])}
+        onreset={() => store.clearOverride(["row", "selected", "bg"])}>
+        <ColorField label="" value={(theme.row?.selected?.bg as string | undefined) ?? "#f0ddd9"}
+          onchange={(v) => store.setThemeField(["row", "selected", "bg"], v)}
+          swatches={colors(ACCENT_SWATCHES)} />
+      </Field>
+
+      <div class="advanced-subhead">Plot scaffold</div>
+      <Field label="axis line"
+        pinned={store.isOverridden(["plot", "axisLine"])}
+        onreset={() => store.clearOverride(["plot", "axisLine"])}>
+        <ColorField label="" value={theme.plot?.axisLine ?? "#808080"}
+          onchange={(v) => store.setThemeField(["plot", "axisLine"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+      <Field label="tick mark"
+        pinned={store.isOverridden(["plot", "tickMark"])}
+        onreset={() => store.clearOverride(["plot", "tickMark"])}>
+        <ColorField label="" value={theme.plot?.tickMark ?? "#808080"}
+          onchange={(v) => store.setThemeField(["plot", "tickMark"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+      <Field label="gridline"
+        pinned={store.isOverridden(["plot", "gridline"])}
+        onreset={() => store.clearOverride(["plot", "gridline"])}>
+        <ColorField label="" value={theme.plot?.gridline ?? "#e0e0e0"}
+          onchange={(v) => store.setThemeField(["plot", "gridline"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+      <Field label="reference"
+        pinned={store.isOverridden(["plot", "reference"])}
+        onreset={() => store.clearOverride(["plot", "reference"])}>
+        <ColorField label="" value={theme.plot?.reference ?? "#808080"}
+          onchange={(v) => store.setThemeField(["plot", "reference"], v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
+      </Field>
+    </Accordion>
+
   </div>
 {:else if theme}
   <!-- Legacy theme without V3 authoring inputs round-trip; the engine
@@ -431,6 +579,21 @@
     color: var(--v2-ink-3, #8a8478);
     font-size: var(--v2-text-small, 10.5px);
     line-height: 1.4;
+  }
+
+  /* Inline subheading inside the Advanced accordion — groups T3 cluster
+     pins by area (Header / Row / Plot etc.) without nested accordions. */
+  .advanced-subhead {
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: var(--v2-text-micro, 9.5px);
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: var(--v2-track-flag, 0.14em);
+    color: var(--v2-ink-3, #8a8478);
+    font-weight: 500;
+    line-height: 1;
+    padding: 12px 0 4px 28px;
+    user-select: none;
   }
 
   .zone-ornament {
