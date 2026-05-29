@@ -24,12 +24,19 @@ web_theme_cochrane <- function() {
     accent = "#C8553D",
     neutral_tint = "brand",
     neutral_tint_strength = 0.04,
-    font_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
+    font_body = "'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif",
+    web_fonts = list(
+      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
+    ),
     name = "cochrane"
   )
 }
 
 #' Lancet theme — two-color editorial (navy + gold) with cream paper.
+#'
+#' Source Serif Pro for body; Crimson Pro for display (warmer editorial
+#' serif than the system Georgia fallback).
+#'
 #' @return A [WebTheme].
 #' @export
 web_theme_lancet <- function() {
@@ -40,8 +47,12 @@ web_theme_lancet <- function() {
     neutral_tint = "decorative",
     neutral_tint_strength = 0.12,
     header_style = "tint",
-    font_body = "Georgia, 'Times New Roman', serif",
-    font_display = "Georgia, 'Times New Roman', serif",
+    font_body = "'Source Serif Pro', Georgia, 'Times New Roman', serif",
+    font_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
+    web_fonts = list(
+      web_font("Source Serif Pro", "https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600&display=swap"),
+      web_font("Crimson Pro", "https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap")
+    ),
     name = "lancet"
   )
 }
@@ -60,12 +71,17 @@ web_theme_jama <- function() {
     accent = "#000000",
     categorical = "brand_mono",
     density = "compact",
-    font_body = "Arial, Helvetica, sans-serif",
+    font_body = "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    font_display = "'Helvetica Neue', Helvetica, Arial, sans-serif",
     name = "jama"
   )
 }
 
 #' NEJM theme — crimson with subtle warm paper and tint headers.
+#'
+#' Spectral for body + display — a warm transitional serif that reads
+#' as more "editorial" than the system Georgia fallback.
+#'
 #' @return A [WebTheme].
 #' @export
 web_theme_nejm <- function() {
@@ -75,13 +91,16 @@ web_theme_nejm <- function() {
     neutral_tint = "brand",
     neutral_tint_strength = 0.04,
     header_style = "tint",
-    font_body = "Georgia, 'Times New Roman', serif",
-    font_display = "Georgia, 'Times New Roman', serif",
+    font_body = "'Spectral', Georgia, 'Times New Roman', serif",
+    font_display = "'Spectral', Georgia, 'Times New Roman', serif",
+    web_fonts = list(
+      web_font("Spectral", "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;700&display=swap")
+    ),
     name = "nejm"
   )
 }
 
-#' Nature theme — teal-deep with amber accent.
+#' Nature theme — teal-deep with amber accent. Source Sans body.
 #' @return A [WebTheme].
 #' @export
 web_theme_nature <- function() {
@@ -90,11 +109,16 @@ web_theme_nature <- function() {
     accent = "#E8A427",
     neutral_tint = "brand",
     neutral_tint_strength = 0.04,
+    font_body = "'Source Sans 3', -apple-system, system-ui, sans-serif",
+    font_display = "'Source Sans 3', -apple-system, system-ui, sans-serif",
+    web_fonts = list(
+      web_font("Source Sans 3", "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&display=swap")
+    ),
     name = "nature"
   )
 }
 
-#' BMJ theme — clean blue with vermillion accent.
+#' BMJ theme — clean blue with vermillion accent. IBM Plex Sans body.
 #' @return A [WebTheme].
 #' @export
 web_theme_bmj <- function() {
@@ -103,6 +127,11 @@ web_theme_bmj <- function() {
     accent = "#E33B3B",
     neutral_tint = "brand",
     neutral_tint_strength = 0.04,
+    font_body = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
+    font_display = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
+    web_fonts = list(
+      web_font("IBM Plex Sans", "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap")
+    ),
     name = "bmj"
   )
 }
