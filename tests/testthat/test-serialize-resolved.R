@@ -72,7 +72,7 @@ test_that("header cluster carries all three variants + text", {
 
 test_that("first_column cluster carries both variants", {
   out <- serialize_theme(WebTheme())
-  expect_named(out$firstColumn, c("plain", "bold"))
+  expect_named(out$firstColumn, c("default", "bold"))
   expect_named(out$firstColumn$bold, c("bg", "fg", "rule", "weight"))
   expect_equal(out$firstColumn$bold$weight, 600)
 })
@@ -110,8 +110,23 @@ test_that("NA fields emit as JSON null (omitted from R list)", {
   out <- serialize_theme(WebTheme())
   # plot.bg defaults transparent (NA) -> null
   expect_null(out$plot$bg)
-  # firstColumn.plain.bg is unset by resolution -> null
-  expect_null(out$firstColumn$plain$bg)
+  # firstColumn.default.bg is unset by resolution -> null
+  expect_null(out$firstColumn$default$bg)
+})
+
+test_that("deserialize accepts legacy firstColumn.plain key", {
+  # Sprint 1 PR 3 renamed firstColumn.plain → firstColumn.default. The
+  # deserializer accepts both shapes for one minor version so old wire
+  # blobs continue to round-trip. Round-trip a real preset, then
+  # mutate firstColumn to the legacy shape and verify it deserializes.
+  blob <- serialize_theme(web_theme_cochrane())
+  blob$firstColumn <- list(
+    plain = list(bg = "#ABCDEF", fg = "#123456", rule = NULL, weight = NULL),
+    bold  = blob$firstColumn$bold
+  )
+  t <- deserialize_resolved_theme(blob)
+  expect_equal(toupper(t@first_column@default@bg), "#ABCDEF")
+  expect_equal(toupper(t@first_column@default@fg), "#123456")
 })
 
 test_that("each preset roundtrips cleanly through serialize_theme", {

@@ -105,6 +105,9 @@ export interface ThemeOverrides {
     text?: Partial<TextRoleV2>;
   };
   firstColumn?: {
+    /** Default variant overrides. Legacy alias `plain` is accepted for
+     *  one minor version after the Sprint 1 PR 3 rename. */
+    default?: Partial<FirstColumnVariantV2>;
     plain?: Partial<FirstColumnVariantV2>;
     bold?: Partial<FirstColumnVariantV2>;
   };
@@ -765,12 +768,14 @@ function resolveCell(args: ResolveComponentsArgs): CellClusterV2 {
 function resolveFirstColumn(args: ResolveComponentsArgs): FirstColumnClusterV2 {
   const { surface, content, divider } = args;
   const o = args.overrides.firstColumn ?? {};
+  // Migration shim: legacy `plain` key feeds the new `default` variant.
+  const def = o.default ?? o.plain ?? {};
   return {
-    plain: {
-      bg:     o.plain?.bg     ?? null,
-      fg:     o.plain?.fg     ?? null,
-      rule:   o.plain?.rule   ?? null,
-      weight: o.plain?.weight ?? null,
+    default: {
+      bg:     def.bg     ?? null,
+      fg:     def.fg     ?? null,
+      rule:   def.rule   ?? null,
+      weight: def.weight ?? null,
     },
     bold: {
       bg:     o.bold?.bg     ?? surface.muted,

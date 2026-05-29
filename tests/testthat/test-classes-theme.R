@@ -130,7 +130,7 @@ test_that("RowSemantic validates marker_fill and font_style", {
 
 test_that("FirstColumnCluster has plain/bold variants", {
   fc <- FirstColumnCluster()
-  expect_s7_class(fc@plain, "FirstColumnVariant")
+  expect_s7_class(fc@default, "FirstColumnVariant")
   expect_s7_class(fc@bold,  "FirstColumnVariant")
 })
 

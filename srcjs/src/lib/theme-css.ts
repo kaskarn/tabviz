@@ -105,7 +105,10 @@ export function buildWidgetCSS(
 function _buildThemeCSSImpl(theme: WebThemeV2): string {
   const headerVariant = activeHeaderVariant(theme);
   const firstColBold = theme.variants?.firstColumnStyle === "bold";
-  const firstColVariant = firstColBold ? theme.firstColumn?.bold : theme.firstColumn?.plain;
+  // Accept legacy `plain` key on input for one minor version (Sprint 1 PR 3).
+  const fc = theme.firstColumn as (typeof theme.firstColumn & { plain?: typeof theme.firstColumn.default }) | undefined;
+  const firstColDefault = fc?.default ?? fc?.plain;
+  const firstColVariant = firstColBold ? fc?.bold : firstColDefault;
   const firstColBg = firstColVariant?.bg ?? "transparent";
   const firstColFg = firstColVariant?.fg ?? "inherit";
   const firstColWeight = firstColVariant?.weight ?? "inherit";

@@ -305,8 +305,8 @@ serialize_theme <- function(theme) {
       text   = serialize_text_role(theme@cell@text)
     ),
     firstColumn = list(
-      plain = serialize_first_column_variant(theme@first_column@plain),
-      bold  = serialize_first_column_variant(theme@first_column@bold)
+      default = serialize_first_column_variant(theme@first_column@default),
+      bold    = serialize_first_column_variant(theme@first_column@bold)
     ),
 
     plot = list(

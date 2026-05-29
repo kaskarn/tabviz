@@ -1,5 +1,27 @@
 # tabviz (development)
 
+## Theme sprint Phase 1c — FirstColumn variant naming alignment
+
+The default first-column variant is now keyed as `default` on both R
+and TS, matching the existing `first_column_style: "default" | "bold"`
+variant id. Previously the variant id was `"default"` but the
+property/object key was `plain` — a known footgun that made
+`theme@first_column@plain` (R) and `theme.firstColumn.plain` (TS) feel
+disconnected from the `firstColumnStyle` setting.
+
+* `R/classes-theme.R::FirstColumnCluster` property `plain` → `default`.
+* `R/utils-serialize-resolved.R` emits `firstColumn.default`.
+* `R/utils-deserialize-resolved.R` accepts both `firstColumn.default`
+  (new) and `firstColumn.plain` (legacy) for one minor version.
+* `srcjs/src/types/theme-v2.ts::FirstColumnClusterV2.plain` → `default`.
+* `srcjs/src/lib/theme-resolve.ts::resolveFirstColumn` accepts the
+  legacy `plain` override key as a migration shim.
+* `srcjs/src/lib/theme-css.ts` reads `default` then falls back to
+  `plain`.
+* `theme-presets-v2.json` regenerated.
+
+User-facing `first_column_style = "default" | "bold"` is unchanged.
+
 ## Theme sprint Phase 1b — SlotBundle → SlotRole rename
 
 `SlotBundle` is renamed to `SlotRole`, and four fields are renamed to

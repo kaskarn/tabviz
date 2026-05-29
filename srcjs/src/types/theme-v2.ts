@@ -298,7 +298,12 @@ export interface CellClusterV2 {
 }
 
 export interface FirstColumnClusterV2 {
-  plain: FirstColumnVariantV2;
+  /**
+   * Default (un-emphasized) first-column variant. Renamed from `plain`
+   * to `default` in Sprint 1 PR 3 so the wire key matches the
+   * `firstColumnStyle: "default" | "bold"` variant id.
+   */
+  default: FirstColumnVariantV2;
   bold: FirstColumnVariantV2;
 }
 

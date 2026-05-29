@@ -666,14 +666,18 @@ FirstColumnVariant <- new_class(
 #' FirstColumnCluster: first-column bindings, default/bold variants.
 #'
 #' Excel-style emphasized first column when first_column_style = "bold".
+#' The default-variant property is named `default` (matching the
+#' `first_column_style` variant id). Renamed from `plain` in Sprint 1
+#' PR 3 — the previous mismatch (param "default", property `plain`)
+#' was a known footgun.
 #'
 #' @usage NULL
 #' @export
 FirstColumnCluster <- new_class(
   "FirstColumnCluster",
   properties = list(
-    plain = new_property(FirstColumnVariant, default = FirstColumnVariant()),
-    bold  = new_property(FirstColumnVariant, default = FirstColumnVariant())
+    default = new_property(FirstColumnVariant, default = FirstColumnVariant()),
+    bold    = new_property(FirstColumnVariant, default = FirstColumnVariant())
   )
 )
 

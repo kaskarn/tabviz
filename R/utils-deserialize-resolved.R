@@ -314,9 +314,11 @@ deserialize_resolved_theme <- function(x) {
   )
 
   fc <- x$firstColumn %||% list()
+  # Accept legacy `plain` key on input for one minor version after the
+  # Sprint 1 PR 3 rename.
   first_column <- FirstColumnCluster(
-    plain = deserialize_first_column_variant(fc$plain),
-    bold  = deserialize_first_column_variant(fc$bold)
+    default = deserialize_first_column_variant(fc$default %||% fc$plain),
+    bold    = deserialize_first_column_variant(fc$bold)
   )
 
   p <- x$plot %||% list()
@@ -667,8 +669,8 @@ deserialize_resolved_theme <- function(x) {
 
 .ov_first_column <- function(fc) {
   out <- list(
-    plain = .ov_first_column_variant(fc@plain),
-    bold  = .ov_first_column_variant(fc@bold)
+    default = .ov_first_column_variant(fc@default),
+    bold    = .ov_first_column_variant(fc@bold)
   )
   out[vapply(out, function(x) length(x) > 0, logical(1))]
 }
