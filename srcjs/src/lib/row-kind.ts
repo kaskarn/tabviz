@@ -73,7 +73,10 @@ const PROPS: Record<RowKind, RowKindProps> = {
   header:       { banded: false, measuresWidth: false, rendersCells: true,  summaryMarker: false },
   summary:      { banded: false, measuresWidth: true,  rendersCells: true,  summaryMarker: true },
   spacer:       { banded: false, measuresWidth: false, rendersCells: false, summaryMarker: false },
-  group_header: { banded: false, measuresWidth: true,  rendersCells: false, summaryMarker: false },
+  // group_header.measuresWidth is moot — group headers never enter the per-
+  // data-row width loop (they're measured via a separate group-label path).
+  // Marked false to match intent (they don't measure as a data cell).
+  group_header: { banded: false, measuresWidth: false, rendersCells: false, summaryMarker: false },
 };
 
 /** Behavior flags for a kind. */

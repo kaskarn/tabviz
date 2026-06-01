@@ -128,23 +128,26 @@ export function renderDebugShapesFromMetrics(m: LayoutMetrics): string {
       `<line x1="${round(m.spacing.padding)}" y1="${round(yMarker)}" x2="${round(W - m.spacing.padding)}" y2="${round(yMarker)}" ` +
         `stroke="${MARKER_LINE}" stroke-width="0.4" stroke-dasharray="4 3" opacity="0.7"/>`,
     );
-    // Indent inset in the label column (amber band right of the left padding).
-    if (totalIndent > 0 && m.columns.length > 0) {
-      const lc = m.columns[0];
+    // Indent inset + per-row annotation live in the label (first) column.
+    // Skip both when there are no columns (degenerate spec) — guards the
+    // m.columns[0] access.
+    const labelCol = m.columns[0];
+    if (labelCol) {
+      if (totalIndent > 0) {
+        parts.push(
+          `<rect x="${round(labelCol.x + padX)}" y="${round(yTop)}" width="${round(totalIndent)}" height="${round(r.height)}" ` +
+            `fill="rgba(251,191,36,0.35)"/>`,
+        );
+      }
       parts.push(
-        `<rect x="${round(lc.x + padX)}" y="${round(yTop)}" width="${round(totalIndent)}" height="${round(r.height)}" ` +
-          `fill="rgba(251,191,36,0.35)"/>`,
+        txt(
+          labelCol.x + padX + totalIndent + 4,
+          yTop + 10,
+          `#${r.index} ${r.kind} h=${round(r.height)} d=${r.depth} i=${r.indent}`,
+          8,
+        ),
       );
     }
-    // Per-row annotation in the label column, after any indent inset.
-    parts.push(
-      txt(
-        m.columns[0].x + padX + totalIndent + 4,
-        yTop + 10,
-        `#${r.index} ${r.kind} h=${round(r.height)} d=${r.depth} i=${r.indent}`,
-        8,
-      ),
-    );
   }
 
   // ── Legend ────────────────────────────────────────────────────────────

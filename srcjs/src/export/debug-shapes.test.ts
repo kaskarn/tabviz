@@ -58,4 +58,19 @@ describe("debug-shapes", () => {
       expect(svg).toContain(`x="${Math.round(c.x * 100) / 100}"`);
     }
   });
+
+  test("degenerate zero-column spec does not crash", () => {
+    // No columns at all → the per-row label-column annotation must be skipped,
+    // not throw on m.columns[0]. (Guard regression.)
+    const spec = {
+      data: { rows: [{ id: "r0", label: "x", metadata: {}, style: {} }], groups: [] },
+      columns: [],
+      theme: (fixtures[0].spec as { theme: unknown }).theme,
+      layout: {},
+      labels: {},
+    } as unknown as Parameters<typeof renderDebugShapes>[0];
+    const svg = renderDebugShapes(spec);
+    expect(svg.startsWith("<?xml")).toBe(true);
+    expect(svg.trimEnd().endsWith("</svg>")).toBe(true);
+  });
 });
