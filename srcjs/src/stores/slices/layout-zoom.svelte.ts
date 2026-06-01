@@ -51,6 +51,7 @@ import type {
 } from "$types";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
+import { resolveRowKind } from "$lib/row-kind";
 
 /** True if any top-level column in the spec is a ColumnGroup. Pushes the
  *  header strip to a 2-row layout, which changes the min header-row height. */
@@ -354,7 +355,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     for (let i = 0; i < displayRows.length; i++) {
       const displayRow = displayRows[i];
       let h: number;
-      if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
+      if (resolveRowKind(displayRow) === "spacer") {
         h = rowHeight / 2;
       } else if (displayRow.type === "group_header") {
         h = rowHeight;

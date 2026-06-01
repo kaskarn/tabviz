@@ -17,6 +17,7 @@ import {
 import { niceDomain } from "$lib/scale-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
+import { resolveRowKind } from "$lib/row-kind";
 import { ops, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";
@@ -1172,7 +1173,7 @@ export function createTabvizStore() {
       const rowGroupPaddingExport = spec?.theme?.spacing?.rowGroupPadding ?? 0;
       for (const displayRow of displayRows) {
         let h: number;
-        if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") h = layout.rowHeight / 2;
+        if (resolveRowKind(displayRow) === "spacer") h = layout.rowHeight / 2;
         else if (displayRow.type === "group_header") h = layout.rowHeight + rowGroupPaddingExport;
         else h = layout.rowHeight;
         rowPositions.push(totalRowsHeight);

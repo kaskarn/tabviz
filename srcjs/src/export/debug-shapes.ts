@@ -14,8 +14,8 @@
  * See docs/dev/sizing-model.md §6b.
  */
 
-import { computeLayoutMetrics, type LayoutMetrics, type RowMetric } from "./svg-generator";
-import type { WebSpec, ExportOptions } from "$types";
+import { computeLayoutMetrics, type LayoutMetrics, type RowMetric, type ExportOptions } from "./svg-generator";
+import type { WebSpec } from "$types";
 
 // Row-kind palette — distinct, legible fills for the box-model view (these are
 // debug chrome, deliberately NOT theme colors).

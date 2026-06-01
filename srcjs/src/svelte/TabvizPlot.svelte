@@ -74,6 +74,7 @@
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
   import { isVizType, resolveShowHeader } from "$lib/column-types";
   import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
+  import { resolveRowKind } from "$lib/row-kind";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {
     isLayoutDebugEnabled,
@@ -1634,7 +1635,7 @@
           {@const rowClasses = row ? getRowClasses(effectiveRowStyle, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
           {@const semBundle = row && theme ? resolveSemanticBundle(effectiveRowStyle, theme) : null}
           {@const rowStyles = row ? getRowStyles(effectiveRowStyle, rowDepth, semBundle) : ""}
-          {@const isSpacerRow = row?.style?.type === "spacer"}
+          {@const isSpacerRow = !!row && resolveRowKind({ type: "data", row }) === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupTier = isGroupHeader && theme
             ? (rowDepth === 0 ? theme.rowGroup.L1
@@ -2434,8 +2435,10 @@
   ): string {
     const classes: string[] = [];
 
-    if (style?.type === "header") classes.push("row-header");
-    if (style?.type === "summary") classes.push("row-summary");
+    // row-header / row-summary are kind-named CSS hooks; derive via RowKind.
+    const styleKind = resolveRowKind({ type: "data", row: { style } });
+    if (styleKind === "header") classes.push("row-header");
+    if (styleKind === "summary") classes.push("row-summary");
     if (style?.bold) classes.push("row-bold");
     if (style?.italic) classes.push("row-italic");
 

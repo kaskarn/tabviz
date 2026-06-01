@@ -794,7 +794,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const rowMarkerCenters: number[] = [];
   for (let i = 0; i < displayRows.length; i++) {
     const dr = displayRows[i];
-    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
+    const isSpacerRow = resolveRowKind(dr) === "spacer";
     let h: number;
     if (isSpacerRow) h = rowHeight / 2;
     else if (dr.type === "group_header") h = rowHeight;
@@ -1753,8 +1753,9 @@ function renderInterval(
   const lineWidth = theme.plot.lineWidth;
   const defaultLineColor = theme.series?.[0]?.stroke ?? theme.accent.default;
 
-  // Check if this is a summary row (should render diamond)
-  const isSummaryRow = row.style?.type === 'summary';
+  // Check if this is a summary row (should render diamond). summaryMarker is
+  // the RowKind property owning this decision.
+  const isSummaryRow = rowKindProps(resolveRowKind({ type: "data", row })).summaryMarker;
   const diamondHeight = 10;
   const halfDiamondHeight = diamondHeight / 2;
 
@@ -4594,7 +4595,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render data row
       const row = displayRow.row;
       const depth = displayRow.depth;
-      const isSpacerRow = row.style?.type === "spacer";
+      const isSpacerRow = resolveRowKind(displayRow) === "spacer";
 
       // Note: Row banding is rendered earlier (before forest intervals) to avoid covering markers
 
@@ -4644,8 +4645,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const x2 = layout.totalWidth - padding;
     if (displayRow.type === "data") {
       const row = displayRow.row;
-      const isSummaryRow = row.style?.type === "summary";
-      const isSpacerRow = row.style?.type === "spacer";
+      const kind = resolveRowKind(displayRow);
+      const isSummaryRow = rowKindProps(kind).summaryMarker;
+      const isSpacerRow = kind === "spacer";
       if (isSummaryRow) {
         parts.push(borderLineSvg(x1, y, x2, y, borders.major));
       }
