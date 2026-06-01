@@ -301,8 +301,20 @@ Direction (confirmed with author):
   `naturalHeight` stays for V8 parity)? (§1.4)
 - [ ] **Density: keep the continuous `factor` alongside named profiles, or fold
   it in?** (§3)
-- [ ] **Build `computeTableMetrics` (shared DOM/SVG) now, or do the cheap
-  vocabulary/parity fixes first?** (§5.1–5.2)
+- [x] **`computeTableMetrics` (shared DOM/SVG)** — BUILT 2026-06 as
+  `srcjs/src/lib/table-metrics.ts`. Both backends (layout-zoom `$derived`,
+  svg-generator `computeLayout`) now call shared pure helpers for the formulas
+  they used to hand-mirror: `computeRowLayout` (heights/positions/marker-centers/
+  rowPaddedAfter), `computeHeaderHeight`, `computeAxisHeight`,
+  `computeScalableChromeHeight` + named constants (`HEADER_FONT_SCALE`,
+  `LINE_HEIGHT`, `HEADER_ROW_PADDING`, `DEFAULT_AXIS_GAP`). **Two divergences
+  converged on the more-correct SVG formula** (axisHeight gate: pure tables now
+  reserve 0 axis, forest tables get density-scaled axis not flat 32 — also fixed
+  the stale `ComputedLayout.axisHeight = LAYOUT.AXIS_HEIGHT` bug; chrome-scale
+  denominator: precise conditional sum, fixing DOM aspect over-scaling). **One
+  divergence deliberately kept** (`forestWidth`: container-responsive DOM vs
+  fixed-canvas SVG — correct context-dependence, documented on both sides).
+  Gated by the snapshot harness + 16 table-metrics unit tests + R export tests.
 
 ---
 
