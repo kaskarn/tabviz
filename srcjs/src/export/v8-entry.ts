@@ -9,6 +9,7 @@
  */
 
 import { generateSVG, computeNaturalDimensions } from "./svg-generator";
+import { renderDebugShapes } from "./debug-shapes";
 import type { WebSpec } from "$types";
 import * as authoring from "../authoring";
 // Side-effect: register built-in schema behaviors before SVG export
@@ -26,6 +27,13 @@ function generateSVGFromJSON(specJson: string, options?: { width?: number; heigh
 function computeNaturalDimensionsFromJSON(specJson: string): string {
   const spec: WebSpec = JSON.parse(specJson);
   return JSON.stringify(computeNaturalDimensions(spec));
+}
+
+// Box-model debug view (sizing harness, visual half). Returns an SVG that
+// draws cell boxes / padding / anchors instead of content.
+function renderDebugShapesFromJSON(specJson: string): string {
+  const spec: WebSpec = JSON.parse(specJson);
+  return renderDebugShapes(spec);
 }
 
 /**
@@ -57,4 +65,5 @@ function callBuilder(name: string, argsJson: string, options2Json?: string): str
 const g = globalThis as unknown as Record<string, unknown>;
 g.generateSVG = generateSVGFromJSON;
 g.computeNaturalDimensions = computeNaturalDimensionsFromJSON;
+g.renderDebugShapes = renderDebugShapesFromJSON;
 g.callBuilder = callBuilder;

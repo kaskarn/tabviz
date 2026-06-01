@@ -3456,7 +3456,11 @@ export function computeNaturalDimensions(spec: WebSpec): {
 export interface RowMetric {
   index: number;
   kind: "data" | "group_header" | "spacer" | "summary";
+  /** Group-nesting depth (drives group-header indent + tier). */
   depth: number;
+  /** Per-row authored indent level (row.style.indent), distinct from `depth`.
+   *  Total label indent = (depth + indent) × indentPerLevel. */
+  indent: number;
   height: number;
   top: number;
   markerCenter: number;
@@ -3466,6 +3470,8 @@ export interface ColMetric {
   id: string;
   type: string;
   width: number;
+  /** Absolute left X of the column's cell box (px from svg origin). */
+  x: number;
 }
 
 export interface LayoutMetrics {
@@ -3477,6 +3483,10 @@ export interface LayoutMetrics {
   labelWidth: number;
   plotHeight: number;
   rowsHeight: number;
+  /** Absolute Y of the top of the column-header band (svg origin). The
+   *  data-rows area starts at mainY + headerHeight; a row's absolute top is
+   *  mainY + headerHeight + row.top. */
+  mainY: number;
   spacing: {
     rowHeight: number;
     headerHeight: number;
@@ -3535,12 +3545,20 @@ export function computeLayoutMetrics(
     return typeof col.width === "number" ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
   };
 
+  // Column X positions: label slot first at `padding`, then data columns in
+  // order. Mirrors generateSVG's columnPositions (currentX = padding +
+  // labelWidth, then accumulate getColWidth) so debug-shapes boxes land on
+  // the real cell origins.
   const columns: ColMetric[] = [];
+  let cursorX = padding;
   if (primaryCol) {
-    columns.push({ id: primaryCol.id, type: primaryCol.type, width: layout.labelWidth });
+    columns.push({ id: primaryCol.id, type: primaryCol.type, width: layout.labelWidth, x: cursorX });
+    cursorX += layout.labelWidth;
   }
   for (const col of allColumns) {
-    columns.push({ id: col.id, type: col.type, width: colWidth(col) });
+    const w = colWidth(col);
+    columns.push({ id: col.id, type: col.type, width: w, x: cursorX });
+    cursorX += w;
   }
 
   const displayRows = buildDisplayRows(spec);
@@ -3548,6 +3566,7 @@ export function computeLayoutMetrics(
     index: i,
     kind: rowKindOf(dr),
     depth: dr.depth ?? 0,
+    indent: (dr.type === "data" ? dr.row.style?.indent : undefined) ?? 0,
     height: layout.rowHeights[i] ?? layout.rowHeight,
     top: layout.rowPositions[i] ?? 0,
     markerCenter: layout.rowMarkerCenters[i] ?? 0,
@@ -3562,6 +3581,7 @@ export function computeLayoutMetrics(
     labelWidth: layout.labelWidth,
     plotHeight: layout.plotHeight,
     rowsHeight: layout.rowsHeight,
+    mainY: layout.mainY,
     spacing: {
       rowHeight: theme.spacing.rowHeight,
       headerHeight: theme.spacing.headerHeight,

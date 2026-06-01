@@ -8,21 +8,25 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
       "id": "label",
       "type": "text",
       "width": 74,
+      "x": 8,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 710,
+      "x": 82,
     },
   ],
   "forestWidth": 710,
   "headerHeight": 29,
   "labelWidth": 74,
+  "mainY": 16,
   "plotHeight": 120,
   "rows": [
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 10,
@@ -31,6 +35,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 30,
@@ -39,6 +44,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 50,
@@ -47,6 +53,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 70,
@@ -55,6 +62,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 90,
@@ -63,6 +71,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 5,
       "kind": "data",
       "markerCenter": 110,
@@ -93,21 +102,25 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
       "id": "label",
       "type": "text",
       "width": 78,
+      "x": 12,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 698,
+      "x": 90,
     },
   ],
   "forestWidth": 698,
   "headerHeight": 32,
   "labelWidth": 78,
+  "mainY": 24,
   "plotHeight": 144,
   "rows": [
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 12,
@@ -116,6 +129,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 36,
@@ -124,6 +138,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 60,
@@ -132,6 +147,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 84,
@@ -140,6 +156,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 108,
@@ -148,6 +165,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 5,
       "kind": "data",
       "markerCenter": 132,
@@ -178,21 +196,25 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
       "id": "label",
       "type": "text",
       "width": 86,
+      "x": 16,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 682,
+      "x": 102,
     },
   ],
   "forestWidth": 682,
   "headerHeight": 40,
   "labelWidth": 86,
+  "mainY": 32,
   "plotHeight": 180,
   "rows": [
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 15,
@@ -201,6 +223,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 45,
@@ -209,6 +232,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 75,
@@ -217,6 +241,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 105,
@@ -225,6 +250,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 135,
@@ -233,6 +259,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 5,
       "kind": "data",
       "markerCenter": 165,
@@ -263,21 +290,25 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
       "id": "label",
       "type": "text",
       "width": 74,
+      "x": 8,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 710,
+      "x": 82,
     },
   ],
   "forestWidth": 710,
   "headerHeight": 29,
   "labelWidth": 74,
+  "mainY": 16,
   "plotHeight": 130,
   "rows": [
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 10,
@@ -286,6 +317,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 30,
@@ -294,6 +326,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 50,
@@ -302,6 +335,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 70,
@@ -310,6 +344,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 90,
@@ -340,21 +375,25 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
       "id": "label",
       "type": "text",
       "width": 78,
+      "x": 12,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 698,
+      "x": 90,
     },
   ],
   "forestWidth": 698,
   "headerHeight": 32,
   "labelWidth": 78,
+  "mainY": 24,
   "plotHeight": 156,
   "rows": [
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 12,
@@ -363,6 +402,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 36,
@@ -371,6 +411,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 60,
@@ -379,6 +420,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 84,
@@ -387,6 +429,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 108,
@@ -417,21 +460,25 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
       "id": "label",
       "type": "text",
       "width": 86,
+      "x": 16,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 682,
+      "x": 102,
     },
   ],
   "forestWidth": 682,
   "headerHeight": 40,
   "labelWidth": 86,
+  "mainY": 32,
   "plotHeight": 195,
   "rows": [
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 15,
@@ -440,6 +487,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 45,
@@ -448,6 +496,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 75,
@@ -456,6 +505,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 105,
@@ -464,6 +514,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 135,
@@ -494,26 +545,31 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
       "id": "label",
       "type": "text",
       "width": 69,
+      "x": 8,
     },
     {
       "id": "notes",
       "type": "text",
       "width": 160,
+      "x": 77,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 555,
+      "x": 237,
     },
   ],
   "forestWidth": 555,
   "headerHeight": 29,
   "labelWidth": 69,
+  "mainY": 16,
   "plotHeight": 116,
   "rows": [
     {
       "depth": 0,
       "height": 48,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 24,
@@ -522,6 +578,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 58,
@@ -530,6 +587,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     {
       "depth": 0,
       "height": 48,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 92,
@@ -560,26 +618,31 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
       "id": "label",
       "type": "text",
       "width": 73,
+      "x": 12,
     },
     {
       "id": "notes",
       "type": "text",
       "width": 160,
+      "x": 85,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 543,
+      "x": 245,
     },
   ],
   "forestWidth": 543,
   "headerHeight": 32,
   "labelWidth": 73,
+  "mainY": 24,
   "plotHeight": 120,
   "rows": [
     {
       "depth": 0,
       "height": 48,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 24,
@@ -588,6 +651,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 60,
@@ -596,6 +660,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
     {
       "depth": 0,
       "height": 48,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 96,
@@ -626,26 +691,31 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
       "id": "label",
       "type": "text",
       "width": 81,
+      "x": 16,
     },
     {
       "id": "notes",
       "type": "text",
       "width": 160,
+      "x": 97,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 527,
+      "x": 257,
     },
   ],
   "forestWidth": 527,
   "headerHeight": 40,
   "labelWidth": 81,
+  "mainY": 32,
   "plotHeight": 126,
   "rows": [
     {
       "depth": 0,
       "height": 48,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 24,
@@ -654,6 +724,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 63,
@@ -662,6 +733,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
     {
       "depth": 0,
       "height": 48,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 102,
@@ -692,21 +764,25 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
       "id": "label",
       "type": "text",
       "width": 123,
+      "x": 12,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 653,
+      "x": 135,
     },
   ],
   "forestWidth": 653,
   "headerHeight": 32,
   "labelWidth": 123,
+  "mainY": 24,
   "plotHeight": 96,
   "rows": [
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 12,
@@ -715,6 +791,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 1,
       "index": 1,
       "kind": "data",
       "markerCenter": 36,
@@ -723,6 +800,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 2,
       "index": 2,
       "kind": "data",
       "markerCenter": 60,
@@ -731,6 +809,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 3,
       "index": 3,
       "kind": "data",
       "markerCenter": 84,
@@ -761,21 +840,25 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
       "id": "label",
       "type": "text",
       "width": 135,
+      "x": 12,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 641,
+      "x": 147,
     },
   ],
   "forestWidth": 641,
   "headerHeight": 32,
   "labelWidth": 135,
+  "mainY": 24,
   "plotHeight": 84,
   "rows": [
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 12,
@@ -784,6 +867,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 36,
@@ -792,6 +876,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     {
       "depth": 0,
       "height": 12,
+      "indent": 0,
       "index": 2,
       "kind": "spacer",
       "markerCenter": 54,
@@ -800,6 +885,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 72,
@@ -830,21 +916,25 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
       "id": "label",
       "type": "text",
       "width": 106,
+      "x": 8,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 678,
+      "x": 114,
     },
   ],
   "forestWidth": 678,
   "headerHeight": 29,
   "labelWidth": 106,
+  "mainY": 16,
   "plotHeight": 120,
   "rows": [
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 0,
       "kind": "group_header",
       "markerCenter": 10,
@@ -853,6 +943,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     {
       "depth": 1,
       "height": 20,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 30,
@@ -861,6 +952,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     {
       "depth": 1,
       "height": 20,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 50,
@@ -869,6 +961,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     {
       "depth": 0,
       "height": 20,
+      "indent": 0,
       "index": 3,
       "kind": "group_header",
       "markerCenter": 70,
@@ -877,6 +970,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     {
       "depth": 1,
       "height": 20,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 90,
@@ -885,6 +979,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     {
       "depth": 1,
       "height": 20,
+      "indent": 0,
       "index": 5,
       "kind": "data",
       "markerCenter": 110,
@@ -915,21 +1010,25 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
       "id": "label",
       "type": "text",
       "width": 110,
+      "x": 12,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 666,
+      "x": 122,
     },
   ],
   "forestWidth": 666,
   "headerHeight": 32,
   "labelWidth": 110,
+  "mainY": 24,
   "plotHeight": 144,
   "rows": [
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 0,
       "kind": "group_header",
       "markerCenter": 12,
@@ -938,6 +1037,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     {
       "depth": 1,
       "height": 24,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 36,
@@ -946,6 +1046,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     {
       "depth": 1,
       "height": 24,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 60,
@@ -954,6 +1055,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 3,
       "kind": "group_header",
       "markerCenter": 84,
@@ -962,6 +1064,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     {
       "depth": 1,
       "height": 24,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 108,
@@ -970,6 +1073,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     {
       "depth": 1,
       "height": 24,
+      "indent": 0,
       "index": 5,
       "kind": "data",
       "markerCenter": 132,
@@ -1000,21 +1104,25 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
       "id": "label",
       "type": "text",
       "width": 118,
+      "x": 16,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 650,
+      "x": 134,
     },
   ],
   "forestWidth": 650,
   "headerHeight": 40,
   "labelWidth": 118,
+  "mainY": 32,
   "plotHeight": 180,
   "rows": [
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 0,
       "kind": "group_header",
       "markerCenter": 15,
@@ -1023,6 +1131,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     {
       "depth": 1,
       "height": 30,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 45,
@@ -1031,6 +1140,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     {
       "depth": 1,
       "height": 30,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 75,
@@ -1039,6 +1149,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     {
       "depth": 0,
       "height": 30,
+      "indent": 0,
       "index": 3,
       "kind": "group_header",
       "markerCenter": 105,
@@ -1047,6 +1158,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     {
       "depth": 1,
       "height": 30,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 135,
@@ -1055,6 +1167,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     {
       "depth": 1,
       "height": 30,
+      "indent": 0,
       "index": 5,
       "kind": "data",
       "markerCenter": 165,
@@ -1085,36 +1198,43 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
       "id": "label",
       "type": "text",
       "width": 78,
+      "x": 12,
     },
     {
       "id": "n",
       "type": "numeric",
       "width": 60,
+      "x": 90,
     },
     {
       "id": "grade",
       "type": "badge",
       "width": 74,
+      "x": 150,
     },
     {
       "id": "pct",
       "type": "bar",
       "width": 100,
+      "x": 224,
     },
     {
       "id": "est",
       "type": "forest",
       "width": 464,
+      "x": 324,
     },
   ],
   "forestWidth": 464,
   "headerHeight": 32,
   "labelWidth": 78,
+  "mainY": 24,
   "plotHeight": 120,
   "rows": [
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 0,
       "kind": "data",
       "markerCenter": 12,
@@ -1123,6 +1243,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 1,
       "kind": "data",
       "markerCenter": 36,
@@ -1131,6 +1252,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 2,
       "kind": "data",
       "markerCenter": 60,
@@ -1139,6 +1261,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 3,
       "kind": "data",
       "markerCenter": 84,
@@ -1147,6 +1270,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     {
       "depth": 0,
       "height": 24,
+      "indent": 0,
       "index": 4,
       "kind": "data",
       "markerCenter": 108,
