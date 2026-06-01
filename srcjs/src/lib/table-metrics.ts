@@ -1,0 +1,159 @@
+/**
+ * table-metrics — shared, pure layout computation for the DOM and V8/SVG
+ * backends.
+ *
+ * The two backends (`layout-zoom.svelte.ts` $derived block; `computeLayout` in
+ * svg-generator.ts) historically hand-mirrored the same formulas — the exact
+ * duplication the sizing harness was built to police. This module is the single
+ * home for the runtime-agnostic parts: per-row heights / positions / marker
+ * centers, the rowPaddedAfter flagging, and the header-height formula. Each
+ * backend calls these, then layers on its runtime-specific pieces (canvas vs.
+ * estimator column measurement, $derived reactivity, aspect ladder, chrome Y
+ * offsets).
+ *
+ * Pure: no Svelte runes, no DOM, no module state. Safe in V8.
+ *
+ * See docs/dev/sizing-model.md §6b (verification harness gates this) and the
+ * DOM/SVG divergence notes there.
+ */
+
+import { resolveRowKind } from "./row-kind";
+
+/**
+ * Minimal structural row shape for layout — a superset of `ClassifiableRow`
+ * adding `depth` and the `row.id` the wrap-count map keys on. Compatible with
+ * both `$types` `DisplayRow` and svg-generator's local DisplayRow (whose
+ * group-header variant omits `group`), so one helper serves both backends.
+ */
+export type LayoutRow =
+  | { type: "group_header"; depth?: number }
+  | { type: "data"; depth?: number; row: { id: string; style?: { type?: string } | null } };
+
+/** Inputs to the per-row vertical layout (heights / positions / markers). */
+export interface RowLayoutInput {
+  displayRows: readonly LayoutRow[];
+  /** Per-row id → wrapped line count (>1 inflates the row). */
+  wrapLineCounts: Record<string, number>;
+  /** Base row height (post-aspect-ladder rowHeight, or the natural value). */
+  rowHeight: number;
+  /** Themed trailing pad on the last data row before a top-level group. */
+  rowGroupPadding: number;
+  /** Single wrapped-line height: `ceil(parseFontSize(body.size) * 1.5)`. */
+  dataLineHeightPx: number;
+}
+
+export interface RowLayout {
+  rowHeights: number[];
+  rowPositions: number[];
+  rowMarkerCenters: number[];
+  /** Per-row: true if it's the last data row before a top-level group_header
+   *  (its track is inflated by rowGroupPadding; marker excludes the pad). */
+  rowPaddedAfter: boolean[];
+  /** Sum of all row heights (the rows-area height, excl. overall summary). */
+  rowsHeight: number;
+}
+
+/**
+ * Flag each data row that directly precedes a top-level (`depth === 0`)
+ * group_header — its track gets the trailing `rowGroupPadding`. Spacer rows
+ * are skipped as the "previous data row". Mirrors the inline computation that
+ * lived in both backends.
+ */
+export function computeRowPaddedAfter(
+  displayRows: readonly LayoutRow[],
+): boolean[] {
+  const flags = new Array<boolean>(displayRows.length).fill(false);
+  for (let i = 0; i < displayRows.length; i++) {
+    const dr = displayRows[i];
+    if (dr.type !== "group_header" || dr.depth !== 0) continue;
+    for (let j = i - 1; j >= 0; j--) {
+      const prev = displayRows[j];
+      if (prev.type === "data" && resolveRowKind(prev) !== "spacer") {
+        flags[j] = true;
+        break;
+      }
+    }
+  }
+  return flags;
+}
+
+/**
+ * Compute per-row heights, cumulative Y positions, and marker-center Ys.
+ *
+ * Height rules (verbatim from both backends):
+ *   - spacer:        rowHeight / 2
+ *   - group_header:  rowHeight
+ *   - data (wrap>1): max(rowHeight, dataLineHeightPx * lines + 6)
+ *   - data (else):   rowHeight
+ *   - +rowGroupPadding on rowPaddedAfter rows.
+ *
+ * Marker center excludes the trailing pad so markers stay centered on the data
+ * portion, not the inflated track (the 2026-05-25 regression this guards).
+ */
+export function computeRowLayout(input: RowLayoutInput): RowLayout {
+  const { displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx } = input;
+  const rowPaddedAfter = computeRowPaddedAfter(displayRows);
+
+  const rowHeights: number[] = [];
+  for (let i = 0; i < displayRows.length; i++) {
+    const dr = displayRows[i];
+    let h: number;
+    if (resolveRowKind(dr) === "spacer") {
+      h = rowHeight / 2;
+    } else if (dr.type === "group_header") {
+      h = rowHeight;
+    } else if (dr.type === "data") {
+      const lines = wrapLineCounts[dr.row.id] ?? 1;
+      h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
+    } else {
+      h = rowHeight;
+    }
+    if (rowPaddedAfter[i]) h += rowGroupPadding;
+    rowHeights.push(h);
+  }
+
+  const rowPositions: number[] = [];
+  let cumulativeY = 0;
+  for (const h of rowHeights) {
+    rowPositions.push(cumulativeY);
+    cumulativeY += h;
+  }
+
+  const rowMarkerCenters: number[] = [];
+  for (let i = 0; i < rowHeights.length; i++) {
+    const trailingPad = rowPaddedAfter[i] ? rowGroupPadding : 0;
+    rowMarkerCenters.push(rowPositions[i] + (rowHeights[i] - trailingPad) / 2);
+  }
+
+  return { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight: cumulativeY };
+}
+
+/** Inputs to the header-band height formula. */
+export interface HeaderHeightInput {
+  /** Body font size in px (already parsed). */
+  bodyFontPx: number;
+  /** Themed minimum header height (`theme.spacing.headerHeight`). */
+  themeHeaderHeight: number;
+  /** 2 when column groups produce a two-tier header strip, else 1. */
+  headerDepth: number;
+}
+
+/** Header-font scale-up applied to the body size for header rows (matches the
+ *  `.header-cell` CSS and the SVG header font). */
+export const HEADER_FONT_SCALE = 1.05;
+/** Line-height used across header / wrapped-row vertical math. */
+export const LINE_HEIGHT = 1.5;
+/** Breathing room added to a header row over its single-line text height.
+ *  (The magic `+6` documented in sizing-model.md §1.2 — named here.) */
+export const HEADER_ROW_PADDING = 6;
+
+/**
+ * Header-band height: `max(themeHeaderHeight, minRow * headerDepth)` where
+ * `minRow = ceil(bodyFontPx * 1.05 * 1.5) + 6`. Verbatim from both backends.
+ * Caller gates header visibility (an all-headers-hidden table collapses the
+ * band to 0) since that predicate differs slightly per backend.
+ */
+export function computeHeaderHeight(input: HeaderHeightInput): number {
+  const minRow = Math.ceil(input.bodyFontPx * HEADER_FONT_SCALE * LINE_HEIGHT) + HEADER_ROW_PADDING;
+  return Math.max(input.themeHeaderHeight, minRow * input.headerDepth);
+}

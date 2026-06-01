@@ -21,8 +21,6 @@
  * this union — classification here is strictly per-display-row.
  */
 
-import type { RowStyle } from "$types";
-
 /** The kinds a display row can resolve to. Mirrors the 5 the renderer
  *  distinguishes today. */
 export type RowKind = "data" | "group_header" | "spacer" | "summary" | "header";
@@ -34,7 +32,7 @@ export type RowKind = "data" | "group_header" | "spacer" | "summary" | "header";
  */
 export type ClassifiableRow =
   | { type: "group_header"; depth?: number }
-  | { type: "data"; row: { style?: RowStyle | null } };
+  | { type: "data"; row: { style?: { type?: string } | null } };
 
 /**
  * Resolve a display row to its single kind. Canonical form of the

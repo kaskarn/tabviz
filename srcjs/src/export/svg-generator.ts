@@ -50,6 +50,7 @@ import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/row-kind";
+import { computeRowLayout, computeHeaderHeight, LINE_HEIGHT } from "$lib/table-metrics";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
@@ -642,11 +643,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Auto-grow when the theme value is smaller than what the current font
   // (× headerFontScale × line-height) needs — matches tabvizStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
-  const headerLineHeight = 1.5;
-  const headerScale = 1.05;
-  const headerFontPx = parseFontSize(theme.text.body.size) * headerScale;
-  const minHeaderRow = Math.ceil(headerFontPx * headerLineHeight) + 6;
-  const effectiveHeaderHeight = Math.max(theme.spacing.headerHeight, minHeaderRow * headerDepth);
+  const effectiveHeaderHeight = computeHeaderHeight({
+    bodyFontPx: parseFontSize(theme.text.body.size),
+    themeHeaderHeight: theme.spacing.headerHeight,
+    headerDepth,
+  });
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
   // If no leaf column's header renders AND no column groups exist, the whole
   // header band collapses — mirrors TabvizPlot.svelte's anyHeaderVisible.
@@ -765,50 +766,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
   const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
-  const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * (1.5));
-  // rowPaddedAfter[i]: data row i directly precedes a top-level
-  // group_header. Walk forward once to mark each affected data row;
-  // its track will be inflated by rowGroupPadding (cell content stays
-  // anchored at the original visible-band Y). Mirrors tabvizStore.
-  const rowPaddedAfter: boolean[] = new Array(displayRows.length).fill(false);
-  for (let i = 0; i < displayRows.length; i++) {
-    const dr = displayRows[i];
-    if (dr.type !== "group_header" || dr.depth !== 0) continue;
-    for (let j = i - 1; j >= 0; j--) {
-      const prev = displayRows[j];
-      if (prev.type === "data" && prev.row.style?.type !== "spacer") {
-        rowPaddedAfter[j] = true;
-        break;
-      }
-    }
-  }
-  let rowsHeight = 0;
-  const rowPositions: number[] = [];
-  const rowHeights: number[] = [];
-  // Per-row marker-center Y. For "padded-after" rows the track height
-  // grows by rowGroupPadding (trailing empty space before the group
-  // header), but the marker itself must keep centering on the *data*
-  // portion of the track — otherwise forest dots / bars / boxes /
-  // violins drift downward as the user bumps rowGroupPadding up.
-  // Mirrors layout-zoom.svelte.ts's rowMarkerCenters.
-  const rowMarkerCenters: number[] = [];
-  for (let i = 0; i < displayRows.length; i++) {
-    const dr = displayRows[i];
-    const isSpacerRow = resolveRowKind(dr) === "spacer";
-    let h: number;
-    if (isSpacerRow) h = rowHeight / 2;
-    else if (dr.type === "group_header") h = rowHeight;
-    else if (dr.type === "data") {
-      const lines = wrapLineCounts[dr.row.id] ?? 1;
-      h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
-    } else h = rowHeight;
-    const trailingPad = rowPaddedAfter[i] ? rowGroupPadding : 0;
-    if (rowPaddedAfter[i]) h += rowGroupPadding;
-    rowPositions.push(rowsHeight);
-    rowHeights.push(h);
-    rowMarkerCenters.push(rowsHeight + (h - trailingPad) / 2);
-    rowsHeight += h;
-  }
+  const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * LINE_HEIGHT);
+  // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
+  const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
+    computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx });
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 
