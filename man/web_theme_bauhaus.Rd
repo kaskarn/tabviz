@@ -3,7 +3,7 @@
 \name{web_theme_bauhaus}
 \alias{web_theme_bauhaus}
 \title{Bauhaus theme — red brand, blue structural decorative, yellow accent,
-bold header band.}
+bold header band. Archivo (geometric sans, Bauhaus-feel).}
 \usage{
 web_theme_bauhaus()
 }
@@ -12,5 +12,5 @@ A \link{WebTheme}.
 }
 \description{
 Bauhaus theme — red brand, blue structural decorative, yellow accent,
-bold header band.
+bold header band. Archivo (geometric sans, Bauhaus-feel).
 }

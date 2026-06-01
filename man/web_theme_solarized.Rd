@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_solarized}
 \alias{web_theme_solarized}
-\title{Solarized theme (light).}
+\title{Solarized theme (light). Source Sans 3 body.}
 \usage{
 web_theme_solarized()
 }
@@ -10,5 +10,5 @@ web_theme_solarized()
 A \link{WebTheme}.
 }
 \description{
-Solarized theme (light).
+Solarized theme (light). Source Sans 3 body.
 }

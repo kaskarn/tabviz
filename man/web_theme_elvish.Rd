@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_elvish}
 \alias{web_theme_elvish}
-\title{Elvish theme — starlit navy brand, mithril silver decorative.}
+\title{Elvish theme — starlit navy brand, mithril silver decorative.
+Cormorant Garamond body; Cinzel display.}
 \usage{
 web_theme_elvish()
 }
@@ -11,4 +12,5 @@ A \link{WebTheme}.
 }
 \description{
 Elvish theme — starlit navy brand, mithril silver decorative.
+Cormorant Garamond body; Cinzel display.
 }

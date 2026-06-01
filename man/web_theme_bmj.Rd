@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_bmj}
 \alias{web_theme_bmj}
-\title{BMJ theme — clean blue with vermillion accent.}
+\title{BMJ theme — clean blue with vermillion accent. IBM Plex Sans body.}
 \usage{
 web_theme_bmj()
 }
@@ -10,5 +10,5 @@ web_theme_bmj()
 A \link{WebTheme}.
 }
 \description{
-BMJ theme — clean blue with vermillion accent.
+BMJ theme — clean blue with vermillion accent. IBM Plex Sans body.
 }

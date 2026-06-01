@@ -10,5 +10,6 @@ web_theme_lancet()
 A \link{WebTheme}.
 }
 \description{
-Lancet theme — two-color editorial (navy + gold) with cream paper.
+Source Serif Pro for body; Crimson Pro for display (warmer editorial
+serif than the system Georgia fallback).
 }

@@ -50,6 +50,7 @@ Collate:
     'utils-embed-fonts.R'
     'save_plot.R'
     'dimensions.R'
+    'debug_shapes.R'
     'forest_plot.R'
     'shiny.R'
     'regenerate_examples.R'

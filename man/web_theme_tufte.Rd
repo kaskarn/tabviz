@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tufte}
 \alias{web_theme_tufte}
-\title{Tufte theme — minimal greys; compact density. Untinted, light headers.}
+\title{Tufte theme — minimal greys; compact density. ET Book-inspired
+Crimson Pro serif for body.}
 \usage{
 web_theme_tufte()
 }
@@ -10,5 +11,6 @@ web_theme_tufte()
 A \link{WebTheme}.
 }
 \description{
-Tufte theme — minimal greys; compact density. Untinted, light headers.
+Tufte theme — minimal greys; compact density. ET Book-inspired
+Crimson Pro serif for body.
 }

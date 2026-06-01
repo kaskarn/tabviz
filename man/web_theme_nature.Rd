@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_nature}
 \alias{web_theme_nature}
-\title{Nature theme — teal-deep with amber accent.}
+\title{Nature theme — teal-deep with amber accent. Source Sans body.}
 \usage{
 web_theme_nature()
 }
@@ -10,5 +10,5 @@ web_theme_nature()
 A \link{WebTheme}.
 }
 \description{
-Nature theme — teal-deep with amber accent.
+Nature theme — teal-deep with amber accent. Source Sans body.
 }

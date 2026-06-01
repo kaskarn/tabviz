@@ -86,6 +86,10 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #' @param font_body,font_display,font_mono Font stacks. font_display NA
 #'   mirrors font_body.
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
+#' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
+#'   `"bold"`. Default `"light"`.
+#' @param first_column_style First (label) column treatment: `"default"`,
+#'   `"tint"`, or `"bold"`. Default `"default"`.
 #' @param web_fonts Optional list of [web_font()] declarations to embed.
 #' @param name Theme name (string).
 #' @return A fully-resolved [WebTheme].

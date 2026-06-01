@@ -58,6 +58,12 @@ mirrors font_body.}
 
 \item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
 
+\item{header_style}{Header chrome treatment: \code{"light"}, \code{"tint"}, or
+\code{"bold"}. Default \code{"light"}.}
+
+\item{first_column_style}{First (label) column treatment: \code{"default"},
+\code{"tint"}, or \code{"bold"}. Default \code{"default"}.}
+
 \item{web_fonts}{Optional list of \code{\link[=web_font]{web_font()}} declarations to embed.}
 
 \item{name}{Theme name (string).}

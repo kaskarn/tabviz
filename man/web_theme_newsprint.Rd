@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_newsprint}
 \alias{web_theme_newsprint}
-\title{Newsprint theme — warm decorative tint; serif body; tint header band.}
+\title{Newsprint theme — warm decorative tint; serif body; tint header band.
+Old Standard TT for body (newsprint serif).}
 \usage{
 web_theme_newsprint()
 }
@@ -11,4 +12,5 @@ A \link{WebTheme}.
 }
 \description{
 Newsprint theme — warm decorative tint; serif body; tint header band.
+Old Standard TT for body (newsprint serif).
 }

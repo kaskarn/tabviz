@@ -3,7 +3,7 @@
 \name{web_theme_hobbit}
 \alias{web_theme_hobbit}
 \title{Hobbit theme — warm earthen brand, foliage-green decorative,
-tint header band.}
+tint header band. IM Fell English body + display.}
 \usage{
 web_theme_hobbit()
 }
@@ -12,5 +12,5 @@ A \link{WebTheme}.
 }
 \description{
 Hobbit theme — warm earthen brand, foliage-green decorative,
-tint header band.
+tint header band. IM Fell English body + display.
 }
