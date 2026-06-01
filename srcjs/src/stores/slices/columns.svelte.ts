@@ -646,6 +646,11 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     if (primaryCol && !userResizedIds.has(primaryCol.id)) {
       let maxLabelWidth = 0;
       const rowGripBudget = 0;
+      // Canonical indent token: the renderer indents by
+      // theme.rowGroup.indentPerLevel (TabvizPlot:1723, svg-generator:1534),
+      // NOT the legacy SPACING.INDENT_PER_LEVEL (12). Budget label width with
+      // the same value so columns don't under-size at indent depth.
+      const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
 
       const groupDepths = new Map<string, number>();
       for (const group of spec.data.groups) {
@@ -685,7 +690,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         const depth = getRowDepth(row.groupId);
         const rowIndent = row.style?.indent ?? 0;
         const totalIndent = depth + rowIndent;
-        const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
+        const indentWidth = totalIndent * indentPx;
 
         let prefixPx = indentWidth + rowGripBudget;
         let badgeText: string | null = null;
@@ -754,7 +759,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       // absolute terms.
       for (const group of spec.data.groups) {
         if (group.label) {
-          const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
+          const indentWidth = group.depth * indentPx;
           const labelWidth = measureExact(group.label, headerFontKey, headerFontSizePx)
             ?? estimateTextWidth(group.label, headerFontSizePx, headerFontKey.weight);
 

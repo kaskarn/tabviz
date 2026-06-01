@@ -490,6 +490,10 @@ function countGroupDescendantRows(
  */
 function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
   const fontSize = parseFontSize(spec.theme.text.body.size);
+  // Canonical indent token: the renderer indents by
+  // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
+  // Budget label width with the same value so it doesn't under-size at depth.
+  const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
   // Header in the primary (label) column is rendered bold at the same scaled
   // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
   // a long primary header doesn't squeeze the label column and trigger
@@ -530,7 +534,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
       const depth = getRowDepth(row.groupId);
       const rowIndent = row.style?.indent ?? 0;
       const totalIndent = depth + rowIndent;
-      const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
+      const indentWidth = totalIndent * indentPx;
       let rowWidth = estimateTextWidth(row.label, fontSize) + indentWidth;
 
       // Account for badge width if present
@@ -557,7 +561,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   const showGroupCounts = !!spec.interaction?.showGroupCounts;
   for (const group of groups) {
     if (group.label) {
-      const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
+      const indentWidth = group.depth * indentPx;
       const labelWidth = estimateTextWidth(group.label, fontSize);
 
       // Count "(N)" suffix is optional — budget 0 when hidden.
@@ -2877,7 +2881,8 @@ function renderUnifiedTableRow(
   // flag; the bundle's per-field `null` leaves that property at the theme
   // default, so a partial bundle (e.g. just bg on emphasis) won't clobber
   // unrelated styling.
-  const indent = depth * SPACING.INDENT_PER_LEVEL + (row.style?.indent ?? 0) * SPACING.INDENT_PER_LEVEL;
+  const indentPerLevel = theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+  const indent = depth * indentPerLevel + (row.style?.indent ?? 0) * indentPerLevel;
   const semBundle = resolveSemanticBundle(row.style, theme);
   const fontWeight =
     semBundle?.fontWeight ??

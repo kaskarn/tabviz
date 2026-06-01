@@ -691,17 +691,17 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     {
       "id": "label",
       "type": "text",
-      "width": 111,
+      "width": 123,
     },
     {
       "id": "est",
       "type": "forest",
-      "width": 665,
+      "width": 653,
     },
   ],
-  "forestWidth": 665,
+  "forestWidth": 653,
   "headerHeight": 32,
-  "labelWidth": 111,
+  "labelWidth": 123,
   "plotHeight": 96,
   "rows": [
     {
