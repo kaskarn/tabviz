@@ -294,11 +294,31 @@ Direction (confirmed with author):
 
 ## 6. Open decisions (carry forward)
 
-- [ ] **Aspect: reflow or scale-to-fit?** Determines whether the ladder is
-  rebuilt around fixpoint iteration or mostly deleted. (§1.6)
-- [ ] **Row height: predict-only, or measure-then-commit on the browser path?**
-  i.e. are we willing to take a DOM measurement pass (browser only; estimator +
-  `naturalHeight` stays for V8 parity)? (§1.4)
+- [x] **Aspect: reflow (not scale-to-fit) — DECIDED 2026-06.** Keep reflow
+  semantics (aspect reshapes geometry: forest flex, column scale, rowHeight),
+  NOT a CSS transform. **But compartmentalize it.** The aspect↔content-height
+  interaction is delicate and will be tweaked repeatedly, so it must live behind
+  a clean seam, not be entangled with the base layout:
+  - Base layout (`computeTableMetrics` / `computeRowLayout`) computes
+    **content-true** row heights with NO aspect awareness — the honest natural
+    layout. This is the stable core; content-driven height extends it freely.
+  - The aspect ladder becomes a **separate, explicit post-pass** that takes the
+    content-true natural metrics as input and reshapes toward the target. When
+    it shrinks rows it must read the *real* per-row heights (not
+    `rows × naturalRowHeight`) and, because narrowing columns can reflow text
+    taller, **iterate to a fixpoint** (solve → recompute content reflow →
+    re-solve, capped). Both backends call the same post-pass.
+  - Acceptance: changing aspect behavior must touch only the post-pass, never
+    the base metrics. (Circular dep is contained inside the iterating post-pass
+    instead of smeared across the layout.)
+- [x] **Row height: measure-then-commit — DECIDED 2026-06 (do it right).**
+  Browser path measures **real** rendered row heights (offsetHeight /
+  ResizeObserver) and commits them back into the layout; V8/export path uses the
+  estimator + per-cell `naturalHeight`. Both feed ONE content-height contract
+  (a `Record<rowId, px>` summed in `computeRowLayout`, the same seam
+  `wrapLineCounts` uses today). The measured map supersedes the predicted map on
+  the browser when available, so DOM is exact and SVG stays predicted-but-close;
+  the prediction is the floor that prevents first-paint jump. (See §1.4.)
 - [ ] **Density: keep the continuous `factor` alongside named profiles, or fold
   it in?** (§3)
 - [x] **`computeTableMetrics` (shared DOM/SVG)** — BUILT 2026-06 as

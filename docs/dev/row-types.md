@@ -244,6 +244,14 @@ are blocked.
 - [ ] Collapse to one resolved `RowKind` + registry (the column-schema mirror)? §2
 - [ ] First-class `section-header` kind, distinct from generated `group-header`? §2
 - [ ] Unify group-summary + `overall` under one scoped `summary` kind? §2
+  - **Tension noted (deferred to the registry build, 2026-06):** the summary
+    diamond renders via TWO independent paths today — group/row summaries go
+    through `RowInterval.svelte` (gated by `rowKindProps().summaryMarker`), while
+    `spec.data.overall` is a singleton rendered outside the displayRows loop in
+    both TabvizPlot and svg-generator. Harmless now (visually identical), but
+    once per-kind theming lands (§4) `overall` has no `RowKind` to theme. Fix
+    when building the registry: give `summary` a `scope: group | overall`, route
+    both through one diamond emitter. Do NOT fix piecemeal before then.
 - [x] **DECIDED 2026-05-29 — decoration surface = per-kind nullable fields over a
   restrained default baseline. NO global `chrome: minimal|standard|rich` dial.**
   Rationale: decoration is a *selection* axis ("which 1–2 elements carry the
