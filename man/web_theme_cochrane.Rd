@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_cochrane}
 \alias{web_theme_cochrane}
-\title{Cochrane theme (v2)}
+\title{Cochrane theme — heritage teal on subtly-tinted paper.}
 \usage{
 web_theme_cochrane()
 }
@@ -10,8 +10,6 @@ web_theme_cochrane()
 A \link{WebTheme}.
 }
 \description{
-The package default. Cochrane heritage teal as primary identity, warm
-coral as the independent accent. Inter sans-serif, comfortable density,
-clean slate neutrals. Tuned as a general-purpose theme: dense
-systematic-review tables read well, and exploratory tables feel inviting.
+Cochrane teal as brand; warm coral accent. Inter sans-serif.
+General-purpose; reads well in systematic-review tables.
 }

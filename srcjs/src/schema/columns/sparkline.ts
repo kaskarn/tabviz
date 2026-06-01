@@ -33,6 +33,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
       label: "Type",
       control: "segmented",
       default: "line",
+      kind: "core",
       segments: [
         { value: "line", label: "Line" },
         { value: "bar",  label: "Bar" },
@@ -44,6 +45,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
       label: "Height",
       control: "integer",
       default: 20,
+      kind: "editor",
       min: 8,
       max: 80,
       step: 1,
@@ -53,6 +55,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
       label: "Color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme primary by default",
     },
   ],

@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_lancet}
 \alias{web_theme_lancet}
-\title{Lancet theme (v2)}
+\title{Lancet theme — two-color editorial (navy + gold) with cream paper.}
 \usage{
 web_theme_lancet()
 }
@@ -10,7 +10,6 @@ web_theme_lancet()
 A \link{WebTheme}.
 }
 \description{
-Lancet navy on warm cream, refined old-gold accent, Georgia serif. The
-deep-navy companion is explicitly pinned (rather than auto-derived) to
-lock the journal identity. Comfortable density for journal-page reading.
+Source Serif Pro for body; Crimson Pro for display (warmer editorial
+serif than the system Georgia fallback).
 }

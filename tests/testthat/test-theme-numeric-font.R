@@ -5,7 +5,7 @@
 # wire shape emitted by `serialize_theme()`.
 
 test_that("numeric text role defaults to body family + tabular figures", {
-  th <- resolve_theme(web_theme())
+  th <- web_theme()
   expect_equal(th@text@numeric@family, th@text@body@family)
   expect_equal(th@text@numeric@figures, "tabular")
 })
@@ -13,14 +13,14 @@ test_that("numeric text role defaults to body family + tabular figures", {
 test_that("explicit numeric override survives resolution", {
   base <- web_theme()
   base@text@numeric <- TextRole(family = "JetBrains Mono", figures = "tabular")
-  th <- resolve_theme(base)
+  th <- base
   expect_equal(th@text@numeric@family, "JetBrains Mono")
   # Body stays put — the numeric override doesn't bleed into other roles.
   expect_false(identical(th@text@body@family, "JetBrains Mono"))
 })
 
 test_that("serialize_theme emits text.numeric on the wire", {
-  th <- resolve_theme(web_theme())
+  th <- web_theme()
   wire <- tabviz:::serialize_theme(th)
   expect_true(!is.null(wire$text$numeric))
   expect_setequal(

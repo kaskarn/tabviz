@@ -250,3 +250,39 @@ describe("schema drift gate — consumedBy", () => {
     expect(stale.length).toBe(0);
   });
 });
+
+// Sprint 1 PR 4: every concrete OptionSpec must declare `kind` explicitly.
+// No grandfather list — the rule lands together with backfill across
+// all 30 schema files. Theme-side surfaces (Sprint 3+ `theme.column_defaults`)
+// gate on this distinction; an un-annotated option is a footgun waiting
+// to happen.
+describe("schema drift gate — kind", () => {
+  const missing: Array<{ schemaKey: string; optionKey: string }> = [];
+  for (const [schemaKey, schema] of Object.entries(SCHEMA_REGISTRY)) {
+    if (schema.abstract) continue;
+    const cascade = resolveSchema(schema);
+    const seen = new Set<string>();
+    for (const layer of cascade) {
+      for (const opt of layer.options) {
+        if (seen.has(opt.key)) continue;
+        seen.add(opt.key);
+        if (opt.kind === undefined) {
+          missing.push({ schemaKey, optionKey: opt.key });
+        }
+      }
+    }
+  }
+
+  it("every option declares kind explicitly", () => {
+    if (missing.length > 0) {
+      const lines = missing.map((o) => `  ${o.schemaKey}:${o.optionKey}`);
+      const msg =
+        `${missing.length} option(s) missing explicit \`kind\`:\n` +
+        lines.join("\n") +
+        `\n\nAdd \`kind: "core" | "styling" | "editor"\` to the OptionSpec. ` +
+        `See OptionKind docstring in src/schema/types.ts for guidance.`;
+      throw new Error(msg);
+    }
+    expect(missing.length).toBe(0);
+  });
+});

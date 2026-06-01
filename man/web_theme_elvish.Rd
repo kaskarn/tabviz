@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_elvish}
 \alias{web_theme_elvish}
-\title{Elvish theme — Lothlórien at twilight}
+\title{Elvish theme — starlit navy brand, mithril silver decorative.
+Cormorant Garamond body; Cinzel display.}
 \usage{
 web_theme_elvish()
 }
@@ -10,16 +11,6 @@ web_theme_elvish()
 A \link{WebTheme}.
 }
 \description{
-Deep night-sky surface with a two-tier identity: starlit-navy primary
-for headlines, mithril-silver secondary for structural groupings (column
-bands, row bars, glyph fills — Lothlórien's pillars and banners — plus
-chrome texture, banding and hairlines silver-tinted to read like
-moonlight on stone). Twilight-gold accent reserved for layered emphasis.
-Elegant Roman serif display with a flowing Renaissance body. Pairs with
-\code{\link[=col_pictogram]{col_pictogram()}} glyphs \code{"crescent"}, \code{"harp"}, \code{"tree"}, \code{"bow"},
-\code{"swan"}.
-}
-\details{
-Loads \code{Cinzel} (display) and \verb{Cormorant Garamond} (body) from Google
-Fonts via the WebTheme \code{web_fonts} slot.
+Elvish theme — starlit navy brand, mithril silver decorative.
+Cormorant Garamond body; Cinzel display.
 }

@@ -99,7 +99,7 @@ const sparklineSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => 
   // width; mirror that here. The renderer emits at (0,0) so the box
   // starts at x=0; SPACING.TEXT_PADDING is reserved on each side.
   const cellWidth = ctx?.cellWidth ?? 100;
-  const padX = SPACING.TEXT_PADDING;
+  const padX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
   const innerW = Math.max(0, cellWidth - padX * 2);
   const points = computeSparklinePoints(data, padX, 0, innerW, height);
 

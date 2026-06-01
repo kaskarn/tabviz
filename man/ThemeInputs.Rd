@@ -2,8 +2,53 @@
 % Please edit documentation in R/classes-theme.R
 \name{ThemeInputs}
 \alias{ThemeInputs}
-\title{ThemeInputs: Tier 1 customer-facing inputs.}
+\title{ThemeInputs: customer-facing theme authoring surface.}
 \description{
-The only tier customers normally edit. Every other token derives from
-these via \code{resolve_theme()} (added in PR 3).
+The entire user authoring surface (locked design 2026-05-28). Every
+other token derives from these via the TS adapter
+(\code{srcjs/src/lib/theme-adapter.ts::buildTheme}), which calls the
+resolver in \code{srcjs/src/lib/theme-resolve.ts}.
 }
+\section{Fields}{
+
+\describe{
+\item{\code{brand}}{Required brand seed hex; drives the brand ramp + identity.}
+
+\item{\code{accent}}{Engagement seed hex (hover/selected/callouts). NA mirrors brand.}
+
+\item{\code{decorative}}{Optional second color for two-color editorial themes.
+Drives structural bg tints (alt-row, dividers,
+row-group L1 band). NA = not set.}
+
+\item{\code{mode}}{"light" or "dark". Inverts neutral ramp direction.}
+
+\item{\code{neutral_tint}}{"untinted" | "brand" | "accent" | "decorative" | hex.
+Optional tint blend into low-chroma ramp ends.}
+
+\item{\code{neutral_tint_strength}}{Numeric in \verb{[0, 1]}. Default \code{0.04} (subtle
+clinical hint). \code{~1.0} makes the tint hex effectively
+the paper color (editorial-strong).}
+
+\item{\code{categorical}}{Named data scheme reference (Okabe-Ito default).}
+
+\item{\code{sequential}}{Named sequential scheme (viridis default).}
+
+\item{\code{diverging}}{Named diverging scheme (rdbu default).}
+
+\item{\code{status_positive}}{Status positive seed. NA -> default.}
+
+\item{\code{status_negative}}{Status negative seed. NA -> default.}
+
+\item{\code{status_warning}}{Status warning seed. NA -> default.}
+
+\item{\code{status_info}}{Status info seed. NA -> default.}
+
+\item{\code{font_body}}{Font stack for body/cell/label text.}
+
+\item{\code{font_display}}{Font stack for title/subtitle. NA mirrors font_body.}
+
+\item{\code{font_mono}}{Font stack for monospace/code. Optional.}
+
+\item{\code{density}}{"compact", "comfortable", or "spacious".}
+}}
+

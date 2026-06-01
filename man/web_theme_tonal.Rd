@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tonal}
 \alias{web_theme_tonal}
-\title{Tonal theme (design)}
+\title{Tonal theme (light) — M3-inspired tonal palette. Roboto Flex.}
 \usage{
 web_theme_tonal()
 }
@@ -10,12 +10,5 @@ web_theme_tonal()
 A \link{WebTheme}.
 }
 \description{
-Tonal-palette-from-seed theme inspired by Material You-style dynamic
-color: a single seed (primary) generates all surfaces via the existing
-OKLCH chrome cascade. Demonstrates the cascade's tonal-palette
-generation behavior — no custom logic needed; the resolver already
-does it.
-}
-\details{
-Pairs with \code{\link[=web_theme_tonal_dark]{web_theme_tonal_dark()}} via the \code{light_dark_pair} field.
+Tonal theme (light) — M3-inspired tonal palette. Roboto Flex.
 }

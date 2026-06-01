@@ -1,4 +1,5 @@
 import type { BandingSpec, Group, Row } from "$types";
+import { isBanded } from "./row-kind";
 
 /**
  * Minimal display-row shape the banding util needs. Both the Svelte store's
@@ -106,11 +107,10 @@ export function computeBandIndexes(
   const withBand = startWithBand ?? banding.mode === "group";
   const offset = withBand ? 1 : 0;
 
-  const isStyled = (dr: BandingDisplayRow): boolean => {
-    if (dr.type !== "data") return false;
-    const t = dr.row.style?.type;
-    return t === "header" || t === "summary" || t === "spacer";
-  };
+  // "Styled" rows (header / summary / spacer) skip banding — the inverse of
+  // RowKind's `banded` property, the single source for this classification.
+  const isStyled = (dr: BandingDisplayRow): boolean =>
+    dr.type === "data" && !isBanded(dr);
 
   if (banding.mode === "row") {
     let counter = 0;

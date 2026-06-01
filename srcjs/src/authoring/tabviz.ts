@@ -6,7 +6,7 @@
  *  - `data`: array of row objects (each row's fields are read by column builders)
  *  - `columns`: array of `ColumnDef` from `colText` / `vizForest` / `colGroup` etc.
  *  - `theme`: a name string (`"lancet"`), a `{ extend, overrides }` object, or
- *    a pre-resolved `WebThemeV2`. Defaults to `"bmj"` — the package's
+ *    a pre-resolved `WebTheme`. Defaults to `"bmj"` — the package's
  *    current default theme (modern editorial register).
  *  - Other top-level args mirror the R `tabviz()` signature.
  */

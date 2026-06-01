@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tufte}
 \alias{web_theme_tufte}
-\title{Tufte theme (design)}
+\title{Tufte theme — minimal greys; compact density. ET Book-inspired
+Crimson Pro serif for body.}
 \usage{
 web_theme_tufte()
 }
@@ -10,15 +11,6 @@ web_theme_tufte()
 A \link{WebTheme}.
 }
 \description{
-Sparse data-ink-only chrome: near-black primary, warm cream secondary,
-Tufte tan accent. Crimson Pro serif as default body+display (Google
-Fonts OFL; the canonical ET Book is available on Edward Tufte's GitHub
-but the licensing for redistribution is ambiguous — substitute ET Book
-via \code{font_body} if you have the family locally).
-}
-\details{
-"Least chrome" point in the entire roster — subtle dividers barely
-visible, strong dividers absent, no alt-row banding.
-
-Loads \verb{Crimson Pro} from Google Fonts via the WebTheme \code{web_fonts} slot.
+Tufte theme — minimal greys; compact density. ET Book-inspired
+Crimson Pro serif for body.
 }

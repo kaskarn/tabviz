@@ -36,7 +36,7 @@ describe("tabviz top-level constructor", () => {
     const spec = tabviz({
       data: SAMPLE_DATA,
       label: "study",
-      theme: { extend: "lancet", variants: { density: "compact" } },
+      theme: { extend: "lancet", overrides: { density: "compact" } },
       columns: [colText({ field: "study" })],
     });
     expect(spec.theme.name).toBe("lancet");

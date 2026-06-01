@@ -4,7 +4,7 @@
 \alias{MarkRecipe}
 \title{MarkRecipe: how one mark type consumes slot-bundle fields.}
 \description{
-Each property names a slot-bundle key ("fill", "stroke", "fill_muted", ...)
+Each property names a slot-role key ("fill", "stroke", "fill_dim", ...)
 so the renderer can look up the actual hex when drawing each visual element.
 v1 wires forest + summary; bar/box/violin/lollipop default to passthrough.
 }

@@ -23,6 +23,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       label: "Max value",
       control: "number",
       default: null,
+      kind: "core",
       hint: "Bar 100% reference; auto from data when null",
     },
     {
@@ -30,6 +31,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       label: "Scale",
       control: "segmented",
       default: "linear",
+      kind: "core",
       segments: [
         { value: "linear", label: "Linear" },
         { value: "log",    label: "Log" },
@@ -41,6 +43,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       label: "Show value",
       control: "toggle",
       default: true,
+      kind: "editor",
       hint: "Numeric label alongside the bar",
     },
     {
@@ -48,6 +51,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       label: "Bar color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme primary by default",
     },
   ],

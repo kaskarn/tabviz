@@ -9,6 +9,7 @@
  */
 
 import { generateSVG, computeNaturalDimensions } from "./svg-generator";
+import { renderDebugShapes } from "./debug-shapes";
 import type { WebSpec } from "$types";
 import * as authoring from "../authoring";
 // Side-effect: register built-in schema behaviors before SVG export
@@ -28,21 +29,35 @@ function computeNaturalDimensionsFromJSON(specJson: string): string {
   return JSON.stringify(computeNaturalDimensions(spec));
 }
 
+// Box-model debug view (sizing harness, visual half). Returns an SVG that
+// draws cell boxes / padding / anchors instead of content.
+function renderDebugShapesFromJSON(specJson: string): string {
+  const spec: WebSpec = JSON.parse(specJson);
+  return renderDebugShapes(spec);
+}
+
 /**
  * Dispatch an authoring builder call from R via V8.
  *
  * `name` is the exported builder symbol (e.g. "colText", "vizForest");
  * `argsJson` is the JSON-serialized argument object the builder expects.
- * Returns the resulting wire-shape object as JSON. Errors throw on the
- * V8 side and surface to R as standard `cli::cli_abort` failures.
+ * `options2Json` is an optional second argument for builders that take
+ * a `(draft, options)` signature (e.g. `resolveTheme`); when undefined
+ * the builder is called single-argument. Returns the resulting
+ * wire-shape object as JSON. Errors throw on the V8 side and surface
+ * to R as standard `cli::cli_abort` failures.
  */
-function callBuilder(name: string, argsJson: string): string {
+function callBuilder(name: string, argsJson: string, options2Json?: string): string {
   const builder = (authoring as Record<string, unknown>)[name];
   if (typeof builder !== "function") {
     throw new Error(`callBuilder: no such builder "${name}"`);
   }
   const args = JSON.parse(argsJson);
-  const result = (builder as (a: unknown) => unknown)(args);
+  const fn = builder as (...a: unknown[]) => unknown;
+  const result =
+    options2Json !== undefined && options2Json !== null && options2Json !== ""
+      ? fn(args, JSON.parse(options2Json))
+      : fn(args);
   return JSON.stringify(result);
 }
 
@@ -50,4 +65,5 @@ function callBuilder(name: string, argsJson: string): string {
 const g = globalThis as unknown as Record<string, unknown>;
 g.generateSVG = generateSVGFromJSON;
 g.computeNaturalDimensions = computeNaturalDimensionsFromJSON;
+g.renderDebugShapes = renderDebugShapesFromJSON;
 g.callBuilder = callBuilder;

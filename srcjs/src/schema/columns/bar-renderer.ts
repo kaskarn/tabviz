@@ -88,7 +88,8 @@ const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const labelFontSize = fontSize * BAR.LABEL_SCALE;
   const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
   const cellWidth = ctx?.cellWidth ?? 100;
-  const barAreaWidth = Math.max(0, cellWidth - SPACING.TEXT_PADDING * 2 - labelReserved);
+  const cellPadX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
+  const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
   const fillRatio = normalizeValue(value, 0, maxValue, scale);
   const fillWidth = Math.max(0, fillRatio * barAreaWidth);
   const rowH = ctx?.rowHeight ?? BAR.HEIGHT;
@@ -107,7 +108,7 @@ const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   );
   if (showLabel) {
     const labelText = formatBarLabel(value);
-    const totalWidth = cellWidth - SPACING.TEXT_PADDING * 2;
+    const totalWidth = cellWidth - cellPadX * 2;
     pieces.push(
       `<text class="cell-text" dominant-baseline="central" ` +
       `x="${totalWidth}" y="${rowH / 2}" ` +
@@ -116,7 +117,7 @@ const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
       `text-anchor="end" fill="${theme.content.primary}">${labelText}</text>`,
     );
   }
-  return { kind: "svg", markup: pieces.join(""), width: cellWidth - SPACING.TEXT_PADDING * 2, height: rowH };
+  return { kind: "svg", markup: pieces.join(""), width: cellWidth - cellPadX * 2, height: rowH };
 };
 
 /** Idempotent re-register helper. */

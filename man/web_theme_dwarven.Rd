@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_dwarven}
 \alias{web_theme_dwarven}
-\title{Dwarven theme — Erebor under the Lonely Mountain}
+\title{Dwarven theme — bronze brand, warm gold decorative, tint header band.
+EB Garamond body; UnifrakturMaguntia display.}
 \usage{
 web_theme_dwarven()
 }
@@ -10,15 +11,6 @@ web_theme_dwarven()
 A \link{WebTheme}.
 }
 \description{
-Deep cavern surface with a two-tier identity: hammered-bronze primary
-for headlines, warm-gold secondary for structural groupings (column
-bands, row bars, glyph fills, plus chrome texture — banding, hairlines,
-gridlines all gold-tinted). Forge-ember accent reserved for layered
-emphasis (hover, selected, semantic accent rows). Runic-inspired
-typography. Pairs well with \code{\link[=col_pictogram]{col_pictogram()}} using \code{glyph = "pickaxe"},
-\code{"anvil"}, \code{"gem"}, \code{"ale_mug"}, or \code{"rune"}.
-}
-\details{
-Loads \code{UnifrakturMaguntia} (display) and \verb{EB Garamond} (body) from
-Google Fonts via the WebTheme \code{web_fonts} slot.
+Dwarven theme — bronze brand, warm gold decorative, tint header band.
+EB Garamond body; UnifrakturMaguntia display.
 }

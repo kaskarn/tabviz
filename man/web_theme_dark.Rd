@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_dark}
 \alias{web_theme_dark}
-\title{Dark theme (v2)}
+\title{Dark theme — Catppuccin-inspired dark mode default.}
 \usage{
 web_theme_dark()
 }
@@ -10,9 +10,5 @@ web_theme_dark()
 A \link{WebTheme}.
 }
 \description{
-Catppuccin Mocha-inspired dark canvas with a pastel marker palette and
-system-font typography. The identity cascade adapts for dark mode: an
-explicit \code{content.inverse} override keeps bold-mode header text light
-(otherwise the resolver's default = \code{n[1]} = the dark canvas, giving
-invisible dark-on-dark text).
+Dark theme — Catppuccin-inspired dark mode default.
 }

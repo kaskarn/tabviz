@@ -49,6 +49,8 @@ import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
 import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
+import { resolveRowKind, rowKindProps, type RowKind } from "$lib/row-kind";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/table-metrics";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
@@ -345,7 +347,7 @@ function calculateSvgAutoWidths(
 
     // Measure all data cell values using proper display text
     for (const row of rows) {
-      if (row.style?.type === "header" || row.style?.type === "spacer") {
+      if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) {
         continue;
       }
       const text = getColumnDisplayText(row, col);
@@ -490,6 +492,10 @@ function countGroupDescendantRows(
  */
 function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
   const fontSize = parseFontSize(spec.theme.text.body.size);
+  // Canonical indent token: the renderer indents by
+  // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
+  // Budget label width with the same value so it doesn't under-size at depth.
+  const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
   // Header in the primary (label) column is rendered bold at the same scaled
   // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
   // a long primary header doesn't squeeze the label column and trigger
@@ -530,7 +536,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
       const depth = getRowDepth(row.groupId);
       const rowIndent = row.style?.indent ?? 0;
       const totalIndent = depth + rowIndent;
-      const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
+      const indentWidth = totalIndent * indentPx;
       let rowWidth = estimateTextWidth(row.label, fontSize) + indentWidth;
 
       // Account for badge width if present
@@ -557,7 +563,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   const showGroupCounts = !!spec.interaction?.showGroupCounts;
   for (const group of groups) {
     if (group.label) {
-      const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
+      const indentWidth = group.depth * indentPx;
       const labelWidth = estimateTextWidth(group.label, fontSize);
 
       // Count "(N)" suffix is optional — budget 0 when hidden.
@@ -637,11 +643,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Auto-grow when the theme value is smaller than what the current font
   // (× headerFontScale × line-height) needs — matches tabvizStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
-  const headerLineHeight = 1.5;
-  const headerScale = 1.05;
-  const headerFontPx = parseFontSize(theme.text.body.size) * headerScale;
-  const minHeaderRow = Math.ceil(headerFontPx * headerLineHeight) + 6;
-  const effectiveHeaderHeight = Math.max(theme.spacing.headerHeight, minHeaderRow * headerDepth);
+  const effectiveHeaderHeight = computeHeaderHeight({
+    bodyFontPx: parseFontSize(theme.text.body.size),
+    themeHeaderHeight: theme.spacing.headerHeight,
+    headerDepth,
+  });
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
   // If no leaf column's header renders AND no column groups exist, the whole
   // header band collapses — mirrors TabvizPlot.svelte's anyHeaderVisible.
@@ -760,50 +766,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
   const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
-  const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * (1.5));
-  // rowPaddedAfter[i]: data row i directly precedes a top-level
-  // group_header. Walk forward once to mark each affected data row;
-  // its track will be inflated by rowGroupPadding (cell content stays
-  // anchored at the original visible-band Y). Mirrors tabvizStore.
-  const rowPaddedAfter: boolean[] = new Array(displayRows.length).fill(false);
-  for (let i = 0; i < displayRows.length; i++) {
-    const dr = displayRows[i];
-    if (dr.type !== "group_header" || dr.depth !== 0) continue;
-    for (let j = i - 1; j >= 0; j--) {
-      const prev = displayRows[j];
-      if (prev.type === "data" && prev.row.style?.type !== "spacer") {
-        rowPaddedAfter[j] = true;
-        break;
-      }
-    }
-  }
-  let rowsHeight = 0;
-  const rowPositions: number[] = [];
-  const rowHeights: number[] = [];
-  // Per-row marker-center Y. For "padded-after" rows the track height
-  // grows by rowGroupPadding (trailing empty space before the group
-  // header), but the marker itself must keep centering on the *data*
-  // portion of the track — otherwise forest dots / bars / boxes /
-  // violins drift downward as the user bumps rowGroupPadding up.
-  // Mirrors layout-zoom.svelte.ts's rowMarkerCenters.
-  const rowMarkerCenters: number[] = [];
-  for (let i = 0; i < displayRows.length; i++) {
-    const dr = displayRows[i];
-    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
-    let h: number;
-    if (isSpacerRow) h = rowHeight / 2;
-    else if (dr.type === "group_header") h = rowHeight;
-    else if (dr.type === "data") {
-      const lines = wrapLineCounts[dr.row.id] ?? 1;
-      h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
-    } else h = rowHeight;
-    const trailingPad = rowPaddedAfter[i] ? rowGroupPadding : 0;
-    if (rowPaddedAfter[i]) h += rowGroupPadding;
-    rowPositions.push(rowsHeight);
-    rowHeights.push(h);
-    rowMarkerCenters.push(rowsHeight + (h - trailingPad) / 2);
-    rowsHeight += h;
-  }
+  const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * LINE_HEIGHT);
+  // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
+  const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
+    computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx });
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 
@@ -834,7 +800,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total table width includes legacy positioned columns AND unified non-forest columns
   const totalTableWidth = leftTableWidth + rightTableWidth + unifiedNonForestWidth;
 
-  // Calculate forest width based on remaining space after tables, or explicit layout settings
+  // Calculate forest width based on remaining space after tables, or explicit
+  // layout settings. INTENTIONALLY diverges from the DOM backend (and is not
+  // shared in table-metrics): the export sizes against a fixed canvas
+  // (`options.width` residual) while the live widget is container-responsive
+  // (`effectiveWidth * 0.25`). Correct context-dependence, not drift.
   let forestWidth: number;
   if (!includeForest) {
     forestWidth = 0;
@@ -879,7 +849,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
   // no bottom axis, so reserving ~76px of axis height caused truncation.
-  const axisGap = theme.spacing.axisGap ?? 12;
+  const axisGap = theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
   const hasAxisColumn = allColumns.some(
     c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
   );
@@ -900,7 +870,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     someColumnHasAxisLabel,
     theme.plot.tickMarkLength,
   );
-  const webAxisHeight = hasAxisColumn ? axisGap + axisLayout.axisRegionHeight : 0;
+  const webAxisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisLayout.axisRegionHeight);
   // Include the themed footer gap when there's a footer to render — the
   // gap sits between the plot/axis area and the caption/footnote text. If
   // we leave it out, totalHeight was smaller than footerY + text, so the
@@ -929,7 +899,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     headerHeight,
     rowHeight,
     plotHeight,
-    axisHeight: LAYOUT.AXIS_HEIGHT,
+    // The real reserved axis band (0 for pure tables). Was previously the
+    // stale LAYOUT.AXIS_HEIGHT constant (always 32) — a latent bug that also
+    // made the aspect ladder's `naturalLayout.axisHeight > 0` always true.
+    axisHeight: webAxisHeight,
     nullValue,
     summaryYPosition: plotHeight - rowHeight,
     showOverallSummary: hasOverall,
@@ -1168,16 +1141,7 @@ function hasColumnGroups(columnDefs: ColumnDef[]): boolean {
 // `$lib/typography-layout.ts` so the live widget's layout engine and
 // the SVG exporter share the same derivations from theme typography.
 
-/** Calculate text X position and anchor based on alignment */
-function getTextPosition(
-  x: number,
-  width: number,
-  align: "left" | "center" | "right" | undefined
-): { textX: number; anchor: string } {
-  return getTextPositionPadded(x, width, align, SPACING.TEXT_PADDING);
-}
-
-/** Same as getTextPosition but with a caller-supplied horizontal padding. */
+/** Calculate text X position and anchor with a caller-supplied horizontal padding. */
 function getTextPositionPadded(
   x: number,
   width: number,
@@ -1563,7 +1527,8 @@ function renderGroupHeader(
 
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
-  const labelX = x + SPACING.TEXT_PADDING + indent;
+  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const labelX = x + cellPadX + indent;
   lines.push(`<text class="cell-text" dominant-baseline="central" x="${labelX}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
@@ -1756,8 +1721,9 @@ function renderInterval(
   const lineWidth = theme.plot.lineWidth;
   const defaultLineColor = theme.series?.[0]?.stroke ?? theme.accent.default;
 
-  // Check if this is a summary row (should render diamond)
-  const isSummaryRow = row.style?.type === 'summary';
+  // Check if this is a summary row (should render diamond). summaryMarker is
+  // the RowKind property owning this decision.
+  const isSummaryRow = rowKindProps(resolveRowKind({ type: "data", row })).summaryMarker;
   const diamondHeight = 10;
   const halfDiamondHeight = diamondHeight / 2;
 
@@ -1792,7 +1758,7 @@ function renderInterval(
 
     // Theme effect defaults for multi-effect plots
     const themeEffectColors = theme.series.map(s => s.fill);
-    // Per-series marker shapes ride on the SlotBundle (theme.series[i].shape).
+    // Per-series marker shapes ride on the SlotRole (theme.series[i].shape).
     // Null/undefined → fall through to the 4-shape rotation.
     const defaultShapes: MarkerShape[] = ["circle", "square", "diamond", "triangle"];
 
@@ -2722,6 +2688,7 @@ function renderUnifiedColumnHeaders(
   // All header cells use bold weight to match web view CSS.
   const fontWeight = theme.header?.text?.weight ?? 600;
   const boldWeight = 600;
+  const cellPadX = theme.spacing.cellPaddingX ?? 10;
   const hasGroups = hasColumnGroups(columnDefs);
 
   // Use row center - dominant-baseline:central handles vertical alignment
@@ -2736,7 +2703,7 @@ function renderUnifiedColumnHeaders(
 
     // Label column spans both rows
     if (showLabelHeader) {
-      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + cellPadX}" y="${getTextY(y, headerHeight)}"
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2768,7 +2735,7 @@ function renderUnifiedColumnHeaders(
         const width = getColWidth(col);
         const headerAlign = col.headerAlign ?? col.align;
         if (resolveShowHeader(col.showHeader, col.header)) {
-          const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+          const pad = isVizType(col.type) ? VIZ_MARGIN : cellPadX;
           const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
           const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
           lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y, headerHeight)}"
@@ -2799,7 +2766,7 @@ function renderUnifiedColumnHeaders(
             const width = getColWidth(sub);
             const headerAlign = sub.headerAlign ?? sub.align;
             if (resolveShowHeader(sub.showHeader, sub.header)) {
-              const pad = isVizType(sub.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+              const pad = isVizType(sub.type) ? VIZ_MARGIN : cellPadX;
               const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
               lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
                 font-family="${fontFamily}"
@@ -2820,7 +2787,7 @@ function renderUnifiedColumnHeaders(
     let currentX = x;
 
     if (showLabelHeader) {
-      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + cellPadX}" y="${getTextY(y, headerHeight)}"
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2834,7 +2801,7 @@ function renderUnifiedColumnHeaders(
       if (resolveShowHeader(col.showHeader, col.header)) {
         // Viz columns pad by VIZ_MARGIN so the header aligns with the plot
         // region's left/right edges (where the axis begins).
-        const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+        const pad = isVizType(col.type) ? VIZ_MARGIN : cellPadX;
         const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
         const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
 
@@ -2875,6 +2842,7 @@ function renderUnifiedTableRow(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
+  const cellPadX = theme.spacing.cellPaddingX ?? 10;
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
@@ -2883,7 +2851,8 @@ function renderUnifiedTableRow(
   // flag; the bundle's per-field `null` leaves that property at the theme
   // default, so a partial bundle (e.g. just bg on emphasis) won't clobber
   // unrelated styling.
-  const indent = depth * SPACING.INDENT_PER_LEVEL + (row.style?.indent ?? 0) * SPACING.INDENT_PER_LEVEL;
+  const indentPerLevel = theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+  const indent = depth * indentPerLevel + (row.style?.indent ?? 0) * indentPerLevel;
   const semBundle = resolveSemanticBundle(row.style, theme);
   const fontWeight =
     semBundle?.fontWeight ??
@@ -2902,7 +2871,7 @@ function renderUnifiedTableRow(
 
   // Don't truncate labels - they're the primary row identifier and the width
   // was already computed to fit them (either by browser measurement or SVG estimation)
-  lines.push(`<text class="cell-text" dominant-baseline="central" x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
+  lines.push(`<text class="cell-text" dominant-baseline="central" x="${x + cellPadX + indent}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
@@ -2916,7 +2885,7 @@ function renderUnifiedTableRow(
     const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
     // Use smart measurement for accurate label width
     const labelTextWidth = measureTextWidth(row.label, fontSize, theme.text.body.family, fontWeight);
-    const badgeX = x + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
+    const badgeX = x + cellPadX + indent + labelTextWidth + BADGE.GAP;
     const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
@@ -2943,7 +2912,7 @@ function renderUnifiedTableRow(
     }
 
     const value = getCellValue(row, col);
-    const { textX, anchor } = getTextPosition(currentX, width, col.align);
+    const { textX, anchor } = getTextPositionPadded(currentX, width, col.align, cellPadX);
 
     // ────────────────────────────────────────────────────────────────
     // Schema dispatch (Phase 7e.4b). Cells whose schema registers an
@@ -3262,7 +3231,7 @@ function renderReferenceLine(
 // Border helpers — Phase 11 layout × type border model
 // ============================================================================
 
-import type { BorderSpecV2 } from "$types/theme-v2";
+import type { BorderSpec } from "$types/theme-resolved";
 
 /**
  * Emit one SVG line obeying a BorderSpec. `single` → one stroke;
@@ -3271,7 +3240,7 @@ import type { BorderSpecV2 } from "$types/theme-v2";
  * `thickness <= 0` (the caller can append unconditionally).
  */
 function borderLineSvg(
-  x1: number, y1: number, x2: number, y2: number, spec: BorderSpecV2,
+  x1: number, y1: number, x2: number, y2: number, spec: BorderSpec,
 ): string {
   if (!spec || spec.thickness <= 0) return "";
   if (spec.style === "double") {
@@ -3443,6 +3412,154 @@ export function computeNaturalDimensions(spec: WebSpec): {
   };
 }
 
+// ============================================================================
+// Layout Metrics — sizing-verification harness (docs/dev/sizing-model.md §6b)
+// ============================================================================
+//
+// Flat serializable snapshot of the real SVG/V8 layout path: per-row
+// height/top/marker-center/kind, per-column resolved width, chrome dims, and
+// an echo of the spacing tokens that drove the layout (so a snapshot also
+// records WHICH token value was consumed — catches dead-token / density-not-
+// applied regressions, not just geometry drift). Consumed by
+// layout-metrics.test.ts (snapshot gate) and, later, the debug-shapes view.
+
+export interface RowMetric {
+  index: number;
+  kind: RowKind;
+  /** Group-nesting depth (drives group-header indent + tier). */
+  depth: number;
+  /** Per-row authored indent level (row.style.indent), distinct from `depth`.
+   *  Total label indent = (depth + indent) × indentPerLevel. */
+  indent: number;
+  height: number;
+  top: number;
+  markerCenter: number;
+}
+
+export interface ColMetric {
+  id: string;
+  type: string;
+  width: number;
+  /** Absolute left X of the column's cell box (px from svg origin). */
+  x: number;
+}
+
+export interface LayoutMetrics {
+  totalWidth: number;
+  totalHeight: number;
+  headerHeight: number;
+  axisHeight: number;
+  forestWidth: number;
+  labelWidth: number;
+  plotHeight: number;
+  rowsHeight: number;
+  /** Absolute Y of the top of the column-header band (svg origin). The
+   *  data-rows area starts at mainY + headerHeight; a row's absolute top is
+   *  mainY + headerHeight + row.top. */
+  mainY: number;
+  spacing: {
+    rowHeight: number;
+    headerHeight: number;
+    cellPaddingX: number;
+    cellPaddingY: number;
+    rowGroupPadding: number;
+    indentPerLevel: number;
+    padding: number;
+    axisGap: number;
+  };
+  rows: RowMetric[];
+  columns: ColMetric[];
+}
+
+
+/** Compute the SVG/V8-path layout metrics for a spec. Pure; no rendering. */
+export function computeLayoutMetrics(
+  spec: WebSpec,
+  options: ExportOptions = {},
+): LayoutMetrics {
+  spec = normalizeLabelColumn(spec);
+  spec = compileVariants(spec);
+  validateSpec(spec);
+
+  const theme = spec.theme;
+  const padding = theme.spacing.padding;
+  const forestSettings = getForestColumnSettings(spec);
+  const layout = computeLayout(spec, options, forestSettings.nullValue);
+
+  const columnsArr = Array.isArray(spec.columns) ? spec.columns : [];
+  const primaryCol = getPrimaryColumn(columnsArr);
+  const allColumns = flattenAllColumns(columnsArr).filter(
+    (c) => c.id !== primaryCol?.id,
+  );
+
+  // Mirror generateSVG's getColWidth precedence (autoWidths → explicit →
+  // forest/viz/default).
+  const colWidth = (col: ColumnSpec): number => {
+    const pre = layout.autoWidths.get(col.id);
+    if (pre !== undefined) return pre;
+    if (col.type === "forest") {
+      if (typeof col.width === "number") return col.width;
+      return col.options?.forest?.width ?? layout.forestWidth;
+    }
+    if (col.type === "viz_bar" || col.type === "viz_boxplot" || col.type === "viz_violin") {
+      if (typeof col.width === "number") return col.width;
+      return layout.forestWidth;
+    }
+    return typeof col.width === "number" ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
+  };
+
+  // Column X positions: label slot first at `padding`, then data columns in
+  // order. Mirrors generateSVG's columnPositions (currentX = padding +
+  // labelWidth, then accumulate getColWidth) so debug-shapes boxes land on
+  // the real cell origins.
+  const columns: ColMetric[] = [];
+  let cursorX = padding;
+  if (primaryCol) {
+    columns.push({ id: primaryCol.id, type: primaryCol.type, width: layout.labelWidth, x: cursorX });
+    cursorX += layout.labelWidth;
+  }
+  for (const col of allColumns) {
+    const w = colWidth(col);
+    columns.push({ id: col.id, type: col.type, width: w, x: cursorX });
+    cursorX += w;
+  }
+
+  const displayRows = buildDisplayRows(spec);
+  const rows: RowMetric[] = displayRows.map((dr, i) => ({
+    index: i,
+    kind: resolveRowKind(dr),
+    depth: dr.depth ?? 0,
+    indent: (dr.type === "data" ? dr.row.style?.indent : undefined) ?? 0,
+    height: layout.rowHeights[i] ?? layout.rowHeight,
+    top: layout.rowPositions[i] ?? 0,
+    markerCenter: layout.rowMarkerCenters[i] ?? 0,
+  }));
+
+  return {
+    totalWidth: layout.totalWidth,
+    totalHeight: layout.totalHeight,
+    headerHeight: layout.headerHeight,
+    axisHeight: layout.axisHeight,
+    forestWidth: layout.forestWidth,
+    labelWidth: layout.labelWidth,
+    plotHeight: layout.plotHeight,
+    rowsHeight: layout.rowsHeight,
+    mainY: layout.mainY,
+    spacing: {
+      rowHeight: theme.spacing.rowHeight,
+      headerHeight: theme.spacing.headerHeight,
+      cellPaddingX: theme.spacing.cellPaddingX ?? 10,
+      cellPaddingY: theme.spacing.cellPaddingY ?? 0,
+      rowGroupPadding: theme.spacing.rowGroupPadding ?? 0,
+      indentPerLevel: theme.spacing.indentPerLevel ?? SPACING.INDENT_PER_LEVEL,
+      padding,
+      axisGap: theme.spacing.axisGap ?? 12,
+    },
+    rows,
+    columns,
+  };
+}
+
 /**
  * Mode 3 lever ladder (Phase 7A — direction-aware, width-first).
  *
@@ -3551,6 +3668,7 @@ function generateSVGForAspectTarget(
   // actually rendered for this spec (no footer → no footerGap, no
   // title+subtitle pair → no titleSubtitleGap, etc.).
   const sp = spec.theme.spacing as unknown as Record<string, number | undefined>;
+  // Apply step (below) scales these same keys; mirror them exactly.
   const VERTICAL_KEYS = ["headerGap", "axisGap", "footerGap", "headerHeight",
                          "rowGroupPadding", "bottomMargin", "titleSubtitleGap"];
   const hasTitle = !!spec.labels?.title;
@@ -3560,14 +3678,14 @@ function generateSVGForAspectTarget(
   const groupHeaderCount = buildDisplayRows(spec).filter(
     r => r.type === "group_header" && (r as { depth?: number }).depth === 0,
   ).length;
-  const scalableChromeHeight =
-      (sp.headerGap ?? 12)
-    + (sp.headerHeight ?? 0)
-    + (hasAxis ? (sp.axisGap ?? 12) : 0)
-    + (hasFooter ? (sp.footerGap ?? 8) : 0)
-    + (sp.bottomMargin ?? LAYOUT.BOTTOM_MARGIN)
-    + (hasTitle && hasSubtitle ? (sp.titleSubtitleGap ?? 13) : 0)
-    + groupHeaderCount * (sp.rowGroupPadding ?? 0);
+  const scalableChromeHeight = computeScalableChromeHeight({
+    spacing: sp,
+    hasAxis,
+    hasTitle,
+    hasSubtitle,
+    hasFooter,
+    topLevelGroupCount: groupHeaderCount,
+  });
   const heightDelta = targetHeight - naturalLayout.totalHeight;
   // MIN_ROW_HEIGHT keeps text readable when shrinking. 1.4 × font + 4
   // matches the line-height + 4 px breathing pattern used in
@@ -4446,7 +4564,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render data row
       const row = displayRow.row;
       const depth = displayRow.depth;
-      const isSpacerRow = row.style?.type === "spacer";
+      const isSpacerRow = resolveRowKind(displayRow) === "spacer";
 
       // Note: Row banding is rendered earlier (before forest intervals) to avoid covering markers
 
@@ -4496,8 +4614,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const x2 = layout.totalWidth - padding;
     if (displayRow.type === "data") {
       const row = displayRow.row;
-      const isSummaryRow = row.style?.type === "summary";
-      const isSpacerRow = row.style?.type === "spacer";
+      const kind = resolveRowKind(displayRow);
+      const isSummaryRow = rowKindProps(kind).summaryMarker;
+      const isSpacerRow = kind === "spacer";
       if (isSummaryRow) {
         parts.push(borderLineSvg(x1, y, x2, y, borders.major));
       }

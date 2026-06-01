@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_hobbit}
 \alias{web_theme_hobbit}
-\title{Hobbit theme — Hobbiton on a clear morning}
+\title{Hobbit theme — warm earthen brand, foliage-green decorative,
+tint header band. IM Fell English body + display.}
 \usage{
 web_theme_hobbit()
 }
@@ -10,16 +11,6 @@ web_theme_hobbit()
 A \link{WebTheme}.
 }
 \description{
-Cream parchment surface with a two-tier identity: warm-clay primary
-for headlines (Bag End brick), garden-green secondary for structural
-groupings (column bands, row bars, glyph fills — Sam's vegetables
-flanking the hearth — plus chrome texture, banding and hairlines
-green-tinted like garden hedgerow against parchment). Autumn-rust
-accent reserved for layered emphasis. Letterpress-era typography.
-Pairs with \code{\link[=col_pictogram]{col_pictogram()}} glyphs \code{"pipe"}, \code{"mushroom"},
-\code{"footprint"}, \code{"jar"}, \code{"pie"}, \code{"leaf"}.
-}
-\details{
-Loads two flavors of \verb{IM Fell English} (display + body) from Google
-Fonts via the WebTheme \code{web_fonts} slot.
+Hobbit theme — warm earthen brand, foliage-green decorative,
+tint header band. IM Fell English body + display.
 }

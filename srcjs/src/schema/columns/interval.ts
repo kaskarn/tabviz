@@ -85,6 +85,7 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
       label: "Separator",
       control: "text",
       default: " ",
+      kind: "core",
       hint: "Between point and bracket",
     },
     {
@@ -92,6 +93,7 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
       label: "Imprecise cutoff",
       control: "number",
       default: null,
+      kind: "core",
       hint: 'Show "—" when upper/lower > threshold',
     },
   ],

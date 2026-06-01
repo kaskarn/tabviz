@@ -24,18 +24,21 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Min value",
       control: "number",
       default: 0,
+      kind: "core",
     },
     {
       key: "maxValue",
       label: "Max value",
       control: "number",
       default: 1,
+      kind: "core",
     },
     {
       key: "color",
       label: "Filled color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme accent by default; thresholds switch color",
     },
     {
@@ -43,6 +46,7 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Color thresholds",
       control: "custom",
       default: null,
+      kind: "core",
       customComponent: "ThresholdList",
       hint: "Breakpoints where the arc color shifts",
     },
@@ -51,6 +55,7 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Track color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme muted by default",
     },
     {
@@ -58,6 +63,7 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Ring size",
       control: "segmented",
       default: "base",
+      kind: "editor",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -69,12 +75,14 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Show label",
       control: "toggle",
       default: true,
+      kind: "editor",
     },
     {
       key: "labelFormat",
       label: "Label format",
       control: "segmented",
       default: "percent",
+      kind: "core",
       segments: [
         { value: "percent", label: "Percent" },
         { value: "decimal", label: "Decimal" },
@@ -87,6 +95,7 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Label decimals",
       control: "integer",
       default: 0,
+      kind: "core",
       min: 0,
       max: 10,
       visibleWhen: (s) => s.showLabel !== false,

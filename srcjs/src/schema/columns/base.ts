@@ -20,6 +20,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Header text",
       control: "text",
       default: null,
+      kind: "editor",
       hint: "Defaults to the field name",
       at: "fixed",
       consumedBy: ["renderCell", "editor"],
@@ -29,6 +30,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Show header",
       control: "toggle",
       default: null,
+      kind: "editor",
       hint: "Auto: show iff header non-empty",
       at: "fixed",
       consumedBy: ["renderCell", "editor"],
@@ -38,6 +40,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Content align",
       control: "segmented",
       default: "left",
+      kind: "editor",
       hint: "Where cell content sits horizontally — text, sparklines, bars",
       segments: [
         { value: "left", label: "Left" },
@@ -52,6 +55,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Header align",
       control: "segmented",
       default: null,
+      kind: "editor",
       hint: "Inherit from content align if unset",
       segments: [
         { value: "left", label: "Left" },
@@ -66,6 +70,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Width",
       control: "number",
       default: "auto",
+      kind: "editor",
       hint: 'Pixels; blank or "auto" for content-driven',
       at: "fixed",
       consumedBy: ["renderCell", "estimateWidth", "editor"],
@@ -75,6 +80,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Sortable",
       control: "toggle",
       default: true,
+      kind: "editor",
       hint: "Click header to sort. Multi-effect viz sorts by the first series.",
       at: "fixed",
       consumedBy: ["editor"],
@@ -84,6 +90,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       label: "Missing value",
       control: "text",
       default: null,
+      kind: "core",
       hint: "Shown when the cell is NA / null",
       // Legacy wire path: `column.options.naText` (top-level, not in
       // any bucket). 13+ reader sites in the renderer + SVG exporter.

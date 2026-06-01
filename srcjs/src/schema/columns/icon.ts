@@ -22,6 +22,7 @@ export const ICON_SCHEMA: ColumnSchema = {
       label: "Value → icon",
       control: "custom",
       default: null,
+      kind: "core",
       customComponent: "IconMap",
       hint: 'e.g. {pass: "✓", fail: "✗"}',
     },
@@ -30,6 +31,7 @@ export const ICON_SCHEMA: ColumnSchema = {
       label: "Size",
       control: "segmented",
       default: "base",
+      kind: "editor",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -42,6 +44,7 @@ export const ICON_SCHEMA: ColumnSchema = {
       label: "Color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme content by default",
     },
   ],

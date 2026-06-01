@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_newsprint}
 \alias{web_theme_newsprint}
-\title{Newsprint theme (design)}
+\title{Newsprint theme — warm decorative tint; serif body; tint header band.
+Old Standard TT for body (newsprint serif).}
 \usage{
 web_theme_newsprint()
 }
@@ -10,16 +11,6 @@ web_theme_newsprint()
 A \link{WebTheme}.
 }
 \description{
-Broadsheet newspaper aesthetic: high-contrast black ink on off-white
-newsprint stock, with a single newspaper-red headline accent. Roboto
-Serif Condensed body for newspaper-column density; regular Roboto Serif
-for display headlines.
-}
-\details{
-Fills the "newspaper" register the other publication themes don't:
-JAMA is clinical-mono, Lancet is journal-navy, Swiss is gridded-restraint
-— none of them feel like the front page of a broadsheet.
-
-Loads \verb{Roboto Serif} (regular + condensed) from Google Fonts via the
-WebTheme \code{web_fonts} slot.
+Newsprint theme — warm decorative tint; serif body; tint header band.
+Old Standard TT for body (newsprint serif).
 }

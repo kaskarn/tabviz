@@ -8,25 +8,17 @@
 //   * Dev paths where the switcher fires before enableThemes arrives
 //   * Programmatic TS authoring: `tabviz({ theme: "lancet", ... })`
 //
-// Snapshot regenerated from the TS cascade resolver (`theme-resolve.ts`).
-// TS is canonical for JS-side themes — the R-side resolver continues to
-// run server-side for R-rendered widgets, but the snapshot here is the
-// JS-only reference. Sub-perceptual divergence (~1-25 channels near gamut
-// boundaries) between the two implementations is documented in
-// `docs/dev/r-ts-parity-notes.md` and no longer matters: each runtime is
-// canonical in its own context.
-//
-// To refresh after a cascade change:
-//   cd srcjs && bun run scripts/regenerate-theme-presets.ts
+// Resolved at module-load time via the theme adapter; the
+// inputs in `theme-presets-inputs.ts` are the source of truth.
 
 import type { WebTheme } from "$types";
-import presetsJson from "./theme-presets-v2.json";
+import { PRESETS } from "./theme-presets-inputs";
+import { buildTheme } from "./theme-adapter";
 
 // Preset names, grouped by category in declaration order. Categories
 // mirror R's `package_themes()` 2-level list shape:
 //   * journals: clinical / publication identities
-//   * design:   design-movement interpretations (light + dark pairs
-//               for solarized & tonal via WebThemeV2.lightDarkPair)
+//   * design:   design-movement interpretations (light + dark pairs)
 //   * lotr:     editorial easter-egg themes
 export const THEME_NAMES = [
   "cochrane",
@@ -51,7 +43,9 @@ export const THEME_NAMES = [
 
 export type ThemeName = (typeof THEME_NAMES)[number];
 
-export const THEME_PRESETS = presetsJson as Record<ThemeName, WebTheme>;
+export const THEME_PRESETS: Record<ThemeName, WebTheme> = Object.fromEntries(
+  THEME_NAMES.map((name) => [name, buildTheme(PRESETS[name], name)]),
+) as Record<ThemeName, WebTheme>;
 
 // Human-readable theme labels for the in-widget switcher UI.
 export const THEME_LABELS: Record<ThemeName, string> = {

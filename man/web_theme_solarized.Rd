@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_solarized}
 \alias{web_theme_solarized}
-\title{Solarized light theme (design)}
+\title{Solarized theme (light). Source Sans 3 body.}
 \usage{
 web_theme_solarized()
 }
@@ -10,7 +10,5 @@ web_theme_solarized()
 A \link{WebTheme}.
 }
 \description{
-Ethan Schoonover's Solarized palette in light variant. base3 cream
-surfaces, base02 slate text, yellow primary, magenta accent. Pairs with
-\code{\link[=web_theme_solarized_dark]{web_theme_solarized_dark()}} via the \code{light_dark_pair} field.
+Solarized theme (light). Source Sans 3 body.
 }

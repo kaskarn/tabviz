@@ -50,7 +50,7 @@ import type {
   ZoomState,
 } from "$types";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
-import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/table-metrics";
 
 /** True if any top-level column in the spec is a ColumnGroup. Pushes the
  *  header strip to a 2-row layout, which changes the min header-row height. */
@@ -169,27 +169,42 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
     const naturalRowHeight = spec.theme.spacing.rowHeight;
     let rowHeight = naturalRowHeight;
-    const lineHeight = 1.5;
+    const lineHeight = LINE_HEIGHT;
     const headerFontSize = parseFontSize(spec.theme.text.body.size);
-    const headerScale = 1.05;
-    const minHeaderRowHeight = Math.ceil(headerFontSize * headerScale * lineHeight) + 6;
     const headerDepthForLayout = anyForestColumnGroups(spec.columns) ? 2 : 1;
-    const headerHeight = Math.max(
-      spec.theme.spacing.headerHeight,
-      minHeaderRowHeight * headerDepthForLayout,
+    const headerHeight = computeHeaderHeight({
+      bodyFontPx: headerFontSize,
+      themeHeaderHeight: spec.theme.spacing.headerHeight,
+      headerDepth: headerDepthForLayout,
+    });
+    const axisGap = spec.theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
+    // Axis band is reserved only when a column actually renders an x-axis
+    // strip (forest or any viz_*). Converged with the SVG backend (2026-06):
+    // previously the DOM reserved axis height unconditionally, over-tall for
+    // plain tables.
+    const hasAxisColumn = allColumns.some(
+      (c) => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
     );
-    const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP;
-    const someColumnHasAxisLabel = forestColumns.some(
-      (fc) => !!fc.column.options?.forest?.axisLabel,
-    );
+    const someColumnHasAxisLabel = allColumns.some((c) => {
+      if (c.type === "forest") return !!c.options?.forest?.axisLabel;
+      if (c.type === "viz_bar") return !!c.options?.vizBar?.axisLabel;
+      if (c.type === "viz_boxplot") return !!c.options?.vizBoxplot?.axisLabel;
+      if (c.type === "viz_violin") return !!c.options?.vizViolin?.axisLabel;
+      return false;
+    });
     const axisGeom = computeAxisLayout(
       { fontSizeSm: spec.theme.text.label.size, lineHeight: 1.5 },
       someColumnHasAxisLabel,
       spec.theme.plot.tickMarkLength,
     );
-    const axisHeight = axisGap + axisGeom.axisRegionHeight;
+    const axisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisGeom.axisRegionHeight);
     const hasForest = forestColumns.length > 0;
     const themePlotWidth = spec.theme.layout?.plotWidth;
+    // forestWidth INTENTIONALLY diverges from the SVG backend and is NOT shared
+    // in table-metrics: the DOM widget is container-responsive
+    // (`effectiveWidth * 0.25`, reflows on resize) while the SVG export sizes
+    // against a fixed canvas (`options.width` residual). This is correct
+    // context-dependence, not drift — converging it would regress one runtime.
     let forestWidth = hasForest
       ? (plotWidthOverride
         ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
@@ -288,9 +303,21 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
       const naturalChromeHeight = approxChromeHeight;
       const naturalPlotHeight = approxRowsHeight;
-      // chromeScale denominator is the scalable subset of natural chrome
-      // (headerHeight + axisHeight; padding × 2 stays unscaled).
-      const scalableChromeHeight = headerHeight + axisHeight;
+      // chromeScale denominator: the scalable subset of natural chrome.
+      // Converged with the SVG backend (2026-06) — was a crude
+      // `headerHeight + axisHeight` proxy that under-allocated chrome for
+      // specs with title/subtitle/footer/multiple groups.
+      const topLevelGroupCount = displayRows.filter(
+        (r) => r.type === "group_header" && r.depth === 0,
+      ).length;
+      const scalableChromeHeight = computeScalableChromeHeight({
+        spacing: spec.theme.spacing as unknown as ScalableChromeInput["spacing"],
+        hasAxis: axisHeight > 0,
+        hasTitle: !!spec.labels?.title,
+        hasSubtitle: !!spec.labels?.subtitle,
+        hasFooter: !!(spec.labels?.caption || spec.labels?.footnote),
+        topLevelGroupCount,
+      });
 
       if (heightDelta > 0 && naturalPlotHeight > 0) {
         const CHROME_SHARE = 0.35;
@@ -333,59 +360,15 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // line counts up to the column's `wrap` cap.
     const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
     const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.text.body.size) * lineHeight);
-    const rowHeights: number[] = [];
 
-    // rowPaddedAfter computed inline here (slim, scoped to layout): flag
-    // each data row that precedes a top-level group_header so the layout
-    // can inflate its track for rowGroupPadding.
-    const rowPaddedAfterLocal = new Array<boolean>(displayRows.length).fill(false);
-    for (let i = 0; i < displayRows.length; i++) {
-      const dr = displayRows[i];
-      if (dr.type !== "group_header" || dr.depth !== 0) continue;
-      for (let j = i - 1; j >= 0; j--) {
-        const prev = displayRows[j];
-        if (prev.type === "data" && prev.row.style?.type !== "spacer") {
-          rowPaddedAfterLocal[j] = true;
-          break;
-        }
-      }
-    }
-
-    for (let i = 0; i < displayRows.length; i++) {
-      const displayRow = displayRows[i];
-      let h: number;
-      if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
-        h = rowHeight / 2;
-      } else if (displayRow.type === "group_header") {
-        h = rowHeight;
-      } else if (displayRow.type === "data") {
-        const lines = wrapLineCounts[displayRow.row.id] ?? 1;
-        h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
-      } else {
-        h = rowHeight;
-      }
-      if (rowPaddedAfterLocal[i]) h += rowGroupPadding;
-      rowHeights.push(h);
-    }
-
-    const rowPositions: number[] = [];
-    let cumulativeY = 0;
-    for (const h of rowHeights) {
-      rowPositions.push(cumulativeY);
-      cumulativeY += h;
-    }
-
-    // Marker-center Y per row. For a "padded-after" row we add
-    // rowGroupPadding to the track height (so the next group_header sits
-    // below empty space, not flush). The marker itself must still center
-    // on the *data* portion of the row, not the inflated total — otherwise
-    // forest dots / bars / boxes / violins drift downward as the user
-    // bumps rowGroupPadding up. Single source so every renderer agrees.
-    const rowMarkerCenters: number[] = [];
-    for (let i = 0; i < rowHeights.length; i++) {
-      const trailingPad = rowPaddedAfterLocal[i] ? rowGroupPadding : 0;
-      rowMarkerCenters.push(rowPositions[i] + (rowHeights[i] - trailingPad) / 2);
-    }
+    // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
+    const { rowHeights, rowPositions, rowMarkerCenters, rowsHeight: cumulativeY } = computeRowLayout({
+      displayRows,
+      wrapLineCounts,
+      rowHeight,
+      rowGroupPadding,
+      dataLineHeightPx,
+    });
 
     const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
 

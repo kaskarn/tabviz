@@ -40,6 +40,7 @@ import type {
 } from "$types";
 import { getColumnDisplayText } from "$lib/formatters";
 import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
+import { resolveRowKind, rowKindProps } from "$lib/row-kind";
 import {
   rankTopK,
   measureExact,
@@ -594,7 +595,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       // Build the candidate-pool for the cells: skip header/spacer rows.
       const candidates: string[] = [];
       for (const row of spec!.data.rows) {
-        if (row.style?.type === "header" || row.style?.type === "spacer") continue;
+        if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) continue;
         const text = getColumnDisplayText(row, col);
         if (text) candidates.push(text);
       }
@@ -646,6 +647,11 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     if (primaryCol && !userResizedIds.has(primaryCol.id)) {
       let maxLabelWidth = 0;
       const rowGripBudget = 0;
+      // Canonical indent token: the renderer indents by
+      // theme.rowGroup.indentPerLevel (TabvizPlot:1723, svg-generator:1534),
+      // NOT the legacy SPACING.INDENT_PER_LEVEL (12). Budget label width with
+      // the same value so columns don't under-size at indent depth.
+      const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
 
       const groupDepths = new Map<string, number>();
       for (const group of spec.data.groups) {
@@ -685,7 +691,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         const depth = getRowDepth(row.groupId);
         const rowIndent = row.style?.indent ?? 0;
         const totalIndent = depth + rowIndent;
-        const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
+        const indentWidth = totalIndent * indentPx;
 
         let prefixPx = indentWidth + rowGripBudget;
         let badgeText: string | null = null;
@@ -754,7 +760,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       // absolute terms.
       for (const group of spec.data.groups) {
         if (group.label) {
-          const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
+          const indentWidth = group.depth * indentPx;
           const labelWidth = measureExact(group.label, headerFontKey, headerFontSizePx)
             ?? estimateTextWidth(group.label, headerFontSizePx, headerFontKey.weight);
 

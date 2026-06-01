@@ -26,6 +26,7 @@ export const CATEGORICAL_SCHEMA: ColumnSchema = {
       // "infer from data" — the renderer can fallback to data-derived levels.
       control: "custom",
       default: [],
+      kind: "core",
       customComponent: "LevelSetEditor",
       hint: "Defined value set (or empty = infer from data)",
     },
@@ -37,6 +38,7 @@ export const CATEGORICAL_SCHEMA: ColumnSchema = {
       label: "Levels (named)",
       control: "text",
       default: null,
+      kind: "core",
       hint: "Reference a shared level set by name",
     },
   ],

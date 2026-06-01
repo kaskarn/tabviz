@@ -4,7 +4,7 @@
   //
   // Each series row: anchor color + a SegmentedField shape picker +
   // expandable color-bundle (fill, stroke, muted, emphasis, text_fg).
-  // Shape rides on the SlotBundle now (theme.series[i].shape) — null
+  // Shape rides on the SlotRole now (theme.series[i].shape) — null
   // falls through to the renderer's default 4-shape rotation.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
@@ -55,13 +55,13 @@
   }
 
   const slotFields = [
-    { field: "fill",            label: "Fill" },
-    { field: "stroke",          label: "Stroke" },
-    { field: "fillMuted",       label: "Fill (muted)" },
-    { field: "strokeMuted",     label: "Stroke (muted)" },
-    { field: "fillEmphasis",    label: "Fill (emphasis)" },
-    { field: "strokeEmphasis",  label: "Stroke (emphasis)" },
-    { field: "textFg",          label: "Text fg" },
+    { field: "fill",       label: "Fill" },
+    { field: "stroke",     label: "Stroke" },
+    { field: "fillDim",    label: "Fill (dim)" },
+    { field: "strokeDim",  label: "Stroke (dim)" },
+    { field: "fillHot",    label: "Fill (hot)" },
+    { field: "strokeHot",  label: "Stroke (hot)" },
+    { field: "textFg",     label: "Text fg" },
   ];
 </script>
 

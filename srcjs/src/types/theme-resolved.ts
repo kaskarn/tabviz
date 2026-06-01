@@ -34,7 +34,7 @@
  * The serializer's `na_to_null` is defensive but unreachable on resolved
  * themes — the JS consumer can treat every field as guaranteed.
  */
-export interface TextRoleV2 {
+export interface TextRole {
   family: string;
   size: string;
   weight: number;
@@ -45,32 +45,38 @@ export interface TextRoleV2 {
 }
 
 /**
- * Series slot bundle — one entry per pooled effect "slot" used by the
- * forest, bar, box, violin, lollipop marks. R's `derive_slot_bundle` +
- * `fill_slot_bundle` ensure every color field is filled before
- * serialization. `shape` stays nullable — null means "renderer picks
- * a default from the 4-shape rotation."
+ * Per-series slot role — one entry per pooled effect "slot" used by the
+ * forest, bar, box, violin, lollipop marks. `dim` is the de-emphasized
+ * state (used by other-series during hover); `hot` is the boosted
+ * interactive-highlight state. Both are derived from the slot anchor
+ * via OKLCH math at resolve time. `shape` stays nullable — null means
+ * "renderer picks a default from the 4-shape rotation."
+ *
+ * Renamed from `SlotBundle` (Sprint 1 PR 2): `muted` and `emphasis`
+ * each carried 3+ meanings across the theme; `dim`/`hot` reserves
+ * `muted` for the chrome/role layer and the paint token, and reserves
+ * `emphasis` for the paint token + design intent.
  */
-export interface SlotBundleV2 {
+export interface SlotRole {
   fill: string;
   stroke: string;
-  fillMuted: string;
-  strokeMuted: string;
-  fillEmphasis: string;
-  strokeEmphasis: string;
+  fillDim: string;
+  strokeDim: string;
+  fillHot: string;
+  strokeHot: string;
   textFg: string;
   /** "square" | "circle" | "diamond" | "triangle" | null */
   shape: string | null;
 }
 
 /** Background + foreground pair for a row state (alt/hover/selected). */
-export interface RowStateV2 {
+export interface RowState {
   bg: string | null;
   fg: string | null;
 }
 
 /** Richer state for semantic rows — adds border, marker, font weight/style. */
-export interface RowSemanticV2 {
+export interface RowSemantic {
   bg: string | null;
   fg: string | null;
   border: string | null;
@@ -82,14 +88,14 @@ export interface RowSemanticV2 {
 }
 
 /** One variant of a header cluster (light/tint/bold). */
-export interface HeaderVariantV2 {
+export interface HeaderVariant {
   bg: string | null;
   fg: string | null;
   rule: string | null;
 }
 
 /** One variant of the first-column cluster (plain/bold). */
-export interface FirstColumnVariantV2 {
+export interface FirstColumnVariant {
   bg: string | null;
   fg: string | null;
   rule: string | null;
@@ -97,16 +103,16 @@ export interface FirstColumnVariantV2 {
 }
 
 /** Bindings for one row-group nesting level (L1/L2/L3). */
-export interface RowGroupTierV2 {
+export interface RowGroupTier {
   bg: string | null;
   fg: string | null;
   rule: string | null;
-  text: TextRoleV2;
+  text: TextRole;
   borderBottom: boolean;
 }
 
 /** Per-mark-type slot-bundle field selectors. */
-export interface MarkRecipeV2 {
+export interface MarkRecipe {
   /** Slot-bundle key for the mark's body (e.g. "fill"). */
   body: string;
   /** Slot-bundle key for the mark's outline (e.g. "stroke"). */
@@ -119,7 +125,7 @@ export interface MarkRecipeV2 {
 // Tier 1 — customer-facing inputs
 // ────────────────────────────────────────────────────────────────────
 
-export interface ThemeInputsV2 {
+export interface ResolvedInputs {
   /** 5-step neutral ramp, lightest to darkest. */
   neutral: string[];
   // Identity (2-tier mirror chain).
@@ -145,7 +151,7 @@ export interface ThemeInputsV2 {
   slotStyle: "fill_with_darker_stroke" | "flat_fill" | "outlined";
 }
 
-export interface ThemeVariantsV2 {
+export interface ThemeVariants {
   /** "compact" | "comfortable" | "spacious" */
   density: "compact" | "comfortable" | "spacious";
   /** "light" | "tint" | "bold" */
@@ -158,39 +164,39 @@ export interface ThemeVariantsV2 {
 // Tier 2 — chrome roles
 // ────────────────────────────────────────────────────────────────────
 
-export interface SurfacesV2 {
+export interface Surfaces {
   base: string;
   muted: string;
   raised: string;
 }
 
-export interface ContentV2 {
+export interface Content {
   primary: string;
   secondary: string;
   muted: string;
   inverse: string;
 }
 
-export interface DividersV2 {
+export interface Dividers {
   subtle: string;
   strong: string;
 }
 
-export interface AccentRolesV2 {
+export interface AccentRoles {
   default: string;
   muted: string;
   tintSubtle: string;
   tintMedium: string;
 }
 
-export interface StatusColorsV2 {
+export interface StatusColors {
   positive: string;
   negative: string;
   warning: string;
   info: string;
 }
 
-export interface SemanticsV2 {
+export interface Semantics {
   fill: string;
 }
 
@@ -198,15 +204,15 @@ export interface SemanticsV2 {
 // Tier 2 — typography roles
 // ────────────────────────────────────────────────────────────────────
 
-export interface TextRolesV2 {
-  title: TextRoleV2;
-  subtitle: TextRoleV2;
-  body: TextRoleV2;
-  cell: TextRoleV2;
-  label: TextRoleV2;
-  tick: TextRoleV2;
-  footnote: TextRoleV2;
-  caption: TextRoleV2;
+export interface TextRoles {
+  title: TextRole;
+  subtitle: TextRole;
+  body: TextRole;
+  cell: TextRole;
+  label: TextRole;
+  tick: TextRole;
+  footnote: TextRole;
+  caption: TextRole;
   /**
    * Optional numeric-flavored text role. When set, the renderer picks
    * this role for numeric-category columns (numeric / percent /
@@ -214,14 +220,14 @@ export interface TextRolesV2 {
    * Resolver fills it from `body` when omitted, so this is always a
    * fully-defined TextRole on the wire.
    */
-  numeric: TextRoleV2;
+  numeric: TextRole;
 }
 
 // ────────────────────────────────────────────────────────────────────
 // Tier 2 — spacing
 // ────────────────────────────────────────────────────────────────────
 
-export interface SpacingTokensV2 {
+export interface SpacingTokens {
   rowHeight: number;
   headerHeight: number;
   padding: number;
@@ -245,84 +251,89 @@ export interface SpacingTokensV2 {
 // Tier 3 — clusters
 // ────────────────────────────────────────────────────────────────────
 
-export interface AnnotationClusterV2 {
-  title: TextRoleV2;
-  subtitle: TextRoleV2;
-  caption: TextRoleV2;
-  footnote: TextRoleV2;
+export interface AnnotationCluster {
+  title: TextRole;
+  subtitle: TextRole;
+  caption: TextRole;
+  footnote: TextRole;
 }
 
-export interface HeaderClusterV2 {
-  light: HeaderVariantV2;
-  tint: HeaderVariantV2;
-  bold: HeaderVariantV2;
-  text: TextRoleV2;
+export interface HeaderCluster {
+  light: HeaderVariant;
+  tint: HeaderVariant;
+  bold: HeaderVariant;
+  text: TextRole;
 }
 
-export type ColumnGroupClusterV2 = HeaderClusterV2;
+export type ColumnGroupCluster = HeaderCluster;
 
-export interface RowGroupClusterV2 {
-  L1: RowGroupTierV2;
-  L2: RowGroupTierV2;
-  L3: RowGroupTierV2;
+export interface RowGroupCluster {
+  L1: RowGroupTier;
+  L2: RowGroupTier;
+  L3: RowGroupTier;
   indentPerLevel: number | null;
 }
 
-export interface RowClusterV2 {
-  base: RowStateV2;
-  alt: RowStateV2;
-  hover: RowStateV2;
-  selected: RowStateV2;
-  emphasis: RowSemanticV2;
-  muted: RowSemanticV2;
-  accent: RowSemanticV2;
-  bold: RowSemanticV2;
-  fill: RowSemanticV2;
+export interface RowCluster {
+  base: RowState;
+  alt: RowState;
+  hover: RowState;
+  selected: RowState;
+  emphasis: RowSemantic;
+  muted: RowSemantic;
+  accent: RowSemantic;
+  bold: RowSemantic;
+  fill: RowSemantic;
   /** Parsed banding spec — R's `serialize_banding` emits `{mode, level}`. */
-  banding: BandingV2;
+  banding: Banding;
   selectedEdgeWidth: number;
   borderWidth: number;
 }
 
-export interface CellClusterV2 {
+export interface CellCluster {
   bg: string | null;
   fg: string | null;
   border: string | null;
-  text: TextRoleV2;
+  text: TextRole;
 }
 
-export interface FirstColumnClusterV2 {
-  plain: FirstColumnVariantV2;
-  bold: FirstColumnVariantV2;
+export interface FirstColumnCluster {
+  /**
+   * Default (un-emphasized) first-column variant. Renamed from `plain`
+   * to `default` in Sprint 1 PR 3 so the wire key matches the
+   * `firstColumnStyle: "default" | "bold"` variant id.
+   */
+  default: FirstColumnVariant;
+  bold: FirstColumnVariant;
 }
 
-export interface PlotScaffoldV2 {
+export interface PlotScaffold {
   bg: string | null;
   axisLine: string;
   tickMark: string;
   gridline: string;
   reference: string;
-  axisLabel: TextRoleV2;
-  tickLabel: TextRoleV2;
+  axisLabel: TextRole;
+  tickLabel: TextRole;
   tickMarkLength: number;
   lineWidth: number;
   pointSize: number;
 }
 
-export interface MarksRecipesV2 {
-  forest: MarkRecipeV2;
-  summary: MarkRecipeV2;
-  bar: MarkRecipeV2;
-  box: MarkRecipeV2;
-  violin: MarkRecipeV2;
-  lollipop: MarkRecipeV2;
+export interface MarksRecipes {
+  forest: MarkRecipe;
+  summary: MarkRecipe;
+  bar: MarkRecipe;
+  box: MarkRecipe;
+  violin: MarkRecipe;
+  lollipop: MarkRecipe;
 }
 
 // ────────────────────────────────────────────────────────────────────
 // Axis + Layout config (sibling of the cascade, lives on the theme)
 // ────────────────────────────────────────────────────────────────────
 
-export interface AxisConfigV2 {
+export interface AxisConfig {
   rangeMin: number | null;
   rangeMax: number | null;
   tickCount: number | null;
@@ -343,13 +354,13 @@ export interface AxisConfigV2 {
  * identical to `BandingSpec` in `./index.ts`; re-exported here so the
  * v2 theme types are self-contained.
  */
-export type BandingV2 = import("./index").BandingSpec;
+export type Banding = import("./index").BandingSpec;
 
-export interface LayoutV2 {
+export interface Layout {
   plotWidth: number | "auto";
   containerBorder: boolean;
   containerBorderRadius: number;
-  banding: BandingV2 | null;
+  banding: Banding | null;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -361,7 +372,7 @@ export interface LayoutV2 {
  * `thickness`-sized gap between them; `single` emits one stroke at
  * `thickness` px.
  */
-export interface BorderSpecV2 {
+export interface BorderSpec {
   thickness: number;
   /** "single" | "double" */
   style: "single" | "double";
@@ -378,12 +389,12 @@ export interface BorderSpecV2 {
  *   - Header bottom + group/summary breaks → `major`
  *   - Outer table edge   → `table` (always rendered when thickness > 0)
  */
-export interface ThemeBordersV2 {
+export interface ThemeBorders {
   /** "horizontal" | "vertical" | "grid" | "none" */
   layout: "horizontal" | "vertical" | "grid" | "none";
-  major: BorderSpecV2;
-  minor: BorderSpecV2;
-  table: BorderSpecV2;
+  major: BorderSpec;
+  minor: BorderSpec;
+  table: BorderSpec;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -391,7 +402,7 @@ export interface ThemeBordersV2 {
 // ────────────────────────────────────────────────────────────────────
 
 /** Web font declaration injected into `document.head` on widget mount. */
-export interface WebFontV2 {
+export interface WebFont {
   family: string;
   url: string;
 }
@@ -402,11 +413,11 @@ export interface WebFontV2 {
  * happens JS-side; the R cascade (`resolve_theme`) fills NA-defaults
  * before serialization.
  */
-export interface WebThemeV2 {
+export interface WebTheme {
   /** Wire schema discriminator. R emits `2`. */
   schemaVersion: 2;
   name: string;
-  webFonts: WebFontV2[];
+  webFonts: WebFont[];
   /**
    * Name of the sibling theme that flips this theme's light/dark mode,
    * or `null` if the theme stands alone. Wire-only convention — the
@@ -414,33 +425,41 @@ export interface WebThemeV2 {
    * but doesn't auto-switch yet (deferred).
    */
   lightDarkPair: string | null;
-  variants: ThemeVariantsV2;
-  inputs: ThemeInputsV2;
-  axis: AxisConfigV2;
-  layout: LayoutV2;
-  borders: ThemeBordersV2;
+  variants: ThemeVariants;
+  inputs: ResolvedInputs;
+  /**
+   * The V3 authoring inputs that produced this theme (brand, accent,
+   * decorative, mode, density, neutral_tint, neutral_tint_strength,
+   * fonts, status, data schemes). Round-trips with the theme so the
+   * settings panel can read them, edit, and rebuild via `buildTheme()`.
+   * Optional for compat with hand-constructed wire blobs that skip it.
+   */
+  authoringInputs?: import("./theme-inputs").ThemeInputs;
+  axis: AxisConfig;
+  layout: Layout;
+  borders: ThemeBorders;
   // Tier 2 — chrome
-  surface: SurfacesV2;
-  content: ContentV2;
-  divider: DividersV2;
-  accent: AccentRolesV2;
-  status: StatusColorsV2;
-  semantic: SemanticsV2;
+  surface: Surfaces;
+  content: Content;
+  divider: Dividers;
+  accent: AccentRoles;
+  status: StatusColors;
+  semantic: Semantics;
   // Tier 2 — data
-  series: SlotBundleV2[];
+  series: SlotRole[];
   // Tier 2 — typography + spacing
-  text: TextRolesV2;
-  spacing: SpacingTokensV2;
+  text: TextRoles;
+  spacing: SpacingTokens;
   // Tier 3 — component clusters
-  annotation: AnnotationClusterV2;
-  header: HeaderClusterV2;
-  columnGroup: ColumnGroupClusterV2;
-  rowGroup: RowGroupClusterV2;
-  row: RowClusterV2;
-  cell: CellClusterV2;
-  firstColumn: FirstColumnClusterV2;
-  plot: PlotScaffoldV2;
-  marks: MarksRecipesV2;
+  annotation: AnnotationCluster;
+  header: HeaderCluster;
+  columnGroup: ColumnGroupCluster;
+  rowGroup: RowGroupCluster;
+  row: RowCluster;
+  cell: CellCluster;
+  firstColumn: FirstColumnCluster;
+  plot: PlotScaffold;
+  marks: MarksRecipes;
   /**
    * Tag-driven node finalization rules. Renderers tag RenderNodes
    * with semantic labels (`"interval-range"`, `"footnote-marker"`,

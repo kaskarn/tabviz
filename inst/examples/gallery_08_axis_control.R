@@ -53,9 +53,12 @@ with_gridlines <- effect_sizes |>
     ),
     scale = "log", null_value = 1,
     axis_ticks = c(0.1, 0.25, 0.5, 1, 2, 4),
-    theme = web_theme_cochrane() |>
-      set_theme_field(c("axis", "gridlines"), TRUE) |>
-      set_theme_field(c("axis", "gridline_style"), "dotted"),
+    theme = local({
+      t <- web_theme_cochrane()
+      t@axis@gridlines <- TRUE
+      t@axis@gridline_style <- "dotted"
+      t
+    }),
     axis_label = "Hazard Ratio (log scale)",
     title = "With Gridlines",
     subtitle = "Custom ticks on log scale with dotted gridlines"
@@ -70,8 +73,11 @@ aggressive_clip <- effect_sizes |>
     label = "study",
     columns = list(col_interval("hr", "lower", "upper", header = "HR (95% CI)")),
     scale = "log", null_value = 1,
-    theme = web_theme_cochrane() |>
-      set_theme_field(c("axis", "ci_clip_factor"), 1.0),  # More aggressive clipping
+    theme = local({
+      t <- web_theme_cochrane()
+      t@axis@ci_clip_factor <- 1.0  # More aggressive clipping
+      t
+    }),
     axis_label = "Hazard Ratio",
     title = "Aggressive CI Clipping",
     subtitle = "ci_clip_factor = 1.0 (default is 2.0)",

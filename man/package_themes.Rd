@@ -2,26 +2,13 @@
 % Please edit documentation in R/themes.R
 \name{package_themes}
 \alias{package_themes}
-\title{All v2 preset themes}
+\title{Available theme presets, organized by category.}
 \usage{
 package_themes()
 }
 \value{
-A 2-level named list of \link{WebTheme} objects.
+A nested list: category -> list of resolved \link{WebTheme} objects.
 }
 \description{
-Returns a 2-level named list of v2 theme presets, organized into
-categories. The first level is the category (renders as a tab in the
-in-widget theme switcher when \code{enable_themes = "default"}); the
-second level is the theme name within the category.
-}
-\details{
-Categories:
-\itemize{
-\item \code{journals} — clinical / publication identities (Cochrane, Lancet,
-JAMA, Dark).
-\item \code{design} — design-movement interpretations (Bauhaus, Swiss, Tufte,
-Newsprint, Solarized x \{light, dark\}, Tonal x \{light, dark\}).
-\item \code{lotr} — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
-}
+Available theme presets, organized by category.
 }

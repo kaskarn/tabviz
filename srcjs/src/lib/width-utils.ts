@@ -45,6 +45,7 @@ import type { ColumnSpec, Row, ColumnOptions, Group } from "../types";
 import { getColumnDisplayText } from "./formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./rendering-constants";
 import { dispatchForColumn } from "../schema/dispatch";
+import { resolveRowKind, rowKindProps } from "./row-kind";
 
 // ============================================================================
 // Text Width Measurement
@@ -221,8 +222,8 @@ export function calculateColumnAutoWidth(
 
   // Measure all data cell values
   for (const row of rows) {
-    // Skip header/spacer rows that don't have real data
-    if (row.style?.type === "header" || row.style?.type === "spacer") {
+    // Skip rows that don't measure width (header / spacer) per RowKind.
+    if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) {
       continue;
     }
 

@@ -15,6 +15,7 @@
  */
 
 import type { ComputedLayout, DisplayRow } from "$types";
+import { resolveRowKind, type RowKind } from "./row-kind";
 
 export function isLayoutDebugEnabled(): boolean {
   if (typeof window === "undefined") return false;
@@ -40,7 +41,7 @@ export function isLayoutOverlayEnabled(): boolean {
 
 interface RowReport {
   index: number;
-  kind: "header" | "data" | "group_header" | "spacer";
+  kind: RowKind;
   predictedHeight: number;
   actualHeight: number;
   delta: number;
@@ -93,12 +94,7 @@ export function reportLayoutMeasurements(input: LayoutDebugInput): void {
     const cell = primaryCells[i];
     const r = cell.getBoundingClientRect();
     const dr = displayRows[i];
-    const kind: RowReport["kind"] =
-      dr?.type === "group_header"
-        ? "group_header"
-        : dr?.type === "data" && dr.row.style?.type === "spacer"
-          ? "spacer"
-          : "data";
+    const kind: RowReport["kind"] = resolveRowKind(dr);
     const predictedHeight = layout.rowHeights[i] ?? layout.rowHeight;
     const predictedTop = layout.rowPositions[i] ?? 0;
     const actualHeight = r.height;

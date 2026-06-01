@@ -14,7 +14,7 @@
  */
 
 import { contrastRatio } from "./oklch";
-import type { WebThemeV2 } from "../types/theme-v2";
+import type { WebTheme } from "../types/theme-resolved";
 
 // Header text is bold (weight=600) and lives in chrome bands rather than
 // dense reading flow, so WCAG AA Large (3.0) is the applicable bar.
@@ -55,7 +55,7 @@ export class ThemeValidationError extends Error {
  * Validate every contrast invariant on a resolved theme. Throws a
  * `ThemeValidationError` on failure; returns void on success.
  */
-export function validateResolvedTheme(theme: WebThemeV2): void {
+export function validateResolvedTheme(theme: WebTheme): void {
   const invariants: Invariant[] = [
     {
       name: "header bold band: header.bold.fg must read on header.bold.bg",

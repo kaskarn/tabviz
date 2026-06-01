@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_bmj}
 \alias{web_theme_bmj}
-\title{BMJ theme (v2)}
+\title{BMJ theme — clean blue with vermillion accent. IBM Plex Sans body.}
 \usage{
 web_theme_bmj()
 }
@@ -10,13 +10,5 @@ web_theme_bmj()
 A \link{WebTheme}.
 }
 \description{
-BMJ Group interpretation: teal primary in a different register than
-Cochrane's brighter cyan-teal — cooler, more contemporary, oriented
-toward modern medical communication. Warm-gray secondary, orange
-accent for emphasis. Modern sans-serif typography throughout.
-}
-\details{
-Distinct from Cochrane: cooler teal with more depth (vs Cochrane's
-brighter heritage cyan), warm-gray secondary instead of mirroring,
-orange complement instead of coral.
+BMJ theme — clean blue with vermillion accent. IBM Plex Sans body.
 }

@@ -74,6 +74,7 @@
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
   import { isVizType, resolveShowHeader } from "$lib/column-types";
   import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
+  import { resolveRowKind } from "$lib/row-kind";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {
     isLayoutDebugEnabled,
@@ -1634,7 +1635,7 @@
           {@const rowClasses = row ? getRowClasses(effectiveRowStyle, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
           {@const semBundle = row && theme ? resolveSemanticBundle(effectiveRowStyle, theme) : null}
           {@const rowStyles = row ? getRowStyles(effectiveRowStyle, rowDepth, semBundle) : ""}
-          {@const isSpacerRow = row?.style?.type === "spacer"}
+          {@const isSpacerRow = !!row && resolveRowKind({ type: "data", row }) === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupTier = isGroupHeader && theme
             ? (rowDepth === 0 ? theme.rowGroup.L1
@@ -1903,9 +1904,9 @@
                     x={colScale(annotation.x)}
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
-                    fill={annotation.color ?? "var(--tv-text-muted)"}
-                    font-size="var(--tv-font-size-sm)"
-                    font-weight="500"
+                    fill={annotation.color ?? theme?.text?.label?.fg ?? "var(--tv-text-muted)"}
+                    font-size={theme?.text?.label?.size ?? "var(--tv-font-size-sm)"}
+                    font-weight={theme?.text?.label?.weight ?? 500}
                   >
                     {annotation.label}
                   </text>
@@ -1929,13 +1930,13 @@
                       {@const annX = markerX + offset}
                       {@const sz = 5 * (customAnn.size ?? 1)}
                       {#if customAnn.shape === "circle"}
-                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "square"}
-                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "triangle"}
-                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "star"}
-                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
                       {/if}
                     {/if}
                   {/if}
@@ -2434,8 +2435,10 @@
   ): string {
     const classes: string[] = [];
 
-    if (style?.type === "header") classes.push("row-header");
-    if (style?.type === "summary") classes.push("row-summary");
+    // row-header / row-summary are kind-named CSS hooks; derive via RowKind.
+    const styleKind = resolveRowKind({ type: "data", row: { style } });
+    if (styleKind === "header") classes.push("row-header");
+    if (styleKind === "summary") classes.push("row-summary");
     if (style?.bold) classes.push("row-bold");
     if (style?.italic) classes.push("row-italic");
 

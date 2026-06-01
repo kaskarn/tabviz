@@ -1,3 +1,164 @@
+# tabviz (development)
+
+## Theme rationalization arc — V3 system (PRs A-I)
+
+A 9-PR arc rebuilt the theme surface around a unified vocabulary
+(ink / paper / brand / rule / role-driven recipes / data palettes),
+addressable references (ref("ink_muted"), ref("brand.9")), and an
+inputs+pins+overrides wire format. The new V3 system ships as a
+parallel, fully-tested foundation; the V2-to-V3 consumer cutover is
+the next sprint's work. See docs/dev/theme-rationalization-arc.md for
+status, the migration plan, and what remains.
+
+* PR A — OKLCH extensions (APCA contrast, 12-step ramps),
+  ThemeInputsV3 S7 class + TS resolver skeleton. Mode-aware ramp step
+  picking; APCA-derived brand_ink / accent_ink / status_ink pairs.
+* PR B — ref() resolver path (plain hex, T2 token name, ramp-step
+  string, tagged object, optional alpha as hex8). PaintRoleV3,
+  ThemeRolesV3, full cluster type shapes. defaultRoles() per locked
+  design: emphasis uses ink (editorial weight); accent uses accent
+  token (engagement). defaultClusters() wires header.bold to brand
+  plus brand_ink, row.alt to paper_alt, plot to rule_strong/subtle.
+* PR C — buildThemeCssV3 emits --tv-* CSS variables. Token names map
+  to kebab-case (ink_muted -> --tv-ink-muted). Cluster shorthand vars
+  and paint role vars.
+* PR D — Paint-role resolver (roles-v3.ts). Fixed canonical role
+  vocabulary: emphasis, muted, accent, bold, fill, positive,
+  negative, warning, info. Themes redefine recipes; role names are
+  closed. Status roles join the paint-tool vocabulary.
+* PR E — Data palette separation (data-schemes-v3.ts). Categorical
+  default Okabe-Ito; sequential default Viridis; diverging default
+  RdBu. Series colors decoupled from brand.
+* PR F — Wire format: inputs + pins + overrides (theme-wire-v3.ts).
+  schemaVersion 3. pin/release verbs. resolveWire runs at consumption.
+  Provenance map (input/derived/pin/override) per leaf.
+* PR G — All 18 presets migrated to the new T1 surface
+  (theme-presets-v3.ts). 6-15 LOC of declarative inputs vs ~30+ LOC
+  of V2 constructor calls. APCA invariants validated across all 18.
+* PR H — Reactive theme store (theme-store-v3.svelte.ts). Wraps a
+  ThemeWireV3 in Svelte 5 runes; resolved theme is $derived.
+* PR I — Migration arc status doc; NEWS entry.
+* PR J (planned) — Deep clean / canonize V3 / remove V1+V2 dead code.
+
+## Theme sprint Phase 1d — OptionKind enforcement
+
+`OptionKind` is promoted from advisory (3 of 169 options tagged) to an
+enforced contract. Every concrete schema option must now declare its
+kind explicitly; the schema drift gate fails on un-annotated options
+with no grandfather list.
+
+* **Extended** `OptionKind` from `"core" | "styling"` to `"core" |
+  "styling" | "editor"` (`srcjs/src/schema/types.ts`):
+  - **`core`** — data shape / behavior (decimals, scale, format
+    string, slot field, thresholds). Author-only; theme-side surfaces
+    will refuse writes (Sprint 3).
+  - **`styling`** — per-row visual override (MappedValue refs,
+    palette/color knobs). Themes may set defaults.
+  - **`editor`** — UI-only knob (header text, visibility toggles,
+    layout density). Themes may set defaults.
+* **Backfilled** every option across 27 schema files
+  (`srcjs/src/schema/columns/*.ts`) with explicit `kind`. ~170
+  options classified by hand.
+* **Extended** the drift gate (`drift.test.ts`) with a new test
+  `every option declares kind explicitly` — no grandfather list.
+  Adding a new option without `kind` now fails CI.
+* **Documented** the contract in
+  `srcjs/src/schema/ARCHITECTURE.md` §2 (Option) — including the
+  Sprint 3+ enforcement boundary for `theme.column_defaults`.
+
+No runtime behavior change. No wire-format change. No R-side change
+(R-side `web_col()` styling args don't have a parallel kind concept
+yet; that's a Sprint 3 follow-up alongside the
+`theme.column_defaults` surface).
+
+## Theme sprint Phase 1c — FirstColumn variant naming alignment
+
+The default first-column variant is now keyed as `default` on both R
+and TS, matching the existing `first_column_style: "default" | "bold"`
+variant id. Previously the variant id was `"default"` but the
+property/object key was `plain` — a known footgun that made
+`theme@first_column@plain` (R) and `theme.firstColumn.plain` (TS) feel
+disconnected from the `firstColumnStyle` setting.
+
+* `R/classes-theme.R::FirstColumnCluster` property `plain` → `default`.
+* `R/utils-serialize-resolved.R` emits `firstColumn.default`.
+* `R/utils-deserialize-resolved.R` accepts both `firstColumn.default`
+  (new) and `firstColumn.plain` (legacy) for one minor version.
+* `srcjs/src/types/theme-v2.ts::FirstColumnClusterV2.plain` → `default`.
+* `srcjs/src/lib/theme-resolve.ts::resolveFirstColumn` accepts the
+  legacy `plain` override key as a migration shim.
+* `srcjs/src/lib/theme-css.ts` reads `default` then falls back to
+  `plain`.
+* `theme-presets-v2.json` regenerated.
+
+User-facing `first_column_style = "default" | "bold"` is unchanged.
+
+## Theme sprint Phase 1b — SlotBundle → SlotRole rename
+
+`SlotBundle` is renamed to `SlotRole`, and four fields are renamed to
+disambiguate `muted` and `emphasis` (which carried 3+ meanings each
+across the theme system):
+
+* `fill_muted`      → `fill_dim`
+* `stroke_muted`    → `stroke_dim`
+* `fill_emphasis`   → `fill_hot`
+* `stroke_emphasis` → `stroke_hot`
+
+Wire JSON camelCase: `fillMuted`→`fillDim`, `strokeMuted`→`strokeDim`,
+`fillEmphasis`→`fillHot`, `strokeEmphasis`→`strokeHot`.
+
+`SlotBundle` is kept as a deprecated alias of `SlotRole` for one minor
+version. The TS resolver (`srcjs/src/lib/theme-resolve.ts`) and the
+R deserializer (`R/utils-deserialize-resolved.R`) both accept legacy
+camelCase field names on input so older wire snapshots continue to
+parse. Output is always the new shape.
+
+* **R**: `R/classes-theme.R` S7 class renamed; `R/utils-serialize-resolved.R`
+  emits new names; `R/utils-deserialize-resolved.R` reads both shapes.
+* **TS**: `SlotBundleV2` → `SlotRoleV2` (`srcjs/src/types/theme-v2.ts`);
+  `deriveSlotBundle` → `deriveSlotRole`; `theme-cascade.ts`,
+  `LayoutControl.svelte`, `MarksControl.svelte` updated. Migration
+  shim in `resolveTheme` normalizes legacy overrides.
+* **Settings panel** labels: "Fill (muted)" → "Fill (dim)"; "Fill
+  (emphasis)" → "Fill (hot)" (Marks control).
+* **`theme-presets-v2.json`** regenerated via
+  `scripts/regenerate-theme-presets.ts`.
+
+Reason: `muted` previously meant five distinct things (SlotBundle
+de-emphasized state, `surface.muted`, `accent.muted`, `divider.muted`,
+paint-tool token). `dim`/`hot` reserve `muted`/`emphasis` for the
+chrome roles and paint tokens.
+
+## Theme sprint Phase 1a — R cascade collapse to TS
+
+`resolve_theme()` now delegates to the TS resolver via V8 instead of
+running a parallel R-side cascade. R authors a `WebTheme` (S7), the
+bridge extracts inputs + variants + user-pinned overrides, ships them
+to `srcjs/src/lib/theme-resolve.ts::resolveTheme`, and reconstructs
+the S7 surface from the returned JSON. `theme@row@base@bg`-style
+access keeps working; cascade semantics now live in one place.
+
+* **Deleted** ~700 LOC of R-side derivation (`resolve_inputs_mirrors`,
+  `resolve_chrome`, `resolve_data`, `resolve_text`, `resolve_components`,
+  `derive_slot_bundle`, et al.) and the 125-LOC contrast validator
+  `R/utils-theme-validate.R`. TS owns the invariants now and runs
+  validation inside `resolveTheme(draft, { validate })`.
+* **Added** the V8-bridge round-trip in
+  `R/utils-deserialize-resolved.R`: `webtheme_to_resolve_draft()`
+  (WebTheme → ResolveDraft list) and `deserialize_resolved_theme()`
+  (resolved JSON → WebTheme S7). Inverse of `serialize_theme()`.
+* **Extended** the V8 dispatcher (`srcjs/src/export/v8-entry.ts`
+  `callBuilder` + `R/v8-bridge.R::ts_call`) to optionally accept a
+  second args slot, so two-argument builders like
+  `resolveTheme(draft, options)` route cleanly.
+* **Reframed** `tests/testthat/test-parity-themes.R`: post-collapse the
+  R and TS sides produce identical blobs by construction, so the
+  tests now serve as an integration check of the V8 round-trip
+  (covers bridge serializer, deserializer, and preset constructors).
+  Cascade semantics are tested in `srcjs/src/lib/theme-resolve.test.ts`.
+* `save_plot()`, `tabviz_theme_css()`, `inspect_resolved()`, and
+  preset constructors are unchanged from a caller perspective.
+
 # tabviz 0.36.0 / @tabviz/core 0.5.0
 
 ## Schema sprint phases 10–12

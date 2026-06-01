@@ -28,7 +28,9 @@
 // initial-* capture migrates with `setSpec`.
 
 import type { WebSpec } from "$types";
+import type { ThemeInputs } from "$types/theme-inputs";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
+import { buildTheme } from "$lib/theme-adapter";
 import { ops, type OpRecord } from "$lib/op-recorder";
 
 /** Sections whose edits change text metrics or cell geometry; changing any
@@ -92,6 +94,10 @@ export interface ThemeSlice {
   cloneTheme: (t: WebSpec["theme"]) => WebSpec["theme"];
   setTheme: (themeName: ThemeName) => void;
   setThemeObject: (theme: WebSpec["theme"]) => void;
+  /** V3 authoring path: merge a partial ThemeInputs over the current
+   *  theme's authoringInputs, rebuild the resolved theme via the adapter,
+   *  and write back. Used by the V3 Theme settings panel. */
+  setAuthoringInputs: (partial: Partial<ThemeInputs>) => void;
   previewThemeField: (section: string, field: string, value: unknown) => void;
   setThemeField: (...args: unknown[]) => void;
   setThemeFieldDerived: (path: (string | number)[], value: unknown) => void;
@@ -180,6 +186,69 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     deps.clearAutoWidthsKeepingUserResizes();
     deps.measureAutoColumns();
     deps.appendOp(ops.setTheme(themeName));
+  }
+
+  // Write `value` into `obj` at `path`, returning a new object (immutable
+  // path-write). Mirrors the inline updater in `writeThemePath`.
+  function writePathImmutable(obj: unknown, path: (string | number)[], value: unknown): unknown {
+    if (path.length === 0) return obj;
+    const key = path[0];
+    if (path.length === 1) {
+      if (Array.isArray(obj)) {
+        const next = [...obj];
+        next[key as number] = value;
+        return next;
+      }
+      return { ...(obj as Record<string, unknown>), [key as string]: value };
+    }
+    if (Array.isArray(obj)) {
+      const next = [...obj];
+      next[key as number] = writePathImmutable(obj[key as number], path.slice(1), value);
+      return next;
+    }
+    const cur = (obj as Record<string, unknown>)?.[key as string];
+    return {
+      ...(obj as Record<string, unknown>),
+      [key as string]: writePathImmutable(cur, path.slice(1), value),
+    };
+  }
+
+  // Re-apply themeEdits onto a freshly-built theme so pinned T2/T3 fields
+  // (paper, ink_muted, header.bold.bg, etc.) survive an authoringInputs
+  // rebuild — brand swap + dark-mode toggle leave per-cluster fine-tunes
+  // intact, matching the V3 wire-format "pins survive re-resolution" spec.
+  function reapplyEdits(theme: WebSpec["theme"]): WebSpec["theme"] {
+    let next: unknown = theme;
+    for (const [section, fields] of Object.entries(themeEdits)) {
+      for (const [field, value] of Object.entries(fields)) {
+        const path: (string | number)[] = field.includes(".")
+          ? [section, ...field.split(".")]
+          : [section, field];
+        next = writePathImmutable(next, path, value);
+      }
+    }
+    return next as WebSpec["theme"];
+  }
+
+  // V3 authoring path — merges a partial ThemeInputs over the current
+  // theme's authoringInputs, rebuilds the resolved theme via buildTheme(),
+  // re-applies tracked pins, and writes back. Theme name is preserved so
+  // the source emitter still matches presets when the inputs happen to
+  // round-trip to a known one.
+  function setAuthoringInputs(partial: Partial<ThemeInputs>): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return;
+    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
+    if (!current) return;
+    const merged: ThemeInputs = { ...current, ...partial };
+    const name = spec.theme.name ?? "custom";
+    const rebuilt = reapplyEdits(buildTheme(merged, name) as WebSpec["theme"]);
+    deps.setSpec({ ...spec, theme: rebuilt });
+    // Identity changes (mode, brand, decorative, density) can shift text
+    // metrics + cell paint. Invalidate auto-widths; user-resized columns
+    // stay frozen.
+    deps.clearAutoWidthsKeepingUserResizes();
+    deps.measureAutoColumns();
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -272,6 +341,30 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     const next = new Set(themeOverrides);
     next.delete(pathKey(path));
     themeOverrides = next;
+
+    // Also drop the value from themeEdits so a subsequent rebuild via
+    // setAuthoringInputs() doesn't re-apply it. Without this, "Reset"
+    // would clear the override flag but the value would stick.
+    if (path.length >= 2) {
+      const section = String(path[0]);
+      const subKey = path.length === 2 ? String(path[1]) : path.slice(1).map(String).join(".");
+      if (themeEdits[section] && subKey in themeEdits[section]) {
+        const nextSection = { ...themeEdits[section] };
+        delete nextSection[subKey];
+        const nextEdits = { ...themeEdits };
+        if (Object.keys(nextSection).length === 0) delete nextEdits[section];
+        else nextEdits[section] = nextSection;
+        themeEdits = nextEdits;
+      }
+    }
+
+    // Re-derive: rebuild from current authoring inputs so the cleared
+    // field reverts to its cascade-computed value. Re-applies any
+    // remaining pins on top.
+    const spec = deps.getSpec();
+    const hasAuthoring = spec?.theme &&
+      (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs != null;
+    if (hasAuthoring) setAuthoringInputs({});
   }
 
   function resetThemeEdits(): void {
@@ -346,7 +439,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     },
 
     captureInitial, clearInitial,
-    cloneTheme, setTheme, setThemeObject, previewThemeField,
+    cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewThemeField,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
     resetThemeEdits, captureThemeSnapshot, applyThemeSnapshot,
     reset,

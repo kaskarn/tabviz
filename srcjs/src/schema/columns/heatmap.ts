@@ -21,11 +21,9 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
     {
       key: "palette",
       label: "Palette",
-      // Palette is a list of hex colors. The editor surfaces this as a
-      // custom control later (Phase 3+ adds PalettePicker); for now
-      // declare the wire shape with a default 2-stop blue gradient.
       control: "custom",
       default: ["#f7fbff", "#08306b"],
+      kind: "styling",
       customComponent: "PalettePicker",
       hint: "2+ hex stops; interpolated by value",
     },
@@ -34,6 +32,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       label: "Min value",
       control: "number",
       default: null,
+      kind: "core",
       hint: "Color-scale floor; auto from data when null",
     },
     {
@@ -41,6 +40,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       label: "Max value",
       control: "number",
       default: null,
+      kind: "core",
       hint: "Color-scale ceiling; auto from data when null",
     },
     {
@@ -48,6 +48,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       label: "Show value",
       control: "toggle",
       default: true,
+      kind: "editor",
       hint: "Numeric label over the color cell",
     },
     {
@@ -55,6 +56,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       label: "Scale",
       control: "segmented",
       default: "linear",
+      kind: "core",
       segments: [
         { value: "linear", label: "Linear" },
         { value: "log",    label: "Log" },

@@ -41,12 +41,9 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
     {
       key: "glyph",
       label: "Glyph",
-      // Glyph can be a single registry key (string), or a named map
-      // (paired with `glyphField` to pick per-row). For schema purposes
-      // we surface the simple-string case; the multi-glyph map case is
-      // an authoring-API feature the editor can expose later.
       control: "text",
       default: "person",
+      kind: "core",
       hint: "Registry key (person, leaf, star, …)",
     },
     {
@@ -54,6 +51,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Glyph field",
       control: "field",
       default: null,
+      kind: "core",
       accepts: ["string"],
       hint: "Per-row glyph selection",
     },
@@ -62,6 +60,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Max glyphs",
       control: "integer",
       default: null,
+      kind: "core",
       min: 1,
       max: 50,
       hint: "Rating-mode cap; null = use raw value as count",
@@ -71,14 +70,14 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Half-step glyphs",
       control: "toggle",
       default: false,
+      kind: "core",
     },
     {
       key: "domain",
-      // Numeric pair [min, max] for input remapping. Custom control later
-      // (a min/max pair input).
       label: "Input range",
       control: "custom",
       default: null,
+      kind: "core",
       customComponent: "MinMaxPair",
       hint: "Remap [min, max] → [0, maxGlyphs]",
     },
@@ -87,6 +86,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Filled color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme accent by default",
     },
     {
@@ -94,6 +94,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Empty color",
       control: "color",
       default: null,
+      kind: "styling",
       hint: "Theme muted by default",
     },
     {
@@ -101,6 +102,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Glyph size",
       control: "segmented",
       default: "base",
+      kind: "editor",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -112,6 +114,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Layout",
       control: "segmented",
       default: "row",
+      kind: "editor",
       segments: [
         { value: "row",   label: "Row" },
         { value: "stack", label: "Stack" },
@@ -122,6 +125,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Value label",
       control: "segmented",
       default: false,
+      kind: "editor",
       segments: [
         { value: false,       label: "Off" },
         { value: true,        label: "Inline" },
@@ -134,6 +138,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Label format",
       control: "segmented",
       default: null,
+      kind: "core",
       segments: [
         { value: "integer", label: "Integer" },
         { value: "decimal", label: "Decimal" },
@@ -145,6 +150,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Label decimals",
       control: "integer",
       default: 1,
+      kind: "core",
       min: 0,
       max: 10,
       visibleWhen: (s) => s.valueLabel !== false,

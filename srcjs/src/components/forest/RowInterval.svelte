@@ -4,6 +4,7 @@
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
+  import { resolveRowKind, rowKindProps } from "$lib/row-kind";
   import { getEffectYOffset } from "$lib/rendering-constants";
   import { resolveMarkerStyle, semanticStrokeFor } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
@@ -112,8 +113,11 @@
     )
   );
 
-  // Check if this is a summary row (should render diamond instead of square)
-  const isSummaryRow = $derived(row.style?.type === 'summary');
+  // Check if this is a summary row (should render diamond instead of square).
+  // summaryMarker is the RowKind property that owns this decision.
+  const isSummaryRow = $derived(
+    rowKindProps(resolveRowKind({ type: "data", row })).summaryMarker,
+  );
 
   // Check if intervals are clipped (extend beyond axis limits)
   // Uses domain values (axis limits), not pixel coordinates
@@ -195,7 +199,7 @@
 
     // Theme effect defaults for multi-effect plots
     const themeEffectColors = theme?.series?.map(s => s.fill);
-    // Per-series marker shapes ride on the SlotBundle now: theme.series[i].shape
+    // Per-series marker shapes ride on the SlotRole now: theme.series[i].shape
     // (NA on the wire = null → fall through to the 4-shape rotation).
     const defaultShapes: MarkerShape[] = ["circle", "square", "diamond", "triangle"];
 

@@ -92,9 +92,16 @@ function resolveBadgeColor(
     color = (customColors as Record<string, string>)[text];
   } else if (variants && text in variants) {
     const variant = variants[text] as keyof typeof BADGE_VARIANTS | "default" | "muted";
+    // Route through theme.status so a themed status color reaches the SVG
+    // export — the DOM badge reads --tv-status-* (which alias theme.status),
+    // so spreading the hardcoded BADGE_VARIANTS hex here drifted exports from
+    // the live widget. BADGE_VARIANTS stays as the per-color fallback.
     const variantColors: Record<string, string> = {
       default: theme.accent.default,
-      ...BADGE_VARIANTS,
+      success: theme.status?.positive ?? BADGE_VARIANTS.success,
+      warning: theme.status?.warning ?? BADGE_VARIANTS.warning,
+      error: theme.status?.negative ?? BADGE_VARIANTS.error,
+      info: theme.status?.info ?? BADGE_VARIANTS.info,
       muted: theme.content.muted,
     };
     color = variantColors[variant] ?? glyphDefault;

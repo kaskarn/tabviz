@@ -25,6 +25,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       label: "Height",
       control: "integer",
       default: null,
+      kind: "editor",
       min: 8,
       max: 200,
       hint: "Pixels; auto from row height when null",
@@ -34,6 +35,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       label: "Max width",
       control: "integer",
       default: null,
+      kind: "editor",
       min: 8,
       max: 400,
       hint: "Pixels; auto when null",
@@ -43,6 +45,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       label: "Fallback text",
       control: "text",
       default: "[img]",
+      kind: "core",
       hint: "Shown when the URL fails to load",
     },
     {
@@ -50,6 +53,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       label: "Shape",
       control: "segmented",
       default: "square",
+      kind: "editor",
       segments: [
         { value: "square",  label: "Square" },
         { value: "rounded", label: "Rounded" },

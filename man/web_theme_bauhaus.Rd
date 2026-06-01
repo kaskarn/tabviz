@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_bauhaus}
 \alias{web_theme_bauhaus}
-\title{Bauhaus theme (design)}
+\title{Bauhaus theme — red brand, blue structural decorative, yellow accent,
+bold header band. Archivo (geometric sans, Bauhaus-feel).}
 \usage{
 web_theme_bauhaus()
 }
@@ -10,12 +11,6 @@ web_theme_bauhaus()
 A \link{WebTheme}.
 }
 \description{
-Bauhaus interpretation: primary red as identity, primary blue as the
-secondary structural axis (column-group bands, row-group bars, chrome
-texture), primary yellow as accent for layered emphasis (hover,
-selected, semantic accent rows). Jost as the standard Futura-substitute
-on Google Fonts (Futura itself being copyright-restricted).
-}
-\details{
-Loads \code{Jost} from Google Fonts via the WebTheme \code{web_fonts} slot.
+Bauhaus theme — red brand, blue structural decorative, yellow accent,
+bold header band. Archivo (geometric sans, Bauhaus-feel).
 }

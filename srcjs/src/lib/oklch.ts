@@ -103,6 +103,10 @@ function hexToOklch(hex: string): OKLCH {
   return oklabToOklch(rgbToOklab(hexToRgb(hex)));
 }
 
+/** Direct hex↔OKLCH access for theme rationalization layer. */
+export { hexToOklch, oklchToHex };
+export type { OKLCH };
+
 /**
  * Increase OKLCH lightness by `by` (0..1). Negative `by` darkens. Mirrors
  * `oklch_lighten` in R.
@@ -203,4 +207,238 @@ export function ensureContrast(fg: string, bg: string, target = 4.5): string {
     if (contrastRatio(candidate, bg) >= target) return candidate;
   }
   return oklchToHex({ ...lch, L: direction < 0 ? 0 : 1 });
+}
+
+// ────────────────────────────────────────────────────────────────────
+// APCA — Accessible Perceptual Contrast Algorithm (Andrew Somers)
+// ────────────────────────────────────────────────────────────────────
+//
+// SAPC-APCA W3 reference (APCA 0.0.98G-4g). Returns a signed Lc value
+// in ~[-108, +106]. Magnitude convention: |Lc| ≥ 60 = readable for
+// large/bold text (e.g. row-group bands, header text). |Lc| ≥ 75 =
+// body text minimum. |Lc| ≥ 90 = high-contrast body / fine print.
+// Sign: positive = dark text on light bg; negative = light text on dark bg.
+//
+// APCA is preferable to WCAG 2.1 in dark-mode and small-text regimes —
+// WCAG 2 systematically overstates contrast on dark backgrounds, which
+// is exactly tabviz's dark-theme regime. We dual-audit (WCAG for
+// regulatory compliance, APCA for legibility decisions).
+//
+// Reference: https://github.com/Myndex/SAPC-APCA
+
+// Linear sRGB → luminance using APCA's 2.4 exponent (not WCAG's 2.2).
+function sRgbToYApca(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  return 0.2126729 * Math.pow(r, 2.4) +
+         0.7151522 * Math.pow(g, 2.4) +
+         0.0721750 * Math.pow(b, 2.4);
+}
+
+const APCA_BLACK_THRESH = 0.022;
+const APCA_BLACK_CLAMP  = 1.414;
+const APCA_DELTA_Y_MIN  = 0.0005;
+const APCA_SCALE_BOW    = 1.14;
+const APCA_NORM_BG      = 0.56;
+const APCA_NORM_TXT     = 0.57;
+const APCA_REV_BG       = 0.65;
+const APCA_REV_TXT      = 0.62;
+const APCA_OFFSET       = 0.027;
+
+/**
+ * APCA Lc — signed lightness-contrast value.
+ *
+ * @param textHex  Foreground (text/marker) color
+ * @param bgHex    Background color
+ * @returns Lc value. Convention: |Lc| ≥ 60 large text; ≥ 75 body text.
+ */
+export function apcaContrast(textHex: string, bgHex: string): number {
+  const yT = sRgbToYApca(textHex);
+  const yB = sRgbToYApca(bgHex);
+
+  // Soft-clamp Y values near black.
+  const txY = yT < APCA_BLACK_THRESH
+    ? yT + Math.pow(APCA_BLACK_THRESH - yT, APCA_BLACK_CLAMP)
+    : yT;
+  const bgY = yB < APCA_BLACK_THRESH
+    ? yB + Math.pow(APCA_BLACK_THRESH - yB, APCA_BLACK_CLAMP)
+    : yB;
+
+  // Below the perception floor — no measurable contrast.
+  if (Math.abs(bgY - txY) < APCA_DELTA_Y_MIN) return 0;
+
+  let SAPC: number;
+  if (bgY > txY) {
+    // Dark text on light bg (positive output).
+    SAPC = (Math.pow(bgY, APCA_NORM_BG) - Math.pow(txY, APCA_NORM_TXT)) * APCA_SCALE_BOW;
+    if (SAPC < 0.1) return 0;
+    return (SAPC - APCA_OFFSET) * 100;
+  } else {
+    // Light text on dark bg (negative output).
+    SAPC = (Math.pow(bgY, APCA_REV_BG) - Math.pow(txY, APCA_REV_TXT)) * APCA_SCALE_BOW;
+    if (SAPC > -0.1) return 0;
+    return (SAPC + APCA_OFFSET) * 100;
+  }
+}
+
+/** Absolute Lc value (use when you only care about magnitude). */
+export function apcaLc(textHex: string, bgHex: string): number {
+  return Math.abs(apcaContrast(textHex, bgHex));
+}
+
+/**
+ * Pick the best ink color from a set of candidates for a given bg via
+ * APCA. Returns the candidate with the highest |Lc| against `bgHex` that
+ * meets `targetLc` (default 60 = readable for large text). If none meet
+ * the target, returns the candidate with the highest |Lc| anyway.
+ *
+ * Use case: from a neutral ramp [neutral.0, neutral.11], pick the one
+ * that reads legibly on a brand bg. Drives `brand_ink`, `accent_ink`,
+ * `positive_ink`, etc.
+ */
+export function pickInkOnBg(
+  bgHex: string,
+  candidates: string[],
+  targetLc = 60,
+): string {
+  if (candidates.length === 0) {
+    throw new Error("pickInkOnBg: candidates must be non-empty");
+  }
+  let best = candidates[0]!;
+  let bestLc = apcaLc(best, bgHex);
+  for (const c of candidates.slice(1)) {
+    const lc = apcaLc(c, bgHex);
+    // Prefer candidates that meet the target; among those, prefer the
+    // one with the LOWEST Lc above target (least visual force). If none
+    // meet, fall back to highest |Lc| overall.
+    if (bestLc < targetLc) {
+      if (lc > bestLc) { best = c; bestLc = lc; }
+    } else {
+      if (lc >= targetLc && lc < bestLc) { best = c; bestLc = lc; }
+    }
+  }
+  return best;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// 12-step OKLCH-uniform ramps (Radix-style per-step contracts)
+// ────────────────────────────────────────────────────────────────────
+//
+// A 12-step ramp encodes a per-step UI contract (step 1 = app bg,
+// step 9 = solid bg purest, step 12 = high-contrast text). Each step
+// holds a fixed OKLCH lightness; the chroma curve peaks near step 9
+// (the "solid" step) and tapers toward the ends.
+//
+// Light mode: L step 1 → 12 is 98 → 13 (light to dark).
+// Dark mode: L step 1 → 12 is 13 → 98 (dark to light).
+//
+// Step labels stay stable across modes (so `paper = neutral.1` always
+// means "the lightest-in-mode step"); the underlying L values shift.
+
+/** Per-step OKLCH L values in light mode (step 1..12, 0-indexed array).
+ *
+ * Step assignments (see theme-resolve.ts::resolveToken):
+ *   step 1 → paper + paper_raised (the brightest body surface; most
+ *           themes want this as default page background)
+ *   step 2 → paper_alt (subtle banding partner — ΔL 0.020 from paper,
+ *           visible at row scale but no individual stripe feels heavy)
+ *   step 3 → paper_sunken (lifted-but-recessed surface)
+ *   step 12 → ink; 11 → ink_muted; 10 → ink_subtle; 8 → ink_disabled
+ *
+ * Tuning history (light-mode neutral surfaces):
+ *   - paper at step 2 (L 0.972) read as too glaring; consistently
+ *     pushed darker through 0.967 and 0.945 before pulling back
+ *   - paper at step 2 (L 0.945) read as clinical gray; banding gap
+ *     too tight to be useful
+ *   - landed on paper = step 1 (was paper_raised's slot), paper_alt
+ *     stepping down to step 2. Δ stays 0.020 which is the established
+ *     Radix-like subtle-bg cadence. */
+const LIGHT_RAMP_L = [
+  0.987, // 1 — paper (near-white body bg)
+  0.967, // 2 — paper_alt (subtle band, ΔL 0.020)
+  0.948, // 3 — paper_sunken
+  0.918, // 4 — UI hover
+  0.870, // 5 — UI active / selected
+  0.804, // 6 — subtle border / rule_subtle
+  0.728, // 7 — UI border / rule_strong / focus
+  0.640, // 8 — hovered UI border
+  0.540, // 9 — solid bg purest / brand
+  0.452, // 10 — solid bg hover / brand_hover
+  0.310, // 11 — low-contrast text / ink_muted
+  0.180, // 12 — high-contrast text / ink
+];
+
+const DARK_RAMP_L = [...LIGHT_RAMP_L].reverse();
+
+/** Chroma curve: peaks at step 9 (index 8), tapers parabolically. */
+function chromaAt(stepIndex: number, peakChroma: number): number {
+  const peakIndex = 8; // step 9 (1-indexed) = index 8
+  const distance = Math.abs(stepIndex - peakIndex);
+  // Falloff curve: 1.0 at peak, ~0.08 at the far end.
+  const falloff = Math.max(0.04, 1 - (distance * distance) / 25);
+  return peakChroma * falloff;
+}
+
+export interface RampOptions {
+  /** Mode for L direction. Default `"light"`. */
+  mode?: "light" | "dark";
+  /** Override the peak chroma (at step 9). Default = seed's OKLCH chroma. */
+  chromaPeak?: number;
+  /** Optional tint hex to blend into low-chroma steps (ends only). */
+  tintHex?: string;
+  /** 0..0.10 typical. Default 0. */
+  tintAmount?: number;
+}
+
+/**
+ * Generate a 12-step OKLCH-uniform ramp from a seed color.
+ *
+ * Returns an array of 12 hex strings, indexed 0..11 (corresponding to
+ * Radix-style steps 1..12). Use `rampStep(ramp, 9)` for 1-indexed access.
+ *
+ * The seed determines the hue and (by default) the peak chroma. L values
+ * are fixed per step; chroma peaks at step 9 (the "solid" step) and
+ * tapers toward the lightest/darkest ends. Mode toggles the L direction.
+ *
+ * @example
+ * const brand = oklchRamp("#0099CC");                // light-mode brand ramp
+ * const neutral = oklchRamp("#888", { chromaPeak: 0 }); // pure achromatic
+ * const tinted = oklchRamp("#888", { chromaPeak: 0.005, tintHex: "#0099CC", tintAmount: 0.04 });
+ */
+export function oklchRamp(seed: string, options: RampOptions = {}): string[] {
+  const seedLch = hexToOklch(seed);
+  const mode = options.mode ?? "light";
+  const chromaPeak = options.chromaPeak ?? seedLch.C;
+  const Ls = mode === "light" ? LIGHT_RAMP_L : DARK_RAMP_L;
+
+  const ramp: string[] = [];
+  for (let i = 0; i < 12; i++) {
+    let hex = oklchToHex({
+      L: Ls[i]!,
+      C: chromaAt(i, chromaPeak),
+      H: seedLch.H,
+    });
+    if (options.tintHex !== undefined && options.tintAmount && options.tintAmount > 0) {
+      // Tint blends into low-chroma steps at BOTH ends symmetrically.
+      // Previously distance was measured from the chroma peak (index 8),
+      // which made the light end (step 1, distance 1.0) take ~10× more
+      // tint than the dark end (step 12, distance 0.375) — paper went
+      // strongly brand-tinted while ink stayed neutral. Measuring from
+      // the perceptual midpoint (5.5) gives both ends matching distance
+      // and matching tint strength, so brand mixes coherently into both
+      // paper and ink at any tint_strength setting.
+      const distFromCenter = Math.abs(i - 5.5) / 5.5; // 0 at center, 1 at ends
+      const strength = options.tintAmount * Math.max(0, distFromCenter - 0.3);
+      if (strength > 0) hex = oklchMix(hex, options.tintHex, strength);
+    }
+    ramp.push(hex);
+  }
+  return ramp;
+}
+
+/** 1-indexed accessor matching Radix step numbering. `rampStep(r, 1)..rampStep(r, 12)`. */
+export function rampStep(ramp: string[], step: number): string {
+  if (step < 1 || step > 12 || !Number.isInteger(step)) {
+    throw new Error(`rampStep: step must be integer in 1..12, got ${step}`);
+  }
+  return ramp[step - 1]!;
 }

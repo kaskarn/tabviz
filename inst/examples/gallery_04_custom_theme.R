@@ -1,25 +1,18 @@
 # Gallery Example 4: Custom Theme Building
-# Building a branded theme from scratch with the fluent API
+# Build a branded theme from inputs via web_theme().
 
 library(tabviz)
 library(dplyr)
 
-# Build a "Terminal" theme via the v2 inputs API.
+# Terminal theme: bright green brand on dark background.
 terminal_theme <- web_theme(
-  name = "terminal",
-  inputs = list(
-    neutral = c("#0C0C0C", "#0C0C0C", "#1A1A1A", "#005500", "#00FF00"),
-    primary = "#00FF00",
-    accent = "#00FF00",
-    series_anchors = c("#00FF00", "#00CC00", "#008800", "#005500", "#003300"),
-    font_body = "'Courier New', monospace"
-  )
-) |>
-  set_spacing(row_height = 28, header_height = 32) |>
-  set_theme_field(c("plot", "gridline"), "#003300") |>
-  set_theme_field(c("plot", "point_size"), 6) |>
-  set_theme_field(c("plot", "line_width"), 1.5) |>
-  set_theme_field(c("axis", "gridlines"), TRUE)
+  brand = "#00FF00",
+  accent = "#00FF00",
+  mode = "dark",
+  density = "comfortable",
+  font_body = "'Courier New', monospace",
+  name = "terminal"
+)
 
 theme_demo_data <- tibble(
   process = c("AUTH_SERVICE", "API_GATEWAY", "DB_PRIMARY", "CACHE_LAYER", "MSG_QUEUE"),
@@ -43,6 +36,6 @@ forest_plot(
   null_value = 20,
   axis_label = "Response Latency (ms)",
   title = "Custom Theme: Terminal",
-  subtitle = "Built with web_theme(inputs=, variants=) + set_spacing()",
-  caption = "Monospace font, green-on-black, zero border radius"
+  subtitle = "Built with web_theme(brand = ..., mode = 'dark')",
+  caption = "Monospace font; brand-mono palette via mode toggle"
 )

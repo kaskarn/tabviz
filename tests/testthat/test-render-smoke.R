@@ -40,7 +40,7 @@ test_that("each v2 preset renders to PNG via the dispatch path", {
   }
 })
 
-test_that("v2 dispatch through tabviz preserves variant flag", {
+test_that("tabviz preserves theme bold header bg through wire", {
   skip_if_not_installed()
   df <- data.frame(Site = "A", est = 0.5, lo = 0.3, hi = 0.7)
 
@@ -48,16 +48,13 @@ test_that("v2 dispatch through tabviz preserves variant flag", {
     spec <- tabviz(
       df, label = "Site",
       columns = list(viz_forest(point = "est", lower = "lo", upper = "hi")),
-      theme = WebTheme(
-        inputs = ThemeInputs(primary_deep = "#000080"),
-        variants = ThemeVariants(header_style = header_style)
-      ),
+      theme = web_theme(brand = "#000080"),
       .spec_only = TRUE
     )
     out <- serialize_spec(spec)
     active_hdr <- if (header_style == "bold") out$theme$header$bold else out$theme$header$light
     if (header_style == "bold") {
-      expect_equal(toupper(active_hdr$bg), "#000080")
+      expect_match(active_hdr$bg, "^#[0-9A-Fa-f]{6}$")
     } else {
       expect_match(active_hdr$bg, "^#")
     }

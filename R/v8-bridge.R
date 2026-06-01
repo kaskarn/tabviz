@@ -43,9 +43,12 @@ tabviz_v8 <- function() {
 #' Call a TS authoring builder via V8 and return its wire-shape result.
 #'
 #' `name` is the exported builder symbol (e.g. `"colText"`, `"vizForest"`);
-#' `args` is a named list matching the builder's argument object. Returns
-#' the parsed result as a base-R list (`jsonlite::fromJSON` semantics —
-#' lists for objects, vectors for primitive arrays).
+#' `args` is a named list matching the builder's argument object.
+#' `options` is an optional second argument for builders that take a
+#' `(draft, options)` signature (e.g. `resolveTheme(draft, { validate })`);
+#' when `NULL` the builder is called single-argument. Returns the parsed
+#' result as a base-R list (`jsonlite::fromJSON` semantics — lists for
+#' objects, vectors for primitive arrays).
 #'
 #' R-side `col_*` helpers that simply pack args into a wire-shape list
 #' delegate through this function so R and TS produce byte-identical
@@ -53,12 +56,18 @@ tabviz_v8 <- function() {
 #'
 #' @param name Builder name (TS symbol).
 #' @param args Named list of arguments.
+#' @param options Optional second args list for two-arg builders.
 #' @return A base-R list matching the TS builder's return type.
 #' @noRd
-ts_call <- function(name, args) {
+ts_call <- function(name, args, options = NULL) {
   ctx <- tabviz_v8()
   args_json <- jsonlite::toJSON(args, auto_unbox = TRUE, null = "null", na = "null")
-  result_json <- ctx$call("callBuilder", name, args_json)
+  result_json <- if (is.null(options)) {
+    ctx$call("callBuilder", name, args_json)
+  } else {
+    options_json <- jsonlite::toJSON(options, auto_unbox = TRUE, null = "null", na = "null")
+    ctx$call("callBuilder", name, args_json, options_json)
+  }
   # Simplify primitive arrays back to vectors so options fields like
   # `thresholds`, `palette`, `seriesAnchors` round-trip as `c(0.33, 0.66)`
   # not `list(0.33, 0.66)`. Keep nested objects as lists

@@ -32,6 +32,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: false,
       hint: "Show significance stars",
+      kind: "core",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
@@ -44,6 +45,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
         { value: "decimal",     label: "Decimal" },
         { value: "scientific",  label: "Scientific" },
       ],
+      kind: "core",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
@@ -53,6 +55,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       default: 2,
       min: 1,
       max: 10,
+      kind: "core",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
@@ -61,6 +64,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       control: "number",
       default: 0.001,
       hint: "Values below use scientific notation",
+      kind: "core",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
@@ -69,6 +73,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       control: "number",
       default: null,
       hint: 'Values below show as "<threshold"',
+      kind: "core",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
@@ -81,6 +86,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       default: [0.05, 0.01, 0.001],
       customComponent: "PValueThresholds",
       visibleWhen: (s) => s.stars === true,
+      kind: "core",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
   ],

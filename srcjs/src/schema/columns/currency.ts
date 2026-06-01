@@ -32,6 +32,7 @@ export const CURRENCY_SCHEMA: ColumnSchema = {
       label: "Symbol",
       control: "text",
       default: "$",
+      kind: "core",
       hint: "Currency symbol",
     },
     {
@@ -39,6 +40,7 @@ export const CURRENCY_SCHEMA: ColumnSchema = {
       label: "Position",
       control: "segmented",
       default: "prefix",
+      kind: "core",
       segments: [
         { value: "prefix", label: "Before" },
         { value: "suffix", label: "After" },
