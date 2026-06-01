@@ -24,12 +24,14 @@ const KIND_FILL: Record<RowMetric["kind"], string> = {
   group_header: "#fef9c3", // yellow-100
   spacer: "#f1f5f9", // slate-100
   summary: "#dcfce7", // green-100
+  header: "#e0f2fe", // sky-100 (authored section header, distinct from group)
 };
 const KIND_STROKE: Record<RowMetric["kind"], string> = {
   data: "#6366f1",
   group_header: "#ca8a04",
   spacer: "#94a3b8",
   summary: "#16a34a",
+  header: "#0284c7",
 };
 
 const BOX_STROKE = "#334155"; // cell allocated-box outline

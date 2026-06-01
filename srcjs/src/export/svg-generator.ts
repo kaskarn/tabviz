@@ -49,6 +49,7 @@ import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
 import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
+import { resolveRowKind, rowKindProps, type RowKind } from "$lib/row-kind";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
@@ -345,7 +346,7 @@ function calculateSvgAutoWidths(
 
     // Measure all data cell values using proper display text
     for (const row of rows) {
-      if (row.style?.type === "header" || row.style?.type === "spacer") {
+      if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) {
         continue;
       }
       const text = getColumnDisplayText(row, col);
@@ -3455,7 +3456,7 @@ export function computeNaturalDimensions(spec: WebSpec): {
 
 export interface RowMetric {
   index: number;
-  kind: "data" | "group_header" | "spacer" | "summary";
+  kind: RowKind;
   /** Group-nesting depth (drives group-header indent + tier). */
   depth: number;
   /** Per-row authored indent level (row.style.indent), distinct from `depth`.
@@ -3501,13 +3502,6 @@ export interface LayoutMetrics {
   columns: ColMetric[];
 }
 
-function rowKindOf(dr: DisplayRow): RowMetric["kind"] {
-  if (dr.type === "group_header") return "group_header";
-  const st = dr.row.style?.type;
-  if (st === "spacer") return "spacer";
-  if (st === "summary") return "summary";
-  return "data";
-}
 
 /** Compute the SVG/V8-path layout metrics for a spec. Pure; no rendering. */
 export function computeLayoutMetrics(
@@ -3564,7 +3558,7 @@ export function computeLayoutMetrics(
   const displayRows = buildDisplayRows(spec);
   const rows: RowMetric[] = displayRows.map((dr, i) => ({
     index: i,
-    kind: rowKindOf(dr),
+    kind: resolveRowKind(dr),
     depth: dr.depth ?? 0,
     indent: (dr.type === "data" ? dr.row.style?.indent : undefined) ?? 0,
     height: layout.rowHeights[i] ?? layout.rowHeight,

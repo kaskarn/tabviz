@@ -40,6 +40,7 @@ import type {
 } from "$types";
 import { getColumnDisplayText } from "$lib/formatters";
 import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
+import { resolveRowKind, rowKindProps } from "$lib/row-kind";
 import {
   rankTopK,
   measureExact,
@@ -594,7 +595,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       // Build the candidate-pool for the cells: skip header/spacer rows.
       const candidates: string[] = [];
       for (const row of spec!.data.rows) {
-        if (row.style?.type === "header" || row.style?.type === "spacer") continue;
+        if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) continue;
         const text = getColumnDisplayText(row, col);
         if (text) candidates.push(text);
       }
