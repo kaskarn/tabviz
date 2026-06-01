@@ -55,6 +55,16 @@ asymmetry is the root of every symptom below.
 
 ## 2. Proposed model — one `RowKind` + a registry (mirror the column system)
 
+> **Status (Phase 1, built):** `srcjs/src/lib/row-kind.ts` now holds the
+> canonical `resolveRowKind(dr)` (replacing svg-generator's inline `rowKindOf`,
+> now incl. the `header` kind it had dropped) + a `RowKindProps` table
+> {`banded`, `measuresWidth`, `rendersCells`, `summaryMarker`} encoding today's
+> scattered predicates. The drift sites are routed through it (banding
+> `isStyled`, the 3 width-skip copies, metrics `rowKindOf`); behavior-preserving
+> (zero snapshot drift, R+TS green). Remaining: the ~40 render-branch call sites
+> still classify inline (incremental, harness-gated); the full *registry* with
+> renderers/traits/scope (§ below) is future work.
+
 Collapse the four concepts into a single **resolved `RowKind`** computed per
 DisplayRow (merging grouping-derived + authored inputs), dispatched through a
 **registry** the way columns have a schema. Each kind declares:
