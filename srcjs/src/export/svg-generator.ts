@@ -50,7 +50,7 @@ import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/row-kind";
-import { computeRowLayout, computeHeaderHeight, computeAxisHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/table-metrics";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/table-metrics";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
@@ -800,7 +800,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total table width includes legacy positioned columns AND unified non-forest columns
   const totalTableWidth = leftTableWidth + rightTableWidth + unifiedNonForestWidth;
 
-  // Calculate forest width based on remaining space after tables, or explicit layout settings
+  // Calculate forest width based on remaining space after tables, or explicit
+  // layout settings. INTENTIONALLY diverges from the DOM backend (and is not
+  // shared in table-metrics): the export sizes against a fixed canvas
+  // (`options.width` residual) while the live widget is container-responsive
+  // (`effectiveWidth * 0.25`). Correct context-dependence, not drift.
   let forestWidth: number;
   if (!includeForest) {
     forestWidth = 0;
@@ -3664,6 +3668,7 @@ function generateSVGForAspectTarget(
   // actually rendered for this spec (no footer → no footerGap, no
   // title+subtitle pair → no titleSubtitleGap, etc.).
   const sp = spec.theme.spacing as unknown as Record<string, number | undefined>;
+  // Apply step (below) scales these same keys; mirror them exactly.
   const VERTICAL_KEYS = ["headerGap", "axisGap", "footerGap", "headerHeight",
                          "rowGroupPadding", "bottomMargin", "titleSubtitleGap"];
   const hasTitle = !!spec.labels?.title;
@@ -3673,14 +3678,14 @@ function generateSVGForAspectTarget(
   const groupHeaderCount = buildDisplayRows(spec).filter(
     r => r.type === "group_header" && (r as { depth?: number }).depth === 0,
   ).length;
-  const scalableChromeHeight =
-      (sp.headerGap ?? 12)
-    + (sp.headerHeight ?? 0)
-    + (hasAxis ? (sp.axisGap ?? 12) : 0)
-    + (hasFooter ? (sp.footerGap ?? 8) : 0)
-    + (sp.bottomMargin ?? LAYOUT.BOTTOM_MARGIN)
-    + (hasTitle && hasSubtitle ? (sp.titleSubtitleGap ?? 13) : 0)
-    + groupHeaderCount * (sp.rowGroupPadding ?? 0);
+  const scalableChromeHeight = computeScalableChromeHeight({
+    spacing: sp,
+    hasAxis,
+    hasTitle,
+    hasSubtitle,
+    hasFooter,
+    topLevelGroupCount: groupHeaderCount,
+  });
   const heightDelta = targetHeight - naturalLayout.totalHeight;
   // MIN_ROW_HEIGHT keeps text readable when shrinking. 1.4 × font + 4
   // matches the line-height + 4 px breathing pattern used in

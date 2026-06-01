@@ -161,6 +161,60 @@ export function computeHeaderHeight(input: HeaderHeightInput): number {
 /** Default axis gap when the theme leaves `spacing.axisGap` unset. */
 export const DEFAULT_AXIS_GAP = 12;
 
+/** Inputs to the aspect ladder's scalable-chrome denominator. */
+export interface ScalableChromeInput {
+  /** Themed vertical spacing tokens (read directly; missing → documented default). */
+  spacing: {
+    headerGap?: number;
+    headerHeight?: number;
+    axisGap?: number;
+    footerGap?: number;
+    bottomMargin?: number;
+    titleSubtitleGap?: number;
+    rowGroupPadding?: number;
+  };
+  hasAxis: boolean;
+  hasTitle: boolean;
+  hasSubtitle: boolean;
+  hasFooter: boolean;
+  /** Count of top-level (depth 0) group headers (each contributes rowGroupPadding). */
+  topLevelGroupCount: number;
+}
+
+/** Defaults for the chrome tokens (mirror the SVG backend's fallbacks). */
+const CHROME_DEFAULTS = {
+  headerGap: 12,
+  axisGap: DEFAULT_AXIS_GAP,
+  footerGap: 8,
+  bottomMargin: 16,
+  titleSubtitleGap: 13,
+} as const;
+
+/**
+ * Scalable-chrome denominator for the aspect-ratio height ladder — the subset
+ * of vertical chrome that scales when an aspect target stretches/shrinks the
+ * table (header gap/height, axis gap, footer gap, bottom margin, the
+ * title↔subtitle gap, and per-top-level-group padding). Each term is gated on
+ * whether that chrome actually renders for the spec.
+ *
+ * **Convergence (2026-06):** the DOM backend previously used a crude
+ * `headerHeight + axisHeight` proxy here, under-allocating chrome for specs with
+ * title/subtitle/footer/multiple groups (so its aspect ladder over-scaled rows).
+ * Both backends now use this precise sum.
+ */
+export function computeScalableChromeHeight(input: ScalableChromeInput): number {
+  const { spacing: sp, hasAxis, hasTitle, hasSubtitle, hasFooter, topLevelGroupCount } = input;
+  return (
+    (sp.headerGap ?? CHROME_DEFAULTS.headerGap) +
+    (sp.headerHeight ?? 0) +
+    (hasAxis ? (sp.axisGap ?? CHROME_DEFAULTS.axisGap) : 0) +
+    (hasFooter ? (sp.footerGap ?? CHROME_DEFAULTS.footerGap) : 0) +
+    (sp.bottomMargin ?? CHROME_DEFAULTS.bottomMargin) +
+    (hasTitle && hasSubtitle ? (sp.titleSubtitleGap ?? CHROME_DEFAULTS.titleSubtitleGap) : 0) +
+    topLevelGroupCount * (sp.rowGroupPadding ?? 0)
+  );
+}
+
 /**
  * Axis-band height. `hasAxisColumn ? axisGap + axisRegionHeight : 0`.
  *

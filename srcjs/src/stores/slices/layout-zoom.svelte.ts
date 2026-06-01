@@ -50,7 +50,7 @@ import type {
   ZoomState,
 } from "$types";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
-import { computeRowLayout, computeHeaderHeight, computeAxisHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/table-metrics";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/table-metrics";
 
 /** True if any top-level column in the spec is a ColumnGroup. Pushes the
  *  header strip to a 2-row layout, which changes the min header-row height. */
@@ -200,6 +200,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const axisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisGeom.axisRegionHeight);
     const hasForest = forestColumns.length > 0;
     const themePlotWidth = spec.theme.layout?.plotWidth;
+    // forestWidth INTENTIONALLY diverges from the SVG backend and is NOT shared
+    // in table-metrics: the DOM widget is container-responsive
+    // (`effectiveWidth * 0.25`, reflows on resize) while the SVG export sizes
+    // against a fixed canvas (`options.width` residual). This is correct
+    // context-dependence, not drift — converging it would regress one runtime.
     let forestWidth = hasForest
       ? (plotWidthOverride
         ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
@@ -298,9 +303,21 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
       const naturalChromeHeight = approxChromeHeight;
       const naturalPlotHeight = approxRowsHeight;
-      // chromeScale denominator is the scalable subset of natural chrome
-      // (headerHeight + axisHeight; padding × 2 stays unscaled).
-      const scalableChromeHeight = headerHeight + axisHeight;
+      // chromeScale denominator: the scalable subset of natural chrome.
+      // Converged with the SVG backend (2026-06) — was a crude
+      // `headerHeight + axisHeight` proxy that under-allocated chrome for
+      // specs with title/subtitle/footer/multiple groups.
+      const topLevelGroupCount = displayRows.filter(
+        (r) => r.type === "group_header" && r.depth === 0,
+      ).length;
+      const scalableChromeHeight = computeScalableChromeHeight({
+        spacing: spec.theme.spacing as unknown as ScalableChromeInput["spacing"],
+        hasAxis: axisHeight > 0,
+        hasTitle: !!spec.labels?.title,
+        hasSubtitle: !!spec.labels?.subtitle,
+        hasFooter: !!(spec.labels?.caption || spec.labels?.footnote),
+        topLevelGroupCount,
+      });
 
       if (heightDelta > 0 && naturalPlotHeight > 0) {
         const CHROME_SHARE = 0.35;

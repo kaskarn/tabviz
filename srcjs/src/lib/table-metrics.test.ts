@@ -3,6 +3,8 @@ import {
   computeRowLayout,
   computeRowPaddedAfter,
   computeHeaderHeight,
+  computeAxisHeight,
+  computeScalableChromeHeight,
   type RowLayoutInput,
 } from "./table-metrics";
 import type { DisplayRow } from "$types";
@@ -88,5 +90,52 @@ describe("computeHeaderHeight", () => {
   test("two-tier header doubles the min row", () => {
     // 29 * 2 = 58 > 26
     expect(computeHeaderHeight({ bodyFontPx: 14, themeHeaderHeight: 26, headerDepth: 2 })).toBe(58);
+  });
+});
+
+describe("computeAxisHeight (converged gate)", () => {
+  test("no axis column → 0 (no band reserved)", () => {
+    expect(computeAxisHeight(false, 12, 20)).toBe(0);
+  });
+  test("axis column → axisGap + axisRegionHeight", () => {
+    expect(computeAxisHeight(true, 12, 20)).toBe(32);
+  });
+});
+
+describe("computeScalableChromeHeight (converged aspect-ladder denominator)", () => {
+  const sp = {
+    headerGap: 12, headerHeight: 32, axisGap: 12, footerGap: 8,
+    bottomMargin: 16, titleSubtitleGap: 13, rowGroupPadding: 8,
+  };
+
+  test("bare table: headerGap + headerHeight + bottomMargin only", () => {
+    // 12 + 32 + 16 = 60 (no axis, no footer, no title-pair, no groups)
+    expect(computeScalableChromeHeight({
+      spacing: sp, hasAxis: false, hasTitle: false, hasSubtitle: false,
+      hasFooter: false, topLevelGroupCount: 0,
+    })).toBe(60);
+  });
+
+  test("axis adds axisGap; footer adds footerGap; title+subtitle adds the gap", () => {
+    // 12 + 32 + 12(axis) + 8(footer) + 16 + 13(title-pair) = 93
+    expect(computeScalableChromeHeight({
+      spacing: sp, hasAxis: true, hasTitle: true, hasSubtitle: true,
+      hasFooter: true, topLevelGroupCount: 0,
+    })).toBe(93);
+  });
+
+  test("title without subtitle does NOT add the pair gap", () => {
+    expect(computeScalableChromeHeight({
+      spacing: sp, hasAxis: false, hasTitle: true, hasSubtitle: false,
+      hasFooter: false, topLevelGroupCount: 0,
+    })).toBe(60);
+  });
+
+  test("each top-level group adds rowGroupPadding", () => {
+    // 60 + 3*8 = 84
+    expect(computeScalableChromeHeight({
+      spacing: sp, hasAxis: false, hasTitle: false, hasSubtitle: false,
+      hasFooter: false, topLevelGroupCount: 3,
+    })).toBe(84);
   });
 });
