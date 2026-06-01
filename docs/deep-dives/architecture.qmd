@@ -164,7 +164,7 @@ stay consistent with explicit overrides.
 ```r
 web_theme_jama() |>
   set_inputs(primary = "#0066cc") |>
-  set_variants(density = "comfortable") |>
+  set_density("comfortable") |>
   set_spacing(row_height = 24) |>
   set_theme_field(c("axis", "gridlines"), TRUE)
 ```
@@ -174,7 +174,7 @@ The four core theme modifiers:
 | Modifier | Edits |
 |----------|-------|
 | `set_inputs()` | Tier 1 customer inputs (`primary` / `secondary` / `accent` and their `_deep` companions, `status_*`, `series_anchors`, `slot_style`, fonts) |
-| `set_variants()` | Per-table variants (density, header_style, first_column_style) |
+| `set_density()` `set_header_style()` `set_first_column_style()` | Per-table variant setters (density, header style, first-column style) |
 | `set_spacing()` | Per-token spacing override on top of the density preset |
 | `set_theme_field(theme, path, value)` | Generic deep setter; `path` is a character/integer vector walking the theme tree |
 

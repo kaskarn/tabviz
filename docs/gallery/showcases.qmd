@@ -398,15 +398,12 @@ Build a fully customized theme by chaining v2 modifiers off a base preset:
 
 ```{r}
 custom_theme <- web_theme(
-  name = "warm",
-  inputs = list(
-    neutral        = c("#FEFCE8", "#FEFCE8", "#FAF6D4", "#A0855A", "#422006"),
-    primary          = "#CA8A04",
-    accent         = "#CA8A04",
-    series_anchors = c("#CA8A04", "#16A34A", "#DC2626", "#3B82F6", "#7C3AED"),
-    font_body      = "Georgia, serif"
-  ),
-  variants = list(density = "spacious")
+  name         = "warm",
+  brand        = "#CA8A04",
+  accent       = "#CA8A04",
+  neutral_tint = "brand",
+  font_body    = "Georgia, serif",
+  density      = "spacious"
 ) |>
   set_spacing(row_height = 32, cell_padding_x = 12) |>
   set_theme_field(c("plot", "point_size"), 8) |>
@@ -441,14 +438,14 @@ tabviz(theme_data,
   marker_color = ~ ifelse(hi < 1, "#16a34a", "#64748b"),
   theme = custom_theme,
   title = "Custom Warm Theme via the v2 Inputs API",
-  subtitle = "web_theme(inputs = ...) + set_spacing() + set_theme_field()"
+  subtitle = "web_theme(brand = ...) + set_spacing() + set_theme_field()"
 )
 ```
 
 ::: {.callout-tip}
 ## Theme modifiers (v2)
 Four modifiers cover the surface: `set_inputs()` (Tier 1 inputs),
-`set_variants()` (per-table toggles), `set_spacing()` (per-token spacing),
+`set_density()` / `set_header_style()` (per-table variants), `set_spacing()` (per-token spacing),
 and `set_theme_field(theme, path, value)` (generic deep setter).
 See [Fluent API](../guide/fluent-api.qmd) and [Themes](../guide/themes.qmd).
 :::
@@ -574,7 +571,7 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_inputs(primary = "#f59e0b") |>
+  set_inputs(brand = "#f59e0b") |>
   set_spacing(row_height = 38) |>
   set_theme_field(c("axis", "gridlines"), TRUE) |>
   set_theme_field(c("axis", "gridline_style"), "dotted")

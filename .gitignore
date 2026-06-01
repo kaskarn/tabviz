@@ -65,3 +65,6 @@ tests/manual/sandbox-widget_files/
 # scratch space
 dev
 forclaude.md
+
+# stray empty file occasionally created by redirect typos (e.g. `2 >&1`)
+/0

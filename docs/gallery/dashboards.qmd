@@ -74,7 +74,7 @@ tabviz(nba_dash,
   row_accent = "all_star",       # bold + theme accent on All-Stars
   row_fill   = "is_mvp",         # strong fill on MVP row
   theme = web_theme_cochrane() |>
-    set_inputs(primary = "#1d428a", accent = "#c8102e"),  # NBA blue + red
+    set_inputs(brand = "#1d428a", accent = "#c8102e"),  # NBA blue + red
   title    = "NBA Player Efficiency Dashboard",
   subtitle = "PER = 15 is league average. Rings show shooting efficiency by typical-range thresholds.",
   caption  = "All-Star rows accented; MVP row gets the row.fill token."

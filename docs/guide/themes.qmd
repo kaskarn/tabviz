@@ -323,12 +323,13 @@ Three pipe-friendly modifiers cover the common edits:
 #| eval: false
 custom <- web_theme_jama() |>
   set_inputs(primary = "#1F3A5F", accent = "#B08938") |>
-  set_variants(density = "comfortable", header_style = "bold") |>
+  set_density("comfortable") |>
+  set_header_style("bold") |>
   set_spacing(row_height = 28, axis_gap = 14)
 ```
 
 * **`set_inputs(theme, ...)`** — update Tier 1 inputs. Cascade-aware: changing `primary` clears `primary_deep` so it re-derives; changing `series_anchors` rebuilds the slot bundles.
-* **`set_variants(theme, ...)`** — flip per-table toggles (density / header_style / first_column_style). Density change resets spacing tokens so the new preset's values flow through.
+* **`set_density(theme, x)`**, **`set_header_style(theme, x)`**, **`set_first_column_style(theme, x)`**  per-table variant setters. `set_density` re-resolves (drives spacing tokens); the style setters flip a post-resolution variant.
 * **`set_spacing(theme, ...)`** — per-token spacing override on top of the density preset. Set what you care about; the rest follow density.
 
 For surgical overrides anywhere in the theme tree, use `set_theme_field()` with a path:
@@ -443,7 +444,7 @@ do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_dark())))
 
 # Slide deck variant — any preset can flip to spacious density
 do.call(tabviz, c(list(meta_data), forest_args,
-                  list(theme = web_theme_cochrane() |> set_variants(density = "spacious"))))
+                  list(theme = web_theme_cochrane() |> set_density("spacious"))))
 
 # --- LOTR illustrative presets ---------------------------------------------
 
@@ -513,7 +514,7 @@ my_table |> set_theme(web_theme_acme())
 * `package_themes()` — 2-level named list (`journals` / `lotr`) of all preset constructors.
 * `set_theme(spec, theme)` — switch a `WebSpec` to a different theme.
 * `set_inputs(theme, ...)` — update Tier 1 inputs.
-* `set_variants(theme, ...)` — update per-table variants.
+* `set_density()` / `set_header_style()` / `set_first_column_style()`  per-table variant setters.
 * `set_spacing(theme, ...)` — per-token spacing overrides.
 * `set_theme_field(theme, path, value)` — generic deep setter.
 * `selectable_themes(spec, themes)` — curate the in-widget theme switcher.

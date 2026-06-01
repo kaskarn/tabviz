@@ -235,7 +235,7 @@ web_theme_jama() |>
     primary          = "#2563EB",
     series_anchors = c("#2563EB", "#16A34A", "#DC2626")
   ) |>
-  set_variants(density = "comfortable") |>
+  set_density("comfortable") |>
   set_spacing(row_height = 28)
 ```
 

@@ -65,86 +65,95 @@ render_acme(
 )
 ```
 
-## Step 1 — pick the neutral ramp
+## Step 1 — tint the neutral ramp
 
-Five greys, lightest to darkest. This drives every surface tone (`base`, `muted`, `raised`), every divider, and every body-text color in the chrome cascade. Acme leans slightly cool with a hint of blue undertone so the chrome reads as quietly editorial.
+The neutral ramp drives every surface tone (`base`, `muted`, `raised`), every
+divider, and the chrome body-text color. Rather than hand-picking five greys,
+the current API derives the ramp and lets you *tint* it toward an identity
+color: `neutral_tint = "brand"` pulls the greys a hair cool/warm in the brand
+direction; `neutral_tint_strength` controls how far (`0` = pure grey, `~1` =
+strongly editorial). Acme wants a quietly cool, editorial chrome.
 
 ```{r}
 acme_t1 <- web_theme(
-  inputs = list(
-    neutral = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230")
-  )
+  neutral_tint = "brand",
+  neutral_tint_strength = 0.06
 )
 
-render_acme(acme_t1, subtitle = "Step 1 — cool-leaning neutrals")
+render_acme(acme_t1, subtitle = "Step 1 — brand-tinted neutrals")
 ```
 
-## Step 2 — pick the primary identity
+## Step 2 — pick the brand identity
 
-Acme's primary is `#1E3A5F` — a deep editorial navy. `primary_deep` auto-derives by darkening; we let it.
+Acme's brand seed is `#1E3A5F` — a deep editorial navy. Everything identity
+(marker fills, title color, the resolved `primary` / `primary_deep` surface
+tokens) derives from this one seed.
 
 ```{r}
 acme_t2 <- web_theme(
-  inputs = list(
-    neutral = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
-    primary = "#1E3A5F"
-  )
+  brand = "#1E3A5F",
+  neutral_tint = "brand",
+  neutral_tint_strength = 0.06
 )
 
-render_acme(acme_t2, subtitle = "Step 2 — primary navy")
+render_acme(acme_t2, subtitle = "Step 2 — navy brand")
 ```
 
 Notice the marker fill, the title color, and the cell-hairline tint all picked up the new identity at once. The chrome cascade does this automatically — there's no per-component knob to flip.
 
 ## Step 3 — pick the accent (engagement layer)
 
-`accent` is reserved for engagement: hover, selected rows, semantic row callouts (`row_accent`), the selection edge, and the `status.info` fallback. **Never identity** — keep it visually distinct from `primary`. Acme picks a warm amber to counterpoint the cool navy.
+`accent` is reserved for engagement: hover, selected rows, semantic row callouts (`row_accent`), the selection edge, and the `status.info` fallback. **Never identity** — keep it visually distinct from `brand`. Acme picks a warm amber to counterpoint the cool navy.
 
 ```{r}
 acme_t3 <- web_theme(
-  inputs = list(
-    neutral = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
-    primary = "#1E3A5F",
-    accent  = "#C8893F"          # amber engagement
-  )
+  brand  = "#1E3A5F",
+  accent = "#C8893F",          # amber engagement
+  neutral_tint = "brand",
+  neutral_tint_strength = 0.06
 )
 
 render_acme(acme_t3, subtitle = "Step 3 — amber accent")
 ```
 
-## Step 4 — series anchors for multi-effect plots
+## Step 4 — series colors for multi-effect plots
 
-`series_anchors` is the per-effect color pool for multi-effect viz columns (multi-arm forest, grouped bars, multiple boxplots per row). The first anchor also drives the pooled-effect diamond fill. Each anchor expands into a 7-field `SlotBundle` with derived muted / emphasized variants, so you only pin the anchor.
+Per-effect colors (for multi-arm forest, grouped bars, multiple boxplots per
+row) are *derived* — the resolved `series` slot bundles come from the `brand`
+identity plus the `categorical` data scheme; the first slot also drives the
+pooled-effect diamond. You don't pin them as an input. To choose the scheme,
+set `categorical`; to override a single resolved slot fill, reach for
+`set_theme_field(c("series", i, "fill"), …)`.
 
 ```{r}
 acme_t4 <- web_theme(
-  inputs = list(
-    neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
-    primary        = "#1E3A5F",
-    accent         = "#C8893F",
-    series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99")
-  )
-)
+  brand  = "#1E3A5F",
+  accent = "#C8893F",
+  categorical = "okabe_ito",   # the per-effect data palette
+  neutral_tint = "brand",
+  neutral_tint_strength = 0.06
+) |>
+  # pin the first series slot to the brand navy (drives the pooled diamond)
+  set_theme_field(c("series", 1L, "fill"), "#1E3A5F")
 
-render_acme(acme_t4, subtitle = "Step 4 — five-anchor series palette (mostly invisible here — single-effect)")
+render_acme(acme_t4, subtitle = "Step 4 — derived series palette (single-effect here)")
 ```
 
-The single-effect forest in this example only consumes the first anchor; switch to a multi-effect `effect_forest()` list and the rest cycle in.
+The single-effect forest in this example only consumes the first slot; switch to a multi-effect `effect_forest()` list and the rest cycle in from the categorical scheme.
 
 ## Step 5 — fonts
 
-Acme picks an editorial serif for display copy and a humanist sans for body. `font_display` falls back to `font_body` when `NA`, so we name both explicitly.
+Acme picks an editorial serif for display copy and a humanist sans for body. `font_display` falls back to `font_body` when unset, so we name both explicitly.
 
 ```{r}
 acme_t5 <- web_theme(
-  inputs = list(
-    neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
-    primary        = "#1E3A5F",
-    accent         = "#C8893F",
-    series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99"),
-    font_body      = "'IBM Plex Sans', system-ui, sans-serif",
-    font_display   = "'IBM Plex Serif', Georgia, serif"
-  ),
+  brand        = "#1E3A5F",
+  accent       = "#C8893F",
+  categorical  = "okabe_ito",
+  neutral_tint = "brand",
+  neutral_tint_strength = 0.06,
+  font_body    = "'IBM Plex Sans', system-ui, sans-serif",
+  font_display = "'IBM Plex Serif', Georgia, serif",
   web_fonts = list(
     web_font("IBM Plex Sans",
              "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"),
@@ -160,30 +169,28 @@ The widget injects `<link rel="stylesheet">` tags on mount for any `web_fonts` d
 
 ## Step 6 — pick variants
 
-Variants are the per-table toggles that don't change identity. Acme picks **comfortable** density and a **tint** header — a primary-tinted band that sits halfway between the default light header and the maximum-chrome bold header.
+Variants are the per-table toggles that don't change identity. Acme picks **comfortable** density and a **tint** header — a brand-tinted band that sits halfway between the default light header and the maximum-chrome bold header.
 
 ```{r}
 acme_t6 <- web_theme(
-  inputs = list(
-    neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
-    primary        = "#1E3A5F",
-    accent         = "#C8893F",
-    series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99"),
-    font_body      = "'IBM Plex Sans', system-ui, sans-serif",
-    font_display   = "'IBM Plex Serif', Georgia, serif"
-  ),
-  variants = list(
-    density       = "comfortable",
-    header_style  = "tint",
-    first_column_style = "default"
-  ),
+  brand        = "#1E3A5F",
+  accent       = "#C8893F",
+  categorical  = "okabe_ito",
+  neutral_tint = "brand",
+  neutral_tint_strength = 0.06,
+  font_body    = "'IBM Plex Sans', system-ui, sans-serif",
+  font_display = "'IBM Plex Serif', Georgia, serif",
+  density            = "comfortable",
+  header_style       = "tint",
+  first_column_style = "default",
   web_fonts = list(
     web_font("IBM Plex Sans",
              "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"),
     web_font("IBM Plex Serif",
              "https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap")
   )
-)
+) |>
+  set_theme_field(c("series", 1L, "fill"), "#1E3A5F")
 
 render_acme(acme_t6, subtitle = "Step 6 — comfortable density, tint header")
 ```
@@ -211,20 +218,17 @@ Once you're happy, wrap the whole theme in a named function for team-wide use. A
 ```{r}
 web_theme_acme <- function() {
   web_theme(
-    name = "acme",
-    inputs = list(
-      neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
-      primary        = "#1E3A5F",
-      accent         = "#C8893F",
-      series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99"),
-      font_body      = "'IBM Plex Sans', system-ui, sans-serif",
-      font_display   = "'IBM Plex Serif', Georgia, serif"
-    ),
-    variants = list(
-      density            = "comfortable",
-      header_style       = "tint",
-      first_column_style = "default"
-    ),
+    name         = "acme",
+    brand        = "#1E3A5F",
+    accent       = "#C8893F",
+    categorical  = "okabe_ito",
+    neutral_tint = "brand",
+    neutral_tint_strength = 0.06,
+    font_body    = "'IBM Plex Sans', system-ui, sans-serif",
+    font_display = "'IBM Plex Serif', Georgia, serif",
+    density            = "comfortable",
+    header_style       = "tint",
+    first_column_style = "default",
     web_fonts = list(
       web_font("IBM Plex Sans",
                "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"),
@@ -232,6 +236,7 @@ web_theme_acme <- function() {
                "https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap")
     )
   ) |>
+    set_theme_field(c("series", 1L, "fill"), "#1E3A5F") |>
     set_theme_field(c("axis", "gridlines"), TRUE) |>
     set_theme_field(c("plot", "tick_label", "weight"), 500)
 }

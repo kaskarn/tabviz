@@ -190,7 +190,7 @@ copies:
 ```r
 web_theme_jama() |>
   set_inputs(primary = "#0066cc") |>
-  set_variants(density = "comfortable") |>
+  set_density("comfortable") |>
   set_spacing(row_height = 24) |>
   set_theme_field(c("axis", "gridlines"), TRUE)
 ```

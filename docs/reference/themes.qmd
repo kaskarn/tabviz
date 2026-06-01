@@ -8,7 +8,7 @@ library(tabviz)
 ```
 
 Built-in theme presets, the `web_theme()` custom-theme constructor, the four core
-modifiers (`set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field()`),
+modifiers (`set_brand()`, `set_accent()`, `set_density()`, `set_header_style()`),
 and `package_themes()` for listing every shipped theme. Pass any theme to
 `tabviz(theme = ...)` or apply it after the fact with
 [`set_theme()`](styling.qmd#set_theme).
@@ -80,39 +80,60 @@ package_themes() |> str(max.level = 2)
 
 ## `web_theme()` {#web_theme}
 
-Custom-theme constructor. Extends a `base_theme` with named lists of
-Tier 1 inputs and per-table variants. Resolves the theme before returning.
+Custom-theme constructor. Pass Tier-1 inputs as direct arguments; everything
+else derives. Resolves the theme before returning.
 
 ```r
 web_theme(
-  name = "custom",
-  inputs = NULL,        # Named list of ThemeInputs property overrides
-  variants = NULL,      # Named list of ThemeVariants property overrides
-  base_theme = web_theme_cochrane()
+  brand = "#0099CC",          # required: identity seed
+  accent = NULL,              # engagement (hover/selected/callouts); mirrors brand
+  decorative = NULL,          # optional second color (editorial two-color themes)
+  mode = "light",             # "light" | "dark"
+  neutral_tint = "untinted",  # "untinted" | "brand" | "accent" | "decorative" | hex
+  neutral_tint_strength = 0.04,
+  categorical = "okabe_ito",  # data palette scheme
+  sequential = "viridis",
+  diverging = "rdbu",
+  status_positive = NULL, status_negative = NULL,
+  status_warning = NULL,  status_info = NULL,
+  font_body = NULL, font_display = NULL, font_mono = NULL,
+  density = "comfortable",    # "compact" | "comfortable" | "spacious"
+  header_style = "light",     # "light" | "tint" | "bold"
+  first_column_style = "default",  # "default" | "tint" | "bold"
+  web_fonts = NULL,
+  name = "custom"
 )
 ```
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
+| `brand` | hex | `"#0099CC"` | Required identity seed. Powers the brand ramp and identity tokens. |
+| `accent` | hex | `NULL` | Engagement layer (hover, selected, callouts). Mirrors `brand` when unset. |
+| `decorative` | hex | `NULL` | Optional second color for editorial two-color themes (alt-row tint, divider hue, row-group L1 band). |
+| `mode` | string | `"light"` | `"light"` or `"dark"`. |
+| `neutral_tint` / `neutral_tint_strength` | string / num | `"untinted"` / `0.04` | Neutral-ramp tint source and blend strength (push toward `~1.0` for editorial paper colors). |
+| `categorical` / `sequential` / `diverging` | string | scheme names | Data-palette scheme references. |
+| `status_*` | hex | `NULL` | Optional status color overrides (`positive`/`negative`/`warning`/`info`). |
+| `font_body` / `font_display` / `font_mono` | string | `NULL` | Font stacks; `font_display` mirrors `font_body` when unset. |
+| `density` | string | `"comfortable"` | `"compact"` / `"comfortable"` / `"spacious"`. |
+| `header_style` | string | `"light"` | Header chrome variant: `"light"` / `"tint"` / `"bold"`. |
+| `first_column_style` | string | `"default"` | Label-column variant: `"default"` / `"tint"` / `"bold"`. |
+| `web_fonts` | list | `NULL` | Optional `web_font()` declarations to embed. |
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
-| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `primary` / `primary_deep`, `secondary` / `secondary_deep`, `accent` / `accent_deep`, `status_positive` / `status_negative` / `status_warning` / `status_info`, `series_anchors`, `slot_style`, `font_body` / `font_display` / `font_mono`. Unset fields inherit from `base_theme`. (Legacy `brand` accepted with deprecation warning; rewrite as `primary`.) |
-| `variants` | named list | `NULL` | Per-table variant overrides: `density` (`compact` / `comfortable` / `spacious`), `header_style` (`light` / `tint` / `bold`), `first_column_style` (`default` / `bold`). |
-| `base_theme` | `WebTheme` | `web_theme_cochrane()` | Starting point. The `inputs` and `variants` lists are applied on top. |
-| `.validate` | logical | `TRUE` | Run construction-time contrast validation on the resolved theme. |
+
+To start from a preset instead of defaults, chain setters off a `web_theme_*()`
+builder (e.g. `web_theme_lancet() |> set_brand("#1F3A5F")`).
 
 Example — Lancet-inspired theme with bold headers:
 
 ```r
 custom <- web_theme(
   name = "navy-bold",
-  inputs = list(
-    primary          = "#1F3A5F",
-    primary_deep     = "#0F2138",
-    accent         = "#B08938",
-    series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
-    font_body      = "Charter, Georgia, serif"
-  ),
-  variants = list(density = "comfortable", header_style = "bold")
+  brand        = "#1F3A5F",
+  accent       = "#B08938",
+  font_body    = "Charter, Georgia, serif",
+  density      = "comfortable",
+  header_style = "bold"
 )
 ```
 
@@ -125,55 +146,60 @@ Chainable via the pipe.
 
 ### `set_inputs()` {#set_inputs}
 
-Update Tier 1 customer-facing inputs. Cascade-aware: changing `primary`
-clears `primary_deep` so it re-derives; changing `series_anchors` rebuilds
-the slot bundles. The pooled-effect diamond reads from `series[1]`, so
-anchoring it is just a matter of setting the first `series_anchors` entry.
+Batch-update Tier-1 inputs and re-resolve. Accepts any [`ThemeInputs`] field by
+name; cascade-aware (derived tokens refresh, explicit pins survive). For a
+single input prefer the focused setter (`set_brand()`, `set_accent()`,
+`set_density()`, …); use `set_inputs()` to change several at once.
 
 ```r
 set_inputs(
   theme,
-  neutral,
-  primary, primary_deep, secondary, secondary_deep,
-  accent, accent_deep,
+  brand, accent, decorative, mode,
+  neutral_tint, neutral_tint_strength,
+  categorical, sequential, diverging,
   status_positive, status_negative, status_warning, status_info,
-  series_anchors,
-  slot_style,
-  font_body, font_display, font_mono
+  font_body, font_display, font_mono,
+  density
 )
 ```
 
 | Argument | Type | Description |
 |---|---|---|
 | `theme` | `WebTheme` | Theme to modify |
-| `neutral` | `chr[5]` | 5-step ramp, lightest → darkest |
-| `primary` | hex | Primary identity (markers, accents) |
-| `primary_deep` | hex | Dark companion for text / strokes / bold-mode header band. Auto-derives by darkening `primary` when `NA` |
-| `secondary` | hex | Secondary identity. Owns chrome texture (`surface.muted`, dividers, banding) and structural defaults (column-group bold band, row-group L1/L2/L3 bg, glyph-column defaults). Mirrors `primary` when `NA` |
-| `secondary_deep` | hex | Dark companion for `secondary`. Mirrors `secondary`'s deep companion when `NA` |
-| `accent` | hex | Engagement layer — hover, selected, semantic row callouts, selection edge. Orthogonal to identity |
-| `accent_deep` | hex | Dark companion; defaults to `accent` |
+| `brand` | hex | Identity seed (markers, identity tokens). Derives the brand ramp |
+| `accent` | hex | Engagement layer — hover, selected, semantic callouts, selection edge. Mirrors `brand` when unset |
+| `decorative` | hex | Optional second color (alt-row tint, divider hue, row-group L1 band) |
+| `mode` | `"light"` / `"dark"` | Light or dark canvas |
+| `neutral_tint` / `neutral_tint_strength` | string / num | Neutral-ramp tint source + blend strength |
+| `categorical` / `sequential` / `diverging` | string | Data-palette scheme names |
 | `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
-| `series_anchors` | `chr[]` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond |
-| `slot_style` | `"fill_with_darker_stroke"` (default) / `"flat_fill"` / `"outlined"` | How each `SlotBundle`'s fill / stroke pair relate |
 | `font_body` | string | Primary CSS font-family |
-| `font_display` | string | Optional title face; mirrors `font_body` when `NA` |
+| `font_display` | string | Optional title face; mirrors `font_body` when unset |
 | `font_mono` | string | Optional monospace face |
+| `density` | string | `"compact"` / `"comfortable"` / `"spacious"` |
 
-### `set_variants()` {#set_variants}
+> Identity vocabulary: `brand` is the **input** name; `primary` / `primary_deep`
+> are the **resolved** surface tokens it derives (along with secondary and the
+> per-series slot anchors). To pin a resolved token directly — e.g. a specific
+> series fill — use `set_theme_field(c("series", 1L, "fill"), "#…")`.
 
-Flip per-table toggles. Density change resets spacing tokens so the new
-preset's values flow through.
+### Variant setters {#set_variants}
+
+Single-purpose fluent setters (the former bundled `set_variants()` was
+retired in favor of one setter per knob, matching `set_brand()` /
+`set_accent()` / `set_density()`).
 
 ```r
-set_variants(theme, density, header_style, first_column_style)
+set_density(theme, density)               # re-resolves the cascade
+set_header_style(theme, header_style)     # variant selector (assign-only)
+set_first_column_style(theme, first_column_style)
 ```
 
-| Argument | Values | Description |
+| Setter | Values | Description |
 |---|---|---|
-| `density` | `"compact"` / `"comfortable"` / `"spacious"` | Drives every spacing token |
-| `header_style` | `"light"` / `"tint"` / `"bold"` | Light header on muted surface, primary-tinted band, or bold header on `primary_deep` |
-| `first_column_style` | `"default"` / `"bold"` | Excel-style emphasized first column when `"bold"` |
+| `set_density()` | `"compact"` / `"comfortable"` / `"spacious"` | Tier-1 input — re-resolves and drives every spacing token |
+| `set_header_style()` | `"light"` / `"tint"` / `"bold"` | Post-resolution variant: light header on muted surface, primary-tinted band, or bold header on `primary_deep` |
+| `set_first_column_style()` | `"default"` / `"tint"` / `"bold"` | Post-resolution variant: emphasized first (label) column |
 
 ### `set_spacing()` {#set_spacing}
 
@@ -202,8 +228,7 @@ Other tokens (`header_height`, gaps, paddings) keep the value `set_spacing()` wr
 ### `set_theme_field()` {#set_theme_field}
 
 Generic deep setter. Walks the theme tree by `path` and replaces the leaf
-with `value`, then re-resolves. Use this for any field not covered by the
-typed setters above.
+with `value`. Assigning under `inputs` re-resolves; other paths pin directly.
 
 ```r
 set_theme_field(theme, path, value)
@@ -225,7 +250,7 @@ theme |> set_theme_field(c("row_group", "L1", "bg"), "#EEEEEE")
 theme |> set_theme_field(c("series", 2L, "stroke"), "#444444")
 
 # Set Tier 1 inputs surgically
-theme |> set_theme_field(c("inputs", "primary"), "#FF0000")
+theme |> set_theme_field(c("inputs", "brand"), "#FF0000")
 
 # Tweak axis config
 theme |> set_theme_field(c("axis", "gridlines"), TRUE)
@@ -236,7 +261,7 @@ theme |> set_theme_field(c("layout", "container_border_radius"), 4)
 ```
 
 Re-resolution preserves explicit overrides on subsequent edits.
-`set_inputs(primary = "...")` after pinning `surface.base` will refresh
+`set_inputs(brand = "...")` after pinning `surface.base` will refresh
 series colors but leave `surface.base` pinned.
 
 ---
@@ -253,7 +278,7 @@ series colors but leave `surface.base` pinned.
 plot |> set_theme("jama")
 
 # Apply by object
-custom <- web_theme(inputs = list(primary = "#1F3A5F"))
+custom <- web_theme(brand = "#1F3A5F")
 plot |> set_theme(custom)
 ```
 
@@ -266,20 +291,17 @@ plot |> set_theme(custom)
 ```r
 my_lancet <- web_theme(
   name = "my-lancet",
-  inputs = list(
-    primary          = "#0066CC",
-    accent         = "#CC9900",
-    series_anchors = c("#0066CC", "#CC9900", "#669933"),
-    font_body      = "Helvetica, Arial, sans-serif",
-    font_display   = "Helvetica, Arial, sans-serif"
-  ),
-  variants = list(density = "comfortable")
+  brand        = "#0066CC",
+  accent       = "#CC9900",
+  font_body    = "Helvetica, Arial, sans-serif",
+  font_display = "Helvetica, Arial, sans-serif",
+  density      = "comfortable"
 )
 
 # Swap presets, then tweak
 custom <- web_theme_lancet() |>
-  set_inputs(primary = "#0066CC") |>
-  set_variants(density = "compact") |>
+  set_brand("#0066CC") |>
+  set_density("compact") |>
   set_theme_field(c("axis", "gridlines"), TRUE)
 ```
 
@@ -288,16 +310,11 @@ custom <- web_theme_lancet() |>
 ```r
 print_theme <- web_theme(
   name = "print",
-  inputs = list(
-    neutral        = c("#FFFFFF", "#FFFFFF", "#FAFAFA", "#666666", "#1A1A1A"),
-    primary          = "#000000",
-    accent         = "#000000",
-    series_anchors = c("#1A1A1A", "#4D4D4D", "#808080", "#B3B3B3"),
-    font_body      = "'Times New Roman', serif",
-    font_display   = "'Times New Roman', serif"
-  ),
-  variants = list(density = "compact"),
-  base_theme = web_theme_jama()
+  brand        = "#000000",
+  accent       = "#000000",
+  font_body    = "'Times New Roman', serif",
+  font_display = "'Times New Roman', serif",
+  density      = "compact"
 ) |>
   set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>
   set_theme_field(c("row_group", "L1", "border_bottom"), TRUE)
@@ -308,13 +325,11 @@ print_theme <- web_theme(
 ```r
 dark_theme <- web_theme(
   name = "dashboard-dark",
-  base_theme = web_theme_dark(),
-  inputs = list(
-    primary          = "#10B981",
-    accent         = "#10B981",
-    series_anchors = c("#10B981", "#3B82F6", "#F59E0B", "#EF4444")
-  ),
-  variants = list(density = "spacious", header_style = "bold")
+  mode         = "dark",
+  brand        = "#10B981",
+  accent       = "#10B981",
+  density      = "spacious",
+  header_style = "bold"
 )
 ```
 

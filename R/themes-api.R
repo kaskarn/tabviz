@@ -268,6 +268,156 @@ set_density <- function(theme, density) {
   resolve_from_inputs(inputs, name = theme@name)
 }
 
+#' Set the header chrome variant.
+#'
+#' `header_style` is a post-resolution variant selector (not a Tier-1 input),
+#' so this assigns it directly without re-resolving the cascade. Mirrors the
+#' `header_style` argument of [web_theme()].
+#'
+#' @param theme A [WebTheme].
+#' @param header_style `"light"`, `"tint"`, or `"bold"`.
+#' @return The [WebTheme] with the header variant applied.
+#' @export
+set_header_style <- function(theme, header_style) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(header_style, c("light", "tint", "bold"))
+  theme@header_style <- header_style
+  theme
+}
+
+#' Set the first (label) column variant.
+#'
+#' `first_column_style` is a post-resolution variant selector (not a Tier-1
+#' input), so this assigns it directly without re-resolving. Mirrors the
+#' `first_column_style` argument of [web_theme()].
+#'
+#' @param theme A [WebTheme].
+#' @param first_column_style `"default"`, `"tint"`, or `"bold"`.
+#' @return The [WebTheme] with the first-column variant applied.
+#' @export
+set_first_column_style <- function(theme, first_column_style) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
+  theme@first_column_style <- first_column_style
+  theme
+}
+
+#' Set named S7 properties on an object from a `...` list. Internal helper for
+#' the batch theme setters; skips NULL args so partial updates are clean.
+#' @noRd
+apply_named_props <- function(obj, args) {
+  for (nm in names(args)) {
+    if (is.null(args[[nm]])) next
+    S7::prop(obj, nm) <- args[[nm]]
+  }
+  obj
+}
+
+#' Update Tier-1 theme inputs and re-resolve.
+#'
+#' Batch setter for any [ThemeInputs] field (`brand`/`primary`, `accent`,
+#' `mode`, `density`, `categorical`, `status_*`, `font_*`, ...). Cascade-aware:
+#' changing an input re-runs resolution, so derived tokens refresh while
+#' user pins on the resolved theme are re-applied by the resolver. For a
+#' single input prefer the focused setter (`set_brand()`, `set_accent()`,
+#' `set_density()`, ...); use this when changing several at once.
+#'
+#' @param theme A [WebTheme].
+#' @param ... Named arguments matching [ThemeInputs] property names.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_inputs <- function(theme, ...) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  inputs <- apply_named_props(theme@inputs, list(...))
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Override density-derived spacing tokens.
+#'
+#' Per-token spacing overrides on top of the active density preset — set the
+#' tokens you care about; the rest keep their density-preset values. `spacing`
+#' is a post-resolution token block (not a Tier-1 input), so this assigns
+#' directly without re-resolving the cascade.
+#'
+#' @param theme A [WebTheme].
+#' @param ... Named numeric arguments matching [SpacingTokens] property names
+#'   (`row_height`, `header_height`, `padding`, `axis_gap`, ...).
+#' @return The [WebTheme] with spacing overrides applied.
+#' @export
+set_spacing <- function(theme, ...) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  theme@spacing <- apply_named_props(theme@spacing, list(...))
+  theme
+}
+
+#' Set a single theme field by path (generic deep setter).
+#'
+#' Escape hatch for pinning any leaf in the resolved theme tree without a
+#' dedicated setter. `path` is a character vector of property names from the
+#' theme root to the leaf; integer entries index list properties (e.g.
+#' `series`). Assigning under `inputs` re-resolves the cascade (the change is
+#' an input); any other path is a post-resolution pin applied directly.
+#'
+#' @param theme A [WebTheme].
+#' @param path Character (or mixed character/integer) vector from the theme
+#'   root to the target leaf.
+#' @param value New value for the leaf.
+#' @return The [WebTheme] with the field set (re-resolved when `path` targets
+#'   an input).
+#' @examples
+#' \dontrun{
+#'   web_theme_cochrane() |> set_theme_field(c("row_group", "L1", "bg"), "#EEE")
+#'   web_theme_cochrane() |> set_theme_field(c("series", 1L, "fill"), "#FF0000")
+#' }
+#' @export
+set_theme_field <- function(theme, path, value) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  if (length(path) == 0L) {
+    cli::cli_abort("{.arg path} must have at least one element.")
+  }
+  # A step indexes a list when it's numeric OR a numeric-looking string against
+  # a bare list target. `c("series", 1L, "fill")` coerces 1L to "1", so we
+  # detect index steps structurally rather than by type alone.
+  is_index_step <- function(key, obj) {
+    if (is.numeric(key)) return(TRUE)
+    is.list(obj) && !inherits(obj, "S7_object") && grepl("^[0-9]+$", key)
+  }
+  set_at <- function(obj, p, v) {
+    key <- p[[1]]
+    if (length(p) == 1L) {
+      if (is_index_step(key, obj)) {
+        obj[[as.integer(key)]] <- v
+        return(obj)
+      }
+      S7::prop(obj, key) <- v
+      return(obj)
+    }
+    if (is_index_step(key, obj)) {
+      idx <- as.integer(key)
+      obj[[idx]] <- set_at(obj[[idx]], p[-1], v)
+      return(obj)
+    }
+    S7::prop(obj, key) <- set_at(S7::prop(obj, key), p[-1], v)
+    obj
+  }
+  theme <- set_at(theme, as.list(path), value)
+  # If an input changed, re-resolve so derived tokens refresh.
+  if (identical(as.character(path[[1]]), "inputs")) {
+    return(resolve_from_inputs(theme@inputs, name = theme@name))
+  }
+  theme
+}
+
 #' Export a theme's resolved CSS variable block.
 #'
 #' Returns a `:root { ... }` CSS string with `--tv-*` custom properties.

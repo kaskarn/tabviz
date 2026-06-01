@@ -87,7 +87,7 @@ tabviz(demo_data,
   subtitle = "Larger fonts for slides",
   caption = "Source: Example data",
   columns = list(col_numeric("value", "Value", decimals = 2)),
-  theme = web_theme_cochrane() |> set_variants(density = "spacious")
+  theme = web_theme_cochrane() |> set_density("spacious")
 )
 ```
 

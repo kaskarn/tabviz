@@ -262,7 +262,7 @@ Build the theme you want, then attach it via `set_theme()`.
 | Modifier | Edits |
 |----------|-------|
 | `set_inputs()` | Tier 1 customer inputs (brand, accent, series, fonts, status) |
-| `set_variants()` | Per-table variants (density, header_style, first_column_style) |
+| `set_density()` `set_header_style()` `set_first_column_style()` | Per-table variant setters (density, header style, first-column style) |
 | `set_spacing()` | Per-token spacing override on top of the density preset |
 | `set_theme_field(theme, path, value)` | Generic deep setter; `path` walks the theme tree |
 
@@ -506,7 +506,7 @@ forest_plot(trial_b, ...) |> apply_clinical_style()
 | `set_marker_style()` | Interval marker (color, shape, opacity, size) |
 | `set_column_style()` | Per-cell styling for one column |
 | `set_theme()` | Apply theme by name or object |
-| `set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field()` | Theme-level modifiers (operate on a `WebTheme`, then `set_theme()` to attach) |
+| `set_brand()`, `set_accent()`, `set_density()`, `set_header_style()` | Theme-level modifiers (operate on a `WebTheme`, then `set_theme()` to attach) |
 
 **Columns**
 

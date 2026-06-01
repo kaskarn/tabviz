@@ -164,7 +164,8 @@ tabviz(...,
       series_anchors = c("#2563EB", "#16A34A", "#DC2626"),
       font_body      = "Georgia, serif"
     ) |>
-    set_variants(density = "comfortable", header_style = "bold") |>
+    set_density("comfortable") |>
+    set_header_style("bold") |>
     set_spacing(row_height = 28, header_height = 32) |>
     set_theme_field(c("plot", "point_size"), 6) |>
     set_theme_field(c("plot", "line_width"), 1.5) |>
@@ -175,7 +176,7 @@ tabviz(...,
 | Modifier | What it edits |
 |---|---|
 | `set_inputs()` | Tier 1 inputs (`primary` / `secondary` / `accent` + their `_deep` companions, `status_*`, `series_anchors`, `slot_style`, fonts) |
-| `set_variants()` | Per-table toggles (`density`, `header_style` `light/tint/bold`, `first_column_style`) |
+| `set_density()` `set_header_style()` `set_first_column_style()` | Per-table variant setters (density, header style, first-column style) |
 | `set_spacing()` | Per-token spacing override on top of the density preset |
 | `set_theme_field(theme, path, value)` | Generic deep setter; `path` walks the theme tree |
 | `set_theme()` | Swap to a different preset (any of the 7 by name) or a `WebTheme` object |

@@ -118,7 +118,7 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 | Function | Description |
 |---|---|
 | [`set_inputs()`](themes.qmd#set_inputs) | Tier 1 inputs (`primary` / `secondary` / `accent` / `status_*` / `series_anchors` / `slot_style` / fonts) |
-| [`set_variants()`](themes.qmd#set_variants) | Per-table variants (`density`, `header_style`, `first_column_style`) |
+| [`set_density()` / `set_header_style()` / `set_first_column_style()`](themes.qmd#set_variants) | Per-table variant setters |
 | [`set_spacing()`](themes.qmd#set_spacing) | Per-token spacing override on top of the density preset |
 | [`set_theme_field()`](themes.qmd#set_theme_field) | Generic deep setter; `path` walks the theme tree |
 

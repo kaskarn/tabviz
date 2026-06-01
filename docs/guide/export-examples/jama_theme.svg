@@ -1,139 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="281.638"
-  viewBox="0 0 403 227">
+  width="500" height="297.297"
+  viewBox="0 0 407 242">
 <style>
   text {
     font-variant-numeric: tabular-nums;
   }
 </style>
-<rect width="100%" height="100%" fill="#FFFFFF"/>
-<text x="6" y="25"
-      font-family="Arial, Helvetica, sans-serif"
-      font-size="16px"
+<rect width="100%" height="100%" fill="#FBFBFB"/>
+<text x="8" y="25"
+      font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+      font-size="14px"
       font-weight="600"
-      fill="#000000">Figure 1. Primary Endpoint</text>
-<line x1="6" x2="397"
-      y1="44" y2="44"
-      stroke="#000000" stroke-width="2"/>
-<text class="cell-text" dominant-baseline="central" x="16" y="58.5"
-        font-family="Arial, Helvetica, sans-serif"
+      fill="#121212">Figure 1. Primary Endpoint</text>
+<line x1="8" x2="399"
+      y1="45" y2="45"
+      stroke="#A7A7A7" stroke-width="2"/>
+<text class="cell-text" dominant-baseline="central" x="16" y="59.5"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
         font-size="14.7px"
-        font-weight="600"
-        fill="#000000">Study</text>
-<text class="cell-text" dominant-baseline="central" x="272" y="58.5"
-          font-family="Arial, Helvetica, sans-serif"
+        font-weight="400"
+        fill="#121212">Study</text>
+<text class="cell-text" dominant-baseline="central" x="272" y="59.5"
+          font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
           font-size="14.7px"
-          font-weight="600"
+          font-weight="400"
           text-anchor="start"
-          fill="#000000">HR (95% CI)</text>
-<line x1="6" x2="397"
-        y1="73" y2="73"
-        stroke="#000000" stroke-width="2"/>
-<rect x="6" y="73"
-            width="391" height="18"
-            fill="#F5F6F6"/>
-<rect x="6" y="109"
-            width="391" height="18"
-            fill="#F5F6F6"/>
-<line x1="220.0006922796589" x2="220.0006922796589" y1="73" y2="145"
-    stroke="#717171" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
+          fill="#121212">HR (95% CI)</text>
+<line x1="8" x2="399"
+        y1="74" y2="74"
+        stroke="#A7A7A7" stroke-width="2"/>
+<rect x="8" y="74"
+            width="391" height="20"
+            fill="#F4F4F4"/>
+<rect x="8" y="114"
+            width="391" height="20"
+            fill="#F4F4F4"/>
+<line x1="222.0006922796589" x2="222.0006922796589" y1="74" y2="154"
+    stroke="#303030" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="138.95538520317044" x2="212.36920080645828" y1="82" y2="82"
-            stroke="#050505" stroke-width="1.5"/>
-          <line x1="138.95538520317044" x2="138.95538520317044" y1="79" y2="85" stroke="#050505" stroke-width="1.5"/>
-          <line x1="212.36920080645828" x2="212.36920080645828" y1="79" y2="85" stroke="#050505" stroke-width="1.5"/>
-          <circle cx="175.20183551768244" cy="82" r="6" fill="#1A1A1A"/>
+          <line x1="140.95538520317044" x2="214.36920080645828" y1="84" y2="84"
+            stroke="#535353" stroke-width="1.5"/>
+          <line x1="140.95538520317044" x2="140.95538520317044" y1="81" y2="87" stroke="#535353" stroke-width="1.5"/>
+          <line x1="214.36920080645828" x2="214.36920080645828" y1="81" y2="87" stroke="#535353" stroke-width="1.5"/>
+          <circle cx="177.20183551768244" cy="84" r="6" fill="#6F6F6F"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="136.36781624714052" x2="235.52752822574973" y1="100" y2="100"
-            stroke="#050505" stroke-width="1.5"/>
-          <line x1="136.36781624714052" x2="136.36781624714052" y1="97" y2="103" stroke="#050505" stroke-width="1.5"/>
-          <line x1="235.52752822574973" x2="235.52752822574973" y1="97" y2="103" stroke="#050505" stroke-width="1.5"/>
-          <circle cx="184.92957821322443" cy="100" r="6" fill="#1A1A1A"/>
+          <line x1="138.36781624714052" x2="237.52752822574973" y1="104" y2="104"
+            stroke="#535353" stroke-width="1.5"/>
+          <line x1="138.36781624714052" x2="138.36781624714052" y1="101" y2="107" stroke="#535353" stroke-width="1.5"/>
+          <line x1="237.52752822574973" x2="237.52752822574973" y1="101" y2="107" stroke="#535353" stroke-width="1.5"/>
+          <circle cx="186.92957821322443" cy="104" r="6" fill="#6F6F6F"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="183.03424729798235" x2="215.46892677355368" y1="118" y2="118"
-            stroke="#050505" stroke-width="1.5"/>
-          <line x1="183.03424729798235" x2="183.03424729798235" y1="115" y2="121" stroke="#050505" stroke-width="1.5"/>
-          <line x1="215.46892677355368" x2="215.46892677355368" y1="115" y2="121" stroke="#050505" stroke-width="1.5"/>
-          <circle cx="199.28107791123773" cy="118" r="6" fill="#1A1A1A"/>
+          <line x1="185.03424729798235" x2="217.46892677355368" y1="124" y2="124"
+            stroke="#535353" stroke-width="1.5"/>
+          <line x1="185.03424729798235" x2="185.03424729798235" y1="121" y2="127" stroke="#535353" stroke-width="1.5"/>
+          <line x1="217.46892677355368" x2="217.46892677355368" y1="121" y2="127" stroke="#535353" stroke-width="1.5"/>
+          <circle cx="201.28107791123773" cy="124" r="6" fill="#6F6F6F"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="184.92957821322443" x2="218.50538858968153" y1="136" y2="136"
-            stroke="#050505" stroke-width="1.5"/>
-          <line x1="184.92957821322443" x2="184.92957821322443" y1="133" y2="139" stroke="#050505" stroke-width="1.5"/>
-          <line x1="218.50538858968153" x2="218.50538858968153" y1="133" y2="139" stroke="#050505" stroke-width="1.5"/>
-          <circle cx="200.9814560165861" cy="136" r="6" fill="#1A1A1A"/>
+          <line x1="186.92957821322443" x2="220.50538858968153" y1="144" y2="144"
+            stroke="#535353" stroke-width="1.5"/>
+          <line x1="186.92957821322443" x2="186.92957821322443" y1="141" y2="147" stroke="#535353" stroke-width="1.5"/>
+          <line x1="220.50538858968153" x2="220.50538858968153" y1="141" y2="147" stroke="#535353" stroke-width="1.5"/>
+          <circle cx="202.9814560165861" cy="144" r="6" fill="#6F6F6F"/>
         </g>
-<g transform="translate(0, 153)"><line x1="102" x2="262"
-    y1="0" y2="0" stroke="#000000" stroke-width="1"/>
-<line x1="143.9993077203411" x2="143.9993077203411" y1="0" y2="4"
-      stroke="#000000" stroke-width="1"/>
-<text x="143.9993077203411" y="16" text-anchor="middle"
-      font-family="Arial, Helvetica, sans-serif"
-      font-size="12px"
+<g transform="translate(0, 162)"><line x1="104" x2="264"
+    y1="0" y2="0" stroke="#A7A7A7" stroke-width="1"/>
+<line x1="145.9993077203411" x2="145.9993077203411" y1="0" y2="4"
+      stroke="#A7A7A7" stroke-width="1"/>
+<text x="145.9993077203411" y="17" text-anchor="middle"
+      font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+      font-size="13px"
       font-weight="400"
       font-style="normal"
-      fill="#616161">0.60</text>
-<line x1="220.0006922796589" x2="220.0006922796589" y1="0" y2="4"
-      stroke="#000000" stroke-width="1"/>
-<text x="220.0006922796589" y="16" text-anchor="middle"
-      font-family="Arial, Helvetica, sans-serif"
-      font-size="12px"
+      fill="#565656">0.60</text>
+<line x1="222.0006922796589" x2="222.0006922796589" y1="0" y2="4"
+      stroke="#A7A7A7" stroke-width="1"/>
+<text x="222.0006922796589" y="17" text-anchor="middle"
+      font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+      font-size="13px"
       font-weight="400"
       font-style="normal"
-      fill="#616161">1.00</text>
-<text x="182" y="28"
+      fill="#565656">1.00</text>
+<text x="184" y="31"
       text-anchor="middle"
-      font-family="Arial, Helvetica, sans-serif"
-      font-size="12px"
+      font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+      font-size="13px"
       font-weight="400"
       font-style="normal"
-      fill="#616161">Effect</text></g>
-<text class="cell-text" dominant-baseline="central" x="16" y="82"
-    font-family="Arial, Helvetica, sans-serif"
+      fill="#303030">Effect</text></g>
+<text class="cell-text" dominant-baseline="central" x="16" y="84"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#000000">SUSTAIN-6</text>
-<g font-family="Arial, Helvetica, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#000000" transform="translate(272 73.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.58</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.95</text></g><g transform="translate(64.19999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="6" x2="397"
-          y1="91" y2="91"
-          stroke="#000000" stroke-width="1"/>
-<text class="cell-text" dominant-baseline="central" x="16" y="100"
-    font-family="Arial, Helvetica, sans-serif"
+    fill="#121212">SUSTAIN-6</text>
+<g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#121212" transform="translate(272 75.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.58</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.95</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="8" x2="399" y1="94" y2="94" stroke="#BFBFBF" stroke-width="1"/>
+<text class="cell-text" dominant-baseline="central" x="16" y="104"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#000000">PIONEER 6</text>
-<g font-family="Arial, Helvetica, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#000000" transform="translate(272 91.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.57</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">1.11</text></g><g transform="translate(55.19999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="6" x2="397"
-          y1="109" y2="109"
-          stroke="#000000" stroke-width="1"/>
-<text class="cell-text" dominant-baseline="central" x="16" y="118"
-    font-family="Arial, Helvetica, sans-serif"
+    fill="#121212">PIONEER 6</text>
+<g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#121212" transform="translate(272 95.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.57</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">1.11</text></g><g transform="translate(64.39999999999999 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="8" x2="399" y1="114" y2="114" stroke="#BFBFBF" stroke-width="1"/>
+<text class="cell-text" dominant-baseline="central" x="16" y="124"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#000000">LEADER</text>
-<g font-family="Arial, Helvetica, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#000000" transform="translate(272 109.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.78</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.97</text></g><g transform="translate(64.19999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="6" x2="397"
-          y1="127" y2="127"
-          stroke="#000000" stroke-width="1"/>
-<text class="cell-text" dominant-baseline="central" x="16" y="136"
-    font-family="Arial, Helvetica, sans-serif"
+    fill="#121212">LEADER</text>
+<g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#121212" transform="translate(272 115.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.78</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.97</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="8" x2="399" y1="134" y2="134" stroke="#BFBFBF" stroke-width="1"/>
+<text class="cell-text" dominant-baseline="central" x="16" y="144"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#000000">REWIND</text>
-<g font-family="Arial, Helvetica, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#000000" transform="translate(272 127.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.79</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">0.99</text></g><g transform="translate(64.19999999999999 0)"><text y="7.20" font-size="12" fill="#717171" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="6" x2="397"
-          y1="145" y2="145"
-          stroke="#000000" stroke-width="1"/>
+    fill="#121212">REWIND</text>
+<g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#121212" transform="translate(272 135.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="8" x2="399" y1="154" y2="154" stroke="#BFBFBF" stroke-width="1"/>
 
 </svg>
