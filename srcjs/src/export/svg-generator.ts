@@ -50,7 +50,7 @@ import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/row-kind";
-import { computeRowLayout, computeHeaderHeight, LINE_HEIGHT } from "$lib/table-metrics";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/table-metrics";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
@@ -845,7 +845,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
   // no bottom axis, so reserving ~76px of axis height caused truncation.
-  const axisGap = theme.spacing.axisGap ?? 12;
+  const axisGap = theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
   const hasAxisColumn = allColumns.some(
     c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
   );
@@ -866,7 +866,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     someColumnHasAxisLabel,
     theme.plot.tickMarkLength,
   );
-  const webAxisHeight = hasAxisColumn ? axisGap + axisLayout.axisRegionHeight : 0;
+  const webAxisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisLayout.axisRegionHeight);
   // Include the themed footer gap when there's a footer to render — the
   // gap sits between the plot/axis area and the caption/footnote text. If
   // we leave it out, totalHeight was smaller than footerY + text, so the
@@ -895,7 +895,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     headerHeight,
     rowHeight,
     plotHeight,
-    axisHeight: LAYOUT.AXIS_HEIGHT,
+    // The real reserved axis band (0 for pure tables). Was previously the
+    // stale LAYOUT.AXIS_HEIGHT constant (always 32) — a latent bug that also
+    // made the aspect ladder's `naturalLayout.axisHeight > 0` always true.
+    axisHeight: webAxisHeight,
     nullValue,
     summaryYPosition: plotHeight - rowHeight,
     showOverallSummary: hasOverall,

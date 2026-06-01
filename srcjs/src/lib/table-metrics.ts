@@ -157,3 +157,24 @@ export function computeHeaderHeight(input: HeaderHeightInput): number {
   const minRow = Math.ceil(input.bodyFontPx * HEADER_FONT_SCALE * LINE_HEIGHT) + HEADER_ROW_PADDING;
   return Math.max(input.themeHeaderHeight, minRow * input.headerDepth);
 }
+
+/** Default axis gap when the theme leaves `spacing.axisGap` unset. */
+export const DEFAULT_AXIS_GAP = 12;
+
+/**
+ * Axis-band height. `hasAxisColumn ? axisGap + axisRegionHeight : 0`.
+ *
+ * **Convergence (2026-06):** the band is reserved only when a column actually
+ * renders an x-axis strip (forest or any viz_*). The DOM backend previously
+ * gated on "any forest column exists", over-reserving ~axis height for plain
+ * tables / non-forest-but-viz layouts; both backends now use this precise gate.
+ * `axisRegionHeight` is the font-derived portion the caller computes via
+ * `computeAxisLayout` (kept caller-side; it needs typography helpers).
+ */
+export function computeAxisHeight(
+  hasAxisColumn: boolean,
+  axisGap: number,
+  axisRegionHeight: number,
+): number {
+  return hasAxisColumn ? axisGap + axisRegionHeight : 0;
+}

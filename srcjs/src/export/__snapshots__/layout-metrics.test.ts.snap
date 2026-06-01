@@ -2,7 +2,7 @@
 
 exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 30,
   "columns": [
     {
       "id": "label",
@@ -96,7 +96,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -190,7 +190,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
 
 exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 38,
   "columns": [
     {
       "id": "label",
@@ -284,7 +284,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 30,
   "columns": [
     {
       "id": "label",
@@ -369,7 +369,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
 
 exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -454,7 +454,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
 
 exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 38,
   "columns": [
     {
       "id": "label",
@@ -539,7 +539,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
 
 exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 30,
   "columns": [
     {
       "id": "label",
@@ -612,7 +612,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -685,7 +685,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 38,
   "columns": [
     {
       "id": "label",
@@ -758,7 +758,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -834,7 +834,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -910,7 +910,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 30,
   "columns": [
     {
       "id": "label",
@@ -1004,7 +1004,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -1098,7 +1098,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 38,
   "columns": [
     {
       "id": "label",
@@ -1192,7 +1192,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
 
 exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
 {
-  "axisHeight": 32,
+  "axisHeight": 34,
   "columns": [
     {
       "id": "label",
@@ -1290,5 +1290,81 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
   },
   "totalHeight": 226,
   "totalWidth": 800,
+}
+`;
+
+exports[`layout metrics (sizing harness) metrics: pure-table-no-axis 1`] = `
+{
+  "axisHeight": 0,
+  "columns": [
+    {
+      "id": "label",
+      "type": "text",
+      "width": 78,
+      "x": 12,
+    },
+    {
+      "id": "n",
+      "type": "numeric",
+      "width": 60,
+      "x": 90,
+    },
+  ],
+  "forestWidth": 0,
+  "headerHeight": 32,
+  "labelWidth": 78,
+  "mainY": 24,
+  "plotHeight": 96,
+  "rows": [
+    {
+      "depth": 0,
+      "height": 24,
+      "indent": 0,
+      "index": 0,
+      "kind": "data",
+      "markerCenter": 12,
+      "top": 0,
+    },
+    {
+      "depth": 0,
+      "height": 24,
+      "indent": 0,
+      "index": 1,
+      "kind": "data",
+      "markerCenter": 36,
+      "top": 24,
+    },
+    {
+      "depth": 0,
+      "height": 24,
+      "indent": 0,
+      "index": 2,
+      "kind": "data",
+      "markerCenter": 60,
+      "top": 48,
+    },
+    {
+      "depth": 0,
+      "height": 24,
+      "indent": 0,
+      "index": 3,
+      "kind": "data",
+      "markerCenter": 84,
+      "top": 72,
+    },
+  ],
+  "rowsHeight": 96,
+  "spacing": {
+    "axisGap": 12,
+    "cellPaddingX": 10,
+    "cellPaddingY": 0,
+    "headerHeight": 32,
+    "indentPerLevel": 16,
+    "padding": 12,
+    "rowGroupPadding": 0,
+    "rowHeight": 24,
+  },
+  "totalHeight": 168,
+  "totalWidth": 162,
 }
 `;

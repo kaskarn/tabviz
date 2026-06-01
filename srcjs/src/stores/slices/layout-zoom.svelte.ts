@@ -50,8 +50,7 @@ import type {
   ZoomState,
 } from "$types";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
-import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
-import { computeRowLayout, computeHeaderHeight, LINE_HEIGHT } from "$lib/table-metrics";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/table-metrics";
 
 /** True if any top-level column in the spec is a ColumnGroup. Pushes the
  *  header strip to a 2-row layout, which changes the min header-row height. */
@@ -178,16 +177,27 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       themeHeaderHeight: spec.theme.spacing.headerHeight,
       headerDepth: headerDepthForLayout,
     });
-    const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP;
-    const someColumnHasAxisLabel = forestColumns.some(
-      (fc) => !!fc.column.options?.forest?.axisLabel,
+    const axisGap = spec.theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
+    // Axis band is reserved only when a column actually renders an x-axis
+    // strip (forest or any viz_*). Converged with the SVG backend (2026-06):
+    // previously the DOM reserved axis height unconditionally, over-tall for
+    // plain tables.
+    const hasAxisColumn = allColumns.some(
+      (c) => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
     );
+    const someColumnHasAxisLabel = allColumns.some((c) => {
+      if (c.type === "forest") return !!c.options?.forest?.axisLabel;
+      if (c.type === "viz_bar") return !!c.options?.vizBar?.axisLabel;
+      if (c.type === "viz_boxplot") return !!c.options?.vizBoxplot?.axisLabel;
+      if (c.type === "viz_violin") return !!c.options?.vizViolin?.axisLabel;
+      return false;
+    });
     const axisGeom = computeAxisLayout(
       { fontSizeSm: spec.theme.text.label.size, lineHeight: 1.5 },
       someColumnHasAxisLabel,
       spec.theme.plot.tickMarkLength,
     );
-    const axisHeight = axisGap + axisGeom.axisRegionHeight;
+    const axisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisGeom.axisRegionHeight);
     const hasForest = forestColumns.length > 0;
     const themePlotWidth = spec.theme.layout?.plotWidth;
     let forestWidth = hasForest

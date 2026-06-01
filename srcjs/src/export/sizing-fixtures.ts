@@ -203,5 +203,19 @@ export function sizingFixtures(): SizingFixture[] {
     }),
   });
 
+  // 8. Pure table — NO forest/viz column. Exercises the converged axisHeight
+  //    gate: no axis-bearing column → zero axis band reserved (previously the
+  //    DOM over-reserved ~axis height here). axisHeight should be 0.
+  out.push({
+    name: "pure-table-no-axis",
+    spec: spec({
+      density: "comfortable",
+      rows: Array.from({ length: 4 }, (_, i) =>
+        dataRow(`p${i}`, `Study ${i + 1}`, { n: 100 + i } as Partial<Row>),
+      ),
+      columns: [LABEL_COL(), col("n", "numeric", "N", { field: "n" })],
+    }),
+  });
+
   return out;
 }

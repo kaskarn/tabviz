@@ -74,6 +74,16 @@ describe("layout metrics (sizing harness)", () => {
       expect(tallest).toBeGreaterThan(m.spacing.rowHeight);
     });
 
+    test("pure table (no forest/viz) reserves zero axis height", () => {
+      const m = computeLayoutMetrics(byName.get("pure-table-no-axis")!.spec);
+      expect(m.axisHeight).toBe(0);
+    });
+
+    test("forest fixtures reserve a nonzero axis band", () => {
+      const m = computeLayoutMetrics(byName.get("density-comfortable-flat")!.spec);
+      expect(m.axisHeight).toBeGreaterThan(0);
+    });
+
     test("rowPositions are monotonic non-decreasing (no overlap)", () => {
       for (const { spec } of fixtures) {
         const m = computeLayoutMetrics(spec);
