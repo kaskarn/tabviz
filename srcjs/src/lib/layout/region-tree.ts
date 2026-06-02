@@ -27,10 +27,9 @@ import type { Row, Group, DisplayRow } from "$types";
 import type { RowKind } from "./row-kind";
 
 /** The kinds a region can be: every display `RowKind` (the single source of
- *  truth, row-kind.ts) plus the structural-only region kinds `panel`
- *  (free-content details child) and `axis_strip` (per-group faceted axis), which
- *  are declared for the foundation but not yet produced by `buildRegionTree`. */
-export type RegionKind = RowKind | "panel" | "axis_strip";
+ *  truth, row-kind.ts — includes `panel`) plus the structural-only `axis_strip`
+ *  (per-group faceted axis), declared for the foundation but not yet produced. */
+export type RegionKind = RowKind | "axis_strip";
 
 /** Orthogonal modifiers a region may carry (many-of). Empty today. */
 export type RegionTrait = "expandable" | "sticky" | "editable" | "computed";
@@ -50,7 +49,7 @@ export interface RegionNode {
   depth: number;
   body:
     | { type: "cells"; row?: Row; group?: Group; rowCount?: number }
-    | { type: "free" };
+    | { type: "free"; content: string; ownerRowId: string };
   children?: RegionNode[];
 }
 
@@ -67,6 +66,8 @@ export interface RegionTreeInput {
 }
 
 const NO_TRAITS: ReadonlySet<RegionTrait> = new Set();
+const EXPANDABLE: ReadonlySet<RegionTrait> = new Set(["expandable"]);
+const EMPTY_SET: ReadonlySet<string> = new Set();
 const ROOT_SCOPE_KEY = "__root__";
 
 /**
@@ -148,14 +149,28 @@ export function buildRegionTree(input: RegionTreeInput): RegionNode[] {
       });
     }
     for (const row of rowsByGroup.get(groupId) ?? []) {
-      nodes.push({
+      const depth = rowDepth(row.groupId);
+      const node: RegionNode = {
         id: `row:${row.id}`,
         kind: "data",
         traits: NO_TRAITS,
         scope: "table",
-        depth: rowDepth(row.groupId),
+        depth,
         body: { type: "cells", row },
-      });
+      };
+      // A row with details content owns an expandable full-width panel child.
+      if (typeof row.details === "string" && row.details.trim() !== "") {
+        node.traits = EXPANDABLE;
+        node.children = [{
+          id: `panel:${row.id}`,
+          kind: "panel",
+          traits: NO_TRAITS,
+          scope: "table",
+          depth,
+          body: { type: "free", content: row.details, ownerRowId: row.id },
+        }];
+      }
+      nodes.push(node);
     }
     return nodes;
   };
@@ -165,12 +180,15 @@ export function buildRegionTree(input: RegionTreeInput): RegionNode[] {
 
 /**
  * Flatten the region tree to the flat `DisplayRow[]` the layout + render paths
- * consume. Collapse is applied here (a `Set` lookup): a collapsed group emits its
- * header but not its subtree. Single linear DFS.
+ * consume. Disclosure state is applied here (a `Set` lookup), keeping it off the
+ * structural pass: a collapsed group emits its header but not its subtree; a
+ * details panel emits only when its owner row is in `expandedRows`. Single
+ * linear DFS.
  */
 export function flatten(
   forest: RegionNode[],
   collapsedGroups: ReadonlySet<string>,
+  expandedRows: ReadonlySet<string> = EMPTY_SET,
 ): DisplayRow[] {
   const out: DisplayRow[] = [];
 
@@ -187,6 +205,9 @@ export function flatten(
       if (collapsed) return; // header shown, subtree hidden
     } else if (node.kind === "data" && node.body.type === "cells" && node.body.row) {
       out.push({ type: "data", row: node.body.row, depth: node.depth });
+    } else if (node.kind === "panel" && node.body.type === "free") {
+      if (!expandedRows.has(node.body.ownerRowId)) return; // collapsed panel: skip subtree
+      out.push({ type: "panel", rowId: node.body.ownerRowId, content: node.body.content, depth: node.depth });
     }
     if (node.children) {
       for (const child of node.children) walk(child);

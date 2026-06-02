@@ -93,6 +93,11 @@ export interface Row {
   point?: number;
   lower?: number;
   upper?: number;
+  /** Details/disclosure panel content (markdown) for this row. When set, the
+   *  row gets a disclosure toggle and owns a full-width child panel region.
+   *  Extracted from the `details`-mapped data column at serialization. Empty /
+   *  undefined → no panel. See docs/dev/region-tree.md + row-types.md §6. */
+  details?: string;
 }
 
 export interface Group {
@@ -871,6 +876,9 @@ export interface WebSpec {
     sort?: { column: string; direction: "asc" | "desc" | "none" };
     filters?: Array<{ field: string; operator: string; value: unknown }>;
     hiddenColumns?: string[];
+    /** Row ids whose details panel is expanded at mount. Also the set the
+     *  static (V8/SVG) export renders panels for. Default: none (collapsed). */
+    expandedRows?: string[];
   };
   /**
    * Widget-level banks — footnotes, axes, legends. User-authored
@@ -1044,7 +1052,19 @@ export interface DataRow {
   depth: number;
 }
 
-export type DisplayRow = GroupHeaderRow | DataRow;
+/** A full-width details/disclosure panel owned by a data row. Emitted by the
+ *  region-tree flatten only when its owner row is expanded. Free content
+ *  (markdown), content-driven height — not column-aligned. */
+export interface PanelRow {
+  type: "panel";
+  /** The data row this panel belongs to. */
+  rowId: string;
+  /** Markdown content. */
+  content: string;
+  depth: number;
+}
+
+export type DisplayRow = GroupHeaderRow | DataRow | PanelRow;
 
 // ============================================================================
 // Store State

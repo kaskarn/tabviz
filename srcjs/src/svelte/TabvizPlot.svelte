@@ -83,6 +83,8 @@
   } from "$lib/viz-domain-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { buildScale, safeLogDomain, forestScaleRange, type ForestScale } from "$lib/layout/forest-scale";
+  import { renderMarkdown } from "$lib/markdown";
+  import { panelContentKey } from "$lib/layout/table-metrics";
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
@@ -427,6 +429,7 @@
     void layout.rowHeights.length;
     void spec.theme.text.body.size;
     void store.columnWidths;
+    void store.expandedRows; // panels opening/closing change rendered heights
 
     const handle = window.requestAnimationFrame(() => {
       if (!containerRef) return;
@@ -438,6 +441,18 @@
         // scrollHeight = content height ignoring the pinned grid track.
         const h = cell.scrollHeight;
         if (h > 0) measured[id] = Math.max(measured[id] ?? 0, h);
+      }
+      // Details panels measure under a distinct key (panelContentKey) so their
+      // content-driven height doesn't collide with the owner row's.
+      const panels = containerRef.querySelectorAll<HTMLElement>("[data-panel-row-id]");
+      for (const p of panels) {
+        const rid = p.dataset.panelRowId;
+        if (!rid) continue;
+        const h = p.scrollHeight;
+        if (h > 0) {
+          const key = panelContentKey(rid);
+          measured[key] = Math.max(measured[key] ?? 0, h);
+        }
       }
       store.setMeasuredRowHeights(measured);
     });
@@ -535,6 +550,9 @@
   function getDisplayRowKey(dr: DisplayRow, idx: number): string {
     if (dr.type === "group_header") {
       return `group_${dr.group.id}`;
+    }
+    if (dr.type === "panel") {
+      return `panel_${dr.rowId}`;
     }
     return dr.row.id;
   }
@@ -1516,6 +1534,19 @@
 
         <!-- Data rows -->
         {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+          {#if displayRow.type === "panel"}
+            <!-- Details/disclosure panel: full-width free content (markdown),
+                 content-driven height. Measured under panel:<rowId>. -->
+            <div
+              class="grid-cell tabviz-details-panel"
+              data-panel-row-id={displayRow.rowId}
+              style:grid-row={effectiveHeaderDepth + 1 + i}
+              style:grid-column="1 / -1"
+            >
+              <!-- eslint-disable-next-line svelte/no-at-html-tags -- renderMarkdown escapes first; safe by construction -->
+              {@html renderMarkdown(displayRow.content)}
+            </div>
+          {:else}
           {@const isGroupHeader = displayRow.type === "group_header"}
           {@const row = isGroupHeader ? null : displayRow.row}
           {@const rowDepth = displayRow.depth}
@@ -1656,6 +1687,16 @@
                     {theme}
                   />
                 {:else if row}
+                  {#if row.details}
+                    <!-- svelte-ignore a11y_consider_explicit_label -->
+                    <button
+                      class="details-toggle"
+                      class:open={store.isRowExpanded(row.id)}
+                      aria-label="Toggle details"
+                      aria-expanded={store.isRowExpanded(row.id)}
+                      onclick={(e) => { e.stopPropagation(); if (row) store.toggleRowDetails(row.id); }}
+                    >▶</button>
+                  {/if}
                   {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
                   {@render renderCellContent(row, column)}
                   {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
@@ -1721,6 +1762,7 @@
               </div>
             {/if}
           {/each}
+          {/if}
         {/each}
 
         <!-- Axis row: one axis cell per viz column -->
@@ -3091,5 +3133,46 @@
     color: var(--tv-bg, #fff);
     border-color: var(--tv-accent, #2563eb);
   }
+
+  /* Details / disclosure panel — full-width free content under its data row. */
+  .tabviz-details-panel {
+    grid-column: 1 / -1;
+    padding: 8px 12px 10px;
+    background: var(--tv-surface-alt, var(--tv-alt-bg, #f8fafc));
+    border-bottom: 1px solid var(--tv-border, #e2e8f0);
+    color: var(--tv-text, var(--tv-content-primary, #1a1a1a));
+    font-size: var(--tv-font-size-sm, 0.8125rem);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .tabviz-details-panel :global(p) { margin: 0 0 0.4em; }
+  .tabviz-details-panel :global(p:last-child) { margin-bottom: 0; }
+  .tabviz-details-panel :global(h1),
+  .tabviz-details-panel :global(h2),
+  .tabviz-details-panel :global(h3) { margin: 0.2em 0 0.3em; font-size: 1em; font-weight: 600; }
+  .tabviz-details-panel :global(ul),
+  .tabviz-details-panel :global(ol) { margin: 0.2em 0; padding-left: 1.4em; }
+  .tabviz-details-panel :global(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.92em;
+    background: var(--tv-border, #e2e8f0);
+    padding: 0.05em 0.3em;
+    border-radius: 3px;
+  }
+  .tabviz-details-panel :global(a) { color: var(--tv-accent, #2563eb); }
+
+  /* Disclosure toggle on an expandable row's primary cell. */
+  .details-toggle {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0 4px 0 0;
+    color: var(--tv-text-muted, #64748b);
+    font-size: 0.7rem;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.12s ease;
+  }
+  .details-toggle.open { transform: rotate(90deg); }
 
 </style>

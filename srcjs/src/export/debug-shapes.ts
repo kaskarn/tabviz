@@ -25,6 +25,7 @@ const KIND_FILL: Record<RowMetric["kind"], string> = {
   spacer: "#f1f5f9", // slate-100
   summary: "#dcfce7", // green-100
   header: "#e0f2fe", // sky-100 (authored section header, distinct from group)
+  panel: "#fae8ff", // fuchsia-100 (details/disclosure panel)
 };
 const KIND_STROKE: Record<RowMetric["kind"], string> = {
   data: "#6366f1",
@@ -32,6 +33,7 @@ const KIND_STROKE: Record<RowMetric["kind"], string> = {
   spacer: "#94a3b8",
   summary: "#16a34a",
   header: "#0284c7",
+  panel: "#c026d3",
 };
 
 const BOX_STROKE = "#334155"; // cell allocated-box outline

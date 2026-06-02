@@ -21,9 +21,10 @@
  * this union — classification here is strictly per-display-row.
  */
 
-/** The kinds a display row can resolve to. Mirrors the 5 the renderer
- *  distinguishes today. */
-export type RowKind = "data" | "group_header" | "spacer" | "summary" | "header";
+/** The kinds a display row can resolve to. `panel` is a full-width
+ *  details/disclosure region owned by a data row (free content, not column
+ *  cells). */
+export type RowKind = "data" | "group_header" | "spacer" | "summary" | "header" | "panel";
 
 /**
  * Minimal structural shape needed to classify a row. Compatible with both
@@ -32,6 +33,7 @@ export type RowKind = "data" | "group_header" | "spacer" | "summary" | "header";
  */
 export type ClassifiableRow =
   | { type: "group_header"; depth?: number }
+  | { type: "panel"; depth?: number }
   | { type: "data"; row: { style?: { type?: string } | null } };
 
 /**
@@ -41,6 +43,7 @@ export type ClassifiableRow =
  */
 export function resolveRowKind(dr: ClassifiableRow): RowKind {
   if (dr.type === "group_header") return "group_header";
+  if (dr.type === "panel") return "panel";
   const st = dr.row.style?.type;
   if (st === "spacer") return "spacer";
   if (st === "summary") return "summary";
@@ -77,6 +80,9 @@ const PROPS: Record<RowKind, RowKindProps> = {
   // data-row width loop (they're measured via a separate group-label path).
   // Marked false to match intent (they don't measure as a data cell).
   group_header: { banded: false, measuresWidth: false, rendersCells: false, summaryMarker: false },
+  // panel = full-width free-content disclosure region: not banded, not a width
+  // contributor, renders free content (not column cells), no summary marker.
+  panel:        { banded: false, measuresWidth: false, rendersCells: false, summaryMarker: false },
 };
 
 /** Behavior flags for a kind. */

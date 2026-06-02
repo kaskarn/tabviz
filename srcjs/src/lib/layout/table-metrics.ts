@@ -27,7 +27,14 @@ import { resolveRowKind } from "./row-kind";
  */
 export type LayoutRow =
   | { type: "group_header"; depth?: number }
+  | { type: "panel"; depth?: number; rowId: string; content?: string }
   | { type: "data"; depth?: number; row: { id: string; style?: { type?: string } | null } };
+
+/** Content-height map key for a details panel (distinct from its owner row's id,
+ *  which keys the data row). Shared by the layout pass + the DOM measure-commit. */
+export function panelContentKey(rowId: string): string {
+  return `panel:${rowId}`;
+}
 
 /** Inputs to the per-row vertical layout (heights / positions / markers). */
 export interface RowLayoutInput {
@@ -118,6 +125,14 @@ export function computeRowLayout(input: RowLayoutInput): RowLayout {
       // visual content height (stacked pictograms, tall icons, multi-effect
       // forest, sparkline/img).
       h = Math.max(wrapH, contentHeights[dr.row.id] ?? 0);
+    } else if (dr.type === "panel") {
+      // Details panel: content-driven. The DOM measure-commit supplies the real
+      // rendered height (keyed panelContentKey); until then a markdown line-count
+      // estimate is the floor (matters for first paint + the SVG estimator).
+      const measured = contentHeights[panelContentKey(dr.rowId)] ?? 0;
+      const estLines = dr.content ? dr.content.split("\n").length : 1;
+      const estimate = dataLineHeightPx * estLines + 6 * 2; // +vertical padding
+      h = Math.max(rowHeight, estimate, measured);
     } else {
       h = rowHeight;
     }

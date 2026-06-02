@@ -94,10 +94,10 @@ describe("data slice — pagination", () => {
       ],
     });
     h.slice.setCurrentPage(1);
-    expect(h.slice.paginatedRows.map((r) => "row" in r ? r.row.id : r.group.id))
+    expect(h.slice.paginatedRows.map((r) => "row" in r ? r.row.id : "group" in r ? r.group.id : r.rowId))
       .toEqual(["g1", "a"]);
     h.slice.setCurrentPage(2);
-    expect(h.slice.paginatedRows.map((r) => "row" in r ? r.row.id : r.group.id))
+    expect(h.slice.paginatedRows.map((r) => "row" in r ? r.row.id : "group" in r ? r.group.id : r.rowId))
       .toEqual(["g2", "b"]);
   });
 

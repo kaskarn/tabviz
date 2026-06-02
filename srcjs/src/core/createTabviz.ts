@@ -128,6 +128,7 @@ interface WebSpecWithInitialState extends WebSpec {
     sort?: { column: string; direction: "asc" | "desc" | "none" };
     filters?: Array<{ field: string; operator: string; value: unknown }>;
     hiddenColumns?: string[];
+    expandedRows?: string[];
   };
 }
 
@@ -169,6 +170,9 @@ export function createTabviz(
     }
     if (x.initialState.hiddenColumns) {
       for (const id of x.initialState.hiddenColumns) store.hideColumn(id);
+    }
+    if (x.initialState.expandedRows) {
+      store.setExpandedRows(x.initialState.expandedRows);
     }
   }
 

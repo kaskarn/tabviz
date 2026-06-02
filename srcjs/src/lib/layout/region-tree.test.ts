@@ -5,6 +5,9 @@ import type { Row, Group } from "$types";
 const row = (id: string, groupId: string | null = null): Row =>
   ({ id, label: id.toUpperCase(), groupId, metadata: {} }) as Row;
 
+const rowWithDetails = (id: string, details: string, groupId: string | null = null): Row =>
+  ({ id, label: id.toUpperCase(), groupId, metadata: {}, details }) as Row;
+
 const group = (id: string, depth: number, parentId: string | null = null): Group =>
   ({ id, label: id.toUpperCase(), depth, parentId }) as Group;
 
@@ -32,7 +35,7 @@ describe("region-tree — grouping + order", () => {
       visibleRows: [row("a", "g1"), row("b", "g1")],
       rowOrder: NO_ORDER,
     });
-    expect(out.map((d) => (d.type === "group_header" ? `H:${d.group.id}@${d.depth}/${d.rowCount}` : `D:${d.row.id}@${d.depth}`)))
+    expect(out.map((d) => (d.type === "group_header" ? `H:${d.group.id}@${d.depth}/${d.rowCount}` : d.type === "data" ? `D:${d.row.id}@${d.depth}` : `P:${d.rowId}`)))
       .toEqual(["H:g1@0/2", "D:a@1", "D:b@1"]);
   });
 
@@ -43,7 +46,7 @@ describe("region-tree — grouping + order", () => {
       visibleRows: [row("z"), row("a", "g1")],
       rowOrder: NO_ORDER,
     });
-    expect(out.map((d) => (d.type === "group_header" ? d.group.id : d.row.id)))
+    expect(out.map((d) => (d.type === "group_header" ? d.group.id : d.type === "data" ? d.row.id : d.rowId)))
       .toEqual(["g1", "a", "z"]);
   });
 
@@ -53,7 +56,7 @@ describe("region-tree — grouping + order", () => {
       visibleRows: [row("cr", "c"), row("pr", "p")],
       rowOrder: NO_ORDER,
     });
-    expect(out.map((d) => (d.type === "group_header" ? `H:${d.group.id}@${d.depth}` : `D:${d.row.id}@${d.depth}`)))
+    expect(out.map((d) => (d.type === "group_header" ? `H:${d.group.id}@${d.depth}` : d.type === "data" ? `D:${d.row.id}@${d.depth}` : `P:${d.rowId}`)))
       .toEqual(["H:p@0", "H:c@1", "D:cr@2", "D:pr@1"]);
   });
 
@@ -108,6 +111,56 @@ describe("region-tree — reorder overrides", () => {
     });
     expect(out.filter((d) => d.type === "group_header").map((d) => (d as { group: Group }).group.id))
       .toEqual(["g2", "g1"]);
+  });
+});
+
+describe("region-tree — details panels (flatten-time, expandedRows)", () => {
+  test("a row with details emits its panel only when expanded", () => {
+    const input: RegionTreeInput = {
+      groups: [],
+      visibleRows: [row("a"), rowWithDetails("b", "**note**"), row("c")],
+      rowOrder: NO_ORDER,
+    };
+    const tree = buildRegionTree(input);
+
+    const closed = flatten(tree, NO_COLLAPSE); // expandedRows defaults to empty
+    expect(closed.map((d) => d.type)).toEqual(["data", "data", "data"]);
+
+    const open = flatten(tree, NO_COLLAPSE, new Set(["b"]));
+    expect(open.map((d) => (d.type === "panel" ? `P:${d.rowId}` : d.type)))
+      .toEqual(["data", "data", "P:b", "data"]); // panel right after its owner row
+    const panel = open.find((d) => d.type === "panel");
+    expect(panel && panel.type === "panel" ? panel.content : "").toBe("**note**");
+  });
+
+  test("rows without details never emit a panel, even if id is in expandedRows", () => {
+    const input: RegionTreeInput = {
+      groups: [],
+      visibleRows: [row("a")],
+      rowOrder: NO_ORDER,
+    };
+    const out = flatten(buildRegionTree(input), NO_COLLAPSE, new Set(["a"]));
+    expect(out.every((d) => d.type !== "panel")).toBe(true);
+  });
+
+  test("empty/whitespace details does not create a panel", () => {
+    const input: RegionTreeInput = {
+      groups: [],
+      visibleRows: [rowWithDetails("a", "   ")],
+      rowOrder: NO_ORDER,
+    };
+    const out = flatten(buildRegionTree(input), NO_COLLAPSE, new Set(["a"]));
+    expect(out.every((d) => d.type !== "panel")).toBe(true);
+  });
+
+  test("a collapsed group hides its rows' panels too (subtree skipped)", () => {
+    const input: RegionTreeInput = {
+      groups: [group("g1", 0)],
+      visibleRows: [rowWithDetails("a", "x", "g1")],
+      rowOrder: NO_ORDER,
+    };
+    const out = flatten(buildRegionTree(input), new Set(["g1"]), new Set(["a"]));
+    expect(out.map((d) => d.type)).toEqual(["group_header"]); // header only
   });
 });
 

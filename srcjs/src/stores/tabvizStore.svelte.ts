@@ -850,6 +850,9 @@ export function createTabvizStore() {
     get collapsedGroups() {
       return rowsGroups.collapsedGroups;
     },
+    get expandedRows() {
+      return rowsGroups.expandedRows;
+    },
     get hoveredRowId() {
       return rowsGroups.hoveredRowId;
     },
@@ -1208,6 +1211,9 @@ export function createTabvizStore() {
     setDimensions: layoutZoom.setDimensions,
     setSelectedRows: semantics.setSelectedRows,
     toggleGroup: rowsGroups.toggleGroup,
+    toggleRowDetails: rowsGroups.toggleRowDetails,
+    isRowExpanded: rowsGroups.isRowExpanded,
+    setExpandedRows: rowsGroups.setExpandedRows,
     // Settings + banding overrides — data slice passthrough.
     openSettings: data.openSettings,
     closeSettings: data.closeSettings,

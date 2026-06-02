@@ -17,6 +17,13 @@ feedback, real layout) can be verified. Two kinds live here:
     measure→commit→re-measure loop settles (no oscillation).
     Run: `bun run tests/browser/measure-rows.browser.ts [--bundle <p>] [--headed]`.
 
+  - `details-panel.browser.ts` — **details/disclosure panels** (row-types.md
+    §6): a row with `details` markdown owns a full-width disclosure panel.
+    Asserts a pre-expanded (initialState) panel renders with markdown→HTML, a
+    row without details has no panel/toggle, and clicking a toggle reveals the
+    panel. Saves `/tmp/details-panel.png`.
+    Run: `bun run tests/browser/details-panel.browser.ts [--headed]`.
+
   - `forest-marks.browser.ts` — the **forest mark x-position** WYSIWYG
     contract (region-tree.md §5): asserts rendered point markers land at
     the canonical forest scale (built from `plotRegion` via the shared

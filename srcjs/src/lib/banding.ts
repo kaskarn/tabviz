@@ -9,6 +9,7 @@ import { isBanded } from "./layout/row-kind";
  */
 export type BandingDisplayRow =
   | { type: "group_header"; group?: Group; groupId?: string; depth: number }
+  | { type: "panel"; depth: number }
   | { type: "data"; row: Row; depth: number };
 
 /**
@@ -149,6 +150,12 @@ export function computeBandIndexes(
   for (let i = 0; i < displayRows.length; i++) {
     const dr = displayRows[i];
     let ancestorId: string | null = null;
+
+    if (dr.type === "panel") {
+      // Details panels are never banded (full-width free content).
+      result[i] = null;
+      continue;
+    }
 
     if (dr.type === "group_header") {
       // Resolve the Group from whichever field the caller's display row

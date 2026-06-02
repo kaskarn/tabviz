@@ -70,6 +70,8 @@ export interface RowsGroupsSliceDeps {
 
 export interface RowsGroupsSlice {
   readonly collapsedGroups: Set<string>;
+  /** Row ids whose details/disclosure panel is open. */
+  readonly expandedRows: Set<string>;
   readonly rowOrderOverrides: RowOrderOverrides;
   readonly hoveredRowId: string | null;
   readonly tooltipRowId: string | null;
@@ -82,6 +84,11 @@ export interface RowsGroupsSlice {
   readonly tooltipRow: Row | null;
 
   toggleGroup: (id: string, collapsed?: boolean) => void;
+  /** Open/close a row's details panel (no arg = toggle). */
+  toggleRowDetails: (id: string, expanded?: boolean) => void;
+  isRowExpanded: (id: string) => boolean;
+  /** Replace the expanded set wholesale (seeds initialState.expandedRows). */
+  setExpandedRows: (ids: string[]) => void;
   findRowGroupScope: (groupId: string) => string;
   siblingsForRowScope: (scopeKey: string) => string[];
   siblingsForRowGroupScope: (parentKey: string) => string[];
@@ -107,6 +114,9 @@ export function createRowsGroupsSlice(
 ): RowsGroupsSlice {
   // REPLACE-only state (per audit): use `$state.raw` to skip proxy wrap.
   let collapsedGroups = $state.raw<Set<string>>(new Set());
+  // Row ids whose details/disclosure panel is expanded. Inverse of collapse:
+  // panels default closed, so this set is empty until a row is opened.
+  let expandedRows = $state.raw<Set<string>>(new Set());
   let rowOrderOverrides = $state.raw<RowOrderOverrides>({
     byGroup: {},
     groupOrderByParent: {},
@@ -150,7 +160,7 @@ export function createRowsGroupsSlice(
       visibleRows: deps.getVisibleIndices().map((i) => deps.getRowAt(i)),
       rowOrder: rowOrderOverrides,
     });
-    return flatten(forest, collapsedGroups);
+    return flatten(forest, collapsedGroups, expandedRows);
   });
 
   const maxGroupDepth = $derived.by((): number => {
@@ -180,6 +190,23 @@ export function createRowsGroupsSlice(
     else newCollapsed.delete(id);
     collapsedGroups = newCollapsed;
     deps.markSource("collapsed_groups");
+  }
+
+  function toggleRowDetails(id: string, expanded?: boolean): void {
+    const next = new Set(expandedRows);
+    const shouldExpand = expanded ?? !next.has(id);
+    if (shouldExpand) next.add(id);
+    else next.delete(id);
+    expandedRows = next;
+    deps.markSource("expanded_rows");
+  }
+
+  function isRowExpanded(id: string): boolean {
+    return expandedRows.has(id);
+  }
+
+  function setExpandedRows(ids: string[]): void {
+    expandedRows = new Set(ids);
   }
 
   function findRowGroupScope(groupId: string): string {
@@ -293,6 +320,7 @@ export function createRowsGroupsSlice(
 
   function reset(): void {
     collapsedGroups = new Set();
+    expandedRows = new Set();
     rowOrderOverrides = { byGroup: {}, groupOrderByParent: {} };
     tooltipRowId = null;
     tooltipPosition = null;
@@ -302,6 +330,7 @@ export function createRowsGroupsSlice(
 
   return {
     get collapsedGroups() { return collapsedGroups; },
+    get expandedRows() { return expandedRows; },
     get rowOrderOverrides() { return rowOrderOverrides; },
     get hoveredRowId() { return hoveredRowId; },
     get tooltipRowId() { return tooltipRowId; },
@@ -313,7 +342,8 @@ export function createRowsGroupsSlice(
     get maxGroupDepth() { return maxGroupDepth; },
     get tooltipRow() { return tooltipRow; },
 
-    toggleGroup, findRowGroupScope, siblingsForRowScope,
+    toggleGroup, toggleRowDetails, isRowExpanded, setExpandedRows,
+    findRowGroupScope, siblingsForRowScope,
     siblingsForRowGroupScope, moveRowItem, moveRowGroupItem,
     clearRowReorder, setHovered, setTooltip, setTooltipRowId,
     reset,
