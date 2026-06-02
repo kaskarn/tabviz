@@ -16,7 +16,7 @@
     sharedScale?: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
   }
 
-  let { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
+  const { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
 
   // Compute stats for each effect
   const effectStats = $derived.by((): (BoxplotStats | null)[] => {

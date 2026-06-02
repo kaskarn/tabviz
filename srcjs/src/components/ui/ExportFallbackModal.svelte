@@ -21,7 +21,7 @@
     onclose: () => void;
   }
 
-  let { open, format, payload, filename, onclose }: Props = $props();
+  const { open, format, payload, filename, onclose }: Props = $props();
 
   let primaryRef = $state<HTMLButtonElement | null>(null);
   let lastFocused: Element | null = null;

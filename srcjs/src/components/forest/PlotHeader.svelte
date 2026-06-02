@@ -25,7 +25,7 @@
     oncommitgap?: (value: number) => void;
   }
 
-  let {
+  const {
     title,
     subtitle,
     enableEdit = false,

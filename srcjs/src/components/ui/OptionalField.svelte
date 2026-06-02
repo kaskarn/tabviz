@@ -19,7 +19,7 @@
     children: Snippet;
   }
 
-  let { label, hint, inherit, onchange, children }: Props = $props();
+  const { label, hint, inherit, onchange, children }: Props = $props();
 </script>
 
 <!--

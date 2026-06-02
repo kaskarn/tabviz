@@ -23,7 +23,7 @@
   interface Props {
     store: TabvizStore;
   }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const spacing = $derived(store.spec?.theme?.spacing);
   const layout = $derived(store.spec?.theme?.layout);

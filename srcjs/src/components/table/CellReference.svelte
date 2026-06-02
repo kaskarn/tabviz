@@ -8,7 +8,7 @@
     naText?: string;
   }
 
-  let { value, metadata, options, naText }: Props = $props();
+  const { value, metadata, options, naText }: Props = $props();
 
   const maxChars = $derived(options?.maxChars ?? 30);
   const showIcon = $derived(options?.showIcon ?? true);

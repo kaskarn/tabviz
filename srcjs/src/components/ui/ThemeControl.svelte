@@ -34,7 +34,7 @@
   import { ACCENT_SWATCHES, STATUS_SWATCHES, colors } from "./swatch-palettes";
 
   interface Props { store: TabvizStore; }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const theme  = $derived(store.spec?.theme);
   const inputs = $derived(
@@ -68,7 +68,7 @@
   // Decorative slot — empty until clicked. Tracked locally so the
   // ColorField only renders after activation; the brand seed is used
   // as the initial value so the user has a starting point.
-  let decorativeActive = $derived(inputs?.decorative != null);
+  const decorativeActive = $derived(inputs?.decorative != null);
 
   // Pill segments
   const MODE_SEG = [

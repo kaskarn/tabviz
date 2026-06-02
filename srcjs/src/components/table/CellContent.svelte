@@ -15,7 +15,7 @@
     title?: string;
   }
 
-  let { value, children, cellStyle, title }: Props = $props();
+  const { value, children, cellStyle, title }: Props = $props();
 
   const hasBadge = $derived(!!cellStyle?.badge);
   const hasIcon = $derived(!!cellStyle?.icon);

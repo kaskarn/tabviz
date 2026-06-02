@@ -17,7 +17,7 @@
   interface Props {
     store: TabvizStore;
   }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const series = $derived(store.spec?.theme?.series ?? []);
   const plot = $derived(store.spec?.theme?.plot);

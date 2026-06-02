@@ -14,7 +14,7 @@
     colorOverride?: string | null;
   }
 
-  let { data, options, naText, colorOverride = null }: Props = $props();
+  const { data, options, naText, colorOverride = null }: Props = $props();
 
   const chartType = $derived(options?.type ?? "line");
   const chartHeight = $derived(options?.height ?? 20);

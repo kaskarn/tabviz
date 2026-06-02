@@ -12,7 +12,7 @@
     colorOverride?: string | null;
   }
 
-  let { value, options, naText, cellStyle, colorOverride }: Props = $props();
+  const { value, options, naText, cellStyle, colorOverride }: Props = $props();
 
   const variants = $derived(options?.variants ?? {});
   const colors = $derived(options?.colors);

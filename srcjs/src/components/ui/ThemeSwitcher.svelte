@@ -29,7 +29,7 @@
     onThemeChange?: (themeName: ThemeName, theme?: WebTheme) => void;
   }
 
-  let { store, availableThemes, onThemeChange }: Props = $props();
+  const { store, availableThemes, onThemeChange }: Props = $props();
 
   let dropdownOpen = $state(false);
   let triggerEl: HTMLButtonElement | null = $state(null);

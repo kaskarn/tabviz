@@ -9,7 +9,7 @@
     store: SplitTabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const activeStore = $derived(store.activeStore);
   const activeKey = $derived(store.activeKey);

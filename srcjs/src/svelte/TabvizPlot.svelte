@@ -120,7 +120,7 @@
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
-  let { store, onThemeChange }: Props = $props();
+  const { store, onThemeChange }: Props = $props();
 
   // Unique per-widget instance suffix so SVG clipPath IDs don't collide when
   // multiple tabviz widgets render on the same page (e.g. docs gallery).

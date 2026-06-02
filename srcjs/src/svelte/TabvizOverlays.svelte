@@ -28,7 +28,7 @@
     store: TabvizStore;
     containerRef: HTMLDivElement | undefined;
   }
-  let { store, containerRef }: Props = $props();
+  const { store, containerRef }: Props = $props();
 
   const spec = $derived(store.spec);
   const theme = $derived(spec?.theme);

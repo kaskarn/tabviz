@@ -16,7 +16,7 @@
     onchange: (value: T) => void;
   }
 
-  let { label, hint, value, options, onchange }: Props = $props();
+  const { label, hint, value, options, onchange }: Props = $props();
 
   const segments = $derived(options.map((o) => ({ value: o.value, label: o.label })));
 </script>

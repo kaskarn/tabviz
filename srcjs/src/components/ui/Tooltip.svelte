@@ -9,7 +9,7 @@
     theme?: WebTheme | undefined;
   }
 
-  let { row, position, fields = null, theme }: Props = $props();
+  const { row, position, fields = null, theme }: Props = $props();
 
   // Tooltip element for measuring
   let tooltipEl: HTMLDivElement | undefined = $state();

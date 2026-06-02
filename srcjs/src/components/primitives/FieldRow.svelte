@@ -18,7 +18,7 @@
     children?: Snippet;
   }
 
-  let { label, hint, forId, children }: Props = $props();
+  const { label, hint, forId, children }: Props = $props();
 </script>
 
 <div class="field-row">

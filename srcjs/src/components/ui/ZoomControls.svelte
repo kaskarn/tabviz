@@ -7,7 +7,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   let dropdownOpen = $state(false);
   let triggerEl: HTMLButtonElement | null = $state(null);

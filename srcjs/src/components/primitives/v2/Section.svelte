@@ -35,7 +35,7 @@
     children?: Snippet;
   }
 
-  let { title, hint, glyph, count, dim, children }: Props = $props();
+  const { title, hint, glyph, count, dim, children }: Props = $props();
 </script>
 
 <section class="section" class:dim>

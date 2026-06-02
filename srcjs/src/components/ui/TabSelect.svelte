@@ -42,7 +42,7 @@
     ariaLabel?: string;
   }
 
-  let { options, value, onchange, ariaLabel = "Select section" }: Props = $props();
+  const { options, value, onchange, ariaLabel = "Select section" }: Props = $props();
 
   let open = $state(false);
   let triggerEl: HTMLButtonElement | null = $state(null);

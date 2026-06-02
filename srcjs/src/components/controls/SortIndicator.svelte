@@ -2,7 +2,7 @@
   interface Props {
     direction: "asc" | "desc" | "none";
   }
-  let { direction }: Props = $props();
+  const { direction }: Props = $props();
 </script>
 
 <span class="sort-indicator" class:active={direction !== "none"} aria-hidden="true">

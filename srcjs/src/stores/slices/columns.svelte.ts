@@ -693,7 +693,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         const totalIndent = depth + rowIndent;
         const indentWidth = totalIndent * indentPx;
 
-        let prefixPx = indentWidth + rowGripBudget;
+        const prefixPx = indentWidth + rowGripBudget;
         let badgeText: string | null = null;
         if (row.style?.badge) {
           badgeText = String(row.style.badge);

@@ -8,7 +8,7 @@
     start?: number;       // perpendicular-axis start (vertical: top; horizontal: left)
     end?: number;         // perpendicular-axis end  (vertical: bottom; horizontal: right)
   }
-  let { orientation, x = 0, y = 0, start = 0, end = 0 }: Props = $props();
+  const { orientation, x = 0, y = 0, start = 0, end = 0 }: Props = $props();
 </script>
 
 <!--

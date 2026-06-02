@@ -8,7 +8,7 @@
   import { onMount } from "svelte";
   import type { WebTheme } from "../../types/index.js";
 
-  let {
+  const {
     text,
     theme,
     color,

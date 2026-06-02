@@ -6,7 +6,7 @@
     teaser: string;
   }
 
-  let { title, teaser }: Props = $props();
+  const { title, teaser }: Props = $props();
 </script>
 
 <div class="stub">

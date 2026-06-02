@@ -8,7 +8,7 @@
     level?: number;  // 1 = top-level, 2 = second-level, etc.
   }
 
-  let { group, rowCount, theme, level = 1 }: Props = $props();
+  const { group, rowCount, theme, level = 1 }: Props = $props();
 
   // Get level-specific styles from theme
   // Note: Background is NOT applied here - it's handled by TabvizPlot.svelte

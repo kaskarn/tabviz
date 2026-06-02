@@ -31,7 +31,7 @@
   import { getCellComponent } from "./render-component-registry";
 
   interface Props { node: RenderNode; }
-  let { node }: Props = $props();
+  const { node }: Props = $props();
 
   // Theme tokens → CSS class names; raw values → inline style.
   function textClasses(s: TextStyle | undefined, tags: string[] | undefined): string {

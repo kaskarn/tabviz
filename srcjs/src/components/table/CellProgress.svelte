@@ -13,7 +13,7 @@
     colorOverride?: string | null;
   }
 
-  let { value, options, naText, colorOverride = null }: Props = $props();
+  const { value, options, naText, colorOverride = null }: Props = $props();
 
   const maxValue = $derived(options?.maxValue ?? 100);
   const showLabel = $derived(options?.showLabel ?? true);

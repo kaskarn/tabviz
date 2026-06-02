@@ -17,7 +17,7 @@
     onchange: (value: boolean) => void;
   }
 
-  let { label, hint, value, onchange }: Props = $props();
+  const { label, hint, value, onchange }: Props = $props();
 </script>
 
 <div class="bf-row" data-tv-v2>

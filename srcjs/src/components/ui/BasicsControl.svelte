@@ -7,7 +7,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   // Plot-level labels live on spec.labels; the store merges session edits
   // so these inputs read the same value the header/footer render, and

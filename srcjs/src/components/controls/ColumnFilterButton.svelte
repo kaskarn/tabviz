@@ -7,7 +7,7 @@
     header: string;
   }
 
-  let { store, field, header }: Props = $props();
+  const { store, field, header }: Props = $props();
 
   let btnEl: HTMLButtonElement | null = $state(null);
 

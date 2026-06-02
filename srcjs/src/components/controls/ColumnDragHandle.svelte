@@ -11,7 +11,7 @@
     root: HTMLElement | null;
   }
 
-  let { store, kind, id, root }: Props = $props();
+  const { store, kind, id, root }: Props = $props();
 
   let suppressClick = false;
 

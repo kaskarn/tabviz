@@ -16,7 +16,7 @@
   interface Props {
     store: TabvizStore;
   }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   type Token = "muted" | "bold" | "accent" | "fill";
   const TOKENS: Array<{ id: Token; label: string; tip: string }> = [

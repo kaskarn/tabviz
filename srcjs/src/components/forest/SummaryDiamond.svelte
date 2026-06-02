@@ -13,7 +13,7 @@
     label?: string;
   }
 
-  let { point, lower, upper, yPosition, xScale, layout, theme, label }: Props = $props();
+  const { point, lower, upper, yPosition, xScale, layout, theme, label }: Props = $props();
 
   const diamondHeight = 10;
   const halfHeight = diamondHeight / 2;

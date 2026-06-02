@@ -10,7 +10,7 @@
     enableResize?: boolean;
   }
 
-  let {
+  const {
     columnDefs,
     showLabel = false,
     labelHeader = "Label",

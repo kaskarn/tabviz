@@ -41,7 +41,7 @@
     top?: string;
   }
 
-  let {
+  const {
     value,
     min = 0,
     max = 400,

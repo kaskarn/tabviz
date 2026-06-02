@@ -31,7 +31,7 @@
     onRowHover?: (hovered: boolean, event?: MouseEvent) => void;
   }
 
-  let {
+  const {
     row,
     yPosition,
     xScale,

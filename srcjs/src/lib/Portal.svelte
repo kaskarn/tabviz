@@ -33,7 +33,7 @@
     children: Snippet;
   }
 
-  let { to = "body", children }: Props = $props();
+  const { to = "body", children }: Props = $props();
 
   function portal(node: HTMLElement) {
     const target: Element | null =

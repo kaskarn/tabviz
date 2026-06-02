@@ -15,7 +15,7 @@
     sharedScale?: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
   }
 
-  let { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
+  const { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
 
   // Use shared scale if provided, otherwise compute locally (fallback)
   const xScale = $derived.by((): ScaleLinear<number, number> | ScaleLogarithmic<number, number> => {

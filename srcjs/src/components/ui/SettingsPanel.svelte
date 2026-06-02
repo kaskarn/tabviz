@@ -25,7 +25,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const open = $derived(store.settingsOpen);
   const hasEdits = $derived(store.hasThemeEdits);

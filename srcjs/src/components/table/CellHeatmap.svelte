@@ -11,7 +11,7 @@
     theme?: WebTheme;
   }
 
-  let { value, options, minValue, maxValue, naText, theme }: Props = $props();
+  const { value, options, minValue, maxValue, naText, theme }: Props = $props();
 
   // Default palette: derive light → dark from the theme's primary identity.
   // Light end is a very pale tint (primary mixed into surface base), dark

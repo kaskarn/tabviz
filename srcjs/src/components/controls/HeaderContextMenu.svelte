@@ -28,7 +28,7 @@
     onClose: () => void;
   }
 
-  let { target, onAction, onClose }: Props = $props();
+  const { target, onAction, onClose }: Props = $props();
 
   let menuEl: HTMLDivElement | null = $state(null);
   let resolvedLeft = $state(0);

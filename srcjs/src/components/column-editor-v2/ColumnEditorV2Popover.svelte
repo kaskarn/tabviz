@@ -70,7 +70,7 @@
     onRequestChangeType?: () => void;
   }
 
-  let { target, available, onCommit, onClose }: Props = $props();
+  const { target, available, onCommit, onClose }: Props = $props();
 
   // ── Resolve schema + initial column draft from the target ─────
   const schema = $derived<ColumnSchema | null>(

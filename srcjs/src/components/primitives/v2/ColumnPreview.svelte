@@ -22,7 +22,7 @@
     column: Partial<ColumnSpec>;
   }
 
-  let { schema, column }: Props = $props();
+  const { schema, column }: Props = $props();
 
   // Per-bucket fixture rows. Keep tiny — 2-3 values per type covers
   // small/large/edge variants enough to be readable.

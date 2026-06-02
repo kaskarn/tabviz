@@ -286,8 +286,8 @@ export function computeAxisLimits(
   }
 
   // Step 9: Apply explicit single-sided overrides if provided
-  let finalMin = hasExplicitMin ? config.rangeMin! : minEst;
-  let finalMax = hasExplicitMax ? config.rangeMax! : maxEst;
+  const finalMin = hasExplicitMin ? config.rangeMin! : minEst;
+  const finalMax = hasExplicitMax ? config.rangeMax! : maxEst;
 
   // Step 10: Final snap to nice numbers (minimal effect since we started from nice values)
   return niceDomain([finalMin, finalMax], scale === "log");

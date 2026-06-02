@@ -16,7 +16,7 @@
   interface Props {
     store: TabvizStore;
   }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   // Only show when an aspect target is pinned.
   const targetAspect = $derived(store.targetAspect);

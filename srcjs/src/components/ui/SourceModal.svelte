@@ -10,7 +10,7 @@
     onclose: () => void;
   }
 
-  let { store, open, onclose }: Props = $props();
+  const { store, open, onclose }: Props = $props();
 
   type Tab = "table" | "theme" | "combined" | "js";
   let activeTab = $state<Tab>("combined");

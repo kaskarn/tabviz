@@ -16,7 +16,7 @@
     sharedScale?: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
   }
 
-  let { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
+  const { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
 
   // Compute KDE for each effect
   const effectKDEs = $derived.by((): (KDEResult | null)[] => {

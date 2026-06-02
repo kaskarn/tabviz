@@ -9,7 +9,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const banding = $derived(store.effectiveBanding);
   const depth = $derived(store.maxGroupDepth);

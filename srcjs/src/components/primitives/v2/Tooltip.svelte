@@ -40,7 +40,7 @@
      *  <span class="tt-trigger"> so it can attach the hover/focus listeners. */
     children: Snippet;
   }
-  let { text, id, children }: Props = $props();
+  const { text, id, children }: Props = $props();
 
   let bubbleEl: HTMLDivElement | null = $state(null);
   let triggerEl: HTMLSpanElement | null = $state(null);

@@ -5,7 +5,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   function handleReset() {
     store.resetState();

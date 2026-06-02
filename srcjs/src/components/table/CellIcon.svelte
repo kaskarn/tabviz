@@ -7,7 +7,7 @@
     naText?: string;
   }
 
-  let { value, options, naText }: Props = $props();
+  const { value, options, naText }: Props = $props();
 
   const mapping = $derived(options?.mapping ?? {});
   const size = $derived(options?.size ?? "base");

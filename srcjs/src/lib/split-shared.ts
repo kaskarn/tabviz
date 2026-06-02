@@ -186,8 +186,8 @@ export function computeSharedAxis(args: SharedAxisArgs): SharedAxisResult {
 
   // Log-scale: positive values only.
   let pts = isLog ? allPoint.filter((v) => v > 0) : allPoint;
-  let los = isLog ? allLower.filter((v) => v > 0) : allLower;
-  let his = isLog ? allUpper.filter((v) => v > 0) : allUpper;
+  const los = isLog ? allLower.filter((v) => v > 0) : allLower;
+  const his = isLog ? allUpper.filter((v) => v > 0) : allUpper;
 
   // Degenerate case: no data at all. Synthesize a ±1 / ÷2×2 span around
   // null_value so niceDomain doesn't choke.

@@ -29,7 +29,7 @@
     family?: "mono" | "serif" | "sans";
   }
 
-  let { label, hint, value, placeholder, oninput, onchange, lines = 1, family = "mono" }: Props = $props();
+  const { label, hint, value, placeholder, oninput, onchange, lines = 1, family = "mono" }: Props = $props();
 
   function handleInput(e: Event) {
     const el = e.target as HTMLInputElement | HTMLTextAreaElement;

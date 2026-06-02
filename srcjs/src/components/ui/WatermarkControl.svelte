@@ -10,7 +10,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const watermark = $derived(store.spec?.watermark ?? "");
   const fallbackColor = $derived(store.spec?.theme?.content?.primary ?? "#1a1a1a");

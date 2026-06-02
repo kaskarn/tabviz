@@ -11,7 +11,7 @@
     root: HTMLElement | null;
   }
 
-  let { store, target, root }: Props = $props();
+  const { store, target, root }: Props = $props();
 
   // Determine mode: plot-level label (labelField set), group-header edit
   // (groupId set), forest popover ("__forest__:colId"), or regular cell

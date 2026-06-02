@@ -20,7 +20,7 @@
     onreset?: () => void;
   }
 
-  let { label, hint, value, onchange, swatches, overridden, onreset }: Props = $props();
+  const { label, hint, value, onchange, swatches, overridden, onreset }: Props = $props();
 
   // Map flat string[] (the historical API) to ThemeSwatch[] (the v2
   // primitive's typed form). Token labels are 1-indexed positional —

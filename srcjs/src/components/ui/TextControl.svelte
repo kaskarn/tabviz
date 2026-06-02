@@ -46,7 +46,7 @@
   interface Props {
     store: TabvizStore;
   }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const text = $derived(store.spec?.theme?.text);
   const rg   = $derived(store.spec?.theme?.rowGroup);
@@ -57,8 +57,8 @@
   // it; for now only header is exposed.
   const headerText = $derived(store.spec?.theme?.header?.text);
 
-  let expandedText = $state<Record<string, boolean>>({});
-  let expandedLevel = $state<Record<string, boolean>>({ L1: true });
+  const expandedText = $state<Record<string, boolean>>({});
+  const expandedLevel = $state<Record<string, boolean>>({ L1: true });
 
   // Tier keys for the row-group cluster, typed as the literal union so the
   // `rg[level]` indexing in the template is well-typed.

@@ -16,7 +16,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   let dropdownOpen = $state(false);
   let isExporting = $state(false);

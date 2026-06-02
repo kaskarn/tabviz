@@ -9,7 +9,7 @@
     naText?: string;
   }
 
-  let { value, options, cellStyle, naText }: Props = $props();
+  const { value, options, cellStyle, naText }: Props = $props();
 
   // Cell styling from NSE/formulas
   const isBold = $derived(cellStyle?.bold ?? false);

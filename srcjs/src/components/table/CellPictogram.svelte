@@ -30,7 +30,7 @@
     colorOverride?: string | null;
   }
 
-  let { value, options, naText, cellStyle, glyphSelector, colorOverride }: Props = $props();
+  const { value, options, naText, cellStyle, glyphSelector, colorOverride }: Props = $props();
 
   // ----- option derivations -------------------------------------------------
 

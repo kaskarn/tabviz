@@ -22,7 +22,7 @@
     oncommitfootergap?: (value: number) => void;
   }
 
-  let {
+  const {
     caption,
     footnote,
     enableEdit = false,

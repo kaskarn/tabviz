@@ -42,7 +42,7 @@
     onClose: () => void;
   }
 
-  let { target, available, onPick, onClose }: Props = $props();
+  const { target, available, onPick, onClose }: Props = $props();
 
   interface Leaf {
     kind: "leaf";

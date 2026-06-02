@@ -19,7 +19,7 @@
     onchange: (value: number) => void;
   }
 
-  let { label, hint, value, min, max, step = 1, unit, onchange }: Props = $props();
+  const { label, hint, value, min, max, step = 1, unit, onchange }: Props = $props();
 
   let local: number = $state(0);
   $effect(() => { local = value; });

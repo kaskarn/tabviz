@@ -40,7 +40,7 @@
     children?: Snippet;
   }
 
-  let { label, hint, glyph, mono, pinned, tight, onreset, forId, children }: Props = $props();
+  const { label, hint, glyph, mono, pinned, tight, onreset, forId, children }: Props = $props();
 </script>
 
 <!--

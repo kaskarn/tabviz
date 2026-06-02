@@ -7,7 +7,7 @@
     naText?: string;
   }
 
-  let { value, options, naText }: Props = $props();
+  const { value, options, naText }: Props = $props();
 
   const imgHeight = $derived(options?.height);
   const maxWidth = $derived(options?.maxWidth);

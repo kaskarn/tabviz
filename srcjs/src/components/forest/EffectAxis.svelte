@@ -16,7 +16,7 @@
     gridlines?: boolean;
   }
 
-  let { xScale, layout, theme, axisLabel, position = "bottom", plotHeight = 0, baseTicks, gridlines }: Props = $props();
+  const { xScale, layout, theme, axisLabel, position = "bottom", plotHeight = 0, baseTicks, gridlines }: Props = $props();
 
   // Get axis config from theme
   const axisConfig = $derived(theme?.axis);

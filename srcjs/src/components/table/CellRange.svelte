@@ -9,7 +9,7 @@
     naText?: string;
   }
 
-  let { value, metadata, options, naText }: Props = $props();
+  const { value, metadata, options, naText }: Props = $props();
 
   const separator = $derived(options?.separator ?? " – ");
   const decimals = $derived(options?.decimals);

@@ -21,8 +21,8 @@ export function computeVizBarDomain(
   rows: readonly Row[],
   options: VizBarColumnOptions,
 ): VizDomain {
-  let min = options.axisRange?.[0];
-  let max = options.axisRange?.[1];
+  const min = options.axisRange?.[0];
+  const max = options.axisRange?.[1];
   if (min != null && max != null) return { min, max };
 
   const values: number[] = [];
@@ -47,8 +47,8 @@ export function computeVizBoxplotDomain(
   rows: readonly Row[],
   options: VizBoxplotColumnOptions,
 ): VizDomain {
-  let min = options.axisRange?.[0];
-  let max = options.axisRange?.[1];
+  const min = options.axisRange?.[0];
+  const max = options.axisRange?.[1];
   if (min != null && max != null) return { min, max };
 
   const values: number[] = [];

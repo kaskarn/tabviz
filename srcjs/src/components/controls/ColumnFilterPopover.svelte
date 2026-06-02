@@ -7,7 +7,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const target = $derived(store.filterPopoverTarget);
   const field = $derived(target?.field ?? "");

@@ -19,7 +19,7 @@
   interface Props {
     store: TabvizStore;
   }
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   const variants = $derived(store.spec?.theme?.variants);
   const layout   = $derived(store.spec?.theme?.layout);

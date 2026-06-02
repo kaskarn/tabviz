@@ -8,7 +8,7 @@
     naText?: string;
   }
 
-  let { value, options, naText }: Props = $props();
+  const { value, options, naText }: Props = $props();
 
   const maxStars = $derived(Math.max(1, Math.min(20, options?.maxStars ?? 5)));
   const filledColor = $derived(options?.color ?? "#f59e0b");

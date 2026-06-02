@@ -27,7 +27,7 @@
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
-  let {
+  const {
     store,
     enableExport = true,
     enableThemes = undefined,  // undefined = show all themes (default behavior)

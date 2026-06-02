@@ -6,7 +6,7 @@
     store: TabvizStore;
   }
 
-  let { store }: Props = $props();
+  const { store }: Props = $props();
 
   let open = $state(false);
 </script>
