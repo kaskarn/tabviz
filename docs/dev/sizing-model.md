@@ -431,6 +431,40 @@ All five are now done, obsolete, or dissolved by dead-code removal:
 > whose pointer drag calls `setRowKindHeight(resolvedKind, newHeight)` (mirrors
 > the column-width drag); its own commit + browser harness.
 
+### 8a. Full row-kind height cascade — DESIGN (reflected 2026-06-02, build pending)
+
+The shipped `rowKindHeights` map is only the **pin layer**. The full per-kind
+height resolution should be a cascade beneath it (low → high precedence):
+
+1. **Intrinsic kind ratio** — each `RowKind` as a *ratio* of the density
+   `rowHeight` (data 1.0, group_header 1.0, summary 1.0, section-header 1.0,
+   spacer 0.5). Ratios (not absolutes) so they scale with density **and** the
+   density factor for free.
+2. **Inheritance** — a kind with no value inherits its *parent*: `summary → data`,
+   `section-header → group_header`. Shallow, fixed graph (not arbitrary). So
+   raising data's height propagates to summary unless summary is set.
+3. **Theme-level default** — a theme sets a kind's ratio (e.g. editorial theme
+   `summary = 1.25×`). Scales with density.
+4. **Constructor override** — authored per-kind at construction (`row_heights`).
+   Keep it a *ratio* for cascade-consistency (an absolute would be a second unit
+   fighting density).
+5. **Interactive pin** (BUILT) — drag / settings-panel writes an **absolute** px
+   that bypasses the ratio chain and survives density (the user dragged to *that*
+   pixel and means it). Highest precedence.
+
+**Crux tension:** ratios everywhere *except* the pin.
+`resolvedHeight = pin ?? (rowHeight × resolveRatio(kind))`, where `resolveRatio`
+walks constructor → theme → inherited-parent → intrinsic. "Reset" clears the pin
+→ re-enters the cascade. Both affordances (settings-panel control + drag handle,
+DECIDED to build both) write the pin; the settings panel additionally needs a
+"reset to default" to drop back into the cascade.
+
+**Implications for the build:** the shipped `rowKindHeights` (absolute) is layer
+5. Layers 1–4 (ratios + inheritance + theme + constructor) are unbuilt — they
+land with the affordances. The drag-UI DOM wrinkle (rows have no wrapper element
+→ handles need an absolutely-positioned overlay layer) is still the open
+build-time question for the drag affordance specifically.
+
 **Question:** when a user drags a row's bottom edge, what are they editing?
 
 **The column precedent (why rows are different).** Column drag-resize writes a
