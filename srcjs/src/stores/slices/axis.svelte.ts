@@ -142,15 +142,16 @@ export function createAxisSlice(deps: AxisSliceDeps): AxisSlice {
         domainOverride: axisZooms[column.id]?.domain ?? null,
       });
 
-      // Mark scale domain = axisLimits (preserves the historical DOM behavior).
-      // NOTE: the V8/SVG export builds its mark scale from plotRegion (axisLimits
-      // + marker margin) instead — a pre-existing DOM↔export divergence to unify
-      // next (would shift DOM forest marks by the marker margin to match export).
+      // Mark scale domain = plotRegion (axisLimits + marker margin) — the
+      // documented render domain, matching the V8/SVG export so the live widget
+      // and the downloaded SVG agree pixel-for-pixel (WYSIWYG). A pan/zoom
+      // override replaces it verbatim (no margin) so zoom feels continuous —
+      // mirroring the export-from-DOM loop's `override ?? plotRegion`.
       const scale = buildForestScale({
         columnId: column.id,
         groupId: null,
         scaleType,
-        domain: axisLimits,
+        domain: axisZooms[column.id]?.domain ?? plotRegion,
         width,
       });
 

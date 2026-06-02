@@ -17,6 +17,14 @@ feedback, real layout) can be verified. Two kinds live here:
     measure→commit→re-measure loop settles (no oscillation).
     Run: `bun run tests/browser/measure-rows.browser.ts [--bundle <p>] [--headed]`.
 
+  - `forest-marks.browser.ts` — the **forest mark x-position** WYSIWYG
+    contract (region-tree.md §5): asserts rendered point markers land at
+    the canonical forest scale (built from `plotRegion` via the shared
+    `forest-scale.ts`, the same domain the V8/SVG export uses), so the live
+    widget and the downloaded SVG agree. Guards against the DOM scale domain
+    drifting (e.g. back onto `axisLimits`).
+    Run: `bun run tests/browser/forest-marks.browser.ts [--bundle <p>] [--headed]`.
+
 ## Run
 
 ```bash
