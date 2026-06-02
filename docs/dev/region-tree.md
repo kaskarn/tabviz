@@ -230,6 +230,38 @@ Each phase its own commit; phase 3 is the one to eyeball (it touches the hot
 path). Foundation ends here — **details** and **faceting** are the following
 sprints, additive on this primitive.
 
+## 8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)
+
+A theming-cascade rework is being scoped in parallel. It is **not** this sprint's
+job and must not change our scope — but the row-kind expansion intersects its
+theme-access surface, so honor these cheap disciplines so our output stays
+forward-compatible (full note: `dev/cascade-rework-note-to-row-kind-agent.md`):
+
+1. **One getter for theme→kind appearance.** Route every row-kind theme read
+   through a single `getRowKindAppearance(theme, kind) → { bg, fg, weight, … }`
+   (or a small set). Renderers never reach into `theme.rowKind.X.Y` directly. The
+   cascade rework swaps the getter's *insides* without touching renderers — the
+   biggest hedge against a half-merged state.
+2. **Kebab-case, attribute-safe kind discriminators.** The kind strings will be
+   stamped as `data-row-kind="<kind>"` later (CSS attribute selectors drive
+   paint; geometry stays JS-side). Use stable kebab-case: `group-header`,
+   `section-header`, `summary`, `spacer`, `overall`. **⚠ Reconcile:** today's
+   `row-kind.ts` enum is snake_case (`group_header`). The expansion must converge
+   on kebab (rename the enum, or map enum→kebab at the stamp site) — decide once,
+   no `groupHead`/`group_header`/`group-header` drift.
+3. **Deliberate, minimal per-kind appearance vocabulary.** Every appearance field
+   becomes a manifested consumed token (a COMPONENT_TOKENS row + drift-gate entry
+   + CSS variable) later. Add only fields the renderer actually consumes; one
+   canonical name per paint surface; no "for the future" fields.
+4. **One-line comment per appearance field** ("summary row background fill",
+   "group-header bottom rule color") — makes the eventual manifest mechanical.
+5. **Don't pre-migrate** to CSS variables / data attributes, and **don't widen**
+   the vocabulary or change scope to align with the rework. It isn't landing
+   first; this foundation stands on today's theme shape.
+6. **HC-mode glyphs as real elements**, never `::before`/`::after` — pseudo-
+   elements don't survive SVG export (geometry/glyph presence is JS-side in both
+   the browser and V8 paths).
+
 ## 9. Don't-foreclose (deferred sub-decisions)
 
 The foundation must *allow* each without deciding it now:
