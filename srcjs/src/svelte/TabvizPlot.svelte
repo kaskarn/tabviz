@@ -42,7 +42,7 @@
   import { tick } from "svelte";
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeName } from "$lib/theme/theme-presets";
-  import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle, Annotation, SemanticBundle } from "$types";
+  import type { WebTheme, ColumnSpec, ColumnDef, Row, DisplayRow, DataRow, CellStyle, Annotation, SemanticBundle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
@@ -52,18 +52,7 @@
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import TabvizOverlays from "./TabvizOverlays.svelte";
-  import CellPvalue from "$components/table/CellPvalue.svelte";
-  import CellSparkline from "$components/table/CellSparkline.svelte";
   import CellContent from "$components/table/CellContent.svelte";
-  import CellIcon from "$components/table/CellIcon.svelte";
-  import CellBadge from "$components/table/CellBadge.svelte";
-  import CellStars from "$components/table/CellStars.svelte";
-  import CellPictogram from "$components/table/CellPictogram.svelte";
-  import CellRing from "$components/table/CellRing.svelte";
-  import CellImg from "$components/table/CellImg.svelte";
-  import CellReference from "$components/table/CellReference.svelte";
-  import CellRange from "$components/table/CellRange.svelte";
-  import CellProgress from "$components/table/CellProgress.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import SettingsPanel from "$components/ui/SettingsPanel.svelte";
   import SortIndicator from "$components/controls/SortIndicator.svelte";
@@ -72,7 +61,7 @@
   // moved into TabvizOverlays (Phase 0c-C2). Tooltip + DropIndicator + EditableCell
   // also moved there.
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
-  import { isVizType, resolveShowHeader } from "$lib/column-types";
+  import { resolveShowHeader } from "$lib/column-types";
   import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
   import { resolveRowKind } from "$lib/layout/row-kind";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
@@ -106,14 +95,6 @@
   } from "../schema/lifecycle-dispatch";
   import type { WidgetContext } from "../schema/render-types";
   import RenderTree from "../components/RenderTree.svelte";
-  import {
-    formatNumber,
-    formatEvents,
-    formatInterval,
-    addThousandsSep,
-    abbreviateNumber,
-    truncateString,
-  } from "$lib/formatters";
 
   interface Props {
     store: TabvizStore;

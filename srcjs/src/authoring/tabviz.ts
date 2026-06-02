@@ -16,7 +16,7 @@ import type {
   AvailableField, FieldCategory,
 } from "../types";
 import type {
-  WidgetBanks, FootnoteEntry, AxisEntry, LegendEntry, ConditionEntry, BankEntry,
+  WidgetBanks, FootnoteEntry, AxisEntry, LegendEntry, BankEntry,
 } from "../schema/banks";
 import {
   evaluateConditions, type ConditionAuthoring,

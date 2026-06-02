@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ColumnDef, ColumnSpec, ColumnGroup } from "$types";
+  import type { ColumnDef, ColumnSpec } from "$types";
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
 
   interface Props {

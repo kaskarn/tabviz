@@ -15,7 +15,7 @@ import type {
   NumericColumnOptions, IntervalColumnOptions, PercentColumnOptions,
   EventsColumnOptions, BarColumnOptions, PvalueColumnOptions,
   SparklineColumnOptions, IconColumnOptions, BadgeColumnOptions,
-  StarsColumnOptions, PictogramColumnOptions, RingColumnOptions,
+  PictogramColumnOptions, RingColumnOptions,
   ImgColumnOptions, ReferenceColumnOptions, RangeColumnOptions,
   HeatmapColumnOptions, ProgressColumnOptions, TextColumnOptions,
 } from "../types";

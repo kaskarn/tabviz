@@ -10,8 +10,6 @@
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import SegmentedField from "./SegmentedField.svelte";
-  import BooleanField from "./BooleanField.svelte";
-  import NumberField from "./NumberField.svelte";
   import ColorField from "./ColorField.svelte";
   import BandingControl from "./BandingControl.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";

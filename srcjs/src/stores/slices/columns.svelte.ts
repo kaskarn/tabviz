@@ -47,8 +47,6 @@ import {
   DEFAULT_TOP_K,
   type FontKey,
 } from "$lib/width-measure";
-import { resolveShowHeader } from "$lib/column-types";
-import { VIZ_MARGIN } from "$lib/axis-utils";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import {
   AUTO_WIDTH,

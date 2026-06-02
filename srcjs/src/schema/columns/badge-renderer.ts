@@ -29,7 +29,7 @@
 // component; this file only registers the `svg` slot.
 
 import type { ColumnOptions, WebTheme } from "../../types";
-import type { CellFormatter, RenderSvg } from "../render-types";
+import type { CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { BADGE, BADGE_VARIANTS } from "../../lib/rendering-constants";
 import { parseFontSize } from "../../lib/typography-layout";

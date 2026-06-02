@@ -41,7 +41,7 @@
  * calculation algorithm and constants.
  */
 
-import type { ColumnSpec, Row, ColumnOptions, Group } from "../types";
+import type { ColumnSpec, Row, Group } from "../types";
 import { getColumnDisplayText } from "./formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./rendering-constants";
 import { dispatchForColumn } from "../schema/dispatch";

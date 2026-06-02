@@ -19,7 +19,6 @@ import type { ColumnSpec } from "../types";
 import type { ColumnSchema } from "./types";
 import type {
   SchemaBehaviors,
-  CellFormatter,
   RenderContext,
   RenderNode,
   ParentRenderers,

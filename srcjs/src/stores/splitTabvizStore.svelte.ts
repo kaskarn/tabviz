@@ -1,5 +1,5 @@
 import type { SplitForestPayload, NavTreeNode, WebSpec, WebTheme, ColumnDef, ColumnSpec } from "$types";
-import { createTabvizStore, type TabvizStore } from "./tabvizStore.svelte";
+import { createTabvizStore } from "./tabvizStore.svelte";
 import { type ThemeName } from "$lib/theme/theme-presets";
 import { ops } from "$lib/op-recorder";
 

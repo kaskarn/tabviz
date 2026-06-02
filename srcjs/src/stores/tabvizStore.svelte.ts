@@ -1,25 +1,14 @@
-import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
+import { scaleLinear, scaleLog } from "d3-scale";
 import type {
   WebSpec,
   Row,
-  Group,
-  ColumnDef,
-  RowOrderOverrides,
-  DragState,
   DisplayRow,
-  GroupHeaderRow,
-  DataRow,
 } from "$types";
-import {
-  computeBandIndexes,
-  maxGroupDepth as computeMaxGroupDepth,
-} from "$lib/banding";
-import { niceDomain } from "$lib/scale-utils";
-import { THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
+import { computeBandIndexes } from "$lib/banding";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
 import { resolveRowKind } from "$lib/layout/row-kind";
-import { ops, type OpRecord } from "$lib/op-recorder";
-import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
+import { type OpRecord } from "$lib/op-recorder";
+import { createSourceSlice } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";
 import { createThemeSlice } from "$stores/slices/theme.svelte";
 import { createAxisSlice } from "$stores/slices/axis.svelte";

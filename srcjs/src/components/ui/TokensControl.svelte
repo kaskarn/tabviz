@@ -12,7 +12,6 @@
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
   import ColorField from "./ColorField.svelte";
-  import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";

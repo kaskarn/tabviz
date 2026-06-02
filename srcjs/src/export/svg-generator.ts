@@ -31,7 +31,6 @@ import type {
   Row,
   ColumnSpec,
   ColumnDef,
-  ColumnOptions,
   ComputedLayout,
   EffectSpec,
   MarkerShape,
@@ -43,8 +42,8 @@ import type {
   AxisConfig,
   Annotation,
 } from "$types";
-import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "$lib/scale-utils";
-import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "$lib/axis-utils";
+import { getEffectValue } from "$lib/scale-utils";
+import { computeAxis, generateTicks, VIZ_MARGIN } from "$lib/axis-utils";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
 import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
@@ -52,7 +51,6 @@ import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/layout/row-kind";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
-import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
@@ -62,18 +60,12 @@ import { computeEffectiveBanks } from "../schema/banks";
 import { resolveStyleMapping } from "$lib/style-mapping-resolve";
 import {
   LAYOUT,
-  TYPOGRAPHY,
   SPACING,
   RENDERING,
   AUTO_WIDTH,
   GROUP_HEADER,
-  COLUMN_GROUP,
   TEXT_MEASUREMENT,
   BADGE,
-  BAR,
-  SPARKLINE,
-  GROUP_HEADER_OPACITY,
-  EFFECT,
   getEffectYOffset,
   AXIS,
   ASPECT,
@@ -95,7 +87,6 @@ import {
   computeBoxplotStats,
   computeKDE,
   normalizeKDE,
-  kdeToViolinPath,
 } from "$lib/viz-utils";
 
 import {

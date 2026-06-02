@@ -19,7 +19,6 @@ import type {
   TokenName,
   ThemeMode,
   ColorRef,
-  RampStepRef,
   ThemeStructure,
   ThemeRoles,
   ClustersInputs,

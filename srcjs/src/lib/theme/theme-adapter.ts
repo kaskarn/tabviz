@@ -23,7 +23,7 @@
 //   decorative_chrome → columnGroup.bold.bg (when set)
 
 import type { ThemeInputs } from "../../types/theme-inputs";
-import { buildThemeStructure, resolveRef } from "./theme-resolve";
+import { buildThemeStructure } from "./theme-resolve";
 import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import type {
   WebTheme, Surfaces, Content, Dividers, AccentRoles,

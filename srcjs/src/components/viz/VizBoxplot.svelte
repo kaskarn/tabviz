@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Row, WebTheme, VizBoxplotColumnOptions, VizBoxplotEffect, BoxplotStats } from "$types";
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
-  import { computeBoxplotStats, computeQuartiles, computeOutliers } from "$lib/viz-utils";
+  import { computeBoxplotStats } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
 

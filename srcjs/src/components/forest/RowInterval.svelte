@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Row, RowStyle, CellStyle, WebTheme, ComputedLayout, EffectSpec, MarkerShape, ForestColumnOptions } from "$types";
+  import type { Row, RowStyle, CellStyle, WebTheme, ComputedLayout, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
