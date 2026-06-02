@@ -14,6 +14,8 @@
     yPosition: number;
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
     layout: ComputedLayout;
+    /** This plot column's pixel width (from the multi-flex distribution). */
+    plotWidth: number;
     theme: WebTheme | undefined;
     weightCol?: string | null;
     /** Axis limits for CI clipping detection (domain units, not pixels) */
@@ -36,6 +38,7 @@
     yPosition,
     xScale,
     layout,
+    plotWidth,
     theme,
     weightCol = null,
     clipBounds,
@@ -127,13 +130,13 @@
   }
 
   function isClippedRight(upper: number): boolean {
-    if (!clipBounds) return xScale(upper) > layout.forestWidth;  // Fallback to pixel-based
+    if (!clipBounds) return xScale(upper) > plotWidth;  // Fallback to pixel-based
     return upper > clipBounds[1];
   }
 
   // Clamp value to axis limits (domain units) then convert to pixels
   function clampAndScale(value: number): number {
-    if (!clipBounds) return Math.max(0, Math.min(layout.forestWidth, xScale(value)));
+    if (!clipBounds) return Math.max(0, Math.min(plotWidth, xScale(value)));
     const clamped = Math.max(clipBounds[0], Math.min(clipBounds[1], value));
     return xScale(clamped);
   }
@@ -144,7 +147,7 @@
     clipBounds ? xScale(clipBounds[0]) : VIZ_MARGIN
   );
   const rightArrowX = $derived(
-    clipBounds ? xScale(clipBounds[1]) : layout.forestWidth - VIZ_MARGIN
+    clipBounds ? xScale(clipBounds[1]) : plotWidth - VIZ_MARGIN
   );
 
   // Diamond height for summary rows (fixed; theme override removed in

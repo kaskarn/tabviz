@@ -152,8 +152,8 @@ export function createRowsGroupsSlice(
 
   // CROSS-SLICE $DERIVED: reads visibleIndices from the sort-filter
   // slice and dereferences each via deps.getRowAt(i). Reactivity
-  // propagates the same way as the axis spike's xScale reading
-  // layout.forestWidth.
+  // propagates the same way as the axis spike's xScale reading the
+  // forest column's resolved flex width.
   const fullDisplayRows = $derived.by((): DisplayRow[] => {
     const spec = deps.getSpec();
     if (!spec) return [];

@@ -33,7 +33,7 @@
 //   - getAllColumns         — columns slice
 //   - getForestColumns      — columns slice (forest-specific)
 //   - getColumnWidths       — columns slice (auto-measured + user-resized)
-//   - getUserResizedIds     — columns slice (gate for aspectNonForestScale)
+//   - getUserResizedIds     — columns slice (gate for honoring manual resizes)
 //   - getDisplayRows        — data slice (pagination cut of fullDisplayRows)
 //   - getTargetAspect       — data slice (pinned aspect for the lever ladder)
 //   - getWrapLineCounts     — cells slice (per-row wrap-line cap for rowHeights)
@@ -189,8 +189,6 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       return {
         totalWidth: effectiveWidth,
         totalHeight: effectiveHeight,
-        tableWidth: 300,
-        forestWidth: 400,
         headerHeight: 36,
         rowHeight: 28,
         plotHeight: 300,
@@ -370,7 +368,8 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const flexSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
       const measured = columnWidths[c.id];
       const userResized = userResizedIds.has(c.id);
-      const forestPin = c.type === "forest" ? pinnedForestWidth : null;
+      const forestPin =
+        c.type === "forest" ? (pinnedForestWidth ?? c.options?.forest?.width ?? null) : null;
       const explicit =
         forestPin ??
         (userResized && typeof measured === "number" ? measured
@@ -390,10 +389,6 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       flexSpecs,
       Math.max(0, layoutWidth - spec.theme.spacing.padding * 2),
     ).widths;
-    const firstForestId = forestColumns[0]?.column.id;
-    const forestWidth = (firstForestId != null ? flexWidths[firstForestId] : undefined) ?? 0;
-
-    const tableWidth = layoutWidth - forestWidth;
     const hasOverall = !!spec.data.overall;
 
     // Per-row heights. Group-header rows pick up rowGroupPadding (themed
@@ -447,8 +442,6 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     return {
       totalWidth: layoutWidth,
       totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + spec.theme.spacing.padding * 2),
-      tableWidth,
-      forestWidth,
       flexWidths,
       chromeScale,
       aspectTargetWidth,

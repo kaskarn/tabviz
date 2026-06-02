@@ -81,14 +81,14 @@ describe("axis slice — derived axisComputation", () => {
 });
 
 describe("axis slice — cross-slice $derived spike", () => {
-  test("xScale.range responds to layout.forestWidth changes (deps.getLayoutForestWidth)", () => {
+  test("xScale.range responds to forest plot-width changes (deps.getForestPlotWidth)", () => {
     const h = buildAxisHarness(400);
     // VIZ_MARGIN = 12 (axis-utils constant). xScale.range = [12, forestWidth - 12].
     const before = h.slice.xScale.range();
     expect(before[0]).toBe(12);
     expect(before[1]).toBe(388);
     // Mutate the "other slice's" state. The slice's $derived must
-    // re-evaluate and pick up the new value via deps.getLayoutForestWidth().
+    // re-evaluate and pick up the new value via deps.getForestPlotWidth().
     h.setForestWidth(800);
     const after = h.slice.xScale.range();
     expect(after[0]).toBe(12);

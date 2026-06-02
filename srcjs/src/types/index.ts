@@ -354,7 +354,7 @@ export interface ForestColumnOptions {
   axisTicks?: number[] | null;          // Explicit tick positions
   axisGridlines?: boolean;              // Show gridlines
   showAxis: boolean;
-  width?: number | null;       // Width in pixels (null for auto from layout.forestWidth)
+  width?: number | null;       // Width in pixels (null for auto from the multi-flex distribution)
   annotations?: Annotation[] | null;    // Reference lines and other annotations
   sharedAxis?: boolean | null; // In split forests: share axis across splits (null = inherit from split-level)
 }
@@ -981,17 +981,11 @@ export type Annotation = ReferenceLine | CustomAnnotation;
 export interface ComputedLayout {
   totalWidth: number;
   totalHeight: number;
-  tableWidth: number;
-  forestWidth: number;
   /** Multi-flex: per-column resolved width (id → px), from the weighted
-   *  distribution (docs/dev/multi-flex-columns.md). Populated alongside the
-   *  legacy `forestWidth` scalar during the migration; consumers move to this
-   *  map, then `forestWidth` is retired. Optional until both runtimes populate. */
+   *  distribution (docs/dev/multi-flex-columns.md). The single source of
+   *  truth for column widths — forest is just a high-weight plot column,
+   *  no longer a special scalar. */
   flexWidths?: Record<string, number>;
-  /** Phase 7E Lever 1B: scale factor for non-flex auto-width columns
-   *  when targetAspect expands the layout past flex saturation. 1 by
-   *  default; > 1 widens columns proportionally; < 1 narrows them. */
-  aspectNonForestScale?: number;
   /** Lever 2C: scale factor applied to headerHeight + axisHeight so
    *  chrome can absorb / shed height when an aspect target is pinned.
    *  1 by default; > 1 grows chrome (taller aspects); < 1 shrinks it

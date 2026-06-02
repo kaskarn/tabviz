@@ -9,11 +9,13 @@
     yPosition: number;
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
     layout: ComputedLayout;
+    /** This plot column's pixel width (from the multi-flex distribution). */
+    plotWidth: number;
     theme: WebTheme | undefined;
     label?: string;
   }
 
-  const { point, lower, upper, yPosition, xScale, layout, theme, label }: Props = $props();
+  const { point, lower, upper, yPosition, xScale, layout, plotWidth, theme, label }: Props = $props();
 
   const diamondHeight = 10;
   const halfHeight = diamondHeight / 2;
@@ -26,7 +28,7 @@
 
     // Clamp to visible area
     const minX = 0;
-    const maxX = layout.forestWidth;
+    const maxX = plotWidth;
 
     const clampedL = Math.max(minX, xL);
     const clampedU = Math.min(maxX, xU);
@@ -41,7 +43,7 @@
 
   // Show arrow indicators if clipped
   const clippedLeft = $derived(xScale(lower) < 0);
-  const clippedRight = $derived(xScale(upper) > layout.forestWidth);
+  const clippedRight = $derived(xScale(upper) > plotWidth);
 </script>
 
 <g class="summary-diamond">
@@ -64,7 +66,7 @@
   <!-- Right arrow if clipped -->
   {#if clippedRight}
     <path
-      d="M {layout.forestWidth - 4} {yPosition} L {layout.forestWidth - 10} {yPosition - 4} L {layout.forestWidth - 10} {yPosition + 4} Z"
+      d="M {plotWidth - 4} {yPosition} L {plotWidth - 10} {yPosition - 4} L {plotWidth - 10} {yPosition + 4} Z"
       fill="var(--tv-summary-fill, #2563eb)"
     />
   {/if}

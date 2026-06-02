@@ -6,6 +6,8 @@
   interface Props {
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
     layout: ComputedLayout;
+    /** This plot column's pixel width (from the multi-flex distribution). */
+    plotWidth: number;
     theme: WebTheme | undefined;
     axisLabel?: string;
     position?: "top" | "bottom";
@@ -16,7 +18,7 @@
     gridlines?: boolean;
   }
 
-  const { xScale, layout, theme, axisLabel, position = "bottom", plotHeight = 0, baseTicks, gridlines }: Props = $props();
+  const { xScale, layout, plotWidth, theme, axisLabel, position = "bottom", plotHeight = 0, baseTicks, gridlines }: Props = $props();
 
   // Get axis config from theme
   const axisConfig = $derived(theme?.axis);
@@ -51,7 +53,7 @@
 
     // Get base ticks: use precomputed baseTicks from axis-utils, or fall back to D3
     const minSpacing = 50; // minimum pixels between tick labels
-    const maxTicks = Math.max(2, Math.floor(layout.forestWidth / minSpacing));
+    const maxTicks = Math.max(2, Math.floor(plotWidth / minSpacing));
     const requestedTicks = axisConfig?.tickCount ?? null;
     const tickCount = requestedTicks ?? Math.min(7, maxTicks);
 
@@ -152,7 +154,7 @@
    */
   function getTextAnchor(tickX: number): "start" | "middle" | "end" {
     if (tickX < EDGE_THRESHOLD) return "start";
-    if (tickX > layout.forestWidth - EDGE_THRESHOLD) return "end";
+    if (tickX > plotWidth - EDGE_THRESHOLD) return "end";
     return "middle";
   }
 
@@ -162,7 +164,7 @@
    */
   function getTextXOffset(tickX: number): number {
     if (tickX < EDGE_THRESHOLD) return 2; // Slight offset from left edge
-    if (tickX > layout.forestWidth - EDGE_THRESHOLD) return -2; // Slight offset from right edge
+    if (tickX > plotWidth - EDGE_THRESHOLD) return -2; // Slight offset from right edge
     return 0;
   }
 </script>
@@ -222,7 +224,7 @@
   <!-- Axis label -->
   {#if axisLabel}
     <text
-      x={layout.forestWidth / 2}
+      x={plotWidth / 2}
       y={isBottom ? axisY + axisGeom.axisLabelY : axisY - axisGeom.axisLabelY}
       text-anchor="middle"
       fill="var(--tv-axis-label-fg, var(--tv-text-muted, #64748b))"

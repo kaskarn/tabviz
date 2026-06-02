@@ -300,13 +300,13 @@ function calculateSvgAutoWidths(
   // PHASE 1: Measure leaf column content
   // ========================================================================
   for (const col of columns) {
-    // Viz columns (forest, viz_bar, viz_boxplot, viz_violin) with width="auto"
+    // Plot columns (forest, viz_bar, viz_boxplot, viz_violin) with width="auto"
     // are intentionally omitted here so the downstream renderer falls through
-    // to `layout.forestWidth` (the expand-to-fill value). A natural-min
-    // autoWidth would cap the plot to ~200px even when the caller asked for a
-    // 1600px canvas, producing a narrow plot with empty space to the right.
-    // User-resized widths still arrive via `options.columnWidths` (see
-    // computeLayout).
+    // to their multi-flex distributed width (`layout.flexWidths`, the
+    // expand-to-fill value). A natural-min autoWidth would cap the plot to
+    // ~200px even when the caller asked for a 1600px canvas, producing a
+    // narrow plot with empty space to the right. User-resized widths still
+    // arrive via `options.columnWidths` (see computeLayout).
     if (
       (col.type === "forest" ||
         col.type === "viz_bar" ||
@@ -775,88 +775,42 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 
-  // Calculate table widths using effective widths
-  // For legacy model: left and right tables around forest
-  const leftTableWidth = labelWidth +
-    leftColumns.reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
-  const rightTableWidth =
-    rightColumns.reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
-
-  // For unified model: count non-flex columns width. A flex column (forest
-  // by default; opt-in for any other type via `flex: true`) absorbs the
-  // remaining width and is excluded from the table-width sum here.
+  // Per-column natural ("wants") width for canvas sizing. A flex/plot column
+  // (forest + viz_* default `flex: true`) has no content width, so it uses its
+  // schema-designed natural (naturalWidthPx); others use explicit/measured. The
+  // weighted distribution below grows columns from these to fill totalWidth.
   const isFlexColumn = (c: ColumnSpec): boolean =>
     c.flex === true && (c.width === "auto" || c.width == null);
-  const unifiedNonForestWidth = unifiedColumns
-    .filter(c => !isFlexColumn(c))
-    .reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
+  const hasFlexColumns = allColumns.some(isFlexColumn);
 
-  // Flex (forest-equivalent) width calculation - "tables first" approach.
-  // The variable is still named `forestWidth` downstream because the
-  // renderer threads a single per-flex-column width through layout; in
-  // practice tabviz today renders at most one flex column per spec.
-  const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
-  const hasForestColumns = allColumns.some(isFlexColumn);
-  const includeForest = hasForestColumns;
+  const colNaturalWidth = (c: ColumnSpec): number => {
+    const provided = options.columnWidths?.[c.id];
+    const explicit =
+      typeof provided === "number" ? provided : typeof c.width === "number" ? c.width : null;
+    return explicit ?? autoWidths.get(c.id) ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
+  };
+  const naturalSum = allColumns.reduce((sum, c) => sum + colNaturalWidth(c), 0);
 
-  // Total table width includes legacy positioned columns AND unified non-forest columns
-  const totalTableWidth = leftTableWidth + rightTableWidth + unifiedNonForestWidth;
-
-  // Calculate forest width based on remaining space after tables, or explicit
-  // layout settings. INTENTIONALLY diverges from the DOM backend (and is not
-  // shared in table-metrics): the export sizes against a fixed canvas
-  // (`options.width` residual) while the live widget is container-responsive
-  // (`effectiveWidth * 0.25`). Correct context-dependence, not drift.
-  let forestWidth: number;
-  if (!includeForest) {
-    forestWidth = 0;
-  } else if (typeof options.forestWidth === "number") {
-    // Use pre-computed forest width from web view
-    forestWidth = options.forestWidth;
-  } else if (typeof spec.layout.plotWidth === "number") {
-    forestWidth = spec.layout.plotWidth;
-  } else {
-    // Auto: use remaining space after tables, with minimum
-    const availableForForest = baseWidth - totalTableWidth - padding * 2;
-    forestWidth = Math.max(availableForForest, LAYOUT.MIN_FOREST_WIDTH);
-  }
-
-  // Total width.
-  //
-  // - When `options.width` is set (explicit at-least), totalWidth is
-  //   `max(width, neededWidth)` per the v0.30 contract.
-  // - When `options.width` is unset AND there's no flex column, total
-  //   = neededWidth — no padding-on-the-right with `LAYOUT.DEFAULT_WIDTH`.
-  //   Previously a tabular spec (no forest, no flex) would render at
-  //   the hardcoded 800 px even when content needed only ~400, leaving
-  //   visible empty space on the right.
-  // - When `options.width` is unset AND there's a flex column, the
-  //   default-width hint applies: forest expands to fill 800 (or the
-  //   computed available), so totalWidth ends up ~800. This preserves
-  //   v0.30's "natural forest plot is 800 wide" baseline.
-  const neededWidth = padding * 2 + totalTableWidth + forestWidth;
-  const widthFloor = includeForest
+  // Total width: at least the intrinsic content width (label + Σ naturals +
+  // padding). A spec with a flex/plot column defaults to DEFAULT_WIDTH so the
+  // plot gets room; a plain table shrinks to its content. `options.width` is an
+  // explicit at-least floor (v0.30 contract).
+  const neededWidth = padding * 2 + labelWidth + naturalSum;
+  const widthFloor = hasFlexColumns
     ? (options.width ?? LAYOUT.DEFAULT_WIDTH)
     : (options.width ?? neededWidth);
   const totalWidth = Math.max(widthFloor, neededWidth);
 
-  // If totalWidth is larger than neededWidth and forest width wasn't explicitly set,
-  // expand forest to fill the remaining space (prevents gap on right side)
-  if (includeForest && totalWidth > neededWidth &&
-      typeof options.forestWidth !== "number" && typeof spec.layout.plotWidth !== "number") {
-    forestWidth = totalWidth - totalTableWidth - padding * 2;
-  }
-
-  // Multi-flex (B-wire-1): per-column width distribution, populated alongside
-  // the legacy single `forestWidth`. UNUSED by consumers yet (they still read
-  // forestWidth / getColWidth) — this only stashes the new per-column map so
-  // the switch (B-wire-2) is isolated. Distributes the content area
-  // (totalWidth − padding×2) across every column by effective weight
-  // (flexWeight × natural); pinned columns immovable. See docs/dev/multi-flex-columns.md.
+  // Per-column width distribution — the single source of truth for column
+  // widths (forest is just a high-weight plot column, no privileged scalar).
+  // Distributes the non-label content area across every column by effective
+  // weight (flexWeight × natural); pinned columns immovable. See
+  // docs/dev/multi-flex-columns.md.
   const flexColSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
     // Pin web-view-provided widths (the live widget already distributed; export
-    // renders them faithfully) and authored numeric widths. Only the R-from-
-    // scratch path (no provided widths) actually flexes.
+    // renders them faithfully) and authored numeric widths. A plot column is
+    // pinned the same way as any other — via its column `width`. Only the
+    // R-from-scratch path (no provided widths) actually flexes.
     const provided = options.columnWidths?.[c.id];
     const explicit =
       typeof provided === "number" ? provided : typeof c.width === "number" ? c.width : null;
@@ -926,8 +880,6 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   return {
     totalWidth,
     totalHeight: options.height ?? totalHeight,
-    tableWidth: leftTableWidth + rightTableWidth,
-    forestWidth,
     flexWidths,
     headerHeight,
     rowHeight,
@@ -3482,7 +3434,6 @@ export interface LayoutMetrics {
   totalHeight: number;
   headerHeight: number;
   axisHeight: number;
-  forestWidth: number;
   labelWidth: number;
   plotHeight: number;
   rowsHeight: number;
@@ -3532,15 +3483,9 @@ export function computeLayoutMetrics(
     if (typeof flexed === "number") return flexed;
     const pre = layout.autoWidths.get(col.id);
     if (pre !== undefined) return pre;
-    if (col.type === "forest") {
-      if (typeof col.width === "number") return col.width;
-      return col.options?.forest?.width ?? layout.forestWidth;
-    }
-    if (col.type === "viz_bar" || col.type === "viz_boxplot" || col.type === "viz_violin") {
-      if (typeof col.width === "number") return col.width;
-      return layout.forestWidth;
-    }
-    return typeof col.width === "number" ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
+    if (typeof col.width === "number") return col.width;
+    if (col.type === "forest") return col.options?.forest?.width ?? vizNaturalWidthForColumn(col) ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
+    return vizNaturalWidthForColumn(col) ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
   };
 
   // Column X positions: label slot first at `padding`, then data columns in
@@ -3575,7 +3520,6 @@ export function computeLayoutMetrics(
     totalHeight: layout.totalHeight,
     headerHeight: layout.headerHeight,
     axisHeight: layout.axisHeight,
-    forestWidth: layout.forestWidth,
     labelWidth: layout.labelWidth,
     plotHeight: layout.plotHeight,
     rowsHeight: layout.rowsHeight,
@@ -3650,7 +3594,11 @@ function generateSVGForAspectTarget(
   const isNonFlexAuto = (c: ColumnSpec): boolean =>
     !isFlex(c) && (c.width === "auto" || c.width == null);
   const nonFlexAutoCols = allColumns.filter(isNonFlexAuto);
-  const naturalForestWidth = naturalLayout.forestWidth;
+  // Natural width of the flex region = sum of every flex column's distributed
+  // natural width (forest is just one high-weight flex column among them).
+  const naturalForestWidth = allColumns
+    .filter(isFlex)
+    .reduce((s, c) => s + (naturalLayout.flexWidths?.[c.id] ?? 0), 0);
   // Sum of natural auto-widths across non-flex auto cols. Used by Lever
   // 1B to scale them proportionally.
   const naturalNonFlexSum = nonFlexAutoCols.reduce(
@@ -4006,21 +3954,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const getColWidth = (col: ColumnSpec): number => {
     const flexed = layout.flexWidths?.[col.id];
     if (typeof flexed === "number") return flexed;
-    if (col.type === "forest") {
-      const precomputed = autoWidths.get(col.id);
-      if (precomputed !== undefined) return precomputed;
-      if (typeof col.width === "number") return col.width;
-      return col.options?.forest?.width ?? layout.forestWidth;
-    }
-    if (col.type === "viz_bar" || col.type === "viz_boxplot" || col.type === "viz_violin") {
-      const precomputed = autoWidths.get(col.id);
-      if (precomputed !== undefined) return precomputed;
-      if (typeof col.width === "number") return col.width;
-      return layout.forestWidth;
-    }
-    const autoWidth = autoWidths.get(col.id);
-    if (autoWidth !== undefined) return autoWidth;
-    return typeof col.width === "number" ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
+    const precomputed = autoWidths.get(col.id);
+    if (precomputed !== undefined) return precomputed;
+    if (typeof col.width === "number") return col.width;
+    if (col.type === "forest") return col.options?.forest?.width ?? vizNaturalWidthForColumn(col) ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
+    return vizNaturalWidthForColumn(col) ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
   };
 
   // Calculate column positions (unified order)

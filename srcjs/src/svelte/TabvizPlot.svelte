@@ -685,27 +685,23 @@
   // Returns "{n}px" for fixed-width columns
   // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
   /**
-   * Effective render width for a non-forest viz column (viz_bar /
-   * viz_boxplot / viz_violin). Applies the aspect-ratio scale (Phase
-   * 7E Lever 1B) unless the user has manually resized the column.
-   * Forest columns use their own `layout.forestWidth` path
-   * (lever-laddered already); this helper covers the other viz types
-   * whose scale + SVG overlay both need aspect-aware widths.
+   * Effective render width for any plot column (forest / viz_bar /
+   * viz_boxplot / viz_violin). Width comes from the multi-flex
+   * distribution (`layout.flexWidths`) — forest is just a high-weight
+   * plot column among the rest, with no special path. This helper drives
+   * the columns whose d3 scale + SVG overlay both need the resolved width.
    */
   function effectiveVizWidth(col: ColumnSpec): number {
-    // Priority: user-resized dynamic width (drag) > author's explicit
-    // `col.width` > `layout.forestWidth` fallback. Matches the
-    // gridTemplateColumns derivation so scale + grid-template + d3
-    // ranges agree. (Earlier draft put `col.width` first, which could
-    // ignore a user resize on a column that had an authored width —
-    // unified now.)
-    // Multi-flex: width comes from the weighted distribution (layout.flexWidths).
+    // Priority: weighted distribution (layout.flexWidths) > user-resized
+    // dynamic width (drag) > author's explicit `col.width` > fallback.
+    // Matches the gridTemplateColumns derivation so scale + grid-template
+    // + d3 ranges agree.
     const flexed = layout.flexWidths?.[col.id];
     if (typeof flexed === "number") return flexed;
     const dynamicWidth = columnWidthsSnapshot[col.id];
     if (typeof dynamicWidth === "number") return dynamicWidth;
     if (typeof col.width === "number") return col.width;
-    return layout.forestWidth;
+    return 200;
   }
 
   /**
@@ -722,18 +718,9 @@
    * produced 0 visual change after resize commit.
    */
   function effectiveColumnWidth(col: ColumnSpec): number {
-    if (col.type === "forest") {
-      if (typeof col.width === "number") return col.width;
-      if (typeof col.options?.forest?.width === "number") return col.options.forest.width;
-      const userResized = store.userResizedIds?.has?.(col.id) ?? false;
-      const dynamicWidth = columnWidthsSnapshot[col.id];
-      if (userResized && typeof dynamicWidth === "number") return dynamicWidth;
-      return layout.forestWidth;
-    }
-    if (vizColumnTypes.includes(col.type)) {
-      return effectiveVizWidth(col);
-    }
-    // Non-viz data column: width from the multi-flex distribution.
+    // Uniform: every column's width is its entry in the multi-flex distribution
+    // (forest is no longer special — explicit/authored/resized widths are already
+    // pinned into flexWidths upstream).
     const flexed = layout.flexWidths?.[col.id];
     if (typeof flexed === "number") return flexed;
     const dynamicWidth = columnWidthsSnapshot[col.id];
@@ -881,39 +868,17 @@
   const gridTemplateColumns = $derived.by(() => {
     const parts: string[] = [];
 
-    // All columns in order, viz columns get fixed widths
+    // All columns in order; plot columns (forest + viz_*) get their
+    // resolved multi-flex width. Width is layout-driven (the weighted
+    // distribution `layout.flexWidths`), not content-measured — and the
+    // distribution already encodes explicit `col.width` /
+    // `col.options.forest.width` pins, so forest needs no special path.
+    // Every plot column routes through the shared `effectiveVizWidth()`
+    // helper so the grid template, d3 scale ranges, and SVG overlay
+    // viewBoxes all agree on the same width.
     for (const col of allColumns) {
       if (vizColumnTypes.includes(col.type)) {
-        // Forest columns are structural: width is layout-driven (the
-        // lever ladder + `layout.forestWidth`), not content-measured.
-        // The auto-width measurer still writes to `columnWidths` for
-        // forest (a header-min sizing) but the layout's value is the
-        // authoritative one — explicit `col.width` (from R) wins
-        // first, then `col.options.forest.width`, then layout. Dynamic
-        // (interactive resize) widths apply only when the user
-        // actually drag-resizes the column.
-        const dynamicWidth = columnWidthsSnapshot[col.id];
-        const userResized = store.userResizedIds?.has?.(col.id) ?? false;
-        let vizWidth: number;
-
-        if (col.type === "forest") {
-          if (typeof col.width === "number") {
-            vizWidth = col.width;
-          } else if (typeof col.options?.forest?.width === "number") {
-            vizWidth = col.options.forest.width;
-          } else if (userResized && typeof dynamicWidth === "number") {
-            vizWidth = dynamicWidth;
-          } else {
-            vizWidth = layout.forestWidth;
-          }
-        } else {
-          // Non-forest viz columns: route through the shared
-          // `effectiveVizWidth()` helper so the grid template, d3
-          // scale ranges, and SVG overlay viewBoxes all agree on the
-          // post-aspect-scale width.
-          vizWidth = effectiveVizWidth(col);
-        }
-        parts.push(`${vizWidth}px`);
+        parts.push(`${effectiveVizWidth(col)}px`);
       } else {
         parts.push(getColWidth(col));
       }
@@ -996,15 +961,14 @@
 
   // Update forest column positions and header height when refs change or layout changes
   $effect(() => {
-    // Reference these to re-run when columns/plot resize. The aspect-
-    // ratio scale (Phase 7E Lever 1B) widens non-flex columns without
-    // changing layout.forestWidth in some regimes, so it needs its own
-    // dependency hook here — otherwise viz overlays render at the new
-    // width but their `left` positions stay at the old grid offsets.
+    // Reference these to re-run when columns/plot resize. The multi-flex
+    // distribution can shift any plot column's width (aspect reshape,
+    // user resize, container resize), so this hook depends on the whole
+    // flexWidths map — otherwise viz overlays render at the new width but
+    // their `left` positions stay at the old grid offsets.
     const _ = columnWidthsSnapshot;
-    const __ = layout.forestWidth;
-    const ___ = layout.flexWidths;
-    const ____ = headerDepth;
+    const __ = layout.flexWidths;
+    const ___ = headerDepth;
 
     // Wait for DOM to update before measuring
     tick().then(() => {
@@ -1119,7 +1083,7 @@
       } else if (userResized && typeof dynamicWidth === "number") {
         colWidth = dynamicWidth;
       } else {
-        colWidth = layout.forestWidth;
+        colWidth = layout.flexWidths?.[col.id] ?? 200;
       }
       const isLog = forestOpts?.scale === "log";
 
@@ -1156,7 +1120,7 @@
     e.stopPropagation();
     resizingPlot = true;
     plotStartX = e.clientX;
-    plotStartWidth = layout.forestWidth;
+    plotStartWidth = layout.flexWidths?.[forestColumns[0]?.column.id ?? ""] ?? 200;
     document.addEventListener("pointermove", onPlotResize);
     document.addEventListener("pointerup", stopPlotResize);
   }
@@ -1361,7 +1325,7 @@
       headerDepth,
       effectiveHeaderDepth,
       axisHeight: layout.axisHeight,
-      forestWidth: layout.forestWidth,
+      forestWidth: layout.flexWidths?.[forestColumns[0]?.column.id ?? ""] ?? 0,
       actualScale,
       zoom,
     })
@@ -1514,8 +1478,8 @@
             <!-- Viz column header (forest, bar, boxplot, violin) -->
             {@const column = cell.col as ColumnSpec}
             {@const vizDefaultWidth = column.type === "forest"
-              ? (column.options?.forest?.width ?? layout.forestWidth)
-              : (typeof column.width === "number" ? column.width : layout.forestWidth)}
+              ? (column.options?.forest?.width ?? layout.flexWidths?.[column.id] ?? 200)
+              : (typeof column.width === "number" ? column.width : (layout.flexWidths?.[column.id] ?? 200))}
             {@const canSortViz = !!spec?.interaction.enableSort && column.sortable !== false}
             {@const vizSortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -1825,15 +1789,7 @@
         <!-- SVG overlays: one per forest column -->
         {#each forestColumns as fc (fc.column.id)}
           {@const forestOpts = fc.column.options?.forest}
-          {@const dynamicForestWidth = columnWidthsSnapshot[fc.column.id]}
-          {@const forestUserResized = store.userResizedIds?.has?.(fc.column.id) ?? false}
-          {@const forestWidth = typeof fc.column.width === "number"
-            ? fc.column.width
-            : (typeof forestOpts?.width === "number"
-              ? forestOpts.width
-              : (forestUserResized && typeof dynamicForestWidth === "number"
-                ? dynamicForestWidth
-                : layout.forestWidth))}
+          {@const forestWidth = effectiveVizWidth(fc.column)}
           {@const forestLeft = forestColumnPositions.get(fc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const nullValue = forestOpts?.nullValue ?? layout.nullValue}
@@ -1951,7 +1907,7 @@
                   row={displayRow.row}
                   yPosition={markerY}
                   xScale={colScale}
-                  layout={{...layout, forestWidth: forestWidth}}
+                  layout={layout} plotWidth={forestWidth}
                   {theme}
                   clipBounds={colScale.domain() as [number, number]}
                   {isLog}
@@ -2000,7 +1956,7 @@
                 upper={spec.data.overall.upper}
                 yPosition={rowsAreaHeight + layout.rowHeight / 2}
                 xScale={colScale}
-                layout={{...layout, forestWidth: forestWidth}}
+                layout={layout} plotWidth={forestWidth}
                 {theme}
               />
             {/if}
@@ -2009,7 +1965,7 @@
             <!-- Axis at bottom (not clipped; ticks reflect zoom via colScale) -->
             {#if forestOpts?.showAxis !== false}
               <g transform="translate(0, {rowsAreaHeight + axisGap})">
-                <EffectAxis xScale={colScale} layout={{...layout, forestWidth: forestWidth}} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={store.getAxisZoom(fc.column.id) ? undefined : axisComputation.ticks} />
+                <EffectAxis xScale={colScale} layout={layout} plotWidth={forestWidth} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={store.getAxisZoom(fc.column.id) ? undefined : axisComputation.ticks} />
               </g>
             {/if}
           </svg>
@@ -2090,7 +2046,7 @@
                 <g transform="translate(0, {rowsAreaHeight + axisGap})">
                   <EffectAxis
                     xScale={sharedScale}
-                    layout={{ ...layout, forestWidth: vizWidth, nullValue: 0 }}
+                    layout={{ ...layout, nullValue: 0 }} plotWidth={vizWidth}
                     {theme}
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
@@ -2179,7 +2135,7 @@
                 <g transform="translate(0, {rowsAreaHeight + axisGap})">
                   <EffectAxis
                     xScale={sharedScale}
-                    layout={{ ...layout, forestWidth: vizWidth, nullValue: 0 }}
+                    layout={{ ...layout, nullValue: 0 }} plotWidth={vizWidth}
                     {theme}
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
@@ -2268,7 +2224,7 @@
                 <g transform="translate(0, {rowsAreaHeight + axisGap})">
                   <EffectAxis
                     xScale={sharedScale}
-                    layout={{ ...layout, forestWidth: vizWidth, nullValue: 0 }}
+                    layout={{ ...layout, nullValue: 0 }} plotWidth={vizWidth}
                     {theme}
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"

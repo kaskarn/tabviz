@@ -2,21 +2,21 @@
 // axis computation + xScale.
 //
 // This is the cross-slice `$derived`-chain spike target per the C1 plan:
-// `axisComputation` and `xScale` are `$derived` here, but they read
-// `layout.forestWidth` (a `$derived` owned by the future layout-zoom slice,
-// currently still in the main factory) and `forestColumns` (a `$derived`
-// owned by the future columns slice, also still in main). Reactivity
+// `axisComputation` and `xScale` are `$derived` here, but they read the
+// forest column's resolved plot width (`layout.flexWidths[forestId]`, a
+// `$derived` owned by the layout-zoom slice) and `forestColumns` (a
+// `$derived` owned by the columns slice) via injected getters. Reactivity
 // propagation through forward-closure getters across slice boundaries is
 // the open question from the source-tagging spike (see
 // docs/dev/store-decomposition-idiom.md §"Risks remaining" line 167).
-// If Svelte 5 tracks the read inside `deps.getForestWidth()` correctly,
+// If Svelte 5 tracks the read inside `deps.getForestPlotWidth()` correctly,
 // the pattern composes for every remaining slice; if it doesn't, the
 // idiom needs an amendment before tackling the long pole.
 //
-// The validation: change layout.forestWidth (e.g. via aspect slider)
-// and observe that axisComputation.plotRegion updates. Already exercised
-// by the visual battery (45 examples touch the aspect ladder); the
-// spike here is moving the read site across a slice boundary without
+// The validation: change the forest column's flex width (e.g. via aspect
+// slider) and observe that axisComputation.plotRegion updates. Already
+// exercised by the visual battery (45 examples touch the aspect ladder);
+// the spike here is moving the read site across a slice boundary without
 // breaking that propagation.
 //
 // Owns:
@@ -27,7 +27,7 @@
 // Dependencies (injected):
 //   - getSpec            for spec.theme.axis / spec.theme.plot / spec.data.rows
 //   - getForestColumns   for the first forest column's options + id
-//   - getLayoutForestWidth   for the aspect-ladder Stage-1 width
+//   - getForestPlotWidth   for the aspect-ladder Stage-1 width
 //   - markSource         source-tags axis_zooms mutations
 
 import type { WebSpec, ColumnSpec } from "$types";
@@ -44,7 +44,7 @@ type ForestColumnEntry = {
 export interface AxisSliceDeps {
   getSpec: () => WebSpec | null;
   getForestColumns: () => readonly ForestColumnEntry[];
-  getLayoutForestWidth: () => number;
+  getForestPlotWidth: () => number;
   markSource: (field: string) => void;
 }
 
@@ -65,7 +65,8 @@ export function createAxisSlice(deps: AxisSliceDeps): AxisSlice {
   let axisZooms = $state<Record<string, { domain: [number, number] }>>({});
 
   // CROSS-SLICE $DERIVED — reads forestColumns (columns slice / main) and
-  // layout.forestWidth (layout-zoom slice / main) via injected getters.
+  // the forest column's resolved flex width (layout-zoom slice / main) via
+  // injected getters.
   const axisComputation = $derived.by((): AxisComputation => {
     const spec = deps.getSpec();
     if (!spec) {
@@ -76,13 +77,12 @@ export function createAxisSlice(deps: AxisSliceDeps): AxisSlice {
     const firstForest = forestColumns[0]?.column;
     const hasForest = forestColumns.length > 0;
 
-    // Read forestWidth from layout so the aspect-ladder Stage-1
-    // forest-absorption result propagates here. Pre-decomp the
-    // store-local closure read `layout.forestWidth` directly;
-    // post-decomp it routes through deps.getLayoutForestWidth().
+    // Read the forest column's resolved plot width from the layout so the
+    // aspect-ladder flex-absorption result propagates here. Routes through
+    // deps.getForestPlotWidth() (= layout.flexWidths[forestId]).
     // Reactivity tracking is the spike — the dep-call site has to
-    // establish the same $derived edge as the previous direct read.
-    const forestWidth = hasForest ? deps.getLayoutForestWidth() : 0;
+    // establish the same $derived edge as a direct read.
+    const forestWidth = hasForest ? deps.getForestPlotWidth() : 0;
 
     const forestOptions = firstForest?.options?.forest;
     const scale = forestOptions?.scale ?? "linear";
@@ -133,7 +133,7 @@ export function createAxisSlice(deps: AxisSliceDeps): AxisSlice {
     const { plotRegion } = axisComputation;
 
     const hasForest = forestColumns.length > 0;
-    const forestWidth = hasForest ? deps.getLayoutForestWidth() : 0;
+    const forestWidth = hasForest ? deps.getForestPlotWidth() : 0;
 
     const rangeStart = VIZ_MARGIN;
     const rangeEnd = Math.max(forestWidth - VIZ_MARGIN, rangeStart + 50);

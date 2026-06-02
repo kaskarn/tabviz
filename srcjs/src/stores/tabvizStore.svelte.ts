@@ -120,12 +120,12 @@ export function createTabvizStore() {
   // ── Axis (cross-slice $derived spike) ────────────────────────────────────
   // Phase 0c-C1 PR3. Owns `axisZooms` and the global `axisComputation` +
   // `xScale` $derived blocks. Reads `forestColumns` from the columns slice
-  // and `layout.forestWidth` (layout-zoom / main) via forward-closure
-  // getters.
+  // and the forest column's resolved flex width (layout-zoom / main) via
+  // forward-closure getters.
   const axis = createAxisSlice({
     getSpec: () => spec,
     getForestColumns: () => columns.forestColumns,
-    getLayoutForestWidth: () => layoutZoom.layout.forestWidth,
+    getForestPlotWidth: () => { const fid = columns.forestColumns[0]?.column?.id; return fid ? (layoutZoom.layout.flexWidths?.[fid] ?? 0) : 0; },
     markSource,
   });
 
@@ -1057,7 +1057,7 @@ export function createTabvizStore() {
           if (typeof col.width === "number") colWidth = col.width;
           else if (typeof col.options?.forest?.width === "number") colWidth = col.options.forest.width;
           else if (userResized && typeof widths[col.id] === "number") colWidth = widths[col.id];
-          else colWidth = layout.forestWidth;
+          else colWidth = layout.flexWidths?.[col.id] ?? 200;
         } else {
           colWidth = widths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
         }
@@ -1082,7 +1082,7 @@ export function createTabvizStore() {
         const col = fc.column;
         const forestOpts = col.options?.forest;
         // Use the width we already computed for this column
-        const fcWidth = columnWidthsOut[col.id] ?? layout.forestWidth;
+        const fcWidth = columnWidthsOut[col.id] ?? layout.flexWidths?.[col.id] ?? 200;
         const fcScale = forestOpts?.scale ?? "linear";
         const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
 
@@ -1186,7 +1186,7 @@ export function createTabvizStore() {
 
         // Legacy fields for backwards compatibility
         // Use actual first forest column width (may be resized) for consistent layout
-        forestWidth: (forestColumnsData[0]?.width ?? layout.forestWidth) * zoom,
+        forestWidth: (forestColumnsData[0]?.width ?? layout.flexWidths?.[columns.forestColumns[0]?.column?.id ?? ""] ?? 200) * zoom,
         xDomain: domain,
         clipBounds: axisComputation.axisLimits,
         scale: zoom,

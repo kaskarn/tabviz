@@ -140,3 +140,44 @@ to its own commit with a visual checkpoint, like the aspect flex-flag change.
 reversibility round-trip) · aspect parity tests · `npm run build` + behavior
 gates · `tabviz::render_visual_tests()` + browser harness for the Phase-B fill
 change (re-baseline) · R `save-plot` + parity tests · full `quarto render`.
+
+## Status — `forestWidth` scalar fully retired (2026-06-02)
+
+Phase B's clean break is **complete**: `ComputedLayout.forestWidth` (and the
+co-dead `tableWidth` field + the unused `aspectNonForestScale`) are gone from the
+type and both layout producers (`svg-generator.ts::computeLayout`,
+`layout-zoom.svelte.ts`). Forest is now *just another high-weight plot column* —
+its width comes only from the per-column `flexWidths` distribution. Changes:
+
+- **Type** (`types/index.ts`): `ComputedLayout` lost `forestWidth` / `tableWidth`
+  / `aspectNonForestScale`; `flexWidths` is the single source of truth.
+- **Overlay components** (`EffectAxis` / `RowInterval` / `SummaryDiamond`): take an
+  explicit `plotWidth: number` prop instead of reading `layout.forestWidth`.
+- **Readers repointed** to `flexWidths[colId]`: `TabvizPlot` (`effectiveVizWidth`
+  now drives *every* plot column incl. forest — the grid-template + overlay forest
+  branches that duplicated explicit-first width logic were collapsed, since
+  `flexWidths` already encodes `col.width` / `options.forest.width` pins), the
+  export `colWidth`/`getColWidth` helpers + `LayoutMetrics`, `tabvizStore` export
+  loop, and the cross-slice axis getter (renamed `getLayoutForestWidth` →
+  `getForestPlotWidth`, now returns `flexWidths[firstForestId]`).
+- **Aspect ladder** (`generateSVGForAspectTarget`): `naturalForestWidth` is now the
+  Σ of *all* flex columns' natural widths (forest is one of them), not a scalar.
+
+### FLAGGED follow-up — converge the forest "pin plot width" feature
+
+Still forest-special (deliberately **not** removed here — it's a working,
+public-surface feature, not the dead scalar): the dedicated path for *pinning the
+forest plot column's width* —
+
+- interactive drag-resize via `setPlotWidth` / `plotWidthOverride`
+  (`layout-zoom.svelte.ts`, `TabvizPlot.svelte:1132`),
+- the Shiny `plot_width` event round-trip (`spec/events.ts`, `R/shiny.R`),
+- the wire scalar `theme.layout.plotWidth` (R `plot_width`, default `"auto"`).
+
+Every *other* plot column (viz_bar / sparkline / …) resizes through the generic
+`userResizedIds` + `columnWidths` mechanism. These pins currently flow correctly
+into the distribution (the DOM `flexSpecs` `forestPin` honors `plotWidthOverride
+?? theme.layout.plotWidth ?? options.forest.width`), so nothing is broken — but to
+make forest *fully* generic this should converge onto the per-column resize path.
+That touches the public wire, the R `plot_width` property/`set_*` API, and the
+Shiny Tier-2 event contract, so it's its own arc.
