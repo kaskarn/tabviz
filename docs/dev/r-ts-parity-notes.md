@@ -1,8 +1,7 @@
 # R↔TS parity notes
 
 Per-helper classification of R↔TS authoring parity. Captured during the
-bilingual-API work for `@tabviz/core@0.2.0` (see plan
-[`encapsulated-snacking-leaf.md`](../../../.claude/plans/encapsulated-snacking-leaf.md)).
+bilingual-API work for `@tabviz/core@0.2.0`.
 
 Status legend:
 

@@ -1,9 +1,12 @@
 # Row types — classification, rendering, and theming
 
-Status: **design assessment, in progress.** Companion to `sizing-model.md`.
-This records the design thread on tabviz's *row-type* subsystem — the logic that
-classifies a row into a kind (data / group-header / section-header / summary /
-spacer / overall) and renders, sizes, and themes it differently.
+Status: **living design record — Phase 1 shipped.** Companion to
+`sizing-model.md`. The canonical `resolveRowKind` + `RowKindProps` registry is
+built (`srcjs/src/lib/row-kind.ts`, see §2); the open threads are the fuller
+renderer/trait registry and per-kind Tier-3 theme clusters. This records the
+design thread on tabviz's *row-type* subsystem — the logic that classifies a
+row into a kind (data / group-header / section-header / summary / spacer /
+overall) and renders, sizes, and themes it differently.
 
 A row type is a **discriminator** that changes data-level rendering, sizing, and
 theming — distinct from a style *token* (a value). The two meet (each kind maps

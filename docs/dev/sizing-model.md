@@ -1,12 +1,15 @@
 # The Sizing Model — a theory of everything for tabviz layout dimensions
 
-Status: **design assessment, in progress.** This is the living record of an
-ongoing design thread about how tabviz determines, computes, and applies every
-size in a table — row/column dimensions, padding, borders, gaps, density, and
-the aspect-ratio reshape. It exists because this work spans long, disjointed
-sessions; read it before touching `layout-zoom.svelte.ts`, `columns.svelte.ts`,
-`width-utils.ts`, `rendering-constants.ts`, `export/svg-generator.ts`, or the
-`SpacingTokens` schema.
+Status: **living design record — partially shipped.** Much of the model below
+is implemented (the shared `computeTableMetrics` helpers, content-driven row
+height, and the extracted `ASPECT`/`CELL_GEOMETRY` constants); the open threads
+are the aspect-ladder algorithmic compartmentalization and the density `factor`
+vs profiles question (flagged inline as NEEDS-DESIGN). This is the durable
+cross-session record of how tabviz determines, computes, and applies every size
+in a table — row/column dimensions, padding, borders, gaps, density, and the
+aspect-ratio reshape. Read it before touching `layout-zoom.svelte.ts`,
+`columns.svelte.ts`, `width-utils.ts`, `rendering-constants.ts`,
+`export/svg-generator.ts`, or the `SpacingTokens` schema.
 
 > Companion docs: `architecture-map.md`, `column-schema-system.md`,
 > `r-ts-parity-notes.md`. The theme **resolution** rework (T1 inputs / role
@@ -50,7 +53,7 @@ density profile  ⊕  theme.spacing  ⊕  per-column/row-type override  ⊕  int
 
 ## 1. Current reality (evidence)
 
-### 1.1 The `SpacingTokens` schema (`srcjs/src/types/theme-v2.ts:142`)
+### 1.1 The `SpacingTokens` schema (`srcjs/src/types/theme-resolved.ts:230`)
 
 ```
 rowHeight, headerHeight, cellPaddingX, cellPaddingY, padding,
@@ -88,8 +91,8 @@ axisGap 12, headerGap 12, indentPerLevel 16, spacerRowHeight 20, …).
 `density` is a Tier-1 input (`R/classes-theme.R:89`, default "comfortable",
 validated to compact/comfortable/spacious; `set_density` sets `inputs@density`,
 `R/themes-api.R:225`). It resolves to Tier-2 spacing numerics via a preset table
-(canonical: `srcjs/src/lib/theme-v2-adapter.ts::DENSITY_SPACING` — the in-flight
-adapter; mirrored for parity tests in `R/utils-theme-resolve.R:7-26`, guarded by
+(canonical: `srcjs/src/lib/theme-adapter.ts::DENSITY_SPACING`; mirrored for
+parity tests in `R/utils-theme-resolve.R:7-26`, guarded by
 `test-theme-roster-sync.R`). The mirror's exact values:
 
 | token | compact | comfortable | spacious | renderer status |
