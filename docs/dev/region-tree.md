@@ -240,6 +240,26 @@ feature sprints (**details/disclosure**, then **faceting**) — they are the
 consumers that justify the vocabulary, and the region tree's `panel`/`axis_strip`
 kinds + `children` already give them a place to attach additively.
 
+## Feature 1 — details/disclosure rows — SHIPPED (2026-06-02)
+
+The first feature on the foundation, complete across all runtimes:
+- **Data/tree:** `Row.details` (markdown) → a `panel` child region; `flatten`
+  emits the `PanelRow` only when the owner is in `expandedRows` (flatten-time
+  state). `initialState.expandedRows` seeds it.
+- **DOM:** full-width panel rendered from safe markdown→HTML (`lib/markdown.ts`),
+  disclosure chevron, content-driven height via measure-then-commit (keyed
+  `panelContentKey`).
+- **R authoring:** `tabviz()/forest_plot(details = "col", details_expanded =)`.
+- **SVG/V8 export:** `buildDisplayRows` emits expanded panels (honoring
+  `initialState.expandedRows`); rendered as a full-width band of wrapped plain
+  text (`markdownToPlainText`, since HTML markdown doesn't translate to SVG).
+  Height + render share `panelInnerWidth` so wrapped lines fit the row track.
+
+Guards: `region-tree.test.ts` (panel emission), `markdown.test.ts`,
+`details-panel.browser.ts` (DOM), R serialize/export tests. Next feature:
+**faceting** (per-group axes via the `axis_strip` kind + the per-context scale
+resolver, both already in place).
+
 ## 8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)
 
 A theming-cascade rework is being scoped in parallel. It is **not** this sprint's

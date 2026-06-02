@@ -50,7 +50,8 @@ import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/layout/row-kind";
-import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, panelContentKey, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
+import { markdownToPlainText } from "$lib/markdown";
 import { computeAspectLadder, minRowHeightFor } from "$lib/layout/aspect-ladder";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
 import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
@@ -151,6 +152,25 @@ function wrapTextIntoLines(
     if (line && out.length < maxLines) out.push(line);
   }
   return out.slice(0, maxLines);
+}
+
+// Details-panel SVG geometry (mirrors the DOM `.tabviz-details-panel` CSS).
+const PANEL_PAD_X = 12;
+const PANEL_PAD_TOP = 8;
+const PANEL_PAD_BOTTOM = 10;
+const PANEL_MAX_LINES = 200;
+
+/** Panel inner text width for a given canvas/table width. The panel spans the
+ *  full table width; text insets by `padding` (table) + `PANEL_PAD_X` each side.
+ *  Shared by the height pre-pass and the renderer so the wrapped line count —
+ *  and therefore the row track height — agree (V8 has no DOM to measure). */
+function panelInnerWidth(canvasWidth: number, padding: number): number {
+  return Math.max(40, canvasWidth - padding * 2 - PANEL_PAD_X * 2);
+}
+
+/** Wrap a panel's markdown (as plain text) to its inner width. */
+function wrapPanelLines(content: string, innerWidth: number, fontSize: number): string[] {
+  return wrapTextIntoLines(markdownToPlainText(content), innerWidth, fontSize, PANEL_MAX_LINES);
 }
 
 // ============================================================================
@@ -770,6 +790,21 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     lineHeight: LINE_HEIGHT,
     fontSize: parseFontSize(theme.text.body.size),
   });
+  // Details panels are content-driven; V8 has no DOM to measure, so size each
+  // from its wrapped plain-text line count. Wrap width = the canvas width
+  // (options.width when set — the usual export case — else a default), derived
+  // identically in the renderer so heights + rendered text agree.
+  {
+    const panelCanvasW = options.width ?? LAYOUT.DEFAULT_WIDTH;
+    const panelInner = panelInnerWidth(panelCanvasW, padding);
+    const panelFontPx = parseFontSize(theme.text.body.size);
+    for (const dr of displayRows) {
+      if (dr.type !== "panel") continue;
+      const lines = wrapPanelLines(dr.content, panelInner, panelFontPx);
+      contentHeights[panelContentKey(dr.rowId)] =
+        lines.length * dataLineHeightPx + PANEL_PAD_TOP + PANEL_PAD_BOTTOM;
+    }
+  }
   // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
   const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
     computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx, contentHeights });
@@ -946,7 +981,14 @@ interface DataDisplayRow {
   depth: number;
 }
 
-type DisplayRow = GroupHeaderDisplayRow | DataDisplayRow;
+interface PanelDisplayRow {
+  type: "panel";
+  rowId: string;
+  content: string;
+  depth: number;
+}
+
+type DisplayRow = GroupHeaderDisplayRow | DataDisplayRow | PanelDisplayRow;
 
 /**
  * Build display rows with group headers interleaved
@@ -956,9 +998,24 @@ function buildDisplayRows(spec: WebSpec): DisplayRow[] {
   const rows = spec.data.rows;
   const groups = Array.isArray(spec.data.groups) ? spec.data.groups : [];
 
-  // If no groups, return flat data rows
+  // Details panels: static export renders the expanded set from initialState
+  // (decision: honor initialState; collapsed by default). A row gets a panel
+  // unit right after it when it has details content AND is in expandedRows.
+  const expanded = new Set(spec.initialState?.expandedRows ?? []);
+  const panelFor = (row: Row, depth: number): DisplayRow | null =>
+    typeof row.details === "string" && row.details.trim() !== "" && expanded.has(row.id)
+      ? { type: "panel", rowId: row.id, content: row.details, depth }
+      : null;
+
+  // If no groups, return flat data rows (+ any expanded panels).
   if (groups.length === 0) {
-    return rows.map(row => ({ type: "data" as const, row, depth: 0 }));
+    const out: DisplayRow[] = [];
+    for (const row of rows) {
+      out.push({ type: "data", row, depth: 0 });
+      const panel = panelFor(row, 0);
+      if (panel) out.push(panel);
+    }
+    return out;
   }
 
   // Build group lookup maps
@@ -1031,14 +1088,13 @@ function buildDisplayRows(spec: WebSpec): DisplayRow[] {
       outputGroup(childGroup.id);
     }
 
-    // Output direct data rows for this group
+    // Output direct data rows for this group (+ any expanded panels)
     const directRows = rowsByGroup.get(groupId) ?? [];
     for (const row of directRows) {
-      result.push({
-        type: "data",
-        row,
-        depth: getRowDepth(row.groupId),
-      });
+      const depth = getRowDepth(row.groupId);
+      result.push({ type: "data", row, depth });
+      const panel = panelFor(row, depth);
+      if (panel) result.push(panel);
     }
   }
 
@@ -1413,6 +1469,38 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
   }
 
   return lines.join("\n");
+}
+
+/** Render a details/disclosure panel: a full-width tinted band with the panel's
+ *  markdown rendered as wrapped plain text (SVG `<text>`; HTML markdown doesn't
+ *  translate to SVG, so we strip to plain text — see markdownToPlainText). The
+ *  wrap width matches the height pre-pass (panelInnerWidth) so lines fit the
+ *  computed row track. */
+function renderDetailsPanel(
+  content: string,
+  padding: number,
+  y: number,
+  rowHeight: number,
+  canvasWidth: number,
+  theme: WebTheme,
+): string {
+  const fontPx = parseFontSize(theme.text.body.size);
+  const lineH = Math.ceil(fontPx * LINE_HEIGHT);
+  const lines = wrapPanelLines(content, panelInnerWidth(canvasWidth, padding), fontPx);
+  const bg = theme.row.alt.bg ?? theme.surface.base;
+  const fg = theme.content.primary;
+  const family = theme.text.body.family;
+  const out: string[] = [];
+  out.push(`<rect x="0" y="${y}" width="${canvasWidth}" height="${rowHeight}" fill="${bg}" />`);
+  out.push(`<line x1="0" y1="${y + rowHeight}" x2="${canvasWidth}" y2="${y + rowHeight}" stroke="${theme.divider.subtle}" stroke-width="1" />`);
+  let ty = y + PANEL_PAD_TOP + fontPx;
+  for (const line of lines) {
+    if (line !== "") {
+      out.push(`<text x="${padding + PANEL_PAD_X}" y="${ty}" font-family="${family}" font-size="${fontPx}px" fill="${fg}">${escapeXml(line)}</text>`);
+    }
+    ty += lineH;
+  }
+  return out.join("\n");
 }
 
 function renderGroupHeader(
@@ -4477,6 +4565,16 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         layout.totalWidth - padding * 2,
         theme,
         renderBg,
+      ));
+    } else if (displayRow.type === "panel") {
+      // Render the details/disclosure panel (full-width markdown-as-text band).
+      parts.push(renderDetailsPanel(
+        displayRow.content,
+        padding,
+        y,
+        rowHeight,
+        layout.totalWidth,
+        theme,
       ));
     } else {
       // Render data row

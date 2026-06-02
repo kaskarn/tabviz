@@ -118,3 +118,29 @@ export function renderMarkdown(md: string): string {
 
   return out.join("");
 }
+
+/**
+ * Strip markdown to plain text for the SVG/V8 export (which renders `<text>`,
+ * not HTML). Removes emphasis/heading/code markers, turns links into their
+ * label, and unordered list items into "• item"; preserves line structure as
+ * newlines so the export's text wrapper can lay it out. Pure.
+ */
+export function markdownToPlainText(md: string): string {
+  if (!md) return "";
+  return md
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => {
+      let s = line;
+      s = s.replace(/^(#{1,3})\s+/, "");               // heading marker
+      s = s.replace(/^\s*[-*]\s+/, "• ");          // unordered list → bullet
+      s = s.replace(/^\s*(\d+)\.\s+/, "$1. ");           // ordered list (keep number)
+      s = s.replace(/`([^`]+)`/g, "$1");                 // inline code
+      s = s.replace(/\[([^\]]+)\]\([^)\s]+\)/g, "$1");   // links → text
+      s = s.replace(/\*\*([^*]+)\*\*/g, "$1");           // bold
+      s = s.replace(/(^|[^*])\*([^*]+)\*/g, "$1$2");     // italic *
+      s = s.replace(/(^|[^_])_([^_]+)_/g, "$1$2");       // italic _
+      return s;
+    })
+    .join("\n");
+}

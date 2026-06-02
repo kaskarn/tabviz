@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { renderMarkdown } from "./markdown";
+import { renderMarkdown, markdownToPlainText } from "./markdown";
 
 describe("renderMarkdown — safety", () => {
   test("escapes raw HTML (no injection)", () => {
@@ -46,5 +46,27 @@ describe("renderMarkdown — formatting", () => {
 
   test("empty input → empty string", () => {
     expect(renderMarkdown("")).toBe("");
+  });
+});
+
+describe("markdownToPlainText (SVG export)", () => {
+  test("strips emphasis/heading/code markers", () => {
+    expect(markdownToPlainText("# H")).toBe("H");
+    expect(markdownToPlainText("**b** *i* `c`")).toBe("b i c");
+  });
+
+  test("unordered list → bullets; ordered list keeps numbers", () => {
+    expect(markdownToPlainText("- a\n- b")).toBe("• a\n• b");
+    expect(markdownToPlainText("1. a\n2. b")).toBe("1. a\n2. b");
+  });
+
+  test("links → their label", () => {
+    expect(markdownToPlainText("see [docs](https://e.com)")).toBe("see docs");
+  });
+
+  test("preserves line structure (no HTML)", () => {
+    const out = markdownToPlainText("one\ntwo");
+    expect(out).toBe("one\ntwo");
+    expect(out).not.toContain("<");
   });
 });
