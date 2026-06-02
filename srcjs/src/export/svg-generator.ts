@@ -50,6 +50,7 @@ import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/layout/row-kind";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
+import { computeAspectLadder, minRowHeightFor } from "$lib/layout/aspect-ladder";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
@@ -3622,33 +3623,12 @@ function generateSVGForAspectTarget(
     0,
   );
 
-  // ----- Width ladder (1A → 1B) -----
-  // Lever 1A: cap-clamped flex absorption.
-  const widthDelta = targetWidth - naturalLayout.totalWidth;
-  let targetForestWidth = naturalForestWidth;
-  let widthResidual = widthDelta;
-  if (naturalForestWidth > 0 && flexCap > 1) {
-    const proposedFlex = naturalForestWidth + widthDelta;
-    const cappedFlex = Math.max(
-      naturalForestWidth / flexCap,
-      Math.min(naturalForestWidth * flexCap, proposedFlex),
-    );
-    targetForestWidth = cappedFlex;
-    widthResidual = widthDelta - (cappedFlex - naturalForestWidth);
-  }
-  // Lever 1B: distribute the residual proportionally across non-flex
-  // auto-width columns. When residual > 0 (cap saturated for growth)
-  // they widen; when < 0 (saturated for shrink) they narrow. Bounded
-  // below by natural*0.25 so columns can't collapse to zero.
-  let nonFlexScale = 1;
-  if (Math.abs(widthResidual) > 0.5 && naturalNonFlexSum > 0) {
-    nonFlexScale = Math.max(
-      ASPECT.NON_FOREST_SCALE_FLOOR,
-      (naturalNonFlexSum + widthResidual) / naturalNonFlexSum,
-    );
-  }
+  // Width + height ladder math runs through the shared computeAspectLadder()
+  // below (after the auto-wrap loop, which feeds it heightDeltaConsumed). The
+  // classification + sums above (naturalForestWidth, naturalNonFlexSum) are its
+  // inputs; the apply step below consumes its outputs.
 
-  // ----- Height ladder (direction-aware) -----
+  // ----- Height ladder inputs (direction-aware) -----
   const naturalRowHeight = spec.theme.spacing?.rowHeight ?? 32;
   const naturalPlotHeight = naturalLayout.plotHeight;
   const naturalChromeHeight = naturalLayout.totalHeight - naturalPlotHeight;
@@ -3690,13 +3670,7 @@ function generateSVGForAspectTarget(
   // matches the line-height + 4 px breathing pattern used in
   // computeAxisLayout / measureWrap. Falls back to 14 px floor.
   const bodyFontSize = parseFontSize(spec.theme.text.body.size);
-  const MIN_ROW_HEIGHT = Math.max(
-    ASPECT.MIN_ROW_HEIGHT.FLOOR,
-    Math.round(bodyFontSize * ASPECT.MIN_ROW_HEIGHT.LINE_FACTOR) + ASPECT.MIN_ROW_HEIGHT.PAD,
-  );
-
-  let rowHeightScale = 1;
-  let chromeScale = 1;
+  const MIN_ROW_HEIGHT = minRowHeightFor(bodyFontSize);
 
   // Phase 7D: auto-wrap loop. When the target is taller than natural,
   // try to absorb the height delta by bumping `wrap` on eligible
@@ -3800,37 +3774,28 @@ function generateSVGForAspectTarget(
     }
   }
 
-  if (heightDelta > 0 && !autoWrapConsumedDelta) {
-    // Taller: chrome takes a fixed share, rowHeight takes the rest.
-    // Without auto-wrap (Phase 7D), this avoids 100 % rowHeight
-    // ballooning at very tall aspects.
-    const CHROME_SHARE = ASPECT.CHROME_SHARE;
-    const chromeDelta = heightDelta * CHROME_SHARE;
-    const rowDelta = heightDelta - chromeDelta;
-    if (scalableChromeHeight > 0)
-      chromeScale = (scalableChromeHeight + chromeDelta) / scalableChromeHeight;
-    if (naturalPlotHeight > 0)
-      rowHeightScale = (naturalPlotHeight + rowDelta) / naturalPlotHeight;
-  } else if (heightDelta < 0) {
-    // Shorter: rowHeight first, floored at MIN_ROW_HEIGHT for legibility.
-    const targetPlotHeight = Math.max(0, targetHeight - naturalChromeHeight);
-    const proposedRowHeight = (targetPlotHeight / naturalPlotHeight) * naturalRowHeight;
-    if (proposedRowHeight >= MIN_ROW_HEIGHT) {
-      rowHeightScale = proposedRowHeight / naturalRowHeight;
-    } else {
-      // Floor saturated: pin rowHeight at MIN_ROW_HEIGHT and shrink
-      // chrome to absorb the remainder.
-      rowHeightScale = MIN_ROW_HEIGHT / naturalRowHeight;
-      const flooredPlotHeight = MIN_ROW_HEIGHT * (naturalPlotHeight / naturalRowHeight);
-      const residualHeight = targetHeight - (naturalChromeHeight + flooredPlotHeight);
-      if (scalableChromeHeight > 0) {
-        chromeScale = Math.max(
-          ASPECT.CHROME_SCALE_FLOOR,
-          (scalableChromeHeight + residualHeight) / scalableChromeHeight,
-        );
-      }
-    }
-  }
+  // Shared width + height ladder. naturalFlexWidth = the forest plot region
+  // (export's canonical flex region); heightDeltaConsumed hands off to the
+  // auto-wrap loop above when it absorbed the delta.
+  const ladder = computeAspectLadder({
+    targetWidth,
+    targetHeight,
+    naturalWidth: naturalLayout.totalWidth,
+    naturalHeight: naturalLayout.totalHeight,
+    naturalFlexWidth: naturalForestWidth,
+    naturalNonFlexAutoSum: naturalNonFlexSum,
+    scalableChromeHeight,
+    naturalPlotHeight,
+    naturalChromeHeight,
+    naturalRowHeight,
+    flexCap,
+    minRowHeight: MIN_ROW_HEIGHT,
+    heightDeltaConsumed: autoWrapConsumedDelta,
+  });
+  const targetForestWidth = ladder.flexWidth;
+  const nonFlexScale = ladder.nonFlexScale;
+  const rowHeightScale = ladder.rowHeightScale;
+  const chromeScale = ladder.chromeScale;
 
   // ----- Apply: spec clone -----
   const adjustedSpec: WebSpec = (typeof structuredClone === "function"
