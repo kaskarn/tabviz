@@ -31,6 +31,7 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     interaction = serialize_interaction(spec@interaction),
     initialState = serialize_initial_state(spec@initial_state),
     labels = serialize_labels(spec@labels),
+    notes = serialize_notes(spec@notes),
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     watermarkColor = if (is.na(spec@watermark_color)) NULL else spec@watermark_color,
     watermarkOpacity = if (is.na(spec@watermark_opacity)) NULL else spec@watermark_opacity,
@@ -513,6 +514,13 @@ is_categorized_themes <- function(x) {
     is.list(category) && length(category) > 0L &&
       all(vapply(category, function(t) inherits(t, "tabviz::WebTheme"), logical(1)))
   }, logical(1)))
+}
+
+#' Serialize annotation/note rows to the wire (NULL when none).
+#' @keywords internal
+serialize_notes <- function(notes) {
+  if (is.null(notes) || length(notes) == 0) return(NULL)
+  lapply(notes, function(n) list(after = n$after, content = n$content))
 }
 
 #' Serialize the authored initial-state bundle.

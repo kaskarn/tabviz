@@ -834,6 +834,16 @@ export interface PaginationConfig {
   nPages: number;
 }
 
+/** A full-width annotation/note row inserted after a target data row. Free
+ *  markdown content, always visible (no disclosure). Reuses the details panel
+ *  render path. Authored R-side via `add_note()`. */
+export interface NoteSpec {
+  /** Id of the data row this note is placed after. */
+  after: string;
+  /** Markdown content. */
+  content: string;
+}
+
 export interface WebSpec {
   /** Wire-format version. Validated on ingest by `$spec/validateSpecVersion`.
    *  Pre-release: emitted as "1.0"; policy informal. Post-publish: minor bumps
@@ -841,6 +851,8 @@ export interface WebSpec {
    *  require migration handlers. See `docs/dev/frontend-split-spec.md` §3.4. */
   version: string;
   data: WebData;
+  /** Annotation/note rows (full-width prose inserted after specific rows). */
+  notes?: NoteSpec[];
   columns: ColumnDef[];
   /**
    * Row-label column. Carries the leftmost "primary" column (sticky-left,

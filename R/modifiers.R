@@ -691,6 +691,46 @@ update_column <- function(x, field, ...) {
 # Row / data verbs
 # ----------------------------------------------------------------------------
 
+#' Add an annotation/note row after a target row
+#'
+#' Inserts a full-width markdown note immediately below a given row — always
+#' visible (it reuses the details-panel rendering). Use it for editorial prose
+#' between rows: caveats, footnote-style commentary, section blurbs.
+#'
+#' @param x A `WebSpec`, htmlwidget, or `tabviz_proxy`.
+#' @param after Which row to place the note after: a 1-based row index, or a
+#'   string matched against the row-label column (first match).
+#' @param content Markdown string shown in the note (bold/italic/lists/links/
+#'   `code`; HTML is escaped). In static export it renders as wrapped plain text.
+#' @return The modified `x`.
+#' @export
+add_note <- function(x, after, content) {
+  checkmate::assert_string(content)
+  if (inherits(x, "tabviz_proxy")) {
+    cli::cli_abort("{.fn add_note} is an authoring-time verb; not supported on a live {.cls tabviz_proxy}.")
+  }
+  transform <- function(spec) {
+    n <- nrow(spec@data)
+    if (n == 0) cli::cli_abort("Cannot {.fn add_note}: the spec has no rows.")
+    idx <- if (is.numeric(after)) {
+      checkmate::assert_integerish(after, lower = 1, upper = n, len = 1)
+      as.integer(after)
+    } else {
+      checkmate::assert_string(after)
+      lab_field <- if (!is.null(spec@label_column)) spec@label_column@field else names(spec@data)[1]
+      labels <- as.character(spec@data[[lab_field]])
+      m <- which(labels == after)
+      if (length(m) == 0) {
+        cli::cli_abort("{.fn add_note}: no row whose label is {.val {after}}.")
+      }
+      m[1]
+    }
+    spec@notes <- c(spec@notes, list(list(after = paste0("row_", idx), content = content)))
+    spec
+  }
+  repack(x, transform(extract_spec(x, arg_name = "x")))
+}
+
 #' Sort rows by a column
 #'
 #' @param x A WebSpec, htmlwidget, or tabviz_proxy

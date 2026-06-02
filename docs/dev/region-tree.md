@@ -256,9 +256,27 @@ The first feature on the foundation, complete across all runtimes:
   Height + render share `panelInnerWidth` so wrapped lines fit the row track.
 
 Guards: `region-tree.test.ts` (panel emission), `markdown.test.ts`,
-`details-panel.browser.ts` (DOM), R serialize/export tests. Next feature:
-**faceting** (per-group axes via the `axis_strip` kind + the per-context scale
-resolver, both already in place).
+`details-panel.browser.ts` (DOM), R serialize/export tests.
+
+## Feature 2 — annotation/note rows — SHIPPED (2026-06-02)
+
+Full-width prose rows inserted after a target row — built almost entirely on the
+details panel primitive (the render is free):
+- A note is an **always-visible panel** node inserted after its target row's node
+  (`RegionNode.body.free.alwaysVisible`); `flatten` emits it regardless of
+  `expandedRows`. Reuses the `PanelRow` render in both backends (DOM markdown→HTML,
+  SVG markdown→plain-text band) — no new render code.
+- Wire: `WebSpec.notes: { after: rowId, content }[]`; threaded into both
+  `buildRegionTree` (DOM) and `buildDisplayRows` (export).
+- R authoring: `add_note(x, after, content)` — `after` is a 1-based row index or
+  a row-label string (resolved to the positional `row_<i>` id). Authoring-time
+  only (errors on a live proxy).
+
+Guards: `region-tree.test.ts` (note emission, always-visible + coexist-with-details),
+R serialize + `save_plot` render verified.
+
+Next feature: **faceting** (per-group axes via the `axis_strip` kind + the
+per-context scale resolver, both already in place) — currently tabled.
 
 ## 8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)
 

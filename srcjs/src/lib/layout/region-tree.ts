@@ -49,7 +49,7 @@ export interface RegionNode {
   depth: number;
   body:
     | { type: "cells"; row?: Row; group?: Group; rowCount?: number }
-    | { type: "free"; content: string; ownerRowId: string };
+    | { type: "free"; content: string; ownerRowId: string; alwaysVisible?: boolean };
   children?: RegionNode[];
 }
 
@@ -63,6 +63,8 @@ export interface RegionTreeInput {
     byGroup: Record<string, string[]>;
     groupOrderByParent: Record<string, string[]>;
   };
+  /** Annotation/note rows to insert after their target rows (always visible). */
+  notes?: ReadonlyArray<{ after: string; content: string }>;
 }
 
 const NO_TRAITS: ReadonlySet<RegionTrait> = new Set();
@@ -98,6 +100,14 @@ export function buildRegionTree(input: RegionTreeInput): RegionNode[] {
         (idx[a.id] ?? Number.POSITIVE_INFINITY) -
         (idx[b.id] ?? Number.POSITIVE_INFINITY),
     );
+  }
+
+  // 1b. Index notes by the row they attach after (preserve authored order).
+  const notesByRow = new Map<string, string[]>();
+  for (const n of input.notes ?? []) {
+    if (!n.content || n.content.trim() === "") continue;
+    if (!notesByRow.has(n.after)) notesByRow.set(n.after, []);
+    notesByRow.get(n.after)!.push(n.content);
   }
 
   // 2. Groups that need a header: every group with data + all its ancestors.
@@ -158,18 +168,34 @@ export function buildRegionTree(input: RegionTreeInput): RegionNode[] {
         depth,
         body: { type: "cells", row },
       };
+      const children: RegionNode[] = [];
       // A row with details content owns an expandable full-width panel child.
       if (typeof row.details === "string" && row.details.trim() !== "") {
         node.traits = EXPANDABLE;
-        node.children = [{
+        children.push({
           id: `panel:${row.id}`,
           kind: "panel",
           traits: NO_TRAITS,
           scope: "table",
           depth,
           body: { type: "free", content: row.details, ownerRowId: row.id },
-        }];
+        });
       }
+      // Annotation/note rows attached after this row — always-visible panels.
+      const notes = notesByRow.get(row.id);
+      if (notes) {
+        notes.forEach((content, ni) => {
+          children.push({
+            id: `note:${row.id}:${ni}`,
+            kind: "panel",
+            traits: NO_TRAITS,
+            scope: "table",
+            depth,
+            body: { type: "free", content, ownerRowId: row.id, alwaysVisible: true },
+          });
+        });
+      }
+      if (children.length > 0) node.children = children;
       nodes.push(node);
     }
     return nodes;
@@ -206,7 +232,8 @@ export function flatten(
     } else if (node.kind === "data" && node.body.type === "cells" && node.body.row) {
       out.push({ type: "data", row: node.body.row, depth: node.depth });
     } else if (node.kind === "panel" && node.body.type === "free") {
-      if (!expandedRows.has(node.body.ownerRowId)) return; // collapsed panel: skip subtree
+      // Notes are always visible; details panels gate on the expanded set.
+      if (!node.body.alwaysVisible && !expandedRows.has(node.body.ownerRowId)) return;
       out.push({ type: "panel", rowId: node.body.ownerRowId, content: node.body.content, depth: node.depth });
     }
     if (node.children) {

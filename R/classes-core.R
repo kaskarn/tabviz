@@ -274,6 +274,9 @@ WebSpec <- new_class(
     available_exclude = new_property(class_character, default = character(0)),
     groups = new_property(class_list, default = list()),
     summaries = new_property(class_list, default = list()),
+    # Annotation/note rows: list of list(after = <row id>, content = <markdown>).
+    # Inserted full-width after their target row. Authored via `add_note()`.
+    notes = new_property(class_list, default = list()),
     overall_summary = new_property(
       new_union(GroupSummary, class_missing),
       default = NULL

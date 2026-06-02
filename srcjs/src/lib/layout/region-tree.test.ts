@@ -164,6 +164,46 @@ describe("region-tree — details panels (flatten-time, expandedRows)", () => {
   });
 });
 
+describe("region-tree — annotation/note rows (always visible)", () => {
+  test("a note attaches after its target row and renders regardless of expandedRows", () => {
+    const input: RegionTreeInput = {
+      groups: [],
+      visibleRows: [row("a"), row("b")],
+      rowOrder: NO_ORDER,
+      notes: [{ after: "a", content: "see methods" }],
+    };
+    const out = flatten(buildRegionTree(input), NO_COLLAPSE); // empty expandedRows
+    expect(out.map((d) => (d.type === "panel" ? `N:${d.content}` : `${d.type}:${(d as { row: Row }).row.id}`)))
+      .toEqual(["data:a", "N:see methods", "data:b"]);
+  });
+
+  test("multiple notes after one row keep authored order; empty content skipped", () => {
+    const input: RegionTreeInput = {
+      groups: [],
+      visibleRows: [row("a")],
+      rowOrder: NO_ORDER,
+      notes: [{ after: "a", content: "first" }, { after: "a", content: "  " }, { after: "a", content: "second" }],
+    };
+    const panels = flatten(buildRegionTree(input), NO_COLLAPSE).filter((d) => d.type === "panel");
+    expect(panels.map((p) => (p.type === "panel" ? p.content : ""))).toEqual(["first", "second"]);
+  });
+
+  test("a details panel (gated) and a note (always) can coexist on one row", () => {
+    const input: RegionTreeInput = {
+      groups: [],
+      visibleRows: [rowWithDetails("a", "the details")],
+      rowOrder: NO_ORDER,
+      notes: [{ after: "a", content: "the note" }],
+    };
+    const tree = buildRegionTree(input);
+    // collapsed: only the note shows; expanded: details then note.
+    expect(flatten(tree, NO_COLLAPSE).filter((d) => d.type === "panel").map((p) => p.type === "panel" ? p.content : ""))
+      .toEqual(["the note"]);
+    expect(flatten(tree, NO_COLLAPSE, new Set(["a"])).filter((d) => d.type === "panel").map((p) => p.type === "panel" ? p.content : ""))
+      .toEqual(["the details", "the note"]);
+  });
+});
+
 describe("region-tree — collapse (flatten-time)", () => {
   test("a collapsed group emits its header (collapsed=true) but not its subtree", () => {
     const input: RegionTreeInput = {

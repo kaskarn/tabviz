@@ -159,6 +159,7 @@ export function createRowsGroupsSlice(
       groups: spec.data.groups,
       visibleRows: deps.getVisibleIndices().map((i) => deps.getRowAt(i)),
       rowOrder: rowOrderOverrides,
+      notes: spec.notes,
     });
     return flatten(forest, collapsedGroups, expandedRows);
   });

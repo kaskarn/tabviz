@@ -1002,18 +1002,31 @@ function buildDisplayRows(spec: WebSpec): DisplayRow[] {
   // (decision: honor initialState; collapsed by default). A row gets a panel
   // unit right after it when it has details content AND is in expandedRows.
   const expanded = new Set(spec.initialState?.expandedRows ?? []);
-  const panelFor = (row: Row, depth: number): DisplayRow | null =>
-    typeof row.details === "string" && row.details.trim() !== "" && expanded.has(row.id)
-      ? { type: "panel", rowId: row.id, content: row.details, depth }
-      : null;
+  // Note rows attach after their target row and are ALWAYS rendered.
+  const notesByRow = new Map<string, string[]>();
+  for (const n of spec.notes ?? []) {
+    if (!n.content || n.content.trim() === "") continue;
+    if (!notesByRow.has(n.after)) notesByRow.set(n.after, []);
+    notesByRow.get(n.after)!.push(n.content);
+  }
+  /** The panel + note units that follow a data row, in order. */
+  const followers = (row: Row, depth: number): DisplayRow[] => {
+    const out: DisplayRow[] = [];
+    if (typeof row.details === "string" && row.details.trim() !== "" && expanded.has(row.id)) {
+      out.push({ type: "panel", rowId: row.id, content: row.details, depth });
+    }
+    for (const content of notesByRow.get(row.id) ?? []) {
+      out.push({ type: "panel", rowId: row.id, content, depth });
+    }
+    return out;
+  };
 
   // If no groups, return flat data rows (+ any expanded panels).
   if (groups.length === 0) {
     const out: DisplayRow[] = [];
     for (const row of rows) {
       out.push({ type: "data", row, depth: 0 });
-      const panel = panelFor(row, 0);
-      if (panel) out.push(panel);
+      out.push(...followers(row, 0));
     }
     return out;
   }
@@ -1088,13 +1101,12 @@ function buildDisplayRows(spec: WebSpec): DisplayRow[] {
       outputGroup(childGroup.id);
     }
 
-    // Output direct data rows for this group (+ any expanded panels)
+    // Output direct data rows for this group (+ expanded panels + notes)
     const directRows = rowsByGroup.get(groupId) ?? [];
     for (const row of directRows) {
       const depth = getRowDepth(row.groupId);
       result.push({ type: "data", row, depth });
-      const panel = panelFor(row, depth);
-      if (panel) result.push(panel);
+      result.push(...followers(row, depth));
     }
   }
 
