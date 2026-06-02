@@ -5,7 +5,7 @@ import {
   OKABE_ITO, TABLEAU_10, SET2, CATEGORICAL_SCHEMES,
   SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES,
 } from "./data-schemes";
-import { buildRamps } from "./theme-resolve";
+import { buildRamps } from "./theme/theme-resolve";
 import type { ThemeInputs } from "../types/theme-inputs";
 
 const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };

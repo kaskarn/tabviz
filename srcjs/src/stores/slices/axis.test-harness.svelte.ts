@@ -4,7 +4,7 @@
 // runes because plain `.ts` test files bypass the compiler.
 
 import { createAxisSlice, type AxisSlice } from "./axis.svelte";
-import { THEME_PRESETS } from "$lib/theme-presets";
+import { THEME_PRESETS } from "$lib/theme/theme-presets";
 import type { WebSpec, ColumnSpec } from "$types";
 
 function buildSpec(): WebSpec {

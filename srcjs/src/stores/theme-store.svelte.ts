@@ -9,10 +9,10 @@
 // inputField() / clusterField() / pinField() accessors.
 
 import type { ThemeStructure, ThemeInputs, ColorRef } from "../types/theme-inputs";
-import type { ThemeWire, Provenance } from "../lib/theme-wire";
+import type { ThemeWire, Provenance } from "../lib/theme/theme-wire";
 import {
   emptyWire, pin, release, isPinned, resolveWire, inspectLeaf,
-} from "../lib/theme-wire";
+} from "../lib/theme/theme-wire";
 
 export interface ThemeStore {
   /** Current wire (inputs + pins + overrides). */

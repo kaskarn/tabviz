@@ -28,11 +28,11 @@ Status legend:
 | R helper                          | Classification        | Notes |
 |-----------------------------------|-----------------------|-------|
 | `R/utils-oklch.R`                 | phase-2-candidate     | TS port at `srcjs/src/lib/oklch.ts` is faithful but ~1-25 channels of drift on chroma-related derivations vs `farver` near gamut boundaries (Ottosson coefficients are slightly different from farver's, and bisection amplifies the drift). Used R-side by tests and standalone color math. Resolution now happens TS-side, so the drift no longer matters for cascade output. |
-| `R/utils-theme-resolve.R`         | **collapsed (Phase 1a)** | R helpers deleted; the file is now an 80-LOC shim around `ts_call("resolveTheme", draft, options)`. `DENSITY_PRESETS` reference value kept for tests. Cascade semantics tested in `srcjs/src/lib/theme-resolve.test.ts`. |
+| `R/utils-theme-resolve.R`         | **collapsed (Phase 1a)** | R helpers deleted; the file is now an 80-LOC shim around `ts_call("resolveTheme", draft, options)`. `DENSITY_PRESETS` reference value kept for tests. Cascade semantics tested in `srcjs/src/lib/theme/theme-resolve.test.ts`. |
 | `R/utils-theme-validate.R`        | **deleted (Phase 1a)** | TS validates inside `resolveTheme(draft, { validate })`. Errors surface through V8 to R with the same `header bold band: ...` invariant names. |
-| `R/themes.R` (4 journal presets)  | thin-wrapper          | Pure Tier 1 input bundles + `resolve_theme()` call. TS mirrors at `srcjs/src/lib/theme-presets-inputs.ts`. Snapshot JSON at `theme-presets-v2.json` remains R-resolved truth (journal presets). |
+| `R/themes.R` (4 journal presets)  | thin-wrapper          | Pure Tier 1 input bundles + `resolve_theme()` call. TS mirrors at `srcjs/src/lib/theme/theme-presets-inputs.ts`. Snapshot JSON at `theme-presets-v2.json` remains R-resolved truth (journal presets). |
 | `R/themes-lotr.R` (3 LOTR presets)| thin-wrapper          | Same shape as journals. TS mirrors at `theme-presets-inputs.ts`; resolved at JS module load (no R snapshot). Pre-release; may be removed before CRAN. |
-| `R/themes-api.R::web_theme`       | phase-2-candidate     | TS mirror at `srcjs/src/lib/theme-api.ts::webTheme`. **Suggested R-side streamline**: the `brand` / `tertiary` legacy migration check (lines 84-100) is duplicated verbatim in `set_inputs` (lines 158-173). Pull into a single `check_legacy_inputs(args)` helper. |
+| `R/themes-api.R::web_theme`       | phase-2-candidate     | TS mirror at `srcjs/src/lib/theme/theme-api.ts::webTheme`. **Suggested R-side streamline**: the `brand` / `tertiary` legacy migration check (lines 84-100) is duplicated verbatim in `set_inputs` (lines 158-173). Pull into a single `check_legacy_inputs(args)` helper. |
 | `R/themes-api.R::set_inputs`      | phase-2-candidate     | TS mirror at `theme-api.ts::setInputs`. See `web_theme` streamline. |
 | `R/themes-api.R::set_variants`    | phase-2-candidate     | TS mirror at `theme-api.ts::setVariants`. |
 | `R/themes-api.R::set_spacing`     | thin-wrapper          | TS mirror at `theme-api.ts::setSpacing`. |
@@ -97,7 +97,7 @@ in as the roster grows, three complementary mechanisms run in CI:
    parity oracle for that) and `layout.banding` (R wire legacy
    duplicates `row.banding`; renderer reads `row.banding` only).
 3. **Byte-exact snapshot drift detection** on TS side
-   (`srcjs/src/lib/theme-resolve.test.ts`) — already in place since
+   (`srcjs/src/lib/theme/theme-resolve.test.ts`) — already in place since
    0.2.1's canonization; auto-extends to new themes via the iterator
    pattern.
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { WebTheme } from "$types";
-  import { THEME_NAMES, THEME_LABELS, type ThemeName } from "$lib/theme-presets";
+  import { THEME_NAMES, THEME_LABELS, type ThemeName } from "$lib/theme/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";

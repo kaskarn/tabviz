@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { buildThemeStructure } from "./theme-resolve";
+import { buildThemeStructure } from "./theme/theme-resolve";
 import {
   resolveRole, resolveRoleRecipe, activeRole, resolveActiveRole,
   roleMarkOpacity, bundleIsActive,

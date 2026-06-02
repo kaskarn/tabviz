@@ -3,8 +3,8 @@ import {
   emptyWire, pin, release, isPinned,
   resolveWire, inspectLeaf,
 } from "./theme-wire";
-import { ref, lit } from "../types/theme-inputs";
-import type { ThemeInputs } from "../types/theme-inputs";
+import { ref, lit } from "../../types/theme-inputs";
+import type { ThemeInputs } from "../../types/theme-inputs";
 
 const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
 

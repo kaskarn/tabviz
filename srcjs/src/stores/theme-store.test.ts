@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { createThemeStoreV3Plain } from "./theme-store.plain";
-import { COCHRANE, LANCET } from "../lib/theme-presets-inputs";
+import { COCHRANE, LANCET } from "../lib/theme/theme-presets-inputs";
 import { ref, lit } from "../types/theme-inputs";
 
 describe("ThemeStore — reactive theme store", () => {

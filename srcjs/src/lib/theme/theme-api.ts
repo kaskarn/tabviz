@@ -9,8 +9,8 @@
 
 import { buildTheme } from "./theme-adapter";
 import { PRESETS } from "./theme-presets-inputs";
-import type { ThemeInputs } from "../types/theme-inputs";
-import type { WebTheme } from "../types/theme-resolved";
+import type { ThemeInputs } from "../../types/theme-inputs";
+import type { WebTheme } from "../../types/theme-resolved";
 
 export type PresetName = keyof typeof PRESETS;
 

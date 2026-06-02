@@ -3,10 +3,10 @@
 // shape using manual reactivity for testing.)
 
 import type { ThemeStructure, ThemeInputs, ColorRef } from "../types/theme-inputs";
-import type { ThemeWire, Provenance } from "../lib/theme-wire";
+import type { ThemeWire, Provenance } from "../lib/theme/theme-wire";
 import {
   emptyWire, pin, release, isPinned, resolveWire, inspectLeaf,
-} from "../lib/theme-wire";
+} from "../lib/theme/theme-wire";
 
 export interface ThemeStoreV3Plain {
   wire: ThemeWire;

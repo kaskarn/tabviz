@@ -1,8 +1,8 @@
 /**
- * Regenerate `src/lib/theme-presets-v2.json` from the TS cascade resolver.
+ * Regenerate `src/lib/theme/theme-presets-v2.json` from the TS cascade resolver.
  *
- * Run after any change to `src/lib/theme-resolve.ts`, `src/lib/oklch.ts`,
- * `src/lib/theme-presets-inputs.ts`, or `src/lib/theme-validate.ts` that
+ * Run after any change to `src/lib/theme/theme-resolve.ts`, `src/lib/oklch.ts`,
+ * `src/lib/theme/theme-presets-inputs.ts`, or `src/lib/theme/theme-validate.ts` that
  * affects resolved output. Output JSON is the runtime preset table; the
  * resolver tests in `theme-resolve.test.ts` use this same file as the
  * drift-detection baseline.
@@ -26,8 +26,8 @@ import {
   BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
   SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
-} from "../src/lib/theme-presets-inputs";
-import { resolveTheme } from "../src/lib/theme-resolve";
+} from "../src/lib/theme/theme-presets-inputs";
+import { resolveTheme } from "../src/lib/theme/theme-resolve";
 
 const presets = {
   cochrane:       resolveTheme(COCHRANE_DRAFT),

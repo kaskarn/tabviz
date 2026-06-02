@@ -41,7 +41,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import type { ThemeName } from "$lib/theme-presets";
+  import type { ThemeName } from "$lib/theme/theme-presets";
   import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle, Annotation, SemanticBundle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
@@ -74,7 +74,7 @@
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
   import { isVizType, resolveShowHeader } from "$lib/column-types";
   import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
-  import { resolveRowKind } from "$lib/row-kind";
+  import { resolveRowKind } from "$lib/layout/row-kind";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {
     isLayoutDebugEnabled,
@@ -95,7 +95,7 @@
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
-  import { buildWidgetCSS } from "$lib/theme-css";
+  import { buildWidgetCSS } from "$lib/theme/theme-css";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
   import { NUMERIC_COLUMN_TYPES } from "../schema/columns";
@@ -1385,11 +1385,11 @@
 
   // CSS variable style string (includes shared rendering constants for consistency)
   // Build the widget CSS variables. The portable theme-only portion is
-  // produced by `buildThemeCSS()` in $lib/theme-css and cached by theme
+  // produced by `buildThemeCSS()` in $lib/theme/theme-css and cached by theme
   // identity; this `$derived` therefore only re-runs the cheap widget-
   // instance composition when layout/zoom changes while the theme is stable.
   // To inspect or export the resolved theme as CSS, call `getThemeCSS(theme)`
-  // from `$lib/theme-css`.
+  // from `$lib/theme/theme-css`.
   const cssVars = $derived(
     buildWidgetCSS(theme ?? null, {
       maxWidth: maxWidth ?? null,

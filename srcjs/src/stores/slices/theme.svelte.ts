@@ -29,8 +29,8 @@
 
 import type { WebSpec } from "$types";
 import type { ThemeInputs } from "$types/theme-inputs";
-import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
-import { buildTheme } from "$lib/theme-adapter";
+import { THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
+import { buildTheme } from "$lib/theme/theme-adapter";
 import { ops, type OpRecord } from "$lib/op-recorder";
 
 /** Sections whose edits change text metrics or cell geometry; changing any

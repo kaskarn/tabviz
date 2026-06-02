@@ -17,7 +17,7 @@ import type {
   ThemeInputs,
   ThemeStructure,
   ColorRef,
-} from "../types/theme-inputs";
+} from "../../types/theme-inputs";
 import { buildThemeStructure, resolveRef } from "./theme-resolve";
 
 // ────────────────────────────────────────────────────────────────────

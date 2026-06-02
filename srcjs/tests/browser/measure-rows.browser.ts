@@ -24,8 +24,8 @@
 import puppeteer, { type Page } from "puppeteer";
 import path from "path";
 import { fileURLToPath } from "url";
-import { buildTheme } from "../../src/lib/theme-adapter";
-import { COCHRANE } from "../../src/lib/theme-presets-inputs";
+import { buildTheme } from "../../src/lib/theme/theme-adapter";
+import { COCHRANE } from "../../src/lib/theme/theme-presets-inputs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_HTML = path.join(__dirname, "fixtures.html");

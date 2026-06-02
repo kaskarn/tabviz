@@ -10,7 +10,7 @@ import type {
   PaintRole,
   TokenRamps,
 } from "../types/theme-inputs";
-import { resolveRef } from "./theme-resolve";
+import { resolveRef } from "./theme/theme-resolve";
 
 /** Canonical role precedence: loud → quiet. */
 export const ROLE_PRECEDENCE: ReadonlyArray<RoleName> = [

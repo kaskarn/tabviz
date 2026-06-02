@@ -7,7 +7,7 @@
 // Lives alongside the legacy theme-css.ts during the rationalization arc.
 // PR I retires the legacy module.
 
-import type { ThemeStructure, TokenName, RoleName } from "../types/theme-inputs";
+import type { ThemeStructure, TokenName, RoleName } from "../../types/theme-inputs";
 import { resolveRef } from "./theme-resolve";
 
 /** Token name → CSS variable name. `brand_ink` → `--tv-brand-ink`. */

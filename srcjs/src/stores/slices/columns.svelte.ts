@@ -40,7 +40,7 @@ import type {
 } from "$types";
 import { getColumnDisplayText } from "$lib/formatters";
 import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
-import { resolveRowKind, rowKindProps } from "$lib/row-kind";
+import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
 import {
   rankTopK,
   measureExact,

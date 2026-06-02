@@ -13,8 +13,8 @@
  * high-saturation colors.
  */
 
-import { contrastRatio } from "./oklch";
-import type { WebTheme } from "../types/theme-resolved";
+import { contrastRatio } from "../oklch";
+import type { WebTheme } from "../../types/theme-resolved";
 
 // Header text is bold (weight=600) and lives in chrome bands rather than
 // dense reading flow, so WCAG AA Large (3.0) is the applicable bar.

@@ -23,7 +23,7 @@
 
 import type { WebSpec, ColumnDef, ColumnSpec, ColumnGroup } from "../types";
 import type { WebTheme } from "../types/theme-resolved";
-import { THEME_PRESETS, THEME_NAMES, type ThemeName } from "./theme-presets";
+import { THEME_PRESETS, THEME_NAMES, type ThemeName } from "./theme/theme-presets";
 import { dispatchForColumn } from "../schema/dispatch";
 // Side-effect: register built-in `emitSource` behaviors so the
 // dispatcher above finds them. Without this import the schema

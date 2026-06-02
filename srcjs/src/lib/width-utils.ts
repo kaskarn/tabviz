@@ -45,7 +45,7 @@ import type { ColumnSpec, Row, ColumnOptions, Group } from "../types";
 import { getColumnDisplayText } from "./formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./rendering-constants";
 import { dispatchForColumn } from "../schema/dispatch";
-import { resolveRowKind, rowKindProps } from "./row-kind";
+import { resolveRowKind, rowKindProps } from "./layout/row-kind";
 
 // ============================================================================
 // Text Width Measurement

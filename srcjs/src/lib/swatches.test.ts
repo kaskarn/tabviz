@@ -9,7 +9,7 @@
 
 import { expect, test, describe } from "bun:test";
 import { resolveSwatches } from "./swatches";
-import { THEME_PRESETS } from "./theme-presets";
+import { THEME_PRESETS } from "./theme/theme-presets";
 
 describe("resolveSwatches", () => {
   test("returns [] when theme is null/undefined", () => {

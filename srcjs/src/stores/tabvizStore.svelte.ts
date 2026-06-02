@@ -15,9 +15,9 @@ import {
   maxGroupDepth as computeMaxGroupDepth,
 } from "$lib/banding";
 import { niceDomain } from "$lib/scale-utils";
-import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
+import { THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
-import { resolveRowKind } from "$lib/row-kind";
+import { resolveRowKind } from "$lib/layout/row-kind";
 import { ops, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";

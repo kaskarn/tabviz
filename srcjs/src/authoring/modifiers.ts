@@ -18,7 +18,7 @@
  */
 
 import type { WebSpec, ColumnDef, PlotLabels } from "../types";
-import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
+import { resolveThemeRef, type ThemeRef } from "../lib/theme/theme-api";
 
 // ────────────────────────────────────────────────────────────────────
 // Label modifiers

@@ -4,7 +4,7 @@ import { describe, test, expect, beforeEach } from "bun:test";
 import { dispatchRenderer } from "../dispatch";
 import { bootBuiltinBehaviors } from "../init";
 import { bootDomRenderers } from "../init-dom";
-import { THEME_PRESETS } from "../../lib/theme-presets";
+import { THEME_PRESETS } from "../../lib/theme/theme-presets";
 import { __testing } from "./heatmap-renderer";
 import type { RenderSvg, RenderComponent, RenderContext } from "../render-types";
 import "../init-dom";

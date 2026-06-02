@@ -60,7 +60,7 @@ rowHeight, headerHeight, cellPaddingX, cellPaddingY, padding,
 groupPadding, rowGroupPadding, axisGap, headerGap,
 titleSubtitleGap?, footerGap?, spacerRowHeight?, indentPerLevel?
 ```
-Defaults: `srcjs/src/lib/theme-resolve.ts:86-100` (rowHeight 28, headerHeight 36,
+Defaults: `srcjs/src/lib/theme/theme-resolve.ts:86-100` (rowHeight 28, headerHeight 36,
 cellPaddingX 10, cellPaddingY 0, padding 16, groupPadding 8, rowGroupPadding 0,
 axisGap 12, headerGap 12, indentPerLevel 16, spacerRowHeight 20, …).
 
@@ -91,7 +91,7 @@ axisGap 12, headerGap 12, indentPerLevel 16, spacerRowHeight 20, …).
 `density` is a Tier-1 input (`R/classes-theme.R:89`, default "comfortable",
 validated to compact/comfortable/spacious; `set_density` sets `inputs@density`,
 `R/themes-api.R:225`). It resolves to Tier-2 spacing numerics via a preset table
-(canonical: `srcjs/src/lib/theme-adapter.ts::DENSITY_SPACING`; mirrored for
+(canonical: `srcjs/src/lib/theme/theme-adapter.ts::DENSITY_SPACING`; mirrored for
 parity tests in `R/utils-theme-resolve.R:7-26`, guarded by
 `test-theme-roster-sync.R`). The mirror's exact values:
 
@@ -325,7 +325,7 @@ Direction (confirmed with author):
 - [ ] **Density: keep the continuous `factor` alongside named profiles, or fold
   it in?** (§3)
 - [x] **`computeTableMetrics` (shared DOM/SVG)** — BUILT 2026-06 as
-  `srcjs/src/lib/table-metrics.ts`. Both backends (layout-zoom `$derived`,
+  `srcjs/src/lib/layout/table-metrics.ts`. Both backends (layout-zoom `$derived`,
   svg-generator `computeLayout`) now call shared pure helpers for the formulas
   they used to hand-mirror: `computeRowLayout` (heights/positions/marker-centers/
   rowPaddedAfter), `computeHeaderHeight`, `computeAxisHeight`,

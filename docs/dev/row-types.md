@@ -2,7 +2,7 @@
 
 Status: **living design record — Phase 1 shipped.** Companion to
 `sizing-model.md`. The canonical `resolveRowKind` + `RowKindProps` registry is
-built (`srcjs/src/lib/row-kind.ts`, see §2); the open threads are the fuller
+built (`srcjs/src/lib/layout/row-kind.ts`, see §2); the open threads are the fuller
 renderer/trait registry and per-kind Tier-3 theme clusters. This records the
 design thread on tabviz's *row-type* subsystem — the logic that classifies a
 row into a kind (data / group-header / section-header / summary / spacer /
@@ -58,7 +58,7 @@ asymmetry is the root of every symptom below.
 
 ## 2. Proposed model — one `RowKind` + a registry (mirror the column system)
 
-> **Status (Phase 1, built):** `srcjs/src/lib/row-kind.ts` now holds the
+> **Status (Phase 1, built):** `srcjs/src/lib/layout/row-kind.ts` now holds the
 > canonical `resolveRowKind(dr)` (replacing svg-generator's inline `rowKindOf`,
 > now incl. the `header` kind it had dropped) + a `RowKindProps` table
 > {`banded`, `measuresWidth`, `rendersCells`, `summaryMarker`} encoding today's

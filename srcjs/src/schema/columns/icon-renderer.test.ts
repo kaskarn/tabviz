@@ -3,7 +3,7 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import { dispatchRenderer } from "../dispatch";
 import { bootBuiltinBehaviors } from "../init";
-import { THEME_PRESETS } from "../../lib/theme-presets";
+import { THEME_PRESETS } from "../../lib/theme/theme-presets";
 import { __testing } from "./icon-renderer";
 import type { RenderSvg, RenderContext } from "../render-types";
 import "../init";

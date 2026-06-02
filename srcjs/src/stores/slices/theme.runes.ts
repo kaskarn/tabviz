@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "vitest";
 import { createThemeSlice } from "./theme.svelte";
-import { THEME_PRESETS } from "$lib/theme-presets";
+import { THEME_PRESETS } from "$lib/theme/theme-presets";
 import type { WebSpec } from "$types";
 import type { OpRecord } from "$lib/op-recorder";
 

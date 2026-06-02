@@ -15,7 +15,7 @@
  * See docs/dev/sizing-model.md.
  */
 
-import { webTheme } from "../lib/theme-api";
+import { webTheme } from "../lib/theme/theme-api";
 import type { WebSpec, Row, ColumnSpec, Group, WebTheme } from "../types";
 
 type Density = "compact" | "comfortable" | "spacious";

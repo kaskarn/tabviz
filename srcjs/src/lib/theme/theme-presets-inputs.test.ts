@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { PRESETS, preset, COCHRANE, LANCET, DARK } from "./theme-presets-inputs";
 import { buildThemeStructure } from "./theme-resolve";
-import { apcaLc } from "./oklch";
+import { apcaLc } from "../oklch";
 
 describe("PRESETS — 18 preset registry", () => {
   it("registers all 18 presets", () => {

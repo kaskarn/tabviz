@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SplitTabvizStore } from "$stores/splitTabvizStore.svelte";
-  import type { ThemeName } from "$lib/theme-presets";
+  import type { ThemeName } from "$lib/theme/theme-presets";
   import type { WebTheme } from "$types";
   import TabvizPlot from "./TabvizPlot.svelte";
   import SplitSidebar from "$components/split/SplitSidebar.svelte";

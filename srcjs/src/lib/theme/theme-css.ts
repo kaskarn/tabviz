@@ -18,14 +18,14 @@
  * The public alias `getThemeCSS` is what consumers should call.
  */
 
-import type { WebTheme } from "../types/theme-resolved";
-import { activeHeaderVariant } from "./header-variant";
-import { VIZ_MARGIN } from "./axis-utils";
+import type { WebTheme } from "../../types/theme-resolved";
+import { activeHeaderVariant } from "../header-variant";
+import { VIZ_MARGIN } from "../axis-utils";
 import {
   TEXT_MEASUREMENT,
   BADGE_VARIANTS,
   generateCSSVariables,
-} from "./rendering-constants";
+} from "../rendering-constants";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Caches

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { buildThemeStructure } from "./theme-resolve";
 import { buildThemeCssFromInputs } from "./theme-inputs-css";
-import type { ThemeInputs } from "../types/theme-inputs";
+import type { ThemeInputs } from "../../types/theme-inputs";
 
 const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
 const LANCET:   ThemeInputs = { brand: "#00407A", accent: "#A6792A", decorative: "#A6792A" };

@@ -50,7 +50,7 @@ import type {
   ZoomState,
 } from "$types";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
-import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/table-metrics";
+import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/layout/table-metrics";
 import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
 

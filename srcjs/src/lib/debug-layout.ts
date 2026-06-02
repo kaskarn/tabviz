@@ -15,7 +15,7 @@
  */
 
 import type { ComputedLayout, DisplayRow } from "$types";
-import { resolveRowKind, type RowKind } from "./row-kind";
+import { resolveRowKind, type RowKind } from "./layout/row-kind";
 
 export function isLayoutDebugEnabled(): boolean {
   if (typeof window === "undefined") return false;

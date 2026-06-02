@@ -6,12 +6,12 @@
 // shape which the store had already migrated away from — describe.skip
 // preserved CI visibility while the cascade rework finished.
 //
-// Now that THEME_PRESETS carries real v2 themes (lib/theme-presets.ts),
+// Now that THEME_PRESETS carries real v2 themes (lib/theme/theme-presets.ts),
 // the fixture uses cochrane directly. No fixture drift, no @ts-nocheck.
 
 import { expect, test, describe } from "vitest";
 import { createTabvizStore } from "./tabvizStore.svelte";
-import { THEME_PRESETS } from "$lib/theme-presets";
+import { THEME_PRESETS } from "$lib/theme/theme-presets";
 import type { WebSpec } from "$types";
 
 function buildSpec(): WebSpec {

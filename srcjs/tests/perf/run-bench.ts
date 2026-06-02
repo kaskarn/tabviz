@@ -17,9 +17,9 @@ import {
   DEFAULT_TOP_K,
   type FontKey,
 } from "../../src/lib/width-measure";
-import { resolveTheme } from "../../src/lib/theme-resolve";
-import { COCHRANE_DRAFT } from "../../src/lib/theme-presets-inputs";
-import { buildThemeCSS } from "../../src/lib/theme-css";
+import { resolveTheme } from "../../src/lib/theme/theme-resolve";
+import { COCHRANE_DRAFT } from "../../src/lib/theme/theme-presets-inputs";
+import { buildThemeCSS } from "../../src/lib/theme/theme-css";
 import { getColumnDisplayText } from "../../src/lib/formatters";
 
 // ─────────────────────────────────────────────────────────────────────────

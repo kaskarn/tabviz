@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import type { ThemeName } from "$lib/theme-presets";
+  import type { ThemeName } from "$lib/theme/theme-presets";
   import type { WebTheme } from "$types";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import DownloadButton from "./DownloadButton.svelte";

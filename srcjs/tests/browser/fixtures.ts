@@ -10,8 +10,8 @@
  */
 
 import { makeFixture, makeSplitFixture, type Fixture } from "../perf/fixtures";
-import { buildTheme } from "../../src/lib/theme-adapter";
-import { COCHRANE } from "../../src/lib/theme-presets-inputs";
+import { buildTheme } from "../../src/lib/theme/theme-adapter";
+import { COCHRANE } from "../../src/lib/theme/theme-presets-inputs";
 
 const THEME = buildTheme(COCHRANE, "cochrane");
 

@@ -12,7 +12,7 @@
 // PR B will expand the T2 token map to the full vocabulary, add the ref()
 // resolver path (tagged object → hex), and ship cluster + role types.
 
-import { oklchRamp, rampStep, pickInkOnBg, hexToOklch, oklchToHex } from "./oklch";
+import { oklchRamp, rampStep, pickInkOnBg, hexToOklch, oklchToHex } from "../oklch";
 import type {
   ThemeInputs,
   TokenRamps,
@@ -23,8 +23,8 @@ import type {
   ThemeStructure,
   ThemeRoles,
   ClustersInputs,
-} from "../types/theme-inputs";
-import { ref } from "../types/theme-inputs";
+} from "../../types/theme-inputs";
+import { ref } from "../../types/theme-inputs";
 
 // ────────────────────────────────────────────────────────────────────
 // Defaults

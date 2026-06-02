@@ -16,7 +16,7 @@
 // PR G's migration consolidates 30 hand-written constructor LOC per
 // preset into ~10-15 LOC at most.
 
-import type { ThemeInputs } from "../types/theme-inputs";
+import type { ThemeInputs } from "../../types/theme-inputs";
 
 // ────────────────────────────────────────────────────────────────────
 // Journals (mono-identity)

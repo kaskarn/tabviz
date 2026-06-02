@@ -22,7 +22,7 @@ import {
   evaluateConditions, type ConditionAuthoring,
 } from "../schema/conditions";
 import { CURRENT_VERSION } from "../spec";
-import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
+import { resolveThemeRef, type ThemeRef } from "../lib/theme/theme-api";
 import { colText } from "./columns";
 
 /**

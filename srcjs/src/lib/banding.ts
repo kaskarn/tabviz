@@ -1,5 +1,5 @@
 import type { BandingSpec, Group, Row } from "$types";
-import { isBanded } from "./row-kind";
+import { isBanded } from "./layout/row-kind";
 
 /**
  * Minimal display-row shape the banding util needs. Both the Svelte store's

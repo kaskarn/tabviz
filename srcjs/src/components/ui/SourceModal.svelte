@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import { generateThemeSource } from "$lib/theme-source";
+  import { generateThemeSource } from "$lib/theme/theme-source";
   import { emitJsSource } from "$lib/source-emit";
   import Portal from "$lib/Portal.svelte";
 

@@ -7,9 +7,9 @@
 
 import { describe, it, expect } from "bun:test";
 import { buildRamps, resolveToken, resolveAllTokens, resolveRef, buildThemeStructure, defaultRoles, defaultClusters } from "./theme-resolve";
-import { apcaLc, hexToOklch } from "./oklch";
-import type { ThemeInputs } from "../types/theme-inputs";
-import { ref, lit } from "../types/theme-inputs";
+import { apcaLc, hexToOklch } from "../oklch";
+import type { ThemeInputs } from "../../types/theme-inputs";
+import { ref, lit } from "../../types/theme-inputs";
 
 const COCHRANE: ThemeInputs = {
   brand: "#0099CC",

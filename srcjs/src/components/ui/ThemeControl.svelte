@@ -21,7 +21,7 @@
   import type { ThemeInputs } from "$types/theme-inputs";
   import { FONT_PRESETS } from "$lib/font-presets";
   import { CATEGORICAL_SCHEMES, SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES } from "$lib/data-schemes";
-  import { buildRamps } from "$lib/theme-resolve";
+  import { buildRamps } from "$lib/theme/theme-resolve";
   import ColorField from "./ColorField.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";

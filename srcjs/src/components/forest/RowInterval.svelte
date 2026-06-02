@@ -4,7 +4,7 @@
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
-  import { resolveRowKind, rowKindProps } from "$lib/row-kind";
+  import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
   import { getEffectYOffset } from "$lib/rendering-constants";
   import { resolveMarkerStyle, semanticStrokeFor } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";

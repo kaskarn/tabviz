@@ -25,7 +25,7 @@ import type {
   WebSpec,
   WebTheme,
 } from "$types";
-import type { ThemeName } from "$lib/theme-presets";
+import type { ThemeName } from "$lib/theme/theme-presets";
 
 // ────────────────────────────────────────────────────────────────────────
 // Per-method typed args

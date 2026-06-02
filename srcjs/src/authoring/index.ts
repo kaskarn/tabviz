@@ -58,16 +58,16 @@ export {
   themeSolarized, themeSolarizedDark, themeTonal, themeTonalDark,
   themeDwarven, themeElvish, themeHobbit,
   webTheme, resolveThemeRef,
-} from "../lib/theme-api";
+} from "../lib/theme/theme-api";
 
 // Resolved theme → portable CSS custom properties. Useful for inspecting,
 // exporting, or matching surrounding chrome to the tabviz palette.
-export { getThemeCSS, buildThemeCSS, buildWidgetCSS } from "../lib/theme-css";
-export type { WidgetCSSContext } from "../lib/theme-css";
+export { getThemeCSS, buildThemeCSS, buildWidgetCSS } from "../lib/theme/theme-css";
+export type { WidgetCSSContext } from "../lib/theme/theme-css";
 
 // Theme authoring: inputs flow through the adapter to produce the
 // resolved theme blob that the renderer consumes.
-export { buildTheme } from "../lib/theme-adapter";
+export { buildTheme } from "../lib/theme/theme-adapter";
 
 // Shared-product computation for split_by widgets. R delegates here via
 // the v8 bridge (`ts_call("computeSharedAxis"|"computeSharedWidths", ...)`);
@@ -79,4 +79,4 @@ export type {
   SharedAxisArgs, SharedAxisResult,
   SharedWidthsArgs, SharedWidthsResult,
 } from "../lib/split-shared";
-export type { WebThemeArgs, ThemeRef, PresetName } from "../lib/theme-api";
+export type { WebThemeArgs, ThemeRef, PresetName } from "../lib/theme/theme-api";

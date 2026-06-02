@@ -22,9 +22,9 @@
 //   accent_subtle     → accent.muted, row.hover.bg, row.selected.bg
 //   decorative_chrome → columnGroup.bold.bg (when set)
 
-import type { ThemeInputs } from "../types/theme-inputs";
+import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure, resolveRef } from "./theme-resolve";
-import { rampStep, oklchMix, oklchDarken } from "./oklch";
+import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import type {
   WebTheme, Surfaces, Content, Dividers, AccentRoles,
   StatusColors, Semantics, SlotRole, TextRole, TextRoles,
@@ -32,7 +32,7 @@ import type {
   RowCluster, CellCluster, FirstColumnCluster, PlotScaffold,
   MarksRecipes, AxisConfig, Layout, ThemeBorders,
   ResolvedInputs, ThemeVariants,
-} from "../types/theme-resolved";
+} from "../../types/theme-resolved";
 
 const DENSITY_SPACING: Record<"compact" | "comfortable" | "spacious", SpacingTokens> = {
   compact: {
