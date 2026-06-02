@@ -245,17 +245,23 @@
            reproduces save_plot()'s default. -->
       <div class="section-label">Aspect ratio</div>
       <div class="aspect-row">
-        <input
-          type="range"
-          class="aspect-slider"
-          min={ASPECT_SLIDER_MIN}
-          max={ASPECT_SLIDER_MAX}
-          step="0.01"
-          value={aspectSliderValue}
-          oninput={handleAspectSlider}
-          aria-label="Target aspect ratio"
-        />
-        <span class="aspect-value">{aspectDisplayRatio}:1</span>
+        <div class="aspect-track-wrap">
+          <input
+            type="range"
+            class="aspect-slider"
+            min={ASPECT_SLIDER_MIN}
+            max={ASPECT_SLIDER_MAX}
+            step="0.01"
+            value={aspectSliderValue}
+            oninput={handleAspectSlider}
+            aria-label="Target aspect ratio"
+          />
+          <!-- Detent marker at center = natural aspect (where the slider snaps). -->
+          <span class="aspect-detent" class:active={!aspectIsPinned} aria-hidden="true"></span>
+        </div>
+        <span class="aspect-value" class:at-natural={!aspectIsPinned}>
+          {aspectIsPinned ? `${aspectDisplayRatio}:1` : "natural"}
+        </span>
       </div>
       <label class="checkbox-row">
         <input
@@ -393,6 +399,37 @@
     align-items: center;
     gap: 8px;
     margin: 4px 0;
+  }
+
+  /* Wrap holds the slider + the center detent marker so the "natural" snap
+     point is visible (the snap itself is the JS sticky tolerance). */
+  .aspect-track-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .aspect-detent {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 10px;
+    border-radius: 1px;
+    background: var(--tv-border, #cbd5e1);
+    pointer-events: none;
+    transition: background-color 0.15s ease;
+  }
+  /* Highlight the detent when the layout is sitting at natural. */
+  .aspect-detent.active {
+    background: var(--tv-accent, #2563eb);
+  }
+
+  .aspect-value.at-natural {
+    font-style: italic;
+    color: var(--tv-muted, #94a3b8);
   }
 
   .aspect-slider {
