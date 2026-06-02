@@ -12,6 +12,14 @@ cd srcjs
 bun run tests/perf/run-bench.ts
 ```
 
+Focused single-concern benches (own runner, own budget gate):
+
+```bash
+# Region-tree flatten (row-system structural pass), 200 rows / 10 groups.
+# Exits non-zero past its budget. See region-tree.md §7.
+bun run tests/perf/region-tree-bench.ts
+```
+
 To save a baseline before a refactor:
 
 ```bash

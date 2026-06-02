@@ -50,6 +50,7 @@ import type {
 } from "$types";
 import { ops, type OpRecord } from "$lib/op-recorder";
 import { maxGroupDepth as computeMaxGroupDepth } from "$lib/banding";
+import { buildRegionTree, flatten } from "$lib/layout/region-tree";
 
 type CellEdits = {
   cells: Record<string, Record<string, unknown>>;
@@ -132,23 +133,6 @@ export function createRowsGroupsSlice(
     return map;
   });
 
-  function getRowDepth(groupId: string | null | undefined): number {
-    if (!groupId) return 0;
-    const groupDepth = groupDepthMap.get(groupId) ?? 0;
-    return groupDepth + 1;
-  }
-
-  function isAncestorCollapsed(groupId: string | null | undefined): boolean {
-    if (!groupId) return false;
-    let current: string | null | undefined = groupId;
-    while (current) {
-      const group = groupMap.get(current);
-      if (!group) break;
-      if (group.parentId && collapsedGroups.has(group.parentId)) return true;
-      current = group.parentId;
-    }
-    return false;
-  }
 
   // CROSS-SLICE $DERIVED: reads visibleIndices from the sort-filter
   // slice and dereferences each via deps.getRowAt(i). Reactivity
@@ -158,100 +142,15 @@ export function createRowsGroupsSlice(
     const spec = deps.getSpec();
     if (!spec) return [];
 
-    const result: DisplayRow[] = [];
-
-    // 1. Group rows by groupId, then apply any per-group reorder override.
-    const rowsByGroup = new Map<string | null, Row[]>();
-    for (const i of deps.getVisibleIndices()) {
-      const row = deps.getRowAt(i);
-      const key = row.groupId ?? null;
-      if (!rowsByGroup.has(key)) rowsByGroup.set(key, []);
-      rowsByGroup.get(key)!.push(row);
-    }
-    for (const [key, bucket] of rowsByGroup) {
-      const scopeKey = key ?? "__root__";
-      const override = rowOrderOverrides.byGroup[scopeKey];
-      if (!override) continue;
-      const idx: Record<string, number> = {};
-      override.forEach((id, i) => (idx[id] = i));
-      bucket.sort((a, b) => {
-        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
-        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
-        return ai - bi;
-      });
-    }
-
-    // 2. Collect all groups that need headers (data groups + ancestors).
-    const groupsWithHeaders = new Set<string>();
-    for (const groupId of rowsByGroup.keys()) {
-      if (!groupId) continue;
-      let current: string | null | undefined = groupId;
-      while (current) {
-        groupsWithHeaders.add(current);
-        current = groupMap.get(current)?.parentId;
-      }
-    }
-
-    // 3. Helper: child groups of a parent (with reorder override).
-    function getChildGroups(parentId: string | null): Group[] {
-      const matches = spec!.data.groups
-        .filter(g => (g.parentId ?? null) === parentId && groupsWithHeaders.has(g.id));
-      const parentKey = parentId ?? "__root__";
-      const order = rowOrderOverrides.groupOrderByParent[parentKey];
-      if (!order) return matches;
-      const idx: Record<string, number> = {};
-      order.forEach((id, i) => (idx[id] = i));
-      return [...matches].sort((a, b) => {
-        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
-        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
-        return ai - bi;
-      });
-    }
-
-    // 3b. Helper: count direct + descendant rows for a group header.
-    function countAllDescendantRows(groupId: string): number {
-      let count = rowsByGroup.get(groupId)?.length ?? 0;
-      for (const childGroup of getChildGroups(groupId)) {
-        count += countAllDescendantRows(childGroup.id);
-      }
-      return count;
-    }
-
-    // 4. Recursive output: header → children → direct data rows.
-    function outputGroup(groupId: string | null) {
-      if (groupId) {
-        const group = groupMap.get(groupId);
-        if (!group) return;
-        if (isAncestorCollapsed(groupId)) return;
-        const isCollapsed = collapsedGroups.has(group.id);
-        const rowCount = countAllDescendantRows(groupId);
-
-        result.push({
-          type: "group_header",
-          group: { ...group, collapsed: isCollapsed },
-          rowCount,
-          depth: group.depth,
-        });
-
-        if (isCollapsed) return;
-      }
-
-      for (const childGroup of getChildGroups(groupId)) {
-        outputGroup(childGroup.id);
-      }
-
-      const directRows = rowsByGroup.get(groupId) ?? [];
-      for (const row of directRows) {
-        result.push({
-          type: "data",
-          row,
-          depth: getRowDepth(row.groupId),
-        });
-      }
-    }
-
-    outputGroup(null);
-    return result;
+    // Structural tree (groups + reorder), then flatten with collapse state.
+    // The tree is the seam details/faceting attach to; see lib/layout/region-tree.ts
+    // + docs/dev/region-tree.md. Output is byte-identical to the prior recursion.
+    const forest = buildRegionTree({
+      groups: spec.data.groups,
+      visibleRows: deps.getVisibleIndices().map((i) => deps.getRowAt(i)),
+      rowOrder: rowOrderOverrides,
+    });
+    return flatten(forest, collapsedGroups);
   });
 
   const maxGroupDepth = $derived.by((): number => {
