@@ -854,7 +854,12 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // (totalWidth − padding×2) across every column by effective weight
   // (flexWeight × natural); pinned columns immovable. See docs/dev/multi-flex-columns.md.
   const flexColSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
-    const explicit = typeof c.width === "number" ? c.width : null;
+    // Pin web-view-provided widths (the live widget already distributed; export
+    // renders them faithfully) and authored numeric widths. Only the R-from-
+    // scratch path (no provided widths) actually flexes.
+    const provided = options.columnWidths?.[c.id];
+    const explicit =
+      typeof provided === "number" ? provided : typeof c.width === "number" ? c.width : null;
     const measured = autoWidths.get(c.id);
     const natural = explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
     return {
@@ -865,7 +870,12 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
       minWidth: measured ?? undefined,
     };
   });
-  const flexWidths = resolveFlexWidths(flexColSpecs, Math.max(0, totalWidth - padding * 2)).widths;
+  // Target = the non-label content area (the primary/label column is positioned
+  // separately via labelWidth and excluded from allColumns).
+  const flexWidths = resolveFlexWidths(
+    flexColSpecs,
+    Math.max(0, totalWidth - padding * 2 - labelWidth),
+  ).widths;
 
 
   // Total height: include full axis area only when a column actually renders
@@ -3515,9 +3525,11 @@ export function computeLayoutMetrics(
     (c) => c.id !== primaryCol?.id,
   );
 
-  // Mirror generateSVG's getColWidth precedence (autoWidths → explicit →
-  // forest/viz/default).
+  // Mirror generateSVG's getColWidth: multi-flex distribution first, then the
+  // legacy precedence (autoWidths → explicit → forest/viz/default).
   const colWidth = (col: ColumnSpec): number => {
+    const flexed = layout.flexWidths?.[col.id];
+    if (typeof flexed === "number") return flexed;
     const pre = layout.autoWidths.get(col.id);
     if (pre !== undefined) return pre;
     if (col.type === "forest") {
@@ -3981,17 +3993,19 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Calculate auto-widths for columns
   const autoWidths = layout.autoWidths;
 
-  // Helper to get column width
+  // Helper to get column width. Multi-flex (B-wire-2): every non-primary column's
+  // width comes from the weighted distribution (layout.flexWidths) — forest/viz
+  // included (forest is just a high-weight column, no longer a special scalar).
+  // The legacy per-type fallbacks remain for any column missing from the map.
   const getColWidth = (col: ColumnSpec): number => {
+    const flexed = layout.flexWidths?.[col.id];
+    if (typeof flexed === "number") return flexed;
     if (col.type === "forest") {
-      // Forest column width: check autoWidths (from web view) first, then col.width, then options, then layout
-      // autoWidths includes the resized width if user manually resized the forest column
       const precomputed = autoWidths.get(col.id);
       if (precomputed !== undefined) return precomputed;
       if (typeof col.width === "number") return col.width;
       return col.options?.forest?.width ?? layout.forestWidth;
     }
-    // Viz column widths: check autoWidths first, then col.width, then layout default
     if (col.type === "viz_bar" || col.type === "viz_boxplot" || col.type === "viz_violin") {
       const precomputed = autoWidths.get(col.id);
       if (precomputed !== undefined) return precomputed;
