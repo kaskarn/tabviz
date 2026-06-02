@@ -82,6 +82,7 @@
     computeVizViolinDomain,
   } from "$lib/viz-domain-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
+  import { buildScale, safeLogDomain, forestScaleRange, type ForestScale } from "$lib/layout/forest-scale";
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
@@ -1009,13 +1010,10 @@
 
   // Compute shared scales for viz columns (so all rows share the same scale)
   const vizColumnScales = $derived.by(() => {
-    const scales = new Map<string, ReturnType<typeof scaleLinear<number, number>>>();
-    // Use consistent padding for all viz column scales
-    const vizPadding = VIZ_MARGIN;
+    const scales = new Map<string, ForestScale>();
 
     for (const vc of vizColumns) {
       const col = vc.column;
-      const padding = vizPadding;
 
       // Pull current page's data rows once per loop iteration; the
       // domain helpers below are shape-agnostic.
@@ -1030,12 +1028,12 @@
       function buildVizScale(
         scaleKind: "linear" | "log" | undefined,
         domain: { min: number; max: number },
-      ): ReturnType<typeof scaleLinear<number, number>> | ReturnType<typeof scaleLog<number, number>> {
+      ): ForestScale {
         const vizWidth = effectiveVizWidth(col);
         const [zMin, zMax] = store.getEffectiveDomain(col.id, [domain.min, domain.max]);
-        return scaleKind === "log"
-          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
+        const type = scaleKind === "log" ? "log" : "linear";
+        const dom = type === "log" ? safeLogDomain([zMin, zMax]) : [zMin, zMax] as [number, number];
+        return buildScale(type, dom, forestScaleRange(vizWidth));
       }
 
       if (col.type === "viz_bar") {
@@ -1759,7 +1757,7 @@
               columnId: fc.column.id,
               isLog,
               getDomain: () => colScale.domain() as [number, number],
-              getPixelRange: () => [VIZ_MARGIN, Math.max(forestWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+              getPixelRange: () => forestScaleRange(forestWidth),
               onChange: (d) => store.setAxisZoom(fc.column.id, d),
               onReset: () => store.resetAxisZoom(fc.column.id),
               enabled: true,
@@ -1943,7 +1941,7 @@
                 columnId: vc.column.id,
                 isLog: vcIsLog,
                 getDomain: () => (sharedScale ? (sharedScale.domain() as [number, number]) : [0, 1]),
-                getPixelRange: () => [VIZ_MARGIN, Math.max(vizWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+                getPixelRange: () => forestScaleRange(vizWidth),
                 onChange: (d) => store.setAxisZoom(vc.column.id, d),
                 onReset: () => store.resetAxisZoom(vc.column.id),
                 enabled: !!sharedScale,
@@ -1983,10 +1981,9 @@
                     row={displayRow.row}
                     yPosition={markerY}
                     rowHeight={rowH}
-                    width={vizWidth}
                     options={vizOpts}
                     {theme}
-                    {sharedScale}
+                    sharedScale={sharedScale!}
                   />
                 {/if}
               {/each}
@@ -2032,7 +2029,7 @@
                 columnId: vc.column.id,
                 isLog: vcIsLog,
                 getDomain: () => (sharedScale ? (sharedScale.domain() as [number, number]) : [0, 1]),
-                getPixelRange: () => [VIZ_MARGIN, Math.max(vizWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+                getPixelRange: () => forestScaleRange(vizWidth),
                 onChange: (d) => store.setAxisZoom(vc.column.id, d),
                 onReset: () => store.resetAxisZoom(vc.column.id),
                 enabled: !!sharedScale,
@@ -2072,10 +2069,9 @@
                     row={displayRow.row}
                     yPosition={markerY}
                     rowHeight={rowH}
-                    width={vizWidth}
                     options={vizOpts}
                     {theme}
-                    {sharedScale}
+                    sharedScale={sharedScale!}
                   />
                 {/if}
               {/each}
@@ -2121,7 +2117,7 @@
                 columnId: vc.column.id,
                 isLog: vcIsLog,
                 getDomain: () => (sharedScale ? (sharedScale.domain() as [number, number]) : [0, 1]),
-                getPixelRange: () => [VIZ_MARGIN, Math.max(vizWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+                getPixelRange: () => forestScaleRange(vizWidth),
                 onChange: (d) => store.setAxisZoom(vc.column.id, d),
                 onReset: () => store.resetAxisZoom(vc.column.id),
                 enabled: !!sharedScale,
@@ -2161,10 +2157,9 @@
                     row={displayRow.row}
                     yPosition={markerY}
                     rowHeight={rowH}
-                    width={vizWidth}
                     options={vizOpts}
                     {theme}
-                    {sharedScale}
+                    sharedScale={sharedScale!}
                   />
                 {/if}
               {/each}

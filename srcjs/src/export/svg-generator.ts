@@ -2365,14 +2365,15 @@ function vizScaleFromDomain(
   isLog: boolean,
   domainOverride?: [number, number] | null,
 ): Scale {
-  const padding = VIZ_MARGIN;
+  // Shared inset range + log clamp (forest-scale.ts) — same constants as the
+  // forest scale + the DOM viz path, so the three can't drift.
+  const range = forestScaleRange(vizWidth);
   // Pan/zoom override from browser wins outright — bit-identical parity
   // with what the user sees in the viewport.
   const [lo, hi] = domainOverride ?? [domain.min, domain.max];
-  if (isLog) {
-    return createLogScale([Math.max(0.01, lo), hi], [padding, vizWidth - padding]);
-  }
-  return createLinearScale([lo, hi], [padding, vizWidth - padding]);
+  return isLog
+    ? createLogScale(safeLogDomain([lo, hi]), range)
+    : createLinearScale([lo, hi], range);
 }
 
 function computeVizBarScale(

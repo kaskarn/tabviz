@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Row, WebTheme, VizBoxplotColumnOptions, VizBoxplotEffect, BoxplotStats } from "$types";
-  import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
+  import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeBoxplotStats } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
@@ -9,14 +9,14 @@
     row: Row;
     yPosition: number;
     rowHeight: number;
-    width: number;
     options: VizBoxplotColumnOptions;
     theme: WebTheme | undefined;
-    /** Pre-computed scale (shared across all rows). If not provided, falls back to row-local computation. */
-    sharedScale?: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
+    /** Pre-computed column scale, shared across all rows. Always provided by the
+     *  parent (the only renderer); the column owns scale construction. */
+    sharedScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
   }
 
-  const { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
+  const { row, yPosition, rowHeight, options, theme, sharedScale }: Props = $props();
 
   // Compute stats for each effect
   const effectStats = $derived.by((): (BoxplotStats | null)[] => {
@@ -61,50 +61,7 @@
   // Check if we have valid data
   const hasValidData = $derived(effectStats.some((s) => s !== null));
 
-  // Use shared scale if provided, otherwise compute locally (fallback)
-  const xScale = $derived.by((): ScaleLinear<number, number> | ScaleLogarithmic<number, number> => {
-    if (sharedScale) return sharedScale;
-
-    const isLog = options.scale === "log";
-    const padding = theme?.spacing?.padding ?? 12;
-
-    // Compute domain from data if not specified
-    // WARNING: This results in per-row scaling - not ideal for comparison
-    let domainMin = options.axisRange?.[0];
-    let domainMax = options.axisRange?.[1];
-
-    if (domainMin == null || domainMax == null) {
-      const allValues: number[] = [];
-      for (const stats of effectStats) {
-        if (stats) {
-          allValues.push(stats.min, stats.max);
-          if (options.showOutliers !== false) {
-            allValues.push(...stats.outliers);
-          }
-        }
-      }
-      if (allValues.length > 0) {
-        const dataMin = Math.min(...allValues);
-        const dataMax = Math.max(...allValues);
-        const range = dataMax - dataMin;
-        domainMin = domainMin ?? dataMin - range * 0.05;
-        domainMax = domainMax ?? dataMax + range * 0.05;
-      } else {
-        domainMin = domainMin ?? 0;
-        domainMax = domainMax ?? 100;
-      }
-    }
-
-    if (isLog) {
-      return scaleLog()
-        .domain([Math.max(0.01, domainMin), domainMax])
-        .range([padding, width - padding]);
-    }
-
-    return scaleLinear()
-      .domain([domainMin, domainMax])
-      .range([padding, width - padding]);
-  });
+  const xScale = $derived(sharedScale);
 
   // Box dimensions
   const boxConfig = $derived.by(() => {

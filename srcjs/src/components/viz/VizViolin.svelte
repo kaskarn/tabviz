@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Row, WebTheme, VizViolinColumnOptions, VizViolinEffect, KDEResult } from "$types";
-  import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
+  import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeKDE, computeQuartiles, normalizeKDE } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
@@ -9,14 +9,14 @@
     row: Row;
     yPosition: number;
     rowHeight: number;
-    width: number;
     options: VizViolinColumnOptions;
     theme: WebTheme | undefined;
-    /** Pre-computed scale (shared across all rows). If not provided, falls back to row-local computation. */
-    sharedScale?: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
+    /** Pre-computed column scale, shared across all rows. Always provided by the
+     *  parent (the only renderer); the column owns scale construction. */
+    sharedScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
   }
 
-  const { row, yPosition, rowHeight, width, options, theme, sharedScale }: Props = $props();
+  const { row, yPosition, rowHeight, options, theme, sharedScale }: Props = $props();
 
   // Compute KDE for each effect
   const effectKDEs = $derived.by((): (KDEResult | null)[] => {
@@ -43,44 +43,7 @@
   // Check if we have valid data
   const hasValidData = $derived(effectKDEs.some((k) => k !== null));
 
-  // Use shared scale if provided, otherwise compute locally (fallback)
-  const xScale = $derived.by((): ScaleLinear<number, number> | ScaleLogarithmic<number, number> => {
-    if (sharedScale) return sharedScale;
-
-    const isLog = options.scale === "log";
-    const padding = theme?.spacing?.padding ?? 12;
-
-    // Compute domain from all KDE x values if not specified
-    // WARNING: This results in per-row scaling - not ideal for comparison
-    let domainMin = options.axisRange?.[0];
-    let domainMax = options.axisRange?.[1];
-
-    if (domainMin == null || domainMax == null) {
-      const allXValues: number[] = [];
-      for (const kde of effectKDEs) {
-        if (kde && kde.x.length > 0) {
-          allXValues.push(...kde.x);
-        }
-      }
-      if (allXValues.length > 0) {
-        domainMin = domainMin ?? Math.min(...allXValues);
-        domainMax = domainMax ?? Math.max(...allXValues);
-      } else {
-        domainMin = domainMin ?? 0;
-        domainMax = domainMax ?? 100;
-      }
-    }
-
-    if (isLog) {
-      return scaleLog()
-        .domain([Math.max(0.01, domainMin), domainMax])
-        .range([padding, width - padding]);
-    }
-
-    return scaleLinear()
-      .domain([domainMin, domainMax])
-      .range([padding, width - padding]);
-  });
+  const xScale = $derived(sharedScale);
 
   // Violin dimensions
   const violinConfig = $derived.by(() => {
