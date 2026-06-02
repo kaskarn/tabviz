@@ -655,7 +655,7 @@ update_column <- function(x, field, ...) {
     cli_warn("No changes passed to {.fn update_column}")
   }
 
-  top_props <- c("header", "align", "header_align", "wrap", "sortable", "width")
+  top_props <- c("header", "align", "header_align", "wrap", "sortable", "width", "flex")
 
   apply_col <- function(col) {
     for (nm in names(changes)) {

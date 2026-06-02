@@ -538,11 +538,17 @@ export interface ColumnSpec {
   wrap?: boolean | number;
   sortable: boolean;
   /**
-   * Whether the column absorbs remaining width when the save-time aspect
-   * ratio differs from natural. Defaults via type: `forest` / `viz_bar` /
-   * `viz_boxplot` / `viz_violin` => true, everything else => false.
+   * Flex weight + aspect participation for the multi-flex width distribution.
+   *  - `number` N — explicit flex weight: this column gets share ∝ N × natural
+   *    (overriding the schema's per-type default weight); N > 0 also absorbs
+   *    aspect-reshape width, N = 0 pins it to natural.
+   *  - `true` — schema-default weight + absorbs aspect width.
+   *  - `false` — schema-default weight, does NOT absorb aspect width.
+   *  - unset — defaults via type: forest / viz_bar / viz_boxplot / viz_violin
+   *    => true, everything else => false.
+   * See `lib/layout/flex-weights.ts` + docs/dev/multi-flex-columns.md.
    */
-  flex?: boolean;
+  flex?: boolean | number;
   options?: ColumnOptions;
   isGroup: false;
   // Style mapping: column names containing per-cell style values

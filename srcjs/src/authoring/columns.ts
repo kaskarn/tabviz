@@ -50,10 +50,12 @@ export interface CommonColumnArgs {
   /** Sortable column. Default `true`. */
   sortable?: boolean;
   /**
-   * Absorb remaining width when save-time aspect ratio differs from natural.
-   * Default `true` for `forest`/`viz_*`, `false` for everything else.
+   * Flex weight + aspect participation. A `number` sets this column's explicit
+   * flex weight (share of distributed width ∝ weight × natural, overriding the
+   * type default); `true`/`false` keep the schema-default weight and toggle
+   * aspect-width absorption. Default `true` for `forest`/`viz_*`, `false` else.
    */
-  flex?: boolean;
+  flex?: boolean | number;
   /**
    * Per-cell style mappings — each value is a column name whose row values
    * drive that style attribute (e.g. `style.bold = "is_significant"`).

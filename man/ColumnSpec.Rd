@@ -59,8 +59,10 @@ track auto-grows to fit.}
 
 \item{sortable}{Whether the column is sortable}
 
-\item{flex}{Whether the column absorbs remaining width when the
-save-time aspect ratio differs from natural. Default per type:
+\item{flex}{Flex weight + aspect participation. A \code{numeric} value sets the
+column's explicit flex weight (share of distributed width proportional to
+weight x natural, overriding the per-type default); \code{TRUE}/\code{FALSE} keep the
+default weight and toggle aspect-width absorption. Default per type:
 \code{viz_forest} / \code{viz_bar} / \code{viz_boxplot} / \code{viz_violin} => \code{TRUE},
 every other column => \code{FALSE}. See \code{web_col()} for the resolver.}
 

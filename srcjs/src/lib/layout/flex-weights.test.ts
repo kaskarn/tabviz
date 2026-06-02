@@ -1,11 +1,11 @@
 // Tests for the schema-backed flex-weight accessors.
 
 import { test, expect, describe } from "bun:test";
-import { flexWeightForColumn, vizNaturalWidthForColumn, DEFAULT_FLEX_WEIGHT } from "./flex-weights";
+import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect, DEFAULT_FLEX_WEIGHT } from "./flex-weights";
 import type { ColumnSpec } from "../../types";
 
-const col = (type: string): ColumnSpec =>
-  ({ id: "c", type, field: "f", options: {} } as unknown as ColumnSpec);
+const col = (type: string, flex?: boolean | number): ColumnSpec =>
+  ({ id: "c", type, field: "f", options: {}, ...(flex !== undefined ? { flex } : {}) } as unknown as ColumnSpec);
 
 describe("flexWeightForColumn (reads ColumnSchema.flexWeight)", () => {
   test("plots weigh more than text; penalized types weigh less", () => {
@@ -21,6 +21,29 @@ describe("flexWeightForColumn (reads ColumnSchema.flexWeight)", () => {
 
   test("forest carries the highest starter weight", () => {
     expect(flexWeightForColumn(col("forest"))).toBe(8);
+  });
+
+  test("numeric `flex` overrides the schema weight; clamped to ≥ 0", () => {
+    expect(flexWeightForColumn(col("forest", 2))).toBe(2);   // override below default
+    expect(flexWeightForColumn(col("text", 5))).toBe(5);     // override above default
+    expect(flexWeightForColumn(col("forest", 0))).toBe(0);   // pinned
+    expect(flexWeightForColumn(col("text", -3))).toBe(0);    // clamped
+  });
+
+  test("boolean `flex` does NOT change the weight (only aspect participation)", () => {
+    expect(flexWeightForColumn(col("forest", true))).toBe(8);
+    expect(flexWeightForColumn(col("forest", false))).toBe(8);
+    expect(flexWeightForColumn(col("text", false))).toBe(DEFAULT_FLEX_WEIGHT);
+  });
+});
+
+describe("columnFlexesForAspect", () => {
+  test("true / positive number → participates; false / 0 / unset → not", () => {
+    expect(columnFlexesForAspect(col("forest", true))).toBe(true);
+    expect(columnFlexesForAspect(col("text", 3))).toBe(true);
+    expect(columnFlexesForAspect(col("forest", false))).toBe(false);
+    expect(columnFlexesForAspect(col("forest", 0))).toBe(false);
+    expect(columnFlexesForAspect(col("forest"))).toBe(false); // unset (authoring sets the default)
   });
 });
 

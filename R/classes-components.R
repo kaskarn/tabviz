@@ -20,8 +20,10 @@
 #'   segments word-wrap within the column's content width. The row
 #'   track auto-grows to fit.
 #' @param sortable Whether the column is sortable
-#' @param flex Whether the column absorbs remaining width when the
-#'   save-time aspect ratio differs from natural. Default per type:
+#' @param flex Flex weight + aspect participation. A `numeric` value sets the
+#'   column's explicit flex weight (share of distributed width proportional to
+#'   weight x natural, overriding the per-type default); `TRUE`/`FALSE` keep the
+#'   default weight and toggle aspect-width absorption. Default per type:
 #'   `viz_forest` / `viz_bar` / `viz_boxplot` / `viz_violin` => `TRUE`,
 #'   every other column => `FALSE`. See `web_col()` for the resolver.
 #' @param options Named list of type-specific options
@@ -57,12 +59,13 @@ ColumnSpec <- new_class(
     # validator below normalises and rejects malformed values.
     wrap = new_property(class_any, default = FALSE),
     sortable = new_property(class_logical, default = TRUE),
-    # Whether the column participates in flex absorption when the save-time
-    # aspect ratio differs from natural. TRUE = absorbs remaining width
-    # (capped at [1/cap, cap]); FALSE = pinned at natural / explicit width.
-    # Default per type: viz_forest / viz_bar / viz_boxplot / viz_violin -> TRUE,
-    # everything else -> FALSE. See `web_col()` for the resolver.
-    flex = new_property(class_logical, default = FALSE),
+    # Flex weight + aspect participation in the multi-flex width distribution.
+    # A NUMBER is an explicit flex weight (share of distributed width
+    # proportional to weight x natural, overriding the per-type schema default);
+    # TRUE/FALSE keep the schema-default weight and toggle aspect-width
+    # absorption. Default per type: forest / viz_bar / viz_boxplot / viz_violin
+    # -> TRUE, everything else -> FALSE. See `web_col()` + flex-weights.ts.
+    flex = new_property(class_any, default = FALSE),
     options = new_property(class_list, default = list()),
     # Per-cell style mappings: column names (character) or formulas (~)
     # Formulas are resolved in web_spec() when data is available
@@ -199,13 +202,14 @@ is_reserved_id <- function(id) {
 #'   segments word-wrap within the column's content width. The row
 #'   track auto-grows to fit.
 #' @param sortable Whether sortable
-#' @param flex Whether the column absorbs remaining width when the
-#'   save-time aspect ratio differs from the spec's natural aspect.
+#' @param flex Flex weight + aspect participation. A `numeric` value sets the
+#'   column's explicit flex weight (share of distributed width proportional to
+#'   weight x natural, overriding the per-type default); `TRUE`/`FALSE` keep the
+#'   default weight and toggle aspect-width absorption.
 #'   `NULL` (default) resolves by type: `viz_forest()`, `viz_bar()`,
 #'   `viz_boxplot()`, `viz_violin()` default to `TRUE`; every other
-#'   column type defaults to `FALSE`. Pass `TRUE` / `FALSE` explicitly to
-#'   override. See `save_plot(flex = ...)` for the per-render cap on
-#'   how far flex columns may stretch.
+#'   column type defaults to `FALSE`. See `save_plot(flex = ...)` for the
+#'   per-render cap on how far flex columns may stretch.
 #' @param options Named list of type-specific options
 #' @param na_text Text to display for NA/missing values (default "" for empty)
 #' @param bold Column name containing logical values for per-cell bold styling
@@ -259,11 +263,14 @@ web_col <- function(
   type <- match.arg(type)
 
   # Resolve flex default by type. The four "viz" / forest types absorb
-  # remaining width by default (matches the existing implicit behavior
-  # for forest); every other column pins to its natural / explicit width.
-  # Per-call `flex = TRUE/FALSE` from the constructor wins.
+  # remaining width by default; every other column pins to its natural /
+  # explicit width. A per-call `flex` wins: a NUMBER sets an explicit flex
+  # weight, TRUE/FALSE toggles aspect absorption at the schema-default weight.
   flex_resolved <- if (is.null(flex)) {
     type %in% c("forest", "viz_bar", "viz_boxplot", "viz_violin")
+  } else if (is.numeric(flex)) {
+    checkmate::assert_number(flex, lower = 0)
+    flex
   } else {
     checkmate::assert_flag(flex)
     flex

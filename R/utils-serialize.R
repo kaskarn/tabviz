@@ -433,7 +433,8 @@ serialize_column <- function(col) {
     # TRUE -> 1, integer passes through. Frontend reads max-extra-lines.
     wrap = if (is.logical(col@wrap)) as.integer(col@wrap) else as.integer(col@wrap),
     sortable = col@sortable,
-    flex = isTRUE(col@flex),
+    # Numeric flex = explicit weight; logical = aspect-participation flag.
+    flex = if (is.numeric(col@flex)) as.numeric(col@flex) else isTRUE(col@flex),
     isGroup = FALSE
   )
 

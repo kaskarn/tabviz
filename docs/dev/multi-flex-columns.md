@@ -119,6 +119,24 @@ ladder is unchanged; its width levers delegate to the new engine in Phase C.
 **~2–3 weeks.** The risky step is **B** (default fill behavior changes) — isolated
 to its own commit with a visual checkpoint, like the aspect flex-flag change.
 
+### Phase status (2026-06-02)
+
+- **A / B / C — done.** Engine (`flex-distribute.ts`), wired into both backends
+  (`forestWidth` scalar retired — see Status below), aspect on the weighted
+  distribution.
+- **D — done.** Per-column flex **weight** is now author-settable: `flex` widened
+  from `boolean` to **`boolean | number`** (number = explicit weight overriding
+  the schema default; `true`/`false` keep the default weight and toggle aspect
+  participation). `flexWeightForColumn` honors the numeric override;
+  `columnFlexesForAspect` centralizes the aspect predicate (both export
+  `isFlex` sites use it). Threaded through R (`web_col`/`col_*` accept numeric,
+  `ColumnSpec@flex` is `class_any`, serialize emits numeric, `update_column`
+  whitelists `flex`) + TS authoring. The two old "flex" concepts (aspect
+  boolean vs schema weight) are now one field.
+- **E — done.** Global `xScale` retired (see `region-tree.md` §5 / forest-scale).
+  Circumstantial Tier-2 weight tuning (wrapped-text / shrunk-pictogram) remains
+  the only unbuilt sliver, deferred until a concrete need.
+
 ## Key change surface (from scoping)
 
 - Export: `computeLayout` forestWidth derivation (`svg-generator.ts` ~785–846),

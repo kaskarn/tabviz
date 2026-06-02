@@ -54,7 +54,7 @@ import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalab
 import { markdownToPlainText } from "$lib/markdown";
 import { computeAspectLadder, minRowHeightFor } from "$lib/layout/aspect-ladder";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
-import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
+import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
@@ -816,7 +816,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // schema-designed natural (naturalWidthPx); others use explicit/measured. The
   // weighted distribution below grows columns from these to fill totalWidth.
   const isFlexColumn = (c: ColumnSpec): boolean =>
-    c.flex === true && (c.width === "auto" || c.width == null);
+    columnFlexesForAspect(c) && (c.width === "auto" || c.width == null);
   const hasFlexColumns = allColumns.some(isFlexColumn);
 
   const colNaturalWidth = (c: ColumnSpec): number => {
@@ -3648,7 +3648,7 @@ function generateSVGForAspectTarget(
   // (`flex !== true && width is auto/null`) participate in Lever 1B.
   // Pinned columns (numeric width) are immutable.
   const isFlex = (c: ColumnSpec): boolean =>
-    c.flex === true && (c.width === "auto" || c.width == null);
+    columnFlexesForAspect(c) && (c.width === "auto" || c.width == null);
   const isNonFlexAuto = (c: ColumnSpec): boolean =>
     !isFlex(c) && (c.width === "auto" || c.width == null);
   const nonFlexAutoCols = allColumns.filter(isNonFlexAuto);

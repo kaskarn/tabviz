@@ -68,13 +68,14 @@ track auto-grows to fit.}
 
 \item{sortable}{Whether sortable}
 
-\item{flex}{Whether the column absorbs remaining width when the
-save-time aspect ratio differs from the spec's natural aspect.
+\item{flex}{Flex weight + aspect participation. A \code{numeric} value sets the
+column's explicit flex weight (share of distributed width proportional to
+weight x natural, overriding the per-type default); \code{TRUE}/\code{FALSE} keep the
+default weight and toggle aspect-width absorption.
 \code{NULL} (default) resolves by type: \code{viz_forest()}, \code{viz_bar()},
 \code{viz_boxplot()}, \code{viz_violin()} default to \code{TRUE}; every other
-column type defaults to \code{FALSE}. Pass \code{TRUE} / \code{FALSE} explicitly to
-override. See \code{save_plot(flex = ...)} for the per-render cap on
-how far flex columns may stretch.}
+column type defaults to \code{FALSE}. See \code{save_plot(flex = ...)} for the
+per-render cap on how far flex columns may stretch.}
 
 \item{options}{Named list of type-specific options}
 
