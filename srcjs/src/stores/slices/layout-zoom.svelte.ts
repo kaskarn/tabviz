@@ -52,6 +52,7 @@ import type {
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/table-metrics";
 import { computeContentHeights } from "$lib/width-utils";
+import { ASPECT } from "$lib/rendering-constants";
 
 /**
  * Merge measured row heights (real DOM offsetHeight per row) over predicted
@@ -266,7 +267,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     let aspectTargetHeight: number | null = null;
     let layoutWidth = effectiveWidth;
     if (targetAspect != null) {
-      const FLEX_CAP = 2;
+      const FLEX_CAP = ASPECT.FLEX_CAP;
       const naturalForestWidth = forestWidth;
       const hasOverallForBudget = !!spec.data.overall;
       const effectiveRowSlots =
@@ -291,7 +292,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         // Hard cap: layoutWidth never exceeds 8× canvas. TARGET_ASPECT_MAX
         // = 10 keeps `targetAspect` finite; 8× canvas is the practical
         // visible / scrollable cap.
-        const MAX_LAYOUT_WIDTH = approxNaturalWidth * 8;
+        const MAX_LAYOUT_WIDTH = approxNaturalWidth * ASPECT.MAX_LAYOUT_WIDTH_MULT;
         targetHeight = approxNaturalHeight;
         targetWidth = Math.min(approxNaturalHeight * targetAspect, MAX_LAYOUT_WIDTH);
         if (targetWidth > approxNaturalWidth) {
@@ -332,7 +333,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         }
         if (naturalNonForestSum > 0) {
           aspectNonForestScale = Math.max(
-            0.25,
+            ASPECT.NON_FOREST_SCALE_FLOOR,
             (naturalNonForestSum + widthResidual) / naturalNonForestSum,
           );
         }
@@ -342,7 +343,10 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       // generateSVGForAspectTarget in svg-generator.ts.
       const heightDelta = targetHeight - approxNaturalHeight;
       const bodyFontSize = parseFontSize(spec.theme.text.body.size);
-      const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
+      const MIN_ROW_HEIGHT = Math.max(
+        ASPECT.MIN_ROW_HEIGHT.FLOOR,
+        Math.round(bodyFontSize * ASPECT.MIN_ROW_HEIGHT.LINE_FACTOR) + ASPECT.MIN_ROW_HEIGHT.PAD,
+      );
       const naturalChromeHeight = approxChromeHeight;
       const naturalPlotHeight = approxRowsHeight;
       // chromeScale denominator: the scalable subset of natural chrome.
@@ -362,7 +366,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       });
 
       if (heightDelta > 0 && naturalPlotHeight > 0) {
-        const CHROME_SHARE = 0.35;
+        const CHROME_SHARE = ASPECT.CHROME_SHARE;
         const chromeDelta = heightDelta * CHROME_SHARE;
         const rowDelta = heightDelta - chromeDelta;
         if (scalableChromeHeight > 0)
@@ -381,7 +385,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
             targetHeight - (naturalChromeHeight + flooredPlotHeight);
           if (scalableChromeHeight > 0) {
             chromeScale = Math.max(
-              0.4,
+              ASPECT.CHROME_SCALE_FLOOR,
               (scalableChromeHeight + residualHeight) / scalableChromeHeight,
             );
           }

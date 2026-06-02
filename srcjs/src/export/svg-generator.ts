@@ -76,6 +76,7 @@ import {
   EFFECT,
   getEffectYOffset,
   AXIS,
+  ASPECT,
 } from "$lib/rendering-constants";
 import {
   formatNumber,
@@ -3606,7 +3607,7 @@ function generateSVGForAspectTarget(
 ): string {
   const targetWidth = options.targetWidth as number;
   const targetHeight = options.targetHeight as number;
-  const flexCap = Math.max(1, options.flexCap ?? 2);
+  const flexCap = Math.max(1, options.flexCap ?? ASPECT.FLEX_CAP);
 
   // ----- Natural baseline -----
   const naturalLayout = computeLayout(spec, {});
@@ -3651,7 +3652,7 @@ function generateSVGForAspectTarget(
   let nonFlexScale = 1;
   if (Math.abs(widthResidual) > 0.5 && naturalNonFlexSum > 0) {
     nonFlexScale = Math.max(
-      0.25,
+      ASPECT.NON_FOREST_SCALE_FLOOR,
       (naturalNonFlexSum + widthResidual) / naturalNonFlexSum,
     );
   }
@@ -3698,7 +3699,10 @@ function generateSVGForAspectTarget(
   // matches the line-height + 4 px breathing pattern used in
   // computeAxisLayout / measureWrap. Falls back to 14 px floor.
   const bodyFontSize = parseFontSize(spec.theme.text.body.size);
-  const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
+  const MIN_ROW_HEIGHT = Math.max(
+    ASPECT.MIN_ROW_HEIGHT.FLOOR,
+    Math.round(bodyFontSize * ASPECT.MIN_ROW_HEIGHT.LINE_FACTOR) + ASPECT.MIN_ROW_HEIGHT.PAD,
+  );
 
   let rowHeightScale = 1;
   let chromeScale = 1;
@@ -3809,7 +3813,7 @@ function generateSVGForAspectTarget(
     // Taller: chrome takes a fixed share, rowHeight takes the rest.
     // Without auto-wrap (Phase 7D), this avoids 100 % rowHeight
     // ballooning at very tall aspects.
-    const CHROME_SHARE = 0.35;
+    const CHROME_SHARE = ASPECT.CHROME_SHARE;
     const chromeDelta = heightDelta * CHROME_SHARE;
     const rowDelta = heightDelta - chromeDelta;
     if (scalableChromeHeight > 0)
@@ -3830,7 +3834,7 @@ function generateSVGForAspectTarget(
       const residualHeight = targetHeight - (naturalChromeHeight + flooredPlotHeight);
       if (scalableChromeHeight > 0) {
         chromeScale = Math.max(
-          0.4,
+          ASPECT.CHROME_SCALE_FLOOR,
           (scalableChromeHeight + residualHeight) / scalableChromeHeight,
         );
       }

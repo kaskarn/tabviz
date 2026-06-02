@@ -394,6 +394,37 @@ export const CELL_GEOMETRY = {
 } as const;
 
 // ============================================================================
+// Aspect ladder — shared tuning constants
+// ============================================================================
+
+/**
+ * Tuning constants for the aspect-ratio reshape ("aspect ladder"). The DOM path
+ * (`stores/slices/layout-zoom.svelte.ts`) and the static-export path
+ * (`export/svg-generator.ts::generateSVGForAspectTarget`) run the same algorithm
+ * and MUST agree pixel-for-pixel, so they read these from one place rather than
+ * duplicating literals kept in sync by hand. This is the constants surface only;
+ * the algorithm itself is intentionally NOT consolidated here (that is the
+ * separate aspect-ladder compartmentalization work).
+ */
+export const ASPECT = {
+  /** Forest flex absorption cap: forest width clamps to [natural/CAP, natural×CAP]. */
+  FLEX_CAP: 2,
+  /** Lower bound on the non-forest column scale so columns can't collapse to zero. */
+  NON_FOREST_SCALE_FLOOR: 0.25,
+  /** Fraction of a positive height-delta routed to chrome (the rest grows rows). */
+  CHROME_SHARE: 0.35,
+  /** Lower bound on chromeScale once the row-height floor has saturated. */
+  CHROME_SCALE_FLOOR: 0.4,
+  /**
+   * Minimum legible data-row height when shrinking:
+   * `max(FLOOR, round(bodyFontSize × LINE_FACTOR) + PAD)`.
+   */
+  MIN_ROW_HEIGHT: { FLOOR: 14, LINE_FACTOR: 1.4, PAD: 4 },
+  /** Height-anchored layout-width hard cap = natural width × this (DOM path only). */
+  MAX_LAYOUT_WIDTH_MULT: 8,
+} as const;
+
+// ============================================================================
 // Axis Rendering Constants
 // ============================================================================
 
