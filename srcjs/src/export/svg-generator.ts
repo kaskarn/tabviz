@@ -3827,8 +3827,7 @@ function generateSVGForAspectTarget(
     minRowHeight: MIN_ROW_HEIGHT,
     heightDeltaConsumed: autoWrapConsumedDelta,
   });
-  const targetForestWidth = ladder.flexWidth;
-  const nonFlexScale = ladder.nonFlexScale;
+  // Height ladder outputs (width comes from the multi-flex distribution below).
   const rowHeightScale = ladder.rowHeightScale;
   const chromeScale = ladder.chromeScale;
 
@@ -3837,28 +3836,35 @@ function generateSVGForAspectTarget(
     ? structuredClone(spec)
     : JSON.parse(JSON.stringify(spec))) as WebSpec;
 
-  // 1A: pin flex column width via layout.plotWidth (the renderer's
-  // forestWidth override).
-  if (adjustedSpec.layout) {
-    adjustedSpec.layout.plotWidth = targetForestWidth;
-  } else {
-    (adjustedSpec as { layout?: { plotWidth?: number } }).layout = {
-      plotWidth: targetForestWidth,
-    };
-  }
-
-  // 1B: write explicit numeric widths on non-flex auto-width columns
-  // so the inner render uses them directly instead of recomputing
-  // auto-widths from content.
-  if (Math.abs(nonFlexScale - 1) > 1e-6) {
-    for (const col of flattenAllColumns(adjustedSpec.columns)) {
-      if (isNonFlexAuto(col)) {
-        const natural = autoWidths.get(col.id);
-        if (typeof natural === "number") {
-          col.width = natural * nonFlexScale;
-        }
-      }
-    }
+  // Width: distribute the aspect target across all (non-primary) columns by
+  // weight × natural, cap-bounded (cap === flexCap; 1 = flex disabled), then pin
+  // each column's width so the inner render reproduces it exactly. Replaces the
+  // old single-forest absorption + non-flex scale; matches the DOM aspect path.
+  // (docs/dev/multi-flex-columns.md)
+  const aspectPadding = spec.theme.spacing.padding ?? 16;
+  const aspectPrimaryId = getPrimaryColumn(spec.columns)?.id;
+  const aspectFlexSpecs: ColumnWidthSpec[] = allColumns
+    .filter((c) => c.id !== aspectPrimaryId)
+    .map((c) => {
+      const explicit = typeof c.width === "number" ? c.width : null;
+      const measured = autoWidths.get(c.id);
+      const natural = explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
+      return {
+        id: c.id,
+        naturalWidth: natural,
+        flexWeight: flexWeightForColumn(c),
+        explicitWidth: explicit,
+        minWidth: measured ?? undefined,
+        cap: flexCap,
+      };
+    });
+  const aspectWidths = resolveFlexWidths(
+    aspectFlexSpecs,
+    Math.max(0, targetWidth - aspectPadding * 2 - naturalLayout.labelWidth),
+  ).widths;
+  for (const col of flattenAllColumns(adjustedSpec.columns)) {
+    const w = aspectWidths[col.id];
+    if (typeof w === "number") col.width = w;
   }
 
   // 7D: write bumped wrap values onto eligible columns. Renderer

@@ -147,8 +147,9 @@ export function resolveFlexWidths(
     const natural = pinned ? (c.explicitWidth as number) : c.naturalWidth;
     const weight = pinned ? 0 : c.flexWeight * natural;
     const min = pinned ? natural : c.minWidth ?? 0;
-    if (!pinned && typeof c.cap === "number" && c.cap > 1) {
+    if (!pinned && typeof c.cap === "number" && c.cap >= 1) {
       // Aspect cap → symmetric bounds around natural (content floor still wins).
+      // cap === 1 pins to natural (flex disabled, e.g. save_plot(flex=FALSE)).
       return { id: c.id, natural, weight, min: Math.max(min, natural / c.cap), max: natural * c.cap };
     }
     return { id: c.id, natural, weight, min, max: pinned ? natural : Number.POSITIVE_INFINITY };

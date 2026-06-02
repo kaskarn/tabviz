@@ -166,6 +166,16 @@ describe("resolveFlexWidths (proportional policy: weight = flexWeight × natural
     expect(r.widths.f).toBeLessThanOrEqual(400 + 0.5);
   });
 
+  test("cap=1 pins columns to natural (flex disabled)", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "f", naturalWidth: 200, flexWeight: 8, cap: 1 },
+      { id: "t", naturalWidth: 100, flexWeight: 1, cap: 1 },
+    ];
+    const r = resolveFlexWidths(cols, 900); // wants to grow but cap=1 pins all
+    approx(r.widths.f, 200);
+    approx(r.widths.t, 100);
+  });
+
   test("shrink floors at content min, redistributes", () => {
     const cols: ColumnWidthSpec[] = [
       { id: "a", naturalWidth: 100, flexWeight: 1, minWidth: 80 },
