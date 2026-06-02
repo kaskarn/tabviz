@@ -699,19 +699,13 @@
     // ranges agree. (Earlier draft put `col.width` first, which could
     // ignore a user resize on a column that had an authored width —
     // unified now.)
+    // Multi-flex: width comes from the weighted distribution (layout.flexWidths).
+    const flexed = layout.flexWidths?.[col.id];
+    if (typeof flexed === "number") return flexed;
     const dynamicWidth = columnWidthsSnapshot[col.id];
-    const userResized = store.userResizedIds?.has?.(col.id) ?? false;
-    let base: number;
-    if (typeof dynamicWidth === "number") {
-      base = dynamicWidth;
-    } else if (typeof col.width === "number") {
-      base = col.width;
-    } else {
-      base = layout.forestWidth;
-    }
-    const scale = layout.aspectNonForestScale ?? 1;
-    if (userResized || Math.abs(scale - 1) < 1e-6) return base;
-    return base * scale;
+    if (typeof dynamicWidth === "number") return dynamicWidth;
+    if (typeof col.width === "number") return col.width;
+    return layout.forestWidth;
   }
 
   /**
@@ -739,35 +733,22 @@
     if (vizColumnTypes.includes(col.type)) {
       return effectiveVizWidth(col);
     }
-    // Non-viz data column: parse the same priority + scale as
-    // `getColWidth()`.
+    // Non-viz data column: width from the multi-flex distribution.
+    const flexed = layout.flexWidths?.[col.id];
+    if (typeof flexed === "number") return flexed;
     const dynamicWidth = columnWidthsSnapshot[col.id];
-    const userResized = store.userResizedIds?.has?.(col.id) ?? false;
-    let base: number;
-    if (typeof dynamicWidth === "number") base = dynamicWidth;
-    else if (typeof col.width === "number") base = col.width;
-    else return 80; // fallback for "auto"-string columns awaiting measurement
-    const scale = layout.aspectNonForestScale ?? 1;
-    if (userResized || Math.abs(scale - 1) < 1e-6) return base;
-    return base * scale;
+    if (typeof dynamicWidth === "number") return dynamicWidth;
+    if (typeof col.width === "number") return col.width;
+    return 80; // fallback for "auto"-string columns awaiting measurement
   }
 
   function getColWidth(column: ColumnSpec): string {
-    // Phase 7E Lever 1B: scale measured / explicit widths by the aspect
-    // factor when an aspect target expanded the layout past flex
-    // saturation. Forest columns have their own (layout-driven) path so
-    // aren't multiplied here. User-resized columns are pinned at the
-    // exact resize value (the aspect scale only applies to columns the
-    // user hasn't manually resized).
-    const scale = layout.aspectNonForestScale ?? 1;
-    const userResized = store.userResizedIds?.has?.(column.id) ?? false;
-    const apply = (w: number): string => {
-      if (userResized || Math.abs(scale - 1) < 1e-6) return `${w}px`;
-      return `${w * scale}px`;
-    };
+    // Multi-flex: width comes from the weighted distribution (layout.flexWidths).
+    const flexed = layout.flexWidths?.[column.id];
+    if (typeof flexed === "number") return `${flexed}px`;
     const dynamicWidth = columnWidthsSnapshot[column.id];
-    if (typeof dynamicWidth === "number") return apply(dynamicWidth);
-    if (typeof column.width === "number") return apply(column.width);
+    if (typeof dynamicWidth === "number") return `${dynamicWidth}px`;
+    if (typeof column.width === "number") return `${column.width}px`;
     return "max-content";
   }
 
@@ -1022,7 +1003,7 @@
     // width but their `left` positions stay at the old grid offsets.
     const _ = columnWidthsSnapshot;
     const __ = layout.forestWidth;
-    const ___ = layout.aspectNonForestScale;
+    const ___ = layout.flexWidths;
     const ____ = headerDepth;
 
     // Wait for DOM to update before measuring

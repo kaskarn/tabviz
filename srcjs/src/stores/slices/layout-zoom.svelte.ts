@@ -53,6 +53,8 @@ import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/layout/table-metrics";
 import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
+import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
+import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
 
 /**
  * Merge measured row heights (real DOM offsetHeight per row) over predicted
@@ -243,15 +245,12 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const axisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisGeom.axisRegionHeight);
     const hasForest = forestColumns.length > 0;
     const themePlotWidth = spec.theme.layout?.plotWidth;
-    // forestWidth INTENTIONALLY diverges from the SVG backend and is NOT shared
-    // in table-metrics: the DOM widget is container-responsive
-    // (`effectiveWidth * 0.25`, reflows on resize) while the SVG export sizes
-    // against a fixed canvas (`options.width` residual). This is correct
-    // context-dependence, not drift — converging it would regress one runtime.
-    let forestWidth = hasForest
-      ? (plotWidthOverride
-        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
-      : 0;
+    // Column widths now come from the multi-flex distribution below
+    // (resolveFlexWidths); forest is just a high-weight column. A pinned plot
+    // width (plotWidthOverride / theme.layout.plotWidth) pins the forest column
+    // in that distribution. See docs/dev/multi-flex-columns.md.
+    const pinnedForestWidth =
+      plotWidthOverride ?? (typeof themePlotWidth === "number" ? themePlotWidth : null);
 
     // ── Aspect ladder ───────────────────────────────────────────────────
     //
@@ -261,14 +260,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // svg-generator counterpart — see those for the design rationale.
     // Mirrors the static-export math in svg-generator.ts so the live
     // widget and the downloaded SVG agree pixel-for-pixel.
-    let aspectNonForestScale = 1;
     let chromeScale = 1;
     let aspectTargetWidth: number | null = null;
     let aspectTargetHeight: number | null = null;
     let layoutWidth = effectiveWidth;
     if (targetAspect != null) {
-      const FLEX_CAP = ASPECT.FLEX_CAP;
-      const naturalForestWidth = forestWidth;
       const hasOverallForBudget = !!spec.data.overall;
       const effectiveRowSlots =
         displayRows.length + (hasOverallForBudget ? 1.5 : 0);
@@ -304,40 +300,8 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       }
       aspectTargetWidth = targetWidth;
       aspectTargetHeight = targetHeight;
-
-      // Stage 1 — forest absorption (cap-clamped flex)
-      const widthDelta = targetWidth - approxNaturalWidth;
-      let widthAbsorbedByFlex = 0;
-      if (hasForest && Math.abs(widthDelta) > 0.5) {
-        const proposedFlex = naturalForestWidth + widthDelta;
-        const cappedFlex = Math.max(
-          naturalForestWidth / FLEX_CAP,
-          Math.min(naturalForestWidth * FLEX_CAP, proposedFlex),
-        );
-        forestWidth = Math.max(0, cappedFlex);
-        widthAbsorbedByFlex = cappedFlex - naturalForestWidth;
-      }
-
-      // Stage 2 — non-forest column scale. Denominator is the actual sum
-      // of measured non-flex column widths (NOT approxNaturalWidth -
-      // naturalForestWidth — the latter folds in chrome which makes the
-      // scale factor too small).
-      const widthResidual = widthDelta - widthAbsorbedByFlex;
-      if (Math.abs(widthResidual) > 0.5) {
-        let naturalNonForestSum = 0;
-        for (const c of allColumns) {
-          if (c.type === "forest") continue;
-          const w = columnWidths[c.id]
-            ?? (typeof c.width === "number" ? c.width : 0);
-          naturalNonForestSum += w;
-        }
-        if (naturalNonForestSum > 0) {
-          aspectNonForestScale = Math.max(
-            ASPECT.NON_FOREST_SCALE_FLOOR,
-            (naturalNonForestSum + widthResidual) / naturalNonForestSum,
-          );
-        }
-      }
+      // Width: the multi-flex distribution below absorbs the width delta into
+      // the flex columns (cap-bounded when aspect-pinned). Height ladder follows.
 
       // Height ladder (direction-aware). Mirrors
       // generateSVGForAspectTarget in svg-generator.ts.
@@ -396,6 +360,39 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const scaledHeaderHeight = headerHeight * chromeScale;
     const scaledAxisHeight = axisHeight * chromeScale;
 
+    // ── Multi-flex width distribution ───────────────────────────────────
+    // Distribute the content area across all columns by weight × natural. At
+    // natural this fills the container; with a pinned targetAspect it distributes
+    // into the (possibly grown) layoutWidth, cap-bounded. Forest is a high-weight
+    // column; pinned/user-resized columns are immovable. (docs/dev/multi-flex-columns.md)
+    const FLEX_DEFAULT_COL_WIDTH = 100;
+    const flexCap = targetAspect != null ? ASPECT.FLEX_CAP : undefined;
+    const flexSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
+      const measured = columnWidths[c.id];
+      const userResized = userResizedIds.has(c.id);
+      const forestPin = c.type === "forest" ? pinnedForestWidth : null;
+      const explicit =
+        forestPin ??
+        (userResized && typeof measured === "number" ? measured
+          : typeof c.width === "number" ? c.width : null);
+      const natural =
+        explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? FLEX_DEFAULT_COL_WIDTH;
+      return {
+        id: c.id,
+        naturalWidth: natural,
+        flexWeight: flexWeightForColumn(c),
+        explicitWidth: explicit,
+        minWidth: measured ?? undefined,
+        cap: flexCap,
+      };
+    });
+    const flexWidths = resolveFlexWidths(
+      flexSpecs,
+      Math.max(0, layoutWidth - spec.theme.spacing.padding * 2),
+    ).widths;
+    const firstForestId = forestColumns[0]?.column.id;
+    const forestWidth = (firstForestId != null ? flexWidths[firstForestId] : undefined) ?? 0;
+
     const tableWidth = layoutWidth - forestWidth;
     const hasOverall = !!spec.data.overall;
 
@@ -452,7 +449,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + spec.theme.spacing.padding * 2),
       tableWidth,
       forestWidth,
-      aspectNonForestScale,
+      flexWidths,
       chromeScale,
       aspectTargetWidth,
       aspectTargetHeight,
@@ -479,23 +476,20 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const DEFAULT_COLUMN_WIDTH = 100;
     const allColumns = deps.getAllColumns();
     const columnWidths = deps.getColumnWidths();
-    const userResizedIds = deps.getUserResizedIds();
 
-    const aspectScale = layout.aspectNonForestScale ?? 1;
-    let totalColumnWidth = 0;
+    // The intrinsic ("wants") width = Σ per-column naturals + padding (forest is
+    // a column here, via its designed natural). The fit math scales down when the
+    // container is narrower than this; when wider, the multi-flex distribution
+    // grows columns to fill instead.
+    let total = 0;
     for (const col of allColumns) {
-      if (col.type === "forest") continue;
-      const userResized = userResizedIds.has(col.id);
-      const base = (columnWidths[col.id]
-        ?? (typeof col.width === "number" ? col.width : null)
-        ?? DEFAULT_COLUMN_WIDTH);
-      const scaled = (userResized || Math.abs(aspectScale - 1) < 1e-6)
-        ? base : base * aspectScale;
-      totalColumnWidth += scaled;
+      const natural = (typeof col.width === "number" ? col.width : null)
+        ?? columnWidths[col.id]
+        ?? vizNaturalWidthForColumn(col)
+        ?? DEFAULT_COLUMN_WIDTH;
+      total += natural;
     }
-    const forestWidth = layout.forestWidth;
-    const padding = spec.theme.spacing.padding * 2;
-    return totalColumnWidth + forestWidth + padding;
+    return total + spec.theme.spacing.padding * 2;
   });
 
   // ── Fit + actualScale ──────────────────────────────────────────────────

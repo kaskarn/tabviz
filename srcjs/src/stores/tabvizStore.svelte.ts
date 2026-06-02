@@ -1034,15 +1034,11 @@ export function createTabvizStore() {
       // in absolute overlays that don't consume flow width.
       const widths = columnWidths;
 
-      // Route widths through the aspect ladder so the downloaded SVG
-      // matches what the user sees on screen when an aspect target is
-      // pinned. Forest columns prefer `layout.forestWidth` (Stage 1
-      // output) over the auto-measured header-min width unless the
-      // user manually resized; non-forest columns multiply their
-      // measured width by `layout.aspectNonForestScale` (Stage 2 output)
-      // unless user-resized. Mirrors
-      // `gridTemplateColumns` and `effectiveVizWidth()` in TabvizPlot.
-      const aspectScale = layout.aspectNonForestScale ?? 1;
+      // Multi-flex: per-column widths come straight from the weighted
+      // distribution (layout.flexWidths) — what the user sees on screen,
+      // including any aspect reshape. The export pins these (renders them
+      // faithfully). Legacy fallbacks remain for any column missing the map.
+      const flexWidths = layout.flexWidths ?? {};
 
       // The primary column is the leftmost entry in allColumns — no separate label slot.
       let currentX = 0;
@@ -1054,28 +1050,16 @@ export function createTabvizStore() {
 
         const userResized = userResizedIds.has(col.id);
         let colWidth: number;
-        if (col.type === "forest") {
-          // Forest is structural: prefer explicit author width, then
-          // user-resize override, then the lever-laddered layout
-          // value, then the auto-measured fallback (a header-min that
-          // wouldn't reflect the lever ladder otherwise).
-          if (typeof col.width === "number") {
-            colWidth = col.width;
-          } else if (typeof col.options?.forest?.width === "number") {
-            colWidth = col.options.forest.width;
-          } else if (userResized && typeof widths[col.id] === "number") {
-            colWidth = widths[col.id];
-          } else {
-            colWidth = layout.forestWidth;
-          }
+        const flexed = flexWidths[col.id];
+        if (typeof flexed === "number") {
+          colWidth = flexed;
+        } else if (col.type === "forest") {
+          if (typeof col.width === "number") colWidth = col.width;
+          else if (typeof col.options?.forest?.width === "number") colWidth = col.options.forest.width;
+          else if (userResized && typeof widths[col.id] === "number") colWidth = widths[col.id];
+          else colWidth = layout.forestWidth;
         } else {
-          // Non-forest: measured / explicit width with aspect scale
-          // applied unless the user pinned via drag-resize.
-          const base = widths[col.id]
-            ?? (typeof col.width === "number" ? col.width : 100);
-          colWidth = (userResized || Math.abs(aspectScale - 1) < 1e-6)
-            ? base
-            : base * aspectScale;
+          colWidth = widths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
         }
         columnWidthsOut[col.id] = colWidth;
         currentX += colWidth;
