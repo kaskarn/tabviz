@@ -1,10 +1,17 @@
 # The Sizing Model — a theory of everything for tabviz layout dimensions
 
-Status: **living design record — partially shipped.** Much of the model below
-is implemented (the shared `computeTableMetrics` helpers, content-driven row
-height, and the extracted `ASPECT`/`CELL_GEOMETRY` constants); the open threads
-are the aspect-ladder algorithmic compartmentalization and the density `factor`
-vs profiles question (flagged inline as NEEDS-DESIGN). This is the durable
+Status: **living design record — mostly shipped (re-audited 2026-06-02).** The
+core is built: shared `table-metrics.ts` helpers (both backends), content-driven
+row height via **measure-then-commit** (`setMeasuredRowHeights` →
+`mergeMeasuredHeights`), the aspect ladder as a **compartmentalized post-pass**
+(`lib/layout/aspect-ladder.ts::computeAspectLadder`, both backends, auto-wrap
+loop), the `RowKind` registry (`lib/layout/row-kind.ts`, Phase-1 form),
+multi-flex column widths (`forestWidth` scalar retired), and the full
+verification harness (`computeLayoutMetrics` + `debug-shapes` + `debug-layout`).
+The §7 cheap wins are all resolved. **The remaining frontier is the RowKind
+*expansion*** — region-tree + kind/traits/scope + per-context forest scale —
+which unlocks faceting + details (see `row-types.md` §6). Open design questions:
+density `factor` vs profiles (§6), row drag-resize ontology (§8). This is the durable
 cross-session record of how tabviz determines, computes, and applies every size
 in a table — row/column dimensions, padding, borders, gaps, density, and the
 aspect-ratio reshape. Read it before touching `layout-zoom.svelte.ts`,
@@ -371,17 +378,34 @@ validated against.
   (V8 + rsvg) for eyeball review; `debug-shapes.test.ts` guards the SVG contract.
   Per-backend rendering of the same metrics is the future DOM↔SVG parity view.
 
-Still TODO: the DOM `debug-layout.ts` (predicted-vs-actual overlay, URL-flag
-gated) could draw from `LayoutMetrics` too, giving a live in-widget version.
+BUILT (2026-06): the DOM `debug-layout.ts` (predicted-vs-actual overlay)
+draws from the same metrics, giving a live in-widget version of the box model.
 
-## 7. Cheap wins available independent of the big refactor
+## 7. Cheap wins — RESOLVED (audited 2026-06-02)
 
-- Honor `spacerRowHeight` (one line per backend) — §1.2.
-- Honor `cellPaddingY` from density instead of the hardcoded `+6` — §1.2.
-- Expose `rowGroupPadding` in the settings panel (already wired) — §3.
-- Collapse the `indentPerLevel` triple-source to the theme token — §1.2.
-- Make SVG text inset read `theme.spacing.cellPaddingX` not `SPACING.TEXT_PADDING`
-  — §1.5 (also fixes a theme-dependent export drift bug).
+All five are now done, obsolete, or dissolved by dead-code removal:
+
+- [x] **SVG text inset reads `cellPaddingX`.** `svg-generator` sources
+  `theme.spacing.cellPaddingX` at every inset site (≥8). The hardcoded
+  `SPACING.TEXT_PADDING` is gone. The export drift bug is fixed.
+- [x] **`cellPaddingY` sourced — but deliberately `0`.** The token exists
+  (`theme-resolved.ts`); all density presets set it to `0` and the renderer reads
+  `theme.spacing.cellPaddingY ?? 0`. Vertical padding was superseded by the `+6`
+  line-height model (now a *named* shared constant in `table-metrics.ts`), so the
+  original "honor cellPaddingY from density" win is obsolete, not pending.
+- [x] **`rowGroupPadding` exposed** in `SpacingControl.svelte` + `LayoutControl.svelte`.
+- [x] **`spacerRowHeight` — no token; consistent `rowHeight/2`.** Both backends
+  compute spacer height as `rowHeight/2` through the shared `computeRowLayout`
+  seam, so the DOM↔SVG drift this item feared no longer exists. (Introducing an
+  actual `spacerRowHeight` token is a *feature*, not a drift fix — moved to §6
+  density questions if wanted.)
+- [x] **`indentPerLevel` double-source dissolved by dead-code removal (2026-06-02).**
+  The live paths already read `theme.rowGroup.indentPerLevel` (SVG `svg-generator`,
+  DOM `columns.svelte.ts`). The only remaining raw `SPACING.INDENT_PER_LEVEL`
+  references lived in `width-utils.ts`'s **dead** legacy auto-width cluster
+  (`calculateColumnAutoWidth` / `calculateAllAutoWidths` / `calculateLabelColumnWidth`
+  + `getEffectiveColumnWidth` — 0 external refs, 0 in the bundle, superseded by the
+  schema-driven resolver). Those were deleted, taking the stale constant with them.
 
 ---
 

@@ -1,10 +1,20 @@
 # Theme rationalization arc — status and next steps
 
+> **SHIPPED / SUPERSEDED (audited 2026-06-02).** The arc *and* the consumer
+> cutover this doc calls "the next sprint" have both landed. The V3 system is
+> now canonical: there is no `theme-v2.ts`, no old `lib/theme-resolve.ts`; the
+> files live in `srcjs/src/lib/theme/` with the `-v3` suffix dropped, the
+> ink/paper/brand input vocabulary is in `theme-inputs.ts` + `theme/theme-resolve.ts`,
+> and the R `set_brand()` / `set_decorative()` / `set_mode()` / `set_categorical()`
+> modifiers exist. The `surface` / `content` / `divider` names the renderer reads
+> are the **Tier-2 derived roles** (per CLAUDE.md's ontology), not V2 leftovers.
+> The section below ("What's NOT yet done — PR J") is **historical** — kept for
+> the migration narrative, not as a live to-do list.
+
 The 9-PR theme rationalization arc (Sprint 1 PR A–I) is complete on the
 TypeScript side. The new V3 theme system is fully built, tested, and
-self-consistent. **The V2 → V3 consumer cutover is the next implementation
-sprint**: updating renderers, the settings panel, the R package, and
-visual regression baselines to consume the V3 system as canonical.
+self-consistent. ~~The V2 → V3 consumer cutover is the next implementation
+sprint~~ — *(done; see banner above)*.
 
 ## What landed (commits 6e39383 → HEAD)
 

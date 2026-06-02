@@ -1,9 +1,16 @@
 # Row types — classification, rendering, and theming
 
-Status: **living design record — Phase 1 shipped.** Companion to
-`sizing-model.md`. The canonical `resolveRowKind` + `RowKindProps` registry is
-built (`srcjs/src/lib/layout/row-kind.ts`, see §2); the open threads are the fuller
-renderer/trait registry and per-kind Tier-3 theme clusters. This records the
+Status: **living design record — Phase 1 shipped; expansion is the live target
+(re-audited 2026-06-02).** Companion to `sizing-model.md`. The canonical
+`resolveRowKind` + `RowKindProps` registry is built
+(`srcjs/src/lib/layout/row-kind.ts`, see §2) and consolidates the ~50 scattered
+predicates. **The next sprint's frontier is the §6 expansion** — kind + traits
+(many-of) + scope, the region-tree (rows as a flattened tree, not a flat
+`displayRows` list), free-content panels with content-driven height, and
+per-context forest scale — which converges on the two author targets (faceting +
+details/disclosure). The sizing/geometry core it depends on
+(`table-metrics.ts`, measure-then-commit, the aspect post-pass) is already
+built; see `sizing-model.md`. This records the
 design thread on tabviz's *row-type* subsystem — the logic that classifies a
 row into a kind (data / group-header / section-header / summary / spacer /
 overall) and renders, sizes, and themes it differently.

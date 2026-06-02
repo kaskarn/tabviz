@@ -9,11 +9,9 @@
  *
  * - estimateTextWidth(): Character-class text width approximation (for SVG/non-browser)
  * - measureTextWidthCanvas(): Accurate canvas-based measurement (browser only)
- * - calculateColumnAutoWidth(): Measures a single column's content
- * - calculateAllAutoWidths(): Measures all auto-width columns
- * - calculateLabelColumnWidth(): Measures label column including badges and group headers
+ * - computeContentHeights(): Per-row intrinsic content height (estimator path)
+ * - glyphNaturalWidth()/glyphNaturalHeight(): icon/pictogram natural sizing
  * - flattenColumns(): Utility to get leaf columns from nested groups
- * - getEffectiveColumnWidth(): Get computed or explicit column width
  *
  * === TEXT WIDTH ESTIMATION ===
  *
@@ -41,11 +39,8 @@
  * calculation algorithm and constants.
  */
 
-import type { ColumnSpec, Row, Group } from "../types";
-import { getColumnDisplayText } from "./formatters";
-import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./rendering-constants";
+import type { ColumnSpec, Row } from "../types";
 import { dispatchForColumn } from "../schema/dispatch";
-import { resolveRowKind, rowKindProps } from "./layout/row-kind";
 
 // ============================================================================
 // Text Width Measurement
@@ -224,211 +219,6 @@ export function computeContentHeights(
   return out;
 }
 
-// ============================================================================
-// Column Width Calculation
-// ============================================================================
-
-export interface AutoWidthOptions {
-  fontSize: string;      // e.g., "14px"
-  fontFamily: string;    // e.g., "Inter, system-ui, sans-serif"
-  useCanvas?: boolean;   // Whether to use canvas measurement (browser only)
-  cellPadding?: number;  // Horizontal cell padding (both sides) - defaults to 20 (10px * 2)
-}
-
-/**
- * Calculate the auto-width for a single column based on header and all data values.
- */
-export function calculateColumnAutoWidth(
-  col: ColumnSpec,
-  rows: Row[],
-  options: AutoWidthOptions
-): number {
-  const { fontSize, fontFamily, useCanvas = true, cellPadding = 20 } = options;
-
-  // Parse font size to number (assumes px units)
-  const fontSizeNum = parseFloat(fontSize) || 14;
-
-  // Measure function - uses canvas if available, falls back to estimation
-  const measureText = (text: string): number => {
-    if (useCanvas) {
-      const canvasWidth = measureTextWidthCanvas(text, fontSize, fontFamily);
-      if (canvasWidth !== null) return canvasWidth;
-    }
-    return estimateTextWidth(text, fontSizeNum);
-  };
-
-  let maxWidth = 0;
-
-  // Measure header text. Sortable columns render a sort chevron inline next
-  // to the text when the column is actively sorted; reserve that budget up
-  // front so headers don't truncate on the first click.
-  const SORT_GLYPH_BUDGET = 16; // 10px glyph + 4px margin + 2px safety
-  if (col.header) {
-    const headerWidth = measureText(col.header) + (col.sortable ? SORT_GLYPH_BUDGET : 0);
-    maxWidth = Math.max(maxWidth, headerWidth);
-  }
-
-  // Measure all data cell values
-  for (const row of rows) {
-    // Skip rows that don't measure width (header / spacer) per RowKind.
-    if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) {
-      continue;
-    }
-
-    const text = getColumnDisplayText(row, col);
-    if (text) {
-      maxWidth = Math.max(maxWidth, measureText(text));
-    }
-  }
-
-  // Apply padding and constraints
-  // Use type-specific minimum for visual columns, else default minimum
-  const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-  const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
-  return Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth));
-}
-
-/**
- * Calculate auto-widths for all columns that need it.
- * Returns a map of column ID to computed width.
- */
-export function calculateAllAutoWidths(
-  columns: ColumnSpec[],
-  rows: Row[],
-  options: AutoWidthOptions
-): Map<string, number> {
-  const widths = new Map<string, number>();
-
-  for (const col of columns) {
-    // Only process columns with width="auto" or null (both trigger auto-sizing)
-    if (col.width !== "auto" && col.width !== null && col.width !== undefined) {
-      continue;
-    }
-
-    const width = calculateColumnAutoWidth(col, rows, options);
-    widths.set(col.id, width);
-  }
-
-  return widths;
-}
-
-/**
- * Calculate the width for the label column based on actual label content.
- *
- * This function measures:
- * 1. Label header text
- * 2. All row labels (with indentation and badges)
- * 3. Row group headers (with chevron, gap, count, and internal padding)
- *
- * The width calculation accounts for the complete visual layout of:
- * - Data rows: [indent][label][badge]
- * - Group headers: [indent][chevron][gap][label][gap][count][internal-padding]
- *
- * @param rows - All data rows
- * @param labelHeader - Header text for the label column
- * @param options - Font and measurement options
- * @param groups - Optional array of row groups (for measuring group header width)
- */
-export function calculateLabelColumnWidth(
-  rows: Row[],
-  labelHeader: string | null | undefined,
-  options: AutoWidthOptions,
-  groups: Group[] = []
-): number {
-  const { fontSize, fontFamily, useCanvas = true, cellPadding = 20 } = options;
-  const fontSizeNum = parseFloat(fontSize) || 14;
-
-  const measureText = (text: string): number => {
-    if (useCanvas) {
-      const canvasWidth = measureTextWidthCanvas(text, fontSize, fontFamily);
-      if (canvasWidth !== null) return canvasWidth;
-    }
-    return estimateTextWidth(text, fontSizeNum);
-  };
-
-  let maxWidth = 0;
-
-  // Measure header
-  if (labelHeader) {
-    maxWidth = Math.max(maxWidth, measureText(labelHeader));
-  }
-
-  // ========================================================================
-  // MEASURE DATA ROW LABELS
-  // ========================================================================
-  // Data row layout: [indent][label][badge]
-  for (const row of rows) {
-    if (row.label) {
-      // Account for potential indentation
-      const indent = row.style?.indent ?? 0;
-      const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
-      let rowWidth = measureText(row.label) + indentWidth;
-
-      // Account for badge width if present
-      if (row.style?.badge) {
-        const badgeText = String(row.style.badge);
-        const badgeFontSize = fontSizeNum * BADGE.FONT_SCALE;
-        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-        const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
-        rowWidth += BADGE.GAP + badgeWidth;
-      }
-
-      maxWidth = Math.max(maxWidth, rowWidth);
-    }
-  }
-
-  // ========================================================================
-  // MEASURE ROW GROUP HEADERS
-  // ========================================================================
-  // Group header layout: [indent][chevron][gap][label][gap][count][internal-padding]
-  // See GROUP_HEADER constants in rendering-constants.ts
-
-  // Helper to count all descendant rows (matching display logic)
-  // This includes direct rows AND rows in nested subgroups
-  function countAllDescendantRows(groupId: string): number {
-    let count = 0;
-    // Direct rows in this group
-    for (const row of rows) {
-      if (row.groupId === groupId) count++;
-    }
-    // Rows in child groups (recursively)
-    for (const g of groups) {
-      if (g.parentId === groupId) {
-        count += countAllDescendantRows(g.id);
-      }
-    }
-    return count;
-  }
-
-  for (const group of groups) {
-    if (group.label) {
-      const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
-      const labelWidth = measureText(group.label);
-
-      // Count all descendant rows for the "(N)" suffix, matching display
-      const rowCount = countAllDescendantRows(group.id);
-      const countText = `(${rowCount})`;
-      const countFontSize = fontSizeNum * 0.75; // matches theme.text.label.size
-      const countWidth = estimateTextWidth(countText, countFontSize);
-
-      // Total width: all components from GroupHeader.svelte layout
-      const totalWidth = indentWidth
-        + GROUP_HEADER.CHEVRON_WIDTH
-        + GROUP_HEADER.GAP
-        + labelWidth
-        + GROUP_HEADER.GAP
-        + countWidth
-        + GROUP_HEADER.SAFETY_MARGIN;
-
-      maxWidth = Math.max(maxWidth, totalWidth);
-    }
-  }
-
-  // Apply padding and constraints (label column has higher max)
-  const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
-  return Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
-}
-
 /**
  * Flatten nested column groups to get leaf columns only.
  */
@@ -450,27 +240,4 @@ export function flattenColumns(
   }
 
   return result;
-}
-
-/**
- * Get the effective width for a column, using computed auto-width if available.
- */
-export function getEffectiveColumnWidth(
-  col: ColumnSpec,
-  autoWidths: Map<string, number>,
-  defaultWidth: number = 100
-): number {
-  // First check if we have a computed auto-width
-  const autoWidth = autoWidths.get(col.id);
-  if (autoWidth !== undefined) {
-    return autoWidth;
-  }
-
-  // Then check if the column has an explicit width
-  if (typeof col.width === "number") {
-    return col.width;
-  }
-
-  // Fall back to default
-  return defaultWidth;
 }
