@@ -216,19 +216,29 @@ No 1k/10k sweep this sprint; 200 rows is representative enough to catch a
 constant-factor or extra-pass regression, which is the only perf risk the
 structure-layer principle leaves open.
 
-## 8. Phased plan
+## 8. Phased plan — status (2026-06-02)
 
-1. **Per-context scale + retire global `xScale`** (multi-flex E) — own PR, first.
-2. **Bench baseline** — the 200-row flatten + measure-loop benches, checked in.
-3. **Region-tree model + flatten** — `buildRegionTree` + `flatten`; swap
-   `fullDisplayRows`; byte-identical snapshot gate.
-4. **`kind`+`traits`+`scope`** generalization of the RowKind registry.
-5. **Content-height seam for `panel`/`axis_strip`** — threaded through metrics,
-   tested with synthetic nodes; no feature consuming it yet.
+1. ✅ **Per-context scale + retire global `xScale`** (multi-flex E) — done
+   (`forest-scale.ts`; commits on `feat/per-context-scale`).
+2. ✅ **Bench** — `region-tree-bench.ts` (200-row flatten, budget-gated;
+   build+flatten ≈ 0.013ms) + the existing `measure-rows.browser.ts` measure loop.
+3. ✅ **Region-tree model + flatten** — `region-tree.ts` (`RegionNode` /
+   `buildRegionTree` / `flatten`); DOM `fullDisplayRows` swapped; byte-identical;
+   `RegionKind = RowKind | "panel" | "axis_strip"` (one kind enum, converged with
+   `row-kind.ts`).
+4. ⏸ **`kind`+`traits`+`scope`** — the *types* are on `RegionNode` already;
+   widening `row-kind.ts`'s consumed vocabulary (traits/scope props, per-kind
+   appearance fields) waits for a **consumer**. Per §8b the architect note,
+   building this speculatively is explicitly discouraged ("don't widen beyond
+   what's consumed today") — so it lands WITH details/faceting, not before.
+5. ⏸ **Content-height seam for `panel`/`axis_strip`** — same reasoning: no
+   feature produces those nodes yet, so the metrics-pass seam lands with the
+   first consumer (details panels) rather than as dead scaffolding.
 
-Each phase its own commit; phase 3 is the one to eyeball (it touches the hot
-path). Foundation ends here — **details** and **faceting** are the following
-sprints, additive on this primitive.
+**The foundation (1–3) is complete.** Phases 4–5 are deliberately deferred to the
+feature sprints (**details/disclosure**, then **faceting**) — they are the
+consumers that justify the vocabulary, and the region tree's `panel`/`axis_strip`
+kinds + `children` already give them a place to attach additively.
 
 ## 8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)
 

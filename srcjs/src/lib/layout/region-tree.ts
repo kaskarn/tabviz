@@ -24,13 +24,13 @@
  * Pure, V8-safe, no DOM / Svelte / theme-resolver — bun-testable.
  */
 import type { Row, Group, DisplayRow } from "$types";
+import type { RowKind } from "./row-kind";
 
-/** The kinds a region can be. The first five mirror today's `RowKind`; `panel`
- *  (free-content details child) and `axis_strip` (per-group faceted axis) are
- *  declared for the foundation but not yet produced by `buildRegionTree`. */
-export type RegionKind =
-  | "data" | "group_header" | "spacer" | "summary" | "header"
-  | "panel" | "axis_strip";
+/** The kinds a region can be: every display `RowKind` (the single source of
+ *  truth, row-kind.ts) plus the structural-only region kinds `panel`
+ *  (free-content details child) and `axis_strip` (per-group faceted axis), which
+ *  are declared for the foundation but not yet produced by `buildRegionTree`. */
+export type RegionKind = RowKind | "panel" | "axis_strip";
 
 /** Orthogonal modifiers a region may carry (many-of). Empty today. */
 export type RegionTrait = "expandable" | "sticky" | "editable" | "computed";
