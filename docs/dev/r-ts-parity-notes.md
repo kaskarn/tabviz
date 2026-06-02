@@ -134,4 +134,29 @@ tests still 45/45.
 
 ## Column constructors
 
-Pending — PR2 work (this notes file gets updated as that work lands).
+### Naming convention: schema key / wire type / options bucket
+
+A column type carries **three related-but-distinct names**, and getting them
+right is what keeps R↔TS parity (canonical doc: `srcjs/src/schema/types.ts`,
+the `bucket` field):
+
+| name | what | rule |
+|---|---|---|
+| schema `key` | registry id (TS schema registry, `registerBehaviors` key) | viz types use the long namespaced form: `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin` |
+| wire `type` | the string serialized to JSON (`column.type`), matched in render branches on BOTH sides | equals `key` for most types |
+| options `bucket` | where the type's options nest: `column.options[bucket]` | camelCase echo of the wire `type` (`viz_bar` → `vizBar`) |
+
+**Two deliberate, preserved exceptions** (both pre-date the convention;
+changing the wire would ripple across ~40 render sites in TS + the R parity
+surface for no user benefit):
+
+- **forest** — schema key `viz_forest`, but wire type *and* bucket are the short
+  `forest` (it was the original viz type). The bucket still follows the rule
+  *relative to its own type* (camelCase of `forest` is `forest`).
+- **percent** — bucket `percent` though wire type is `numeric`.
+
+**Adding a new column/viz type:** pick `type`, set `bucket = camelCase(type)`,
+key = the same (or namespaced for viz). Don't invent a third short form. The
+R↔TS parity tests (`tests/testthat/test-parity-columns.R`) assert R's
+`col@options$<bucket>` matches TS's `shape$options$<bucket>`, so a bucket-name
+mismatch fails loudly.

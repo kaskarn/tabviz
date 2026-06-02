@@ -176,6 +176,54 @@ export function glyphNaturalWidth(col: ColumnSpec, rows: Row[]): number {
   return fn(col, rows);
 }
 
+/**
+ * Compute the intrinsic rendered HEIGHT a single row needs for a column's
+ * visual content — the vertical mirror of {@link glyphNaturalWidth}. Stacked
+ * pictograms, tall icons (xl), rings, and explicit sparkline / img heights all
+ * report here. Per-row (not whole-dataset) because height is row-local.
+ *
+ * Returns 0 for columns with no intrinsic tall content (text/numeric/badge/bar
+ * are single-line), so callers `Math.max` it into the row-height budget without
+ * a type check. Text wrapping is handled separately via wrapLineCounts.
+ */
+export function glyphNaturalHeight(
+  col: ColumnSpec,
+  row: Row,
+  ctx: { rowHeight: number; lineHeight: number; fontSize: number },
+): number {
+  const fn = dispatchForColumn(col, "naturalHeight");
+  if (!fn) return 0;
+  return fn(col, row, ctx);
+}
+
+/**
+ * Build the per-row content-height map consumed by `computeRowLayout`:
+ * `rowId → max over columns of glyphNaturalHeight(col, row)`. The predicted
+ * (estimator) content height shared by both backends — the browser may later
+ * supersede individual entries with measured heights. Only rows whose tallest
+ * content exceeds 0 are included (sparse map; absent → no extra height).
+ *
+ * Cheap: dispatch returns undefined for the common single-line columns, so the
+ * inner loop is a no-op for plain tables.
+ */
+export function computeContentHeights(
+  columns: readonly ColumnSpec[],
+  rows: readonly Row[],
+  ctx: { rowHeight: number; lineHeight: number; fontSize: number },
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  // Columns with no naturalHeight behavior never contribute — resolve the
+  // dispatchable set once so per-row work skips the dead columns.
+  const heightCols = columns.filter((c) => dispatchForColumn(c, "naturalHeight"));
+  if (heightCols.length === 0) return out;
+  for (const row of rows) {
+    let h = 0;
+    for (const col of heightCols) h = Math.max(h, glyphNaturalHeight(col, row, ctx));
+    if (h > 0) out[row.id] = h;
+  }
+  return out;
+}
+
 // ============================================================================
 // Column Width Calculation
 // ============================================================================

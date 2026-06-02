@@ -217,5 +217,28 @@ export function sizingFixtures(): SizingFixture[] {
     }),
   });
 
+  // 9. Content-driven height — a stacked pictogram column. Rows with larger
+  //    counts stack more glyphs vertically (14px each), so the row grows past
+  //    the base rowHeight. Exercises naturalHeight → contentHeights →
+  //    computeRowLayout. Row p2 (count 5) should be the tallest.
+  out.push({
+    name: "content-height-pictogram",
+    spec: spec({
+      density: "comfortable",
+      rows: [
+        dataRow("ch0", "Few",  { metadata: { cnt: 1 } } as Partial<Row>),
+        dataRow("ch1", "Some", { metadata: { cnt: 3 } } as Partial<Row>),
+        dataRow("ch2", "Many", { metadata: { cnt: 5 } } as Partial<Row>),
+      ],
+      columns: [
+        LABEL_COL(),
+        col("cnt", "pictogram", "Count", {
+          field: "cnt",
+          options: { pictogram: { layout: "stack", size: "base" } } as never,
+        }),
+      ],
+    }),
+  });
+
   return out;
 }

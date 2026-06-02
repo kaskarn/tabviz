@@ -84,6 +84,16 @@ describe("layout metrics (sizing harness)", () => {
       expect(m.axisHeight).toBeGreaterThan(0);
     });
 
+    test("content-driven height: stacked pictogram rows grow with count", () => {
+      const m = computeLayoutMetrics(byName.get("content-height-pictogram")!.spec);
+      const h = m.rows.map((r) => r.height);
+      // cnt = 1, 3, 5 → strictly increasing row heights (more stacked glyphs).
+      expect(h[0]).toBeLessThan(h[1]);
+      expect(h[1]).toBeLessThan(h[2]);
+      // The 5-stack row is 5 × 14px glyphs = 70, well past base rowHeight (24).
+      expect(h[2]).toBeGreaterThan(m.spacing.rowHeight);
+    });
+
     test("rowPositions are monotonic non-decreasing (no overlap)", () => {
       for (const { spec } of fixtures) {
         const m = computeLayoutMetrics(spec);

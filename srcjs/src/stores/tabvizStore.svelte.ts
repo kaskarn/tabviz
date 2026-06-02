@@ -1326,6 +1326,7 @@ export function createTabvizStore() {
     setColumnWidth: columns.setColumnWidth,
     previewColumnWidth: columns.previewColumnWidth,
     setPlotWidth: layoutZoom.setPlotWidth,
+    setMeasuredRowHeights: layoutZoom.setMeasuredRowHeights,
     // Aspect ratio — data slice passthrough.
     setTargetAspect: data.setTargetAspect,
     setTargetAspectAnchor: data.setTargetAspectAnchor,

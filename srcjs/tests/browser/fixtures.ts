@@ -10,10 +10,10 @@
  */
 
 import { makeFixture, makeSplitFixture, type Fixture } from "../perf/fixtures";
-import { resolveTheme } from "../../src/lib/theme-resolve";
-import { COCHRANE_DRAFT } from "../../src/lib/theme-presets-inputs";
+import { buildTheme } from "../../src/lib/theme-adapter";
+import { COCHRANE } from "../../src/lib/theme-presets-inputs";
 
-const THEME = resolveTheme(COCHRANE_DRAFT);
+const THEME = buildTheme(COCHRANE, "cochrane");
 
 function toWebSpec(fx: Fixture): unknown {
   return {

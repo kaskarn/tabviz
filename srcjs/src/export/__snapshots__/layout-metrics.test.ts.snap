@@ -1368,3 +1368,70 @@ exports[`layout metrics (sizing harness) metrics: pure-table-no-axis 1`] = `
   "totalWidth": 162,
 }
 `;
+
+exports[`layout metrics (sizing harness) metrics: content-height-pictogram 1`] = `
+{
+  "axisHeight": 0,
+  "columns": [
+    {
+      "id": "label",
+      "type": "text",
+      "width": 67,
+      "x": 12,
+    },
+    {
+      "id": "cnt",
+      "type": "pictogram",
+      "width": 84,
+      "x": 79,
+    },
+  ],
+  "forestWidth": 0,
+  "headerHeight": 32,
+  "labelWidth": 67,
+  "mainY": 24,
+  "plotHeight": 136,
+  "rows": [
+    {
+      "depth": 0,
+      "height": 24,
+      "indent": 0,
+      "index": 0,
+      "kind": "data",
+      "markerCenter": 12,
+      "top": 0,
+    },
+    {
+      "depth": 0,
+      "height": 42,
+      "indent": 0,
+      "index": 1,
+      "kind": "data",
+      "markerCenter": 45,
+      "top": 24,
+    },
+    {
+      "depth": 0,
+      "height": 70,
+      "indent": 0,
+      "index": 2,
+      "kind": "data",
+      "markerCenter": 101,
+      "top": 66,
+    },
+  ],
+  "rowsHeight": 136,
+  "spacing": {
+    "axisGap": 12,
+    "cellPaddingX": 10,
+    "cellPaddingY": 0,
+    "headerHeight": 32,
+    "indentPerLevel": 16,
+    "padding": 12,
+    "rowGroupPadding": 0,
+    "rowHeight": 24,
+  },
+  "totalHeight": 208,
+  "totalWidth": 175,
+}
+`;

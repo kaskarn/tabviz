@@ -427,6 +427,40 @@
     return () => window.cancelAnimationFrame(handle);
   });
 
+  // ── Measure-then-commit row heights ─────────────────────────────────────
+  // Content-driven height (sizing-model §6): the estimator predicts row content
+  // height for V8/first-paint; on the browser we measure the REAL rendered
+  // height per row and commit it back, so rows are exact (wrapped text at true
+  // font metrics, arbitrary cell content). Grid tracks are pinned to
+  // layout.rowHeights, so we read each cell's scrollHeight (content extent,
+  // which exceeds the pinned track when content is taller) — NOT offsetHeight
+  // (the pinned track itself, which would feed back a no-op). The store's
+  // shallow-equal guard (sameHeightMap) settles the measure→commit→re-measure
+  // loop; rows only grow (Math.max), never oscillate.
+  $effect(() => {
+    if (!containerRef || !spec) return;
+    // Re-measure when the things that change rendered height change.
+    void displayRows.length;
+    void layout.rowHeights.length;
+    void spec.theme.text.body.size;
+    void store.columnWidths;
+
+    const handle = window.requestAnimationFrame(() => {
+      if (!containerRef) return;
+      const cells = containerRef.querySelectorAll<HTMLElement>("[data-row-id]");
+      const measured: Record<string, number> = {};
+      for (const cell of cells) {
+        const id = cell.dataset.rowId;
+        if (!id) continue;
+        // scrollHeight = content height ignoring the pinned grid track.
+        const h = cell.scrollHeight;
+        if (h > 0) measured[id] = Math.max(measured[id] ?? 0, h);
+      }
+      store.setMeasuredRowHeights(measured);
+    });
+    return () => window.cancelAnimationFrame(handle);
+  });
+
   // Check if export is enabled (default true)
   const enableExport = $derived(spec?.interaction?.enableExport !== false);
 

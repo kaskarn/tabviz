@@ -40,6 +40,13 @@ export interface RowLayoutInput {
   rowGroupPadding: number;
   /** Single wrapped-line height: `ceil(parseFontSize(body.size) * 1.5)`. */
   dataLineHeightPx: number;
+  /** Optional per-row intrinsic content height (px) — the max over the row's
+   *  columns of each cell's `naturalHeight` (stacked pictograms, tall icons,
+   *  multi-effect forest, sparkline/img). Computed by the caller (it needs
+   *  schema dispatch + theme); `Math.max`-ed in alongside wrap height so a row
+   *  grows to fit its tallest content. Absent/0 → no effect. Browser may
+   *  supply MEASURED heights here; V8/export supplies estimated ones. */
+  contentHeights?: Record<string, number>;
 }
 
 export interface RowLayout {
@@ -85,6 +92,7 @@ export function computeRowPaddedAfter(
  *   - group_header:  rowHeight
  *   - data (wrap>1): max(rowHeight, dataLineHeightPx * lines + 6)
  *   - data (else):   rowHeight
+ *   - data: also max-ed with contentHeights[id] (tall visual cells)
  *   - +rowGroupPadding on rowPaddedAfter rows.
  *
  * Marker center excludes the trailing pad so markers stay centered on the data
@@ -92,6 +100,7 @@ export function computeRowPaddedAfter(
  */
 export function computeRowLayout(input: RowLayoutInput): RowLayout {
   const { displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx } = input;
+  const contentHeights = input.contentHeights ?? {};
   const rowPaddedAfter = computeRowPaddedAfter(displayRows);
 
   const rowHeights: number[] = [];
@@ -104,7 +113,11 @@ export function computeRowLayout(input: RowLayoutInput): RowLayout {
       h = rowHeight;
     } else if (dr.type === "data") {
       const lines = wrapLineCounts[dr.row.id] ?? 1;
-      h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
+      const wrapH = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
+      // Grow to the tallest of: base/wrap height and the row's intrinsic
+      // visual content height (stacked pictograms, tall icons, multi-effect
+      // forest, sparkline/img).
+      h = Math.max(wrapH, contentHeights[dr.row.id] ?? 0);
     } else {
       h = rowHeight;
     }

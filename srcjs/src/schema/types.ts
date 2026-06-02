@@ -185,9 +185,26 @@ export interface ColumnSchema {
   type?: ColumnType;
   /**
    * Bucket on `column.options` where this type's options live (for
-   * options whose `at` is `"bucket"`). For percent the bucket is
-   * `"percent"` even though the wire `type` is `"numeric"` —
-   * historical, preserved.
+   * options whose `at` is `"bucket"`).
+   *
+   * NAMING CONVENTION (3 names, related but distinct):
+   *   - `key`    — registry/schema id; ALWAYS the namespaced long form for viz
+   *                (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`).
+   *   - `type`   — the WIRE value serialized to JSON + matched in render
+   *                branches. Equals `key` for most types.
+   *   - `bucket` — the camelCase echo of the wire `type`
+   *                (`viz_bar` → `vizBar`), where this type's options nest.
+   *
+   * Two deliberate, documented exceptions (legacy, preserved — both pre-date
+   * the convention and changing the wire would ripple across ~40 render sites
+   * and the R↔TS parity surface for no user benefit):
+   *   - forest:  key `viz_forest`, but wire type AND bucket are the short
+   *              `forest` (it was the original viz type). Bucket still follows
+   *              the rule relative to its own type (camelCase of `forest`).
+   *   - percent: bucket `percent` even though wire type is `numeric`.
+   *
+   * A NEW viz/column type MUST follow the rule: pick `type`, set
+   * `bucket` = camelCase(type). Don't invent a third short form.
    */
   bucket?: string;
   /** Coarse grouping for the column-type menu. */
