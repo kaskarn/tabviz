@@ -51,6 +51,8 @@ import { computeBandIndexes } from "$lib/banding";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/layout/row-kind";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
 import { computeAspectLadder, minRowHeightFor } from "$lib/layout/aspect-ladder";
+import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
+import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
@@ -845,6 +847,26 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     forestWidth = totalWidth - totalTableWidth - padding * 2;
   }
 
+  // Multi-flex (B-wire-1): per-column width distribution, populated alongside
+  // the legacy single `forestWidth`. UNUSED by consumers yet (they still read
+  // forestWidth / getColWidth) — this only stashes the new per-column map so
+  // the switch (B-wire-2) is isolated. Distributes the content area
+  // (totalWidth − padding×2) across every column by effective weight
+  // (flexWeight × natural); pinned columns immovable. See docs/dev/multi-flex-columns.md.
+  const flexColSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
+    const explicit = typeof c.width === "number" ? c.width : null;
+    const measured = autoWidths.get(c.id);
+    const natural = explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
+    return {
+      id: c.id,
+      naturalWidth: natural,
+      flexWeight: flexWeightForColumn(c),
+      explicitWidth: explicit,
+      minWidth: measured ?? undefined,
+    };
+  });
+  const flexWidths = resolveFlexWidths(flexColSpecs, Math.max(0, totalWidth - padding * 2)).widths;
+
 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
@@ -896,6 +918,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     totalHeight: options.height ?? totalHeight,
     tableWidth: leftTableWidth + rightTableWidth,
     forestWidth,
+    flexWidths,
     headerHeight,
     rowHeight,
     plotHeight,

@@ -983,6 +983,11 @@ export interface ComputedLayout {
   totalHeight: number;
   tableWidth: number;
   forestWidth: number;
+  /** Multi-flex: per-column resolved width (id → px), from the weighted
+   *  distribution (docs/dev/multi-flex-columns.md). Populated alongside the
+   *  legacy `forestWidth` scalar during the migration; consumers move to this
+   *  map, then `forestWidth` is retired. Optional until both runtimes populate. */
+  flexWidths?: Record<string, number>;
   /** Phase 7E Lever 1B: scale factor for non-flex auto-width columns
    *  when targetAspect expands the layout past flex saturation. 1 by
    *  default; > 1 widens columns proportionally; < 1 narrows them. */
