@@ -2,7 +2,6 @@ import { scaleLinear, scaleLog } from "d3-scale";
 import type {
   WebSpec,
   Row,
-  DisplayRow,
 } from "$types";
 import { computeBandIndexes } from "$lib/banding";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
@@ -224,9 +223,7 @@ export function createTabvizStore() {
   const hasVizColumns = $derived(columns.hasVizColumns);
   const columnWidths = $derived(columns.columnWidths);
   const userResizedIds = $derived(columns.userResizedIds);
-  const userInsertedColumns = $derived(columns.userInsertedColumns);
   const hiddenColumnIds = $derived(columns.hiddenColumnIds);
-  const columnSpecOverrides = $derived(columns.columnSpecOverrides);
   const columnOrderOverrides = $derived(columns.columnOrderOverrides);
 
   // Aliases for the data slice's state + derived. Most layout / event /
@@ -291,8 +288,6 @@ export function createTabvizStore() {
 
   // Layout-zoom slice aliases — keep flat names so existing reads in this
   // file stay unchanged.
-  const initialWidth = $derived(layoutZoom.initialWidth);
-  const initialHeight = $derived(layoutZoom.initialHeight);
   const plotWidthOverride = $derived(layoutZoom.plotWidthOverride);
   const zoom = $derived(layoutZoom.zoom);
   const autoFit = $derived(layoutZoom.autoFit);
@@ -333,14 +328,11 @@ export function createTabvizStore() {
   // Group lookup maps + fullDisplayRows + maxGroupDepth + tooltipRow live
   // on the rows-groups slice (Phase 0c-C1 PR5). Local aliases keep the
   // existing call sites in this file unchanged.
-  const groupMap = $derived(rowsGroups.groupMap);
-  const groupDepthMap = $derived(rowsGroups.groupDepthMap);
 
   // getRowDepth / isAncestorCollapsed helpers + the full fullDisplayRows
   // derived live inside the rows-groups slice (Phase 0c-C1 PR5). One-line
   // alias keeps consumers (paginatedRows, displayRows derived, etc.)
   // pointed at the slice.
-  const fullDisplayRows = $derived<DisplayRow[]>(rowsGroups.fullDisplayRows);
 
   // Pagination derived (totalPages, isPaginated, currentPageRowIds,
   // paginatedRows, displayRows) + actions (setCurrentPage / nextPage /
