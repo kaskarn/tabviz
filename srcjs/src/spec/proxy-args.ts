@@ -58,6 +58,12 @@ export interface ToggleGroupArgs {
   collapsed?: boolean;
 }
 
+/** `toggleRowDetails` — open/close a row's details panel. */
+export interface ToggleRowDetailsArgs {
+  rowId: string;
+  expanded?: boolean;
+}
+
 /**
  * `applyFilter` — single typed shape post-PR7 (spec S4 + D3): always
  * carries a per-column `ColumnFilter` keyed by `field`. The pre-PR7
@@ -237,6 +243,12 @@ export const normalize = {
     if (typeof raw.groupId !== "string") return null;
     const collapsed = typeof raw.collapsed === "boolean" ? raw.collapsed : undefined;
     return { groupId: raw.groupId, collapsed };
+  },
+
+  toggleRowDetails(raw: Record<string, unknown>): ToggleRowDetailsArgs | null {
+    if (typeof raw.rowId !== "string") return null;
+    const expanded = typeof raw.expanded === "boolean" ? raw.expanded : undefined;
+    return { rowId: raw.rowId, expanded };
   },
 
   applyFilter(raw: Record<string, unknown>): ApplyFilterArgs | null {

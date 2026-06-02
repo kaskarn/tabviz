@@ -47,6 +47,11 @@ export const proxyMethods: Record<string, (store: TabvizStore, args: Record<stri
     if (!a) return;
     store.toggleGroup(a.groupId, a.collapsed);
   },
+  toggleRowDetails: (store, raw) => {
+    const a = normalize.toggleRowDetails(raw);
+    if (!a) return;
+    store.toggleRowDetails(a.rowId, a.expanded);
+  },
   applyFilter: (store, raw) => {
     const a = normalize.applyFilter(raw);
     if (!a) return;
@@ -244,6 +249,7 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
   store.on("cellStyles", (value) => emit(EVENT_TO_SHINY_FIELD.cellStyles, value));
   store.on("paintTool", (value) => emit(EVENT_TO_SHINY_FIELD.paintTool, value));
   store.on("collapsedGroups", (value) => emit(EVENT_TO_SHINY_FIELD.collapsedGroups, value));
+  store.on("expandedRows", (value) => emit(EVENT_TO_SHINY_FIELD.expandedRows, value));
   store.on("hiddenColumns", (value) => emit(EVENT_TO_SHINY_FIELD.hiddenColumns, value));
   store.on("columnOrder", (value) => emit(EVENT_TO_SHINY_FIELD.columnOrder, value));
   store.on("columnWidths", (value) => emit(EVENT_TO_SHINY_FIELD.columnWidths, value));
@@ -273,6 +279,7 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
         paint_tool: store.paintTool,
         selected: Array.from(store.selectedRowIds),
         collapsed_groups: Array.from(store.collapsedGroups),
+        expanded_rows: Array.from(store.expandedRows),
         hidden_columns: Array.from(store.hiddenColumnIds),
         column_order: store.allColumns.map((c) => c.id),
         column_widths: { ...store.columnWidths },

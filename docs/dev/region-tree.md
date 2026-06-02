@@ -258,6 +258,12 @@ The first feature on the foundation, complete across all runtimes:
 Guards: `region-tree.test.ts` (panel emission), `markdown.test.ts`,
 `details-panel.browser.ts` (DOM), R serialize/export tests.
 
+Follow-ups closed (2026-06-02): **Shiny sync** for `expanded_rows` —
+bidirectional, mirroring `collapsedGroups` (event registry + emit + snapshot +
+R `TABVIZ_STATE_FIELDS`; inbound proxy `toggleRowDetails` + R
+`toggle_row_details()`); **TS authoring** — `tabviz({ details: "col" })` column
+mapping + `notes:` passthrough, mirroring the R sugar.
+
 ## Feature 2 — annotation/note rows — SHIPPED (2026-06-02)
 
 Full-width prose rows inserted after a target row — built almost entirely on the

@@ -100,7 +100,7 @@ invoke_proxy_method <- function(proxy, method, args) {
 TABVIZ_STATE_FIELDS <- c(
   # Tier 1
   "sort", "filters", "row_styles", "cell_styles", "paint_tool",
-  "selected", "hover", "collapsed_groups", "hidden_columns",
+  "selected", "hover", "collapsed_groups", "expanded_rows", "hidden_columns",
   "column_order", "column_widths", "cell_edits", "label_edits", "zoom",
   # Tier 2
   "axis_zooms", "banding", "plot_width",

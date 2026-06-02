@@ -978,6 +978,40 @@ toggle_group <- function(x, group_id, collapsed = NULL) {
   repack(x, spec)
 }
 
+#' Open or close a row's details panel
+#'
+#' Toggles a row's details/disclosure panel. On a live `tabviz_proxy` it drives
+#' the widget directly; on a static spec/widget it seeds `initialState$expanded_rows`
+#' (which the initial render + static export honor).
+#'
+#' @param x A tabviz widget, `WebSpec`, or `tabviz_proxy`.
+#' @param row Which row: a 1-based index, or a wire row id (e.g. `"row_3"`).
+#' @param expanded `TRUE` to open, `FALSE` to close, `NULL` to toggle.
+#' @return The modified input.
+#' @export
+toggle_row_details <- function(x, row, expanded = NULL) {
+  row_id <- if (is.numeric(row)) {
+    checkmate::assert_integerish(row, lower = 1, len = 1)
+    paste0("row_", as.integer(row))
+  } else {
+    checkmate::assert_string(row)
+    row
+  }
+  if (inherits(x, "tabviz_proxy")) {
+    return(invoke_proxy_method(x, "toggleRowDetails", list(
+      rowId = row_id,
+      expanded = expanded
+    )))
+  }
+  spec <- extract_spec(x)
+  st <- if (is.null(spec@initial_state)) list() else spec@initial_state
+  cur <- if (is.null(st$expanded_rows)) character(0) else st$expanded_rows
+  want <- if (is.null(expanded)) !(row_id %in% cur) else isTRUE(expanded)
+  st$expanded_rows <- if (want) union(cur, row_id) else setdiff(cur, row_id)
+  spec@initial_state <- st
+  repack(x, spec)
+}
+
 # ----------------------------------------------------------------------------
 # Cell-edit verbs (proxy-only)
 # ----------------------------------------------------------------------------

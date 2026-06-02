@@ -12,7 +12,7 @@
  */
 
 import type {
-  WebSpec, WebData, Row, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels,
+  WebSpec, WebData, Row, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels, NoteSpec,
   AvailableField, FieldCategory,
 } from "../types";
 import type {
@@ -47,6 +47,13 @@ export interface TabvizArgs {
   labelHeader?: string;
   /** Field used to group rows. */
   group?: string;
+  /** Field whose per-row value is markdown shown in a details/disclosure panel
+   *  (mirrors R `details = "col"`). Empty values get no panel. */
+  details?: string;
+  /** Annotation/note rows (full-width prose after a target row). `after` is a
+   *  wire row id (`row_<i>`). For label/index resolution use the `addNote`
+   *  modifier or the R `add_note()` verb. */
+  notes?: NoteSpec[];
   /** Column definitions. */
   columns: ColumnDef[];
   /** Extra columns (appended after `columns`). */
@@ -125,11 +132,13 @@ export function tabviz(args: TabvizArgs): WebSpec {
   // their data. R always uses positional ids; TS now does too.
   const rows: Row[] = args.data.map((row, i) => {
     const labelVal = args.label != null ? String(row[args.label] ?? "") : String(i + 1);
+    const detailsVal = args.details != null ? String(row[args.details] ?? "").trim() : "";
     return {
       id: `row_${i + 1}`,
       label: labelVal,
       groupId: args.group != null ? String(row[args.group] ?? "") : null,
       metadata: { ...row },
+      ...(detailsVal !== "" ? { details: detailsVal } : {}),
     };
   });
 
@@ -243,6 +252,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
   const spec: WebSpec = {
     version: CURRENT_VERSION,
     data,
+    ...(args.notes?.length ? { notes: args.notes } : {}),
     columns,
     labelColumn,
     extraColumns: args.extraColumns,

@@ -755,6 +755,7 @@ export function createTabvizStore() {
     $effect(() => { events.emit("cellStyles", semantics.styleEdits.cells); });
     $effect(() => { events.emit("paintTool", semantics.paintTool); });
     $effect(() => { events.emit("collapsedGroups", Array.from(rowsGroups.collapsedGroups)); });
+    $effect(() => { events.emit("expandedRows", Array.from(rowsGroups.expandedRows)); });
     $effect(() => { events.emit("hiddenColumns", Array.from(hiddenColumnIds)); });
     $effect(() => { events.emit("columnOrder", allColumns.map((c) => c.id)); });
     $effect(() => { events.emit("columnWidths", { ...columnWidths }); });
