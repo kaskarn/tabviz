@@ -170,9 +170,10 @@
 
   const rowPaddedAfter = $derived(store.rowPaddedAfter);
   const layout = $derived(store.layout);
-  const xScale = $derived(store.xScale);
-  const axisComputation = $derived(store.axisComputation);
-  const clipBounds = $derived(axisComputation.axisLimits);
+  // Per-context forest axes (one per forest column) + the primary column's axis
+  // for the single-value consumers (plot annotations). See the axis slice.
+  const forestAxes = $derived(store.forestAxes);
+  const primaryForestAxis = $derived(store.primaryForestAxis);
   const theme = $derived(spec?.theme);
 
   // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
@@ -501,7 +502,7 @@
   function computeAnnotationLabelOffsets(annotations: Annotation[]): Record<string, number> {
     const labeledAnnotations = annotations
       .filter((a): a is Annotation & { type: "reference_line"; label: string } => a.type === "reference_line" && !!a.label)
-      .map(a => ({ id: a.id, x: xScale(a.x), label: a.label }))
+      .map(a => ({ id: a.id, x: primaryForestAxis.scale(a.x), label: a.label }))
       .sort((a, b) => a.x - b.x);
 
     // Center-anchored labels: a ~100px label extends 50px each side of its anchor.
@@ -1055,59 +1056,9 @@
     return scales;
   });
 
-  // Compute per-column scales for forest columns (to handle custom widths and dynamic resizing)
-  const forestColumnScales = $derived.by(() => {
-    const scales = new Map<string, ReturnType<typeof scaleLinear<number, number>> | ReturnType<typeof scaleLog<number, number>>>();
-    // Use consistent padding for all viz column scales
-    const forestPadding = VIZ_MARGIN;
-
-    for (const fc of forestColumns) {
-      const col = fc.column;
-      const forestOpts = col.options?.forest;
-      // Forest columns are layout-driven (lever ladder + theme defaults),
-      // not content-measured — same priority order as `gridTemplateColumns`
-      // and `getColWidth` (Phase 7E forest fix). Without this, the d3
-      // scale's range stayed stuck at the header-min auto-width
-      // (`columnWidthsSnapshot[col.id]`) when the aspect slider moved,
-      // squishing circles + CI lines into the left half of a wider
-      // viewBox. Manually resizing a column "fixed" it because that
-      // mutated columnWidths and triggered a re-derivation that
-      // happened to refresh the scale range too.
-      const userResized = store.userResizedIds?.has?.(col.id) ?? false;
-      const dynamicWidth = columnWidthsSnapshot[col.id];
-      let colWidth: number;
-      if (typeof col.width === "number") {
-        colWidth = col.width;
-      } else if (typeof forestOpts?.width === "number") {
-        colWidth = forestOpts.width;
-      } else if (userResized && typeof dynamicWidth === "number") {
-        colWidth = dynamicWidth;
-      } else {
-        colWidth = layout.flexWidths?.[col.id] ?? 200;
-      }
-      const isLog = forestOpts?.scale === "log";
-
-      // Use the global domain from axisComputation, then let any per-column
-      // pan/zoom override replace it. Store the override on a 1:1 basis so
-      // two forest columns with identical data can be inspected independently.
-      const baseDomain = axisComputation.axisLimits as [number, number];
-      const domain = store.getEffectiveDomain(col.id, baseDomain);
-      const rangeStart = forestPadding;
-      const rangeEnd = Math.max(colWidth - forestPadding, rangeStart + 50);
-
-      if (isLog) {
-        const safeDomain: [number, number] = [
-          Math.max(domain[0], 0.01),
-          Math.max(domain[1], 0.02),
-        ];
-        scales.set(col.id, scaleLog().domain(safeDomain).range([rangeStart, rangeEnd]));
-      } else {
-        scales.set(col.id, scaleLinear().domain(domain).range([rangeStart, rangeEnd]));
-      }
-    }
-
-    return scales;
-  });
+  // Per-column forest scales now come from the axis slice's per-context
+  // resolver (`store.forestAxes`) — each column resolves its own
+  // domain/width/zoom. See lib/layout/forest-scale.ts + the axis slice.
 
   // Plot resize state and handlers
   let resizingPlot = $state(false);
@@ -1795,7 +1746,7 @@
           {@const nullValue = forestOpts?.nullValue ?? layout.nullValue}
           {@const axisLabel = forestOpts?.axisLabel ?? "Effect"}
           {@const isLog = forestOpts?.scale === "log"}
-          {@const colScale = forestColumnScales.get(fc.column.id) ?? xScale}
+          {@const colScale = forestAxes.get(fc.column.id)?.scale ?? primaryForestAxis.scale}
           {@const fcClipId = `viz-clip-${instanceId}-${fc.column.id}`}
           <svg
             class="plot-overlay"
@@ -1965,7 +1916,7 @@
             <!-- Axis at bottom (not clipped; ticks reflect zoom via colScale) -->
             {#if forestOpts?.showAxis !== false}
               <g transform="translate(0, {rowsAreaHeight + axisGap})">
-                <EffectAxis xScale={colScale} layout={layout} plotWidth={forestWidth} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={store.getAxisZoom(fc.column.id) ? undefined : axisComputation.ticks} />
+                <EffectAxis xScale={colScale} layout={layout} plotWidth={forestWidth} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={store.getAxisZoom(fc.column.id) ? undefined : forestAxes.get(fc.column.id)?.ticks} />
               </g>
             {/if}
           </svg>

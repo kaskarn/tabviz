@@ -1,38 +1,38 @@
-// Axis slice — per-forest-column pan/zoom domain overrides + the global
-// axis computation + xScale.
+// Axis slice — per-forest-column pan/zoom domain overrides + the per-context
+// forest axis resolver (scale + limits + ticks, one per forest column).
 //
-// This is the cross-slice `$derived`-chain spike target per the C1 plan:
-// `axisComputation` and `xScale` are `$derived` here, but they read the
-// forest column's resolved plot width (`layout.flexWidths[forestId]`, a
-// `$derived` owned by the layout-zoom slice) and `forestColumns` (a
-// `$derived` owned by the columns slice) via injected getters. Reactivity
-// propagation through forward-closure getters across slice boundaries is
-// the open question from the source-tagging spike (see
-// docs/dev/store-decomposition-idiom.md §"Risks remaining" line 167).
-// If Svelte 5 tracks the read inside `deps.getForestPlotWidth()` correctly,
-// the pattern composes for every remaining slice; if it doesn't, the
-// idiom needs an amendment before tackling the long pole.
+// `forestAxes` is the per-context scale resolver: each forest column gets its
+// own axis computed from its OWN data, options, width, and pan/zoom override.
+// Previously a single global `axisComputation` + `xScale` (the first forest
+// column's) was shared across every forest column — a DOM↔export divergence
+// (export already resolves per-column) that this fixes. The `ForestScaleContext`
+// the scales are built from carries a `groupId` seam: faceting (per-group
+// domains/scale-types) extends this resolver without changing its consumers.
+// See docs/dev/region-tree.md §5 + docs/dev/row-types.md §6.
 //
-// The validation: change the forest column's flex width (e.g. via aspect
-// slider) and observe that axisComputation.plotRegion updates. Already
-// exercised by the visual battery (45 examples touch the aspect ladder);
-// the spike here is moving the read site across a slice boundary without
-// breaking that propagation.
+// This reads `forestColumns` (columns slice / main) and the per-column flex
+// widths (layout-zoom slice / main) via injected getters — a cross-slice
+// `$derived` chain (see docs/dev/store-decomposition-idiom.md).
 //
 // Owns:
 //   - axisZooms          per-column { domain: [lo, hi] } overrides
-//   - axisComputation    $derived global axis (limits + plotRegion + ticks)
-//   - xScale             $derived d3 scale built from plotRegion + forestWidth
+//   - forestAxes         $derived Map<colId, ResolvedForestAxis> (the resolver)
+//   - primaryForestAxis  $derived first forest column's axis (single-value
+//                        consumers: plot annotations, export clip bounds)
 //
 // Dependencies (injected):
 //   - getSpec            for spec.theme.axis / spec.theme.plot / spec.data.rows
-//   - getForestColumns   for the first forest column's options + id
-//   - getForestPlotWidth   for the aspect-ladder Stage-1 width
+//   - getForestColumns   the forest columns to resolve (id + options)
+//   - getFlexWidths      per-column resolved widths (layout.flexWidths)
 //   - markSource         source-tags axis_zooms mutations
 
 import type { WebSpec, ColumnSpec } from "$types";
-import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
-import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
+import { computeAxis } from "$lib/axis-utils";
+import {
+  buildForestScale,
+  type ForestScale,
+  type ForestScaleType,
+} from "$lib/layout/forest-scale";
 
 /** Matches the shape produced by tabvizStore's `forestColumns` $derived
  *  — flat leaf-column entries with the original tree index. */
@@ -41,17 +41,34 @@ type ForestColumnEntry = {
   column: ColumnSpec;
 };
 
+/** A forest column's fully-resolved x-axis: the d3 scale plus the axis metadata
+ *  it was built from. Produced per-column by the `forestAxes` resolver. */
+export interface ResolvedForestAxis {
+  /** d3 x-scale: data value → pixel x within the column's plot area. */
+  scale: ForestScale;
+  /** Axis line extent / clip bounds. */
+  axisLimits: [number, number];
+  /** Plot region (axisLimits + marker margin). */
+  plotRegion: [number, number];
+  /** Tick values within axisLimits. */
+  ticks: number[];
+}
+
 export interface AxisSliceDeps {
   getSpec: () => WebSpec | null;
   getForestColumns: () => readonly ForestColumnEntry[];
-  getForestPlotWidth: () => number;
+  getFlexWidths: () => Record<string, number>;
   markSource: (field: string) => void;
 }
 
 export interface AxisSlice {
   readonly axisZooms: Record<string, { domain: [number, number] }>;
-  readonly axisComputation: AxisComputation;
-  readonly xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
+  /** Per-column resolved forest axis, keyed by column id. The per-context
+   *  resolver — faceting extends each context with a non-null group later. */
+  readonly forestAxes: ReadonlyMap<string, ResolvedForestAxis>;
+  /** The primary (first) forest column's resolved axis. Back-stop for the
+   *  single-value consumers — plot annotations + export clip bounds. */
+  readonly primaryForestAxis: ResolvedForestAxis;
 
   setAxisZoom: (columnId: string, domain: [number, number]) => void;
   resetAxisZoom: (columnId: string) => void;
@@ -61,92 +78,91 @@ export interface AxisSlice {
   reset: () => void;
 }
 
+/** Width used for a forest column before the layout has produced a flex width
+ *  (first paint). Mirrors the renderers' forest fallback. */
+const DEFAULT_FOREST_WIDTH = 200;
+
+/** Resolved axis for the "no forest columns" case — never used for positioning
+ *  (no forest ⇒ no marks/annotations), only as a non-null back-stop. */
+const EMPTY_FOREST_AXIS: ResolvedForestAxis = {
+  scale: buildForestScale({
+    columnId: "",
+    groupId: null,
+    scaleType: "linear",
+    domain: [0, 1],
+    width: DEFAULT_FOREST_WIDTH,
+  }),
+  axisLimits: [0, 1],
+  plotRegion: [0, 1],
+  ticks: [0, 0.5, 1],
+};
+
 export function createAxisSlice(deps: AxisSliceDeps): AxisSlice {
   let axisZooms = $state<Record<string, { domain: [number, number] }>>({});
 
-  // CROSS-SLICE $DERIVED — reads forestColumns (columns slice / main) and
-  // the forest column's resolved flex width (layout-zoom slice / main) via
-  // injected getters.
-  const axisComputation = $derived.by((): AxisComputation => {
+  // ── Per-context forest axis resolver ─────────────────────────────────────
+  // One resolved axis per forest column, each from its OWN data / options /
+  // width / pan-zoom override. Cross-slice $derived: reads forestColumns
+  // (columns slice) and flex widths (layout-zoom slice) via injected getters.
+  const forestAxes = $derived.by((): Map<string, ResolvedForestAxis> => {
+    const map = new Map<string, ResolvedForestAxis>();
     const spec = deps.getSpec();
-    if (!spec) {
-      return { axisLimits: [0, 1], plotRegion: [0, 1], ticks: [0, 0.5, 1] };
+    if (!spec) return map;
+
+    const flexWidths = deps.getFlexWidths();
+
+    for (const { column } of deps.getForestColumns()) {
+      const fo = column.options?.forest;
+      const scaleType: ForestScaleType =
+        (fo?.scale ?? "linear") === "log" ? "log" : "linear";
+      const nullValue = fo?.nullValue ?? (scaleType === "log" ? 1 : 0);
+      const width = flexWidths[column.id] ?? DEFAULT_FOREST_WIDTH;
+
+      // Merge this column's axisRange / axisTicks overrides into the theme axis.
+      const config = { ...spec.theme.axis };
+      if (fo?.axisRange && Array.isArray(fo.axisRange) && fo.axisRange.length === 2) {
+        config.rangeMin = fo.axisRange[0];
+        config.rangeMax = fo.axisRange[1];
+      }
+      if (fo?.axisTicks && Array.isArray(fo.axisTicks)) {
+        config.tickValues = fo.axisTicks;
+      }
+
+      const { axisLimits, plotRegion, ticks } = computeAxis({
+        rows: spec.data.rows,
+        config,
+        scale: scaleType,
+        nullValue,
+        forestWidth: width,
+        pointSize: spec.theme.plot.pointSize,
+        effects: fo?.effects ?? [],
+        pointCol: fo?.point ?? null,
+        lowerCol: fo?.lower ?? null,
+        upperCol: fo?.upper ?? null,
+        domainOverride: axisZooms[column.id]?.domain ?? null,
+      });
+
+      // Mark scale domain = axisLimits (preserves the historical DOM behavior).
+      // NOTE: the V8/SVG export builds its mark scale from plotRegion (axisLimits
+      // + marker margin) instead — a pre-existing DOM↔export divergence to unify
+      // next (would shift DOM forest marks by the marker margin to match export).
+      const scale = buildForestScale({
+        columnId: column.id,
+        groupId: null,
+        scaleType,
+        domain: axisLimits,
+        width,
+      });
+
+      map.set(column.id, { scale, axisLimits, plotRegion, ticks });
     }
 
-    const forestColumns = deps.getForestColumns();
-    const firstForest = forestColumns[0]?.column;
-    const hasForest = forestColumns.length > 0;
-
-    // Read the forest column's resolved plot width from the layout so the
-    // aspect-ladder flex-absorption result propagates here. Routes through
-    // deps.getForestPlotWidth() (= layout.flexWidths[forestId]).
-    // Reactivity tracking is the spike — the dep-call site has to
-    // establish the same $derived edge as a direct read.
-    const forestWidth = hasForest ? deps.getForestPlotWidth() : 0;
-
-    const forestOptions = firstForest?.options?.forest;
-    const scale = forestOptions?.scale ?? "linear";
-    const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
-    const effects = forestOptions?.effects ?? [];
-    const pointCol = forestOptions?.point ?? null;
-    const lowerCol = forestOptions?.lower ?? null;
-    const upperCol = forestOptions?.upper ?? null;
-
-    // Merge forest column axis overrides into theme config
-    const axisConfig = { ...spec.theme.axis };
-    if (forestOptions?.axisRange && Array.isArray(forestOptions.axisRange) && forestOptions.axisRange.length === 2) {
-      axisConfig.rangeMin = forestOptions.axisRange[0];
-      axisConfig.rangeMax = forestOptions.axisRange[1];
-    }
-    if (forestOptions?.axisTicks && Array.isArray(forestOptions.axisTicks)) {
-      axisConfig.tickValues = forestOptions.axisTicks;
-    }
-
-    // Honor first forest column's pan/zoom override for the global scale.
-    // Per-column viz components consult axisZooms directly for their own axes.
-    const firstForestId = firstForest?.id;
-    const domainOverride = firstForestId ? axisZooms[firstForestId]?.domain ?? null : null;
-
-    return computeAxis({
-      rows: spec.data.rows,
-      config: axisConfig,
-      scale,
-      nullValue,
-      forestWidth,
-      pointSize: spec.theme.plot.pointSize,
-      effects,
-      pointCol,
-      lowerCol,
-      upperCol,
-      domainOverride,
-    });
+    return map;
   });
 
-  const xScale = $derived.by(() => {
-    const spec = deps.getSpec();
-    if (!spec) return scaleLinear().domain([0, 1]).range([0, 100]);
-
-    const forestColumns = deps.getForestColumns();
-    const firstForest = forestColumns[0]?.column;
-    const forestOptions = firstForest?.options?.forest;
-    const isLog = (forestOptions?.scale ?? "linear") === "log";
-    const { plotRegion } = axisComputation;
-
-    const hasForest = forestColumns.length > 0;
-    const forestWidth = hasForest ? deps.getForestPlotWidth() : 0;
-
-    const rangeStart = VIZ_MARGIN;
-    const rangeEnd = Math.max(forestWidth - VIZ_MARGIN, rangeStart + 50);
-
-    if (isLog) {
-      const safeDomain: [number, number] = [
-        Math.max(plotRegion[0], 0.01),
-        Math.max(plotRegion[1], 0.02),
-      ];
-      return scaleLog().domain(safeDomain).range([rangeStart, rangeEnd]);
-    }
-
-    return scaleLinear().domain(plotRegion).range([rangeStart, rangeEnd]);
+  const primaryForestAxis = $derived.by((): ResolvedForestAxis => {
+    const firstId = deps.getForestColumns()[0]?.column.id;
+    return (firstId !== undefined && forestAxes.get(firstId)) || EMPTY_FOREST_AXIS;
   });
 
   function setAxisZoom(columnId: string, domain: [number, number]): void {
@@ -178,8 +194,8 @@ export function createAxisSlice(deps: AxisSliceDeps): AxisSlice {
 
   return {
     get axisZooms() { return axisZooms; },
-    get axisComputation() { return axisComputation; },
-    get xScale() { return xScale; },
+    get forestAxes() { return forestAxes; },
+    get primaryForestAxis() { return primaryForestAxis; },
     setAxisZoom, resetAxisZoom, getAxisZoom, getEffectiveDomain,
     reset,
   };

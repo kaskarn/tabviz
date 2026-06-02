@@ -117,15 +117,14 @@ export function createTabvizStore() {
     appendOp,
   });
 
-  // ── Axis (cross-slice $derived spike) ────────────────────────────────────
-  // Phase 0c-C1 PR3. Owns `axisZooms` and the global `axisComputation` +
-  // `xScale` $derived blocks. Reads `forestColumns` from the columns slice
-  // and the forest column's resolved flex width (layout-zoom / main) via
-  // forward-closure getters.
+  // ── Axis (cross-slice $derived) ──────────────────────────────────────────
+  // Owns `axisZooms` + the per-context `forestAxes` resolver (one resolved
+  // axis per forest column). Reads `forestColumns` from the columns slice and
+  // per-column flex widths (layout-zoom / main) via forward-closure getters.
   const axis = createAxisSlice({
     getSpec: () => spec,
     getForestColumns: () => columns.forestColumns,
-    getForestPlotWidth: () => { const fid = columns.forestColumns[0]?.column?.id; return fid ? (layoutZoom.layout.flexWidths?.[fid] ?? 0) : 0; },
+    getFlexWidths: () => layoutZoom.layout.flexWidths ?? {},
     markSource,
   });
 
@@ -311,11 +310,11 @@ export function createTabvizStore() {
   // that need full Rows call `sortFilter.rowAt(i)` (lazy overlay merge).
   const visibleIndices = $derived(sortFilter.visibleIndices);
 
-  // `axisComputation` and `xScale` $derived blocks live on the axis slice
-  // (Phase 0c-C1 PR3). Read here via `axis.axisComputation` / `axis.xScale`.
-  // Local aliases keep the existing call sites in this file unchanged.
-  const axisComputation = $derived(axis.axisComputation);
-  const xScale = $derived(axis.xScale);
+  // Per-context forest axes live on the axis slice. `forestAxes` is the
+  // per-column resolver; `primaryForestAxis` is the first column's axis for
+  // the single-value consumers (plot annotations, export clip bounds).
+  const forestAxes = $derived(axis.forestAxes);
+  const primaryForestAxis = $derived(axis.primaryForestAxis);
 
   // Column tree + edits / measurement / methods all live on the columns
   // slice (Phase 0c-C1 PR9). Aliases for the slice's derived blocks were
@@ -834,11 +833,11 @@ export function createTabvizStore() {
       return visibleIndices;
     },
     rowAt: (i: number) => sortFilter.rowAt(i),
-    get xScale() {
-      return xScale;
+    get forestAxes() {
+      return forestAxes;
     },
-    get axisComputation() {
-      return axisComputation;
+    get primaryForestAxis() {
+      return primaryForestAxis;
     },
     get layout() {
       return layout;
@@ -1022,8 +1021,9 @@ export function createTabvizStore() {
      * - R save_plot(): Uses same algorithm but with text estimation (no DOM)
      */
     getExportDimensions() {
-      // Get the current x-axis domain from xScale
-      const domain = xScale.domain() as [number, number];
+      // Primary forest column's scale domain (plotRegion) for the legacy
+      // top-level export fields below.
+      const domain = primaryForestAxis.plotRegion;
 
       // Build column order and positions sequentially
       const columnOrder: string[] = [];
@@ -1086,12 +1086,17 @@ export function createTabvizStore() {
         const fcScale = forestOpts?.scale ?? "linear";
         const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
 
+        // Each forest column exports from its OWN resolved axis (per-context).
+        const fcAxis = forestAxes.get(col.id) ?? primaryForestAxis;
+
         // Apply per-column pan/zoom override if present. Clip bounds track the
         // override so svg-generator's CI clipping + arrow logic matches view.
+        // The scale domain stays plotRegion (export convention; the marker
+        // margin is the DOM↔export divergence flagged in the axis slice).
         const override = axis.axisZooms[col.id]?.domain;
-        const fcDomain: [number, number] = override ?? domain;
-        const fcClip: [number, number] = override ?? axisComputation.axisLimits;
-        let fcTicks = axisComputation.ticks;
+        const fcDomain: [number, number] = override ?? fcAxis.plotRegion;
+        const fcClip: [number, number] = override ?? fcAxis.axisLimits;
+        let fcTicks = fcAxis.ticks;
         if (override) {
           // Regenerate ticks against the overridden domain so axis labels reflect zoom.
           const tickScale = fcScale === "log"
@@ -1188,7 +1193,7 @@ export function createTabvizStore() {
         // Use actual first forest column width (may be resized) for consistent layout
         forestWidth: (forestColumnsData[0]?.width ?? layout.flexWidths?.[columns.forestColumns[0]?.column?.id ?? ""] ?? 200) * zoom,
         xDomain: domain,
-        clipBounds: axisComputation.axisLimits,
+        clipBounds: primaryForestAxis.axisLimits,
         scale: zoom,
       };
     },

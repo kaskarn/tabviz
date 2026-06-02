@@ -149,16 +149,43 @@ Keep the two `$derived` boundaries the slices already have: a structural derived
 (produces the unit array) and the layout derived (`computeRowLayout` over it).
 Crossing them is the regression to guard against.
 
-## 5. Per-context scale (ships FIRST, as its own PR)
+## 5. Per-context scale — DONE (2026-06-02)
 
-Self-contained, lowest-risk, clear parity tests, and it unblocks faceting
-independently — so it lands *before* the tree work. Today forest scale is global
-(`axis.svelte.ts` `xScale` via `getForestPlotWidth`; per-column overlays already
-bypass it). Change: forest scale resolves **by context** — a cached
-`Map<(colId, groupId) → scale>` keyed on domain/null/scale-type/range, with the
-group fallback being "whole column" (today's behavior). The global `xScale` is
-retired (this *is* multi-flex Phase E). Parity: per-context-with-one-group must
-equal today's global scale, byte-identical, across the export + DOM harnesses.
+Shipped first, as planned. The forest x-scale now resolves **by context**:
+
+- **`lib/layout/forest-scale.ts`** — the single source of truth.
+  `buildForestScale(ctx)` + `forestScaleRange`/`safeLogDomain`/`forestScaleKey`,
+  keyed on a `ForestScaleContext { columnId, groupId, scaleType, domain, width }`.
+  `groupId === null` = "whole column" today; faceting passes a real group id with
+  a per-group domain *without changing call sites*.
+- **Axis slice** (`axis.svelte.ts`) — replaced the global `axisComputation` +
+  `xScale` (the first forest column's, shared across all) with a per-column
+  `forestAxes: Map<colId, ResolvedForestAxis>` resolver + a `primaryForestAxis`
+  back-stop. The global `xScale` is **retired**.
+- **Both backends** build through the module: DOM via `forestAxes`, export
+  (`computeXScaleAndClip`) via the shared range/clamp helpers.
+
+This also fixed a latent **DOM↔export divergence**: the DOM shared the first
+forest column's domain across every forest column while the export was already
+per-column. Single-forest specs are byte-identical; multi-forest DOM now
+converges to the (correct) export. Plus the global `xScale` retirement aligned
+plot **annotations** with the marks (both now resolve through the primary
+column's per-context scale; previously annotations used `plotRegion` and marks
+used `axisLimits`).
+
+Validation: 11 `forest-scale.test.ts` + 10 axis runes tests, full TS suite (923
+bun / 201 vitest), R `devtools::test()`, export visuals unchanged, DOM
+screenshot verified.
+
+### Known follow-up — unify the mark domain on `plotRegion`
+
+DOM forest marks still build their scale from `axisLimits`; the export builds
+from `plotRegion` (= axisLimits + marker margin). Within each backend everything
+is self-consistent, but live-DOM marks and the downloaded SVG differ by the
+marker margin. Unifying the DOM onto `plotRegion` (the documented render domain,
+what the export uses) is a small, isolated change — but it shifts *every* DOM
+forest render by the marker margin, so it wants its own commit + browser visual
+sign-off (and ideally a DOM mark-position test). Flagged in `axis.svelte.ts`.
 
 ## 6. Migration (behavior-preserving)
 

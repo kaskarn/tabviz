@@ -54,7 +54,7 @@ export interface AxisHarness {
 /** Build the axis slice with reactive test deps. forestColumns and
  *  forestWidth live in `$state` so changing them from a test
  *  propagates through the slice's `$derived` blocks via
- *  `deps.getForestColumns()` / `deps.getForestPlotWidth()` — the
+ *  `deps.getForestColumns()` / `deps.getFlexWidths()` — the
  *  same edge we need across real slice boundaries in production. */
 export function buildAxisHarness(initialForestWidth = 400): AxisHarness {
   const spec: WebSpec = buildSpec();
@@ -66,7 +66,8 @@ export function buildAxisHarness(initialForestWidth = 400): AxisHarness {
   const slice = createAxisSlice({
     getSpec: () => spec,
     getForestColumns: () => forestColumns,
-    getForestPlotWidth: () => forestWidth,
+    // Per-column widths keyed by id; the harness uses one width for all.
+    getFlexWidths: () => Object.fromEntries(forestColumns.map((fc) => [fc.column.id, forestWidth])),
     markSource: (f) => { sourceMarks.push(f); },
   });
   return {
