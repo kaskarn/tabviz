@@ -5,14 +5,14 @@
 // table-metrics' feeders) Math.max the results across a row's columns with the
 // text-wrap height and base rowHeight.
 //
-// Geometry mirrors the live cell components verbatim (the same numbers
-// width-behaviors uses). Source of truth for both browser and V8/SVG paths.
+// Glyph dimensions come from CELL_GEOMETRY (lib/rendering-constants) — the same
+// single source width-behaviors and the SVG renderers read.
 //
 // naturalHeight is PER-ROW (one row's value) — height is row-local, unlike
 // naturalWidth which scans all rows for the column's extent.
 
 import { registerBehaviors } from "../extend";
-import { EFFECT } from "../../lib/rendering-constants";
+import { EFFECT, CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 type PictogramOpts = {
   pictogram?: {
@@ -28,8 +28,6 @@ type SparklineOpts = { sparkline?: { height?: number | null } };
 type ImgOpts = { img?: { height?: number | null } };
 type ForestOpts = { forest?: { effects?: unknown[] | null } };
 
-const PICTOGRAM_GLYPH_PX = { sm: 10, base: 14, lg: 20 } as const;
-
 /** Re-register height behaviors. Idempotent. */
 export function registerHeightBehaviors(): void {
 
@@ -38,7 +36,7 @@ export function registerHeightBehaviors(): void {
   registerBehaviors("pictogram", {
     naturalHeight: (column, row) => {
       const opts = (column.options as PictogramOpts).pictogram;
-      const glyphPx = PICTOGRAM_GLYPH_PX[opts?.size ?? "base"];
+      const glyphPx = CELL_GEOMETRY.pictogram.glyphPx[opts?.size ?? "base"];
       if ((opts?.layout ?? "row") !== "stack") return glyphPx;
       // stack: vertical column of glyphs, CSS gap: 0 → count × glyphPx.
       const v = Number(row.metadata[column.field]);
@@ -52,7 +50,7 @@ export function registerHeightBehaviors(): void {
   registerBehaviors("ring", {
     naturalHeight: (column) => {
       const sizeKey = (column.options as RingOpts).ring?.size ?? "base";
-      return sizeKey === "sm" ? 18 : sizeKey === "lg" ? 32 : 24;
+      return CELL_GEOMETRY.ring.diameter[sizeKey];
     },
   });
 
@@ -61,7 +59,7 @@ export function registerHeightBehaviors(): void {
   registerBehaviors("icon", {
     naturalHeight: (column, _row, ctx) => {
       const sizeKey = (column.options as IconOpts).icon?.size ?? "base";
-      const mult = sizeKey === "sm" ? 0.75 : sizeKey === "lg" ? 1 : sizeKey === "xl" ? 1.6 : 0.875;
+      const mult = CELL_GEOMETRY.icon.fontScale[sizeKey];
       return Math.ceil(ctx.fontSize * mult);
     },
   });

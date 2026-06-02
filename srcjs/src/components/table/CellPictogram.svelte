@@ -11,6 +11,7 @@
 <script lang="ts">
   import type { CellStyle, PictogramColumnOptions } from "$types";
   import { resolveGlyph, type ResolvedGlyph } from "$lib/glyph-registry";
+  import { CELL_GEOMETRY } from "$lib/rendering-constants";
 
   // One id per component instance (plain `let` runs once at mount; not
   // reactive, no $state — the id is stable across re-renders).
@@ -42,6 +43,11 @@
     size === "sm" ? "size-sm" : size === "lg" ? "size-lg" : "size-base"
   );
   const layoutClass = $derived(layout === "stack" ? "layout-stack" : "layout-row");
+  // Glyph box + track gap from the shared geometry source (CELL_GEOMETRY) —
+  // the same px the width budget reserves and the SVG renderer draws. Stack
+  // layout butts glyphs together (gap 0).
+  const glyphPx = $derived(CELL_GEOMETRY.pictogram.glyphPx[size]);
+  const trackGapPx = $derived(layout === "stack" ? 0 : CELL_GEOMETRY.pictogram.gap);
 
   // Theme-aware defaults: null → CSS var. style_color overrides the filled
   // color (per the per-cell cascade decisions). Pictograms read identity
@@ -146,13 +152,15 @@
     {#if labelPosition === "leading"}
       <span class="pictogram-label">{labelText}</span>
     {/if}
-    <span class="glyph-track">
+    <span class="glyph-track" style:gap="{trackGapPx}px">
       {#each slots as slot, i (i)}
         {#if resolvedGlyph.kind === "registry"}
           <svg
             class="glyph"
             viewBox={resolvedGlyph.def.viewBox}
             class:half={slot.state === "half"}
+            style:width="{glyphPx}px"
+            style:height="{glyphPx}px"
             aria-hidden="true"
           >
             {#if slot.state === "full"}
@@ -205,23 +213,20 @@
     opacity: 0.5;
   }
 
+  /* Track gap + glyph box are set inline from CELL_GEOMETRY (see <script>);
+     the stack layout only needs its flex direction here. */
   .glyph-track {
     display: inline-flex;
     align-items: center;
-    gap: 1px;
   }
   .layout-stack .glyph-track {
     flex-direction: column-reverse;
-    gap: 0;
   }
 
   .glyph {
     display: inline-block;
     transition: fill 0.15s ease, stroke 0.15s ease;
   }
-  .size-sm .glyph { width: 10px; height: 10px; }
-  .size-base .glyph { width: 14px; height: 14px; }
-  .size-lg .glyph { width: 20px; height: 20px; }
 
   .glyph-literal {
     transition: color 0.15s ease, opacity 0.15s ease;

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { StarsColumnOptions } from "$types";
+  import { CELL_GEOMETRY } from "$lib/rendering-constants";
 
   interface Props {
     value: number | undefined | null;
@@ -51,7 +52,7 @@
 </script>
 
 {#if value !== undefined && value !== null}
-  <span class="cell-stars {sizeClass}" title="{value} / {maxStars}">
+  <span class="cell-stars {sizeClass}" style:gap="{CELL_GEOMETRY.stars.gap}px" title="{value} / {maxStars}">
     {#each starDisplay as star, i (i)}
       <span
         class="star"
@@ -68,10 +69,11 @@
 {/if}
 
 <style>
+  /* gap is set inline from CELL_GEOMETRY.stars.gap (matches the px width
+     budget + SVG renderer); the star glyph itself stays font-relative below. */
   .cell-stars {
     display: inline-flex;
     align-items: center;
-    gap: 1px;
     line-height: 1;
   }
 

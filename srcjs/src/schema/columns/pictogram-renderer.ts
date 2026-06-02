@@ -21,6 +21,7 @@ import { registerCellComponent } from "../../components/render-component-registr
 import CellPictogram from "../../components/table/CellPictogram.svelte";
 import { resolveGlyph } from "../../lib/glyph-registry";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 interface PictogramOptions {
   glyph?: string | Record<string, string>;
@@ -37,9 +38,9 @@ interface PictogramOptions {
   labelDecimals?: number;
 }
 
-const GLYPH_PX: Record<"sm" | "base" | "lg", number> = { sm: 10, base: 14, lg: 20 };
+const GLYPH_PX = CELL_GEOMETRY.pictogram.glyphPx;
 const LABEL_FONT_PX: Record<"sm" | "base" | "lg", number> = { sm: 9, base: 11, lg: 12 };
-const GLYPH_GAP = 1;
+const GLYPH_GAP = CELL_GEOMETRY.pictogram.gap;
 
 const pictogramDomRenderer: CellFormatter = (value, options, ctx) => {
   // Multi-field read: glyphSelector comes from the configured

@@ -1,8 +1,9 @@
 // Stars cell SVG renderer (schema-sprint Phase 4b.3).
 //
-// Mirrors svg-generator.ts:3523-3574. N-pointed-star glyphs with
-// fill/empty fills, optional half-star, configurable domain mapping
-// (value range → 0..maxStars), maxStars clamped to [1, 20].
+// The canonical SVG path for stars cells (svg-generator delegates here via
+// schema dispatch). N-pointed-star glyphs with fill/empty fills, optional
+// half-star, configurable domain mapping (value range → 0..maxStars),
+// maxStars clamped to [1, 20].
 //
 // Output is a single <g> containing N <path> star glyphs laid out in
 // a row. Origin is (0,0); caller wraps + positions.
@@ -10,6 +11,7 @@
 import type { ColumnOptions } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
+import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 interface StarsOptions {
   maxStars?: number;
@@ -19,8 +21,8 @@ interface StarsOptions {
   halfStars?: boolean;
 }
 
-const STAR_SIZE = 12;
-const STAR_GAP = 2;
+const STAR_SIZE = CELL_GEOMETRY.stars.glyphPx;
+const STAR_GAP = CELL_GEOMETRY.stars.gap;
 const DEFAULT_FILL = "#f59e0b";
 const DEFAULT_EMPTY = "#d1d5db";
 

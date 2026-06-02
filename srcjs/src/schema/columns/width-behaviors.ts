@@ -6,11 +6,12 @@
 // (column auto-width, svg-generator) Math.max it against the
 // text-derived width budget.
 //
-// Geometry mirrors the live cell components verbatim — see the
-// comments inline. Numbers here are the source of truth for both
-// browser and V8/SVG measurement paths.
+// Glyph dimensions come from CELL_GEOMETRY (lib/rendering-constants) — the
+// single source shared with the SVG renderers, the height behaviors, and the
+// cell components' absolute-px CSS.
 
 import { registerBehaviors } from "../extend";
+import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 type PictogramOpts = {
   pictogram?: {
@@ -33,8 +34,8 @@ registerBehaviors("pictogram", {
   naturalWidth: (column, rows) => {
     const opts = (column.options as PictogramOpts).pictogram;
     const sizeKey = opts?.size ?? "base";
-    const glyphPx = sizeKey === "sm" ? 10 : sizeKey === "lg" ? 20 : 14;
-    const gap = 1;
+    const glyphPx = CELL_GEOMETRY.pictogram.glyphPx[sizeKey];
+    const gap = CELL_GEOMETRY.pictogram.gap;
     const layout = opts?.layout ?? "row";
 
     let slots: number;
@@ -66,14 +67,14 @@ registerBehaviors("pictogram", {
 registerBehaviors("stars", {
   naturalWidth: (column) => {
     const max = (column.options as StarsOpts).stars?.maxStars ?? 5;
-    return max * 12 + Math.max(0, max - 1) * 2;
+    return max * CELL_GEOMETRY.stars.glyphPx + Math.max(0, max - 1) * CELL_GEOMETRY.stars.gap;
   },
 });
 
 registerBehaviors("icon", {
   naturalWidth: (column) => {
     const sizeKey = (column.options as IconOpts).icon?.size ?? "base";
-    return sizeKey === "sm" ? 12 : sizeKey === "lg" ? 16 : sizeKey === "xl" ? 26 : 14;
+    return CELL_GEOMETRY.icon.px[sizeKey];
   },
 });
 
@@ -81,7 +82,7 @@ registerBehaviors("ring", {
   naturalWidth: (column) => {
     const opts = (column.options as RingOpts).ring;
     const sizeKey = opts?.size ?? "base";
-    const diameter = sizeKey === "sm" ? 18 : sizeKey === "lg" ? 32 : 24;
+    const diameter = CELL_GEOMETRY.ring.diameter[sizeKey];
     if (!(opts?.showLabel ?? true)) return diameter;
     const labelFontPx = sizeKey === "sm" ? 9 : sizeKey === "lg" ? 12 : 11;
     // "100%" is the widest typical label (4 chars).

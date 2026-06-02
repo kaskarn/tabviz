@@ -1,8 +1,9 @@
 // Ring cell SVG renderer (schema-sprint Phase 4b.4).
 //
-// Mirrors svg-generator.ts:3753-3855. Donut gauge: track ring + filled
-// arc + optional trailing label. Theme colors resolved to literals
-// (nested <svg> elements don't inherit CSS vars in rsvg).
+// The canonical SVG path for ring cells (svg-generator delegates here via
+// schema dispatch). Donut gauge: track ring + filled arc + optional trailing
+// label. Theme colors resolved to literals (nested <svg> elements don't
+// inherit CSS vars in rsvg).
 //
 // Output is a single <g>-ish blob (track circle, optional fill arc,
 // optional label) at origin (0,0); caller wraps + positions.
@@ -11,6 +12,7 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 interface RingOptions {
   minValue?: number;
@@ -24,7 +26,7 @@ interface RingOptions {
   color?: string | string[];
 }
 
-const DIAMETER: Record<"sm" | "base" | "lg", number> = { sm: 18, base: 24, lg: 32 };
+const DIAMETER = CELL_GEOMETRY.ring.diameter;
 const LABEL_FONT_PX: Record<"sm" | "base" | "lg", number> = { sm: 9, base: 11, lg: 12 };
 
 function resolveFilledColor(

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { CellStyle, RingColumnOptions } from "$types";
+  import { CELL_GEOMETRY } from "$lib/rendering-constants";
 
   interface Props {
     value: number | undefined | null;
@@ -89,8 +90,9 @@
 
   // ----- geometry -----------------------------------------------------------
 
-  // Donut sized by class. Stroke width = ~22% of diameter.
-  const diameter = $derived(size === "sm" ? 18 : size === "lg" ? 32 : 24);
+  // Donut diameter from the shared geometry source (CELL_GEOMETRY); it drives
+  // the <svg> width/height attributes below. Stroke width = ~22% of diameter.
+  const diameter = $derived(CELL_GEOMETRY.ring.diameter[size]);
   const stroke = $derived(Math.max(2, Math.round(diameter * 0.22)));
   const radius = $derived((diameter - stroke) / 2);
   const cx = $derived(diameter / 2);
@@ -162,9 +164,8 @@
     opacity: 0.5;
   }
 
-  .size-sm svg { width: 18px; height: 18px; }
-  .size-base svg { width: 24px; height: 24px; }
-  .size-lg svg { width: 32px; height: 32px; }
+  /* SVG width/height come from the `diameter` attribute (CELL_GEOMETRY) — no
+     CSS size override needed. */
 
   .ring-label {
     font-variant-numeric: tabular-nums;

@@ -349,6 +349,51 @@ export const EFFECT = {
 } as const;
 
 // ============================================================================
+// Cell glyph geometry — single source of truth
+// ============================================================================
+
+/**
+ * Per-size pixel geometry for the glyph-style cell columns (pictogram, ring,
+ * stars, icon). This is THE source of truth: the width-estimate behaviors
+ * (`width-behaviors.ts`), the content-height behaviors (`height-behaviors.ts`),
+ * the SVG cell renderers (`{pictogram,ring,stars,icon}-renderer.ts`), and the
+ * absolute-px CSS in the matching Svelte components all read these numbers.
+ * Before this table they were copied — and had begun to drift (the stars gap
+ * disagreed between the px paths and the DOM).
+ *
+ * Two coordinate systems coexist deliberately:
+ *  - Absolute px (`pictogram.glyphPx`, `ring.diameter`, `stars.glyphPx`,
+ *    `icon.px`) — what the SVG renderer draws and the width budget reserves,
+ *    and what the DOM uses where it sizes in px.
+ *  - `icon.fontScale` — body-font multiples used by the DOM (CSS `rem`) and the
+ *    content-height behavior, because the icon glyph is a font character that
+ *    must scale with the table's font. The DOM keeps its CSS-var hook
+ *    (`--tv-font-size-*`) and mirrors these multiples; height-behaviors imports
+ *    them directly.
+ */
+export const CELL_GEOMETRY = {
+  /** Pictogram registry-glyph box + inter-glyph track gap (px). */
+  pictogram: {
+    glyphPx: { sm: 10, base: 14, lg: 20 },
+    gap: 1,
+  },
+  /** Ring donut outer diameter (px). */
+  ring: {
+    diameter: { sm: 18, base: 24, lg: 32 },
+  },
+  /** Star glyph box + inter-star gap (px). */
+  stars: {
+    glyphPx: 12,
+    gap: 2,
+  },
+  /** Icon glyph: absolute px (SVG/width budget) + body-font multiple (DOM/height). */
+  icon: {
+    px: { sm: 12, base: 14, lg: 16, xl: 26 },
+    fontScale: { sm: 0.75, base: 0.875, lg: 1, xl: 1.6 },
+  },
+} as const;
+
+// ============================================================================
 // Axis Rendering Constants
 // ============================================================================
 

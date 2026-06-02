@@ -50,6 +50,11 @@
     line-height: 1;
   }
 
+  /* The rem fallbacks below mirror CELL_GEOMETRY.icon.fontScale
+     (sm 0.75 / base 0.875 / lg 1 / xl 1.6) — the same body-font multiples the
+     content-height behavior (height-behaviors.ts) reads. The DOM keeps the
+     CSS-var hook (--tv-font-size-*) so themes can override; the SVG renderer
+     and width budget use CELL_GEOMETRY.icon.px instead (absolute, no var). */
   .icon-sm {
     font-size: var(--tv-font-size-sm, 0.75rem);
   }

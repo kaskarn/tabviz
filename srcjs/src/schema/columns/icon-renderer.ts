@@ -1,9 +1,9 @@
 // Icon cell SVG renderer (schema-sprint Phase 4b.2).
 //
-// Mirrors svg-generator.ts:3856-3903. Single-glyph cell — applies
-// `options.icon.mapping[value]` when present, otherwise renders the
-// value verbatim (the typical case is a unicode/emoji glyph stored
-// directly in the data column).
+// The canonical SVG path for icon cells (svg-generator delegates here via
+// schema dispatch). Single-glyph cell — applies `options.icon.mapping[value]`
+// when present, otherwise renders the value verbatim (the typical case is a
+// unicode/emoji glyph stored directly in the data column).
 //
 // Output is a single <text> element at origin (0,0); the caller in
 // svg-generator.ts wraps it with translate based on column align and
@@ -20,6 +20,7 @@ import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { escapeXml } from "../../lib/svg-text-utils";
+import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 interface IconOptions {
   mapping?: Record<string, string>;
@@ -27,9 +28,7 @@ interface IconOptions {
   size?: "sm" | "base" | "lg" | "xl";
 }
 
-const SIZE_PX: Record<"sm" | "base" | "lg" | "xl", number> = {
-  sm: 12, base: 14, lg: 16, xl: 26,
-};
+const SIZE_PX = CELL_GEOMETRY.icon.px;
 
 function resolveIconColor(
   iconOpts: IconOptions | undefined,
