@@ -82,7 +82,7 @@ import {
   getColumnDisplayText,
   truncateString,
 } from "$lib/formatters";
-import { estimateTextWidth, measureTextWidth, glyphNaturalWidth } from "$lib/width-utils";
+import { estimateTextWidth, measureTextWidth, glyphNaturalWidth, computeContentHeights } from "$lib/width-utils";
 import { escapeXml } from "$lib/svg-text-utils";
 import {
   computeVizBarDomain,
@@ -767,9 +767,16 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // positions line up with the visible row edges in the export.
   const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
   const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * LINE_HEIGHT);
+  // Per-row intrinsic content height (stacked pictograms, tall icons,
+  // multi-effect forest, sparkline/img) — estimator path for V8/export.
+  const contentHeights = computeContentHeights(allColumns, spec.data.rows, {
+    rowHeight,
+    lineHeight: LINE_HEIGHT,
+    fontSize: parseFontSize(theme.text.body.size),
+  });
   // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
   const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
-    computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx });
+    computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx, contentHeights });
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 

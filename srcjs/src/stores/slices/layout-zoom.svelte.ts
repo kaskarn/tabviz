@@ -51,6 +51,42 @@ import type {
 } from "$types";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/table-metrics";
+import { computeContentHeights } from "$lib/width-utils";
+
+/**
+ * Merge measured row heights (real DOM offsetHeight per row) over predicted
+ * (estimator) content heights. Measured wins when present — the browser knows
+ * the true rendered height; the estimate is the first-paint floor before the
+ * ResizeObserver reports. Pure; returns a fresh map.
+ */
+function mergeMeasuredHeights(
+  predicted: Record<string, number>,
+  measured: Record<string, number> | null,
+): Record<string, number> {
+  if (!measured) return predicted;
+  const out: Record<string, number> = { ...predicted };
+  for (const id in measured) {
+    const m = measured[id];
+    if (m > 0) out[id] = Math.max(out[id] ?? 0, m);
+  }
+  return out;
+}
+
+/** Shallow value-equality for measured-height maps (within 0.5px), so the
+ *  ResizeObserver→commit loop doesn't churn on sub-pixel jitter. */
+function sameHeightMap(
+  a: Record<string, number> | null,
+  b: Record<string, number> | null,
+): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  for (const k of ka) {
+    if (!(k in b) || Math.abs(a[k] - b[k]) > 0.5) return false;
+  }
+  return true;
+}
 
 /** True if any top-level column in the spec is a ColumnGroup. Pushes the
  *  header strip to a 2-row layout, which changes the min header-row height. */
@@ -101,6 +137,8 @@ export interface LayoutZoomSlice {
   setContainerElementId: (id: string | null) => void;
   setPlotWidth: (newWidth: number | null) => void;
   getPlotWidth: () => number | null;
+  /** Commit measured per-row content heights (rowId → px) from the DOM. */
+  setMeasuredRowHeights: (heights: Record<string, number> | null) => void;
   setZoom: (value: number) => void;
   resetZoom: () => void;
   zoomIn: () => void;
@@ -124,6 +162,10 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   let scalableNaturalHeight = $state<number>(0);
   let containerElementId = $state<string | null>(null);
   let plotWidthOverride = $state<number | null>(null);
+  // Measured per-row content heights (rowId → real rendered px) reported by the
+  // DOM ResizeObserver. `$state.raw` — replaced wholesale, never deep-mutated.
+  // Supersedes the estimator in the layout derivation (measure-then-commit).
+  let measuredRowHeights = $state.raw<Record<string, number> | null>(null);
 
   let zoom = $state<number>(1.0);
   let autoFit = $state<boolean>(true);
@@ -361,6 +403,15 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
     const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.text.body.size) * lineHeight);
 
+    // Per-row intrinsic content height (predicted estimator path). Measured
+    // overrides from the DOM are layered on top via getMeasuredRowHeights().
+    const predictedContent = computeContentHeights(allColumns, spec.data.rows, {
+      rowHeight,
+      lineHeight,
+      fontSize: parseFontSize(spec.theme.text.body.size),
+    });
+    const contentHeights = mergeMeasuredHeights(predictedContent, measuredRowHeights);
+
     // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
     const { rowHeights, rowPositions, rowMarkerCenters, rowsHeight: cumulativeY } = computeRowLayout({
       displayRows,
@@ -368,6 +419,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       rowHeight,
       rowGroupPadding,
       dataLineHeightPx,
+      contentHeights,
     });
 
     const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
@@ -493,6 +545,14 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     return plotWidthOverride;
   }
 
+  // Commit measured row heights from the DOM ResizeObserver. Shallow-equal
+  // guard: skip the reassignment (and the layout re-derive it would trigger)
+  // when nothing changed, so the measure→commit→re-measure loop settles.
+  function setMeasuredRowHeights(heights: Record<string, number> | null): void {
+    if (sameHeightMap(measuredRowHeights, heights)) return;
+    measuredRowHeights = heights;
+  }
+
   function setZoom(value: number) {
     zoom = Math.max(0.5, Math.min(2.0, value));
     persistZoomState();
@@ -583,6 +643,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
   function reset() {
     plotWidthOverride = null;
+    measuredRowHeights = null;
     zoom = 1.0;
     autoFit = true;
     maxWidth = null;
@@ -616,6 +677,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     setDimensions, setContainerDimensions, setScalableNaturalDimensions,
     setContainerElementId,
     setPlotWidth, getPlotWidth,
+    setMeasuredRowHeights,
     setZoom, resetZoom, zoomIn, zoomOut, setAutoFit, fitToWidth,
     setMaxWidth, setMaxHeight, setShowZoomControls,
     reset,

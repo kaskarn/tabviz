@@ -1,10 +1,21 @@
-# tabviz browser bench
+# tabviz browser harnesses
 
-Puppeteer-based bench harness. Mounts synthetic specs in real headless
-Chromium and times the htmlwidget binding's `renderValue` call —
-end-to-end mount cost including measurement, theme application, and
-DOM construction. Complements `srcjs/tests/perf/` (algorithmic-only Bun
-bench).
+Puppeteer-based harnesses that mount tabviz in real headless Chromium —
+the only place DOM-dependent behavior (measurement, ResizeObserver
+feedback, real layout) can be verified. Two kinds live here:
+
+- **Bench** (`run-bench.ts`) — times the htmlwidget binding's
+  `renderValue` call end-to-end. Complements `srcjs/tests/perf/`
+  (algorithmic-only Bun bench).
+- **Correctness tests** (`*.browser.ts`) — mount a spec, assert
+  DOM-measured behavior, exit non-zero on failure. For things the
+  headless bun/vitest suites structurally cannot check.
+
+  - `measure-rows.browser.ts` — the content-driven-height
+    **measure-then-commit** loop (sizing-model.md §6): asserts wrapped /
+    tall-content rows grow to their real rendered height and that the
+    measure→commit→re-measure loop settles (no oscillation).
+    Run: `bun run tests/browser/measure-rows.browser.ts [--bundle <p>] [--headed]`.
 
 ## Run
 

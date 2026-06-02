@@ -421,6 +421,27 @@ export interface SchemaBehaviors {
   ) => number;
 
   /**
+   * Natural pixel height a SINGLE row needs to render this column's content
+   * without clipping — the vertical mirror of `naturalWidth`. Operates per-row
+   * (one `row`, not all rows) because height is row-local: a stacked pictogram,
+   * a tall icon, a multi-effect forest's effect stack, an explicit sparkline /
+   * img height. Distinct from text wrapping (that's `wrapLineCounts`, computed
+   * separately and `Math.max`-ed in by the caller) — return only the column's
+   * intrinsic visual height here.
+   *
+   * `ctx` carries the font metrics height scales against (`fontSize`,
+   * `lineHeight`) and the baseline `rowHeight` for reference. Returning 0 (or
+   * omitting the behavior) means "no extra height needed"; callers `Math.max`
+   * this across a row's columns with the wrap-height and base rowHeight.
+   */
+  naturalHeight?: (
+    column: ColumnSpec,
+    row: { metadata: Record<string, unknown> },
+    ctx: { rowHeight: number; lineHeight: number; fontSize: number },
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["naturalHeight"]>>,
+  ) => number;
+
+  /**
    * Emit the JS builder call that would reproduce this column spec.
    * Today lives in `source-emit.ts` with a switch over column types.
    * Returns `{ name, typeArgs }` — the builder function name (e.g.
