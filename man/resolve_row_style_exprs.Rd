@@ -22,7 +22,8 @@ resolve_row_style_exprs(
   marker_shape = NULL,
   marker_opacity = NULL,
   marker_size = NULL,
-  weight = NULL
+  weight = NULL,
+  details = NULL
 )
 }
 \arguments{

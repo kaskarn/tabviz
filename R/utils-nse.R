@@ -626,7 +626,8 @@ resolve_row_style_exprs <- function(
     marker_shape = NULL,
     marker_opacity = NULL,
     marker_size = NULL,
-    weight = NULL
+    weight = NULL,
+    details = NULL
 ) {
   checkmate::assert_data_frame(data, min.rows = 0, .var.name = "data")
 
@@ -650,7 +651,8 @@ resolve_row_style_exprs <- function(
       marker_shape = NA_character_,
       marker_opacity = NA_character_,
       marker_size = NA_character_,
-      weight = NA_character_
+      weight = NA_character_,
+      details = NA_character_
     ))
   }
 
@@ -682,6 +684,7 @@ resolve_row_style_exprs <- function(
   result$marker_opacity <- resolve_one(marker_opacity, "marker_opacity")
   result$marker_size <- resolve_one(marker_size, "marker_size")
   result$weight <- resolve_one(weight, "weight")
+  result$details <- resolve_one(details, "details")
 
   result
 }

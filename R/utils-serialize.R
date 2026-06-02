@@ -236,6 +236,9 @@ serialize_data <- function(spec, include_forest = TRUE) {
   cell_style_recipes <- compile_cell_style_recipes(spec@columns)
   row_style_recipe <- compile_row_style_recipe(spec)
   marker_style_recipe <- compile_marker_style_recipe(spec)
+  # Details/disclosure panel content, pre-extracted per the positional pattern.
+  details_vec <- if (!is.na(spec@details_col) && spec@details_col %in% col_names)
+    as.character(col_vectors[[spec@details_col]]) else NULL
   # Some columns are list-columns whose per-row value is a single-element
   # list. We need to unwrap those when building metadata, so flag them once.
   is_list_col <- vapply(col_vectors, function(v) is.list(v), logical(1))
@@ -337,6 +340,12 @@ serialize_data <- function(spec, include_forest = TRUE) {
     # Only include cellStyles if any cell styles are set
     if (length(cell_styles) > 0) {
       result$cellStyles <- cell_styles
+    }
+
+    # Details/disclosure panel content (markdown), when non-empty for this row.
+    if (!is.null(details_vec)) {
+      dval <- details_vec[i]
+      if (!is.na(dval) && nzchar(trimws(dval))) result$details <- dval
     }
 
     result
@@ -528,6 +537,9 @@ serialize_initial_state <- function(initial_state) {
   if (!is.null(initial_state$hidden_columns)) {
     # Force a JSON array even for length-1 vectors via toJSON's auto_unbox=TRUE.
     out$hiddenColumns <- I(unlist(initial_state$hidden_columns))
+  }
+  if (!is.null(initial_state$expanded_rows)) {
+    out$expandedRows <- I(unlist(initial_state$expanded_rows))
   }
   if (length(out) == 0) NULL else out
 }

@@ -308,6 +308,9 @@ WebSpec <- new_class(
     # Semantic-token data-column slots. See R/classes-theme.R for the
     # corresponding RowSemantic bundles on RowCluster.
     row_fill_col      = new_property(class_character, default = NA_character_),
+    # Details/disclosure panel content column: per-row markdown shown in a
+    # full-width expandable panel. See docs/dev/region-tree.md.
+    details_col = new_property(class_character, default = NA_character_),
     # Marker style column mappings
     marker_color_col = new_property(class_character, default = NA_character_),
     marker_shape_col = new_property(class_character, default = NA_character_),

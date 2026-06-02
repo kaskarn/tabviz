@@ -37,6 +37,8 @@ tabviz(
   marker_opacity = NULL,
   marker_size = NULL,
   weight = NULL,
+  details = NULL,
+  details_expanded = FALSE,
   theme = web_theme_bmj(),
   interaction = NULL,
   initial_sort = NULL,
@@ -150,6 +152,15 @@ marker areas scale sensibly — pass the raw weight column, not a
 pre-normalized multiplier.}
 
 \item{weight}{Deprecated: use marker_size instead}
+
+\item{details}{Details/disclosure panel content. Column name (or formula)
+whose per-row value is markdown shown in a full-width expandable panel below
+the row. Rows with empty/\code{NA} values get no panel. Collapsed by default;
+click the row's disclosure toggle to open (interactive widget).}
+
+\item{details_expanded}{Logical; if \code{TRUE}, every row with details content is
+expanded on initial render (and in static/SVG export, which renders the
+expanded set). Default \code{FALSE} (collapsed).}
 
 \item{theme}{Theme object (use \verb{web_theme_*()} functions)}
 

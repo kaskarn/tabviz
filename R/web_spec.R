@@ -55,6 +55,13 @@
 #' @param row_muted Muted styling (lighter, reduced prominence). Column name or formula (logical).
 #' @param row_accent Accent styling (bold + accent color). Column name or formula (logical).
 #' @param row_fill Fill styling (bold + pastel accent-derived row tint). Column name or formula (logical).
+#' @param details Details/disclosure panel content. Column name (or formula)
+#'   whose per-row value is markdown shown in a full-width expandable panel below
+#'   the row. Rows with empty/`NA` values get no panel. Collapsed by default;
+#'   click the row's disclosure toggle to open (interactive widget).
+#' @param details_expanded Logical; if `TRUE`, every row with details content is
+#'   expanded on initial render (and in static/SVG export, which renders the
+#'   expanded set). Default `FALSE` (collapsed).
 #' @param marker_color Marker fill color. Column name or formula returning CSS color strings.
 #' @param marker_shape Marker shape. Column name or formula returning "square", "circle", "diamond", "triangle".
 #' @param marker_opacity Marker opacity. Column name or formula returning numeric 0-1.
@@ -211,6 +218,8 @@ tabviz <- function(
     marker_opacity = NULL,
     marker_size = NULL,
     weight = NULL,
+    details = NULL,
+    details_expanded = FALSE,
     theme = web_theme_bmj(),
     interaction = NULL,
     initial_sort = NULL,
@@ -572,7 +581,8 @@ tabviz <- function(
     marker_shape = marker_shape,
     marker_opacity = marker_opacity,
     marker_size = marker_size,
-    weight = weight
+    weight = weight,
+    details = details
   )
   data <- style_resolved$data
 
@@ -582,6 +592,21 @@ tabviz <- function(
     col_resolved <- resolve_all_column_styles(columns, data, env = parent.frame())
     columns <- col_resolved$columns
     data <- col_resolved$data
+  }
+
+  # Pre-expand details panels for the static export + initial render when
+  # `details_expanded = TRUE`. Wire row ids are positional (`row_<i>`), so the
+  # expanded set is the indices of rows with non-empty details content. (The
+  # interactive widget can still toggle freely; this only seeds initialState.)
+  details_col_name <- style_resolved$details
+  if (isTRUE(details_expanded) && !is.na(details_col_name) &&
+      details_col_name %in% names(data)) {
+    dvals <- trimws(as.character(data[[details_col_name]]))
+    idx <- which(!is.na(dvals) & nzchar(dvals))
+    if (length(idx) > 0) {
+      initial_state <- initial_state %||% list()
+      initial_state$expanded_rows <- paste0("row_", idx)
+    }
   }
 
   # Build WebSpec
@@ -613,6 +638,7 @@ tabviz <- function(
     row_muted_col     = style_resolved$row_muted,
     row_accent_col    = style_resolved$row_accent,
     row_fill_col      = style_resolved$row_fill,
+    details_col = style_resolved$details,
     marker_color_col = style_resolved$marker_color,
     marker_shape_col = style_resolved$marker_shape,
     marker_opacity_col = style_resolved$marker_opacity,
