@@ -1,0 +1,91 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`computeAspectLadder — fixture matrix grow-wide 1`] = `
+{
+  "chromeScale": 1,
+  "flexWidth": 400,
+  "nonFlexScale": 1.333,
+  "rowHeightScale": 1,
+  "widthResidual": 100,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix grow-wide-saturate 1`] = `
+{
+  "chromeScale": 1,
+  "flexWidth": 400,
+  "nonFlexScale": 2.333,
+  "rowHeightScale": 1,
+  "widthResidual": 400,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix shrink-narrow 1`] = `
+{
+  "chromeScale": 1,
+  "flexWidth": 100,
+  "nonFlexScale": 0.667,
+  "rowHeightScale": 1,
+  "widthResidual": -100,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix grow-tall 1`] = `
+{
+  "chromeScale": 2.167,
+  "flexWidth": 200,
+  "nonFlexScale": 1,
+  "rowHeightScale": 1.406,
+  "widthResidual": 0,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix shrink-short 1`] = `
+{
+  "chromeScale": 0.667,
+  "flexWidth": 200,
+  "nonFlexScale": 1,
+  "rowHeightScale": 0.75,
+  "widthResidual": 0,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix shrink-short-floor 1`] = `
+{
+  "chromeScale": 0.4,
+  "flexWidth": 200,
+  "nonFlexScale": 1,
+  "rowHeightScale": 0.75,
+  "widthResidual": 0,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix forest-only 1`] = `
+{
+  "chromeScale": 1,
+  "flexWidth": 400,
+  "nonFlexScale": 1,
+  "rowHeightScale": 1,
+  "widthResidual": 100,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix pinned-only 1`] = `
+{
+  "chromeScale": 1,
+  "flexWidth": 0,
+  "nonFlexScale": 2,
+  "rowHeightScale": 1,
+  "widthResidual": 300,
+}
+`;
+
+exports[`computeAspectLadder — fixture matrix height-consumed 1`] = `
+{
+  "chromeScale": 1,
+  "flexWidth": 200,
+  "nonFlexScale": 1,
+  "rowHeightScale": 1,
+  "widthResidual": 0,
+}
+`;
