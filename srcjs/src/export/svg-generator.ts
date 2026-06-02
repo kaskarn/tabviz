@@ -44,6 +44,7 @@ import type {
 } from "$types";
 import { getEffectValue } from "$lib/scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN } from "$lib/axis-utils";
+import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
 import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
@@ -1295,40 +1296,25 @@ interface ScaleAndClip {
 
 function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings: ForestColumnSettings, options?: ExportOptions): ScaleAndClip {
   const isLog = forestSettings.scale === "log";
-  // Use VIZ_MARGIN (12px) to match web rendering - this is the margin from forest column edges
-  const rangeStart = VIZ_MARGIN;
-  const rangeEnd = Math.max(forestWidth - VIZ_MARGIN, rangeStart + 50);
+  // Range insets by VIZ_MARGIN on each side, matching web rendering. Shared with
+  // the DOM via forest-scale.ts so the two backends can't drift.
+  const range = forestScaleRange(forestWidth);
+  const buildScale = (domain: [number, number]) =>
+    isLog ? createLogScale(safeLogDomain(domain), range) : createLinearScale(domain, range);
 
-  // If pre-computed domain is provided, use it directly
+  // If a pre-computed domain is provided (shared-axis split export), use it directly.
   if (options?.xDomain) {
-    const domain = options.xDomain;
-    const clipBounds = options.clipBounds ?? domain;
-    // Generate ticks for pre-computed domain using axis-utils
-    const ticks = generateTicks(
-      clipBounds,
-      spec.theme.axis,
-      forestSettings.scale,
-      forestSettings.nullValue
-    );
-    if (isLog) {
-      return {
-        scale: createLogScale(
-          [Math.max(domain[0], 0.01), Math.max(domain[1], 0.02)],
-          [rangeStart, rangeEnd]
-        ),
-        clipBounds,
-        ticks,
-      };
-    }
+    const clipBounds = options.clipBounds ?? options.xDomain;
     return {
-      scale: createLinearScale(domain, [rangeStart, rangeEnd]),
+      scale: buildScale(options.xDomain),
       clipBounds,
-      ticks,
+      ticks: generateTicks(clipBounds, spec.theme.axis, forestSettings.scale, forestSettings.nullValue),
     };
   }
 
-  // Use shared axis computation from axis-utils.ts
-  const axisResult = computeAxis({
+  // Otherwise resolve this column's axis from its own data via the shared
+  // computeAxis() (axis-utils.ts) — the same call the DOM per-context resolver uses.
+  const { plotRegion, axisLimits, ticks } = computeAxis({
     rows: spec.data.rows,
     config: spec.theme.axis,
     scale: forestSettings.scale,
@@ -1341,24 +1327,7 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings
     upperCol: forestSettings.upperCol,
   });
 
-  const { plotRegion, axisLimits, ticks } = axisResult;
-
-  if (isLog) {
-    return {
-      scale: createLogScale(
-        [Math.max(plotRegion[0], 0.01), Math.max(plotRegion[1], 0.02)],
-        [rangeStart, rangeEnd]
-      ),
-      clipBounds: axisLimits,
-      ticks,
-    };
-  }
-
-  return {
-    scale: createLinearScale(plotRegion, [rangeStart, rangeEnd]),
-    clipBounds: axisLimits,
-    ticks,
-  };
+  return { scale: buildScale(plotRegion), clipBounds: axisLimits, ticks };
 }
 
 // ============================================================================
