@@ -84,11 +84,18 @@ ThemeInputs <- new_class(
     font_display    = new_property(class_character, default = NA_character_),
     font_mono       = new_property(class_character, default = NA_character_),
 
-    density         = new_property(class_character, default = "comfortable")
+    density         = new_property(class_character, default = "comfortable"),
+    # Continuous multiplier on the density preset's spacing (fine dial atop the
+    # named profile). 1 = profile unchanged. Clamped [0.5, 2] at resolution.
+    density_factor  = new_property(class_numeric, default = 1)
   ),
   validator = function(self) {
     if (!grepl(hex_pattern, self@brand)) {
       return(paste0("brand must be a hex color, got '", self@brand, "'"))
+    }
+    if (length(self@density_factor) != 1 || is.na(self@density_factor) ||
+        self@density_factor < 0.5 || self@density_factor > 2) {
+      return("density_factor must be a single number in [0.5, 2]")
     }
     for (p in c("accent", "decorative", "status_positive", "status_negative",
                 "status_warning", "status_info")) {

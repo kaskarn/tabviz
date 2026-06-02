@@ -45,7 +45,8 @@ theme_inputs_to_json <- function(inputs) {
     diverging             = inputs@diverging,
     status                = if (length(status) > 0L) status else NULL,
     fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
-    density               = inputs@density
+    density               = inputs@density,
+    densityFactor         = if (inputs@density_factor != 1) inputs@density_factor else NULL
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -86,6 +87,9 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #' @param font_body,font_display,font_mono Font stacks. font_display NA
 #'   mirrors font_body.
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
+#' @param density_factor Continuous multiplier on the density preset's spacing,
+#'   in `[0.5, 2]` (1 = preset unchanged) — a fine dial on top of the named
+#'   profile (e.g. `0.9` for a touch tighter).
 #' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
 #' @param first_column_style First (label) column treatment: `"default"`,
@@ -112,6 +116,7 @@ web_theme <- function(
     font_display = NULL,
     font_mono = NULL,
     density = "comfortable",
+    density_factor = 1,
     header_style = "light",
     first_column_style = "default",
     web_fonts = NULL,
@@ -124,6 +129,7 @@ web_theme <- function(
   checkmate::assert_number(neutral_tint_strength, lower = 0, upper = 1)
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
+  checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
   checkmate::assert_choice(header_style, c("light", "tint", "bold"))
   checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
   checkmate::assert_string(name)
@@ -145,7 +151,8 @@ web_theme <- function(
     font_body       = font_body       %||% "system-ui, -apple-system, sans-serif",
     font_display    = if (is.null(font_display)) NA_character_ else font_display,
     font_mono       = if (is.null(font_mono))    NA_character_ else font_mono,
-    density = density
+    density = density,
+    density_factor = density_factor
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style
@@ -253,18 +260,27 @@ set_neutral_tint_strength <- function(theme, strength) {
   resolve_from_inputs(inputs, name = theme@name)
 }
 
-#' Set the density preset and re-resolve.
+#' Set the density preset (and optionally the continuous factor) and re-resolve.
 #' @param theme A [WebTheme].
-#' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
+#' @param density `"compact"`, `"comfortable"`, or `"spacious"` (or `NULL` to
+#'   keep the current preset and adjust only `factor`).
+#' @param factor Optional continuous multiplier on the preset's spacing, in
+#'   `[0.5, 2]` (1 = preset unchanged). `NULL` keeps the current factor.
 #' @return The re-resolved [WebTheme].
 #' @export
-set_density <- function(theme, density) {
+set_density <- function(theme, density = NULL, factor = NULL) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   inputs <- theme@inputs
-  inputs@density <- density
+  if (!is.null(density)) {
+    checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
+    inputs@density <- density
+  }
+  if (!is.null(factor)) {
+    checkmate::assert_number(factor, lower = 0.5, upper = 2)
+    inputs@density_factor <- factor
+  }
   resolve_from_inputs(inputs, name = theme@name)
 }
 

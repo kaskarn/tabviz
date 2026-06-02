@@ -2,18 +2,22 @@
 % Please edit documentation in R/themes-api.R
 \name{set_density}
 \alias{set_density}
-\title{Set the density preset and re-resolve.}
+\title{Set the density preset (and optionally the continuous factor) and re-resolve.}
 \usage{
-set_density(theme, density)
+set_density(theme, density = NULL, factor = NULL)
 }
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
+\item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"} (or \code{NULL} to
+keep the current preset and adjust only \code{factor}).}
+
+\item{factor}{Optional continuous multiplier on the preset's spacing, in
+\verb{[0.5, 2]} (1 = preset unchanged). \code{NULL} keeps the current factor.}
 }
 \value{
 The re-resolved \link{WebTheme}.
 }
 \description{
-Set the density preset and re-resolve.
+Set the density preset (and optionally the continuous factor) and re-resolve.
 }

@@ -58,6 +58,23 @@ const DENSITY_SPACING: Record<"compact" | "comfortable" | "spacious", SpacingTok
   },
 };
 
+/** Scale every dimensional spacing token by the continuous density factor (a
+ *  fine dial on top of the named profile). Clamped to [0.5, 2]; rounded to whole
+ *  px to keep crisp geometry. `undefined`/1 is an identity passthrough. */
+function scaleSpacing(s: SpacingTokens, factor: number | undefined): SpacingTokens {
+  if (factor == null || factor === 1) return s;
+  const f = Math.max(0.5, Math.min(2, factor));
+  const m = (v: number): number => Math.round(v * f);
+  return {
+    rowHeight: m(s.rowHeight), headerHeight: m(s.headerHeight), padding: m(s.padding),
+    containerPadding: m(s.containerPadding), axisGap: m(s.axisGap),
+    columnGroupPadding: m(s.columnGroupPadding), rowGroupPadding: m(s.rowGroupPadding),
+    cellPaddingX: m(s.cellPaddingX), cellPaddingY: m(s.cellPaddingY), groupPadding: m(s.groupPadding),
+    footerGap: m(s.footerGap), titleSubtitleGap: m(s.titleSubtitleGap),
+    headerGap: m(s.headerGap), bottomMargin: m(s.bottomMargin), indentPerLevel: m(s.indentPerLevel),
+  };
+}
+
 const DEFAULT_FONT_BODY = "system-ui, -apple-system, sans-serif";
 
 function textRoleBody(family: string, fg: string): TextRole {
@@ -185,7 +202,7 @@ export function buildTheme(
     numeric:  textRoleBody(fontBody, t.ink),
   };
 
-  const spacing = DENSITY_SPACING[variants.density];
+  const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.densityFactor);
 
   const annotation: AnnotationCluster = {
     title: text.title,

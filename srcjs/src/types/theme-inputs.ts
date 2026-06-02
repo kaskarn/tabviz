@@ -68,8 +68,12 @@ export interface ThemeInputs {
     mono?: string;
   };
 
-  /** Density preset (used for spacing). */
+  /** Density preset (the curated spacing baseline). */
   density?: "compact" | "comfortable" | "spacious";
+  /** Continuous multiplier on the density preset's spacing tokens — a fine
+   *  dial on top of the named profile (e.g. 0.9 = a touch tighter than
+   *  comfortable). 1 = the profile unchanged. Clamped to [0.5, 2]. */
+  densityFactor?: number;
 }
 
 // ────────────────────────────────────────────────────────────────────

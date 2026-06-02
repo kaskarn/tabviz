@@ -22,6 +22,7 @@ web_theme(
   font_display = NULL,
   font_mono = NULL,
   density = "comfortable",
+  density_factor = 1,
   header_style = "light",
   first_column_style = "default",
   web_fonts = NULL,
@@ -57,6 +58,10 @@ sepia, newsprint). Ignored when \code{neutral_tint = "untinted"}.}
 mirrors font_body.}
 
 \item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
+
+\item{density_factor}{Continuous multiplier on the density preset's spacing,
+in \verb{[0.5, 2]} (1 = preset unchanged) — a fine dial on top of the named
+profile (e.g. \code{0.9} for a touch tighter).}
 
 \item{header_style}{Header chrome treatment: \code{"light"}, \code{"tint"}, or
 \code{"bold"}. Default \code{"light"}.}

@@ -210,11 +210,13 @@ The cascade is already:
 ```
 density preset (compact|comfortable|spacious)  →  theme.spacing  →  (column/row-type override — MISSING)  →  interactive pin (MISSING)
 ```
-The first two arrows exist (§1.3). The remaining work:
+The first two arrows exist (§1.3). **Status (2026-06-02): the dead-token items
+below are RESOLVED** — see §7 (cellPaddingX sourced; cellPaddingY deliberately
+`0` under the `+6` line-height model; indentPerLevel single-sourced; spacer =
+`rowHeight/2` consistent). Remaining work:
 
-- **Make the renderer honor the tokens density already sets** (`indent_per_level`,
-  SVG `cell_padding_x`) and **add the two inert tokens** (`cellPaddingY`,
-  `spacerRowHeight`) to both the renderer and the presets (§1.2).
+- ~~Honor `indent_per_level` / SVG `cell_padding_x`; revive `cellPaddingY` /
+  `spacerRowHeight`.~~ RESOLVED (§7).
 - **Give `row_group_padding` real per-density values** (currently 0/0/0).
 - **Per-column / per-row-type override tier** — does not exist yet; the cascade
   jumps straight from theme to render.
@@ -329,8 +331,13 @@ Direction (confirmed with author):
   `wrapLineCounts` uses today). The measured map supersedes the predicted map on
   the browser when available, so DOM is exact and SVG stays predicted-but-close;
   the prediction is the floor that prevents first-paint jump. (See §1.4.)
-- [ ] **Density: keep the continuous `factor` alongside named profiles, or fold
-  it in?** (§3)
+- [x] **Density: continuous `factor` alongside named profiles — DECIDED + BUILT
+  2026-06-02.** A `densityFactor` (theme input, clamped [0.5, 2]) multiplies the
+  chosen profile's spacing tokens — a fine dial on top of the curated named
+  profile. Applied in `theme-adapter.ts::scaleSpacing` at density→spacing
+  resolution (default 1 = identity); surfaced R-side via
+  `web_theme(density_factor=)` + `set_density(theme, factor=)`. Precedence:
+  named profile → × factor → (future per-token override → pin).
 - [x] **`computeTableMetrics` (shared DOM/SVG)** — BUILT 2026-06 as
   `srcjs/src/lib/layout/table-metrics.ts`. Both backends (layout-zoom `$derived`,
   svg-generator `computeLayout`) now call shared pure helpers for the formulas
