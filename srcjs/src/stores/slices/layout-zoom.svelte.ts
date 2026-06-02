@@ -55,6 +55,7 @@ import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
 import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
+import type { RowKind } from "$lib/layout/row-kind";
 
 /**
  * Merge measured row heights (real DOM offsetHeight per row) over predicted
@@ -142,6 +143,12 @@ export interface LayoutZoomSlice {
   getPlotWidth: () => number | null;
   /** Commit measured per-row content heights (rowId → px) from the DOM. */
   setMeasuredRowHeights: (heights: Record<string, number> | null) => void;
+  /** Per-row-kind height overrides (the pin layer). */
+  readonly rowKindHeights: Partial<Record<RowKind, number>>;
+  /** Pin a row kind's base height (`null` clears it back to the density default). */
+  setRowKindHeight: (kind: RowKind, height: number | null) => void;
+  /** Clear all per-row-kind height pins. */
+  resetRowKindHeights: () => void;
   setZoom: (value: number) => void;
   resetZoom: () => void;
   zoomIn: () => void;
@@ -169,6 +176,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   // DOM ResizeObserver. `$state.raw` — replaced wholesale, never deep-mutated.
   // Supersedes the estimator in the layout derivation (measure-then-commit).
   let measuredRowHeights = $state.raw<Record<string, number> | null>(null);
+
+  // Per-row-kind height overrides (the cascade's last arrow + the interactive
+  // pin target). `$state.raw` — replaced wholesale. Survives density/factor
+  // re-resolution (it's an override layer on top of the density-derived base).
+  let rowKindHeights = $state.raw<Partial<Record<RowKind, number>>>({});
 
   let zoom = $state<number>(1.0);
   let autoFit = $state<boolean>(true);
@@ -416,6 +428,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       rowGroupPadding,
       dataLineHeightPx,
       contentHeights,
+      rowKindHeights,
     });
 
     const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
@@ -544,6 +557,20 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     measuredRowHeights = heights;
   }
 
+  function setRowKindHeight(kind: RowKind, height: number | null): void {
+    const next = { ...rowKindHeights };
+    if (height == null) delete next[kind];
+    else next[kind] = Math.max(1, Math.round(height));
+    rowKindHeights = next;
+    deps.markSource("row_kind_heights");
+  }
+
+  function resetRowKindHeights(): void {
+    if (Object.keys(rowKindHeights).length === 0) return;
+    rowKindHeights = {};
+    deps.markSource("row_kind_heights");
+  }
+
   function setZoom(value: number) {
     zoom = Math.max(0.5, Math.min(2.0, value));
     persistZoomState();
@@ -635,6 +662,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   function reset() {
     plotWidthOverride = null;
     measuredRowHeights = null;
+    rowKindHeights = {};
     zoom = 1.0;
     autoFit = true;
     maxWidth = null;
@@ -664,11 +692,13 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     get minZoomFloor()          { return minZoomFloor; },
     get actualScale()           { return actualScale; },
     get isClamped()             { return isClamped; },
+    get rowKindHeights()        { return rowKindHeights; },
 
     setDimensions, setContainerDimensions, setScalableNaturalDimensions,
     setContainerElementId,
     setPlotWidth, getPlotWidth,
     setMeasuredRowHeights,
+    setRowKindHeight, resetRowKindHeights,
     setZoom, resetZoom, zoomIn, zoomOut, setAutoFit, fitToWidth,
     setMaxWidth, setMaxHeight, setShowZoomControls,
     reset,

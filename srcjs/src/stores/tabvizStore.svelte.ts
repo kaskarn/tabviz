@@ -1304,6 +1304,9 @@ export function createTabvizStore() {
     previewColumnWidth: columns.previewColumnWidth,
     setPlotWidth: layoutZoom.setPlotWidth,
     setMeasuredRowHeights: layoutZoom.setMeasuredRowHeights,
+    setRowKindHeight: layoutZoom.setRowKindHeight,
+    resetRowKindHeights: layoutZoom.resetRowKindHeights,
+    get rowKindHeights() { return layoutZoom.rowKindHeights; },
     // Aspect ratio — data slice passthrough.
     setTargetAspect: data.setTargetAspect,
     setTargetAspectAnchor: data.setTargetAspectAnchor,

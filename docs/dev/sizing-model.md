@@ -421,6 +421,16 @@ All five are now done, obsolete, or dissolved by dead-code removal:
 
 ## 8. Ontology of interactive row-height drag-resize
 
+> **Mechanism BUILT 2026-06-02 (drag UI pending).** The override/pin layer the
+> §8 ontology calls for is in: `computeRowLayout` honors a per-`RowKind`
+> `rowKindHeights` map (the cascade's last arrow — base per kind, content still
+> grows above it, survives density/factor re-resolution); the layout-zoom slice
+> holds the map + `setRowKindHeight(kind, h)` / `resetRowKindHeights()` (store-
+> exposed). So the "edit the band-type's height token table-wide + pin it" model
+> is the implementation. **Remaining: the drag-resize UI** — a row-edge handle
+> whose pointer drag calls `setRowKindHeight(resolvedKind, newHeight)` (mirrors
+> the column-width drag); its own commit + browser harness.
+
 **Question:** when a user drags a row's bottom edge, what are they editing?
 
 **The column precedent (why rows are different).** Column drag-resize writes a

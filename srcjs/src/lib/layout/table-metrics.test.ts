@@ -77,6 +77,32 @@ describe("computeRowLayout", () => {
     const rows = [data("a"), group(1), data("b")];
     expect(computeRowPaddedAfter(rows)).toEqual([false, false, false]);
   });
+
+  test("rowKindHeights overrides the per-kind base height", () => {
+    const rows = [data("a"), data("s", { type: "summary" }), data("sp", { type: "spacer" })];
+    // data → 40, summary → 30, spacer → override 10 (not rowHeight/2)
+    const r = computeRowLayout(base({
+      displayRows: rows,
+      rowKindHeights: { data: 40, summary: 30, spacer: 10 },
+    }));
+    expect(r.rowHeights).toEqual([40, 30, 10]);
+  });
+
+  test("content still grows above a rowKindHeights base (override is a floor)", () => {
+    const r = computeRowLayout(base({
+      displayRows: [data("a")],
+      rowKindHeights: { data: 30 },
+      contentHeights: { a: 55 }, // taller content wins
+    }));
+    expect(r.rowHeights).toEqual([55]);
+  });
+
+  test("rowKindHeights is independent of rowHeight (survives density changes)", () => {
+    // Same pinned data height regardless of the density-derived rowHeight base.
+    const pin = { data: 36 };
+    expect(computeRowLayout(base({ displayRows: [data("a")], rowHeight: 20, rowKindHeights: pin })).rowHeights).toEqual([36]);
+    expect(computeRowLayout(base({ displayRows: [data("a")], rowHeight: 30, rowKindHeights: pin })).rowHeights).toEqual([36]);
+  });
 });
 
 describe("computeHeaderHeight", () => {

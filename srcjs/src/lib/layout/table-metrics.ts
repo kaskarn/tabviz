@@ -17,7 +17,7 @@
  * DOM/SVG divergence notes there.
  */
 
-import { resolveRowKind } from "./row-kind";
+import { resolveRowKind, type RowKind } from "./row-kind";
 
 /**
  * Minimal structural row shape for layout — a superset of `ClassifiableRow`
@@ -54,6 +54,13 @@ export interface RowLayoutInput {
    *  grows to fit its tallest content. Absent/0 → no effect. Browser may
    *  supply MEASURED heights here; V8/export supplies estimated ones. */
   contentHeights?: Record<string, number>;
+  /** Per-row-kind height override (px) — the last cascade arrow:
+   *  density preset → spacing → THIS override → (interactive pin writes here).
+   *  Sets the *base* height for rows of that kind; content/wrap still grows
+   *  above it. Survives density/factor re-resolution (it's an override layer).
+   *  Keyed by `RowKind` ("data" / "summary" / "header" / "spacer" /
+   *  "group_header"). Absent → density-derived defaults. */
+  rowKindHeights?: Partial<Record<RowKind, number>>;
 }
 
 export interface RowLayout {
@@ -110,17 +117,25 @@ export function computeRowLayout(input: RowLayoutInput): RowLayout {
   const contentHeights = input.contentHeights ?? {};
   const rowPaddedAfter = computeRowPaddedAfter(displayRows);
 
+  // Base height for a row kind: the per-kind override (the cascade's last arrow
+  // / interactive pin) if set, else the density-derived default (spacer = half).
+  const overrides = input.rowKindHeights;
+  const kindBase = (kind: RowKind): number =>
+    overrides?.[kind] ?? (kind === "spacer" ? rowHeight / 2 : rowHeight);
+
   const rowHeights: number[] = [];
   for (let i = 0; i < displayRows.length; i++) {
     const dr = displayRows[i];
+    const kind = resolveRowKind(dr);
     let h: number;
-    if (resolveRowKind(dr) === "spacer") {
-      h = rowHeight / 2;
+    if (kind === "spacer") {
+      h = kindBase("spacer");
     } else if (dr.type === "group_header") {
-      h = rowHeight;
+      h = kindBase("group_header");
     } else if (dr.type === "data") {
+      const base = kindBase(kind); // data / summary / header
       const lines = wrapLineCounts[dr.row.id] ?? 1;
-      const wrapH = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
+      const wrapH = lines > 1 ? Math.max(base, dataLineHeightPx * lines + 6) : base;
       // Grow to the tallest of: base/wrap height and the row's intrinsic
       // visual content height (stacked pictograms, tall icons, multi-effect
       // forest, sparkline/img).
@@ -134,7 +149,7 @@ export function computeRowLayout(input: RowLayoutInput): RowLayout {
       const estimate = dataLineHeightPx * estLines + 6 * 2; // +vertical padding
       h = Math.max(rowHeight, estimate, measured);
     } else {
-      h = rowHeight;
+      h = kindBase(kind);
     }
     if (rowPaddedAfter[i]) h += rowGroupPadding;
     rowHeights.push(h);
