@@ -8,6 +8,8 @@ import type { ColumnSchema } from "../types";
 
 export const SPARKLINE_SCHEMA: ColumnSchema = {
   key: "sparkline",
+  flexWeight: 3,
+  naturalWidthPx: 80,
   label: "Sparkline",
   glyph: "type.sparkline",
   defaultOpen: true,

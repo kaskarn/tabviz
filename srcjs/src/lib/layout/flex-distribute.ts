@@ -111,3 +111,47 @@ function weightOf(items: FlexItem[], id: string): number {
   for (const it of items) if (it.id === id) return it.weight;
   return 0;
 }
+
+// ────────────────────────────────────────────────────────────────────
+// Column resolver — applies the "B" proportional policy (pure, data-driven).
+// Flex weights arrive as data (the caller reads them from the schema via
+// lib/layout/flex-weights `flexWeightForColumn`); kept here, schema-free, so the
+// math stays bun-testable without schema/theme bootstrapping.
+// ────────────────────────────────────────────────────────────────────
+
+export interface ColumnWidthSpec {
+  id: string;
+  /** Content-natural (measured) width, or the schema's designed viz natural. */
+  naturalWidth: number;
+  /** Flex weight (from `flexWeightForColumn`). */
+  flexWeight: number;
+  /** Explicit numeric width pins the column (immovable, weight 0). */
+  explicitWidth?: number | null;
+  /** Content floor below which the column can't shrink. Default 0. */
+  minWidth?: number;
+  /** Aspect flex cap: bounds the column to [natural/cap, natural×cap]. Default none. */
+  cap?: number;
+}
+
+/**
+ * Resolve per-column widths by distributing `targetTotal` with the proportional
+ * base rule: effective weight = `flexWeight × natural`; pinned columns immovable;
+ * shrink floored at content min; optional aspect cap as bounds.
+ */
+export function resolveFlexWidths(
+  columns: ColumnWidthSpec[],
+  targetTotal: number,
+): FlexDistribution {
+  const items: FlexItem[] = columns.map((c) => {
+    const pinned = typeof c.explicitWidth === "number";
+    const natural = pinned ? (c.explicitWidth as number) : c.naturalWidth;
+    const weight = pinned ? 0 : c.flexWeight * natural;
+    const min = pinned ? natural : c.minWidth ?? 0;
+    if (!pinned && typeof c.cap === "number" && c.cap > 1) {
+      // Aspect cap → symmetric bounds around natural (content floor still wins).
+      return { id: c.id, natural, weight, min: Math.max(min, natural / c.cap), max: natural * c.cap };
+    }
+    return { id: c.id, natural, weight, min, max: pinned ? natural : Number.POSITIVE_INFINITY };
+  });
+  return distributeFlexWidths(items, targetTotal);
+}

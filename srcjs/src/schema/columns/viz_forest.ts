@@ -8,6 +8,8 @@ import type { ColumnSchema } from "../types";
 
 export const VIZ_FOREST_SCHEMA: ColumnSchema = {
   key: "viz_forest",
+  flexWeight: 8,
+  naturalWidthPx: 240,
   label: "Forest",
   glyph: "type.forest",
   defaultOpen: true,

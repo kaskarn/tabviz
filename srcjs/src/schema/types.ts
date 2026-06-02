@@ -209,6 +209,22 @@ export interface ColumnSchema {
   bucket?: string;
   /** Coarse grouping for the column-type menu. */
   category?: "text" | "numeric" | "visual" | "glyph" | "viz";
+  /**
+   * Flex weight for multi-flex width distribution (docs/dev/multi-flex-columns.md).
+   * Higher = absorbs more of the extra/deficit width when the layout reshapes;
+   * the effective weight is `flexWeight × naturalWidth`. Omitted → 1 (the default
+   * for text/numeric/data columns). Plots weigh high; fixed-ish glyph columns
+   * (pvalue/ring/stars/icon/badge) are penalized < 1. Starter values, tunable.
+   */
+  flexWeight?: number;
+  /**
+   * Designed natural width (px) for plot columns that have NO content-natural
+   * width (forest/viz fill given space). Used as the `natural` in the
+   * proportional distribution. Omit for content-measured columns.
+   * ⚠️ Must eventually fold in intrinsic viz text (value labels, in-plot
+   * annotations) — see docs/dev/multi-flex-columns.md.
+   */
+  naturalWidthPx?: number;
   /** Field slots — point/lower/upper, value, etc. Existing slot system. */
   slots?: SlotSpec[];
   /** Per-schema option default overrides (e.g. percent overrides numeric's decimals=2 to 1). */

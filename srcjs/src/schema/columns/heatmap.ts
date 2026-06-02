@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 
 export const HEATMAP_SCHEMA: ColumnSchema = {
   key: "heatmap",
+  flexWeight: 3,
   label: "Heatmap",
   glyph: "type.heatmap",
   defaultOpen: true,

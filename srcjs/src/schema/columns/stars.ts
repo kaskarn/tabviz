@@ -13,6 +13,7 @@ import type { ColumnSchema } from "../types";
 
 export const STARS_SCHEMA: ColumnSchema = {
   key: "stars",
+  flexWeight: 0.3,
   label: "Stars",
   glyph: "type.stars",
   defaultOpen: true,

@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 
 export const BAR_SCHEMA: ColumnSchema = {
   key: "bar",
+  flexWeight: 3,
   label: "Bar",
   glyph: "type.bar",
   defaultOpen: true,

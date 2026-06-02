@@ -5,6 +5,8 @@ import type { ColumnSchema } from "../types";
 
 export const VIZ_BAR_SCHEMA: ColumnSchema = {
   key: "viz_bar",
+  flexWeight: 6,
+  naturalWidthPx: 200,
   label: "Viz: bars",
   glyph: "type.bar",
   defaultOpen: true,

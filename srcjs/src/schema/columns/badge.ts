@@ -6,6 +6,7 @@ import type { ColumnSchema } from "../types";
 
 export const BADGE_SCHEMA: ColumnSchema = {
   key: "badge",
+  flexWeight: 0.3,
   label: "Badge",
   glyph: "type.badge",
   defaultOpen: true,

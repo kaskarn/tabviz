@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 
 export const PROGRESS_SCHEMA: ColumnSchema = {
   key: "progress",
+  flexWeight: 3,
   label: "Progress",
   glyph: "type.progress",
   defaultOpen: true,

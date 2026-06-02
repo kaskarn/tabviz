@@ -6,6 +6,8 @@ import type { ColumnSchema } from "../types";
 
 export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
   key: "viz_violin",
+  flexWeight: 6,
+  naturalWidthPx: 200,
   label: "Viz: violin",
   glyph: "type.violin",
   defaultOpen: true,

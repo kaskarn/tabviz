@@ -6,6 +6,8 @@ import type { ColumnSchema } from "../types";
 
 export const VIZ_BOXPLOT_SCHEMA: ColumnSchema = {
   key: "viz_boxplot",
+  flexWeight: 6,
+  naturalWidthPx: 200,
   label: "Viz: boxplot",
   glyph: "type.boxplot",
   defaultOpen: true,

@@ -1,7 +1,12 @@
 // Tests for the weighted width-distribution engine. Pure arithmetic.
 
 import { test, expect, describe } from "bun:test";
-import { distributeFlexWidths, type FlexItem } from "./flex-distribute";
+import {
+  distributeFlexWidths,
+  resolveFlexWidths,
+  type FlexItem,
+  type ColumnWidthSpec,
+} from "./flex-distribute";
 
 const approx = (a: number, b: number, eps = 1e-6) => expect(Math.abs(a - b)).toBeLessThan(eps);
 
@@ -108,5 +113,66 @@ describe("distributeFlexWidths", () => {
       const r = distributeFlexWidths(items, target);
       approx(r.total, target);
     }
+  });
+});
+
+describe("resolveFlexWidths (proportional policy: weight = flexWeight × natural)", () => {
+  test("flexWeight=1 everywhere → uniform proportional scale", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "a", naturalWidth: 100, flexWeight: 1 },
+      { id: "b", naturalWidth: 200, flexWeight: 1 },
+    ];
+    const r = resolveFlexWidths(cols, 600); // 2× of natural 300
+    approx(r.widths.a, 200);
+    approx(r.widths.b, 400); // proportions preserved
+  });
+
+  test("high-weight plot absorbs most of the extra", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "t", naturalWidth: 100, flexWeight: 1 },   // eff 100
+      { id: "f", naturalWidth: 200, flexWeight: 8 },   // eff 1600
+    ];
+    const r = resolveFlexWidths(cols, 600); // delta 300
+    expect(r.widths.f - 200).toBeGreaterThan(r.widths.t - 100);
+    approx(r.total, 600);
+  });
+
+  test("pinned (explicit width) column is immovable", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "p", naturalWidth: 100, flexWeight: 1, explicitWidth: 150 },
+      { id: "f", naturalWidth: 100, flexWeight: 1 },
+    ];
+    const r = resolveFlexWidths(cols, 400);
+    approx(r.widths.p, 150);
+    approx(r.widths.f, 250);
+  });
+
+  test("small penalized column absorbs only a sliver (auto-penalty)", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "icon", naturalWidth: 20, flexWeight: 0.3 }, // eff 6
+      { id: "txt", naturalWidth: 100, flexWeight: 1 },   // eff 100
+    ];
+    const r = resolveFlexWidths(cols, 320); // delta 200
+    expect(r.widths.icon - 20).toBeLessThan(r.widths.txt - 100);
+    expect(r.widths.icon - 20).toBeLessThan(15);
+  });
+
+  test("aspect cap bounds a column to [natural/cap, natural×cap]", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "f", naturalWidth: 200, flexWeight: 8, cap: 2 },
+      { id: "t", naturalWidth: 100, flexWeight: 1 },
+    ];
+    const r = resolveFlexWidths(cols, 900);
+    expect(r.widths.f).toBeLessThanOrEqual(400 + 0.5);
+  });
+
+  test("shrink floors at content min, redistributes", () => {
+    const cols: ColumnWidthSpec[] = [
+      { id: "a", naturalWidth: 100, flexWeight: 1, minWidth: 80 },
+      { id: "b", naturalWidth: 100, flexWeight: 1 },
+    ];
+    const r = resolveFlexWidths(cols, 100);
+    approx(r.widths.a, 80);
+    approx(r.widths.b, 20);
   });
 });

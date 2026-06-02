@@ -6,6 +6,7 @@ import type { ColumnSchema } from "../types";
 
 export const PVALUE_SCHEMA: ColumnSchema = {
   key: "pvalue",
+  flexWeight: 0.3,
   label: "P-value",
   glyph: "type.pvalue",
   defaultOpen: true,
