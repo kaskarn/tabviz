@@ -774,9 +774,8 @@ ThemeBorders <- new_class(
 #'
 #' Holds Tier 1 inputs, per-table variants, all derived Tier 2 roles, and
 #' Tier 3 component bindings. Tier 2/3 fields default to NA-filled empty
-#' classes; PR 3's `resolve_theme()` populates them from inputs.
-#'
-#' Renamed to `WebTheme` and replaces v1 in PR 10.
+#' classes; the TS cascade (`buildTheme`, invoked via `resolve_from_inputs()`)
+#' populates them from inputs.
 #'
 #' @usage NULL
 #' @export
@@ -806,7 +805,7 @@ WebTheme <- new_class(
     first_column_style = new_property(class_character, default = "default"),
     inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
 
-    # Tier 2 (derived; NA until resolve_theme runs)
+    # Tier 2 (derived; NA until the TS cascade runs)
     surface = new_property(Surfaces,      default = Surfaces()),
     content = new_property(Content,       default = Content()),
     divider = new_property(Dividers,      default = Dividers()),

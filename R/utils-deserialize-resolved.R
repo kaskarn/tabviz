@@ -1,17 +1,10 @@
-# Theme V8-bridge helpers.
+# Theme V8-bridge deserialization helpers.
 #
-# Two symmetric directions:
-#   * webtheme_to_resolve_draft() — WebTheme S7 → ResolveDraft list
-#     (the input shape TS resolveTheme expects). Inputs + variants +
-#     sibling config blocks (axis/layout/borders) + per-cluster
-#     overrides extracted from any non-NA T2/T3 fields the author
-#     pinned at construction time.
-#   * deserialize_resolved_theme() — resolved JSON list → WebTheme S7
-#     (the inverse of `serialize_theme()` in utils-serialize-resolved.R).
-#     Used to reconstruct the S7 surface after TS returns the cascade.
-#
-# Together they let resolve_theme() delegate the full cascade to TS
-# while keeping `theme@row@base@bg` access intact R-side.
+# `deserialize_resolved_theme()` — resolved JSON list → WebTheme S7.
+# The inverse of `serialize_theme()` (R/utils-serialize-resolved.R). Used by
+# `resolve_from_inputs()` (R/themes-api.R) to reconstruct the S7 surface after
+# the TS cascade (`ts_call("buildTheme", inputs_json)`) returns the resolved
+# tiers, so `theme@row@base@bg` access stays intact R-side.
 
 # NULL/missing -> NA character scalar.
 .coerce_chr <- function(x) {
@@ -151,14 +144,14 @@ deserialize_border_spec <- function(x) {
   )
 }
 
-#' Deserialize a resolved theme JSON list (from TS resolveTheme via V8)
+#' Deserialize a resolved theme JSON list (from TS `buildTheme` via V8)
 #' back into an S7 WebTheme.
 #'
-#' Inverse of `serialize_theme()`. Used by `resolve_theme()` after the V8
+#' Inverse of `serialize_theme()`. Used by `resolve_from_inputs()` after the V8
 #' delegation. Field names: camelCase on the wire (TS), snake_case in S7
 #' (R). JSON `null` maps to the appropriate NA scalar per property type.
 #'
-#' @param x A nested list produced by `ts_call("resolveTheme", draft)`.
+#' @param x A nested list produced by `ts_call("buildTheme", inputs_json)`.
 #' @return A fully-resolved `WebTheme`.
 #' @noRd
 deserialize_resolved_theme <- function(x) {

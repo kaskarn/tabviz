@@ -4,8 +4,8 @@
 # the bundled JS exposes a `themeX` builder for each via `callBuilder`.
 # Either side adding or dropping a theme without the other fails here.
 #
-# Pair this with `test-parity-themes.R` (resolved-output comparison,
-# byte-exact on structural fields, hex-close on chroma-derived hex) for
+# Pair this with `test-theme-css.R` (R↔TS resolved-output comparison: the
+# R wrapper and the TS engine, run via V8, must emit identical theme CSS) for
 # full R↔TS theme drift detection.
 
 EXPECTED_THEME_NAMES <- c(

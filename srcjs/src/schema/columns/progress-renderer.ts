@@ -22,9 +22,9 @@ interface ProgressOptions {
   scale?: "linear" | "log" | "sqrt";
 }
 
-const BAR_HEIGHT = 10;
-const LABEL_RESERVED_WIDTH = 40;
-const BAR_RADIUS = 5;
+const PROGRESS_BAR_HEIGHT = 10;
+const PROGRESS_LABEL_WIDTH = 40;
+const PROGRESS_BAR_RADIUS = 5;
 
 function resolveProgressColor(
   opts: ProgressOptions | undefined,
@@ -60,24 +60,24 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   // Bar area = cell width minus left+right padding minus label reservation.
   const cellWidth = ctx?.cellWidth ?? 100;
   const cellPadX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
-  const labelReserved = showLabel ? LABEL_RESERVED_WIDTH : 0;
+  const labelReserved = showLabel ? PROGRESS_LABEL_WIDTH : 0;
   const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
   const barWidth = Math.max(0, ratio * barAreaWidth);
   const totalWidth = cellWidth - cellPadX * 2;
   const fontSize = parseFontSize(theme.text.body.size);
   const labelFontSize = fontSize * 0.9;
-  const height = Math.max(BAR_HEIGHT, showLabel ? labelFontSize : BAR_HEIGHT);
+  const height = Math.max(PROGRESS_BAR_HEIGHT, showLabel ? labelFontSize : PROGRESS_BAR_HEIGHT);
 
   const pieces: string[] = [];
   // Track
   pieces.push(
-    `<rect x="0" y="${(height - BAR_HEIGHT) / 2}" width="${barAreaWidth}" height="${BAR_HEIGHT}" ` +
-    `fill="${theme.divider.subtle}" opacity="0.5" rx="${BAR_RADIUS}"/>`,
+    `<rect x="0" y="${(height - PROGRESS_BAR_HEIGHT) / 2}" width="${barAreaWidth}" height="${PROGRESS_BAR_HEIGHT}" ` +
+    `fill="${theme.divider.subtle}" opacity="0.5" rx="${PROGRESS_BAR_RADIUS}"/>`,
   );
   // Fill
   pieces.push(
-    `<rect x="0" y="${(height - BAR_HEIGHT) / 2}" width="${barWidth}" height="${BAR_HEIGHT}" ` +
-    `fill="${color}" rx="${BAR_RADIUS}"/>`,
+    `<rect x="0" y="${(height - PROGRESS_BAR_HEIGHT) / 2}" width="${barWidth}" height="${PROGRESS_BAR_HEIGHT}" ` +
+    `fill="${color}" rx="${PROGRESS_BAR_RADIUS}"/>`,
   );
   if (showLabel) {
     pieces.push(
@@ -98,4 +98,4 @@ export function registerProgressRenderer(): void {
 
 registerProgressRenderer();
 
-export const __testing = { resolveProgressColor, BAR_HEIGHT, LABEL_RESERVED_WIDTH, BAR_RADIUS };
+export const __testing = { resolveProgressColor, PROGRESS_BAR_HEIGHT, PROGRESS_LABEL_WIDTH, PROGRESS_BAR_RADIUS };

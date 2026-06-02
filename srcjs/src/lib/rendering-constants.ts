@@ -116,8 +116,9 @@ export const LAYOUT = {
   /** Default width for data columns */
   DEFAULT_COLUMN_WIDTH: 100,
 
-  /** Height reserved for x-axis line and ticks */
-  AXIS_HEIGHT: 32,
+  // NOTE: the old `AXIS_HEIGHT: 32` constant was removed — the reserved axis
+  // band is now computed dynamically by `computeAxisHeight()` (table-metrics.ts);
+  // a static 32 silently broke when users raised font sizes.
 
   /** Height reserved for axis label text below axis */
   AXIS_LABEL_HEIGHT: 32,

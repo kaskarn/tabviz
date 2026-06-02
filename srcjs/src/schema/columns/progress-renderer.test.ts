@@ -8,7 +8,7 @@ import { __testing } from "./progress-renderer";
 import type { RenderSvg, RenderContext } from "../render-types";
 import "../init";
 
-const { resolveProgressColor, BAR_HEIGHT } = __testing;
+const { resolveProgressColor, PROGRESS_BAR_HEIGHT } = __testing;
 
 beforeEach(() => {
   bootBuiltinBehaviors();
@@ -66,9 +66,9 @@ describe("progress renderer — markup", () => {
     expect(callProgress(NaN).markup).toBe("");
   });
 
-  test("height tracks BAR_HEIGHT minimum", () => {
+  test("height tracks PROGRESS_BAR_HEIGHT minimum", () => {
     const node = callProgress(50, { progress: { maxValue: 100, showLabel: false } });
-    expect(node.height).toBeGreaterThanOrEqual(BAR_HEIGHT);
+    expect(node.height).toBeGreaterThanOrEqual(PROGRESS_BAR_HEIGHT);
   });
 });
 
