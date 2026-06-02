@@ -217,7 +217,10 @@ below are RESOLVED** — see §7 (cellPaddingX sourced; cellPaddingY deliberatel
 
 - ~~Honor `indent_per_level` / SVG `cell_padding_x`; revive `cellPaddingY` /
   `spacerRowHeight`.~~ RESOLVED (§7).
-- **Give `row_group_padding` real per-density values** (currently 0/0/0).
+- [x] **`row_group_padding` real per-density values — DONE 2026-06-02.** Was
+  0/0/0 (inert); now 8/12/16 (compact/comfortable/spacious) in both
+  `DENSITY_SPACING` + the R `DENSITY_PRESETS` mirror. Top-level groups get a
+  half-row separator gap that scales with density (and the density factor).
 - **Per-column / per-row-type override tier** — does not exist yet; the cascade
   jumps straight from theme to render.
 - **Interactive pins** — a settings-panel slider or drag edit should pin that
