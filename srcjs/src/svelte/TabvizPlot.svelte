@@ -53,6 +53,7 @@
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import TabvizOverlays from "./TabvizOverlays.svelte";
   import RowEdgeHandles from "../components/controls/RowEdgeHandles.svelte";
+  import CascadeInspector from "../components/inspector/CascadeInspector.svelte";
   import CellContent from "$components/table/CellContent.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import SettingsPanel from "$components/ui/SettingsPanel.svelte";
@@ -2378,6 +2379,12 @@
     <div class="tabviz-empty">No data</div>
   {/if}
 </div>
+
+<!-- Stage 3 §2 Cascade Inspector — browser-only docked panel, opens via
+     inspectorStore.trace(cssVar, resolvedTheme). Off until consumers
+     wire a click handler that invokes tryTraceFromEvent. -->
+<CascadeInspector />
+
 
 <script lang="ts" module>
   import type { RowStyle } from "$types";
