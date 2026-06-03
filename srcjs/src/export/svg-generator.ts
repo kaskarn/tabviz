@@ -1561,8 +1561,14 @@ function renderGroupHeader(
   totalWidth: number,
   theme: WebTheme,
   renderBackground: boolean = true,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
+
+  // Group-header colors (v4 cssVars → v3 fallback).
+  const labelFg = readVar(cssVars, "--tv-text", theme.content.primary);
+  const countFg = readVar(cssVars, "--tv-text-subtle", theme.content.muted);
+  const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
 
   // Get level-based styling (depth is 0-indexed, level is 1-indexed)
   const level = depth + 1;
@@ -1612,7 +1618,7 @@ function renderGroupHeader(
   // Border bottom if enabled
   if (borderBottom) {
     lines.push(`<line x1="${x}" x2="${x + totalWidth}" y1="${y + rowHeight}" y2="${y + rowHeight}"
-      stroke="${theme.divider.subtle}" stroke-width="1" opacity="0.5"/>`);
+      stroke="${borderStroke}" stroke-width="1" opacity="0.5"/>`);
   }
 
   // Group header text (label)
@@ -1623,7 +1629,7 @@ function renderGroupHeader(
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
-    fill="${theme.content.primary}">${escapeXml(label)}</text>`);
+    fill="${labelFg}">${escapeXml(label)}</text>`);
 
   // Row count (e.g., "(15)") - smaller muted text after label
   // Web CSS: font-weight: normal, color: muted, font-size: 0.75rem
@@ -1637,7 +1643,7 @@ function renderGroupHeader(
       font-family="${theme.text.body.family}"
       font-size="${countFontSize}px"
       font-weight="${400}"
-      fill="${theme.content.muted}">(${rowCount})</text>`);
+      fill="${countFg}">(${rowCount})</text>`);
   }
 
   return lines.join("\n");
@@ -4684,6 +4690,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         layout.totalWidth - padding * 2,
         theme,
         renderBg,
+        cssVars,
       ));
     } else if (displayRow.type === "panel") {
       // Render the details/disclosure panel (full-width markdown-as-text band).

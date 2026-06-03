@@ -565,10 +565,10 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // ── Text roles (--tv-text-title-fg + --tv-text-footnote-fg consumed 2026-06-02 by renderHeader/renderFooter)
   "--tv-text-body-fg",
   // ── Generic T2 role passthroughs (Phase 6 migration helpers)
-  // --tv-text + --tv-text-muted + --tv-cell-border consumed by renderDetailsPanel and axis renderers
+  // Consumed 2026-06-02: --tv-text, --tv-text-muted, --tv-text-subtle,
+  //                      --tv-cell-border (used as border-subtle proxy)
   "--tv-surface-bg",
   "--tv-surface-subtle-bg",
-  "--tv-text-subtle",
   "--tv-border",
 
   // ── v3 LEGACY REFERENCES ──────────────────────────────────────────────────
