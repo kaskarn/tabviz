@@ -245,6 +245,18 @@ function resolveTokenValue(
     return resolved.roles[beh.swap];
   }
 
+  // Stage 2 §5 HC fidelity tokens — short-circuit before kind dispatch
+  // so density/border-width branches don't capture them.
+  if (token.cssVar === "--tv-hc-caret-char") {
+    return resolved.inputs.mode === "high-contrast" ? "▸" : "";
+  }
+  if (token.cssVar === "--tv-hc-ring-width") {
+    return "1.5px";
+  }
+  if (token.cssVar === "--tv-hc-bar-width") {
+    return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
+  }
+
   // Stage 2 typography tokens always route through the typography resolver,
   // regardless of kind. (`lh` and `track` are tagged spacing-px / size, but
   // their values come from the type-role table, not density.)
@@ -285,7 +297,17 @@ function resolveTokenValue(
       // sources are token-specific; they fall through to placeholder.
       return "<computed>";
     case "const":
-      // Const sources have hard-coded values; the most common is "transparent".
+      // Const sources have hard-coded values. Stage 2 §5 HC-fidelity tokens
+      // also live here — their value depends on the active mode.
+      if (token.cssVar === "--tv-hc-caret-char") {
+        return resolved.inputs.mode === "high-contrast" ? "▸" : "";
+      }
+      if (token.cssVar === "--tv-hc-ring-width") {
+        return "1.5px";
+      }
+      if (token.cssVar === "--tv-hc-bar-width") {
+        return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
+      }
       if (source.note?.includes("transparent")) return "transparent";
       return "<const>";
   }

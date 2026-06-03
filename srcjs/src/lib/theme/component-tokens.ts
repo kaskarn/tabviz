@@ -487,6 +487,32 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Paper inner padding (px).",
   },
 
+  // ── Stage 2 §5 — HC encoding fidelity tokens ──────────────────────────────
+  // High-contrast mode drops translucent washes; these tokens preserve the
+  // semantic encoding on non-color channels (caret glyph, ring stroke, bar
+  // thickness). The resolver emits standard vs HC values per token.modes.
+  {
+    cssVar: "--tv-hc-caret-char",
+    kind: "paint-color",  // emitted as a character literal string
+    source: { tier: "const", note: "HC caret glyph (▸ / blank)" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Caret glyph emitted in emphasis rows under HC mode; empty string under standard",
+  },
+  {
+    cssVar: "--tv-hc-ring-width",
+    kind: "border-width",
+    source: { tier: "const", note: "HC chip ring stroke width" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Ring stroke width for status chips under HC mode (1.5px)",
+  },
+  {
+    cssVar: "--tv-hc-bar-width",
+    kind: "spacing-px",
+    source: { tier: "const", note: "HC emphasis-row bar thickness" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Emphasis-row vertical bar thickness — 3px standard, 4px under HC",
+  },
+
   // ── Stage 2 §3 — Surface texture color tokens ─────────────────────────────
   // Two color knobs drive all four textures (ruled / grid / dotted / grain).
   // The selector + recipe live in theme-runtime.css; the colors come from
