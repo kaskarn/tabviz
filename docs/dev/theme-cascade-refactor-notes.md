@@ -789,3 +789,43 @@ A focused deletion session can carry the remaining v3 surface out without functi
 Stages 2 (typography + shell/paper + textures + HC encoding) and 3 (editor architecture + Cascade Inspector + Spine UI) remain designed-but-not-built. Stage 4 (preset reimagining) is the natural next step once Stage 2 lands.
 
 Branch is at `5960eae` plus this doc commit; ready for merge to main.
+
+---
+
+### 2026-06-03 (Stage 2 kickoff) — typography cascade LANDED on `feat/theme-stage2`
+
+Stage 1 merged to main as `9c7f1c6`. Stage 2 §1 (typography cascade) now lands on `feat/theme-stage2`. Three commits:
+
+1. **`[Stage2.T1] typography cascade Tier 1 + Tier 2 + Tier 3 emission`** — foundational layer mirroring Stage 1's color cascade:
+   - **Tier 1 inputs (ThemeInputs extension)**: `type_base_size` (14), `type_scale_ratio` (1.2), `type_weights {regular/medium/semibold/bold}` (400/500/600/700). `fonts {body, display, mono}` already existed.
+   - **Tier 1 derived (`buildSizeScale`)**: 7-step modular scale (label/foot/body/head/subtitle/title/display) generated from `base × ratio^step`.
+   - **Tier 2 (`DEFAULT_TYPE_ROLES`)**: 10 named type roles composing `{family, size, weight, lh, track}`.
+   - **Tier 3 (manifest)**: 60 entries (10 roles × 6 per-role props) via `buildTypographyManifestEntries()`.
+   - **Resolver**: `resolveTypographyComputed(cssVar, inputs)` matches `--tv-text-{role}-{prop}` and emits via `resolveTypeRole()`. Routes typography BEFORE spacing-px branch so lh/track emit correctly.
+   - **Tests**: typography.test.ts (13 unit) + typography-integration.test.ts (11 integration).
+
+2. **`[Stage2.T1.R] R-side typography wrappers`** — R user surface:
+   - ThemeInputs S7 class grows 6 typography fields.
+   - Serialization packs into JSON wire as `type_base_size` / `type_scale_ratio` / `type_weights{}`.
+   - New `R/typography-api.R`: `set_fonts`, `set_type_scale`, `set_type_weights`.
+   - End-to-end verified: `theme_css_vars(set_fonts(cochrane, body = "Inter"))["--tv-text-title-font"]` → `"600 20.53px/1.12 Inter"`.
+
+3. (this commit) **`[docs] Stage 2 §1 typography LANDED`** — design doc status flip + this journal entry.
+
+**Branch state at end of session:**
+- `feat/theme-stage2` at `074c842`, 3 commits ahead of main (plus this doc commit).
+- 1196 bun tests + 309 R theme tests pass; svelte-check clean.
+- Stage 2 §1 typography cascade LANDED.
+
+**Stage 2 §§2-7 still designed-but-not-built:**
+- §2 Shell/paper two-surface model
+- §3 Surface textures (ruled/grid/dotted/grain)
+- §4 Texture knockouts
+- §5 HC encoding fidelity (caret glyphs, ring chips, bar thickening)
+- §6 Elevation shadows (SVG `<filter>` parity)
+- §7 Browser-additive effects (glass, gradient, glow)
+
+**Natural follow-ups:**
+1. Consumer migration of `theme.text.*` reads (~70 in svg-generator, ~40 in TabvizPlot) — pattern mirrors Stage 1; routes through `readVar(cssVars, "--tv-text-{role}-{prop}", v3fallback)` for SVG-attr consumers, bare `var()` for CSS templates.
+2. Stage 2 §2 shell/paper model — adds `data-shell-mode` attribute + 10 new shell/paper tokens.
+3. Stage 2 §5 HC encoding — caret glyphs as real `<text>` elements; load-bearing for accessibility.

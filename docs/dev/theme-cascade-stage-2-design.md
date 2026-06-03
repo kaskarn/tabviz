@@ -1,6 +1,9 @@
 # Stage 2 design — typography cascade, shell/paper, surface effects, HC fidelity
 
-> **Status:** v0.1 — 2026-06-02. Initial architectural articulation.
+> **Status:** v0.2 — 2026-06-03. §1 typography cascade LANDED on `feat/theme-stage2`
+> (Tier 1 inputs + Tier 2 type roles + Tier 3 emission + R wrappers). Sections 2-7
+> (shell/paper, textures, knockouts, HC fidelity, elevation, additive effects) still
+> designed-but-not-built.
 > **Builds on:** [`theme-cascade-stage-1-design.md`](theme-cascade-stage-1-design.md) — substrate (manifest, CSS-var wire, override schema, `data-*` variants, resolver capabilities, row-kind cascade).
 > **Parent vision:** [`theme-cascade-rework.md`](theme-cascade-rework.md) — §5 Stage 2 scope.
 
