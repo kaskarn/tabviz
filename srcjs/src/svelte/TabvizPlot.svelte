@@ -3078,7 +3078,7 @@
     margin-left: 6px;
     padding: 1px 6px;
     font-size: var(--tv-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-surface-bg, var(--tv-bg)));
     border-radius: 4px;
     color: var(--tv-accent);
   }
