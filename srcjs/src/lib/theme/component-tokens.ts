@@ -388,7 +388,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Outer container padding (px)",
   },
 
-  // ── Text roles (Tier-3 typography tokens; Stage 2 expands these) ──────────
+  // ── Text roles (Tier-3 typography tokens) ──────────────────────────────────
+  // Color (fg) side of the typography roles. The typography family/size/weight/
+  // lh/track tokens follow per Stage 2 §1e.
   {
     cssVar: "--tv-text-title-fg",
     kind: "paint-color",
@@ -410,6 +412,17 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Footnote text color",
   },
+
+  // ── Stage 2 — Typography Tier 3 (family/size/weight/lh/track per role) ────
+  // 10 type roles × 5 properties each + a `font` shorthand = 60 entries.
+  // Sourced from typography-tier-1 inputs via the resolver's
+  // resolveTypeRole() walker. Consumers read e.g.
+  //   font: var(--tv-text-title-font);
+  // or the individual properties:
+  //   font-family: var(--tv-text-title-family);
+  //   font-size:   var(--tv-text-title-size);
+  // etc.
+  ...buildTypographyManifestEntries(),
 
   // ── Accent (engagement layer) ─────────────────────────────────────────────
   {
@@ -481,7 +494,73 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Generic subtle border color. Mirrors role:border-subtle — use for hairlines, faint dividers",
   },
-] as const;
+];
+
+// ============================================================================
+// TYPOGRAPHY MANIFEST GENERATOR (Stage 2)
+// ============================================================================
+
+/** Generate the 60 Tier-3 typography manifest entries (10 type roles × 6
+ *  per-role properties: family/size/weight/lh/track + font shorthand).
+ *
+ *  Sourced from `lib/theme/typography.ts::DEFAULT_TYPE_ROLES` via the
+ *  resolver's resolveTypeRole walker. The `source.tier = "computed"` tag
+ *  marks these as derived rather than direct-role bindings — the resolver
+ *  reads typography-tier-1 inputs and produces the final values. */
+function buildTypographyManifestEntries(): ComponentToken[] {
+  const ROLES = [
+    "title", "subtitle", "heading", "body", "numeric",
+    "label", "caption", "footnote", "cell", "tick",
+  ] as const;
+  const entries: ComponentToken[] = [];
+  for (const role of ROLES) {
+    const base = `--tv-text-${role}` as const;
+    const consumedBy = ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"];
+    entries.push({
+      cssVar: `${base}-family`,
+      kind: "font-family",
+      source: { tier: "computed", note: `typography role:${role}` },
+      consumedBy,
+      description: `${role} font family stack`,
+    });
+    entries.push({
+      cssVar: `${base}-size`,
+      kind: "font-size",
+      source: { tier: "computed", note: `typography role:${role}` },
+      consumedBy,
+      description: `${role} font size (px)`,
+    });
+    entries.push({
+      cssVar: `${base}-weight`,
+      kind: "font-weight",
+      source: { tier: "computed", note: `typography role:${role}` },
+      consumedBy,
+      description: `${role} font weight`,
+    });
+    entries.push({
+      cssVar: `${base}-lh`,
+      kind: "spacing-px",
+      source: { tier: "computed", note: `typography role:${role} line-height` },
+      consumedBy,
+      description: `${role} line height (unitless or px)`,
+    });
+    entries.push({
+      cssVar: `${base}-track`,
+      kind: "spacing-px",
+      source: { tier: "computed", note: `typography role:${role} letter-spacing` },
+      consumedBy,
+      description: `${role} letter-spacing (CSS value, e.g. -0.022em)`,
+    });
+    entries.push({
+      cssVar: `${base}-font`,
+      kind: "font-family",  // `font` shorthand bundles family
+      source: { tier: "computed", note: `typography role:${role} shorthand` },
+      consumedBy,
+      description: `${role} CSS font shorthand (weight size/lh family)`,
+    });
+  }
+  return entries;
+}
 
 // ============================================================================
 // REVERSE LOOKUPS — built once at module load.
@@ -538,6 +617,13 @@ export const TOKENS_BY_CONSUMER: ReadonlyMap<string, readonly ComponentToken[]> 
 //   bun test src/lib/theme/component-tokens.drift.test.ts 2>&1 | awk '/^  \"/' | sort -u
 // ============================================================================
 export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
+  // ── Stage 2 typography (declared but consumers migrating in Stage 2 §1f)
+  ...buildTypographyManifestEntries().map((t) => t.cssVar),
+  // ── False positive: drift regex matches the bare prefix `--tv-text-` from
+  // the template literal `${base}-family` inside buildTypographyManifestEntries.
+  // Not a real reference; grandfather to keep the gate green.
+  "--tv-text-",
+
   // ── Row state
   "--tv-row-base-bg",
   "--tv-row-base-fg",

@@ -70,6 +70,21 @@ export interface ThemeInputs {
     mono?: string;
   };
 
+  /** Stage 2 typography Tier 1 — anchor of the modular size scale (px).
+   *  Default 14. */
+  type_base_size?: number;
+  /** Stage 2 typography Tier 1 — exponential ratio between scale steps.
+   *  Default 1.2 (Major Third minus a hair, editorial rhythm). */
+  type_scale_ratio?: number;
+  /** Stage 2 typography Tier 1 — weight axis. Each role binds to one of
+   *  these four named weights. Defaults 400/500/600/700. */
+  type_weights?: {
+    regular?: number;
+    medium?: number;
+    semibold?: number;
+    bold?: number;
+  };
+
   /** Density preset (the curated spacing baseline). */
   density?: "compact" | "comfortable" | "spacious";
   /** Continuous multiplier on the density preset's spacing tokens — a fine

@@ -39,6 +39,11 @@ import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectHex } from "./polarity";
 import { pickInkOnBg } from "../oklch";
 import {
+  resolveTypographyInputs,
+  resolveTypeRole,
+  type TypeRoleName,
+} from "./typography";
+import {
   COMPONENT_TOKENS,
   type ComponentToken,
   type TokenSource,
@@ -237,6 +242,14 @@ function resolveTokenValue(
     return resolved.roles[beh.swap];
   }
 
+  // Stage 2 typography tokens always route through the typography resolver,
+  // regardless of kind. (`lh` and `track` are tagged spacing-px / size, but
+  // their values come from the type-role table, not density.)
+  if (token.source.tier === "computed") {
+    const typography = resolveTypographyComputed(token.cssVar, resolved.inputs);
+    if (typography !== null) return typography;
+  }
+
   // Spacing-px tokens are resolved via the density table regardless of
   // source.tier — many are tagged `computed` because they derive from a
   // density × kind formula. The density preset comes from inputs.density;
@@ -259,13 +272,44 @@ function resolveTokenValue(
       return anchorHex ?? "<anchor-missing>";
     }
     case "computed":
-      // Computed sources are token-specific; non-spacing computed tokens
-      // get a placeholder until their per-token computation lands.
+      // Typography computed tokens were handled above. Other computed
+      // sources are token-specific; they fall through to placeholder.
       return "<computed>";
     case "const":
       // Const sources have hard-coded values; the most common is "transparent".
       if (source.note?.includes("transparent")) return "transparent";
       return "<const>";
+  }
+}
+
+/** Stage 2 typography resolver. Matches `--tv-text-{role}-{prop}` and emits
+ *  the typed value via `resolveTypeRole()`. Returns null when the cssVar
+ *  doesn't match the typography pattern so the caller falls through to
+ *  the placeholder path. */
+const TYPOGRAPHY_PROPS = ["family", "size", "weight", "lh", "track", "font"] as const;
+const TYPOGRAPHY_ROLE_NAMES = new Set<TypeRoleName>([
+  "title", "subtitle", "heading", "body", "numeric",
+  "label", "caption", "footnote", "cell", "tick",
+]);
+
+function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string | null {
+  // Pattern: --tv-text-{role}-{prop}
+  const m = cssVar.match(/^--tv-text-([a-z]+)-([a-z]+)$/);
+  if (!m) return null;
+  const role = m[1] as TypeRoleName;
+  const prop = m[2];
+  if (!TYPOGRAPHY_ROLE_NAMES.has(role)) return null;
+  if (!TYPOGRAPHY_PROPS.includes(prop as (typeof TYPOGRAPHY_PROPS)[number])) return null;
+  const typo = resolveTypographyInputs(inputs);
+  const r = resolveTypeRole(role, typo);
+  switch (prop) {
+    case "family": return r.family;
+    case "size":   return `${r.size}px`;
+    case "weight": return String(r.weight);
+    case "lh":     return r.lh === null ? "normal" : String(r.lh);
+    case "track":  return r.track;
+    case "font":   return r.font;
+    default:       return null;
   }
 }
 
