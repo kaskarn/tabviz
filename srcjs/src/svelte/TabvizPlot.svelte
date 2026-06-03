@@ -52,6 +52,7 @@
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import TabvizOverlays from "./TabvizOverlays.svelte";
+  import RowEdgeHandles from "../components/controls/RowEdgeHandles.svelte";
   import CellContent from "$components/table/CellContent.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import SettingsPanel from "$components/ui/SettingsPanel.svelte";
@@ -2356,6 +2357,22 @@
          HeaderContextMenu + ColumnTypeMenu + ColumnEditorPopover. All
          encapsulated by TabvizOverlays as of Phase 0c-C2. -->
     <TabvizOverlays bind:this={overlays} {store} {containerRef} />
+
+    <!-- Phase 5: per-row-kind drag-handle overlay. Mounted next to the
+         existing overlays; positioned absolutely within whatever its
+         parent is. enabled=false today: the rowPositions coordinates
+         from computeRowLayout are relative to the rows region's origin,
+         but this mount point's geometry doesn't yet align — verifying
+         the parent container's coordinate space (and adding an offset if
+         needed) is integration work for a follow-up. Once aligned, flip
+         enabled=true to make the handles user-interactable. -->
+    <RowEdgeHandles
+      {store}
+      rowPositions={layout.rowPositions ?? []}
+      rowHeights={layout.rowHeights ?? []}
+      {displayRows}
+      enabled={false}
+    />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}
