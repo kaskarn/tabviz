@@ -33,11 +33,18 @@ theme_inputs_to_json <- function(inputs) {
     list(hex = inputs@neutral_tint)
   }
 
+  # Q-P4.5 mode/polarity split (TS substrate sprint, M4 phase): R-side
+  # input @mode is the historical light/dark switch — it now serializes as
+  # `polarity` to match the TS substrate's polarity field. TS-side `mode`
+  # is reserved for accessibility modes (standard / high-contrast /
+  # reduced-transparency); the R API will expose those via a future
+  # `accessibility_mode` arg once Stage 2 lands them in the R surface.
   out <- list(
     brand                 = inputs@brand,
     accent                = na_to_null(inputs@accent),
     decorative            = na_to_null(inputs@decorative),
-    mode                  = inputs@mode,
+    polarity              = inputs@mode,
+    mode                  = "standard",
     neutral_tint          = neutral_tint_out,
     neutral_tint_strength = inputs@neutral_tint_strength,
     categorical           = inputs@categorical,
@@ -223,6 +230,20 @@ set_mode <- function(theme, mode) {
   inputs <- theme@inputs
   inputs@mode <- mode
   resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the theme polarity (light/dark) and re-resolve.
+#'
+#' Alias for [set_mode()] using the V4 substrate's polarity vocabulary
+#' (Stage 1 §40 — mode is now the accessibility axis (standard /
+#' high-contrast / reduced-transparency); polarity is the L-reflection axis).
+#'
+#' @param theme A [WebTheme].
+#' @param polarity `"light"` or `"dark"`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_polarity <- function(theme, polarity) {
+  set_mode(theme, polarity)
 }
 
 #' Set the categorical data scheme and re-resolve.

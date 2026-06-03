@@ -6,8 +6,6 @@
 \description{
 Holds Tier 1 inputs, per-table variants, all derived Tier 2 roles, and
 Tier 3 component bindings. Tier 2/3 fields default to NA-filled empty
-classes; PR 3's \code{resolve_theme()} populates them from inputs.
-}
-\details{
-Renamed to \code{WebTheme} and replaces v1 in PR 10.
+classes; the TS cascade (\code{buildTheme}, invoked via \code{resolve_from_inputs()})
+populates them from inputs.
 }

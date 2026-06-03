@@ -1,0 +1,185 @@
+/*
+ * theme-runtime.css — the v4 substrate's canonical paint-rules surface.
+ *
+ * Single source of truth (per Q-P1.1 / Q-P3.1 closures, Stage 1 §17).
+ * Authored as plain CSS; imported as a raw string at build time via Vite's
+ * `?raw` query (`import css from "./theme-runtime.css?raw"`) by the
+ * SVG-export consumer; loaded as a regular stylesheet by the browser path.
+ *
+ * Organization:
+ *   - Scope + reset
+ *   - Variant attribute selectors (data-* drives paint)
+ *   - Cluster blocks (row, header, cell, plot, spacing — populated as
+ *     Phases 2-5 of the substrate sprint progress)
+ *   - Browser-only rules at the bottom, wrapped in / * sv-omit-* * /
+ *     markers stripped at SVG export time
+ *
+ * Each rule begins with `.tabviz-scope` (or `.tabviz-scope[data-...]`) so
+ * the rules are scoped and cannot leak into a host page.
+ *
+ * Variable references use `var(--tv-...)` exclusively. No hard-coded
+ * colors, no per-rule literals. The cascade owns all values via
+ * `theme-css.ts::emitCssVarsFromManifest()` (Stage 1 §10b).
+ *
+ * INITIAL SCAFFOLD (Stage 1 sprint kickoff): cluster headers, sv-omit
+ * markers, and reset rules. Rule bodies are populated in subsequent
+ * sprint commits as consumers migrate. The file is structurally valid
+ * CSS but semantically empty.
+ */
+
+/* ============================================================================
+ * SCOPE + RESET
+ * ========================================================================== */
+
+.tabviz-scope {
+  /* Box-sizing inheritance — substrate convention */
+  box-sizing: border-box;
+}
+
+.tabviz-scope *,
+.tabviz-scope *::before,
+.tabviz-scope *::after {
+  box-sizing: inherit;
+}
+
+/* ============================================================================
+ * VARIANT ATTRIBUTE SELECTORS (data-* driven paint)
+ * Per Stage 1 §15c — the scope element carries data-* attributes that drive
+ * paint variants. Each selector block is populated as Phase 4 (resolver
+ * capability surface) and subsequent steps wire up the variants.
+ * ========================================================================== */
+
+/* data-mode: standard / high-contrast / reduced-transparency */
+.tabviz-scope[data-mode="standard"] {
+  /* default mode — no overrides */
+}
+
+.tabviz-scope[data-mode="high-contrast"] {
+  /* HC mode — populated by Phase 4 */
+}
+
+.tabviz-scope[data-mode="reduced-transparency"] {
+  /* RT mode — populated by Phase 4 */
+}
+
+/* data-polarity: light / dark (computed by resolver from anchor L) */
+.tabviz-scope[data-polarity="light"] {
+  /* light polarity */
+}
+
+.tabviz-scope[data-polarity="dark"] {
+  /* dark polarity */
+}
+
+/* data-head-style: light / tint / fill */
+.tabviz-scope[data-head-style="light"] {
+  /* default header presentation */
+}
+
+.tabviz-scope[data-head-style="tint"] {
+  /* tinted header */
+}
+
+.tabviz-scope[data-head-style="fill"] {
+  /* solid brand header */
+}
+
+/* data-title-style: normal / bar / underline (Phase 3) */
+.tabviz-scope[data-title-style="normal"] { }
+.tabviz-scope[data-title-style="bar"] { }
+.tabviz-scope[data-title-style="underline"] { }
+
+/* data-rules: horizontal / vertical / grid / none */
+.tabviz-scope[data-rules="horizontal"] { }
+.tabviz-scope[data-rules="vertical"] { }
+.tabviz-scope[data-rules="grid"] { }
+.tabviz-scope[data-rules="none"] { }
+
+/* data-frame: on / off */
+.tabviz-scope[data-frame="on"] { }
+.tabviz-scope[data-frame="off"] { }
+
+/* data-density: compact / cozy / comfortable / spacious */
+.tabviz-scope[data-density="compact"] { }
+.tabviz-scope[data-density="cozy"] { }
+.tabviz-scope[data-density="comfortable"] { }
+.tabviz-scope[data-density="spacious"] { }
+
+/* data-banding: none / row / group / group-N */
+.tabviz-scope[data-banding="none"] { }
+.tabviz-scope[data-banding="row"] { }
+.tabviz-scope[data-banding="group"] { }
+
+/* data-first-col-style: default / bold */
+.tabviz-scope[data-first-col-style="default"] { }
+.tabviz-scope[data-first-col-style="bold"] { }
+
+/* data-shell-mode (Phase 4 / Stage 2): flush / raised / float / transparent */
+.tabviz-scope[data-shell-mode="flush"] { }
+.tabviz-scope[data-shell-mode="raised"] { }
+.tabviz-scope[data-shell-mode="float"] { }
+.tabviz-scope[data-shell-mode="transparent"] { }
+
+/* ============================================================================
+ * ROW STATE
+ * Per-row tokens consumed by data rows and their state variations.
+ * Populated as consumer migration (step 6) progresses.
+ * ========================================================================== */
+
+/* Default row */
+.tabviz-scope .tv-row { /* rule body populated in step 6 */ }
+.tabviz-scope .tv-row.tv-row-alt { /* alt row — uses --tv-row-alt-bg */ }
+.tabviz-scope .tv-row[data-row-kind="data"] { }
+.tabviz-scope .tv-row[data-row-kind="group-header"] { }
+.tabviz-scope .tv-row[data-row-kind="section-header"] { }
+.tabviz-scope .tv-row[data-row-kind="summary"] { }
+.tabviz-scope .tv-row[data-row-kind="spacer"] { }
+
+/* Paint-tool emphasis tokens (per-row data-row-token) */
+.tabviz-scope .tv-row[data-row-token="emphasis"] { }
+.tabviz-scope .tv-row[data-row-token="muted"] { }
+.tabviz-scope .tv-row[data-row-token="accent"] { }
+.tabviz-scope .tv-row[data-row-token="bold"] { }
+.tabviz-scope .tv-row[data-row-token="fill"] { }
+
+/* ============================================================================
+ * HEADER
+ * Column header rules; selector picks light/tint/fill from data-head-style.
+ * ========================================================================== */
+
+.tabviz-scope .tv-header { /* populated in step 6 */ }
+
+/* ============================================================================
+ * CELL
+ * Cell-level paint rules (text color, dividers).
+ * ========================================================================== */
+
+.tabviz-scope .tv-cell { /* populated in step 6 */ }
+
+/* ============================================================================
+ * PLOT SCAFFOLD
+ * Forest plot axis, ticks, gridlines, reference lines.
+ * ========================================================================== */
+
+.tabviz-scope .tv-plot-axis-line { /* populated in step 6 */ }
+.tabviz-scope .tv-plot-tick { /* populated in step 6 */ }
+
+/* ============================================================================
+ * BROWSER-ONLY RULES — interactive states, transitions, pseudo-elements.
+ * These rules require DOM and user-interaction support; librsvg can't
+ * render them. Stripped from the SVG-export embed by extract-svg-css.ts
+ * (Stage 1 §18d).
+ * ========================================================================== */
+
+/* sv-omit-begin */
+
+/* Hover, focus, active — interactive states */
+.tabviz-scope .tv-row:hover { /* populated in step 6 */ }
+.tabviz-scope .tv-row:focus-visible { /* populated in step 6 */ }
+
+/* Transitions */
+.tabviz-scope .tv-row {
+  transition: background-color 140ms ease;
+}
+
+/* sv-omit-end */

@@ -1,170 +1,253 @@
-// Wire format — inputs + pins + overrides.
-//
-// Resolves paint roles from inputs to flat values for the renderer.
-//   - schemaVersion: 3
-//   - inputs (T1)
-//   - pins: dotted-path strings the user has explicitly authored
-//   - overrides: map of dotted-path → ColorRef / value override
-//
-// Resolver runs at consumption (browser, V8 export, R via V8); the wire
-// no longer carries a fully-resolved blob. This brings Sprint 2's
-// inputs+pins design into Sprint 1.
-//
-// Provenance is derived during resolution: each leaf is tagged "input",
-// "pin", "override", or "derived" so consumers can introspect.
+/**
+ * Theme wire (v4 substrate).
+ *
+ * The wire is a self-contained, serializable theme. The complete authoring
+ * state lives here:
+ *   - `$schema`        — schema version identifier (`"tabviz-theme/v4"`)
+ *   - `inputs`         — Tier-1 input values (brand, accent, fonts, mode, …)
+ *   - `roleOverrides`  — user-pinned role bindings ({ramp, grade} per role)
+ *
+ * Wires are immutable; all mutators return a new wire. This is what makes
+ * resolver memoization safe (single-slot identity cache, Stage 1 §11).
+ *
+ * The wire is fully serializable — no closures, no class instances. It is
+ * exactly what gets written to JSON for export, sent over the htmlwidget
+ * bridge, or round-tripped through R via V8.
+ *
+ * Override surface (Stage 1 §8–9):
+ *   - Role-level overrides only — `{ramp, grade}` bound to a `RoleName`.
+ *   - Token-level pinning is explicitly rejected (silently routes around
+ *     the manifest's source declarations); the friendly `pinTokenByName`
+ *     accepts a component-token name but resolves it to a role-level pin
+ *     via the manifest's `source.role`.
+ *   - Non-role-sourced tokens (status, computed, anchor, input, const)
+ *     throw `TokenNotPinnableError` with an actionable message.
+ *
+ * NOTE (Stage 1 sprint kickoff state): `resolveWire()` still calls the
+ * pre-existing `buildThemeStructure()` resolver — role overrides stored on
+ * the wire are NOT yet applied during resolution. Step 4 of the substrate
+ * sprint replaces the resolver with one that consumes roleOverrides and
+ * emits the v4 CSS-var map via `emitCssVarsFromManifest()`.
+ */
 
-import type {
-  ThemeInputs,
-  ThemeStructure,
-  ColorRef,
-} from "../../types/theme-inputs";
-import { buildThemeStructure, resolveRef } from "./theme-resolve";
+import type { ThemeInputs, ThemeStructure } from "../../types/theme-inputs";
+import type { RoleName, RampName } from "../../types/theme-roles";
+import { OFF_RAMP_ROLES } from "../../types/theme-roles";
+import { buildThemeStructure } from "./theme-resolve";
+import { TOKENS_BY_VAR } from "./component-tokens";
+import {
+  DEFAULT_ROLE_BINDINGS as DEFAULT_ROLE_BINDINGS_IMPORT,
+  type RoleBinding as RoleBindingImport,
+} from "./role-bindings";
 
-// ────────────────────────────────────────────────────────────────────
-// Wire shape
-// ────────────────────────────────────────────────────────────────────
+/** Re-exported here so existing imports from theme-wire continue to work
+ *  (the substrate consumes both surfaces). */
+export const DEFAULT_ROLE_BINDINGS = DEFAULT_ROLE_BINDINGS_IMPORT;
+export type RoleBinding = RoleBindingImport;
 
+// ============================================================================
+// SCHEMA + TYPES
+// ============================================================================
+
+/** Wire schema version. Frozen across the v4 substrate; bumps on incompatible
+ *  shape changes (per Decisions log Q8 closure 2026-06-02). */
+export const WIRE_SCHEMA = "tabviz-theme/v4" as const;
+export type WireSchema = typeof WIRE_SCHEMA;
+
+/** Map of pinned role bindings. Roles not in the map use defaults. */
+export type RoleOverrides = Partial<Record<RoleName, RoleBinding>>;
+
+/** The wire — the serializable theme value. */
 export interface ThemeWire {
-  schemaVersion: 3;
-  name: string;
-  inputs: ThemeInputs;
-  /** Dotted-path strings the user has explicitly authored. */
-  pins: string[];
-  /** Map of dotted-path -> override value. */
-  overrides: Record<string, ColorRef | string | number | boolean | null>;
+  readonly $schema: WireSchema;
+  readonly name: string;
+  readonly inputs: ThemeInputs;
+  readonly roleOverrides: RoleOverrides;
 }
 
-/** Construct an empty wire from inputs. */
-export function emptyWire(inputs: ThemeInputs, name = "custom"): ThemeWire {
+/** Provenance of a role's current binding — whether the user pinned it or
+ *  it's the default. The Cascade Inspector reads this to display "this is
+ *  a user override" vs "this is the preset default". */
+export type RoleProvenance =
+  | { source: "default"; binding: RoleBinding }
+  | { source: "override"; binding: RoleBinding };
+
+// ============================================================================
+// ERRORS
+// ============================================================================
+
+/** Thrown when `pinTokenByName()` is called with a token whose source isn't
+ *  a Tier-2 role. The error message directs the user to the right modifier
+ *  (e.g. `setBrand()` for input-sourced tokens). Per Stage 1 §9c. */
+export class TokenNotPinnableError extends Error {
+  readonly tokenName: string;
+  constructor(tokenName: string, message: string) {
+    super(message);
+    this.name = "TokenNotPinnableError";
+    this.tokenName = tokenName;
+  }
+}
+
+/** Thrown when `setRoleBinding()` targets an off-ramp role (status, computed,
+ *  text-onsolid). Off-ramp roles are anchored at Tier-1 inputs or computed at
+ *  resolve time — not bindable via (ramp, grade). Per Stage 1 §26 + Q-P4.4. */
+export class RoleNotBindableError extends Error {
+  readonly role: RoleName;
+  constructor(role: RoleName, message: string) {
+    super(message);
+    this.name = "RoleNotBindableError";
+    this.role = role;
+  }
+}
+
+// ============================================================================
+// WIRE CONSTRUCTORS + MUTATORS (all pure)
+// ============================================================================
+
+/** Construct a wire from inputs alone; no overrides. */
+export function createWire(inputs: ThemeInputs, name = "custom"): ThemeWire {
   return {
-    schemaVersion: 3,
+    $schema: WIRE_SCHEMA,
     name,
     inputs,
-    pins: [],
-    overrides: {},
+    roleOverrides: {},
   };
 }
 
-// ────────────────────────────────────────────────────────────────────
-// Pin / release verbs
-// ────────────────────────────────────────────────────────────────────
-
-/** Add a pin + override to the wire. */
-export function pin(
+/** Pin a role to a (ramp, grade) pair. Returns a new wire.
+ *  Throws RoleNotBindableError if the role is off-ramp. */
+export function setRoleBinding(
   wire: ThemeWire,
-  path: string,
-  value: ColorRef | string | number | boolean | null,
+  role: RoleName,
+  ramp: RampName,
+  grade: number,
 ): ThemeWire {
-  const pins = wire.pins.includes(path) ? wire.pins : [...wire.pins, path];
+  if (OFF_RAMP_ROLES.has(role)) {
+    throw new RoleNotBindableError(
+      role,
+      `Role '${role}' is off-ramp (status-anchored or computed) and cannot be ` +
+        `bound to a (ramp, grade) pair. Override the upstream input instead ` +
+        `(e.g. setStatus("positive", "#abcdef") for pos-* roles).`,
+    );
+  }
+  if (!Number.isInteger(grade) || grade < 1 || grade > 11) {
+    throw new RangeError(
+      `Grade must be an integer in [1, 11]; got ${grade}`,
+    );
+  }
   return {
     ...wire,
-    pins,
-    overrides: { ...wire.overrides, [path]: value },
+    roleOverrides: {
+      ...wire.roleOverrides,
+      [role]: { ramp, grade },
+    },
   };
 }
 
-/** Remove a pin (release back to derived). */
-export function release(wire: ThemeWire, path: string): ThemeWire {
-  if (!wire.pins.includes(path)) return wire;
-  const pins = wire.pins.filter((p) => p !== path);
-  const { [path]: _removed, ...rest } = wire.overrides;
-  void _removed;
-  return { ...wire, pins, overrides: rest };
-}
-
-/** True if a path is pinned. */
-export function isPinned(wire: ThemeWire, path: string): boolean {
-  return wire.pins.includes(path);
-}
-
-// ────────────────────────────────────────────────────────────────────
-// Resolve at consumption
-// ────────────────────────────────────────────────────────────────────
-
-/** Provenance for a single resolved leaf. */
-export type Provenance =
-  | { source: "input" }
-  | { source: "derived" }
-  | { source: "pin"; path: string }
-  | { source: "override"; path: string };
-
-/** Walk an override-path and apply to a nested object. Mutates `target`. */
-function applyOverrideToPath(
-  target: Record<string, unknown>,
-  path: string,
-  value: unknown,
-): void {
-  const parts = path.split(".");
-  let cursor: Record<string, unknown> = target;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const k = parts[i]!;
-    if (typeof cursor[k] !== "object" || cursor[k] === null) {
-      cursor[k] = {};
-    }
-    cursor = cursor[k] as Record<string, unknown>;
+/** Friendly token-name lookup. Finds the component-token in
+ *  COMPONENT_TOKENS, identifies its source role, and pins that role.
+ *
+ *  Accepts either the bare leaf name (`"row-alt-bg"`) or the full cssVar
+ *  (`"--tv-row-alt-bg"`). Throws TokenNotPinnableError for tokens whose
+ *  source isn't a Tier-2 role (per Stage 1 §9c). */
+export function pinTokenByName(
+  wire: ThemeWire,
+  tokenName: string,
+  ramp: RampName,
+  grade: number,
+): ThemeWire {
+  const cssVar = tokenName.startsWith("--tv-") ? tokenName : `--tv-${tokenName}`;
+  const token = TOKENS_BY_VAR.get(cssVar);
+  if (!token) {
+    throw new TokenNotPinnableError(
+      tokenName,
+      `Token '${tokenName}' is not in COMPONENT_TOKENS. ` +
+        `Use list_component_tokens() to discover available tokens.`,
+    );
   }
-  cursor[parts[parts.length - 1]!] = value;
+  switch (token.source.tier) {
+    case "role":
+      return setRoleBinding(wire, token.source.role, ramp, grade);
+    case "input":
+      throw new TokenNotPinnableError(
+        tokenName,
+        `Token '${tokenName}' derives from input '${token.source.input}'. ` +
+          `Use the appropriate input modifier (e.g. setBrand, setFonts) instead.`,
+      );
+    case "anchor":
+      throw new TokenNotPinnableError(
+        tokenName,
+        `Token '${tokenName}' derives from anchor '${token.source.anchor}'. ` +
+          `Modify the anchor via inputs.`,
+      );
+    case "computed":
+      throw new TokenNotPinnableError(
+        tokenName,
+        `Token '${tokenName}' is computed (${token.source.note}); not pinnable. ` +
+          `Change the source roles instead.`,
+      );
+    case "const":
+      throw new TokenNotPinnableError(
+        tokenName,
+        `Token '${tokenName}' is a hard-coded constant (${token.source.note}); not pinnable.`,
+      );
+  }
 }
+
+/** Remove a role's override, falling back to its default binding. */
+export function releaseRole(wire: ThemeWire, role: RoleName): ThemeWire {
+  if (!(role in wire.roleOverrides)) return wire;
+  const { [role]: _removed, ...rest } = wire.roleOverrides;
+  void _removed;
+  return { ...wire, roleOverrides: rest };
+}
+
+/** Remove all role overrides at once. */
+export function releaseAllRoles(wire: ThemeWire): ThemeWire {
+  if (Object.keys(wire.roleOverrides).length === 0) return wire;
+  return { ...wire, roleOverrides: {} };
+}
+
+/** Is this role currently pinned (overridden)? */
+export function isRolePinned(wire: ThemeWire, role: RoleName): boolean {
+  return role in wire.roleOverrides;
+}
+
+/** Get the current binding for a role — override if pinned, default otherwise. */
+export function getRoleBinding(wire: ThemeWire, role: RoleName): RoleBinding {
+  return wire.roleOverrides[role] ?? DEFAULT_ROLE_BINDINGS[role];
+}
+
+/** Get the provenance for a role — distinguishes user override from default. */
+export function getRoleProvenance(wire: ThemeWire, role: RoleName): RoleProvenance {
+  const override = wire.roleOverrides[role];
+  if (override) {
+    return { source: "override", binding: override };
+  }
+  return { source: "default", binding: DEFAULT_ROLE_BINDINGS[role] };
+}
+
+// ============================================================================
+// RESOLVE
+// ============================================================================
 
 /**
- * Resolve a wire to a fully-built ThemeStructure at consumption time.
+ * Resolve a wire to a ThemeStructure.
  *
- * Steps:
- *   1. buildThemeStructure(inputs) → base theme
- *   2. Apply overrides into the theme by dotted path
+ * SUBSTRATE SPRINT KICKOFF NOTE: this still calls the pre-v4 resolver
+ * (`buildThemeStructure`) and IGNORES roleOverrides. The substrate
+ * sprint's step 4 replaces this with a v4 resolver that:
+ *   1. Builds ramps from inputs.
+ *   2. Resolves roles using DEFAULT_ROLE_BINDINGS + wire.roleOverrides.
+ *   3. Walks COMPONENT_TOKENS via emitCssVarsFromManifest to produce the
+ *      CSS-var map.
+ *   4. Returns a v4 ResolvedTheme (per Stage 1 §10a) instead of the v3
+ *      ThemeStructure.
  *
- * Returns the ThemeStructure + a provenance map computed from pins.
+ * Until step 4 lands, role overrides are stored on the wire but have no
+ * effect on rendered output. The wire serialization/round-trip remains
+ * faithful so tests can verify override storage without resolver hookup.
  */
-export function resolveWire(wire: ThemeWire): {
-  theme: ThemeStructure;
-  provenance: Record<string, Provenance>;
-} {
-  const base = buildThemeStructure(wire.inputs, wire.name);
-  // Walk overrides; apply each into the theme.
-  const themeAny = base as unknown as Record<string, unknown>;
-  for (const path of Object.keys(wire.overrides)) {
-    applyOverrideToPath(themeAny, path, wire.overrides[path]);
-  }
-
-  // Build provenance map: every pin → "pin"; non-pinned override → "override".
-  const provenance: Record<string, Provenance> = {};
-  for (const path of wire.pins) {
-    provenance[path] = { source: "pin", path };
-  }
-  for (const path of Object.keys(wire.overrides)) {
-    if (!wire.pins.includes(path)) {
-      provenance[path] = { source: "override", path };
-    }
-  }
-  return { theme: base, provenance };
-}
-
-/** Inspect a specific leaf path. Returns the resolved hex (if a color) + provenance. */
-export function inspectLeaf(
-  wire: ThemeWire,
-  path: string,
-): { value: unknown; provenance: Provenance; resolved?: string | null } {
-  const { theme, provenance } = resolveWire(wire);
-  const parts = path.split(".");
-  let cursor: unknown = theme;
-  for (const k of parts) {
-    if (typeof cursor !== "object" || cursor === null) {
-      return { value: undefined, provenance: { source: "derived" } };
-    }
-    cursor = (cursor as Record<string, unknown>)[k];
-  }
-  // If the cursor is a ColorRef or string, also try to resolve it.
-  let resolved: string | null | undefined;
-  if (
-    cursor != null &&
-    (typeof cursor === "string" ||
-      (typeof cursor === "object" && ("ref" in cursor || "hex" in cursor)))
-  ) {
-    resolved = resolveRef(cursor as ColorRef | string, theme.ramps);
-  }
-  return {
-    value: cursor,
-    provenance: provenance[path] ?? { source: "derived" },
-    resolved,
-  };
+export function resolveWire(wire: ThemeWire): ThemeStructure {
+  return buildThemeStructure(wire.inputs, wire.name);
 }

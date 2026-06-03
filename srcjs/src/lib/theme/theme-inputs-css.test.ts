@@ -5,7 +5,7 @@ import type { ThemeInputs } from "../../types/theme-inputs";
 
 const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
 const LANCET:   ThemeInputs = { brand: "#00407A", accent: "#A6792A", decorative: "#A6792A" };
-const DARK:     ThemeInputs = { brand: "#89B4FA", mode: "dark" };
+const DARK:     ThemeInputs = { brand: "#89B4FA", polarity: "dark" };
 
 describe("buildThemeCssFromInputs — full CSS variable emission", () => {
   it("emits :root block with --tv-* variables", () => {

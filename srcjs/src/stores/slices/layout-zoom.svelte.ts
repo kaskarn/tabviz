@@ -421,6 +421,12 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const contentHeights = mergeMeasuredHeights(predictedContent, measuredRowHeights);
 
     // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
+    // Phase 5 row-kind height cascade:
+    //   layer 3 (themeKinds) — pulled from spec.theme.row_kinds when present
+    //     (v4 substrate field; not yet emitted by the v3 resolver). Currently
+    //     undefined; populated once the new resolver lands.
+    //   layer 4 (constructorRowHeights) — from spec.rowHeights (v4 field).
+    //   layer 5 (rowKindHeights pins) — interactive pin slice state, unchanged.
     const { rowHeights, rowPositions, rowMarkerCenters, rowsHeight: cumulativeY } = computeRowLayout({
       displayRows,
       wrapLineCounts,
@@ -429,6 +435,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       dataLineHeightPx,
       contentHeights,
       rowKindHeights,
+      constructorRowHeights: spec.rowHeights,
     });
 
     const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);

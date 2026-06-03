@@ -1,14 +1,20 @@
+// Tests for the v4 theme-store surface — wraps the new wire API and
+// exposes the role-binding override surface to consumers.
+//
+// Stage 1 step 3 of the substrate sprint; rewrites the v3 pinPath/inspect
+// tests to match the new store API.
+
 import { describe, it, expect } from "bun:test";
 import { createThemeStoreV3Plain } from "./theme-store.plain";
 import { COCHRANE, LANCET } from "../lib/theme/theme-presets-inputs";
-import { ref, lit } from "../types/theme-inputs";
 
 describe("ThemeStore — reactive theme store", () => {
   it("initializes from inputs", () => {
     const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
     expect(s.wire.name).toBe("cochrane");
     expect(s.wire.inputs.brand).toBe("#0099CC");
-    expect(s.theme.schemaVersion).toBe(3);
+    expect(s.wire.$schema).toBe("tabviz-theme/v4");
+    expect(s.theme.schemaVersion).toBe(3); // pre-step-4 resolver still emits v3 structure
     expect(s.theme.tokens.ink).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });
 
@@ -20,36 +26,53 @@ describe("ThemeStore — reactive theme store", () => {
     expect(after).not.toBe(before);
   });
 
-  it("mode toggle inverts paper/ink", () => {
+  it("polarity toggle inverts paper/ink", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
     const paperLight = s.theme.tokens.paper;
-    s.setInput("mode", "dark");
+    s.setInput("polarity", "dark");
     const paperDark = s.theme.tokens.paper;
     expect(paperDark).not.toBe(paperLight);
   });
 
-  it("pinPath + releasePath round-trip", () => {
+  it("setRoleBinding + releaseRole round-trip on the store", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
-    const beforeFg = s.theme.clusters.cell.fg;
+    expect(s.isRolePinned("surface-subtle")).toBe(false);
 
-    s.pinPath("clusters.cell.fg", lit("#FF00FF"));
-    expect(s.isPinned("clusters.cell.fg")).toBe(true);
-    expect(s.theme.clusters.cell.fg).toEqual({ hex: "#FF00FF" });
+    s.setRoleBinding("surface-subtle", "neutral", 5);
+    expect(s.isRolePinned("surface-subtle")).toBe(true);
+    expect(s.getRoleBinding("surface-subtle")).toEqual({ ramp: "neutral", grade: 5 });
 
-    s.releasePath("clusters.cell.fg");
-    expect(s.isPinned("clusters.cell.fg")).toBe(false);
-    expect(s.theme.clusters.cell.fg).toEqual(beforeFg);
+    s.releaseRole("surface-subtle");
+    expect(s.isRolePinned("surface-subtle")).toBe(false);
   });
 
-  it("inspect returns provenance + resolved hex", () => {
+  it("pinTokenByName resolves a component-token name to a role pin", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
-    s.pinPath("clusters.cell.fg", ref("ink_muted"));
-    const info = s.inspect("clusters.cell.fg");
-    expect(info.provenance.source).toBe("pin");
-    expect(info.resolved).toBe(s.theme.tokens.ink_muted);
+    // --tv-row-alt-bg sources from role surface-subtle
+    s.pinTokenByName("row-alt-bg", "neutral", 1);
+    expect(s.isRolePinned("surface-subtle")).toBe(true);
+    expect(s.getRoleBinding("surface-subtle")).toEqual({ ramp: "neutral", grade: 1 });
   });
 
-  it("load swaps to a different wire", () => {
+  it("getRoleProvenance distinguishes default vs override on the store", () => {
+    const s = createThemeStoreV3Plain(COCHRANE);
+    const p0 = s.getRoleProvenance("surface");
+    expect(p0.source).toBe("default");
+    s.setRoleBinding("surface", "neutral", 5);
+    const p1 = s.getRoleProvenance("surface");
+    expect(p1.source).toBe("override");
+  });
+
+  it("releaseAllRoles clears all overrides", () => {
+    const s = createThemeStoreV3Plain(COCHRANE);
+    s.setRoleBinding("surface", "neutral", 5);
+    s.setRoleBinding("border", "brand", 7);
+    expect(Object.keys(s.wire.roleOverrides)).toHaveLength(2);
+    s.releaseAllRoles();
+    expect(s.wire.roleOverrides).toEqual({});
+  });
+
+  it("reset to a different preset swaps inputs", () => {
     const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
     s.reset(LANCET, "lancet");
     expect(s.wire.name).toBe("lancet");
@@ -58,32 +81,34 @@ describe("ThemeStore — reactive theme store", () => {
     expect(s.theme.ramps.decorative).not.toBeNull();
   });
 
-  it("reset clears pins + overrides while keeping inputs", () => {
+  it("reset clears role overrides while keeping inputs", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
-    s.pinPath("clusters.cell.fg", lit("#FF00FF"));
-    expect(s.wire.pins.length).toBe(1);
+    s.setRoleBinding("surface", "neutral", 5);
+    expect(Object.keys(s.wire.roleOverrides)).toHaveLength(1);
     s.reset(s.wire.inputs);
-    expect(s.wire.pins.length).toBe(0);
-    expect(Object.keys(s.wire.overrides).length).toBe(0);
+    expect(Object.keys(s.wire.roleOverrides)).toHaveLength(0);
+  });
+
+  it("load swaps the entire wire", () => {
+    const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
+    s.setRoleBinding("surface", "neutral", 5);
+    // Load a fresh wire with no overrides
+    s.reset(LANCET, "lancet");
+    expect(s.wire.roleOverrides).toEqual({});
+    expect(s.wire.name).toBe("lancet");
   });
 });
 
 describe("ThemeStore — input changes propagate to derived clusters", () => {
-  it("changing brand changes header.bold bg", () => {
+  it("changing brand changes the resolved brand token", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
-    const before = s.inspect("clusters.header.bold.bg").resolved;
+    const before = s.theme.tokens.brand;
     s.setInput("brand", "#FF0000");
-    const after = s.inspect("clusters.header.bold.bg").resolved;
+    const after = s.theme.tokens.brand;
     expect(after).not.toBe(before);
   });
 
   it("brand_ink picks the right end against brand bg (APCA-derived)", () => {
-    // Brand step 9 is the resolved brand color. For most seeds in light
-    // mode this is a mid-L vibrant — brand_ink should be dark (neutral.12).
-    // For a very-light brand seed in light mode, the resolved brand
-    // remains at step 9's L (still mid), so brand_ink also stays dark.
-    // This test confirms the invariant holds rather than that brand_ink
-    // changes when brand input changes nominally.
     const s = createThemeStoreV3Plain(COCHRANE);
     const lightNeutral = s.theme.ramps.neutral[0]!;
     const darkNeutral = s.theme.ramps.neutral[11]!;

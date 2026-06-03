@@ -6,11 +6,9 @@
 # in the widget's Theme tab (Phase B).
 #
 # Implementation: a hand-authored registry maps each well-known leaf path
-# to its resolver recipe. Adding a leaf requires updating both the
-# resolver (R/utils-theme-resolve.R) AND this registry -- they describe
-# the same contract from two angles. The cost of duplication is low
-# (~25 leaves) and the recipe-as-data shape is also what the JS Theme
-# tab needs for inline cascade tooltips.
+# to its resolver recipe. The cost of duplication is low (~25 leaves) and
+# the recipe-as-data shape is also what the JS Theme tab needs for inline
+# cascade tooltips.
 
 # RESOLVED_LEAVES: address -> recipe.
 #

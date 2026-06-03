@@ -7,6 +7,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { WebTheme } from "../../types/index.js";
+  import { getCssVars, readVar } from "../../lib/theme/consumer-bridge";
 
   const {
     text,
@@ -59,6 +60,9 @@
   );
   const cx = $derived(width / 2);
   const cy = $derived(height / 2);
+  const fillColor = $derived(
+    color ?? (readVar(getCssVars(theme), "--tv-text", theme.content.primary) ?? theme.content.primary)
+  );
 </script>
 
 <div bind:this={wrapper} class="tabviz-watermark" aria-hidden="true">
@@ -78,7 +82,7 @@
         font-family={theme.text.body.family}
         font-size={fontSize.toFixed(1)}
         font-weight="700"
-        fill={color ?? theme.content.primary}
+        fill={fillColor}
         fill-opacity={opacity ?? 0.07}
       >{text}</text>
     </svg>

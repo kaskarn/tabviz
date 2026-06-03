@@ -103,6 +103,62 @@ describe("computeRowLayout", () => {
     expect(computeRowLayout(base({ displayRows: [data("a")], rowHeight: 20, rowKindHeights: pin })).rowHeights).toEqual([36]);
     expect(computeRowLayout(base({ displayRows: [data("a")], rowHeight: 30, rowKindHeights: pin })).rowHeights).toEqual([36]);
   });
+
+  // ── Height cascade integration (layers 1-4) — Phase 5 ──
+  test("layer 4 constructor row_heights override applies as ratio", () => {
+    // data row at rowHeight 24, ratio 1.25 → 30px
+    const out = computeRowLayout(base({
+      displayRows: [data("a")],
+      constructorRowHeights: { data: 1.25 },
+    }));
+    expect(out.rowHeights).toEqual([30]);
+  });
+
+  test("layer 3 theme row_kinds.heightRatio applies", () => {
+    const out = computeRowLayout(base({
+      displayRows: [data("a")],
+      themeKinds: { data: { heightRatio: 1.5 } },
+    }));
+    expect(out.rowHeights).toEqual([36]);
+  });
+
+  test("layer 4 (constructor) overrides layer 3 (theme)", () => {
+    const out = computeRowLayout(base({
+      displayRows: [data("a")],
+      themeKinds: { data: { heightRatio: 1.25 } },
+      constructorRowHeights: { data: 1.5 },
+    }));
+    expect(out.rowHeights).toEqual([36]);
+  });
+
+  test("layer 5 (pin) overrides all other layers", () => {
+    const out = computeRowLayout(base({
+      displayRows: [data("a")],
+      rowKindHeights: { data: 40 },
+      themeKinds: { data: { heightRatio: 2 } },
+      constructorRowHeights: { data: 3 },
+    }));
+    expect(out.rowHeights).toEqual([40]);
+  });
+
+  test("spacer intrinsic 0.5 still applies when no overrides", () => {
+    const spacerRow = data("s", { type: "spacer" });
+    const out = computeRowLayout(base({
+      displayRows: [spacerRow],
+      rowHeight: 24,
+    }));
+    // spacer = 24 * 0.5 = 12
+    expect(out.rowHeights).toEqual([12]);
+  });
+
+  test("summary inherits data's theme ratio (layer 2 inheritance)", () => {
+    const summary = data("sum", { type: "summary" });
+    const out = computeRowLayout(base({
+      displayRows: [summary],
+      themeKinds: { data: { heightRatio: 1.5 } },  // theme sets data; summary inherits
+    }));
+    expect(out.rowHeights).toEqual([36]);
+  });
 });
 
 describe("computeHeaderHeight", () => {

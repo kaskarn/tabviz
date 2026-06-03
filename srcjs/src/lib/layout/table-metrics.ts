@@ -18,6 +18,7 @@
  */
 
 import { resolveRowKind, type RowKind } from "./row-kind";
+import { resolveRowKindHeight } from "./row-kind-heights";
 
 /**
  * Minimal structural row shape for layout — a superset of `ClassifiableRow`
@@ -54,13 +55,19 @@ export interface RowLayoutInput {
    *  grows to fit its tallest content. Absent/0 → no effect. Browser may
    *  supply MEASURED heights here; V8/export supplies estimated ones. */
   contentHeights?: Record<string, number>;
-  /** Per-row-kind height override (px) — the last cascade arrow:
-   *  density preset → spacing → THIS override → (interactive pin writes here).
+  /** Per-row-kind height override (px) — layer 5 of the height cascade.
+   *  The interactive pin: drag-handle / settings-panel writes here.
    *  Sets the *base* height for rows of that kind; content/wrap still grows
-   *  above it. Survives density/factor re-resolution (it's an override layer).
-   *  Keyed by `RowKind` ("data" / "summary" / "header" / "spacer" /
-   *  "group_header"). Absent → density-derived defaults. */
+   *  above it. Survives density/factor re-resolution.
+   *  Keyed by `RowKind`. Absent → falls through to layer 4/3/2/1 resolution
+   *  via the row-kind-heights cascade. */
   rowKindHeights?: Partial<Record<RowKind, number>>;
+  /** Layer 3 — theme-default ratios from `inputs.row_kinds.<kind>.heightRatio`.
+   *  See `row-kind-heights.ts`. */
+  themeKinds?: Partial<Record<RowKind, { heightRatio?: number }>>;
+  /** Layer 4 — per-spec constructor override (`row_heights` map).
+   *  Values are ratios, not absolute px (Q-P5.2 closure). */
+  constructorRowHeights?: Partial<Record<RowKind, number>>;
 }
 
 export interface RowLayout {
@@ -117,11 +124,17 @@ export function computeRowLayout(input: RowLayoutInput): RowLayout {
   const contentHeights = input.contentHeights ?? {};
   const rowPaddedAfter = computeRowPaddedAfter(displayRows);
 
-  // Base height for a row kind: the per-kind override (the cascade's last arrow
-  // / interactive pin) if set, else the density-derived default (spacer = half).
-  const overrides = input.rowKindHeights;
+  // Base height for a row kind — the full 5-layer cascade resolution per
+  // Stage 1 §33:
+  //   pin[kind] ?? (rowHeight × resolveRatio(kind))
+  //   resolveRatio walks: constructor → theme → inheritance → intrinsic.
+  const pins = input.rowKindHeights;
+  const cascadeCtx = {
+    themeKinds: input.themeKinds,
+    constructorOverride: input.constructorRowHeights,
+  };
   const kindBase = (kind: RowKind): number =>
-    overrides?.[kind] ?? (kind === "spacer" ? rowHeight / 2 : rowHeight);
+    resolveRowKindHeight(kind, rowHeight, pins?.[kind], cascadeCtx);
 
   const rowHeights: number[] = [];
   for (let i = 0; i < displayRows.length; i++) {

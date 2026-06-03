@@ -1,23 +1,41 @@
 // Plain-runtime mirror of theme-store.svelte.ts — for bun test.
 // (bun can't run .svelte.ts files directly; this file provides the same
 // shape using manual reactivity for testing.)
+//
+// Migrated to v4 wire surface during Stage 1 step 3 of the substrate sprint.
 
-import type { ThemeStructure, ThemeInputs, ColorRef } from "../types/theme-inputs";
-import type { ThemeWire, Provenance } from "../lib/theme/theme-wire";
+import type { ThemeStructure, ThemeInputs } from "../types/theme-inputs";
+import type { RoleName, RampName } from "../types/theme-roles";
+import type {
+  ThemeWire,
+  RoleBinding,
+  RoleProvenance,
+} from "../lib/theme/theme-wire";
 import {
-  emptyWire, pin, release, isPinned, resolveWire, inspectLeaf,
+  createWire,
+  setRoleBinding,
+  pinTokenByName,
+  releaseRole,
+  releaseAllRoles,
+  isRolePinned,
+  getRoleBinding,
+  getRoleProvenance,
+  resolveWire,
 } from "../lib/theme/theme-wire";
 
 export interface ThemeStoreV3Plain {
   wire: ThemeWire;
   theme: ThemeStructure;
-  provenance: Record<string, Provenance>;
 
   setInput<K extends keyof ThemeInputs>(key: K, value: ThemeInputs[K]): void;
-  pinPath(path: string, value: ColorRef | string | number | boolean | null): void;
-  releasePath(path: string): void;
-  isPinned(path: string): boolean;
-  inspect(path: string): ReturnType<typeof inspectLeaf>;
+  setRoleBinding(role: RoleName, ramp: RampName, grade: number): void;
+  pinTokenByName(tokenName: string, ramp: RampName, grade: number): void;
+  releaseRole(role: RoleName): void;
+  releaseAllRoles(): void;
+  isRolePinned(role: RoleName): boolean;
+  getRoleBinding(role: RoleName): RoleBinding;
+  getRoleProvenance(role: RoleName): RoleProvenance;
+
   load(wire: ThemeWire): void;
   reset(inputs: ThemeInputs, name?: string): void;
 }
@@ -26,37 +44,46 @@ export function createThemeStoreV3Plain(
   initialInputs: ThemeInputs,
   initialName = "custom",
 ): ThemeStoreV3Plain {
-  let wire = emptyWire(initialInputs, initialName);
+  let wire = createWire(initialInputs, initialName);
   let cached = resolveWire(wire);
 
   function recompute() { cached = resolveWire(wire); }
 
   return {
     get wire() { return wire; },
-    get theme() { return cached.theme; },
-    get provenance() { return cached.provenance; },
+    get theme() { return cached; },
 
     setInput(key, value) {
       wire = { ...wire, inputs: { ...wire.inputs, [key]: value } };
       recompute();
     },
 
-    pinPath(path, value) {
-      wire = pin(wire, path, value);
-      recompute();
+    setRoleBinding(role, ramp, grade) {
+      wire = setRoleBinding(wire, role, ramp, grade);
     },
 
-    releasePath(path) {
-      wire = release(wire, path);
-      recompute();
+    pinTokenByName(tokenName, ramp, grade) {
+      wire = pinTokenByName(wire, tokenName, ramp, grade);
     },
 
-    isPinned(path) {
-      return isPinned(wire, path);
+    releaseRole(role) {
+      wire = releaseRole(wire, role);
     },
 
-    inspect(path) {
-      return inspectLeaf(wire, path);
+    releaseAllRoles() {
+      wire = releaseAllRoles(wire);
+    },
+
+    isRolePinned(role) {
+      return isRolePinned(wire, role);
+    },
+
+    getRoleBinding(role) {
+      return getRoleBinding(wire, role);
+    },
+
+    getRoleProvenance(role) {
+      return getRoleProvenance(wire, role);
     },
 
     load(newWire) {
@@ -65,7 +92,7 @@ export function createThemeStoreV3Plain(
     },
 
     reset(inputs, name) {
-      wire = emptyWire(inputs, name ?? wire.name);
+      wire = createWire(inputs, name ?? wire.name);
       recompute();
     },
   };

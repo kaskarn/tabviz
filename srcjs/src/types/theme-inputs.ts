@@ -10,8 +10,10 @@
 // T1 — Identity inputs (what the user authors)
 // ────────────────────────────────────────────────────────────────────
 
-/** Mode toggle. Inverts the neutral ramp direction. T2 token names stay stable. */
-export type ThemeMode = "light" | "dark";
+/** Display mode (Q-P4.5 closure 2026-06-02). Contrast variants applied
+ *  by the resolver via per-token `modes.{hc,rt}` behavior in the manifest.
+ *  Independent of polarity, which controls light/dark anchor reflection. */
+export type ThemeMode = "standard" | "high-contrast" | "reduced-transparency";
 
 /** Optional tint for the neutral ramp — blends a small fraction of a hue into low-chroma ends. */
 export type NeutralTint =
@@ -74,6 +76,30 @@ export interface ThemeInputs {
    *  dial on top of the named profile (e.g. 0.9 = a touch tighter than
    *  comfortable). 1 = the profile unchanged. Clamped to [0.5, 2]. */
   densityFactor?: number;
+
+  /** Polarity — light vs dark. (V4 substrate field; per Q-P4.5 closure
+   *  polarity and `mode` will be split. During the sprint, when set,
+   *  this takes precedence over `mode`'s interpretation as light/dark.) */
+  polarity?: "light" | "dark";
+
+  /** Per-ramp curve shape (linear / ease / smooth / log / exp). Reshapes
+   *  the lightness progression across the 11 ramp grades. Defaults per
+   *  `DEFAULT_RAMP_CURVES` in `lib/theme/curves.ts`:
+   *    neutral=ease, brand=linear, accent=linear.
+   *  Per Q-P4.3 closure (Stage 1 §25). */
+  curves?: {
+    neutral?: "linear" | "ease" | "smooth" | "log" | "exp";
+    brand?: "linear" | "ease" | "smooth" | "log" | "exp";
+    accent?: "linear" | "ease" | "smooth" | "log" | "exp";
+  };
+
+  /** Per-row-kind theme defaults — currently only height ratio; Stage 2
+   *  paint fields (bg, fg, border, weight) extend this shape per Q10
+   *  closure. Layer 3 of the row-kind height cascade (Stage 1 §33). */
+  row_kinds?: Partial<Record<
+    "data" | "group_header" | "spacer" | "summary" | "header" | "panel",
+    { heightRatio?: number }
+  >>;
 }
 
 // ────────────────────────────────────────────────────────────────────

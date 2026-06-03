@@ -44,8 +44,8 @@ describe("webTheme", () => {
     expect(t.name).toBe("custom");
   });
 
-  test("mode dark applies", () => {
-    const t = webTheme({ brand: "#1F3A5F", mode: "dark" });
+  test("polarity dark applies", () => {
+    const t = webTheme({ brand: "#1F3A5F", polarity: "dark" });
     expect(t.schemaVersion).toBe(2);
   });
 });

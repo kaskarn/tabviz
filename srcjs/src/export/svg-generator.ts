@@ -57,6 +57,7 @@ import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distri
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
+import { getCssVars, readVar, readVarPx } from "$lib/theme/consumer-bridge";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
@@ -313,9 +314,11 @@ function calculateSvgAutoWidths(
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   const rows = spec.data.rows;
 
-  // Padding values from theme (not hardcoded magic numbers)
-  const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
-  const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
+  // Padding values from theme (not hardcoded magic numbers). v4 cssVars when
+  // available; v3 fallback otherwise.
+  const cssVars = getCssVars(spec.theme);
+  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", spec.theme.spacing.groupPadding ?? 8) * 2;
 
   // ========================================================================
   // PHASE 1: Measure leaf column content
@@ -511,7 +514,12 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   // Canonical indent token: the renderer indents by
   // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
   // Budget label width with the same value so it doesn't under-size at depth.
-  const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+  // v4 reads --tv-spacing-indent-per-level (kept in sync with rowGroup.indentPerLevel).
+  const indentPx = (() => {
+    const v3 = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+    const cv = getCssVars(spec.theme);
+    return readVarPx(cv, "--tv-spacing-indent-per-level", v3);
+  })();
   // Header in the primary (label) column is rendered bold at the same scaled
   // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
   // a long primary header doesn't squeeze the label column and trigger
@@ -523,7 +531,8 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
     : Math.round(fontSize * 1.05 * 100) / 100;
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   // Use theme-based padding (not hardcoded magic numbers)
-  const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const cssVars = getCssVars(spec.theme);
+  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", spec.theme.spacing.cellPaddingX ?? 10) * 2;
   let maxWidth = 0;
 
   // Build group depth map for calculating row indentation
@@ -641,8 +650,13 @@ interface InternalLayout extends ComputedLayout {
 
 function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
   const theme = spec.theme;
-  const rowHeight = theme.spacing.rowHeight;
-  const padding = theme.spacing.padding;
+  // Layout arithmetic reads spacing tokens via v4 cssVars (with v3 fallback).
+  // Computed once at function entry; all spacing reads below use the resolved
+  // numbers. When theme.authoringInputs is unavailable, cssVars is empty and
+  // every readVarPx call falls back to theme.spacing.* — identical behavior.
+  const cssVars = getCssVars(theme);
+  const rowHeight = readVarPx(cssVars, "--tv-spacing-row-height", theme.spacing.rowHeight);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
@@ -661,7 +675,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const headerDepth = hasGroups ? 2 : 1;
   const effectiveHeaderHeight = computeHeaderHeight({
     bodyFontPx: parseFontSize(theme.text.body.size),
-    themeHeaderHeight: theme.spacing.headerHeight,
+    themeHeaderHeight: readVarPx(cssVars, "--tv-spacing-header-height", theme.spacing.headerHeight),
     headerDepth,
   });
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
@@ -688,7 +702,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
   // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
   // padding = 6+1+6).
-  const titleSubtitleGap = (hasTitle && hasSubtitle) ? (theme.spacing.titleSubtitleGap ?? 13) : 0;
+  const titleSubtitleGap = (hasTitle && hasSubtitle) ? readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", theme.spacing.titleSubtitleGap ?? 13) : 0;
   const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
 
   const captionHeight = hasCaption ? textRegionHeight(theme.text.label.size, lineHeight) : 0;
@@ -750,7 +764,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const wrapLineCounts: Record<string, number> = {};
   if (wrapEnabledCols.length > 0) {
     const dataFontSize = parseFontSize(theme.text.body.size);
-    const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
+    const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
     for (const row of spec.data.rows) {
       let maxLines = 1;
       for (const col of wrapEnabledCols) {
@@ -781,7 +795,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Group-header rows take the themed `rowGroupPadding` (mirrors the
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
-  const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
+  const rowGroupPadding = readVarPx(cssVars, "--tv-spacing-row-group-padding", theme.spacing.rowGroupPadding ?? 0);
   const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * LINE_HEIGHT);
   // Per-row intrinsic content height (stacked pictograms, tall icons,
   // multi-effect forest, sparkline/img) — estimator path for V8/export.
@@ -806,8 +820,21 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     }
   }
   // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
+  // Phase 5 row-kind height cascade:
+  //   layer 4 (constructorRowHeights) — from spec.rowHeights (v4 field; ratios).
+  //   layers 3 + 5 not plumbed through the SVG path yet (browser-side pins
+  //   live in the layout-zoom slice; SVG export doesn't currently consume
+  //   them — that's a step 6 concern).
   const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
-    computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx, contentHeights });
+    computeRowLayout({
+      displayRows,
+      wrapLineCounts,
+      rowHeight,
+      rowGroupPadding,
+      dataLineHeightPx,
+      contentHeights,
+      constructorRowHeights: spec.rowHeights,
+    });
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 
@@ -871,7 +898,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
   // no bottom axis, so reserving ~76px of axis height caused truncation.
-  const axisGap = theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
+  const axisGap = readVarPx(cssVars, "--tv-spacing-axis-gap", theme.spacing.axisGap ?? DEFAULT_AXIS_GAP);
   const hasAxisColumn = allColumns.some(
     c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
   );
@@ -900,13 +927,14 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // (where `webAxisHeight === 0` meant less buffer space to absorb the
   // mismatch).
   const footerGap = (spec.labels?.caption || spec.labels?.footnote)
-    ? (theme.spacing.footerGap ?? 8)
+    ? readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
     : 0;
   // Bottom margin: themable via spacing.bottom_margin (default 16 to
   // mirror the prior LAYOUT.BOTTOM_MARGIN constant).
-  const bottomMargin = theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN;
+  const bottomMargin = readVarPx(cssVars, "--tv-spacing-bottom-margin", theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN);
+  const headerGap = readVarPx(cssVars, "--tv-spacing-header-gap", theme.spacing.headerGap ?? 12);
   const totalHeight = headerTextHeight + padding +
-    (theme.spacing.headerGap ?? 12) +
+    headerGap +
     headerHeight + plotHeight +
     webAxisHeight +
     footerGap +
@@ -938,7 +966,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // on the header element via `--tv-header-gap` (PlotHeader.svelte:130);
     // SVG has no header element so we fold the gap into mainY. Default 12
     // matches the live CSS-var fallback in TabvizPlot.svelte.
-    mainY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12),
+    mainY: headerTextHeight + padding + headerGap,
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
     // footerY = caption baseline. Live widget renders the caption with
@@ -948,9 +976,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // top to baseline ≈ 0.85 × fontSize). Without the +captionAscent,
     // SVG and live disagreed by ~10px and the footer text overlapped
     // the axis region in the export.
-    footerY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12)
+    footerY: headerTextHeight + padding + headerGap
            + headerHeight + plotHeight + webAxisHeight
-           + (theme.spacing.footerGap ?? 8)
+           + readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
            + Math.round(parseFontSize(theme.text.label.size) * 0.85),
     axisGap,
     rowsHeight,
@@ -1402,14 +1430,25 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings
 // SVG Renderers
 // ============================================================================
 
-function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): string {
+function renderHeader(
+  spec: WebSpec,
+  layout: InternalLayout,
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
+): string {
   const lines: string[] = [];
-  const padding = theme.spacing.padding;
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
+  const subtitleFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
+  const separatorStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
 
   if (spec.labels?.title) {
     const fontSize = parseFontSize(theme.text.subtitle.size);
     const titleFamily = theme.text.title?.family ?? theme.text.body.family;
-    const titleFg = theme.text.title?.fg ?? theme.content.primary;
+    const titleFg = readVar(
+      cssVars,
+      "--tv-text-title-fg",
+      theme.text.title?.fg ?? theme.content.primary,
+    );
     lines.push(`<text x="${padding}" y="${layout.titleY}"
       font-family="${titleFamily}"
       font-size="${fontSize}px"
@@ -1423,7 +1462,7 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.content.secondary}">${escapeXml(spec.labels.subtitle)}</text>`);
+      fill="${subtitleFg}">${escapeXml(spec.labels.subtitle)}</text>`);
   }
 
   // Thin separator line between title and subtitle (only when both exist)
@@ -1435,27 +1474,35 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
     const separatorY = layout.subtitleY - subtitleAscent - 6; // 6px gap like web CSS padding-top
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${separatorY}" y2="${separatorY}"
-      stroke="${theme.divider.subtle}" stroke-width="1" opacity="0.3"/>`);
+      stroke="${separatorStroke}" stroke-width="1" opacity="0.3"/>`);
   }
 
   return lines.join("\n");
 }
 
-function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): string {
+function renderFooter(
+  spec: WebSpec,
+  layout: InternalLayout,
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
+): string {
   const lines: string[] = [];
-  const padding = theme.spacing.padding;
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
   let y = layout.footerY;
+  const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+  const captionFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
+  const footnoteFg = readVar(cssVars, "--tv-text-footnote-fg", theme.content.muted);
 
   // Draw footer border (1px) when caption or footnote exists, matching web view's PlotFooter border-top
   const hasFooter = !!spec.labels?.caption || !!spec.labels?.footnote;
   if (hasFooter) {
     // Border sits `footer_gap` above the text baseline — footerY already
     // includes the themed gap.
-    const gap = theme.spacing.footerGap ?? 8;
+    const gap = readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8);
     const borderY = layout.footerY - gap;
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${borderY}" y2="${borderY}"
-      stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+      stroke="${borderStroke}" stroke-width="1"/>`);
   }
 
   if (spec.labels?.caption) {
@@ -1464,7 +1511,7 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.content.secondary}">${escapeXml(spec.labels.caption)}</text>`);
+      fill="${captionFg}">${escapeXml(spec.labels.caption)}</text>`);
     // Advance Y by the caption's actual line height — derived from
     // typography rather than the hardcoded 16px constant.
     y += textRegionHeight(theme.text.label.size, 1.5);
@@ -1477,7 +1524,7 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-size="${fontSize}px"
       font-weight="${400}"
       font-style="italic"
-      fill="${theme.content.muted}">${escapeXml(spec.labels.footnote)}</text>`);
+      fill="${footnoteFg}">${escapeXml(spec.labels.footnote)}</text>`);
   }
 
   return lines.join("\n");
@@ -1495,16 +1542,19 @@ function renderDetailsPanel(
   rowHeight: number,
   canvasWidth: number,
   theme: WebTheme,
+  cssVars: Record<string, string>,
 ): string {
   const fontPx = parseFontSize(theme.text.body.size);
   const lineH = Math.ceil(fontPx * LINE_HEIGHT);
   const lines = wrapPanelLines(content, panelInnerWidth(canvasWidth, padding), fontPx);
-  const bg = theme.row.alt.bg ?? theme.surface.base;
-  const fg = theme.content.primary;
+  const surfaceBase = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+  const bg = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg) ?? surfaceBase;
+  const fg = readVar(cssVars, "--tv-text", theme.content.primary);
+  const dividerSubtle = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
   const family = theme.text.body.family;
   const out: string[] = [];
   out.push(`<rect x="0" y="${y}" width="${canvasWidth}" height="${rowHeight}" fill="${bg}" />`);
-  out.push(`<line x1="0" y1="${y + rowHeight}" x2="${canvasWidth}" y2="${y + rowHeight}" stroke="${theme.divider.subtle}" stroke-width="1" />`);
+  out.push(`<line x1="0" y1="${y + rowHeight}" x2="${canvasWidth}" y2="${y + rowHeight}" stroke="${dividerSubtle}" stroke-width="1" />`);
   let ty = y + PANEL_PAD_TOP + fontPx;
   for (const line of lines) {
     if (line !== "") {
@@ -1525,8 +1575,14 @@ function renderGroupHeader(
   totalWidth: number,
   theme: WebTheme,
   renderBackground: boolean = true,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
+
+  // Group-header colors (v4 cssVars → v3 fallback).
+  const labelFg = readVar(cssVars, "--tv-text", theme.content.primary);
+  const countFg = readVar(cssVars, "--tv-text-subtle", theme.content.muted);
+  const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
 
   // Get level-based styling (depth is 0-indexed, level is 1-indexed)
   const level = depth + 1;
@@ -1576,18 +1632,18 @@ function renderGroupHeader(
   // Border bottom if enabled
   if (borderBottom) {
     lines.push(`<line x1="${x}" x2="${x + totalWidth}" y1="${y + rowHeight}" y2="${y + rowHeight}"
-      stroke="${theme.divider.subtle}" stroke-width="1" opacity="0.5"/>`);
+      stroke="${borderStroke}" stroke-width="1" opacity="0.5"/>`);
   }
 
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
-  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   const labelX = x + cellPadX + indent;
   lines.push(`<text class="cell-text" dominant-baseline="central" x="${labelX}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
-    fill="${theme.content.primary}">${escapeXml(label)}</text>`);
+    fill="${labelFg}">${escapeXml(label)}</text>`);
 
   // Row count (e.g., "(15)") - smaller muted text after label
   // Web CSS: font-weight: normal, color: muted, font-size: 0.75rem
@@ -1601,7 +1657,7 @@ function renderGroupHeader(
       font-family="${theme.text.body.family}"
       font-size="${countFontSize}px"
       font-weight="${400}"
-      fill="${theme.content.muted}">(${rowCount})</text>`);
+      fill="${countFg}">(${rowCount})</text>`);
   }
 
   return lines.join("\n");
@@ -1626,7 +1682,7 @@ function renderGroupHeader(
 // here. Today the SVG-export path's legacy text branch handles that
 // via resolveSemanticBundle — the schema-dispatched path will need
 // the same logic as more cells migrate.
-function makeThemeResolver(theme: WebTheme): StyleResolver {
+function makeThemeResolver(theme: WebTheme, cssVars: Record<string, string> = {}): StyleResolver {
   const fontFamily: Record<string, string> = {
     base:    theme.text.body.family,
     display: theme.text.title.family,
@@ -1639,14 +1695,14 @@ function makeThemeResolver(theme: WebTheme): StyleResolver {
     minor: parseFontSizeUtil(theme.text.label.size ?? "0.75rem"),
   };
   const color: Record<string, string> = {
-    primary:   theme.content.primary,
-    secondary: theme.content.secondary,
-    muted:     theme.content.muted,
+    primary:   readVar(cssVars, "--tv-text", theme.content.primary) ?? theme.content.primary,
+    secondary: readVar(cssVars, "--tv-text-muted", theme.content.secondary) ?? theme.content.secondary,
+    muted:     readVar(cssVars, "--tv-text-subtle", theme.content.muted) ?? theme.content.muted,
     accent:    theme.accent.default,
   };
   const bg: Record<string, string> = {
     base:   "transparent",
-    muted:  theme.divider.subtle,
+    muted:  readVar(cssVars, "--tv-cell-border", theme.divider.subtle) ?? theme.divider.subtle,
     accent: theme.accent.tintSubtle,
   };
   const weight: Record<string, number> = {
@@ -1719,7 +1775,8 @@ function renderInterval(
   forestX: number = 0,
   forestWidth: number = Infinity,
   clipBounds?: [number, number],
-  isLog: boolean = false
+  isLog: boolean = false,
+  cssVars: Record<string, string> = {},
 ): string {
   // Build effective effects to render
   interface ResolvedEffect {
@@ -1771,9 +1828,10 @@ function renderInterval(
     return "";
   }
 
-  const baseSize = theme.plot.pointSize;
-  const lineWidth = theme.plot.lineWidth;
-  const defaultLineColor = theme.series?.[0]?.stroke ?? theme.accent.default;
+  const baseSize = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize);
+  const lineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth);
+  const accentDefault = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
+  const defaultLineColor = theme.series?.[0]?.stroke ?? accentDefault;
 
   // Check if this is a summary row (should render diamond). summaryMarker is
   // the RowKind property owning this decision.
@@ -1825,11 +1883,11 @@ function renderInterval(
     if (effect.color) {
       baseColor = effect.color;
     } else if (isSummaryRow && isPrimary) {
-      baseColor = theme.series?.[0]?.fill ?? theme.accent.default;
+      baseColor = theme.series?.[0]?.fill ?? accentDefault;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      baseColor = theme.accent.default ?? "#2563eb";
+      baseColor = accentDefault ?? "#2563eb";
     }
 
     // Apply Layers 3+4 via the shared cascade resolver
@@ -1953,7 +2011,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}" stroke-width="1"${mutedLineOpacityAttr}/>
+            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? accentDefault}" stroke-width="1"${mutedLineOpacityAttr}/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -2039,7 +2097,8 @@ function renderDiamond(
   xScale: Scale,
   forestX: number,
   forestWidth: number,
-  theme: WebTheme
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
 ): string {
   const diamondHeight = 10;
   const halfHeight = diamondHeight / 2;
@@ -2066,9 +2125,10 @@ function renderDiamond(
     `${xP},${yPosition + halfHeight}`,
   ].join(" ");
 
+  const accentDefault = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
   return `<polygon points="${points}"
-    fill="${theme.series?.[0]?.fill ?? theme.accent.default}"
-    stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}"
+    fill="${theme.series?.[0]?.fill ?? accentDefault}"
+    stroke="${theme.series?.[0]?.stroke ?? accentDefault}"
     stroke-width="1"/>`;
 }
 
@@ -2186,7 +2246,8 @@ function renderVizBoxplot(
   vizWidth: number,
   options: VizBoxplotColumnOptions,
   xScale: Scale,
-  theme: WebTheme
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
 ): string {
   const parts: string[] = [];
   const effects = options.effects;
@@ -2241,9 +2302,9 @@ function renderVizBoxplot(
 
   // Default colors
   const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = theme.content.primary ?? "#1a1a1a";
-  const themeLineWidth = theme.plot.lineWidth ?? 1.5;
-  const outlierR = (theme.plot.pointSize ?? 6) * 0.4;
+  const lineColor = readVar(cssVars, "--tv-text", theme.content.primary) ?? "#1a1a1a";
+  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth ?? 1.5);
+  const outlierR = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize ?? 6) * 0.4;
 
   effects.forEach((effect, idx) => {
     const stats = effectStats[idx];
@@ -2329,7 +2390,8 @@ function renderVizViolin(
   vizWidth: number,
   options: VizViolinColumnOptions,
   xScale: Scale,
-  theme: WebTheme
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
 ): string {
   const parts: string[] = [];
   const effects = options.effects;
@@ -2376,8 +2438,8 @@ function renderVizViolin(
 
   // Default colors
   const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = theme.content.primary ?? "#1a1a1a";
-  const themeLineWidth = theme.plot.lineWidth ?? 1.5;
+  const lineColor = readVar(cssVars, "--tv-text", theme.content.primary) ?? "#1a1a1a";
+  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth ?? 1.5);
   // Violin outline reads thinner than a forest-plot stroke by convention;
   // scale from theme so bumping shapes.lineWidth still thickens the violin.
   const violinStrokeDefault = themeLineWidth * 0.33;
@@ -2517,7 +2579,8 @@ function renderVizAxis(
   vizX: number,
   vizWidth: number,
   nullValue: number | undefined,
-  isLog: boolean = false
+  isLog: boolean = false,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.label.size);
@@ -2525,6 +2588,28 @@ function renderVizAxis(
     { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
     theme.plot.tickMarkLength,
+  );
+
+  // Plot scaffold colors (v4 cssVars → v3 fallback chain).
+  const axisLineColor = readVar(
+    cssVars,
+    "--tv-plot-axis-line",
+    theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle,
+  );
+  const tickMarkColor = readVar(
+    cssVars,
+    "--tv-plot-tick-mark",
+    theme.plot?.tickMark ?? theme.divider.subtle,
+  );
+  const tickLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.tickLabel?.fg ?? theme.content.secondary,
+  );
+  const axisLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.axisLabel?.fg ?? theme.content.secondary,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2543,7 +2628,7 @@ function renderVizAxis(
 
   // Axis line
   lines.push(`<line x1="${vizX}" x2="${vizX + vizWidth}"
-    y1="0" y2="0" stroke="${theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${axisLineColor}" stroke-width="1"/>`);
 
   // Generate "nice" ticks sized to the column width, then filter to keep
   // label spacing above the minimum pixel threshold.
@@ -2599,13 +2684,13 @@ function renderVizAxis(
     const xOffset = getTextXOffset(tickX);
     const label = formatNumber(tick);
 
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${label}</text>`);
+      fill="${tickLabelFg}">${label}</text>`);
   }
 
   // Axis label
@@ -2615,7 +2700,7 @@ function renderVizAxis(
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${500}"
-      fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
+      fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
 
   return lines.join("\n");
@@ -2633,7 +2718,8 @@ function renderForestAxis(
   forestX: number,
   forestWidth: number,
   nullValue: number = 1,
-  baseTicks?: number[]
+  baseTicks?: number[],
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const tickCount = typeof theme.axis.tickCount === "number"
@@ -2646,6 +2732,33 @@ function renderForestAxis(
     { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
     theme.plot.tickMarkLength,
+  );
+
+  // Plot scaffold colors (v4 cssVars → v3 fallback chain).
+  const axisLineColor = readVar(
+    cssVars,
+    "--tv-plot-axis-line",
+    theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle,
+  );
+  const tickMarkColor = readVar(
+    cssVars,
+    "--tv-plot-tick-mark",
+    theme.plot?.tickMark ?? theme.divider.subtle,
+  );
+  const tickLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.tickLabel?.fg ?? theme.content.secondary,
+  );
+  const axisLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.axisLabel?.fg ?? theme.content.secondary,
+  );
+  const gridlineColor = readVar(
+    cssVars,
+    "--tv-border-subtle",
+    theme.divider.subtle,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2664,7 +2777,7 @@ function renderForestAxis(
 
   // Axis line
   lines.push(`<line x1="${forestX}" x2="${forestX + forestWidth}"
-    y1="0" y2="0" stroke="${theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${axisLineColor}" stroke-width="1"/>`);
 
   // Gridlines (behind ticks) — mirrors EffectAxis.svelte; opt-in via
   // theme.axis.gridlines, styled per theme.axis.gridlineStyle.
@@ -2675,7 +2788,7 @@ function renderForestAxis(
     for (const tick of ticks) {
       const x = forestX + xScale(tick);
       lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${-layout.plotHeight}"
-        stroke="${theme.divider.subtle}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
+        stroke="${gridlineColor}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
     }
   }
 
@@ -2687,13 +2800,13 @@ function renderForestAxis(
     const xOffset = getTextXOffset(tickX);
 
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
-      stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
+      stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
       font-family="${theme.plot?.tickLabel?.family ?? theme.text.tick?.family ?? theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${theme.plot?.tickLabel?.weight ?? theme.text.tick?.weight ?? 400}"
       font-style="${(theme.plot?.tickLabel?.italic ?? theme.text.tick?.italic) ? "italic" : "normal"}"
-      fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${formatTick(tick)}</text>`);
+      fill="${tickLabelFg}">${formatTick(tick)}</text>`);
   }
 
   // Axis label
@@ -2704,7 +2817,7 @@ function renderForestAxis(
       font-size="${fontSize}px"
       font-weight="${theme.plot?.axisLabel?.weight ?? theme.text.label?.weight ?? 500}"
       font-style="${(theme.plot?.axisLabel?.italic ?? theme.text.label?.italic) ? "italic" : "normal"}"
-      fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
+      fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
 
   // Position axis at: mainY + headerHeight + rowsHeight + axisGap
@@ -2728,7 +2841,8 @@ function renderUnifiedColumnHeaders(
   labelWidth: number,
   autoWidths: Map<string, number>,
   getColWidth: (col: ColumnSpec) => number,
-  showLabelHeader: boolean = true
+  showLabelHeader: boolean = true,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const baseFontSize = parseFontSize(theme.text.body.size);
@@ -2743,7 +2857,7 @@ function renderUnifiedColumnHeaders(
   // All header cells use bold weight to match web view CSS.
   const fontWeight = theme.header?.text?.weight ?? 600;
   const boldWeight = 600;
-  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   const hasGroups = hasColumnGroups(columnDefs);
 
   // Use row center - dominant-baseline:central handles vertical alignment
@@ -2805,10 +2919,11 @@ function renderUnifiedColumnHeaders(
     }
 
     // Draw borders under groups (matches web view: .group-row { border-bottom: 1px solid var(--tv-border) })
+    const groupBorderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
     for (const border of groupBorders) {
       lines.push(`<line x1="${border.x1}" x2="${border.x2}"
         y1="${y + row1Height}" y2="${y + row1Height}"
-        stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+        stroke="${groupBorderStroke}" stroke-width="1"/>`);
     }
 
     // Row 2: Sub-column headers
@@ -2894,12 +3009,21 @@ function renderUnifiedTableRow(
   columnSummaries: Map<string, { min: number; max: number }> = new Map(),
   rowIdToIndex: Map<string, number> = new Map(),
   banks: import("../schema/banks").EffectiveBanks | null = null,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
-  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
+
+  // Default cell foreground: v4 cssVars → v3 fallback. The row.style.color +
+  // semantic-bundle fg paths win over the default per-site below.
+  const cellFgDefault: string = readVar(
+    cssVars,
+    "--tv-cell-fg",
+    theme.cell.fg ?? theme.content.primary,
+  ) ?? theme.content.primary;
 
   // Render label. Semantic bundles (theme.semantics.{emphasis|muted|accent})
   // drive fg / font_weight / font_style when the row carries the matching
@@ -2921,7 +3045,7 @@ function renderUnifiedTableRow(
   } else if (semBundle?.fg) {
     textColor = semBundle.fg;
   } else {
-    textColor = (theme.cell.fg ?? theme.content.primary);
+    textColor = cellFgDefault;
   }
 
   // Don't truncate labels - they're the primary row identifier and the width
@@ -2945,14 +3069,15 @@ function renderUnifiedTableRow(
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
 
+    const accentColor = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
     lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-      rx="3" fill="${theme.accent.default}" opacity="0.15"/>`);
+      rx="3" fill="${accentColor}" opacity="0.15"/>`);
     lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
       font-family="${theme.text.body.family}"
       font-size="${badgeFontSize}px"
       font-weight="${600}"
-      fill="${theme.accent.default}">${escapeXml(badgeText)}</text>`);
+      fill="${accentColor}">${escapeXml(badgeText)}</text>`);
   }
 
   // Render each column at its position
@@ -3008,7 +3133,7 @@ function renderUnifiedTableRow(
         "svg",
       );
       if (tree) {
-        const resolver = makeThemeResolver(theme);
+        const resolver = makeThemeResolver(theme, cssVars);
         // Apply the same cellStyle precedence the legacy text branch
         // does (bold / italic / color → semantic bundle → theme
         // default). Wrap the tree's markup in a <g> with these
@@ -3024,7 +3149,7 @@ function renderUnifiedTableRow(
         let cellFontStyle = "normal";
         if (cellStyle?.italic) cellFontStyle = "italic";
         else if (cellSemBundle?.fontStyle != null) cellFontStyle = cellSemBundle.fontStyle;
-        let cellColor: string = (theme.cell.fg ?? theme.content.primary);
+        let cellColor: string = cellFgDefault;
         if (cellStyle?.color)         cellColor = cellStyle.color;
         else if (cellSemBundle?.fg)   cellColor = cellSemBundle.fg;
 
@@ -3074,7 +3199,7 @@ function renderUnifiedTableRow(
       cellFontStyle = cellSemBundle.fontStyle;
     }
 
-    let cellColor = (theme.cell.fg ?? theme.content.primary);
+    let cellColor = cellFgDefault;
     if (cellStyle?.color) {
       cellColor = cellStyle.color;
     } else if (rowStyle?.color) {
@@ -3087,7 +3212,7 @@ function renderUnifiedTableRow(
     const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
     if (wrapEnabled) {
       const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
-      const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
+      const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
       const contentWidth = Math.max(1, width - cellPadding);
       const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
       const lineHeight = 1.5;
@@ -3262,7 +3387,8 @@ function renderReferenceLine(
   label?: string,
   width: number = 1,
   opacity: number = 0.6,
-  labelY?: number
+  labelY?: number,
+  cssVars: Record<string, string> = {},
 ): string {
   const dashArray = style === "dashed" ? "6,4" : style === "dotted" ? "2,2" : "";
   const dashAttr = dashArray ? ` stroke-dasharray="${dashArray}"` : "";
@@ -3270,7 +3396,7 @@ function renderReferenceLine(
     stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
-    const labelColor = theme.content.secondary;
+    const labelColor = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
     const ty = labelY ?? y1 - 4;
     svg += `<text x="${x}" y="${ty}" text-anchor="middle"
       font-family="${theme.text.body.family}"
@@ -3979,6 +4105,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const theme = spec.theme;
   const padding = theme.spacing.padding;
 
+  // Phase 6 consumer migration — pilot.
+  // Compute the v4 cssVars map from the theme's authoring inputs (when
+  // present). Consumers read via readVar(cssVars, varName, fallback)
+  // so v3 specs without authoringInputs continue to work via the v3 path.
+  // See `srcjs/src/lib/theme/consumer-bridge.ts`.
+  const cssVars = getCssVars(theme);
+
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
 
@@ -4054,27 +4187,29 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 </style>`);
 
   // Background
-  const bgColor = options.backgroundColor ?? theme.surface.base;
+  const surfaceBgResolved = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+  const bgColor = options.backgroundColor ?? surfaceBgResolved;
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
 
   // Container border (if enabled in theme)
   // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
   if (theme.layout.containerBorder !== false) {
     const borderRadius = theme.layout.containerBorderRadius ?? 8;
+    const containerBorderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
     parts.push(`<rect x="0.5" y="0.5"
       width="${layout.totalWidth - 1}" height="${layout.totalHeight - 1}"
-      fill="none" stroke="${theme.divider.subtle}" stroke-width="1"
+      fill="none" stroke="${containerBorderStroke}" stroke-width="1"
       rx="${borderRadius}" ry="${borderRadius}"/>`);
   }
 
   // Header (title, subtitle)
-  parts.push(renderHeader(spec, layout, theme));
+  parts.push(renderHeader(spec, layout, theme, cssVars));
 
   // Top table border - frames column headers (symmetric with header bottom border)
   const headerBorderW = 2;
   const headerVariantRule = activeHeaderVariant(theme).rule
-    ?? theme.divider.strong
-    ?? theme.divider.subtle;
+    ?? readVar(cssVars, "--tv-border", theme.divider.strong)
+    ?? readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
   if (headerBorderW > 0) {
     parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${layout.mainY}" y2="${layout.mainY}"
@@ -4090,7 +4225,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // draw text on top. Uses colors.headerBg (which cascades from rowBg in
     // set_colors so existing themes render identically).
     const headerBg = activeHeaderVariant(theme).bg;
-    if (headerBg && headerBg !== theme.surface.base) {
+    if (headerBg && headerBg !== surfaceBgResolved) {
       parts.push(`<rect x="${padding}" y="${headerY}"
         width="${layout.totalWidth - padding * 2}" height="${layout.headerHeight}"
         fill="${headerBg}"/>`);
@@ -4113,7 +4248,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       layout.labelWidth,
       autoWidths,
       getColWidth,
-      showLabelHeader
+      showLabelHeader,
+      cssVars,
     ));
 
     // Header border — tied to 2 (default 2)
@@ -4161,9 +4297,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           fill="${row.style.bg}"/>`);
       } else if (row.style?.type === "header") {
         // Header-type rows get a subtle muted background
+        const headerRowFill = readVar(cssVars, "--tv-text-subtle", theme.content.muted);
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-          fill="${theme.content.muted}" fill-opacity="0.1"/>`);
+          fill="${headerRowFill}" fill-opacity="0.1"/>`);
       } else if (semBundle?.bg) {
         // Semantic bundle background — semantic classes can request a
         // row bg via theme.semantics.<token>.bg. Rendered BEFORE the
@@ -4175,8 +4312,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       } else if (bandIdx === 1) {
         // Alternating row banding (only paint the "odd" band — even rows
         // inherit the container background, matching the web widget).
-        const bgColor = theme.row.alt.bg;
-        if (bgColor !== theme.surface.base) {
+        // Phase 6: row-alt-bg + surface-bg both via cssVars.
+        const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
+        const surfaceBg = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+        if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
@@ -4198,8 +4337,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // so the group_header row is just rowHeight tall and paints
       // edge-to-edge here.
       if (bandIdx === 1) {
-        const bgColor = theme.row.alt.bg;
-        if (bgColor !== theme.surface.base) {
+        // Phase 6: row-alt-bg + surface-bg both via cssVars.
+        const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
+        const surfaceBg = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+        if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
@@ -4229,7 +4370,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Honor spec-level watermarkColor / watermarkOpacity (v0.20.1+); fall
       // back to foreground @ 0.07 for specs authored before those fields
       // existed.
-      const wmFill = spec.watermarkColor ?? theme.content.primary;
+      const wmFill = spec.watermarkColor ?? readVar(cssVars, "--tv-text", theme.content.primary);
       const wmOpacity = spec.watermarkOpacity ?? 0.07;
       parts.push(
         `<text x="${cx}" y="${cy}" ` +
@@ -4293,8 +4434,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       plotY,
       plotY + layout.rowsHeight,
       "dashed",
-      theme.content.muted,
-      theme
+      readVar(cssVars, "--tv-text-subtle", theme.content.muted) ?? theme.content.muted,
+      theme,
+      undefined,
+      1,
+      0.6,
+      undefined,
+      cssVars,
     ));
 
     // Custom annotations for this forest column (column-level only)
@@ -4324,7 +4470,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           ann.label,
           ann.width ?? 1,
           ann.opacity ?? 0.6,
-          annotationLabelBaseY + labelYOffset
+          annotationLabelBaseY + labelYOffset,
+          cssVars,
         ));
       }
     }
@@ -4383,7 +4530,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           forestX,
           forestWidth,
           clipBounds,
-          isLog
+          isLog,
+          cssVars,
         ));
       }
     });
@@ -4402,12 +4550,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         xScale,
         forestX,
         forestWidth,
-        theme
+        theme,
+        cssVars,
       ));
     }
 
     // Axis
-    parts.push(renderForestAxis(xScale, layout, theme, fcAxisLabel, forestX, forestWidth, fcNullValue, baseTicks));
+    parts.push(renderForestAxis(xScale, layout, theme, fcAxisLabel, forestX, forestWidth, fcNullValue, baseTicks, cssVars));
   }
 
   // Render viz columns (viz_bar, viz_boxplot, viz_violin)
@@ -4465,7 +4614,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log", cssVars));
         parts.push("</g>");
       }
     } else if (vizColInfo.type === "viz_boxplot") {
@@ -4491,7 +4640,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             vizWidth,
             opts,
             xScale,
-            theme
+            theme,
+            cssVars,
           ));
         }
       });
@@ -4500,7 +4650,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log", cssVars));
         parts.push("</g>");
       }
     } else if (vizColInfo.type === "viz_violin") {
@@ -4526,7 +4676,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             vizWidth,
             opts,
             xScale,
-            theme
+            theme,
+            cssVars,
           ));
         }
       });
@@ -4535,7 +4686,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log", cssVars));
         parts.push("</g>");
       }
     }
@@ -4577,6 +4728,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         layout.totalWidth - padding * 2,
         theme,
         renderBg,
+        cssVars,
       ));
     } else if (displayRow.type === "panel") {
       // Render the details/disclosure panel (full-width markdown-as-text band).
@@ -4587,6 +4739,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         rowHeight,
         layout.totalWidth,
         theme,
+        cssVars,
       ));
     } else {
       // Render data row
@@ -4628,6 +4781,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           columnSummaries,
           rowIdToIndex,
           effectiveBanks,
+          cssVars,
         ));
       }
     }
@@ -4672,7 +4826,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   }
 
   // Footer (caption, footnote)
-  parts.push(renderFooter(spec, layout, theme));
+  parts.push(renderFooter(spec, layout, theme, cssVars));
 
   // Close SVG
   parts.push("</svg>");

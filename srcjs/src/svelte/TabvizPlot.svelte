@@ -52,6 +52,7 @@
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import TabvizOverlays from "./TabvizOverlays.svelte";
+  import RowEdgeHandles from "../components/controls/RowEdgeHandles.svelte";
   import CellContent from "$components/table/CellContent.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import SettingsPanel from "$components/ui/SettingsPanel.svelte";
@@ -1817,7 +1818,7 @@
               x2={colScale(nullValue)}
               y1={0}
               y2={rowsAreaHeight}
-              stroke="var(--tv-muted)"
+              stroke="var(--tv-text-subtle, var(--tv-muted))"
               stroke-width="1"
               stroke-dasharray="4,4"
             />
@@ -2356,6 +2357,22 @@
          HeaderContextMenu + ColumnTypeMenu + ColumnEditorPopover. All
          encapsulated by TabvizOverlays as of Phase 0c-C2. -->
     <TabvizOverlays bind:this={overlays} {store} {containerRef} />
+
+    <!-- Phase 5: per-row-kind drag-handle overlay. Mounted next to the
+         existing overlays; positioned absolutely within whatever its
+         parent is. enabled=false today: the rowPositions coordinates
+         from computeRowLayout are relative to the rows region's origin,
+         but this mount point's geometry doesn't yet align — verifying
+         the parent container's coordinate space (and adding an offset if
+         needed) is integration work for a follow-up. Once aligned, flip
+         enabled=true to make the handles user-interactable. -->
+    <RowEdgeHandles
+      {store}
+      rowPositions={layout.rowPositions ?? []}
+      rowHeights={layout.rowHeights ?? []}
+      {displayRows}
+      enabled={false}
+    />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}
@@ -2494,8 +2511,10 @@
     position: relative; /* Needed for toolbar positioning */
     font-family: var(--tv-font-family);
     font-size: var(--tv-font-size-base);
-    color: var(--tv-fg);
-    background: var(--tv-bg);
+    /* v4 substrate cssVars preferred; v3 fallback (--tv-fg / --tv-bg)
+       remains until step 10's v3-emitter cleanup. */
+    color: var(--tv-text, var(--tv-fg));
+    background: var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg)));
     border: var(--tv-container-border, none);
     border-radius: var(--tv-container-border-radius, 8px);
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
@@ -2653,15 +2672,15 @@
     align-items: center;
     border-bottom-width: var(--tv-row-border-width, 1px);
     border-bottom-style: var(--tv-border-row-style, solid);
-    border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
+    border-bottom-color: var(--tv-border-minor-color, var(--tv-cell-border, var(--tv-border)));
     border-right-width: var(--tv-row-border-width, 1px);
     border-right-style: var(--tv-border-col-style, none);
-    border-right-color: var(--tv-border-minor-color, var(--tv-border));
-    color: var(--tv-cell-fg, var(--tv-fg));
-    /* Row background: `--tv-row-bg` (theme.row.base.bg) with fallback to
-       the container bg. Separate from `--tv-bg` so users can tint rows
-       distinct from the outer container without flipping the whole widget. */
-    background: var(--tv-row-bg, var(--tv-bg));
+    border-right-color: var(--tv-border-minor-color, var(--tv-cell-border, var(--tv-border)));
+    color: var(--tv-cell-fg, var(--tv-text, var(--tv-fg)));
+    /* Row background: --tv-row-base-bg (v4) | --tv-row-bg (v3) | container bg.
+       Separate from --tv-surface-bg so users can tint rows distinct from the
+       outer container without flipping the whole widget. */
+    background: var(--tv-row-base-bg, var(--tv-row-bg, var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg)))));
   }
 
   /* Header cells - use row height for multi-row headers. Background is
@@ -2677,7 +2696,7 @@
     border-bottom-width: var(--tv-header-border-width, 2px);
     border-bottom-style: var(--tv-border-major-style, solid);
     border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
-    background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
+    background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-surface-bg, var(--tv-bg))));
     color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
     position: relative;
     /* Fill sub-pixel hairline gaps between adjacent cells when the
@@ -2699,7 +2718,7 @@
        JAMA's divider.subtle is pure black, which made the hover bg
        unreadable against the unchanged dark text (GH #4). The 12%
        mix mirrors .group-row:hover / .data-cell.editable:hover. */
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-surface-bg, var(--tv-bg)));
   }
 
   /* Primary (leftmost) column header — MAJOR bottom (same as leaf headers). */
@@ -2856,7 +2875,7 @@
   .axis-cell {
     height: var(--tv-axis-height);
     border-bottom: none;
-    background: var(--tv-bg);
+    background: var(--tv-surface-bg, var(--tv-bg));
     padding: 0;
     border-top-width: var(--tv-table-border-width, 0);
     border-top-style: var(--tv-table-border-style, none);
@@ -2950,22 +2969,22 @@
   }
 
   .group-row:hover {
-    background: color-mix(in srgb, var(--tv-muted) 15%, transparent) !important;
+    background: color-mix(in srgb, var(--tv-text-subtle, var(--tv-muted)) 15%, transparent) !important;
   }
 
   /* Hovered row styling - uses accent color for better visibility */
   .data-cell.hovered {
-    background: color-mix(in srgb, var(--tv-accent) 12%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent) 12%, var(--tv-surface-bg, var(--tv-bg)));
     cursor: pointer;
   }
 
   /* Editable cells: cursor + faint tint on hover so users know to double-click */
   .data-cell.editable:hover {
-    background: color-mix(in srgb, var(--tv-accent) 6%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent) 6%, var(--tv-surface-bg, var(--tv-bg)));
     cursor: text;
   }
   .data-cell.editable.hovered:hover {
-    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-accent) 6%, var(--tv-bg)));
+    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-accent) 6%, var(--tv-surface-bg, var(--tv-bg))));
   }
 
   /* Spacer row styling */
@@ -2982,13 +3001,13 @@
   .tabviz-empty {
     padding: 24px;
     text-align: center;
-    color: var(--tv-muted);
+    color: var(--tv-text-subtle, var(--tv-muted));
   }
 
   /* Row type styles (applied to data-cell elements) */
   .row-header {
     font-weight: var(--tv-font-weight-bold, 600);
-    background: color-mix(in srgb, var(--tv-muted) 10%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-text-subtle, var(--tv-muted)) 10%, var(--tv-surface-bg, var(--tv-bg)));
   }
 
   .row-summary {
@@ -3059,14 +3078,14 @@
     margin-left: 6px;
     padding: 1px 6px;
     font-size: var(--tv-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg))));
     border-radius: 4px;
     color: var(--tv-accent);
   }
 
   /* Alternating row banding */
   .row-odd {
-    background: var(--tv-alt-bg);
+    background: var(--tv-row-alt-bg, var(--tv-alt-bg));
   }
 
   /* Pagination controls — sit between the plot body and the footer.
@@ -3089,14 +3108,14 @@
     height: 24px;
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
-    background: var(--tv-bg, #fff);
+    background: var(--tv-surface-bg, var(--tv-bg, #fff));
     color: var(--tv-text, #1f2937);
     border-radius: 4px;
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
   }
   .pager-btn:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-bg, #fff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, var(--tv-bg, #fff)));
     border-color: var(--tv-accent, #2563eb);
     color: var(--tv-accent, #2563eb);
   }
@@ -3116,7 +3135,7 @@
     margin-left: auto;
     padding: 3px 10px;
     border: 1px solid var(--tv-border, #e2e8f0);
-    background: var(--tv-bg, #fff);
+    background: var(--tv-surface-bg, var(--tv-bg, #fff));
     color: var(--tv-text-muted, #64748b);
     border-radius: 4px;
     font-size: var(--tv-font-size-sm, 0.75rem);
@@ -3124,13 +3143,13 @@
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
   }
   .pager-mode-btn:hover {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-bg, #fff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, var(--tv-bg, #fff)));
     border-color: var(--tv-accent, #2563eb);
     color: var(--tv-accent, #2563eb);
   }
   .pager-mode-btn.active {
     background: var(--tv-accent, #2563eb);
-    color: var(--tv-bg, #fff);
+    color: var(--tv-surface-bg, var(--tv-bg, #fff));
     border-color: var(--tv-accent, #2563eb);
   }
 

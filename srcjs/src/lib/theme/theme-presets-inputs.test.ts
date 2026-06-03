@@ -42,10 +42,10 @@ describe("Preset structural correctness", () => {
     expect(PRESETS.newsprint!.decorative).toBeTruthy();
   });
 
-  it("dark themes have mode: dark", () => {
-    expect(DARK.mode).toBe("dark");
-    expect(PRESETS.solarized_dark!.mode).toBe("dark");
-    expect(PRESETS.tonal_dark!.mode).toBe("dark");
+  it("dark themes have polarity: dark", () => {
+    expect(DARK.polarity).toBe("dark");
+    expect(PRESETS.solarized_dark!.polarity).toBe("dark");
+    expect(PRESETS.tonal_dark!.polarity).toBe("dark");
   });
 });
 

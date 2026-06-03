@@ -4,6 +4,7 @@
   import ThemeControl from "./ThemeControl.svelte";
   import LayoutControl from "./LayoutControl.svelte";
   import SpacingControl from "./SpacingControl.svelte";
+  import RowKindHeightsControl from "./RowKindHeightsControl.svelte";
   import MarksControl from "./MarksControl.svelte";
   import TextControl from "./TextControl.svelte";
   import TokensControl from "./TokensControl.svelte";
@@ -232,6 +233,7 @@
               <WatermarkControl {store} />
             {:else if tab.id === "spacing"}
               <SpacingControl {store} />
+              <RowKindHeightsControl {store} />
             {:else if tab.id === "viz"}
               <MarksControl {store} />
             {:else if tab.id === "text"}
