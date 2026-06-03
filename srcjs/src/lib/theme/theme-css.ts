@@ -354,73 +354,8 @@ function _buildWidgetExtras(ctx: WidgetCSSContext): string {
     `.trim();
 }
 
-// ============================================================================
-// V4 SUBSTRATE — emitCssVarsFromManifest
-//
-// The new manifest-driven CSS-var emitter. Walks COMPONENT_TOKENS and
-// produces a Record<cssVar, value> map by dispatching on each entry's
-// `source.tier` (role / input / anchor / computed / const).
-//
-// This commit ships the STUB: every entry returns a placeholder value of
-// the form `<TBD source-description>`. The full implementation requires
-// the resolver capability surface (Phase 4 / step 4 of Stage 1 §40) to
-// produce role values, input echos, anchor OKLCH triples, and computed
-// derivations.
-//
-// The stub exists to:
-//   1. Validate the manifest-walking dispatch logic compiles against the
-//      Phase 1 manifest shape (component-tokens.ts).
-//   2. Let downstream consumers (svg-generator.ts, theme-runtime.css
-//      embedding) start migrating against the API surface while the
-//      resolver rewrite proceeds in parallel.
-//   3. Provide a single point where step 4's resolver hook-up lands.
-// ============================================================================
-
-import {
-  COMPONENT_TOKENS,
-  type ComponentToken,
-} from "./component-tokens";
-
-/**
- * Walk the COMPONENT_TOKENS manifest and produce a CSS-var map.
- *
- * Two overloads:
- *   - With no argument: returns placeholder values (the original stub from
- *     the M2 commit). Useful for testing manifest-dispatch shape without
- *     a resolved theme.
- *   - With a ResolvedTheme argument: returns the actual cssVars map from
- *     the resolved theme. This is the real wire emission used by browser
- *     DOM rendering and SVG export.
- *
- * The latter is just `resolved.cssVars` — `resolveTheme()` walks the
- * manifest as its final step (per Stage 1 §10b), so the map is already
- * built inside the ResolvedTheme. We expose this function as a thin
- * pass-through for callers that already have a ResolvedTheme; callers
- * that don't have one should construct it via `resolveTheme(wire)`
- * from `lib/theme/resolve-theme.ts`.
- */
-export function emitCssVarsFromManifest(
-  resolved?: { cssVars: Readonly<Record<string, string>> },
-): Record<string, string> {
-  if (resolved) return { ...resolved.cssVars };
-  const out: Record<string, string> = {};
-  for (const token of COMPONENT_TOKENS) {
-    out[token.cssVar] = placeholderValue(token);
-  }
-  return out;
-}
-
-function placeholderValue(token: ComponentToken): string {
-  switch (token.source.tier) {
-    case "role":
-      return `<TBD role:${token.source.role}>`;
-    case "input":
-      return `<TBD input:${token.source.input}>`;
-    case "anchor":
-      return `<TBD anchor:${token.source.anchor}>`;
-    case "computed":
-      return `<TBD computed:${token.source.note}>`;
-    case "const":
-      return `<TBD const:${token.source.note}>`;
-  }
-}
+// emitCssVarsFromManifest stub deleted 2026-06-03. The substrate's wire is
+// `ResolvedTheme.cssVars` directly — built by `resolveTheme(wire)` in
+// `lib/theme/resolve-theme.ts`. The M2-era placeholder-emit stub was a
+// dispatch-shape canary; v4-preset-coverage.test.ts now validates the same
+// invariant (and more) across the full 18-preset roster.
