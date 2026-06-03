@@ -571,6 +571,25 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Texture dot color when texture lives on the paper surface.",
   },
 
+  // ── Stage 2 §4 — Texture knockout token ───────────────────────────────────
+  // When text sits over a ruled / grid / dotted texture, the texture lines
+  // pass through glyphs and hurt legibility. Knockout = a faint pad behind
+  // the text that hides ~78% of the texture without erasing it entirely.
+  {
+    cssVar: "--tv-shell-text-knockout-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "knockout: shell-bg @ 78% opacity premix" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Premixed knockout pad behind text on textured shell surfaces",
+  },
+  {
+    cssVar: "--tv-paper-text-knockout-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "knockout: paper-bg @ 78% opacity premix" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Premixed knockout pad behind text on textured paper surfaces",
+  },
+
   // ── Stage 2 §6 — Elevation shadow color tokens ────────────────────────────
   // Hue-aware shadow colors derived from the paper bg's hue mixed with
   // black. Browser CSS uses them in box-shadow; SVG export uses them as

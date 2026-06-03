@@ -45,7 +45,7 @@ import {
 } from "./typography";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
-import { resolveTextureColors, textureKeyForCssVar } from "./textures";
+import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } from "./textures";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -294,6 +294,8 @@ function resolveTokenValue(
     if (elevation !== null) return elevation;
     const texture = resolveTextureComputed(token.cssVar, resolved);
     if (texture !== null) return texture;
+    const knockout = resolveKnockoutComputed(token.cssVar, resolved);
+    if (knockout !== null) return knockout;
   }
 
   // Spacing-px tokens are resolved via the density table regardless of
@@ -358,6 +360,35 @@ function resolveTextureComputed(
   const key = textureKeyForCssVar(cssVar);
   if (key === null) return null;
   return resolveTextureColors(resolved.ramps.neutral)[key];
+}
+
+/** Stage 2 §4 texture knockout resolver. Premixes the surface bg at 78%
+ *  opacity against white so both CSS and SVG paths consume a literal hex
+ *  (avoiding the `color-mix()` librsvg compatibility wrinkle). */
+function resolveKnockoutComputed(
+  cssVar: string,
+  resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
+): string | null {
+  let surfaceBg: string | null = null;
+  if (cssVar === "--tv-shell-text-knockout-bg") {
+    const sp = resolveShellPaper(resolved.inputs, {
+      surface:       resolved.roles.surface       ?? "#FFFFFF",
+      surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+      border:        resolved.roles.border        ?? "#CCCCCC",
+      borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+    });
+    surfaceBg = sp.shellBg;
+  } else if (cssVar === "--tv-paper-text-knockout-bg") {
+    const sp = resolveShellPaper(resolved.inputs, {
+      surface:       resolved.roles.surface       ?? "#FFFFFF",
+      surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+      border:        resolved.roles.border        ?? "#CCCCCC",
+      borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+    });
+    surfaceBg = sp.paperBg;
+  }
+  if (surfaceBg === null) return null;
+  return resolveTextureKnockoutBg(surfaceBg);
 }
 
 /** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`

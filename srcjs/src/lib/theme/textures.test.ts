@@ -74,6 +74,45 @@ describe("svgTexturePattern", () => {
   });
 });
 
+describe("texture knockouts (Stage 2 §4)", () => {
+  it("resolveTextureKnockoutBg premixes hex against white at 78%", async () => {
+    const { resolveTextureKnockoutBg } = await import("./textures");
+    // Pure black at 78% → ~22% white = #383838
+    expect(resolveTextureKnockoutBg("#000000")).toBe("#383838");
+    // Pure white stays white
+    expect(resolveTextureKnockoutBg("#FFFFFF")).toBe("#ffffff");
+  });
+
+  it("transparent or unrecognized surface → rgba fallback", async () => {
+    const { resolveTextureKnockoutBg } = await import("./textures");
+    expect(resolveTextureKnockoutBg("transparent")).toBe("rgba(255,255,255,0.78)");
+  });
+
+  it("svgTextureKnockoutRect emits a <rect> with knockout fill", async () => {
+    const { svgTextureKnockoutRect } = await import("./textures");
+    const rect = svgTextureKnockoutRect(10, 20, 100, 16);
+    expect(rect).toContain("<rect");
+    expect(rect).toContain("tv-text-knockout");
+    expect(rect).toContain("var(--tv-shell-text-knockout-bg)");
+    expect(rect).toContain('rx="4"');
+  });
+
+  it("knockout cssVars resolve to hex when shell-mode produces a hex surface", async () => {
+    const { resolveTheme } = await import("./resolve-theme");
+    const { createWire } = await import("./theme-wire");
+    const r = resolveTheme(createWire({ brand: "#0099CC", shell_mode: "raised" }, "t"));
+    expect(r.cssVars["--tv-shell-text-knockout-bg"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(r.cssVars["--tv-paper-text-knockout-bg"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+  });
+
+  it("flush mode → shell knockout is transparent fallback (shellBg is transparent)", async () => {
+    const { resolveTheme } = await import("./resolve-theme");
+    const { createWire } = await import("./theme-wire");
+    const r = resolveTheme(createWire({ brand: "#0099CC", shell_mode: "flush" }, "t"));
+    expect(r.cssVars["--tv-shell-text-knockout-bg"]).toContain("rgba");
+  });
+});
+
 describe("texture → cssVars integration", () => {
   it("emits 4 texture cssVars", () => {
     const r = resolveTheme(createWire({ brand: "#0099CC" }, "t"));

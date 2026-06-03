@@ -90,3 +90,48 @@ export function svgTexturePattern(texture: ShellTexture, surface: "shell" | "pap
       );
   }
 }
+
+/** Mix a hex color with white at the given opacity. Used to pre-resolve
+ *  the texture knockout pad (`shell-bg @ 78%` against page white). */
+function premixOnWhite(hex: string, opacity: number): string {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return hex;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const o = Math.max(0, Math.min(1, opacity));
+  const mix = (c: number): number => Math.round(c * o + 255 * (1 - o));
+  const toHex = (c: number): string => c.toString(16).padStart(2, "0");
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
+}
+
+/** Resolve the knockout pad color for a given surface bg.
+ *
+ *  Stage 2 §4: shell bg at 78% opacity premixed against a neutral page
+ *  background (white). The result is a hex literal both CSS and SVG can
+ *  consume directly — no `color-mix()` needed (librsvg compatibility). */
+export function resolveTextureKnockoutBg(surfaceBg: string): string {
+  if (surfaceBg === "transparent" || !surfaceBg.startsWith("#")) {
+    return "rgba(255,255,255,0.78)";
+  }
+  return premixOnWhite(surfaceBg, 0.78);
+}
+
+/** Stage 2 §4 — emit a knockout `<rect>` to sit behind a text element on
+ *  a textured surface. Caller draws the rect first, then the text. */
+export function svgTextureKnockoutRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  surface: "shell" | "paper" = "shell",
+): string {
+  const padX = 7, padY = 1.5;
+  const fill = `var(--tv-${surface}-text-knockout-bg)`;
+  return (
+    `<rect class="tv-text-knockout" ` +
+    `x="${x - padX}" y="${y - padY}" ` +
+    `width="${width + padX * 2}" height="${height + padY * 2}" ` +
+    `fill="${fill}" rx="4"/>`
+  );
+}

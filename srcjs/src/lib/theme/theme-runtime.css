@@ -142,6 +142,19 @@
 /* `grain` uses an inline SVG fractalNoise data-URI applied in JS where
  * needed; pure-CSS grain isn't reliable across browsers. */
 
+/* Stage 2 §4 — Texture knockouts. When text sits over a textured shell
+ * or paper, this pad sits behind the glyphs so the texture lines don't
+ * pass through them. Grain doesn't need a knockout (it's low-contrast). */
+.tabviz-scope[data-shell-texture="ruled"] .tv-shell-text,
+.tabviz-scope[data-shell-texture="grid"] .tv-shell-text,
+.tabviz-scope[data-shell-texture="dotted"] .tv-shell-text {
+  background: var(--tv-shell-text-knockout-bg);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 1.5px 7px;
+  border-radius: 4px;
+}
+
 /* data-mode="high-contrast" (Stage 2 §5 HC encoding fidelity). The wash
  * fills already drop via the resolver's mode-aware paint tokens; these
  * rules layer on the non-color encoding (caret glyph, ring chips, thicker
