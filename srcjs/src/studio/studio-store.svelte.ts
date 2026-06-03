@@ -6,13 +6,16 @@
 // Shared by StudioShell + all tab + Inspector components.
 
 import type { ThemeInputs } from "../types/theme-inputs";
+import type { RoleName, RampName } from "../types/theme-roles";
 import type { ResolvedTheme } from "../lib/theme/resolve-theme";
 import { resolveTheme } from "../lib/theme/resolve-theme";
-import { createWire } from "../lib/theme/theme-wire";
+import { createWire, setRoleBinding as wireSetRoleBinding, type RoleOverrides } from "../lib/theme/theme-wire";
 
-/** Per-edit history step. `inputs` is a complete snapshot (cheap; <1kB). */
+/** Per-edit history step. `inputs` + `roleOverrides` are complete snapshots
+ *  (cheap; <1kB combined). */
 export interface HistoryStep {
   readonly inputs: ThemeInputs;
+  readonly roleOverrides: RoleOverrides;
   /** Brief description for UI hints (e.g. "Brand color", "Polarity"). */
   readonly label: string;
 }
@@ -29,6 +32,11 @@ class StudioStore {
   /** The current working-copy inputs — the user's edits. */
   inputs = $state.raw<ThemeInputs | null>(null);
 
+  /** Current role bindings overlaid on DEFAULT_ROLE_BINDINGS. Each entry
+   *  is `{ramp, grade}`; absent roles use the default. Mutated by the
+   *  Spine drag-to-rebind. */
+  roleOverrides = $state.raw<RoleOverrides>({});
+
   /** History stack: undo pops from end; redo follows the cursor. */
   history = $state<HistoryStep[]>([]);
   /** Index of the current state in history (-1 = no history). */
@@ -37,12 +45,14 @@ class StudioStore {
   /** Derived: the resolved theme cssVars + roles + ramps for chart rendering
    *  and Inspector trace. Recomputes on every input change. */
   resolved = $derived<ResolvedTheme | null>(
-    this.inputs ? resolveTheme(createWire(this.inputs, this.baseName)) : null,
+    this.inputs
+      ? resolveTheme({ ...createWire(this.inputs, this.baseName), roleOverrides: this.roleOverrides })
+      : null,
   );
 
-  /** Derived: dirty iff the current inputs differ from the base. */
+  /** Derived: dirty iff the current state differs from the base. */
   dirty = $derived<boolean>(
-    !inputsEqual(this.base, this.inputs),
+    !inputsEqual(this.base, this.inputs) || Object.keys(this.roleOverrides).length > 0,
   );
 
   /** Initialize the store with a base + initial inputs (usually identical). */
@@ -50,7 +60,8 @@ class StudioStore {
     this.base = base;
     this.baseName = baseName;
     this.inputs = base;
-    this.history = [{ inputs: base, label: "Loaded" }];
+    this.roleOverrides = {};
+    this.history = [{ inputs: base, roleOverrides: {}, label: "Loaded" }];
     this.cursor = 0;
   }
 
@@ -58,10 +69,25 @@ class StudioStore {
    *  truncates any redo trail. */
   apply(next: ThemeInputs, label: string): void {
     this.inputs = next;
-    // Truncate forward history (redo trail) past the current cursor.
+    this.pushHistory(next, this.roleOverrides, label);
+  }
+
+  /** Rebind a role to a (ramp, grade) pair. Used by Spine drag-to-rebind. */
+  setRoleBinding(role: RoleName, ramp: RampName, grade: number): void {
+    if (!this.inputs) return;
+    const wire = { ...createWire(this.inputs, this.baseName), roleOverrides: this.roleOverrides };
+    try {
+      const next = wireSetRoleBinding(wire, role, ramp, grade);
+      this.roleOverrides = next.roleOverrides;
+      this.pushHistory(this.inputs, next.roleOverrides, `Rebind ${role} → ${ramp}[${grade}]`);
+    } catch {
+      // Off-ramp role or invalid grade — silently no-op; UI prevents this.
+    }
+  }
+
+  private pushHistory(inputs: ThemeInputs, roleOverrides: RoleOverrides, label: string): void {
     const truncated = this.history.slice(0, this.cursor + 1);
-    truncated.push({ inputs: next, label });
-    // Cap at HISTORY_CAP — drop oldest if over.
+    truncated.push({ inputs, roleOverrides, label });
     while (truncated.length > HISTORY_CAP) truncated.shift();
     this.history = truncated;
     this.cursor = truncated.length - 1;
@@ -71,7 +97,9 @@ class StudioStore {
   undo(): boolean {
     if (this.cursor <= 0) return false;
     this.cursor -= 1;
-    this.inputs = this.history[this.cursor].inputs;
+    const step = this.history[this.cursor];
+    this.inputs = step.inputs;
+    this.roleOverrides = step.roleOverrides;
     return true;
   }
 
@@ -79,13 +107,19 @@ class StudioStore {
   redo(): boolean {
     if (this.cursor >= this.history.length - 1) return false;
     this.cursor += 1;
-    this.inputs = this.history[this.cursor].inputs;
+    const step = this.history[this.cursor];
+    this.inputs = step.inputs;
+    this.roleOverrides = step.roleOverrides;
     return true;
   }
 
   /** Revert to the base. Treated as a single edit (one undo step). */
   revert(): void {
-    if (this.base) this.apply(this.base, "Revert to base");
+    if (this.base) {
+      this.inputs = this.base;
+      this.roleOverrides = {};
+      this.pushHistory(this.base, {}, "Revert to base");
+    }
   }
 
   /** Reset everything (used on close). */
@@ -93,6 +127,7 @@ class StudioStore {
     this.base = null;
     this.baseName = "(default)";
     this.inputs = null;
+    this.roleOverrides = {};
     this.history = [];
     this.cursor = -1;
   }
