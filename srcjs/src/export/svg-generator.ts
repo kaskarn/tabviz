@@ -57,7 +57,7 @@ import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distri
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
-import { getCssVars, readVar, readVarPx } from "$lib/theme/consumer-bridge";
+import { getCssVars, readVar, readVarPx, readTypeFamily, readTypeSize, readTypeWeight } from "$lib/theme/consumer-bridge";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
@@ -299,12 +299,16 @@ function calculateSvgAutoWidths(
   columns: ColumnSpec[]
 ): Map<string, number> {
   const widths = new Map<string, number>();
-  const fontSize = parseFontSize(spec.theme.text.body.size);
+  const cssVarsLocal = getCssVars(spec.theme);
+  // bodySizeStr stays at v3 value so the string-equality check against
+  // headerExplicit retains v3 semantics (preserving the 5% header scale-up
+  // path). fontSize itself routes through v4 cssVars.
+  const bodySizeStr = spec.theme.text.body.size;
+  const fontSize = parseFontSize(readTypeSize(cssVarsLocal, "body", bodySizeStr));
   // Header cells: use the explicit theme.header.text.size when it's been
   // pinned distinct from body.size; otherwise apply the historical 5%
   // scale-up (matches the .header-cell CSS calc-fallback in TabvizPlot).
   const headerExplicit = spec.theme.header?.text?.size;
-  const bodySizeStr = spec.theme.text.body.size;
   const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(fontSize * 1.05 * 100) / 100;
@@ -510,22 +514,22 @@ function countGroupDescendantRows(
  * Calculate primary (leftmost) column width based on actual label content.
  */
 function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
-  const fontSize = parseFontSize(spec.theme.text.body.size);
+  const cssVarsLocal = getCssVars(spec.theme);
+  // bodySizeStr stays at v3 value for the string-equality check; fontSize
+  // routes through v4 (see calculateSvgAutoWidths for the same pattern).
+  const bodySizeStr = spec.theme.text.body.size;
+  const fontSize = parseFontSize(readTypeSize(cssVarsLocal, "body", bodySizeStr));
   // Canonical indent token: the renderer indents by
   // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
   // Budget label width with the same value so it doesn't under-size at depth.
   // v4 reads --tv-spacing-indent-per-level (kept in sync with rowGroup.indentPerLevel).
-  const indentPx = (() => {
-    const v3 = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
-    const cv = getCssVars(spec.theme);
-    return readVarPx(cv, "--tv-spacing-indent-per-level", v3);
-  })();
+  const indentPx = readVarPx(cssVarsLocal, "--tv-spacing-indent-per-level",
+    spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
   // Header in the primary (label) column is rendered bold at the same scaled
   // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
   // a long primary header doesn't squeeze the label column and trigger
   // ellipsis in the live header.
   const headerExplicit = spec.theme.header?.text?.size;
-  const bodySizeStr = spec.theme.text.body.size;
   const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(fontSize * 1.05 * 100) / 100;
@@ -674,7 +678,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // (× headerFontScale × line-height) needs — matches tabvizStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
   const effectiveHeaderHeight = computeHeaderHeight({
-    bodyFontPx: parseFontSize(theme.text.body.size),
+    bodyFontPx: parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size)),
     themeHeaderHeight: readVarPx(cssVars, "--tv-spacing-header-height", theme.spacing.headerHeight),
     headerDepth,
   });
@@ -763,7 +767,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   });
   const wrapLineCounts: Record<string, number> = {};
   if (wrapEnabledCols.length > 0) {
-    const dataFontSize = parseFontSize(theme.text.body.size);
+    const dataFontSize = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
     const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
     for (const row of spec.data.rows) {
       let maxLines = 1;
@@ -796,13 +800,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
   const rowGroupPadding = readVarPx(cssVars, "--tv-spacing-row-group-padding", theme.spacing.rowGroupPadding ?? 0);
-  const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * LINE_HEIGHT);
+  const dataLineHeightPx = Math.ceil(parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size)) * LINE_HEIGHT);
   // Per-row intrinsic content height (stacked pictograms, tall icons,
   // multi-effect forest, sparkline/img) — estimator path for V8/export.
   const contentHeights = computeContentHeights(allColumns, spec.data.rows, {
     rowHeight,
     lineHeight: LINE_HEIGHT,
-    fontSize: parseFontSize(theme.text.body.size),
+    fontSize: parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size)),
   });
   // Details panels are content-driven; V8 has no DOM to measure, so size each
   // from its wrapped plain-text line count. Wrap width = the canvas width
@@ -811,7 +815,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   {
     const panelCanvasW = options.width ?? LAYOUT.DEFAULT_WIDTH;
     const panelInner = panelInnerWidth(panelCanvasW, padding);
-    const panelFontPx = parseFontSize(theme.text.body.size);
+    const panelFontPx = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
     for (const dr of displayRows) {
       if (dr.type !== "panel") continue;
       const lines = wrapPanelLines(dr.content, panelInner, panelFontPx);
@@ -979,7 +983,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     footerY: headerTextHeight + padding + headerGap
            + headerHeight + plotHeight + webAxisHeight
            + readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
-           + Math.round(parseFontSize(theme.text.label.size) * 0.85),
+           + Math.round(parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size)) * 0.85),
     axisGap,
     rowsHeight,
     autoWidths,
@@ -1442,8 +1446,10 @@ function renderHeader(
   const separatorStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
 
   if (spec.labels?.title) {
-    const fontSize = parseFontSize(theme.text.subtitle.size);
-    const titleFamily = theme.text.title?.family ?? theme.text.body.family;
+    const fontSize = parseFontSize(readTypeSize(cssVars, "title", theme.text.subtitle.size));
+    const titleFamily = readTypeFamily(cssVars, "title",
+      theme.text.title?.family ?? theme.text.body.family);
+    const titleWeight = readTypeWeight(cssVars, "title", 600);
     const titleFg = readVar(
       cssVars,
       "--tv-text-title-fg",
@@ -1452,16 +1458,18 @@ function renderHeader(
     lines.push(`<text x="${padding}" y="${layout.titleY}"
       font-family="${titleFamily}"
       font-size="${fontSize}px"
-      font-weight="${600}"
+      font-weight="${titleWeight}"
       fill="${titleFg}">${escapeXml(spec.labels.title)}</text>`);
   }
 
   if (spec.labels?.subtitle) {
-    const fontSize = parseFontSize(theme.text.body.size);
+    const fontSize = parseFontSize(readTypeSize(cssVars, "subtitle", theme.text.body.size));
+    const subtitleFamily = readTypeFamily(cssVars, "subtitle", theme.text.body.family);
+    const subtitleWeight = readTypeWeight(cssVars, "subtitle", 400);
     lines.push(`<text x="${padding}" y="${layout.subtitleY}"
-      font-family="${theme.text.body.family}"
+      font-family="${subtitleFamily}"
       font-size="${fontSize}px"
-      font-weight="${400}"
+      font-weight="${subtitleWeight}"
       fill="${subtitleFg}">${escapeXml(spec.labels.subtitle)}</text>`);
   }
 
@@ -1469,7 +1477,7 @@ function renderHeader(
   // Web CSS has 6px padding-top on subtitle after the border, so position separator
   // to leave 6px gap between it and the subtitle text top
   if (spec.labels?.title && spec.labels?.subtitle) {
-    const subtitleFontSize = parseFontSize(theme.text.body.size);
+    const subtitleFontSize = parseFontSize(readTypeSize(cssVars, "subtitle", theme.text.body.size));
     const subtitleAscent = subtitleFontSize * 0.75; // Approximate ascent (text top from baseline)
     const separatorY = layout.subtitleY - subtitleAscent - 6; // 6px gap like web CSS padding-top
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
@@ -1506,9 +1514,9 @@ function renderFooter(
   }
 
   if (spec.labels?.caption) {
-    const fontSize = parseFontSize(theme.text.label.size);
+    const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
     lines.push(`<text x="${padding}" y="${y}"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${fontSize}px"
       font-weight="${400}"
       fill="${captionFg}">${escapeXml(spec.labels.caption)}</text>`);
@@ -1518,9 +1526,9 @@ function renderFooter(
   }
 
   if (spec.labels?.footnote) {
-    const fontSize = parseFontSize(theme.text.label.size);
+    const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
     lines.push(`<text x="${padding}" y="${y}"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${fontSize}px"
       font-weight="${400}"
       font-style="italic"
@@ -1544,7 +1552,7 @@ function renderDetailsPanel(
   theme: WebTheme,
   cssVars: Record<string, string>,
 ): string {
-  const fontPx = parseFontSize(theme.text.body.size);
+  const fontPx = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
   const lineH = Math.ceil(fontPx * LINE_HEIGHT);
   const lines = wrapPanelLines(content, panelInnerWidth(canvasWidth, padding), fontPx);
   const surfaceBase = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
@@ -1654,7 +1662,7 @@ function renderGroupHeader(
     const countX = labelX + labelWidth + 6; // 6px gap (matches web's flex gap)
     const countFontSize = parseFontSize(theme.text.label.size ?? "0.75rem");
     lines.push(`<text class="cell-text" dominant-baseline="central" x="${countX}" y="${textY}"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${countFontSize}px"
       font-weight="${400}"
       fill="${countFg}">(${rowCount})</text>`);
@@ -2583,7 +2591,7 @@ function renderVizAxis(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(theme.text.label.size);
+  const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
   const axisGeom = computeAxisLayout(
     { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
@@ -2687,7 +2695,7 @@ function renderVizAxis(
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${fontSize}px"
       font-weight="${400}"
       fill="${tickLabelFg}">${label}</text>`);
@@ -2697,7 +2705,7 @@ function renderVizAxis(
   if (axisLabel) {
     lines.push(`<text x="${vizX + vizWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${fontSize}px"
       font-weight="${500}"
       fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
@@ -2727,7 +2735,7 @@ function renderForestAxis(
     : SPACING.DEFAULT_TICK_COUNT;
 
   const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, forestWidth, baseTicks);
-  const fontSize = parseFontSize(theme.text.label.size);
+  const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
   const axisGeom = computeAxisLayout(
     { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
@@ -2845,7 +2853,7 @@ function renderUnifiedColumnHeaders(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const baseFontSize = parseFontSize(theme.text.body.size);
+  const baseFontSize = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
   // Header cells: prefer explicit theme.header.text.size when pinned
   // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
   const headerExplicit = theme.header?.text?.size;
@@ -3012,7 +3020,8 @@ function renderUnifiedTableRow(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(theme.text.body.size);
+  const fontSize = parseFontSize(readTypeSize(cssVars, "cell", theme.text.body.size));
+  const cellFamily = readTypeFamily(cssVars, "cell", theme.text.body.family);
   const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
@@ -3074,7 +3083,7 @@ function renderUnifiedTableRow(
       rx="3" fill="${accentColor}" opacity="0.15"/>`);
     lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${badgeFontSize}px"
       font-weight="${600}"
       fill="${accentColor}">${escapeXml(badgeText)}</text>`);
@@ -3222,7 +3231,7 @@ function renderUnifiedTableRow(
       for (let li = 0; li < wrappedLines.length; li++) {
         const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
         lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${lineY}"
-          font-family="${theme.text.body.family}"
+          font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
           font-size="${fontSize}px"
           font-weight="${cellFontWeight}"
           font-style="${cellFontStyle}"
@@ -3231,7 +3240,7 @@ function renderUnifiedTableRow(
       }
     } else {
       lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${textY}"
-        font-family="${theme.text.body.family}"
+        font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
         font-size="${fontSize}px"
         font-weight="${cellFontWeight}"
         font-style="${cellFontStyle}"
@@ -3399,7 +3408,7 @@ function renderReferenceLine(
     const labelColor = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
     const ty = labelY ?? y1 - 4;
     svg += `<text x="${x}" y="${ty}" text-anchor="middle"
-      font-family="${theme.text.body.family}"
+      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
       font-size="${theme.text.label.size}"
       font-weight="${500}"
       fill="${labelColor}">${escapeXml(label)}</text>`;

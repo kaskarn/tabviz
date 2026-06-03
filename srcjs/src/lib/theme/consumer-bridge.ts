@@ -121,3 +121,41 @@ export function readVarPx(
   if (!Number.isFinite(n)) return fallback;
   return n;
 }
+
+/** Stage 2 §1 typography role names. */
+export type TypeRoleName =
+  | "title" | "subtitle" | "heading" | "body" | "numeric"
+  | "label" | "caption" | "footnote" | "cell" | "tick";
+
+/** Read a typography role's `family` cssVar with v3 fallback (a
+ *  font-family stack string). Stage 2 §1 migration helper. */
+export function readTypeFamily(
+  cssVars: Record<string, string>,
+  role: TypeRoleName,
+  fallback: string,
+): string {
+  return readVar(cssVars, `--tv-text-${role}-family`, fallback) ?? fallback;
+}
+
+/** Read a typography role's `size` cssVar as a CSS dimension string
+ *  (e.g. `"14px"` or v3's `"0.875rem"`). Stage 2 §1 migration helper. */
+export function readTypeSize(
+  cssVars: Record<string, string>,
+  role: TypeRoleName,
+  fallback: string,
+): string {
+  return readVar(cssVars, `--tv-text-${role}-size`, fallback) ?? fallback;
+}
+
+/** Read a typography role's `weight` cssVar as a numeric font-weight.
+ *  Stage 2 §1 migration helper. */
+export function readTypeWeight(
+  cssVars: Record<string, string>,
+  role: TypeRoleName,
+  fallback: number,
+): number {
+  const v = cssVars[`--tv-text-${role}-weight`];
+  if (v === undefined || v.startsWith("<")) return fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
