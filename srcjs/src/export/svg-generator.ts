@@ -2962,12 +2962,21 @@ function renderUnifiedTableRow(
   columnSummaries: Map<string, { min: number; max: number }> = new Map(),
   rowIdToIndex: Map<string, number> = new Map(),
   banks: import("../schema/banks").EffectiveBanks | null = null,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
   const cellPadX = theme.spacing.cellPaddingX ?? 10;
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
+
+  // Default cell foreground: v4 cssVars → v3 fallback. The row.style.color +
+  // semantic-bundle fg paths win over the default per-site below.
+  const cellFgDefault: string = readVar(
+    cssVars,
+    "--tv-cell-fg",
+    theme.cell.fg ?? theme.content.primary,
+  ) ?? theme.content.primary;
 
   // Render label. Semantic bundles (theme.semantics.{emphasis|muted|accent})
   // drive fg / font_weight / font_style when the row carries the matching
@@ -2989,7 +2998,7 @@ function renderUnifiedTableRow(
   } else if (semBundle?.fg) {
     textColor = semBundle.fg;
   } else {
-    textColor = (theme.cell.fg ?? theme.content.primary);
+    textColor = cellFgDefault;
   }
 
   // Don't truncate labels - they're the primary row identifier and the width
@@ -3092,7 +3101,7 @@ function renderUnifiedTableRow(
         let cellFontStyle = "normal";
         if (cellStyle?.italic) cellFontStyle = "italic";
         else if (cellSemBundle?.fontStyle != null) cellFontStyle = cellSemBundle.fontStyle;
-        let cellColor: string = (theme.cell.fg ?? theme.content.primary);
+        let cellColor: string = cellFgDefault;
         if (cellStyle?.color)         cellColor = cellStyle.color;
         else if (cellSemBundle?.fg)   cellColor = cellSemBundle.fg;
 
@@ -3142,7 +3151,7 @@ function renderUnifiedTableRow(
       cellFontStyle = cellSemBundle.fontStyle;
     }
 
-    let cellColor = (theme.cell.fg ?? theme.content.primary);
+    let cellColor = cellFgDefault;
     if (cellStyle?.color) {
       cellColor = cellStyle.color;
     } else if (rowStyle?.color) {
@@ -4706,6 +4715,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           columnSummaries,
           rowIdToIndex,
           effectiveBanks,
+          cssVars,
         ));
       }
     }

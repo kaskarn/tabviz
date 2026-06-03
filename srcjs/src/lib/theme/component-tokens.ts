@@ -533,8 +533,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-row-emphasis-fg",
   // ── Cell
   "--tv-cell-bg",
-  "--tv-cell-fg",
-  "--tv-cell-border",
+  // --tv-cell-fg consumed 2026-06-02 (renderUnifiedTableRow default cell fg)
+  // --tv-cell-border consumed 2026-06-02 (renderDetailsPanel + axis renderers)
   // ── Header
   "--tv-header-light-bg",
   "--tv-header-light-fg",
