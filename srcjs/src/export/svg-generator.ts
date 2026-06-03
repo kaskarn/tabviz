@@ -1682,7 +1682,7 @@ function renderGroupHeader(
 // here. Today the SVG-export path's legacy text branch handles that
 // via resolveSemanticBundle — the schema-dispatched path will need
 // the same logic as more cells migrate.
-function makeThemeResolver(theme: WebTheme): StyleResolver {
+function makeThemeResolver(theme: WebTheme, cssVars: Record<string, string> = {}): StyleResolver {
   const fontFamily: Record<string, string> = {
     base:    theme.text.body.family,
     display: theme.text.title.family,
@@ -1695,14 +1695,14 @@ function makeThemeResolver(theme: WebTheme): StyleResolver {
     minor: parseFontSizeUtil(theme.text.label.size ?? "0.75rem"),
   };
   const color: Record<string, string> = {
-    primary:   theme.content.primary,
-    secondary: theme.content.secondary,
-    muted:     theme.content.muted,
+    primary:   readVar(cssVars, "--tv-text", theme.content.primary) ?? theme.content.primary,
+    secondary: readVar(cssVars, "--tv-text-muted", theme.content.secondary) ?? theme.content.secondary,
+    muted:     readVar(cssVars, "--tv-text-subtle", theme.content.muted) ?? theme.content.muted,
     accent:    theme.accent.default,
   };
   const bg: Record<string, string> = {
     base:   "transparent",
-    muted:  theme.divider.subtle,
+    muted:  readVar(cssVars, "--tv-cell-border", theme.divider.subtle) ?? theme.divider.subtle,
     accent: theme.accent.tintSubtle,
   };
   const weight: Record<string, number> = {
@@ -1830,7 +1830,8 @@ function renderInterval(
 
   const baseSize = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize);
   const lineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth);
-  const defaultLineColor = theme.series?.[0]?.stroke ?? theme.accent.default;
+  const accentDefault = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
+  const defaultLineColor = theme.series?.[0]?.stroke ?? accentDefault;
 
   // Check if this is a summary row (should render diamond). summaryMarker is
   // the RowKind property owning this decision.
@@ -1882,11 +1883,11 @@ function renderInterval(
     if (effect.color) {
       baseColor = effect.color;
     } else if (isSummaryRow && isPrimary) {
-      baseColor = theme.series?.[0]?.fill ?? theme.accent.default;
+      baseColor = theme.series?.[0]?.fill ?? accentDefault;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      baseColor = theme.accent.default ?? "#2563eb";
+      baseColor = accentDefault ?? "#2563eb";
     }
 
     // Apply Layers 3+4 via the shared cascade resolver
@@ -2010,7 +2011,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}" stroke-width="1"${mutedLineOpacityAttr}/>
+            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? accentDefault}" stroke-width="1"${mutedLineOpacityAttr}/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -2096,7 +2097,8 @@ function renderDiamond(
   xScale: Scale,
   forestX: number,
   forestWidth: number,
-  theme: WebTheme
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
 ): string {
   const diamondHeight = 10;
   const halfHeight = diamondHeight / 2;
@@ -2123,9 +2125,10 @@ function renderDiamond(
     `${xP},${yPosition + halfHeight}`,
   ].join(" ");
 
+  const accentDefault = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
   return `<polygon points="${points}"
-    fill="${theme.series?.[0]?.fill ?? theme.accent.default}"
-    stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}"
+    fill="${theme.series?.[0]?.fill ?? accentDefault}"
+    stroke="${theme.series?.[0]?.stroke ?? accentDefault}"
     stroke-width="1"/>`;
 }
 
@@ -3066,14 +3069,15 @@ function renderUnifiedTableRow(
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
 
+    const accentColor = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
     lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-      rx="3" fill="${theme.accent.default}" opacity="0.15"/>`);
+      rx="3" fill="${accentColor}" opacity="0.15"/>`);
     lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
       font-family="${theme.text.body.family}"
       font-size="${badgeFontSize}px"
       font-weight="${600}"
-      fill="${theme.accent.default}">${escapeXml(badgeText)}</text>`);
+      fill="${accentColor}">${escapeXml(badgeText)}</text>`);
   }
 
   // Render each column at its position
@@ -3129,7 +3133,7 @@ function renderUnifiedTableRow(
         "svg",
       );
       if (tree) {
-        const resolver = makeThemeResolver(theme);
+        const resolver = makeThemeResolver(theme, cssVars);
         // Apply the same cellStyle precedence the legacy text branch
         // does (bold / italic / color → semantic bundle → theme
         // default). Wrap the tree's markup in a <g> with these
@@ -4546,7 +4550,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         xScale,
         forestX,
         forestWidth,
-        theme
+        theme,
+        cssVars,
       ));
     }
 

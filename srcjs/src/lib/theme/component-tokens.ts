@@ -411,6 +411,22 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Footnote text color",
   },
 
+  // ── Accent (engagement layer) ─────────────────────────────────────────────
+  {
+    cssVar: "--tv-accent",
+    kind: "paint-color",
+    source: { tier: "role", role: "accent-solid" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Accent solid color (hover/selected/callout layer; engagement, not identity)",
+  },
+  {
+    cssVar: "--tv-accent-fill",
+    kind: "paint-fill",
+    source: { tier: "role", role: "accent-fill" },
+    consumedBy: ["export/svg-generator.ts"],
+    description: "Accent fill (translucent wash for callout/highlight)",
+  },
+
   // ── Generic T2 role passthroughs (consumer migration helpers) ─────────────
   // These mirror Tier-2 roles 1:1 with no Tier-3 specialization. Consumers
   // reading e.g. theme.surface.base / theme.content.primary / theme.content.muted
@@ -565,7 +581,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // grandfathered en masse during sprint kickoff. As consumers migrate
   // (step 6) and v3 emitters get deleted (step 10), these rows disappear.
   // Per Stage 1 §4b: shrink-only; do not add to this block.
-  "--tv-accent",
   "--tv-actual-scale",
   "--tv-alt-bg",
   "--tv-axis-gap",
