@@ -487,6 +487,40 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Paper inner padding (px).",
   },
 
+  // ── Stage 2 §6 — Elevation shadow color tokens ────────────────────────────
+  // Hue-aware shadow colors derived from the paper bg's hue mixed with
+  // black. Browser CSS uses them in box-shadow; SVG export uses them as
+  // <feFlood flood-color> inside <filter> definitions. Same value, both
+  // surfaces — the parity guarantee.
+  {
+    cssVar: "--tv-shadow-raised-near",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 12% black, alpha 0.12" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Near shadow color for raised elevation (1-2 px softness)",
+  },
+  {
+    cssVar: "--tv-shadow-raised-far",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.08" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Far shadow color for raised elevation (6-20 px diffusion)",
+  },
+  {
+    cssVar: "--tv-shadow-overlay-near",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.18" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Near shadow color for overlay (modal/popover) elevation",
+  },
+  {
+    cssVar: "--tv-shadow-overlay-far",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 32% black, alpha 0.12" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Far shadow color for overlay elevation",
+  },
+
   // ── Stage 2 — Typography Tier 3 (family/size/weight/lh/track per role) ────
   // 10 type roles × 5 properties each + a `font` shorthand = 60 entries.
   // Sourced from typography-tier-1 inputs via the resolver's
@@ -698,6 +732,7 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-text-",
   "--tv-shell-",
   "--tv-paper-",
+  "--tv-shadow-",
 
   // ── Row state
   "--tv-row-base-bg",

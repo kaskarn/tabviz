@@ -44,6 +44,7 @@ import {
   type TypeRoleName,
 } from "./typography";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
+import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -251,6 +252,8 @@ function resolveTokenValue(
     if (typography !== null) return typography;
     const shellPaper = resolveShellPaperComputed(token.cssVar, resolved);
     if (shellPaper !== null) return shellPaper;
+    const elevation = resolveElevationComputed(token.cssVar, resolved);
+    if (elevation !== null) return elevation;
   }
 
   // Spacing-px tokens are resolved via the density table regardless of
@@ -294,6 +297,25 @@ const TYPOGRAPHY_ROLE_NAMES = new Set<TypeRoleName>([
   "title", "subtitle", "heading", "body", "numeric",
   "label", "caption", "footnote", "cell", "tick",
 ]);
+
+/** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`
+ *  cssVars and emits hue-aware shadow colors mixed from the paper bg.
+ *  Returns null when the cssVar doesn't match. */
+function resolveElevationComputed(
+  cssVar: string,
+  resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
+): string | null {
+  const key = elevationKeyForCssVar(cssVar);
+  if (key === null) return null;
+  const sp = resolveShellPaper(resolved.inputs, {
+    surface:       resolved.roles.surface       ?? "#FFFFFF",
+    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+    border:        resolved.roles.border        ?? "#CCCCCC",
+    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+  });
+  const paperBg = sp.paperBg.startsWith("#") ? sp.paperBg : "#FFFFFF";
+  return resolveElevationShadows(paperBg)[key];
+}
 
 /** Stage 2 §2 shell/paper resolver. Matches `--tv-shell-*` and `--tv-paper-*`
  *  cssVars and emits the corresponding value from resolveShellPaper().
