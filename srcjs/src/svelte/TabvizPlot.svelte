@@ -2511,8 +2511,10 @@
     position: relative; /* Needed for toolbar positioning */
     font-family: var(--tv-font-family);
     font-size: var(--tv-font-size-base);
-    color: var(--tv-fg);
-    background: var(--tv-bg);
+    /* v4 substrate cssVars preferred; v3 fallback (--tv-fg / --tv-bg)
+       remains until step 10's v3-emitter cleanup. */
+    color: var(--tv-text, var(--tv-fg));
+    background: var(--tv-surface-bg, var(--tv-bg));
     border: var(--tv-container-border, none);
     border-radius: var(--tv-container-border-radius, 8px);
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
@@ -2670,15 +2672,15 @@
     align-items: center;
     border-bottom-width: var(--tv-row-border-width, 1px);
     border-bottom-style: var(--tv-border-row-style, solid);
-    border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
+    border-bottom-color: var(--tv-border-minor-color, var(--tv-cell-border, var(--tv-border)));
     border-right-width: var(--tv-row-border-width, 1px);
     border-right-style: var(--tv-border-col-style, none);
-    border-right-color: var(--tv-border-minor-color, var(--tv-border));
-    color: var(--tv-cell-fg, var(--tv-fg));
-    /* Row background: `--tv-row-bg` (theme.row.base.bg) with fallback to
-       the container bg. Separate from `--tv-bg` so users can tint rows
-       distinct from the outer container without flipping the whole widget. */
-    background: var(--tv-row-bg, var(--tv-bg));
+    border-right-color: var(--tv-border-minor-color, var(--tv-cell-border, var(--tv-border)));
+    color: var(--tv-cell-fg, var(--tv-text, var(--tv-fg)));
+    /* Row background: --tv-row-base-bg (v4) | --tv-row-bg (v3) | container bg.
+       Separate from --tv-surface-bg so users can tint rows distinct from the
+       outer container without flipping the whole widget. */
+    background: var(--tv-row-base-bg, var(--tv-row-bg, var(--tv-surface-bg, var(--tv-bg))));
   }
 
   /* Header cells - use row height for multi-row headers. Background is
@@ -3083,7 +3085,7 @@
 
   /* Alternating row banding */
   .row-odd {
-    background: var(--tv-alt-bg);
+    background: var(--tv-row-alt-bg, var(--tv-alt-bg));
   }
 
   /* Pagination controls — sit between the plot body and the footer.
