@@ -283,3 +283,51 @@ Step 5 (row-kind height cascade) can land independently of these resolver refine
 **State to verify in next session:**
 - 1037 bun tests pass; svelte-check clean; `npm run build:widget` succeeds.
 - `resolveTheme(createWire({brand: "#0099CC"}))` returns a ResolvedTheme with non-placeholder values for the row/cell/header/spacing entries in COMPONENT_TOKENS.
+
+---
+
+### 2026-06-02 — Sprint continuation: M4 refinements + M9 inspect helpers
+
+**Internal commits landed (extending further):**
+
+- `[M4] role-bindings.ts: extract DEFAULT_ROLE_BINDINGS to own module` — new `srcjs/src/lib/theme/role-bindings.ts` (89 lines). theme-wire.ts and resolve-theme.ts both import from it; theme-wire.ts re-exports for backwards compat.
+- `[M4] resolve-theme: status anchors + APCA text-onsolid` — wires the off-ramp role resolution. text-onsolid uses pickInkOnBg against brand-solid; status roles (pos/neg/warn/info × fill/solid/text) read from the 5-step status ramps the existing buildStatusRamp produces. Adds 6 new tests.
+- `[M9] inspect.ts: cascade-trace inspection helpers` — new module providing `inspectToken(resolved, name)` (walks Tier 3 → Tier 2 → Tier 1 trace), `formatTrace(inspection)` (pretty prints), `listComponentTokens(resolved?)` (discovery surface). Used by R-side `inspect_token` (future V8 wiring) and the Stage 3 Cascade Inspector. 18 tests pass.
+
+**Branch state at end of session:**
+- 1061 bun tests pass (was 1037 + 6 new resolve-theme tests + 18 new inspect tests).
+- svelte-check clean.
+- npm run build:widget succeeds (bundle size unchanged).
+
+**Significant capabilities now live:**
+
+- End-to-end wire integration: `resolveTheme(wire) → ResolvedTheme.cssVars` produces real values for all role-sourced tokens (including status + computed text-onsolid via APCA), spacing-px / border-width tokens, and const-sourced tokens.
+- Override propagation: `setRoleBinding` and `pinTokenByName` produce cssVars maps reflecting the override (cross-ramp included).
+- Polarity flip: anchor L-reflection produces distinct dark themes.
+- Status anchors: custom status seeds produce different pos-/neg-/warn-/info- roles.
+- APCA-aware text-onsolid: contrast picker against brand-solid.
+- Cascade trace: any token's cascade walk is structured, formattable, and ready for R-side / Inspector consumption.
+- Discovery: full manifest list with optional resolved values.
+
+**Architectural cleanups along the way:**
+
+- DEFAULT_ROLE_BINDINGS moved to its own module (cleaner separation; both wire and resolver consume from one place; future relocation toward the resolver is easier).
+- OffRampContext factored from the per-token inner loop to a per-resolveTheme outer step (O(1) per token, not per off-ramp computation).
+- inspect.ts is small + self-contained — no transitive dependency growth.
+
+**Pilot consumer migration deliberately deferred.** Started looking at svg-generator.ts (`theme.row.alt.bg` reads at lines 1502/4178/4201) but concluded the proper migration requires wholesale refactor of the SVG generator's theme parameter to consume a `ResolvedTheme` or `cssVars` map. That's step 6 work, sized for its own session. Pilot would have been mostly mechanical refactor with no architectural payoff.
+
+**Next session — natural priorities:**
+
+1. **HC + RT mode transforms in the resolver** (Stage 1 §23). The resolveRoleValue function reads the binding but doesn't yet apply mode-specific transforms (border-grade push, alpha→solid swap, fill drops). The mode field on ThemeInputs is currently `"light" | "dark"` — the proper split into `polarity` + `mode` is half-done (polarity field exists; mode semantics unchanged from v3). Completing the mode split is half-day work + 18-preset audit deferred to Stage 4 per preset-deferral decision.
+
+2. **Curves integration into `oklchRamp`** (Stage 1 §25). Modify `lib/oklch.ts:oklchRamp` to accept an optional `curve: CurveName` parameter; when given, generate the L progression via `curveFn(curve)` instead of the fixed LIGHT_RAMP_L / DARK_RAMP_L arrays. Wire `inputs.curves` through `buildRamps` per-ramp.
+
+3. **Phase 5 row-kind height cascade** (Stage 1 §33–34). New focus area: layers 1–4 of the row-kind height resolution, settings-panel control, drag-handle overlay layer + browser harness. Mostly independent of the resolver refinements above.
+
+4. **Phase 6 consumer migration** — `svg-generator.ts` is the biggest single file (4730 LOC, ~223 theme.* reads). A focused session can migrate one cluster (e.g., row backgrounds + cell text) and ship visible end-to-end integration.
+
+**State to verify in next session:**
+- 1061 bun tests pass; svelte-check clean; npm run build:widget succeeds.
+- `inspectToken(resolveTheme(createWire({brand:"#0099CC"})), "row-base-bg")` returns a 3-step trace.
+- `listComponentTokens(resolveTheme(...))` returns 40+ entries with resolved values.
