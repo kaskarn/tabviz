@@ -33,7 +33,6 @@ Collate:
     'utils-nse.R'
     'utils-oklch.R'
     'utils-deserialize-resolved.R'
-    'utils-theme-resolve.R'
     'inspect-resolved.R'
     'themes.R'
     'themes-lotr.R'
