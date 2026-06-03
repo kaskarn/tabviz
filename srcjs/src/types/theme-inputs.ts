@@ -74,6 +74,22 @@ export interface ThemeInputs {
    *  dial on top of the named profile (e.g. 0.9 = a touch tighter than
    *  comfortable). 1 = the profile unchanged. Clamped to [0.5, 2]. */
   densityFactor?: number;
+
+  /** Polarity — light vs dark. (V4 substrate field; per Q-P4.5 closure
+   *  polarity and `mode` will be split. During the sprint, when set,
+   *  this takes precedence over `mode`'s interpretation as light/dark.) */
+  polarity?: "light" | "dark";
+
+  /** Per-ramp curve shape (linear / ease / smooth / log / exp). Reshapes
+   *  the lightness progression across the 11 ramp grades. Defaults per
+   *  `DEFAULT_RAMP_CURVES` in `lib/theme/curves.ts`:
+   *    neutral=ease, brand=linear, accent=linear.
+   *  Per Q-P4.3 closure (Stage 1 §25). */
+  curves?: {
+    neutral?: "linear" | "ease" | "smooth" | "log" | "exp";
+    brand?: "linear" | "ease" | "smooth" | "log" | "exp";
+    accent?: "linear" | "ease" | "smooth" | "log" | "exp";
+  };
 }
 
 // ────────────────────────────────────────────────────────────────────
