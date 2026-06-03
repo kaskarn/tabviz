@@ -232,6 +232,20 @@ set_mode <- function(theme, mode) {
   resolve_from_inputs(inputs, name = theme@name)
 }
 
+#' Set the theme polarity (light/dark) and re-resolve.
+#'
+#' Alias for [set_mode()] using the V4 substrate's polarity vocabulary
+#' (Stage 1 §40 — mode is now the accessibility axis (standard /
+#' high-contrast / reduced-transparency); polarity is the L-reflection axis).
+#'
+#' @param theme A [WebTheme].
+#' @param polarity `"light"` or `"dark"`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_polarity <- function(theme, polarity) {
+  set_mode(theme, polarity)
+}
+
 #' Set the categorical data scheme and re-resolve.
 #' @param theme A [WebTheme].
 #' @param scheme Named scheme (`"okabe_ito"`, `"tableau10"`, `"set1"`,

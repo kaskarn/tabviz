@@ -108,6 +108,34 @@ inspect_token <- function(theme, css_var) {
                      simplifyDataFrame = FALSE, simplifyMatrix = FALSE)
 }
 
+#' Contrast report for the V4 substrate.
+#'
+#' Returns a data frame of foreground/background pairs that matter for
+#' typography legibility, with their absolute APCA-Lc contrast values.
+#' Lower magnitudes (under ~45) flag tokens that may be hard to read.
+#'
+#' @param theme A [WebTheme].
+#' @return A data frame with columns `pair`, `fg`, `bg`, `apca_lc`.
+#' @export
+contrast_report <- function(theme) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  inputs_json <- jsonlite::toJSON(theme_inputs_to_json(theme@inputs),
+                                  auto_unbox = TRUE, null = "null", na = "null")
+  ctx <- tabviz_v8()
+  resolved_json <- ctx$call("callBuilder", "resolveFromInputs", as.character(inputs_json))
+  out_json <- ctx$call("callBuilder", "contrastReport", resolved_json)
+  raw <- jsonlite::fromJSON(out_json, simplifyVector = FALSE)
+  data.frame(
+    pair    = vapply(raw, function(x) x$label %||% NA_character_, character(1)),
+    fg      = vapply(raw, function(x) x$fg    %||% NA_character_, character(1)),
+    bg      = vapply(raw, function(x) x$bg    %||% NA_character_, character(1)),
+    apca_lc = vapply(raw, function(x) x$apcaLc %||% NA_real_,      numeric(1)),
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Diff the cssVars of two themes.
 #'
 #' Compares the V4 cssVars maps and returns a data frame of tokens that

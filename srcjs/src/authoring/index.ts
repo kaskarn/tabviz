@@ -99,6 +99,39 @@ export function resolveFromInputs(inputs: _ThemeInputs): _ResolvedTheme {
   return _resolveTheme(_createWire(inputs, "inspect"));
 }
 
+// Contrast probe for the R-side `contrast_report(theme)` wrapper.
+import { apcaLc as _apcaLc } from "../lib/oklch";
+export { apcaContrast, apcaLc } from "../lib/oklch";
+
+/** Build a contrast report for the foreground/background pairs that
+ *  matter most: cell on row, header on header-bg, brand-solid pair.
+ *  Returns absolute APCA-Lc values plus the v3 contrast ratio (which
+ *  the WCAG 2.x flat 4.5:1 framing uses) so authors can sanity-check
+ *  against either standard. */
+export interface ContrastReportRow {
+  readonly label: string;
+  readonly fg: string;
+  readonly bg: string;
+  readonly apcaLc: number;
+}
+
+export function contrastReport(resolved: _ResolvedTheme): readonly ContrastReportRow[] {
+  const cv = resolved.cssVars;
+  const apca = (textHex: string, bgHex: string): number => Math.abs(_apcaLc(textHex, bgHex));
+  return [
+    { label: "row text on row bg", fg: cv["--tv-row-base-fg"] ?? "#000", bg: cv["--tv-row-base-bg"] ?? "#fff",
+      apcaLc: apca(cv["--tv-row-base-fg"] ?? "#000", cv["--tv-row-base-bg"] ?? "#fff") },
+    { label: "row text on alt bg", fg: cv["--tv-row-base-fg"] ?? "#000", bg: cv["--tv-row-alt-bg"] ?? "#fff",
+      apcaLc: apca(cv["--tv-row-base-fg"] ?? "#000", cv["--tv-row-alt-bg"] ?? "#fff") },
+    { label: "emphasis fg on emphasis bg", fg: cv["--tv-row-emphasis-fg"] ?? "#000", bg: cv["--tv-row-emphasis-bg"] ?? "#fff",
+      apcaLc: apca(cv["--tv-row-emphasis-fg"] ?? "#000", cv["--tv-row-emphasis-bg"] ?? "#fff") },
+    { label: "muted text on surface", fg: cv["--tv-text-muted"] ?? "#000", bg: cv["--tv-surface-bg"] ?? "#fff",
+      apcaLc: apca(cv["--tv-text-muted"] ?? "#000", cv["--tv-surface-bg"] ?? "#fff") },
+    { label: "text-onsolid on brand-solid", fg: cv["--tv-text-onsolid"] ?? "#fff", bg: cv["--tv-brand-solid"] ?? "#000",
+      apcaLc: apca(cv["--tv-text-onsolid"] ?? "#fff", cv["--tv-brand-solid"] ?? "#000") },
+  ];
+}
+
 // Shared-product computation for split_by widgets. R delegates here via
 // the v8 bridge (`ts_call("computeSharedAxis"|"computeSharedWidths", ...)`);
 // JS authors building SplitForest payloads can call these directly to
