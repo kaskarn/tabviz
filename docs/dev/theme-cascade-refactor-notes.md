@@ -237,3 +237,49 @@ These are scoped intuitions noted in conversation but not yet sharp enough to ac
 - 1020 bun tests pass; svelte-check clean; `npm run build:widget` succeeds.
 - All capability modules' tests pass: curves (12), alpha-ramp (7), polarity (12), drift gate (3), emit-manifest (5), theme-runtime-css (5), extract-svg-css (7), theme-wire (24), theme-store (12).
 - DEFAULT_ROLE_BINDINGS const in theme-wire.ts ready to be consumed by the new resolver.
+
+---
+
+### 2026-06-02 — Sprint deeper push: step 4 resolver integration
+
+**Internal commits landed (extending the prior session):**
+
+- `[M4] ThemeInputs: add polarity + curves fields (additive)` — `srcjs/src/types/theme-inputs.ts` gains optional `polarity` and `curves` fields. v3 behavior unchanged when unset; the new resolver consumes them when present.
+- `[M4] resolveTheme: v4 substrate resolver entry point` — new `srcjs/src/lib/theme/resolve-theme.ts` (336 lines) composes the v4 pipeline: applyPolarity → buildRamps → buildAlphaRamp ×3 → resolveRoles → emit manifest → ResolvedTheme. `theme-css.ts::emitCssVarsFromManifest` accepts an optional ResolvedTheme parameter and returns the real CSS-var map when given.
+
+**Branch state at end of session:**
+- 1037 bun tests pass (was 1020 + 17 new resolveTheme tests).
+- svelte-check clean.
+- The wire-to-cssVars pipeline now produces REAL values for role-sourced tokens (hex from ramps), spacing tokens (px from density table), and const-sourced transparent tokens. Computed/anchor/input-sourced tokens still ship placeholder values pending the resolver rewrite proper.
+
+**What works end-to-end now:**
+- `resolveTheme(wire)` returns a complete ResolvedTheme with ramps + alpha companions + role values + cssVars.
+- `setRoleBinding(wire, role, ramp, grade)` followed by `resolveTheme` produces a cssVars map reflecting the override (cross-ramp rebinding included).
+- Polarity flip (anchor L-reflection) is wired and produces visually different dark themes when `polarity: "dark"` is set.
+- The friendly `pinTokenByName` lookup pins the source role and the override propagates through.
+
+**What's still placeholder (deferred to future sessions):**
+- Off-ramp role resolution (status `*-text/fill/solid`, computed `text-onsolid`) — emits ramp values as a placeholder; needs APCA contrast picker + status anchor wiring.
+- Anchor-sourced tokens (paper/ink) — `pickAnchorHex` returns null for these.
+- Computed non-spacing tokens — emit `<computed>` placeholder.
+- HC + RT mode transforms — not yet wired (Stage 1 §23).
+- Curves integration into ramp construction — module exists, not yet consumed by `oklchRamp`.
+- 18-preset polarity audit — deferred to Stage 4 per preset-deferral decision.
+
+**Next session — large rewrite that ties it all together:**
+
+The natural next step is the proper rewrite of `theme-resolve.ts` and the eventual deletion of `theme-adapter.ts`. Specifically:
+
+1. Modify `oklchRamp` (in `lib/oklch.ts`) to accept an optional `curve: CurveName`; when given, generate the L progression dynamically via `curveFn(curve)` rather than the fixed LIGHT_RAMP_L / DARK_RAMP_L arrays.
+2. Wire `inputs.curves` through `buildRamps` to `oklchRamp` per-ramp.
+3. Implement HC + RT mode transforms in the resolver (per Stage 1 §23) — read `inputs.mode` (now meaning standard/HC/RT after the proper split), push border grades, swap alpha→solid for RT.
+4. Add proper status anchor resolution to `resolveRoleValue` — use `inputs.status.{positive,...}` to seed status ramps (Stage 1 §27).
+5. Add APCA contrast pick for `text-onsolid` per the existing `pickInkOnBg` utility.
+6. Move `DEFAULT_ROLE_BINDINGS` from `theme-wire.ts` to `theme-resolve.ts` (tighter cohesion with the resolver).
+7. Begin step 6 (consumer migration) — start with `svg-generator.ts`'s most-consumed tokens (row-base-bg, cell-fg, spacing-cell-padding-x) so the visual output begins consuming the new wire.
+
+Step 5 (row-kind height cascade) can land independently of these resolver refinements.
+
+**State to verify in next session:**
+- 1037 bun tests pass; svelte-check clean; `npm run build:widget` succeeds.
+- `resolveTheme(createWire({brand: "#0099CC"}))` returns a ResolvedTheme with non-placeholder values for the row/cell/header/spacing entries in COMPONENT_TOKENS.
