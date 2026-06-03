@@ -230,6 +230,37 @@ describe("resolveTheme — HC + RT mode transforms", () => {
     // HC still drops the alt-bg even under dark polarity
     expect(darkHC.cssVars["--tv-row-alt-bg"]).toBe("transparent");
   });
+
+  it("HC pushes border roles +2 grades (Stage 1 §23b)", () => {
+    const std = resolveTheme(createWire({ brand: "#0099CC", mode: "standard" }));
+    const hc = resolveTheme(createWire({ brand: "#0099CC", mode: "high-contrast" }));
+    // border-subtle default is neutral.6; HC pushes to neutral.8
+    expect(std.roles["border-subtle"]).toBe(std.ramps.neutral[5]!);
+    expect(hc.roles["border-subtle"]).toBe(hc.ramps.neutral[7]!);
+    // border default is neutral.7; HC pushes to neutral.9
+    expect(std.roles.border).toBe(std.ramps.neutral[6]!);
+    expect(hc.roles.border).toBe(hc.ramps.neutral[8]!);
+    // border-strong default is neutral.8; HC pushes to neutral.10
+    expect(std.roles["border-strong"]).toBe(std.ramps.neutral[7]!);
+    expect(hc.roles["border-strong"]).toBe(hc.ramps.neutral[9]!);
+  });
+
+  it("HC border push clamps at grade 11 for already-high bindings", () => {
+    // Pin border to grade 10; HC push would target 12 but clamps to 11
+    const wire = createWire({ brand: "#0099CC", mode: "high-contrast" });
+    const wirePinned = setRoleBinding(wire, "border", "neutral", 10);
+    const r = resolveTheme(wirePinned);
+    expect(r.roles.border).toBe(r.ramps.neutral[10]!);
+  });
+
+  it("HC push leaves non-border roles unchanged", () => {
+    const std = resolveTheme(createWire({ brand: "#0099CC", mode: "standard" }));
+    const hc = resolveTheme(createWire({ brand: "#0099CC", mode: "high-contrast" }));
+    // surface, fill, text — none are border roles; should match across modes
+    expect(std.roles.surface).toBe(hc.roles.surface);
+    expect(std.roles.fill).toBe(hc.roles.fill);
+    expect(std.roles.text).toBe(hc.roles.text);
+  });
 });
 
 describe("resolveTheme — cssVars has no TBD placeholders", () => {

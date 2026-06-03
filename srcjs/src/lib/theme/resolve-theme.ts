@@ -140,16 +140,33 @@ interface OffRampContext {
   readonly status: TokenRamps["status"];
 }
 
+/** Apply HC mode's border-grade push. Per Stage 1 §23b: under
+ *  high-contrast, border roles push by +2 grades so the dividers gain
+ *  visual force. Other roles pass through unchanged. */
+function applyHcGradePush(role: RoleName, binding: RoleBinding): RoleBinding {
+  if (role === "border-subtle" || role === "border" || role === "border-strong"
+      || role === "focus-ring" || role === "accent-border") {
+    return { ramp: binding.ramp, grade: Math.min(11, binding.grade + 2) };
+  }
+  return binding;
+}
+
 /** Resolve a single role to its hex value. Routes off-ramp roles
  *  (status, text-onsolid) through dedicated paths; standard roles
- *  read from the bound ramp. */
+ *  read from the bound ramp. Applies HC mode's border-grade push at
+ *  this layer. */
 function resolveRoleValue(
   role: RoleName,
-  binding: RoleBinding,
+  rawBinding: RoleBinding,
   ramps12: TokenRamps,
   alphaRamps: { neutralAlpha: AlphaRamp; brandAlpha: AlphaRamp; accentAlpha: AlphaRamp },
   offRamp: OffRampContext,
+  mode: ThemeInputs["mode"],
 ): string {
+  const binding = mode === "high-contrast"
+    ? applyHcGradePush(role, rawBinding)
+    : rawBinding;
+
   // Computed: text-onsolid is APCA-picked against the most-common solid
   // (brand-solid). Pre-computed in offRamp.
   if (role === "text-onsolid") {
@@ -359,7 +376,7 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
   for (const role of Object.keys(DEFAULT_ROLE_BINDINGS) as RoleName[]) {
     const binding = getRoleBinding(wire, role);
     roleSource[role] = binding;
-    roles[role] = resolveRoleValue(role, binding, ramps12, alphaRamps, offRamp);
+    roles[role] = resolveRoleValue(role, binding, ramps12, alphaRamps, offRamp, wire.inputs.mode);
   }
 
   // Emit the CSS-var map by walking the manifest.
