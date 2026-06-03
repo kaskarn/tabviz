@@ -150,3 +150,49 @@ These are scoped intuitions noted in conversation but not yet sharp enough to ac
 - Watch for **named constants scattered at call sites** that could move to a frozen module-level table (per CLAUDE.md).
 - Watch for **dead exports** or **unused fields** the drift gate would catch later — fix now if obvious.
 - Watch for **`$state.raw` reactivity traps** in the Svelte store (per CLAUDE.md the `2026-05-25` regression note).
+
+---
+
+## Sprint journal — Stage 1 substrate sprint
+
+### 2026-06-02 — Sprint kickoff session: steps 1 + 2 scaffolded
+
+**Branch:** `feat/theme-rework` opened from `main` (per Decisions log vision §9 commit).
+
+**Internal commits landed (all on the branch; none merged to main):**
+
+- `[arc] open feat/theme-rework — substrate sprint kickoff` — branch marker + the 5 design docs force-added (they were gitignored on main per the `dev` shadow rule).
+- `[M1] theme-roles.ts: new file — RoleName / RampName / AnchorName / CurveName unions` — `srcjs/src/types/theme-roles.ts`, 185 lines.
+- `[M1] component-tokens.ts: scaffold + types + initial 40 entries` — `srcjs/src/lib/theme/component-tokens.ts`, 517 lines. Manifest covers spacing/row/cell/header/plot clusters; ~110 more entries deferred to subsequent commits.
+- `[M1] component-tokens.drift.test.ts: regex-based drift gate` — `srcjs/src/lib/theme/component-tokens.drift.test.ts`, 168 lines. Three tests cover (a) consumer references in manifest, (b) entries with consumers, (c) stale KNOWN_UNCONSUMED entries. Mirrors `srcjs/src/schema/columns/drift.test.ts` precedent.
+- `[M2] theme-runtime.css: scaffold cluster blocks + sv-omit markers` — `srcjs/src/lib/theme/theme-runtime.css`, 185 lines. Cluster comments + all 10 scope-level `data-*` selectors + element-level row-kind/row-token selectors + sv-omit markers around browser-only :hover/transition section.
+- `[M2] theme-runtime.css ?raw import test` — `srcjs/src/lib/theme/theme-runtime-css.test.ts`, 48 lines. Confirms Vite/bun support `?raw` import natively; no `vite.config.ts` change needed.
+- `[M2] theme-css.ts: emitCssVarsFromManifest stub (placeholder values)` — added function returns `<TBD tier:detail>` placeholder values; full implementation requires resolver rewrite (step 4). Test in `emit-manifest.test.ts`.
+- `[M2] extract-svg-css.ts: SVG-CSS extractor strips sv-omit blocks` — `srcjs/src/lib/theme/extract-svg-css.ts`, 40 lines. Single-regex implementation; 7-test coverage including real-file integration.
+
+**Branch state at end of session:**
+- 980 bun tests pass (was 963 on main + 17 new substrate tests added).
+- `npm run check` clean: 0 errors, 0 warnings.
+- v3 code on main continues to work unchanged (the substrate is parallel; consumers haven't migrated; resolver hasn't been rewritten).
+- Drift gate's `KNOWN_UNCONSUMED` contains: 40 entries from the new manifest (consumers haven't migrated yet) + ~140 v3 legacy `--tv-*` references from existing emitters (will shrink during step 10 as v3 is deleted).
+
+**Observations surfaced during scaffold:**
+
+- **Nested `/* ... */` comments break TS parse.** Initial `component-tokens.ts` used `/* ... /* ── ── */ ... */` for section dividers — the inner `/*` closed the outer block early, producing parse errors. Switched to `// ...` line comments for section dividers. Worth a refactor-notes flag: any TS file using nested block comments will trip the parser similarly.
+- **Regex `--tv-[a-z][a-z0-9-]*` can produce trailing-hyphen matches.** Examples found: `--tv-badge-` (the `*` after `--tv-badge-` in a comment context). False positives are harmless (they grandfather into KNOWN_UNCONSUMED) but worth knowing. Future refinement: tighten the regex to require at least one trailing alphanumeric (`[a-z][a-z0-9-]*[a-z0-9]`).
+- **`theme-css.ts:186-200` has hard-coded fallback values** (`--tv-badge-success: var(--tv-status-positive)`) — these become part of step 10 (v3 emitter deletion). Currently grandfathered.
+
+**Next session pickup — step 3 (override schema + wire rewrite):**
+
+- Rewrite `theme-wire.ts` to use `{role, ramp, grade}` override records (per Stage 1 §8–9).
+- Add `setRoleBinding` and `pinTokenByName` API functions with `TokenNotPinnableError` for non-role-sourced tokens.
+- Refactor `pin()` / `release()` / `isPinned()` callers — settings panel files (`TokensControl.svelte`, etc.) need to migrate.
+- This is the first **disruptive** step of the sprint: it changes API shape and will break some existing tests until the consumer call sites migrate. Plan to run consumer migration (step 6) in tandem with the wire rewrite.
+
+**State to verify in next session:**
+- `git log --oneline feat/theme-rework` shows the 7 commits above.
+- `bun test src/lib/theme/component-tokens.drift.test.ts` passes (3 tests).
+- `bun test src/lib/theme/emit-manifest.test.ts` passes (5 tests).
+- `bun test src/lib/theme/extract-svg-css.test.ts` passes (7 tests).
+- `bun test src/lib/theme/theme-runtime-css.test.ts` passes (5 tests).
+- Total: 980 pass across full bun suite.
