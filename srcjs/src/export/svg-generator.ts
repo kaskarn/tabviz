@@ -4198,7 +4198,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Background
   const surfaceBgResolved = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
   const bgColor = options.backgroundColor ?? surfaceBgResolved;
-  parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
+  parts.push(`<rect width="100%" height="100%" fill="${bgColor}" data-tv-token="surface-bg"/>`);
 
   // Container border (if enabled in theme)
   // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
@@ -4327,7 +4327,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-            fill="${bgColor}"/>`);
+            fill="${bgColor}" data-tv-token="row-alt-bg"/>`);
         }
       }
       // Semantic bundle border (drawn as a bottom-edge line). Mirrors the
@@ -4352,7 +4352,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-            fill="${bgColor}"/>`);
+            fill="${bgColor}" data-tv-token="row-alt-bg"/>`);
         }
       }
     }
