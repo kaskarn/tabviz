@@ -21,6 +21,8 @@
 import type { WebTheme } from "../../types/theme-resolved";
 import { activeHeaderVariant } from "../header-variant";
 import { VIZ_MARGIN } from "../axis-utils";
+import { createWire } from "./theme-wire";
+import { resolveTheme } from "./resolve-theme";
 import {
   TEXT_MEASUREMENT,
   BADGE_VARIANTS,
@@ -310,7 +312,32 @@ function _buildThemeCSSImpl(theme: WebTheme): string {
       --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
       ${generateCSSVariables()}
+      /* ── v4 substrate cssVars (additive; v3 names above continue to drive the
+         DOM render path). When TabvizPlot.svelte migrates from v3 names to
+         v4 names, deletion order is: v3 names first, then this comment, then
+         the buildThemeCSS function entirely. */
+${_emitV4CssVarsBody(theme)}
     `.trim();
+}
+
+/** Append v4 cssVars from theme.authoringInputs. Empty when authoringInputs
+ *  is unavailable (legacy / programmatic themes); v3 path continues to work
+ *  unchanged in that case. */
+function _emitV4CssVarsBody(theme: WebTheme): string {
+  if (!theme.authoringInputs) return "";
+  try {
+    const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
+    const resolved = resolveTheme(wire);
+    const lines: string[] = [];
+    for (const [name, value] of Object.entries(resolved.cssVars)) {
+      // Skip placeholder values (TBD / input / computed sentinels).
+      if (value.startsWith("<")) continue;
+      lines.push(`      ${name}: ${value};`);
+    }
+    return lines.join("\n");
+  } catch {
+    return "";
+  }
 }
 
 function _buildWidgetExtras(ctx: WidgetCSSContext): string {
