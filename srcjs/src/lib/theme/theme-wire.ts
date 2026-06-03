@@ -35,6 +35,15 @@ import type { RoleName, RampName } from "../../types/theme-roles";
 import { OFF_RAMP_ROLES } from "../../types/theme-roles";
 import { buildThemeStructure } from "./theme-resolve";
 import { TOKENS_BY_VAR } from "./component-tokens";
+import {
+  DEFAULT_ROLE_BINDINGS as DEFAULT_ROLE_BINDINGS_IMPORT,
+  type RoleBinding as RoleBindingImport,
+} from "./role-bindings";
+
+/** Re-exported here so existing imports from theme-wire continue to work
+ *  (the substrate consumes both surfaces). */
+export const DEFAULT_ROLE_BINDINGS = DEFAULT_ROLE_BINDINGS_IMPORT;
+export type RoleBinding = RoleBindingImport;
 
 // ============================================================================
 // SCHEMA + TYPES
@@ -44,13 +53,6 @@ import { TOKENS_BY_VAR } from "./component-tokens";
  *  shape changes (per Decisions log Q8 closure 2026-06-02). */
 export const WIRE_SCHEMA = "tabviz-theme/v4" as const;
 export type WireSchema = typeof WIRE_SCHEMA;
-
-/** A single role binding — a pin from a role to a (ramp, grade) pair. */
-export interface RoleBinding {
-  readonly ramp: RampName;
-  /** 1..11 (1-indexed, matches the CSS-var ramp grades). */
-  readonly grade: number;
-}
 
 /** Map of pinned role bindings. Roles not in the map use defaults. */
 export type RoleOverrides = Partial<Record<RoleName, RoleBinding>>;
@@ -97,71 +99,6 @@ export class RoleNotBindableError extends Error {
     this.role = role;
   }
 }
-
-// ============================================================================
-// DEFAULT ROLE BINDINGS
-//
-// The cascade's defaults — every role's "where it lives if no override".
-// Mirrors rgc_v4's DEFAULT_GRADES. Step 4 (resolver rewrite) takes ownership
-// of this; for the substrate sprint kickoff it lives here so the wire layer
-// can answer `getRoleBinding()` without depending on the not-yet-rewritten
-// resolver. The default values are placeholders during step 3 and become
-// fully authoritative once step 4 lands.
-// ============================================================================
-
-export const DEFAULT_ROLE_BINDINGS: Record<RoleName, RoleBinding> = {
-  // Surface
-  surface:           { ramp: "neutral", grade: 1 },
-  "surface-subtle":  { ramp: "neutral", grade: 2 },
-  // Fill states
-  fill:              { ramp: "neutral", grade: 3 },
-  "fill-hover":      { ramp: "neutral", grade: 4 },
-  "fill-active":     { ramp: "neutral", grade: 5 },
-  // Border
-  "border-subtle":   { ramp: "neutral", grade: 6 },
-  border:            { ramp: "neutral", grade: 7 },
-  "border-strong":   { ramp: "neutral", grade: 8 },
-  // Brand
-  "brand-solid":       { ramp: "brand", grade: 9 },
-  "brand-solid-hover": { ramp: "brand", grade: 10 },
-  "brand-text":        { ramp: "brand", grade: 11 },
-  // Text
-  text:              { ramp: "neutral", grade: 11 },
-  "text-muted":      { ramp: "neutral", grade: 8 },
-  "text-subtle":     { ramp: "neutral", grade: 6 },
-  "text-onsolid":    { ramp: "neutral", grade: 1 },  // computed at resolve; placeholder
-  // Focus + highlight
-  "focus-ring":      { ramp: "brand", grade: 8 },
-  "highlight-bg":    { ramp: "brand", grade: 3 },    // reads alpha companion
-  "highlight-bar":   { ramp: "brand", grade: 8 },
-  // Accent
-  "accent-fill":     { ramp: "accent", grade: 2 },
-  "accent-border":   { ramp: "accent", grade: 7 },
-  "accent-solid":    { ramp: "accent", grade: 9 },
-  "accent-text":     { ramp: "accent", grade: 11 },
-  // Status — off-ramp; placeholders only (anchored at status inputs in step 4)
-  "pos-fill":        { ramp: "neutral", grade: 2 },
-  "pos-solid":       { ramp: "neutral", grade: 9 },
-  "pos-text":        { ramp: "neutral", grade: 11 },
-  "neg-fill":        { ramp: "neutral", grade: 2 },
-  "neg-solid":       { ramp: "neutral", grade: 9 },
-  "neg-text":        { ramp: "neutral", grade: 11 },
-  "warn-fill":       { ramp: "neutral", grade: 2 },
-  "warn-text":       { ramp: "neutral", grade: 11 },
-  "info-fill":       { ramp: "neutral", grade: 2 },
-  "info-text":       { ramp: "neutral", grade: 11 },
-  // Series slots — step 4 takes ownership; placeholders.
-  "series-1-fill":   { ramp: "brand", grade: 9 },
-  "series-1-stroke": { ramp: "brand", grade: 10 },
-  "series-2-fill":   { ramp: "accent", grade: 9 },
-  "series-2-stroke": { ramp: "accent", grade: 10 },
-  "series-3-fill":   { ramp: "brand", grade: 7 },
-  "series-3-stroke": { ramp: "brand", grade: 8 },
-  "series-4-fill":   { ramp: "accent", grade: 7 },
-  "series-4-stroke": { ramp: "accent", grade: 8 },
-  "series-5-fill":   { ramp: "neutral", grade: 9 },
-  "series-5-stroke": { ramp: "neutral", grade: 10 },
-};
 
 // ============================================================================
 // WIRE CONSTRUCTORS + MUTATORS (all pure)
