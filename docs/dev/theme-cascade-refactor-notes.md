@@ -591,3 +591,72 @@ e. **The group-header tinted-rgba background** is a synthesized fallback (when `
 2. **Spacing cluster (~15 sites)** — `theme.spacing.*` reads; these are all dimensional, so unblock with the `readVarPx` helper first.
 3. **TabvizPlot.svelte DOM render-path migration** — Svelte component reads `theme.row.*`, `theme.cell.*`, `theme.divider.*` directly; the v4 cssVars are already emitted into the scope element via `theme-runtime.css`, so component reads can switch from `theme.foo.bar` to actual CSS `var(--tv-foo-bar)` syntax (no JS bridge needed).
 4. **Header variants cluster** — `--tv-header-light-*`, `--tv-header-tint-*`, `--tv-header-fill-*` — depends on `activeHeaderVariant()` returning structured data; this is Stage 2 scope.
+
+---
+
+### 2026-06-03 — Phase 6 deep run: spacing flow + DOM wire + density resolver fix
+
+**Commits landed this session (8):**
+
+1. **`[M6] buildThemeCSS appends v4 cssVars`** — The bridge from v4 manifest into the DOM render path. buildThemeCSS now appends v4 cssVars after the v3 body, sourced from theme.authoringInputs via createWire + resolveTheme. Empty when authoringInputs is unavailable. New theme-css.test.ts (3 tests) asserts v3 + v4 coexist and placeholders don't leak.
+
+2. **`[M6] migrate spacing reads in helper renderers via readVarPx`** — 5 helper-renderer spacing reads (renderHeader/Footer/GroupHeader/UnifiedTableRow/UnifiedColumnHeaders) read via readVarPx with v3 fallback.
+
+3. **`[M6] computeLayout cssVars + density-correct resolver + v3 spacing pins`** — Three interlocked changes:
+   - **resolve-theme.ts**: `tokenDensityPx()` now consults `inputs.density` + `inputs.densityFactor` (was hard-coded to comfortable). Full preset table for compact/comfortable/spacious mirrors theme-adapter.ts.
+   - **consumer-bridge.ts**: `getCssVars()` applies `theme.spacing.*` + `theme.plot.*` as override pins after resolver, honoring the v3-era `spec.theme.spacing.X = N` mutation pattern.
+   - **svg-generator.ts**: `computeLayout()` builds cssVars at function entry and reads 8 spacing tokens via readVarPx; deep layout arithmetic flows through v4.
+
+4. **`[M6] migrate width-utility spacing reads`** — `calculateSvgAutoWidths` + `calculateSvgLabelWidth` + wrap-line counting + renderUnifiedTableRow wrap-line layout migrated to readVarPx.
+
+5. **`[M6] DOM render path: v4 cssVars first, v3 fallback (Svelte)`** — First DOM render path commit. TabvizPlot.svelte's `.tabviz-container`, `.data-cell`, `.row-odd` now read v4 names with v3 fallback. Each CSS var chain is forward-compatible: buildThemeCSS emits both names, so v4 wins via natural CSS resolution order; the chain bottom (v3 name) goes away in step 10's emitter cleanup.
+
+**Density resolver fix details:**
+
+The v3-only path read `theme.spacing.rowHeight` directly — populated by `DENSITY_SPACING[density]` at `buildTheme()` time. The v4 path read `--tv-spacing-row-height` which the resolver computed via `tokenDensityPx()` — but that function ignored `inputs.density` and always returned the comfortable preset. With computeLayout migrated to v4 cssVars, every theme was inadvertently downgraded to comfortable spacing. Caught by the layout-metrics snapshot (8 failures); fixed by giving the resolver access to `inputs.density` + `inputs.densityFactor` and a full DENSITY_PRESETS table mirroring theme-adapter.ts. The fix is provably equivalent — the same numbers come out either path.
+
+**Spacing pin behavior:**
+
+The svg-centering test (`rowGroupPadding does not shift the padded-after row's marker`) mutates `spec.theme.spacing.rowGroupPadding = 40` after construction, expecting that mutation to propagate into render. The v4 cssVars path didn't see it because the resolver only reads `inputs`. Fix: getCssVars applies `theme.spacing.*` as override pins after computing the resolved cssVars. This treats the v3 spacing field as a "user pin" layer that survives v4 resolution — preserving v3 mutability semantics during the migration window.
+
+**Tokens consumed this session (no longer grandfathered):**
+- `--tv-spacing-padding`, `--tv-spacing-cell-padding-x`, `--tv-spacing-footer-gap` (helper renderers)
+- `--tv-spacing-row-height`, `--tv-spacing-header-height`, `--tv-spacing-axis-gap`, `--tv-spacing-row-group-padding`, `--tv-spacing-header-gap`, `--tv-spacing-title-subtitle-gap`, `--tv-spacing-bottom-margin` (computeLayout)
+- `--tv-spacing-column-group-padding`, `--tv-spacing-indent-per-level` (width utilities)
+
+**Tokens still grandfathered:**
+- `--tv-spacing-cell-padding-y` (deprecated → 0 across all densities)
+- `--tv-spacing-container-padding` (no consumer; outer canvas paint isn't token-driven yet)
+- `--tv-text-body-fg` (font-shorthand cluster migration belongs together)
+- `--tv-surface-subtle-bg`, `--tv-border` (helpers awaiting renderHeader/PlotHeader rationalization)
+- `--tv-cell-bg` (always transparent; default rather than a real surface paint)
+- `--tv-row-base-bg`, `--tv-row-base-fg`, `--tv-row-hover-bg`, `--tv-row-selected-bg`, `--tv-row-emphasis-*` (multiple but in DOM-render-path only; Svelte rules now read them, drift gate respects this since `var(--tv-row-base-bg)` IS a consumer reference)
+- `--tv-header-{light,tint,fill}-*` (Stage 2 cluster)
+- `--tv-plot-tick-mark-length` (read in `computeAxisLayout` — its own utility threading question)
+
+Note: as of this session, several row-state tokens including `--tv-row-base-bg` and `--tv-row-alt-bg` are now actually referenced by TabvizPlot.svelte's CSS templates, so the drift gate considers them consumed — though they're not on KNOWN_UNCONSUMED anymore because of the `var(--tv-…)` template literals. Inspect via:
+```
+grep -E "var\(--tv-row" srcjs/src/svelte/TabvizPlot.svelte
+```
+
+**Branch state at end of session:**
+- `feat/theme-rework` at `d79899f`.
+- 1123 bun tests pass (up from 1117); 18 svg-export snapshots + drift gate + 18 consumer-bridge + 3 theme-css tests.
+- svelte-check 0 errors; widget bundle 760.89 kB (+6.65 kB from buildThemeCSS v4 emission).
+- ~17 of ~30 distinct migration clusters landed.
+
+**Next session — natural priorities:**
+
+1. **Row state cluster in TabvizPlot.svelte** — `--tv-row-emphasis-bg`/`bar`/`fg`, `--tv-row-hover-bg`, `--tv-row-selected-bg` are the obvious sweep. Most are already emitted to the DOM; consumer migration is a CSS chain swap.
+2. **Header variants cluster** — needs `activeHeaderVariant()` to return cssVar names or to gain a v4 mode that emits all variants and a `[data-head-style="…"]` selector picks the active one (matches Stage 1 §17b's data-attribute design).
+3. **R-side modifier API** — set_polarity, set_role_binding, pin_token_by_name, set_row_kind_height_ratio + inspection helpers.
+4. **R↔TS parity tests for v4 cssVars** — verify R-side computeLayout (via V8) produces identical layout metrics to TS.
+5. **Visual regression refresh** — run `tabviz::render_visual_tests()` to confirm widget visuals are pixel-identical or accept-different per the "visual change accepted, not minimized" stance.
+
+**Architectural observations:**
+
+a. **Spacing pin semantics is doing double duty.** `getCssVars` applies `theme.spacing.*` as pins because (i) v3 code mutates `spec.theme.spacing.X = N` and the v4 substrate must honor it, AND (ii) v4 will eventually pin spacing via `wire.pinTokenByName("--tv-spacing-X", "Npx")` — a different mechanism. Once R/TS authoring APIs migrate to the v4 pin mechanism, the bridge pin function can be deleted in step 10.
+
+b. **computeAxisLayout consumes `theme.plot.tickMarkLength` directly** as a function parameter. To migrate, either (i) thread cssVars through computeAxisLayout's call sites, or (ii) build a v4-aware wrapper. The deeper this kind of widening goes, the more it argues for a single load-bearing `themeContext` object instead of threading individual `cssVars` everywhere — a clear sign the API needs a v4-style consolidation.
+
+c. **TabvizPlot.svelte's CSS templates are the natural migration target.** With buildThemeCSS now emitting v4 names alongside v3, the Svelte CSS just needs `var(--tv-v4-name, var(--tv-v3-name))` chains. The migration is mechanical CSS rename rather than code changes — fast.
