@@ -57,12 +57,13 @@ function resolveNeutralTintHex(
   return null;
 }
 
-/** Build a 5-step status palette (just lightness variations for now; PR E refines). */
-function buildStatusRamp(seed: string, mode: ThemeMode): string[] {
-  // 5 steps. In light mode: light→dark; in dark mode: dark→light.
+/** Build a 5-step status palette (just lightness variations for now; PR E refines).
+ *  Takes polarity (the L direction) rather than the v3 mode. */
+function buildStatusRamp(seed: string, polarity: "light" | "dark"): string[] {
+  // 5 steps. In light polarity: light→dark; in dark polarity: dark→light.
   // Steps: subtle bg, subtle border, solid, solid hover, ink.
   const seedLch = hexToOklch(seed);
-  const Ls = mode === "light"
+  const Ls = polarity === "light"
     ? [0.95, 0.86, seedLch.L, Math.max(0.18, seedLch.L - 0.08), 0.30]
     : [0.30, 0.40, seedLch.L, Math.min(0.85, seedLch.L + 0.08), 0.90];
   const ramp: string[] = [];
@@ -83,9 +84,13 @@ function stepFromLCH(L: number, C: number, H: number): string {
   return oklchToHex({ L, C, H });
 }
 
-/** Build T0 ramps from T1 inputs. */
+/** Build T0 ramps from T1 inputs.
+ *
+ *  L direction (light vs dark) is driven by `inputs.polarity` per the
+ *  Q-P4.5 mode/polarity split (decisions log 2026-06-02). `inputs.mode`
+ *  now means contrast mode (standard/HC/RT), not light/dark. */
 export function buildRamps(inputs: ThemeInputs): TokenRamps {
-  const mode: ThemeMode = inputs.mode ?? "light";
+  const polarity: "light" | "dark" = inputs.polarity ?? "light";
   const accent = inputs.accent ?? inputs.brand;
   const decorative = inputs.decorative ?? null;
 
@@ -93,16 +98,16 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
   const tintAmount = tintHex !== null ? (inputs.neutral_tint_strength ?? 0.04) : 0;
 
   const neutral = oklchRamp(NEUTRAL_SEED, {
-    mode,
+    mode: polarity,
     chromaPeak: 0, // achromatic seed
     tintHex: tintHex ?? undefined,
     tintAmount,
   });
 
-  const brand = oklchRamp(inputs.brand, { mode });
-  const accentRamp = oklchRamp(accent, { mode });
+  const brand = oklchRamp(inputs.brand, { mode: polarity });
+  const accentRamp = oklchRamp(accent, { mode: polarity });
   const decorativeRamp = decorative !== null
-    ? oklchRamp(decorative, { mode })
+    ? oklchRamp(decorative, { mode: polarity })
     : null;
 
   const statusSeeds = {
@@ -118,10 +123,10 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
     accent: accentRamp,
     decorative: decorativeRamp,
     status: {
-      positive: buildStatusRamp(statusSeeds.positive, mode),
-      negative: buildStatusRamp(statusSeeds.negative, mode),
-      warning: buildStatusRamp(statusSeeds.warning, mode),
-      info: buildStatusRamp(statusSeeds.info, mode),
+      positive: buildStatusRamp(statusSeeds.positive, polarity),
+      negative: buildStatusRamp(statusSeeds.negative, polarity),
+      warning: buildStatusRamp(statusSeeds.warning, polarity),
+      info: buildStatusRamp(statusSeeds.info, polarity),
     },
   };
 }

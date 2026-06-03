@@ -26,10 +26,10 @@ describe("ThemeStore — reactive theme store", () => {
     expect(after).not.toBe(before);
   });
 
-  it("mode toggle inverts paper/ink", () => {
+  it("polarity toggle inverts paper/ink", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
     const paperLight = s.theme.tokens.paper;
-    s.setInput("mode", "dark");
+    s.setInput("polarity", "dark");
     const paperDark = s.theme.tokens.paper;
     expect(paperDark).not.toBe(paperLight);
   });

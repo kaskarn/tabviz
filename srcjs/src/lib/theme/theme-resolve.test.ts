@@ -24,7 +24,7 @@ const LANCET: ThemeInputs = {
 
 const DARK: ThemeInputs = {
   brand: "#89B4FA",
-  mode: "dark",
+  polarity: "dark",
 };
 
 describe("buildRamps — T0 ramp generation", () => {

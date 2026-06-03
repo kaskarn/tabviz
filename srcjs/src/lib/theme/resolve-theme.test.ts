@@ -114,17 +114,8 @@ describe("resolveTheme — polarity", () => {
     expect(rL.ramps.neutral[0]).not.toBe(rD.ramps.neutral[0]);
   });
 
-  it("legacy mode='dark' is recognized as polarity (backward compat)", () => {
-    const r = resolveTheme(createWire({ brand: "#0099CC", mode: "dark" }));
-    expect(r.polarity).toBe("dark");
-  });
-
-  it("explicit polarity field takes precedence over mode", () => {
-    const r = resolveTheme(createWire({
-      brand: "#0099CC",
-      polarity: "light",
-      mode: "dark",  // contradicts polarity; polarity wins
-    }));
+  it("polarity field defaults to light when unset", () => {
+    const r = resolveTheme(createWire({ brand: "#0099CC" }));
     expect(r.polarity).toBe("light");
   });
 });

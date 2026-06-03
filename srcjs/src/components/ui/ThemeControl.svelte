@@ -278,13 +278,15 @@
     <!-- ── Identity ─────────────────────────────────────────────────── -->
     <Section title="Identity" glyph="section.identity"
       hint="Brand drives chrome + identity. Accent drives engagement (hover, selected, callouts). Decorative is an optional second editorial color.">
-      <!-- Mode toggle — foundational, top of section. -->
-      <Field label="Mode">
+      <!-- Polarity toggle — foundational, top of section.
+           Q-P4.5 split: polarity controls light/dark anchor reflection;
+           mode (contrast standard/HC/RT) is a separate input. -->
+      <Field label="Polarity">
         <Pill
-          value={inputs.mode ?? "light"}
+          value={inputs.polarity ?? "light"}
           segments={MODE_SEG}
-          ariaLabel="Light/dark mode"
-          onchange={(v) => commitNow({ mode: v as "light" | "dark" })}
+          ariaLabel="Light/dark polarity"
+          onchange={(v) => commitNow({ polarity: v as "light" | "dark" })}
         />
       </Field>
 

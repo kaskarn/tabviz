@@ -49,7 +49,8 @@ export interface WebThemeArgs {
   accent?: string;
   /** Optional second color for two-color editorial themes. */
   decorative?: string;
-  mode?: "light" | "dark";
+  mode?: "standard" | "high-contrast" | "reduced-transparency";
+  polarity?: "light" | "dark";
   density?: "compact" | "comfortable" | "spacious";
   categorical?: string;
   sequential?: string;
@@ -61,7 +62,7 @@ export interface WebThemeArgs {
 }
 
 const INPUT_KEYS: readonly (keyof ThemeInputs)[] = [
-  "brand", "accent", "decorative", "mode", "neutral_tint",
+  "brand", "accent", "decorative", "mode", "polarity", "neutral_tint",
   "categorical", "sequential", "diverging", "status", "fonts", "density",
 ];
 

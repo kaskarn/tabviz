@@ -10,8 +10,10 @@
 // T1 — Identity inputs (what the user authors)
 // ────────────────────────────────────────────────────────────────────
 
-/** Mode toggle. Inverts the neutral ramp direction. T2 token names stay stable. */
-export type ThemeMode = "light" | "dark";
+/** Display mode (Q-P4.5 closure 2026-06-02). Contrast variants applied
+ *  by the resolver via per-token `modes.{hc,rt}` behavior in the manifest.
+ *  Independent of polarity, which controls light/dark anchor reflection. */
+export type ThemeMode = "standard" | "high-contrast" | "reduced-transparency";
 
 /** Optional tint for the neutral ramp — blends a small fraction of a hue into low-chroma ends. */
 export type NeutralTint =

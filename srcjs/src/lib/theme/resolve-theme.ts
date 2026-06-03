@@ -94,30 +94,21 @@ export interface ResolvedTheme {
 // RESOLVER PIPELINE
 // ============================================================================
 
-/** Derive polarity from inputs. `polarity` field wins; falls back to `mode`. */
+/** Derive polarity from inputs. Polarity field is authoritative now; mode
+ *  no longer encodes light/dark (post Q-P4.5 split). */
 function derivePolarity(inputs: ThemeInputs): "light" | "dark" {
-  if (inputs.polarity) return inputs.polarity;
-  if (inputs.mode === "dark") return "dark";
-  return "light";
+  return inputs.polarity ?? "light";
 }
 
 /** Apply polarity reflection to the input anchor hexes (Stage 1 §22).
- *  Returns a new ThemeInputs with reflected anchors when polarity is dark.
- *
- *  Only applies the reflection to the anchor hexes (brand, accent,
- *  decorative, status). The reflected inputs are then fed into the
- *  existing `buildRamps` which respects the mode/polarity for ramp
- *  direction.
- *
- *  NOTE: backward-compat caveat — `buildRamps` reads `inputs.mode` for L
- *  direction. We keep `mode` in sync with polarity to avoid breaking the
- *  existing resolver's mode-based ramp construction. */
+ *  Returns a new ThemeInputs with `polarity` set and anchors reflected
+ *  when polarity is dark. */
 function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
   const polarity = derivePolarity(inputs);
-  if (polarity === "light") return { ...inputs, mode: "light" };
+  if (polarity === "light") return { ...inputs, polarity: "light" };
   return {
     ...inputs,
-    mode: "dark",
+    polarity: "dark",
     brand: reflectHex(inputs.brand),
     accent: inputs.accent ? reflectHex(inputs.accent) : undefined,
     decorative: inputs.decorative ? reflectHex(inputs.decorative) : null,
