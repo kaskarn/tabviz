@@ -424,3 +424,52 @@ The hand-tuned array gives a perceptually-correct gentle S curve. The linear cur
 - 1102 bun tests pass; svelte-check clean; npm run build:widget succeeds.
 - `oklchRamp("#0099CC", { mode: "light", curve: CURVES.log })` produces a different ramp than default.
 - `computeRowLayout({...rowHeight:24, themeKinds:{data:{heightRatio:1.5}}}).rowHeights` reflects layer 3.
+
+---
+
+### 2026-06-02 — Phase 5 finish: spec field, settings control, drag handle
+
+**Internal commits landed:**
+
+- `[M5] WebSpec.rowHeights + plumb through DOM + SVG paths` — layer 4 constructor field added to WebSpec; both `computeRowLayout` call sites (layout-zoom slice + svg-generator) read `spec.rowHeights` and pass as `constructorRowHeights`. layer 3 (`themeKinds`) plumbing left as a TODO until the new resolver emits `inputs.row_kinds` to layout consumers.
+- `[M5] RowKindHeightsControl.svelte: settings-panel control` — new Svelte component listing data/group_header/summary/spacer kinds with current resolved px (via `resolveRowKindHeight` cascade walk), provenance label (pin / constructor / intrinsic), per-kind number input writing the layer-5 pin, per-kind × reset, "Reset all" button. Not yet wired into a SettingsPanel tab (that's a Stage 3 editor concern).
+- `[M5] RowEdgeHandles.svelte: drag-handle overlay layer` — separate component mounted as sibling overlay. Mirrors `ColumnHeaders.svelte::startResize`: pointerdown captures row kind + start height; pointermove computes new height clamped at content minimum and commits via `store.setRowKindHeight(kind, newHeight)` per move; pointerup detaches; fallbacks for window blur / Escape / pointercancel. Not yet wired into TabvizPlot — integration touches the plot's overlay layering.
+
+**Branch state at end of session:**
+- 1102 bun tests pass; svelte-check clean: 0 errors, 0 warnings.
+- `npm run build:widget` succeeds.
+- KNOWN_UNCONSUMED gained `--tv-focus` (grandfathered until role mapping lands).
+
+**Phase 5 status (Stage 1 §33–34):**
+
+| Layer / Item | Status |
+|---|---|
+| Layer 1 — intrinsic kind ratios | ✓ shipped (`INTRINSIC_KIND_RATIOS`) |
+| Layer 2 — inheritance graph | ✓ shipped (`KIND_INHERITANCE`, summary→data edge) |
+| Layer 3 — theme default (`inputs.row_kinds`) | ✓ field on ThemeInputs; resolver consumes when present |
+| Layer 4 — constructor override (`spec.rowHeights`) | ✓ field on WebSpec; both DOM + SVG paths consume |
+| Layer 5 — interactive pin | ✓ (was already in main from the row-kind handoff) |
+| Settings-panel control | ✓ component built (`RowKindHeightsControl.svelte`); not yet placed in a tab |
+| Drag-handle overlay | ✓ component built (`RowEdgeHandles.svelte`); not yet wired into TabvizPlot |
+| Cascade resolution tests | ✓ 16 unit tests + 6 integration tests in `table-metrics.test.ts` |
+| R-side modifiers (`set_row_kind_height_ratio`, etc.) | ⏳ pending (deferred — depends on broader R-side v4 migration) |
+| Browser harness (puppeteer drag commit) | ⏳ pending (deferred — needs harness setup) |
+| TabvizPlot integration (RowEdgeHandles mount) | ⏳ pending (touches plot's overlay layering) |
+
+**What "Phase 5 done" means at this state:**
+
+- The substrate is complete: the cascade math + ThemeInputs/WebSpec contract + both consumer call sites + the dedicated settings-panel control + the drag-handle component all ship in coherent form.
+- The integration surface (mounting RowEdgeHandles in TabvizPlot, placing the settings control in the panel tabs, R-side authoring API) is well-defined but spans surfaces that benefit from focused attention — they're the natural starting points for future sessions.
+
+**Next session — natural priorities:**
+
+1. **TabvizPlot integration of RowEdgeHandles** — small but touches the plot's render tree.
+2. **SettingsPanel integration of RowKindHeightsControl** — place the new control in the appropriate tab.
+3. **R-side modifier API** — `set_row_kind_height_ratio`, `set_row_kind_height_pin`, `release_row_kind_heights`, `release_all_row_kind_heights`. Likely scoped as part of the broader R-side v4 migration (step 8 of Stage 1 §40 sequence).
+4. **Browser harness for drag** — puppeteer setup + `tests/browser/row-edge-resize.browser.ts`.
+5. **Phase 6 consumer migration** — `svg-generator.ts` cluster-by-cluster.
+
+**State to verify in next session:**
+- 1102 bun tests pass; svelte-check clean; npm run build:widget succeeds.
+- `RowKindHeightsControl.svelte` and `RowEdgeHandles.svelte` files exist with their full implementations.
+- `WebSpec.rowHeights` typed and consumed by both DOM and SVG paths.
