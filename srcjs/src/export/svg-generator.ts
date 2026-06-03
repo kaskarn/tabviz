@@ -1509,16 +1509,19 @@ function renderDetailsPanel(
   rowHeight: number,
   canvasWidth: number,
   theme: WebTheme,
+  cssVars: Record<string, string>,
 ): string {
   const fontPx = parseFontSize(theme.text.body.size);
   const lineH = Math.ceil(fontPx * LINE_HEIGHT);
   const lines = wrapPanelLines(content, panelInnerWidth(canvasWidth, padding), fontPx);
-  const bg = theme.row.alt.bg ?? theme.surface.base;
-  const fg = theme.content.primary;
+  const surfaceBase = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+  const bg = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg) ?? surfaceBase;
+  const fg = readVar(cssVars, "--tv-text", theme.content.primary);
+  const dividerSubtle = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
   const family = theme.text.body.family;
   const out: string[] = [];
   out.push(`<rect x="0" y="${y}" width="${canvasWidth}" height="${rowHeight}" fill="${bg}" />`);
-  out.push(`<line x1="0" y1="${y + rowHeight}" x2="${canvasWidth}" y2="${y + rowHeight}" stroke="${theme.divider.subtle}" stroke-width="1" />`);
+  out.push(`<line x1="0" y1="${y + rowHeight}" x2="${canvasWidth}" y2="${y + rowHeight}" stroke="${dividerSubtle}" stroke-width="1" />`);
   let ty = y + PANEL_PAD_TOP + fontPx;
   for (const line of lines) {
     if (line !== "") {
@@ -4610,6 +4613,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         rowHeight,
         layout.totalWidth,
         theme,
+        cssVars,
       ));
     } else {
       // Render data row

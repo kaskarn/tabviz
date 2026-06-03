@@ -410,6 +410,61 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Footnote text color",
   },
+
+  // ── Generic T2 role passthroughs (consumer migration helpers) ─────────────
+  // These mirror Tier-2 roles 1:1 with no Tier-3 specialization. Consumers
+  // reading e.g. theme.surface.base / theme.content.primary / theme.content.muted
+  // migrate to these tokens during Phase 6.
+  {
+    cssVar: "--tv-surface-bg",
+    kind: "paint-fill",
+    source: { tier: "role", role: "surface" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Generic surface background (paper). Mirrors role:surface for consumers that don't have a row/cell-specific surface need",
+  },
+  {
+    cssVar: "--tv-surface-subtle-bg",
+    kind: "paint-fill",
+    source: { tier: "role", role: "surface-subtle" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    modes: { hc: "drop" },
+    description: "Generic surface-subtle background (alt paper). Mirrors role:surface-subtle",
+  },
+  {
+    cssVar: "--tv-text",
+    kind: "paint-color",
+    source: { tier: "role", role: "text" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Generic primary text color. Mirrors role:text — use for body content that isn't row-specific",
+  },
+  {
+    cssVar: "--tv-text-muted",
+    kind: "paint-color",
+    source: { tier: "role", role: "text-muted" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Generic muted/secondary text color. Mirrors role:text-muted — use for captions, secondary labels",
+  },
+  {
+    cssVar: "--tv-text-subtle",
+    kind: "paint-color",
+    source: { tier: "role", role: "text-subtle" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Generic subtle/tertiary text color. Mirrors role:text-subtle — use for de-emphasized labels, hints",
+  },
+  {
+    cssVar: "--tv-border",
+    kind: "paint-color",
+    source: { tier: "role", role: "border" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Generic border color. Mirrors role:border",
+  },
+  {
+    cssVar: "--tv-border-subtle",
+    kind: "paint-color",
+    source: { tier: "role", role: "border-subtle" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Generic subtle border color. Mirrors role:border-subtle — use for hairlines, faint dividers",
+  },
 ] as const;
 
 // ============================================================================
@@ -513,6 +568,14 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-text-title-fg",
   "--tv-text-body-fg",
   "--tv-text-footnote-fg",
+  // ── Generic T2 role passthroughs (Phase 6 migration helpers)
+  "--tv-surface-bg",
+  "--tv-surface-subtle-bg",
+  "--tv-text",
+  "--tv-text-muted",
+  "--tv-text-subtle",
+  "--tv-border",
+  "--tv-border-subtle",
 
   // ── v3 LEGACY REFERENCES ──────────────────────────────────────────────────
   // The 140+ entries below are `--tv-*` references already present in v3
