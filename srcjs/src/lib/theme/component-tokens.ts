@@ -487,6 +487,39 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Paper inner padding (px).",
   },
 
+  // ── Stage 2 §3 — Surface texture color tokens ─────────────────────────────
+  // Two color knobs drive all four textures (ruled / grid / dotted / grain).
+  // The selector + recipe live in theme-runtime.css; the colors come from
+  // the resolver tied to neutral grades.
+  {
+    cssVar: "--tv-shell-texture-line",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: faint hairline (neutral grade ~3)" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture line color (ruled / grid). Faint hairline on the surface.",
+  },
+  {
+    cssVar: "--tv-shell-texture-dot",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: dot color (neutral grade ~4)" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture dot color (dotted / grain). Slightly stronger than line.",
+  },
+  {
+    cssVar: "--tv-paper-texture-line",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: paper-side hairline" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture line color when texture lives on the paper surface.",
+  },
+  {
+    cssVar: "--tv-paper-texture-dot",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: paper-side dot" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture dot color when texture lives on the paper surface.",
+  },
+
   // ── Stage 2 §6 — Elevation shadow color tokens ────────────────────────────
   // Hue-aware shadow colors derived from the paper bg's hue mixed with
   // black. Browser CSS uses them in box-shadow; SVG export uses them as
@@ -733,6 +766,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-shell-",
   "--tv-paper-",
   "--tv-shadow-",
+  "--tv-shell-texture-",
+  "--tv-paper-texture-",
 
   // ── Row state
   "--tv-row-base-bg",

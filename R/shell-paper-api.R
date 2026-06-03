@@ -26,3 +26,29 @@ set_shell_mode <- function(theme, mode) {
   inputs@shell_mode <- mode
   resolve_from_inputs(inputs, name = theme@name)
 }
+
+#' Set the surface texture on a theme.
+#'
+#' Four themeable surface textures (Stage 2 §3) tile the shell or paper:
+#'
+#' * `none` (default) — flat surface.
+#' * `ruled` — horizontal lines (notebook paper).
+#' * `grid` — orthogonal grid (graph paper).
+#' * `dotted` — dotted grid.
+#' * `grain` — pseudo-random noise (subtle paper texture).
+#'
+#' Drives `[data-shell-texture]` selectors + 4 Tier-3 texture color tokens.
+#'
+#' @param theme A [WebTheme].
+#' @param texture One of `"none"`, `"ruled"`, `"grid"`, `"dotted"`, `"grain"`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_shell_texture <- function(theme, texture) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(texture, c("none", "ruled", "grid", "dotted", "grain"))
+  inputs <- theme@inputs
+  inputs@shell_texture <- texture
+  resolve_from_inputs(inputs, name = theme@name)
+}

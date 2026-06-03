@@ -92,6 +92,9 @@ ThemeInputs <- new_class(
     # Stage 2 §2 shell/paper two-surface model. One of "flush" / "raised" /
     # "float" / "transparent". NA defaults to "flush" at resolution.
     shell_mode      = new_property(class_character, default = NA_character_),
+    # Stage 2 §3 surface texture. One of "none" / "ruled" / "grid" / "dotted" /
+    # "grain". NA defaults to "none".
+    shell_texture   = new_property(class_character, default = NA_character_),
 
     # Stage 2 typography Tier 1 (theme-cascade-stage-2-design.md §1b).
     # Base size + ratio drive the 7-step size scale (label/foot/body/head/

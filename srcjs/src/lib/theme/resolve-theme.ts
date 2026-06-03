@@ -45,6 +45,7 @@ import {
 } from "./typography";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
+import { resolveTextureColors, textureKeyForCssVar } from "./textures";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -254,6 +255,8 @@ function resolveTokenValue(
     if (shellPaper !== null) return shellPaper;
     const elevation = resolveElevationComputed(token.cssVar, resolved);
     if (elevation !== null) return elevation;
+    const texture = resolveTextureComputed(token.cssVar, resolved);
+    if (texture !== null) return texture;
   }
 
   // Spacing-px tokens are resolved via the density table regardless of
@@ -297,6 +300,18 @@ const TYPOGRAPHY_ROLE_NAMES = new Set<TypeRoleName>([
   "title", "subtitle", "heading", "body", "numeric",
   "label", "caption", "footnote", "cell", "tick",
 ]);
+
+/** Stage 2 §3 texture color resolver. Matches `--tv-{surface}-texture-{line|dot}`
+ *  cssVars and emits the neutral-grade-derived value. Returns null when
+ *  the cssVar doesn't match. */
+function resolveTextureComputed(
+  cssVar: string,
+  resolved: { ramps: TokenRamps },
+): string | null {
+  const key = textureKeyForCssVar(cssVar);
+  if (key === null) return null;
+  return resolveTextureColors(resolved.ramps.neutral)[key];
+}
 
 /** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`
  *  cssVars and emits hue-aware shadow colors mixed from the paper bg.

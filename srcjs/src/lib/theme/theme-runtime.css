@@ -123,6 +123,25 @@
 .tabviz-scope[data-shell-mode="float"] { /* via --tv-shell-* / --tv-paper-* */ }
 .tabviz-scope[data-shell-mode="transparent"] { /* via --tv-shell-* / --tv-paper-* */ }
 
+/* data-shell-texture (Stage 2 §3): none / ruled / grid / dotted / grain.
+ * Paints atop the shell's background using --tv-shell-texture-{line,dot}. */
+.tabviz-scope[data-shell-texture="ruled"] .tv-shell {
+  background-image: repeating-linear-gradient(180deg,
+    transparent 0 28px,
+    var(--tv-shell-texture-line) 28px 29px);
+}
+.tabviz-scope[data-shell-texture="grid"] .tv-shell {
+  background-image:
+    repeating-linear-gradient(180deg, transparent 0 23px, var(--tv-shell-texture-line) 23px 24px),
+    repeating-linear-gradient(90deg,  transparent 0 23px, var(--tv-shell-texture-line) 23px 24px);
+}
+.tabviz-scope[data-shell-texture="dotted"] .tv-shell {
+  background-image: radial-gradient(var(--tv-shell-texture-dot) 1px, transparent 1.6px);
+  background-size: 15px 15px;
+}
+/* `grain` uses an inline SVG fractalNoise data-URI applied in JS where
+ * needed; pure-CSS grain isn't reliable across browsers. */
+
 /* When the DOM/SVG output isn't yet wrapped in `.tv-shell` + `.tv-paper`,
  * the rules below are inert. As Stage 2 §2 consumer migration plumbs the
  * wrapping elements into TabvizPlot.svelte + svg-generator.ts, these

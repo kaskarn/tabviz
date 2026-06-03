@@ -70,6 +70,18 @@ export interface ThemeInputs {
     mono?: string;
   };
 
+  /** Stage 2 §3 surface texture. Themeable background pattern applied to
+   *  the shell or paper. Four textures plus none:
+   *
+   *    none    — no texture (default)
+   *    ruled   — horizontal lines (notebook paper)
+   *    grid    — orthogonal grid (graph paper)
+   *    dotted  — dotted grid
+   *    grain   — pseudo-random noise (subtle paper texture)
+   *
+   *  Drives `[data-shell-texture]` selectors + 3 texture color tokens. */
+  shell_texture?: "none" | "ruled" | "grid" | "dotted" | "grain";
+
   /** Stage 2 §2 shell/paper two-surface model. Controls the relationship
    *  between the outer chrome (shell) and the inner data card (paper):
    *
