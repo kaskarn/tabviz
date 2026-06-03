@@ -566,8 +566,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-text-body-fg",
   // ── Generic T2 role passthroughs (Phase 6 migration helpers)
   // Consumed 2026-06-02: --tv-text, --tv-text-muted, --tv-text-subtle,
-  //                      --tv-cell-border (used as border-subtle proxy)
-  "--tv-surface-bg",
+  //                      --tv-cell-border (used as border-subtle proxy),
+  //                      --tv-surface-bg (canvas + row-banding guard)
   "--tv-surface-subtle-bg",
   "--tv-border",
 

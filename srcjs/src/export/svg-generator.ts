@@ -4163,16 +4163,18 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 </style>`);
 
   // Background
-  const bgColor = options.backgroundColor ?? theme.surface.base;
+  const surfaceBgResolved = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+  const bgColor = options.backgroundColor ?? surfaceBgResolved;
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
 
   // Container border (if enabled in theme)
   // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
   if (theme.layout.containerBorder !== false) {
     const borderRadius = theme.layout.containerBorderRadius ?? 8;
+    const containerBorderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
     parts.push(`<rect x="0.5" y="0.5"
       width="${layout.totalWidth - 1}" height="${layout.totalHeight - 1}"
-      fill="none" stroke="${theme.divider.subtle}" stroke-width="1"
+      fill="none" stroke="${containerBorderStroke}" stroke-width="1"
       rx="${borderRadius}" ry="${borderRadius}"/>`);
   }
 
@@ -4199,7 +4201,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // draw text on top. Uses colors.headerBg (which cascades from rowBg in
     // set_colors so existing themes render identically).
     const headerBg = activeHeaderVariant(theme).bg;
-    if (headerBg && headerBg !== theme.surface.base) {
+    if (headerBg && headerBg !== surfaceBgResolved) {
       parts.push(`<rect x="${padding}" y="${headerY}"
         width="${layout.totalWidth - padding * 2}" height="${layout.headerHeight}"
         fill="${headerBg}"/>`);
