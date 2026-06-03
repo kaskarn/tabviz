@@ -4208,8 +4208,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Top table border - frames column headers (symmetric with header bottom border)
   const headerBorderW = 2;
   const headerVariantRule = activeHeaderVariant(theme).rule
-    ?? theme.divider.strong
-    ?? theme.divider.subtle;
+    ?? readVar(cssVars, "--tv-border", theme.divider.strong)
+    ?? readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
   if (headerBorderW > 0) {
     parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${layout.mainY}" y2="${layout.mainY}"

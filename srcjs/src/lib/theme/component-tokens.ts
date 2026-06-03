@@ -571,8 +571,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // Consumed 2026-06-02: --tv-text, --tv-text-muted, --tv-text-subtle,
   //                      --tv-cell-border (used as border-subtle proxy),
   //                      --tv-surface-bg (canvas + row-banding guard)
+  // Consumed 2026-06-03: --tv-border (header variant rule fallback)
   "--tv-surface-subtle-bg",
-  "--tv-border",
 
   // ── v3 LEGACY REFERENCES ──────────────────────────────────────────────────
   // The 140+ entries below are `--tv-*` references already present in v3
