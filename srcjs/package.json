@@ -64,10 +64,11 @@
   "scripts": {
     "dev": "vite build --watch",
     "prepublishOnly": "npm run build:npm && npm run check:size && npm run check:lockfiles",
-    "build": "vite build && vite build --config vite.config.split.ts && vite build --config vite.config.v8.ts",
+    "build": "vite build && vite build --config vite.config.split.ts && vite build --config vite.config.v8.ts && vite build --config vite.config.studio.ts",
     "build:widget": "vite build",
     "build:split": "vite build --config vite.config.split.ts",
     "build:v8": "vite build --config vite.config.v8.ts",
+    "build:studio": "vite build --config vite.config.studio.ts",
     "build:harness": "vite build --config vite.config.harness.ts",
     "dev:harness": "vite serve --config vite.config.harness.ts",
     "harness:drive": "node tests/components/drive.mjs",

@@ -41,6 +41,7 @@ Collate:
     'typography-api.R'
     'shell-paper-api.R'
     'v4-inspect.R'
+    'studio.R'
     'utils-serialize-resolved.R'
     'conditions.R'
     'paginate.R'
@@ -74,6 +75,8 @@ Imports:
     tools
 Suggests:
     shiny (>= 1.8.0),
+    miniUI,
+    rstudioapi,
     systemfonts (>= 1.0.0),
     data.table,
     broom,
