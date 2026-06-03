@@ -1416,14 +1416,25 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings
 // SVG Renderers
 // ============================================================================
 
-function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): string {
+function renderHeader(
+  spec: WebSpec,
+  layout: InternalLayout,
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
+): string {
   const lines: string[] = [];
   const padding = theme.spacing.padding;
+  const subtitleFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
+  const separatorStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
 
   if (spec.labels?.title) {
     const fontSize = parseFontSize(theme.text.subtitle.size);
     const titleFamily = theme.text.title?.family ?? theme.text.body.family;
-    const titleFg = theme.text.title?.fg ?? theme.content.primary;
+    const titleFg = readVar(
+      cssVars,
+      "--tv-text-title-fg",
+      theme.text.title?.fg ?? theme.content.primary,
+    );
     lines.push(`<text x="${padding}" y="${layout.titleY}"
       font-family="${titleFamily}"
       font-size="${fontSize}px"
@@ -1437,7 +1448,7 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.content.secondary}">${escapeXml(spec.labels.subtitle)}</text>`);
+      fill="${subtitleFg}">${escapeXml(spec.labels.subtitle)}</text>`);
   }
 
   // Thin separator line between title and subtitle (only when both exist)
@@ -1449,16 +1460,24 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
     const separatorY = layout.subtitleY - subtitleAscent - 6; // 6px gap like web CSS padding-top
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${separatorY}" y2="${separatorY}"
-      stroke="${theme.divider.subtle}" stroke-width="1" opacity="0.3"/>`);
+      stroke="${separatorStroke}" stroke-width="1" opacity="0.3"/>`);
   }
 
   return lines.join("\n");
 }
 
-function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): string {
+function renderFooter(
+  spec: WebSpec,
+  layout: InternalLayout,
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
+): string {
   const lines: string[] = [];
   const padding = theme.spacing.padding;
   let y = layout.footerY;
+  const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+  const captionFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
+  const footnoteFg = readVar(cssVars, "--tv-text-footnote-fg", theme.content.muted);
 
   // Draw footer border (1px) when caption or footnote exists, matching web view's PlotFooter border-top
   const hasFooter = !!spec.labels?.caption || !!spec.labels?.footnote;
@@ -1469,7 +1488,7 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
     const borderY = layout.footerY - gap;
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${borderY}" y2="${borderY}"
-      stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+      stroke="${borderStroke}" stroke-width="1"/>`);
   }
 
   if (spec.labels?.caption) {
@@ -1478,7 +1497,7 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.content.secondary}">${escapeXml(spec.labels.caption)}</text>`);
+      fill="${captionFg}">${escapeXml(spec.labels.caption)}</text>`);
     // Advance Y by the caption's actual line height — derived from
     // typography rather than the hardcoded 16px constant.
     y += textRegionHeight(theme.text.label.size, 1.5);
@@ -1491,7 +1510,7 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-size="${fontSize}px"
       font-weight="${400}"
       font-style="italic"
-      fill="${theme.content.muted}">${escapeXml(spec.labels.footnote)}</text>`);
+      fill="${footnoteFg}">${escapeXml(spec.labels.footnote)}</text>`);
   }
 
   return lines.join("\n");
@@ -4152,7 +4171,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   }
 
   // Header (title, subtitle)
-  parts.push(renderHeader(spec, layout, theme));
+  parts.push(renderHeader(spec, layout, theme, cssVars));
 
   // Top table border - frames column headers (symmetric with header bottom border)
   const headerBorderW = 2;
@@ -4259,9 +4278,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       } else if (bandIdx === 1) {
         // Alternating row banding (only paint the "odd" band — even rows
         // inherit the container background, matching the web widget).
-        // Phase 6 pilot migration: prefer v4 cssVars; fall back to v3.
+        // Phase 6: row-alt-bg + surface-bg both via cssVars.
         const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
-        if (bgColor !== theme.surface.base) {
+        const surfaceBg = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+        if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
@@ -4283,9 +4303,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // so the group_header row is just rowHeight tall and paints
       // edge-to-edge here.
       if (bandIdx === 1) {
-        // Phase 6 pilot migration: prefer v4 cssVars; fall back to v3.
+        // Phase 6: row-alt-bg + surface-bg both via cssVars.
         const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
-        if (bgColor !== theme.surface.base) {
+        const surfaceBg = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+        if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
@@ -4760,7 +4781,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   }
 
   // Footer (caption, footnote)
-  parts.push(renderFooter(spec, layout, theme));
+  parts.push(renderFooter(spec, layout, theme, cssVars));
 
   // Close SVG
   parts.push("</svg>");

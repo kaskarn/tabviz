@@ -562,10 +562,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-spacing-bottom-margin",
   "--tv-spacing-indent-per-level",
   "--tv-spacing-container-padding",
-  // ── Text roles
-  "--tv-text-title-fg",
+  // ── Text roles (--tv-text-title-fg + --tv-text-footnote-fg consumed 2026-06-02 by renderHeader/renderFooter)
   "--tv-text-body-fg",
-  "--tv-text-footnote-fg",
   // ── Generic T2 role passthroughs (Phase 6 migration helpers)
   // --tv-text + --tv-text-muted + --tv-cell-border consumed by renderDetailsPanel and axis renderers
   "--tv-surface-bg",
