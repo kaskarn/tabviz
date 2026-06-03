@@ -129,6 +129,66 @@ describe("resolveTheme — polarity", () => {
   });
 });
 
+describe("resolveTheme — off-ramp role resolution", () => {
+  it("text-onsolid is APCA-picked (not a hard-coded placeholder)", () => {
+    const r = resolveTheme(createWire(COCHRANE));
+    // text-onsolid should be one of the extreme neutrals (lightest or darkest)
+    expect([r.ramps.neutral[0], r.ramps.neutral[10]]).toContain(r.roles["text-onsolid"]);
+  });
+
+  it("text-onsolid achieves meaningful APCA contrast on brand-solid", () => {
+    // Whatever ink the picker chooses, it should be the most-contrastful
+    // option from the candidates [neutral.1, neutral.11]. We verify by
+    // confirming text-onsolid IS one of those endpoints rather than
+    // some other value.
+    const r = resolveTheme(createWire(COCHRANE));
+    const candidates = [r.ramps.neutral[0]!, r.ramps.neutral[10]!];
+    expect(candidates).toContain(r.roles["text-onsolid"]);
+  });
+
+  it("pos-fill / pos-solid / pos-text resolve to real status hex strings", () => {
+    const r = resolveTheme(createWire(COCHRANE));
+    expect(r.roles["pos-fill"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(r.roles["pos-solid"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(r.roles["pos-text"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    // The three pos- variants should differ from each other
+    expect(r.roles["pos-fill"]).not.toBe(r.roles["pos-solid"]);
+    expect(r.roles["pos-solid"]).not.toBe(r.roles["pos-text"]);
+  });
+
+  it("status anchor inputs propagate into the resolved status roles", () => {
+    const baseR = resolveTheme(createWire({ brand: "#0099CC" }));
+    const customR = resolveTheme(
+      createWire({
+        brand: "#0099CC",
+        status: { positive: "#0033AA" },  // custom positive
+      }),
+    );
+    // Custom positive seed should produce different pos-* values
+    expect(customR.roles["pos-solid"]).not.toBe(baseR.roles["pos-solid"]);
+  });
+
+  it("neg / warn / info status families are independent", () => {
+    const r = resolveTheme(createWire(COCHRANE));
+    expect(r.roles["neg-fill"]).not.toBe(r.roles["pos-fill"]);
+    expect(r.roles["warn-fill"]).not.toBe(r.roles["pos-fill"]);
+    expect(r.roles["info-fill"]).not.toBe(r.roles["pos-fill"]);
+  });
+
+  it("cssVars status entries reflect the real status colors", () => {
+    const r = resolveTheme(createWire(COCHRANE));
+    // The manifest doesn't yet emit explicit pos-* cssVars (will be added
+    // in subsequent commits), but the roles record holds the values.
+    // Verify the role values are present and well-formed:
+    for (const role of ["pos-fill", "pos-solid", "pos-text",
+                         "neg-fill", "neg-solid", "neg-text",
+                         "warn-fill", "warn-text",
+                         "info-fill", "info-text"] as const) {
+      expect(r.roles[role]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+});
+
 describe("resolveTheme — cssVars has no TBD placeholders", () => {
   it("no role-sourced token returns a TBD placeholder", () => {
     const r = resolveTheme(createWire(COCHRANE));

@@ -32,10 +32,12 @@
 
 import type { ThemeInputs, TokenRamps } from "../../types/theme-inputs";
 import type { RoleName } from "../../types/theme-roles";
-import type { ThemeWire, RoleBinding } from "./theme-wire";
+import type { ThemeWire } from "./theme-wire";
+import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectHex } from "./polarity";
+import { pickInkOnBg } from "../oklch";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -43,8 +45,8 @@ import {
 } from "./component-tokens";
 import {
   DEFAULT_ROLE_BINDINGS,
-  getRoleBinding,
-} from "./theme-wire";
+  type RoleBinding,
+} from "./role-bindings";
 
 // ============================================================================
 // TYPES
@@ -137,32 +139,49 @@ function trimRamp(ramp12: string[]): string[] {
   return ramp12.slice(0, 11);
 }
 
-/** Resolve a single role to its hex value. Off-ramp roles get placeholder
- *  values for now (proper computation lands in the resolver rewrite). */
+/** Pre-computed context for resolving off-ramp roles — status anchors,
+ *  APCA-picked text-onsolid, etc. Built once per resolveTheme call. */
+interface OffRampContext {
+  /** APCA-picked text color against brand-solid (pickInkOnBg result). */
+  readonly textOnSolid: string;
+  /** The full TokenRamps.status object — each status has a 5-step ramp:
+   *  slot 0 = subtle bg, slot 2 = solid, slot 4 = ink (text). */
+  readonly status: TokenRamps["status"];
+}
+
+/** Resolve a single role to its hex value. Routes off-ramp roles
+ *  (status, text-onsolid) through dedicated paths; standard roles
+ *  read from the bound ramp. */
 function resolveRoleValue(
   role: RoleName,
   binding: RoleBinding,
   ramps12: TokenRamps,
   alphaRamps: { neutralAlpha: AlphaRamp; brandAlpha: AlphaRamp; accentAlpha: AlphaRamp },
+  offRamp: OffRampContext,
 ): string {
-  // Series slots fall through to placeholder for now (their full resolution
-  // depends on the slot-anchor table not yet ported to v4).
-  if (role.startsWith("series-")) {
-    const r = binding.ramp === "neutral" ? ramps12.neutral
-            : binding.ramp === "brand" ? ramps12.brand
-            : ramps12.accent;
-    return r[Math.max(0, Math.min(10, binding.grade - 1))]!;
-  }
-  // Status + computed: placeholder values for now.
+  // Computed: text-onsolid is APCA-picked against the most-common solid
+  // (brand-solid). Pre-computed in offRamp.
   if (role === "text-onsolid") {
-    // Computed: pick neutral.1 (lightest) as a placeholder.
-    return ramps12.neutral[0]!;
+    return offRamp.textOnSolid;
   }
-  if (role.startsWith("pos-") || role.startsWith("neg-") || role.startsWith("warn-") || role.startsWith("info-")) {
-    // Status: placeholder — read from neutral ramp at the placeholder grade.
-    const r = ramps12.neutral;
-    return r[Math.max(0, Math.min(10, binding.grade - 1))]!;
+
+  // Status roles read from the corresponding status 5-step ramp.
+  // Slot layout per `buildStatusRamp` in theme-resolve.ts:
+  //   [0] subtle bg, [1] subtle border, [2] solid, [3] solid-hover, [4] ink
+  if (role.startsWith("pos-") || role.startsWith("neg-")
+      || role.startsWith("warn-") || role.startsWith("info-")) {
+    const key = role.startsWith("pos-")   ? "positive"
+              : role.startsWith("neg-")   ? "negative"
+              : role.startsWith("warn-")  ? "warning"
+              : "info";
+    const ramp = offRamp.status[key as keyof typeof offRamp.status];
+    const suffix = role.split("-").slice(1).join("-"); // "fill" | "solid" | "text"
+    if (suffix === "fill") return ramp[0]!;   // subtle background
+    if (suffix === "solid") return ramp[2]!;  // solid (the seed)
+    if (suffix === "text") return ramp[4]!;   // ink
+    return ramp[2]!;  // fallback to solid
   }
+
   // Wash roles: read from alpha companions.
   if (role === "highlight-bg") {
     const r = binding.ramp === "neutral" ? alphaRamps.neutralAlpha
@@ -170,7 +189,8 @@ function resolveRoleValue(
             : alphaRamps.accentAlpha;
     return r[Math.max(0, Math.min(10, binding.grade - 1))]!;
   }
-  // Standard role: read from the appropriate solid ramp at the bound grade.
+
+  // Standard role + series slots: read from the bound solid ramp.
   const r = binding.ramp === "neutral" ? ramps12.neutral
           : binding.ramp === "brand" ? ramps12.brand
           : ramps12.accent;
@@ -303,13 +323,29 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
     accentAlpha: buildAlphaRamp(ramps12.accent[8] ?? wire.inputs.accent ?? wire.inputs.brand),
   };
 
+  // Pre-compute off-ramp context:
+  //   - text-onsolid: APCA pick between the lightest and darkest neutrals
+  //     against the brand-solid (rgb 9) background. This is the most-common
+  //     "text on a colored solid" surface in widget output.
+  //   - status: lifted from the existing buildRamps output (5-step per
+  //     status).
+  const brandSolid = ramps12.brand[8] ?? wire.inputs.brand;
+  const textOnSolidCandidates = [
+    ramps12.neutral[0]!,
+    ramps12.neutral[11]!,
+  ];
+  const offRamp: OffRampContext = {
+    textOnSolid: pickInkOnBg(brandSolid, textOnSolidCandidates),
+    status: ramps12.status,
+  };
+
   // Resolve every role to its hex via its binding.
   const roleSource = {} as Record<RoleName, RoleBinding>;
   const roles = {} as Record<RoleName, string>;
   for (const role of Object.keys(DEFAULT_ROLE_BINDINGS) as RoleName[]) {
     const binding = getRoleBinding(wire, role);
     roleSource[role] = binding;
-    roles[role] = resolveRoleValue(role, binding, ramps12, alphaRamps);
+    roles[role] = resolveRoleValue(role, binding, ramps12, alphaRamps, offRamp);
   }
 
   // Emit the CSS-var map by walking the manifest.
