@@ -2916,10 +2916,11 @@ function renderUnifiedColumnHeaders(
     }
 
     // Draw borders under groups (matches web view: .group-row { border-bottom: 1px solid var(--tv-border) })
+    const groupBorderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
     for (const border of groupBorders) {
       lines.push(`<line x1="${border.x1}" x2="${border.x2}"
         y1="${y + row1Height}" y2="${y + row1Height}"
-        stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+        stroke="${groupBorderStroke}" stroke-width="1"/>`);
     }
 
     // Row 2: Sub-column headers
@@ -3382,7 +3383,8 @@ function renderReferenceLine(
   label?: string,
   width: number = 1,
   opacity: number = 0.6,
-  labelY?: number
+  labelY?: number,
+  cssVars: Record<string, string> = {},
 ): string {
   const dashArray = style === "dashed" ? "6,4" : style === "dotted" ? "2,2" : "";
   const dashAttr = dashArray ? ` stroke-dasharray="${dashArray}"` : "";
@@ -3390,7 +3392,7 @@ function renderReferenceLine(
     stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
-    const labelColor = theme.content.secondary;
+    const labelColor = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
     const ty = labelY ?? y1 - 4;
     svg += `<text x="${x}" y="${ty}" text-anchor="middle"
       font-family="${theme.text.body.family}"
@@ -4428,8 +4430,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       plotY,
       plotY + layout.rowsHeight,
       "dashed",
-      theme.content.muted,
-      theme
+      readVar(cssVars, "--tv-text-subtle", theme.content.muted) ?? theme.content.muted,
+      theme,
+      undefined,
+      1,
+      0.6,
+      undefined,
+      cssVars,
     ));
 
     // Custom annotations for this forest column (column-level only)
@@ -4459,7 +4466,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           ann.label,
           ann.width ?? 1,
           ann.opacity ?? 0.6,
-          annotationLabelBaseY + labelYOffset
+          annotationLabelBaseY + labelYOffset,
+          cssVars,
         ));
       }
     }
