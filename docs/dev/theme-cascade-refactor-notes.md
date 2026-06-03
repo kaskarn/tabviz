@@ -473,3 +473,121 @@ The hand-tuned array gives a perceptually-correct gentle S curve. The linear cur
 - 1102 bun tests pass; svelte-check clean; npm run build:widget succeeds.
 - `RowKindHeightsControl.svelte` and `RowEdgeHandles.svelte` files exist with their full implementations.
 - `WebSpec.rowHeights` typed and consumed by both DOM and SVG paths.
+
+---
+
+### 2026-06-02 — Deeper integration: SettingsPanel + TabvizPlot mount + Phase 6 pilot
+
+**Internal commits landed:**
+
+- `[M5] integrate RowKindHeightsControl + mount RowEdgeHandles` —
+  - `SettingsPanel.svelte`: `RowKindHeightsControl` rendered alongside `SpacingControl` in the spacing tab; users see the new control whenever they open Spacing.
+  - `TabvizPlot.svelte`: `RowEdgeHandles` mounted as sibling overlay next to `TabvizOverlays`, with `enabled={false}` as a deliberate "off until geometry is verified" stance. The `rowPositions` coordinates from `computeRowLayout` are relative to the rows region's origin; this mount point's parent geometry doesn't align yet. Flipping `enabled={true}` once the parent's coordinate space is verified (likely adding a Y offset for header + axis chrome) makes the handles user-interactable.
+
+- `[M6] consumer-bridge.ts: Phase 6 pilot migration` —
+  - New `srcjs/src/lib/theme/consumer-bridge.ts` module providing the bridge that lets v3 consumers opt into v4 cssVars reads without wholesale rewrites. Two exports: `getCssVars(theme)` builds a v4 wire from `theme.authoringInputs`, resolves it, returns the cssVars map (empty when unavailable). `readVar(cssVars, name, fallback)` looks up a cssVar with fallback to v3 reads.
+  - Pilot migration in `svg-generator.ts::generateSVG`: computes `cssVars` once at the top; two inline `theme.row.alt.bg` reads (data row banding + group_header row banding) switch to `readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg)`. Pattern preserves v3 behavior when cssVars is empty (older specs) while exercising v4 cssVars when authoringInputs is present.
+  - `renderDetailsPanel`'s `theme.row.alt.bg` site left as v3-only — migrating helper functions requires plumbing cssVars as a parameter; will land as cluster-by-cluster migration progresses.
+
+**Branch state at end of session:**
+- 1111 bun tests pass (1102 + 9 consumer-bridge tests).
+- svelte-check clean; npm run build:widget succeeds.
+- Bundle 754.24 kB (+15.7 kB from new components + bridge module + new svg-generator code).
+
+**Capability surface after this session:**
+
+✓ RowKindHeightsControl visible in SettingsPanel spacing tab
+✓ RowEdgeHandles mounted in TabvizPlot (off by default; geometry verification pending)
+✓ Consumer-bridge module + readVar helper available for any consumer
+✓ svg-generator's two row-alt-bg sites running on the v4 wire
+✓ Bridge is a step-10 cleanup target (deletes when all consumers migrate)
+
+**Phase 5 status (complete):**
+
+All substrate items + initial integration done. Outstanding pieces are:
+- R-side modifier API (deferred to broader R-side v4 migration)
+- Browser harness for drag commit (puppeteer setup)
+- RowEdgeHandles geometry verification (Y-offset alignment for the overlay's parent)
+
+**Phase 6 status (kicked off):**
+
+Three of ~223 theme.* read sites migrated. The bridge pattern is established and tested. Remaining migration is mechanical work that benefits from focused per-cluster sweeps:
+- Row state cluster (~8 more sites): row.base.bg, row.alt.bg (1 more in renderDetailsPanel), row.hover.bg, row.selected.bg, row.emphasis.bg, row.emphasis.bar, row.emphasis.fg, row.base.fg
+- Cell cluster (~3 sites): cell.bg, cell.fg, cell.border
+- Header cluster (~8 sites): header.light.bg/fg/rule, header.tint.bg/fg, header.fill.bg/fg
+- Plot scaffold (~5 sites): axis-line, tick-mark, tick-mark-length, line-width, point-size
+- Spacing (~15 sites): row-height, header-height, etc.
+- Text roles (~3 sites): title-fg, body-fg, footnote-fg
+- And ~110 more entries in the broader v3 inventory that still need manifest declarations + consumer migration
+
+**Next session — natural priorities:**
+
+1. **More Phase 6 consumer migration** — continue the cluster-by-cluster sweep through svg-generator.ts. Each cluster reduces v3 surface area; once all clusters migrate, step 10 deletes v3 theme reads + the bridge.
+2. **RowEdgeHandles geometry verification** — inspect TabvizPlot's render tree; identify the correct parent container for the overlay; flip `enabled={true}`.
+3. **R-side modifier API** — set_polarity, set_role_binding, pin_token_by_name, set_row_kind_height_ratio, plus the four inspection helpers (list_component_tokens, inspect_token, contrast_report, diff_themes).
+4. **Manifest expansion** — add the ~110 deferred entries from the v3 inventory to component-tokens.ts so the drift gate's KNOWN_UNCONSUMED can shrink.
+
+**State to verify in next session:**
+- 1111 bun tests pass; svelte-check clean; widget build succeeds.
+- `getCssVars(buildTheme(COCHRANE, "cochrane"))["--tv-row-base-bg"]` returns a real hex.
+- `RowKindHeightsControl` appears in the SettingsPanel's Spacing tab.
+- `RowEdgeHandles` is mounted in TabvizPlot's render tree (enabled=false).
+
+---
+
+### 2026-06-02 — Phase 6 broad sweep: 6 cluster migrations across svg-generator.ts
+
+**Internal commits landed in sequence:**
+
+1. **`[M6] manifest: T2 passthroughs + renderDetailsPanel migration`** — added 7 generic Tier-2 role passthrough tokens to `component-tokens.ts` (`--tv-surface-bg`, `--tv-surface-subtle-bg`, `--tv-text`, `--tv-text-muted`, `--tv-text-subtle`, `--tv-border`, `--tv-border-subtle`) — these mirror T2 roles 1:1 so consumers reading `theme.surface.base` / `theme.content.primary` / `theme.divider.subtle` migrate to them. Also migrated `renderDetailsPanel`'s reads (`row-alt-bg`, `surface-bg` fallback, `text`, `cell-border`) via threaded `cssVars` param.
+
+2. **`[M6] migrate plot scaffold (axis-line, tick-mark, label fg) to cssVars`** — `renderForestAxis` + `renderVizAxis` (3 callsites for bar/box/violin variants) now take `cssVars`. Threaded 6 sites: `--tv-plot-axis-line` (forest+viz axis lines), `--tv-plot-tick-mark` (ticks), `--tv-text-muted` (tick + axis label fg), `--tv-border-subtle` (forest gridlines). Drift gate: 5 tokens removed from `KNOWN_UNCONSUMED`.
+
+3. **`[M6] migrate cell cluster (cell-fg, cell-border) to cssVars`** — `renderUnifiedTableRow` takes `cssVars` and computes `cellFgDefault` once at the function top. Three internal default-fg sites (label text, general cell color, icon cell color) collapse to `cellFgDefault`. The `string | null | undefined` from `readVar` is coerced back via outer `?? theme.content.primary`. Drift gate: `--tv-cell-fg` + `--tv-cell-border` removed.
+
+4. **`[M6] migrate renderHeader/renderFooter + row banding to cssVars`** — header path (`--tv-text-title-fg`, `--tv-text-muted`, `--tv-cell-border`), footer path (`--tv-cell-border`, `--tv-text-muted`, `--tv-text-footnote-fg`). Row banding's data-row + group-header-row both now read `row-alt-bg` and `surface-bg` from `cssVars` for the inequality guard. Drift gate: `--tv-text-title-fg` + `--tv-text-footnote-fg` removed.
+
+5. **`[M6] migrate renderGroupHeader to cssVars`** — group-header label fg (`--tv-text`), count fg (`--tv-text-subtle`), border-bottom stroke (`--tv-cell-border`). Drift gate: `--tv-text` + `--tv-text-subtle` removed. Note: group-header tinted-rgba background fallback (when tier.bg is unset) stays v3-style — it's a synthesized tint from secondary, not a token surface; deferring to Stage-2 secondary tinting.
+
+6. **`[M6] migrate canvas surface + container border + header-bg guard`** — generateSVG's top-level surface bg reads `--tv-surface-bg`; container border (`theme.layout.containerBorder`) reads `--tv-cell-border`; the `headerBg !== surface` guard for skipping bg-paint when redundant now uses the resolved cssVar value. Drift gate: `--tv-surface-bg` removed.
+
+7. **`[M6] migrate row-style header bg + watermark fill to cssVars`** — `row.style.type === 'header'` tinted bg (the 0.1-opacity wash on header-style rows) reads `--tv-text-subtle`; watermark fill reads `--tv-text` when `spec.watermarkColor` is unset.
+
+**Tokens consumed in this session (no longer grandfathered):**
+- `--tv-cell-fg`, `--tv-cell-border` (cell cluster)
+- `--tv-plot-axis-line`, `--tv-plot-tick-mark` (plot scaffold)
+- `--tv-text-title-fg`, `--tv-text-footnote-fg` (text roles)
+- `--tv-surface-bg`, `--tv-text`, `--tv-text-muted`, `--tv-text-subtle`, `--tv-border-subtle` (T2 passthroughs)
+
+**Tokens still on KNOWN_UNCONSUMED (manifest declared, awaiting consumer):**
+- `--tv-row-*` (all five row state vars) — covered partly by data + group-header banding (uses `--tv-row-alt-bg`) but other row reads still v3-only
+- `--tv-cell-bg` (always transparent; consumer needs to be a real surface paint, not just the default)
+- `--tv-header-*-bg/fg/rule` (full header variant cluster — Stage 2 territory)
+- `--tv-plot-tick-mark-length`, `--tv-plot-line-width`, `--tv-plot-point-size` (numeric dims — consumer migration needs px-parsing helper)
+- `--tv-spacing-*` (all spacing tokens — same; dimensional, needs px-parser)
+- `--tv-text-body-fg` (body text reads cluster — typography migration belongs together with font-shorthand fields)
+- `--tv-surface-subtle-bg`, `--tv-border` (generic helpers; no consumer reference yet — kept for future renderHeader/PlotHeader rationalization)
+
+**Branch state at end of session:**
+- `feat/theme-rework` at `1554aa4`.
+- 1111 bun tests pass; svelte-check clean.
+- ~6 of ~30 distinct migration patterns landed; the textual cluster, sparkline cluster, viz-mark color/dim cluster, and pictogram cluster still v3-only.
+
+**Architectural observations from this sweep:**
+
+a. **Threading `cssVars` through render functions is fine, not invasive.** Five render functions gained a trailing optional `cssVars` param. The pattern is consistent: read v4 cssVar with v3 fallback at the top of the function; reference the resolved local at draw sites. Each function's diff is ~5–15 lines.
+
+b. **The `string | null | undefined` from `readVar`** trips TS when assigning to a `string`-typed local. The fix used here — chain a second `?? v3Fallback` after the `readVar` call — is verbose but correct and explicit. A future ergonomic helper `readVarOr(cssVars, name, fallback): string` might bake in the coercion when the fallback is guaranteed non-null.
+
+c. **Equality guards like `bgColor !== theme.surface.base`** need both sides to be migrated. Migrating only one side means the v3 path's `theme.surface.base` and the v4 path's `cssVars["--tv-surface-bg"]` could be slightly different strings (e.g. `#FFFFFF` vs `#ffffff`) and the guard fires spuriously. We migrated both sides in commit 4/6.
+
+d. **Dimensional tokens (px values) need a parser helper.** `theme.plot.lineWidth` is a `number`; `cssVars["--tv-plot-line-width"]` is a string like `"1.5px"` or `"1.5"`. Migrating those requires adding a `readVarPx(cssVars, name, fallback): number` to `consumer-bridge.ts`. Deferred from this session.
+
+e. **The group-header tinted-rgba background** is a synthesized fallback (when `tier.bg` is unset, compose `rgba(r,g,b,opacity)` from `secondaryDeep`). This isn't a token — it's a Tier-3 derivation that belongs to Stage 2's typography/surface cascade. We left it untouched.
+
+**Next session — natural priorities:**
+
+1. **Dimensional `readVarPx` helper + migrate `--tv-plot-line-width` / `--tv-plot-point-size` / `--tv-plot-tick-mark-length`** — small consumer-bridge helper, then sweep the ~6 sites.
+2. **Spacing cluster (~15 sites)** — `theme.spacing.*` reads; these are all dimensional, so unblock with the `readVarPx` helper first.
+3. **TabvizPlot.svelte DOM render-path migration** — Svelte component reads `theme.row.*`, `theme.cell.*`, `theme.divider.*` directly; the v4 cssVars are already emitted into the scope element via `theme-runtime.css`, so component reads can switch from `theme.foo.bar` to actual CSS `var(--tv-foo-bar)` syntax (no JS bridge needed).
+4. **Header variants cluster** — `--tv-header-light-*`, `--tv-header-tint-*`, `--tv-header-fill-*` — depends on `activeHeaderVariant()` returning structured data; this is Stage 2 scope.
