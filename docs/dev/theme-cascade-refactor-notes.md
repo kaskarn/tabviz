@@ -369,3 +369,58 @@ The session's HC push implementation may be a good template for any other Stage 
 - 1068 bun tests pass; svelte-check clean; npm run build:widget succeeds.
 - `resolveTheme(createWire({brand:"#0099CC", mode:"high-contrast"})).roles.border` returns ramps.neutral[8] (HC-pushed from default neutral.6).
 - `resolveTheme(createWire({brand:"#0099CC", mode:"high-contrast"})).cssVars["--tv-row-alt-bg"]` returns `"transparent"`.
+
+---
+
+### 2026-06-02 — Sprint continuation: curves wiring + Phase 5 height cascade
+
+**Internal commits landed:**
+
+- `[M4] curves: integrate into oklchRamp + buildRamps` — `oklchRamp` gains optional `curve` parameter; when set, derives L progression dynamically by interpolating between `LIGHT_RAMP_L[0]` (paper) and `LIGHT_RAMP_L[11]` (ink) bounds. `buildRamps` reads `inputs.curves` and passes per-ramp curves through. Decorative shares accent curve. 12 tests.
+- `[M5] row-kind-heights.ts: layers 1-4 of the height cascade` — new module with `INTRINSIC_KIND_RATIOS` (layer 1: spacer=0.5, rest=1.0), `KIND_INHERITANCE` (layer 2: summary→data), `resolveRowKindRatio` and `resolveRowKindHeight` functions walking layers 4→3→2→1. `ThemeInputs.row_kinds` field added per Q10 closure (structured shape with `heightRatio`, forward-compatible with Stage 2 paint fields). 16 tests.
+- `[M5] computeRowLayout: consume row-kind-heights cascade` — replaces inline `kindBase` in `table-metrics.ts` with cascade walker. `RowLayoutInput` gains `themeKinds` (layer 3) and `constructorRowHeights` (layer 4). The existing `rowKindHeights` pin (layer 5) stays unchanged. 6 new integration tests.
+
+**Branch state at end of session:**
+- 1102 bun tests pass (was 1068 + 12 curves integration + 16 row-kind module + 6 table-metrics integration).
+- svelte-check clean: 0 errors, 0 warnings.
+- `npm run build:widget` succeeds (733.65 kB).
+
+**Capability surface after this session:**
+
+✓ Per-ramp curves (linear/ease/smooth/log/exp) wired end-to-end
+✓ `inputs.curves.{neutral,brand,accent}` reshapes ramp L progression
+✓ Decorative ramp shares accent curve
+✓ Row-kind height cascade (5 layers) — full pipeline:
+  - Layer 5 (pin) bypasses everything (already shipped)
+  - Layer 4 (constructor) wins over layer 3
+  - Layer 3 (theme) wins over inheritance
+  - Layer 2 (inheritance, summary→data) walks correctly
+  - Layer 1 (intrinsic) is the floor
+- `computeRowLayout` consumes the cascade transparently — existing call sites unchanged, new optional inputs available
+✓ `ThemeInputs.row_kinds` structured shape per Q10 closure
+
+**What's still owed for Phase 5 completion** (deferred to a future session):
+
+- Settings-panel per-kind height control (`RowKindHeightsControl.svelte`) — UI work.
+- Drag-handle overlay layer (`RowEdgeHandles.svelte`) + browser harness — needs Puppeteer test setup.
+- R modifier API (`set_row_kind_height_ratio`, `set_row_kind_height_pin`, `release_row_kind_heights`) — V8 wiring.
+- `RowKind` enum rename to kebab-case (Q9 closure — group_header → group-header, etc.) — coordinated rename across ~50 sites; substrate-landing concern.
+
+**Architectural seam: curves vs. v3 hand-tuned ramps.**
+
+The existing `LIGHT_RAMP_L` array is hand-tuned for perceptual smoothness; the curve-derived path interpolates linearly between paper L (0.987) and ink L (0.180) through whichever curve is chosen. These are NOT equivalent:
+- `LIGHT_RAMP_L[5]` (hand-tuned) = 0.804
+- linear curve at index 5: 0.987 - (5/11) × 0.807 = 0.620
+
+The hand-tuned array gives a perceptually-correct gentle S curve. The linear curve is "uniform L distribution" which is different. The mismatch is intentional and signals to authors: pick a curve to alter the feel; leave unset for the v3 perceptually-correct default.
+
+**Next session — natural priorities:**
+
+1. **Phase 6 consumer migration** — `svg-generator.ts` cluster-by-cluster (highest user-visible payoff; biggest mechanical effort).
+2. **Phase 5 affordances** — settings-panel + drag-handle (UI work; can wait for Stage 3 redesign).
+3. **R-side modifier API** — `set_polarity`, `set_curve`, `set_row_kind_height_ratio`, `set_role_binding`, `pin_token_by_name`, etc. via V8.
+
+**State to verify in next session:**
+- 1102 bun tests pass; svelte-check clean; npm run build:widget succeeds.
+- `oklchRamp("#0099CC", { mode: "light", curve: CURVES.log })` produces a different ramp than default.
+- `computeRowLayout({...rowHeight:24, themeKinds:{data:{heightRatio:1.5}}}).rowHeights` reflects layer 3.
