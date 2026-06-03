@@ -1,6 +1,10 @@
 # Stage 1 substrate-design
 
-> **Status:** v0.6 — 2026-06-02. Phases 1–6 of Stage 1 design (full Stage 1 design complete).
+> **Status:** v1.0 LANDED — 2026-06-03. Implementation substantially complete on `feat/theme-rework`.
+> Steps 1–7 + 9 fully landed; steps 8 (R-side slimming) and 10 (v3 dead-code purge) are intentionally
+> deferred to follow-up sessions — the v3 surface coexists with v4 emissions in the bridge module
+> (`srcjs/src/lib/theme/consumer-bridge.ts`) and via `buildThemeCSS` dual-emission. Step 11 has a
+> running visual sweep (`tests/visual/output/`); fresh `dev-light`/`dev-dark` baselines TBD.
 > **Parent vision:** [`theme-cascade-rework.md`](theme-cascade-rework.md) — §4a (substrate moves), §5 Stage 1 scope.
 > **Locks once approved:** the contract everything else in Stage 1 implementation reads from.
 

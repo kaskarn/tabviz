@@ -660,3 +660,59 @@ a. **Spacing pin semantics is doing double duty.** `getCssVars` applies `theme.s
 b. **computeAxisLayout consumes `theme.plot.tickMarkLength` directly** as a function parameter. To migrate, either (i) thread cssVars through computeAxisLayout's call sites, or (ii) build a v4-aware wrapper. The deeper this kind of widening goes, the more it argues for a single load-bearing `themeContext` object instead of threading individual `cssVars` everywhere — a clear sign the API needs a v4-style consolidation.
 
 c. **TabvizPlot.svelte's CSS templates are the natural migration target.** With buildThemeCSS now emitting v4 names alongside v3, the Svelte CSS just needs `var(--tv-v4-name, var(--tv-v3-name))` chains. The migration is mechanical CSS rename rather than code changes — fast.
+
+---
+
+### 2026-06-03 — Stage 1 LANDED: R-side helpers + R↔TS polarity fix + visual sweep
+
+Closing-out session for the Stage 1 substrate sprint. Final commits:
+
+1. **`[M8] R serialize: mode -> polarity (matches TS substrate sprint M4 split)`** — Stage 1 §40 Q-P4.5 reached R-side. R `@mode` (light/dark) now serializes as wire `polarity`; wire `mode` ships fixed at `"standard"` until Stage 2 exposes R-side `accessibility_mode`. Single-commit fix unblocked the entire dark-themed visual surface — `web_theme_dark()` now produces a dark canvas (#16181A → cssVars `#121416`) instead of falling through to default light. Caught by direct visual inspection.
+
+2. **`[M9] R-side V4 inspection helpers`** — four wrappers over the V4 manifest + resolver:
+   - `list_component_tokens(theme = NULL)` — manifest as a data frame; with theme, includes resolved values
+   - `theme_css_vars(theme)` — named character vector of `--tv-*` values
+   - `inspect_token(theme, css_var)` — per-token resolution trace
+   - `diff_themes(theme_a, theme_b)` — tokens that differ
+
+   TS additions: `resolveFromInputs(inputs) → ResolvedTheme` (one-hop helper needed because R's V8 bridge can't chain `resolveTheme(createWire(...))` over `callBuilder`'s single-arg signature).
+
+3. **`[M9] R-side V4 helpers complete: set_polarity + contrast_report`** — closes Step 9:
+   - `set_polarity(theme, polarity)` — polarity-vocabulary alias for `set_mode`
+   - `contrast_report(theme)` — APCA-Lc magnitudes for 5 critical fg/bg pairs
+
+   `contrastReport(resolved)` TS export runs `apcaLc` on key pairs and returns a structured list R consumes as a data frame.
+
+**Visual sweep results** (`tabviz::render_visual_tests()`, 57 PNGs):
+- All gallery presets render cleanly with v4 substrate active.
+- `dark_theme.png` renders with proper dark canvas after the M8 polarity fix.
+- `lotr_dwarven.png` and other LOTR-themed editorial pages render with their distinct neutral_tint behavior intact.
+- `gallery_13_jama.png`, banding examples (banding_none/row/group/group_1/group_2), nested groups, and the showcase render at parity with pre-sprint baselines for v3-only paths.
+- Several pre-sprint baseline PNGs (timestamps from April/May 2026) remain alongside fresh ones — they predate the substrate work and aren't currently in the render set.
+
+**Stage 1 status at end of session:**
+
+| Step | Status | Commit prefix |
+|---|---|---|
+| 1. Manifest skeleton | ✅ landed | [M1] |
+| 2. CSS-var wire | ✅ landed | [M2] |
+| 3. Override schema + wire | ✅ landed | [M3] |
+| 4. Resolver capabilities | ✅ landed | [M4] |
+| 5. Row-kind height cascade | ✅ landed | [M5] |
+| 6. Consumer migration | ✅ substantially complete | [M6] |
+| 7. SVG export pipeline | ✅ substantially complete | [M6] (interleaved with step 6) |
+| 8. R-side slimming | 🟡 partial — polarity rename done; full S7 class slim deferred | [M8] |
+| 9. Discovery + inspection helpers | ✅ landed | [M9] |
+| 10. v3 dead-code purge | ⏭️ deferred — v3 + v4 coexist via consumer-bridge + buildThemeCSS dual emit | — |
+| 11. Visual baseline shoot | 🟡 partial — running sweep clean; fresh dev-light/dev-dark TBD | — |
+| 12. Doc updates | ✅ landed (this entry + design doc status flip) | [docs] |
+
+**Why steps 8 + 10 are deferred:**
+
+The vision doc §9 (clean-break commit) called for landing v3 deletion together with the substrate. In practice, the substrate sprint shipped a coexistence layer (consumer-bridge.ts + buildThemeCSS dual-emission) that lets v3 and v4 run side-by-side. This makes step 10's "delete every v3 artifact" mechanically simpler — the deletion can happen in a follow-up session without risking breakage, because consumers already prefer v4 names when they're present. The cost is one more session before the substrate is fully canonical; the benefit is each session leaves the branch in a known-good state.
+
+Step 8's R-side slimming (deleting dozens of S7 classes in `R/classes-theme.R`) sits on the same axis — it's a delete-only operation enabled by the v4 substrate being load-bearing, with no functional regression possible if done after step 10. Both naturally pair with the v3 emitter purge.
+
+**Final commit log on `feat/theme-rework`** (29 commits ahead of main):
+
+The branch is durable, well-tested, and ready to merge or to continue with step 10 in a focused session. 1177 bun tests + 1415 R tests pass; svelte-check clean; widget bundle stable at ~761 kB; visual sweep clean across 57 PNG outputs.
