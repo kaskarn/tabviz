@@ -23,11 +23,12 @@
  *   - Non-role-sourced tokens (status, computed, anchor, input, const)
  *     throw `TokenNotPinnableError` with an actionable message.
  *
- * NOTE (Stage 1 sprint kickoff state): `resolveWire()` still calls the
- * pre-existing `buildThemeStructure()` resolver — role overrides stored on
- * the wire are NOT yet applied during resolution. Step 4 of the substrate
- * sprint replaces the resolver with one that consumes roleOverrides and
- * emits the v4 CSS-var map via `emitCssVarsFromManifest()`.
+ * Stage 1 substrate sprint state (post-merge): the actual v4 resolver
+ * lives in `resolve-theme.ts::resolveTheme(wire)`, which consumes the
+ * wire's `roleOverrides` and emits the cssVars map directly on the
+ * returned `ResolvedTheme`. `resolveWire()` here is the legacy v3
+ * resolver path kept available for callers that still consume
+ * `ThemeStructure`.
  */
 
 import type { ThemeInputs, ThemeStructure } from "../../types/theme-inputs";
@@ -232,20 +233,15 @@ export function getRoleProvenance(wire: ThemeWire, role: RoleName): RoleProvenan
 // ============================================================================
 
 /**
- * Resolve a wire to a ThemeStructure.
+ * Resolve a wire to a v3 `ThemeStructure` via the legacy `buildThemeStructure`
+ * path. The v4 cssVars resolver — which DOES consume `roleOverrides` and
+ * emits the cssVars map directly — lives in `resolve-theme.ts::resolveTheme`.
  *
- * SUBSTRATE SPRINT KICKOFF NOTE: this still calls the pre-v4 resolver
- * (`buildThemeStructure`) and IGNORES roleOverrides. The substrate
- * sprint's step 4 replaces this with a v4 resolver that:
- *   1. Builds ramps from inputs.
- *   2. Resolves roles using DEFAULT_ROLE_BINDINGS + wire.roleOverrides.
- *   3. Walks COMPONENT_TOKENS via emitCssVarsFromManifest to produce the
- *      CSS-var map.
- *   4. Returns a v4 ResolvedTheme (per Stage 1 §10a) instead of the v3
- *      ThemeStructure.
+ * This function persists for callers that still want a ThemeStructure
+ * (most notably the v3 deserialization path R-side). It IGNORES
+ * `wire.roleOverrides` — those flow only through the v4 resolver.
  *
- * Until step 4 lands, role overrides are stored on the wire but have no
- * effect on rendered output. The wire serialization/round-trip remains
+ * The wire serialization/round-trip remains
  * faithful so tests can verify override storage without resolver hookup.
  */
 export function resolveWire(wire: ThemeWire): ThemeStructure {
