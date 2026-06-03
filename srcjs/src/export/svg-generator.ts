@@ -806,8 +806,21 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     }
   }
   // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
+  // Phase 5 row-kind height cascade:
+  //   layer 4 (constructorRowHeights) — from spec.rowHeights (v4 field; ratios).
+  //   layers 3 + 5 not plumbed through the SVG path yet (browser-side pins
+  //   live in the layout-zoom slice; SVG export doesn't currently consume
+  //   them — that's a step 6 concern).
   const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
-    computeRowLayout({ displayRows, wrapLineCounts, rowHeight, rowGroupPadding, dataLineHeightPx, contentHeights });
+    computeRowLayout({
+      displayRows,
+      wrapLineCounts,
+      rowHeight,
+      rowGroupPadding,
+      dataLineHeightPx,
+      contentHeights,
+      constructorRowHeights: spec.rowHeights,
+    });
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 

@@ -872,6 +872,20 @@ export interface WebSpec {
   extraColumns?: ColumnDef[];
   availableFields?: AvailableField[];
   theme: WebTheme;
+  /** Per-spec row-kind height ratios — layer 4 of the row-kind height
+   *  cascade (Stage 1 §33). Values are RATIOS relative to the density
+   *  `rowHeight`, not absolute px (per Q-P5.2 closure). Keyed by `RowKind`.
+   *
+   *  Example: `{ data: 1.0, summary: 1.25 }` makes summary rows 25%
+   *  taller than data rows.
+   *
+   *  R-side: emitted by `forest_plot(data, row_heights = list(...))`.
+   *  The constructor layer wins over theme defaults (layer 3) but loses
+   *  to the interactive pin (layer 5). */
+  rowHeights?: Partial<Record<
+    "data" | "group_header" | "spacer" | "summary" | "header" | "panel",
+    number
+  >>;
   interaction: InteractionSpec;
   /** @kind forest — `plotWidth` is the forest column's pixel width;
    *  ignored when no forest column is present. */
