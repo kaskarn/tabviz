@@ -33,11 +33,18 @@ theme_inputs_to_json <- function(inputs) {
     list(hex = inputs@neutral_tint)
   }
 
+  # Q-P4.5 mode/polarity split (TS substrate sprint, M4 phase): R-side
+  # input @mode is the historical light/dark switch — it now serializes as
+  # `polarity` to match the TS substrate's polarity field. TS-side `mode`
+  # is reserved for accessibility modes (standard / high-contrast /
+  # reduced-transparency); the R API will expose those via a future
+  # `accessibility_mode` arg once Stage 2 lands them in the R surface.
   out <- list(
     brand                 = inputs@brand,
     accent                = na_to_null(inputs@accent),
     decorative            = na_to_null(inputs@decorative),
-    mode                  = inputs@mode,
+    polarity              = inputs@mode,
+    mode                  = "standard",
     neutral_tint          = neutral_tint_out,
     neutral_tint_strength = inputs@neutral_tint_strength,
     categorical           = inputs@categorical,
