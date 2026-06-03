@@ -57,6 +57,7 @@ import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distri
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
+import { getCssVars, readVar } from "$lib/theme/consumer-bridge";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
@@ -3992,6 +3993,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const theme = spec.theme;
   const padding = theme.spacing.padding;
 
+  // Phase 6 consumer migration — pilot.
+  // Compute the v4 cssVars map from the theme's authoring inputs (when
+  // present). Consumers read via readVar(cssVars, varName, fallback)
+  // so v3 specs without authoringInputs continue to work via the v3 path.
+  // See `srcjs/src/lib/theme/consumer-bridge.ts`.
+  const cssVars = getCssVars(theme);
+
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
 
@@ -4188,7 +4196,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       } else if (bandIdx === 1) {
         // Alternating row banding (only paint the "odd" band — even rows
         // inherit the container background, matching the web widget).
-        const bgColor = theme.row.alt.bg;
+        // Phase 6 pilot migration: prefer v4 cssVars; fall back to v3.
+        const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
         if (bgColor !== theme.surface.base) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
@@ -4211,7 +4220,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // so the group_header row is just rowHeight tall and paints
       // edge-to-edge here.
       if (bandIdx === 1) {
-        const bgColor = theme.row.alt.bg;
+        // Phase 6 pilot migration: prefer v4 cssVars; fall back to v3.
+        const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
         if (bgColor !== theme.surface.base) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
