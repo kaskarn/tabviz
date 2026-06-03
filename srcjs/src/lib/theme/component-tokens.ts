@@ -543,9 +543,7 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-header-tint-fg",
   "--tv-header-fill-bg",
   "--tv-header-fill-fg",
-  // ── Plot
-  "--tv-plot-axis-line",
-  "--tv-plot-tick-mark",
+  // ── Plot (axis-line + tick-mark migrated 2026-06-02 in svg-generator.ts)
   "--tv-plot-tick-mark-length",
   "--tv-plot-line-width",
   "--tv-plot-point-size",
@@ -569,13 +567,11 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-text-body-fg",
   "--tv-text-footnote-fg",
   // ── Generic T2 role passthroughs (Phase 6 migration helpers)
+  // --tv-text + --tv-text-muted + --tv-cell-border consumed by renderDetailsPanel and axis renderers
   "--tv-surface-bg",
   "--tv-surface-subtle-bg",
-  "--tv-text",
-  "--tv-text-muted",
   "--tv-text-subtle",
   "--tv-border",
-  "--tv-border-subtle",
 
   // ── v3 LEGACY REFERENCES ──────────────────────────────────────────────────
   // The 140+ entries below are `--tv-*` references already present in v3

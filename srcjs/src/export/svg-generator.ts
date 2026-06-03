@@ -2534,7 +2534,8 @@ function renderVizAxis(
   vizX: number,
   vizWidth: number,
   nullValue: number | undefined,
-  isLog: boolean = false
+  isLog: boolean = false,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.label.size);
@@ -2542,6 +2543,28 @@ function renderVizAxis(
     { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
     theme.plot.tickMarkLength,
+  );
+
+  // Plot scaffold colors (v4 cssVars → v3 fallback chain).
+  const axisLineColor = readVar(
+    cssVars,
+    "--tv-plot-axis-line",
+    theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle,
+  );
+  const tickMarkColor = readVar(
+    cssVars,
+    "--tv-plot-tick-mark",
+    theme.plot?.tickMark ?? theme.divider.subtle,
+  );
+  const tickLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.tickLabel?.fg ?? theme.content.secondary,
+  );
+  const axisLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.axisLabel?.fg ?? theme.content.secondary,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2560,7 +2583,7 @@ function renderVizAxis(
 
   // Axis line
   lines.push(`<line x1="${vizX}" x2="${vizX + vizWidth}"
-    y1="0" y2="0" stroke="${theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${axisLineColor}" stroke-width="1"/>`);
 
   // Generate "nice" ticks sized to the column width, then filter to keep
   // label spacing above the minimum pixel threshold.
@@ -2616,13 +2639,13 @@ function renderVizAxis(
     const xOffset = getTextXOffset(tickX);
     const label = formatNumber(tick);
 
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${label}</text>`);
+      fill="${tickLabelFg}">${label}</text>`);
   }
 
   // Axis label
@@ -2632,7 +2655,7 @@ function renderVizAxis(
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${500}"
-      fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
+      fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
 
   return lines.join("\n");
@@ -2650,7 +2673,8 @@ function renderForestAxis(
   forestX: number,
   forestWidth: number,
   nullValue: number = 1,
-  baseTicks?: number[]
+  baseTicks?: number[],
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const tickCount = typeof theme.axis.tickCount === "number"
@@ -2663,6 +2687,33 @@ function renderForestAxis(
     { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
     theme.plot.tickMarkLength,
+  );
+
+  // Plot scaffold colors (v4 cssVars → v3 fallback chain).
+  const axisLineColor = readVar(
+    cssVars,
+    "--tv-plot-axis-line",
+    theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle,
+  );
+  const tickMarkColor = readVar(
+    cssVars,
+    "--tv-plot-tick-mark",
+    theme.plot?.tickMark ?? theme.divider.subtle,
+  );
+  const tickLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.tickLabel?.fg ?? theme.content.secondary,
+  );
+  const axisLabelFg = readVar(
+    cssVars,
+    "--tv-text-muted",
+    theme.plot?.axisLabel?.fg ?? theme.content.secondary,
+  );
+  const gridlineColor = readVar(
+    cssVars,
+    "--tv-border-subtle",
+    theme.divider.subtle,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2681,7 +2732,7 @@ function renderForestAxis(
 
   // Axis line
   lines.push(`<line x1="${forestX}" x2="${forestX + forestWidth}"
-    y1="0" y2="0" stroke="${theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${axisLineColor}" stroke-width="1"/>`);
 
   // Gridlines (behind ticks) — mirrors EffectAxis.svelte; opt-in via
   // theme.axis.gridlines, styled per theme.axis.gridlineStyle.
@@ -2692,7 +2743,7 @@ function renderForestAxis(
     for (const tick of ticks) {
       const x = forestX + xScale(tick);
       lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${-layout.plotHeight}"
-        stroke="${theme.divider.subtle}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
+        stroke="${gridlineColor}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
     }
   }
 
@@ -2704,13 +2755,13 @@ function renderForestAxis(
     const xOffset = getTextXOffset(tickX);
 
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
-      stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
+      stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
       font-family="${theme.plot?.tickLabel?.family ?? theme.text.tick?.family ?? theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${theme.plot?.tickLabel?.weight ?? theme.text.tick?.weight ?? 400}"
       font-style="${(theme.plot?.tickLabel?.italic ?? theme.text.tick?.italic) ? "italic" : "normal"}"
-      fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${formatTick(tick)}</text>`);
+      fill="${tickLabelFg}">${formatTick(tick)}</text>`);
   }
 
   // Axis label
@@ -2721,7 +2772,7 @@ function renderForestAxis(
       font-size="${fontSize}px"
       font-weight="${theme.plot?.axisLabel?.weight ?? theme.text.label?.weight ?? 500}"
       font-style="${(theme.plot?.axisLabel?.italic ?? theme.text.label?.italic) ? "italic" : "normal"}"
-      fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
+      fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
 
   // Position axis at: mainY + headerHeight + rowsHeight + axisGap
@@ -4433,7 +4484,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     }
 
     // Axis
-    parts.push(renderForestAxis(xScale, layout, theme, fcAxisLabel, forestX, forestWidth, fcNullValue, baseTicks));
+    parts.push(renderForestAxis(xScale, layout, theme, fcAxisLabel, forestX, forestWidth, fcNullValue, baseTicks, cssVars));
   }
 
   // Render viz columns (viz_bar, viz_boxplot, viz_violin)
@@ -4491,7 +4542,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log", cssVars));
         parts.push("</g>");
       }
     } else if (vizColInfo.type === "viz_boxplot") {
@@ -4526,7 +4577,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log", cssVars));
         parts.push("</g>");
       }
     } else if (vizColInfo.type === "viz_violin") {
@@ -4561,7 +4612,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log", cssVars));
         parts.push("</g>");
       }
     }
