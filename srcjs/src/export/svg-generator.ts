@@ -314,9 +314,11 @@ function calculateSvgAutoWidths(
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   const rows = spec.data.rows;
 
-  // Padding values from theme (not hardcoded magic numbers)
-  const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
-  const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
+  // Padding values from theme (not hardcoded magic numbers). v4 cssVars when
+  // available; v3 fallback otherwise.
+  const cssVars = getCssVars(spec.theme);
+  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", spec.theme.spacing.groupPadding ?? 8) * 2;
 
   // ========================================================================
   // PHASE 1: Measure leaf column content
@@ -512,7 +514,12 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   // Canonical indent token: the renderer indents by
   // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
   // Budget label width with the same value so it doesn't under-size at depth.
-  const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+  // v4 reads --tv-spacing-indent-per-level (kept in sync with rowGroup.indentPerLevel).
+  const indentPx = (() => {
+    const v3 = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+    const cv = getCssVars(spec.theme);
+    return readVarPx(cv, "--tv-spacing-indent-per-level", v3);
+  })();
   // Header in the primary (label) column is rendered bold at the same scaled
   // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
   // a long primary header doesn't squeeze the label column and trigger
@@ -524,7 +531,8 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
     : Math.round(fontSize * 1.05 * 100) / 100;
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   // Use theme-based padding (not hardcoded magic numbers)
-  const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const cssVars = getCssVars(spec.theme);
+  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", spec.theme.spacing.cellPaddingX ?? 10) * 2;
   let maxWidth = 0;
 
   // Build group depth map for calculating row indentation
@@ -756,7 +764,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const wrapLineCounts: Record<string, number> = {};
   if (wrapEnabledCols.length > 0) {
     const dataFontSize = parseFontSize(theme.text.body.size);
-    const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
+    const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
     for (const row of spec.data.rows) {
       let maxLines = 1;
       for (const col of wrapEnabledCols) {
@@ -3199,7 +3207,7 @@ function renderUnifiedTableRow(
     const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
     if (wrapEnabled) {
       const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
-      const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
+      const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
       const contentWidth = Math.max(1, width - cellPadding);
       const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
       const lineHeight = 1.5;
