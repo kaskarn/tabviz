@@ -257,6 +257,31 @@ function resolveTokenValue(
     return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
   }
 
+  // Stage 2 §7 browser-additive effects.
+  if (token.cssVar === "--tv-brand-gradient") {
+    const brandSolid = resolved.roles["brand-solid"] ?? resolved.inputs.brand;
+    // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
+    const brandRamp = resolved.ramps.brand;
+    const a = brandRamp[7] ?? brandSolid;
+    const b = brandRamp[9] ?? brandSolid;
+    return `linear-gradient(90deg, ${a} 0%, ${b} 100%)`;
+  }
+  if (token.cssVar === "--tv-brand-glow") {
+    // rgba from accent-solid at alpha 0.4.
+    const accent = resolved.roles["accent-solid"] ?? resolved.inputs.brand;
+    if (accent.startsWith("#")) {
+      const h = accent.slice(1);
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, 0.4)`;
+    }
+    return accent;
+  }
+  if (token.cssVar === "--tv-glass-blur") {
+    return "16px";
+  }
+
   // Stage 2 typography tokens always route through the typography resolver,
   // regardless of kind. (`lh` and `track` are tagged spacing-px / size, but
   // their values come from the type-role table, not density.)

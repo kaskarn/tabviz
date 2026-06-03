@@ -166,6 +166,27 @@
   width: var(--tv-hc-bar-width, 3px);
 }
 
+/* sv-omit-begin */
+/* Stage 2 §7 browser-additive effects. These rules apply backdrop-filter
+ * (glass), gradient strips, and glow shadows; SVG export strips them via
+ * the sv-omit markers. SVG path emits structural equivalents (gradient
+ * defs, filter defs) where parity is desired. */
+
+.tabviz-scope[data-shell-surface="glass"] .tv-shell {
+  backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(150%);
+}
+
+.tabviz-scope .shell-strip {
+  height: 3px;
+  background: var(--tv-brand-gradient);
+}
+
+.tabviz-scope .tv-glow {
+  box-shadow: 0 0 10px var(--tv-brand-glow);
+}
+/* sv-omit-end */
+
 /* When the DOM/SVG output isn't yet wrapped in `.tv-shell` + `.tv-paper`,
  * the rules below are inert. As Stage 2 §2 consumer migration plumbs the
  * wrapping elements into TabvizPlot.svelte + svg-generator.ts, these

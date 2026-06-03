@@ -487,6 +487,31 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Paper inner padding (px).",
   },
 
+  // ── Stage 2 §7 — Browser-additive effects (graceful-degrade in SVG) ───────
+  // Glass, brand gradient, glow. Each token's browser-additive companion
+  // lives in the same scope; SVG export degrades to a flat/solid equivalent.
+  {
+    cssVar: "--tv-brand-gradient",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "brand gradient: brand → brand-deep" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Brand gradient stop pair (CSS linear-gradient or SVG <linearGradient>)",
+  },
+  {
+    cssVar: "--tv-brand-glow",
+    kind: "paint-color",
+    source: { tier: "computed", note: "brand glow: accent @ alpha 0.4" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Brand glow color for box-shadow / SVG <filter> emit",
+  },
+  {
+    cssVar: "--tv-glass-blur",
+    kind: "spacing-px",
+    source: { tier: "const", note: "glass backdrop-filter blur radius" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Glass blur radius (browser only; SVG degrades to no-blur)",
+  },
+
   // ── Stage 2 §5 — HC encoding fidelity tokens ──────────────────────────────
   // High-contrast mode drops translucent washes; these tokens preserve the
   // semantic encoding on non-color channels (caret glyph, ring stroke, bar
