@@ -642,8 +642,13 @@ interface InternalLayout extends ComputedLayout {
 
 function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
   const theme = spec.theme;
-  const rowHeight = theme.spacing.rowHeight;
-  const padding = theme.spacing.padding;
+  // Layout arithmetic reads spacing tokens via v4 cssVars (with v3 fallback).
+  // Computed once at function entry; all spacing reads below use the resolved
+  // numbers. When theme.authoringInputs is unavailable, cssVars is empty and
+  // every readVarPx call falls back to theme.spacing.* — identical behavior.
+  const cssVars = getCssVars(theme);
+  const rowHeight = readVarPx(cssVars, "--tv-spacing-row-height", theme.spacing.rowHeight);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
@@ -662,7 +667,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const headerDepth = hasGroups ? 2 : 1;
   const effectiveHeaderHeight = computeHeaderHeight({
     bodyFontPx: parseFontSize(theme.text.body.size),
-    themeHeaderHeight: theme.spacing.headerHeight,
+    themeHeaderHeight: readVarPx(cssVars, "--tv-spacing-header-height", theme.spacing.headerHeight),
     headerDepth,
   });
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
@@ -689,7 +694,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
   // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
   // padding = 6+1+6).
-  const titleSubtitleGap = (hasTitle && hasSubtitle) ? (theme.spacing.titleSubtitleGap ?? 13) : 0;
+  const titleSubtitleGap = (hasTitle && hasSubtitle) ? readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", theme.spacing.titleSubtitleGap ?? 13) : 0;
   const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
 
   const captionHeight = hasCaption ? textRegionHeight(theme.text.label.size, lineHeight) : 0;
@@ -782,7 +787,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Group-header rows take the themed `rowGroupPadding` (mirrors the
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
-  const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
+  const rowGroupPadding = readVarPx(cssVars, "--tv-spacing-row-group-padding", theme.spacing.rowGroupPadding ?? 0);
   const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * LINE_HEIGHT);
   // Per-row intrinsic content height (stacked pictograms, tall icons,
   // multi-effect forest, sparkline/img) — estimator path for V8/export.
@@ -885,7 +890,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
   // no bottom axis, so reserving ~76px of axis height caused truncation.
-  const axisGap = theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
+  const axisGap = readVarPx(cssVars, "--tv-spacing-axis-gap", theme.spacing.axisGap ?? DEFAULT_AXIS_GAP);
   const hasAxisColumn = allColumns.some(
     c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
   );
@@ -914,13 +919,14 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // (where `webAxisHeight === 0` meant less buffer space to absorb the
   // mismatch).
   const footerGap = (spec.labels?.caption || spec.labels?.footnote)
-    ? (theme.spacing.footerGap ?? 8)
+    ? readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
     : 0;
   // Bottom margin: themable via spacing.bottom_margin (default 16 to
   // mirror the prior LAYOUT.BOTTOM_MARGIN constant).
-  const bottomMargin = theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN;
+  const bottomMargin = readVarPx(cssVars, "--tv-spacing-bottom-margin", theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN);
+  const headerGap = readVarPx(cssVars, "--tv-spacing-header-gap", theme.spacing.headerGap ?? 12);
   const totalHeight = headerTextHeight + padding +
-    (theme.spacing.headerGap ?? 12) +
+    headerGap +
     headerHeight + plotHeight +
     webAxisHeight +
     footerGap +
@@ -952,7 +958,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // on the header element via `--tv-header-gap` (PlotHeader.svelte:130);
     // SVG has no header element so we fold the gap into mainY. Default 12
     // matches the live CSS-var fallback in TabvizPlot.svelte.
-    mainY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12),
+    mainY: headerTextHeight + padding + headerGap,
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
     // footerY = caption baseline. Live widget renders the caption with
@@ -962,9 +968,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // top to baseline ≈ 0.85 × fontSize). Without the +captionAscent,
     // SVG and live disagreed by ~10px and the footer text overlapped
     // the axis region in the export.
-    footerY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12)
+    footerY: headerTextHeight + padding + headerGap
            + headerHeight + plotHeight + webAxisHeight
-           + (theme.spacing.footerGap ?? 8)
+           + readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
            + Math.round(parseFontSize(theme.text.label.size) * 0.85),
     axisGap,
     rowsHeight,

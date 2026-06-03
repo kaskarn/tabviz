@@ -239,10 +239,10 @@ function resolveTokenValue(
 
   // Spacing-px tokens are resolved via the density table regardless of
   // source.tier — many are tagged `computed` because they derive from a
-  // density × kind formula. The full density-cascade integration lands
-  // with the row-kind work (step 5).
+  // density × kind formula. The density preset comes from inputs.density;
+  // inputs.densityFactor multiplies it (clamped [0.5, 2]).
   if (token.kind === "spacing-px") {
-    return tokenDensityPx(token.cssVar);
+    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.densityFactor);
   }
   if (token.kind === "border-width") {
     return "1px";
@@ -269,12 +269,30 @@ function resolveTokenValue(
   }
 }
 
-/** Per-token density-driven default px value. Comfortable preset values
- *  used as the placeholder during step 4; full density-cascade integration
- *  lands with the row-kind work (step 5). */
-function tokenDensityPx(cssVar: string): string {
-  // Match the inventory values from Stage 1 §1.
-  const COMFORTABLE: Record<string, number> = {
+/** Per-token density-driven default px value. Looks up the density preset
+ *  (compact / comfortable / spacious), then multiplies by densityFactor
+ *  (clamped [0.5, 2]). Mirrors theme-adapter.ts's DENSITY_SPACING +
+ *  scaleSpacing for parity with the v3 path. */
+type DensityPreset = "compact" | "comfortable" | "spacious";
+
+const DENSITY_PRESETS: Record<DensityPreset, Record<string, number>> = {
+  compact: {
+    "--tv-spacing-row-height": 20,
+    "--tv-spacing-header-height": 26,
+    "--tv-spacing-padding": 8,
+    "--tv-spacing-cell-padding-x": 8,
+    "--tv-spacing-cell-padding-y": 0,
+    "--tv-spacing-axis-gap": 8,
+    "--tv-spacing-column-group-padding": 6,
+    "--tv-spacing-row-group-padding": 8,
+    "--tv-spacing-header-gap": 8,
+    "--tv-spacing-footer-gap": 6,
+    "--tv-spacing-title-subtitle-gap": 10,
+    "--tv-spacing-bottom-margin": 12,
+    "--tv-spacing-indent-per-level": 14,
+    "--tv-spacing-container-padding": 0,
+  },
+  comfortable: {
     "--tv-spacing-row-height": 24,
     "--tv-spacing-header-height": 32,
     "--tv-spacing-padding": 12,
@@ -289,12 +307,44 @@ function tokenDensityPx(cssVar: string): string {
     "--tv-spacing-bottom-margin": 16,
     "--tv-spacing-indent-per-level": 16,
     "--tv-spacing-container-padding": 0,
-    "--tv-plot-tick-mark-length": 4,
-    "--tv-plot-line-width": 1.5,
-    "--tv-plot-point-size": 6,
-  };
-  const v = COMFORTABLE[cssVar];
-  return v !== undefined ? `${v}px` : "0px";
+  },
+  spacious: {
+    "--tv-spacing-row-height": 30,
+    "--tv-spacing-header-height": 40,
+    "--tv-spacing-padding": 16,
+    "--tv-spacing-cell-padding-x": 14,
+    "--tv-spacing-cell-padding-y": 0,
+    "--tv-spacing-axis-gap": 16,
+    "--tv-spacing-column-group-padding": 12,
+    "--tv-spacing-row-group-padding": 16,
+    "--tv-spacing-header-gap": 16,
+    "--tv-spacing-footer-gap": 12,
+    "--tv-spacing-title-subtitle-gap": 18,
+    "--tv-spacing-bottom-margin": 22,
+    "--tv-spacing-indent-per-level": 20,
+    "--tv-spacing-container-padding": 0,
+  },
+};
+
+// Plot-dim tokens don't scale with density per v3 conventions.
+const PLOT_DIMS: Record<string, number> = {
+  "--tv-plot-tick-mark-length": 4,
+  "--tv-plot-line-width": 1.5,
+  "--tv-plot-point-size": 6,
+};
+
+function tokenDensityPx(
+  cssVar: string,
+  density: DensityPreset,
+  factor: number | undefined,
+): string {
+  const plot = PLOT_DIMS[cssVar];
+  if (plot !== undefined) return `${plot}px`;
+  const base = DENSITY_PRESETS[density][cssVar];
+  if (base === undefined) return "0px";
+  if (factor == null || factor === 1) return `${base}px`;
+  const f = Math.max(0.5, Math.min(2, factor));
+  return `${Math.round(base * f)}px`;
 }
 
 /** Resolve an anchor name to its hex value from inputs. */

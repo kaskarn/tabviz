@@ -80,3 +80,27 @@ describe("readVarPx", () => {
     expect(readVarPx({ "--tv-spacing-row-height": "auto" }, "--tv-spacing-row-height", 24)).toBe(24);
   });
 });
+
+describe("getCssVars — density + pin behavior", () => {
+  it("returns density-correct spacing for each preset", () => {
+    const compact = buildTheme({ ...COCHRANE, density: "compact" }, "t");
+    const comfy = buildTheme({ ...COCHRANE, density: "comfortable" }, "t");
+    const spacious = buildTheme({ ...COCHRANE, density: "spacious" }, "t");
+    expect(getCssVars(compact)["--tv-spacing-row-height"]).toBe("20px");
+    expect(getCssVars(comfy)["--tv-spacing-row-height"]).toBe("24px");
+    expect(getCssVars(spacious)["--tv-spacing-row-height"]).toBe("30px");
+  });
+
+  it("honors mutated theme.spacing.X as a v3-compat pin", () => {
+    const theme = buildTheme({ ...COCHRANE, density: "comfortable" }, "t");
+    // v3-era mutation pattern: callers set spec.theme.spacing.X directly.
+    theme.spacing.rowGroupPadding = 40;
+    expect(getCssVars(theme)["--tv-spacing-row-group-padding"]).toBe("40px");
+  });
+
+  it("applies densityFactor scaling", () => {
+    const theme = buildTheme({ ...COCHRANE, density: "comfortable", densityFactor: 1.5 }, "t");
+    // comfortable rowHeight 24 × 1.5 = 36
+    expect(getCssVars(theme)["--tv-spacing-row-height"]).toBe("36px");
+  });
+});

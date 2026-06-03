@@ -545,17 +545,11 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-header-fill-fg",
   // ── Plot (axis-line + tick-mark + line-width + point-size migrated 2026-06-02)
   "--tv-plot-tick-mark-length",
-  // ── Spacing (--tv-spacing-padding, --tv-spacing-cell-padding-x,
-  //              --tv-spacing-footer-gap consumed 2026-06-03 by helper renderers)
-  "--tv-spacing-row-height",
-  "--tv-spacing-header-height",
+  // ── Spacing (10 of 13 consumed 2026-06-03 via computeLayout cssVars;
+  //              cell-padding-y, column-group-padding, indent-per-level,
+  //              container-padding still v3-only)
   "--tv-spacing-cell-padding-y",
-  "--tv-spacing-axis-gap",
   "--tv-spacing-column-group-padding",
-  "--tv-spacing-row-group-padding",
-  "--tv-spacing-header-gap",
-  "--tv-spacing-title-subtitle-gap",
-  "--tv-spacing-bottom-margin",
   "--tv-spacing-indent-per-level",
   "--tv-spacing-container-padding",
   // ── Text roles (--tv-text-title-fg + --tv-text-footnote-fg consumed 2026-06-02 by renderHeader/renderFooter)

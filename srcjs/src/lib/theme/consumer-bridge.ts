@@ -30,19 +30,58 @@ import { resolveTheme } from "./resolve-theme";
  *
  *  When `theme.authoringInputs` is undefined (older specs, hand-built
  *  themes), returns an empty record — consumers fall back to reading
- *  v3 fields directly per `readVar(...)`. */
+ *  v3 fields directly per `readVar(...)`.
+ *
+ *  After resolving from authoringInputs, applies theme.spacing.* as
+ *  override pins. This honors callers that mutate `spec.theme.spacing.X`
+ *  after construction (a v3-era pattern that bypasses the v4 wire). */
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
   if (!theme?.authoringInputs) return {};
   try {
     const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
     const resolved = resolveTheme(wire);
-    return resolved.cssVars;
+    return applySpacingPins({ ...resolved.cssVars }, theme);
   } catch {
     // Resolver errors during the sprint are tolerated; consumers fall
     // back to v3 reads. Drift gates + visual regression catch silent
     // mismatches.
     return {};
   }
+}
+
+/** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override
+ *  pins on the cssVars map. Mirrors the v3-side "spec.theme.spacing.X = N"
+ *  mutation pattern so the v4 path stays in sync with v3 mutations. */
+function applySpacingPins(
+  cssVars: Record<string, string>,
+  theme: WebTheme,
+): Record<string, string> {
+  const s = theme.spacing;
+  // Each pin: only override when the field is set (preserves authoringInputs
+  // density when no override exists).
+  const pin = (cssVar: string, value: number | undefined): void => {
+    if (value === undefined) return;
+    cssVars[cssVar] = `${value}px`;
+  };
+  pin("--tv-spacing-row-height", s.rowHeight);
+  pin("--tv-spacing-header-height", s.headerHeight);
+  pin("--tv-spacing-padding", s.padding);
+  pin("--tv-spacing-cell-padding-x", s.cellPaddingX);
+  pin("--tv-spacing-cell-padding-y", s.cellPaddingY);
+  pin("--tv-spacing-axis-gap", s.axisGap);
+  pin("--tv-spacing-column-group-padding", s.columnGroupPadding);
+  pin("--tv-spacing-row-group-padding", s.rowGroupPadding);
+  pin("--tv-spacing-header-gap", s.headerGap);
+  pin("--tv-spacing-footer-gap", s.footerGap);
+  pin("--tv-spacing-title-subtitle-gap", s.titleSubtitleGap);
+  pin("--tv-spacing-bottom-margin", s.bottomMargin);
+  pin("--tv-spacing-indent-per-level", s.indentPerLevel);
+  pin("--tv-spacing-container-padding", s.containerPadding);
+  // Plot dims (non-density-scaled).
+  if (theme.plot?.tickMarkLength !== undefined) pin("--tv-plot-tick-mark-length", theme.plot.tickMarkLength);
+  if (theme.plot?.lineWidth !== undefined) pin("--tv-plot-line-width", theme.plot.lineWidth);
+  if (theme.plot?.pointSize !== undefined) pin("--tv-plot-point-size", theme.plot.pointSize);
+  return cssVars;
 }
 
 /** Read a cssVar with a v3 fallback.
