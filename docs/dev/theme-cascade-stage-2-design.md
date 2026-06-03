@@ -1,8 +1,9 @@
 # Stage 2 design — typography cascade, shell/paper, surface effects, HC fidelity
 
-> **Status:** v1.0 LANDED — 2026-06-03. Substrate complete for §1–§3 + §5–§7
-> on `feat/theme-stage2`. §4 (texture knockouts) is the natural follow-up
-> once consumer migration plumbs the textured surfaces into the SVG export.
+> **Status:** v1.1 LANDED — 2026-06-03. Substrate complete for §§1–7
+> on `origin/main`. §4 (texture knockouts) landed in commit `[Stage2.4]`
+> at `82206b4` with the `--tv-{shell,paper}-text-knockout-bg` tokens +
+> `svgTextureKnockoutRect()` helper + `[data-shell-texture]` CSS rules.
 > **Builds on:** [`theme-cascade-stage-1-design.md`](theme-cascade-stage-1-design.md) — substrate (manifest, CSS-var wire, override schema, `data-*` variants, resolver capabilities, row-kind cascade).
 > **Parent vision:** [`theme-cascade-rework.md`](theme-cascade-rework.md) — §5 Stage 2 scope.
 

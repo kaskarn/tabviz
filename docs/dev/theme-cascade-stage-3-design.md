@@ -34,7 +34,21 @@ What this doc settles:
 
 ## 1. Settings panel — tab-organized API
 
-### 1a. The four axes
+> **SUPERSEDED 2026-06-03 by `tabviz_studio()`.** The original §1 design
+> proposed an in-widget settings panel with Color/Type/Size/Effects
+> tabs. The 2026-06-03 design-critic ideation session pivoted to
+> **studio mode**: editor lives in `tabviz_studio()` (Shiny gadget),
+> embedded widgets ship zero editor chrome, and the tab taxonomy is
+> reorganized by *decision altitude* — **Identity / Rhythm / Encoding
+> / Advanced** — per the Settings critic's "decoder altitude not
+> stationery store" framing. See the 2026-06-03 closing entry in
+> `theme-cascade-refactor-notes.md` for the locked design.
+>
+> The original Color/Type/Size/Effects taxonomy below is preserved for
+> historical context only; the landed taxonomy and tab content are
+> in `srcjs/src/studio/tabs/{Identity,Rhythm,Encoding,Advanced}Tab.svelte`.
+
+### 1a. The four axes (superseded)
 
 The settings panel is reorganized into four tabs matching the system's natural decomposition (per rgc_v4's `Playground`):
 

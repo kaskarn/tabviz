@@ -877,7 +877,7 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
 
   // ── v3 LEGACY REFERENCES ──────────────────────────────────────────────────
   // The 140+ entries below are `--tv-*` references already present in v3
-  // code (theme-css.ts, theme-inputs-css.ts, Svelte components, etc.) that
+  // code (theme-css.ts, Svelte components, etc.) that
   // the gate detects but the v4 manifest doesn't model. They are
   // grandfathered en masse during sprint kickoff. As consumers migrate
   // (step 6) and v3 emitters get deleted (step 10), these rows disappear.

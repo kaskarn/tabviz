@@ -421,17 +421,15 @@ All five are now done, obsolete, or dissolved by dead-code removal:
 
 ## 8. Ontology of interactive row-height drag-resize
 
-> **Mechanism BUILT 2026-06-02 (drag UI pending).** The override/pin layer the
-> §8 ontology calls for is in: `computeRowLayout` honors a per-`RowKind`
-> `rowKindHeights` map (the cascade's last arrow — base per kind, content still
-> grows above it, survives density/factor re-resolution); the layout-zoom slice
-> holds the map + `setRowKindHeight(kind, h)` / `resetRowKindHeights()` (store-
-> exposed). So the "edit the band-type's height token table-wide + pin it" model
-> is the implementation. **Remaining: the drag-resize UI** — a row-edge handle
-> whose pointer drag calls `setRowKindHeight(resolvedKind, newHeight)` (mirrors
-> the column-width drag); its own commit + browser harness.
+> **Mechanism + UI BOTH BUILT 2026-06-03.** The override/pin layer + the
+> drag-resize UI shipped in Stage 1 of the cascade rework. `computeRowLayout`
+> honors a per-`RowKind` `rowKindHeights` map; the layout-zoom slice holds
+> the map + `setRowKindHeight(kind, h)` / `resetRowKindHeights()`. The
+> drag-resize UI is `RowEdgeHandles.svelte` (pointer-capture mechanics
+> matching the column-width drag) and the settings-panel pin control is
+> `RowKindHeightsControl.svelte`.
 
-### 8a. Full row-kind height cascade — DESIGN (reflected 2026-06-02, build pending)
+### 8a. Full row-kind height cascade — BUILT (Stage 1 LANDED 2026-06-03)
 
 The shipped `rowKindHeights` map is only the **pin layer**. The full per-kind
 height resolution should be a cascade beneath it (low → high precedence):

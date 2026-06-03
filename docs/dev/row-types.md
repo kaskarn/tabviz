@@ -1,10 +1,16 @@
 # Row types — classification, rendering, and theming
 
-Status: **living design record — Phase 1 shipped; expansion is the live target
-(re-audited 2026-06-02).** Companion to `sizing-model.md`. The canonical
-`resolveRowKind` + `RowKindProps` registry is built
-(`srcjs/src/lib/layout/row-kind.ts`, see §2) and consolidates the ~50 scattered
-predicates. **The next sprint's frontier is the §6 expansion** — kind + traits
+Status: **living design record — Phase 1 + region-tree expansion + per-row-kind
+height cascade LANDED (re-audited 2026-06-03).** Companion to `sizing-model.md`.
+The canonical `resolveRowKind` + `RowKindProps` registry
+(`srcjs/src/lib/layout/row-kind.ts`, see §2) consolidates the ~50 scattered
+predicates. Region-tree primitive shipped 2026-06-02
+(`srcjs/src/lib/layout/region-tree.ts`); details/disclosure + per-context scale
+shipped on the same primitive. 5-layer row-kind height cascade landed in
+Stage 1 of the theme cascade rework (`row-kind-heights.ts`,
+`RowKindHeightsControl.svelte`, `RowEdgeHandles.svelte`). Faceting remains
+tabled as the future use case the seam was designed for. Original §6
+expansion roadmap below is preserved historically — kind + traits
 (many-of) + scope, the region-tree (rows as a flattened tree, not a flat
 `displayRows` list), free-content panels with content-driven height, and
 per-context forest scale — which converges on the two author targets (faceting +

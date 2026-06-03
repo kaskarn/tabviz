@@ -1,10 +1,9 @@
 # Region tree — the row-system foundation
 
-Status: **design doc — proposed (2026-06-02).** The next sprint's deliverable.
-Foundation-only and behavior-preserving: this builds the structural primitive
-that both **faceting** and **details/disclosure** grow from, but ships *no*
-user-facing feature itself. Companion to `row-types.md` (the why + the targets)
-and `sizing-model.md` (the geometry core this sits on). Read those first.
+Status: **LANDED 2026-06-02.** Region tree primitive shipped (`srcjs/src/lib/layout/region-tree.ts`).
+Feature 1 (details/disclosure rows) + Feature 2 (per-context forest scale)
+LANDED via the same primitive. Faceting remains the future use case the
+seam was designed for. Companion to `row-types.md` and `sizing-model.md`.
 
 Decisions locked going in (see `row-types.md` §6 + the 2026-06-02 planning
 session): full tree refactor; foundation only, both targets later; performance
