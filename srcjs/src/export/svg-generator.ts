@@ -1423,7 +1423,7 @@ function renderHeader(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const padding = theme.spacing.padding;
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
   const subtitleFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
   const separatorStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
 
@@ -1473,7 +1473,7 @@ function renderFooter(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const padding = theme.spacing.padding;
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
   let y = layout.footerY;
   const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
   const captionFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
@@ -1484,7 +1484,7 @@ function renderFooter(
   if (hasFooter) {
     // Border sits `footer_gap` above the text baseline — footerY already
     // includes the themed gap.
-    const gap = theme.spacing.footerGap ?? 8;
+    const gap = readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8);
     const borderY = layout.footerY - gap;
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${borderY}" y2="${borderY}"
@@ -1623,7 +1623,7 @@ function renderGroupHeader(
 
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
-  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   const labelX = x + cellPadX + indent;
   lines.push(`<text class="cell-text" dominant-baseline="central" x="${labelX}" y="${textY}"
     font-family="${theme.text.body.family}"
@@ -2824,7 +2824,8 @@ function renderUnifiedColumnHeaders(
   labelWidth: number,
   autoWidths: Map<string, number>,
   getColWidth: (col: ColumnSpec) => number,
-  showLabelHeader: boolean = true
+  showLabelHeader: boolean = true,
+  cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
   const baseFontSize = parseFontSize(theme.text.body.size);
@@ -2839,7 +2840,7 @@ function renderUnifiedColumnHeaders(
   // All header cells use bold weight to match web view CSS.
   const fontWeight = theme.header?.text?.weight ?? 600;
   const boldWeight = 600;
-  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   const hasGroups = hasColumnGroups(columnDefs);
 
   // Use row center - dominant-baseline:central handles vertical alignment
@@ -2994,7 +2995,7 @@ function renderUnifiedTableRow(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
-  const cellPadX = theme.spacing.cellPaddingX ?? 10;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
@@ -4227,7 +4228,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       layout.labelWidth,
       autoWidths,
       getColWidth,
-      showLabelHeader
+      showLabelHeader,
+      cssVars,
     ));
 
     // Header border — tied to 2 (default 2)
