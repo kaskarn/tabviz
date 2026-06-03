@@ -1,7 +1,7 @@
 // Tests for the Phase 6 consumer-migration bridge.
 
 import { describe, it, expect } from "bun:test";
-import { getCssVars, readVar } from "./consumer-bridge";
+import { getCssVars, readVar, readVarPx } from "./consumer-bridge";
 import { buildTheme } from "./theme-adapter";
 import { COCHRANE } from "./theme-presets-inputs";
 
@@ -52,5 +52,31 @@ describe("readVar", () => {
 
   it("passes through undefined fallback", () => {
     expect(readVar({}, "--tv-row-alt-bg", undefined)).toBeUndefined();
+  });
+});
+
+describe("readVarPx", () => {
+  it("parses `16px` into 16", () => {
+    expect(readVarPx({ "--tv-spacing-row-height": "16px" }, "--tv-spacing-row-height", 12)).toBe(16);
+  });
+
+  it("parses bare numeric strings (`1.5`)", () => {
+    expect(readVarPx({ "--tv-plot-line-width": "1.5" }, "--tv-plot-line-width", 1)).toBe(1.5);
+  });
+
+  it("parses floats with px suffix (`1.5px`)", () => {
+    expect(readVarPx({ "--tv-plot-line-width": "1.5px" }, "--tv-plot-line-width", 1)).toBe(1.5);
+  });
+
+  it("returns fallback when missing", () => {
+    expect(readVarPx({}, "--tv-spacing-row-height", 24)).toBe(24);
+  });
+
+  it("returns fallback for placeholder values", () => {
+    expect(readVarPx({ "--tv-spacing-row-height": "<input:density>" }, "--tv-spacing-row-height", 24)).toBe(24);
+  });
+
+  it("returns fallback when value is unparseable", () => {
+    expect(readVarPx({ "--tv-spacing-row-height": "auto" }, "--tv-spacing-row-height", 24)).toBe(24);
   });
 });

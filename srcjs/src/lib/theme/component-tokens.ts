@@ -543,10 +543,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-header-tint-fg",
   "--tv-header-fill-bg",
   "--tv-header-fill-fg",
-  // ── Plot (axis-line + tick-mark migrated 2026-06-02 in svg-generator.ts)
+  // ── Plot (axis-line + tick-mark + line-width + point-size migrated 2026-06-02)
   "--tv-plot-tick-mark-length",
-  "--tv-plot-line-width",
-  "--tv-plot-point-size",
   // ── Spacing
   "--tv-spacing-row-height",
   "--tv-spacing-header-height",

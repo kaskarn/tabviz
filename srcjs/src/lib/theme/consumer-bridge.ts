@@ -61,3 +61,24 @@ export function readVar(
   if (v.startsWith("<")) return fallback;  // placeholder
   return v;
 }
+
+/** Read a dimensional (px) cssVar with a numeric v3 fallback.
+ *
+ *  Parses strings like `"16px"`, `"16"`, `"1.5"`, `"1.5px"` into the
+ *  underlying number. Returns `fallback` when the cssVar is missing,
+ *  a placeholder, or unparseable. Used for spacing/plot-dim tokens where
+ *  consumers expect a `number` (e.g. `theme.plot.lineWidth: number`). */
+export function readVarPx(
+  cssVars: Record<string, string>,
+  name: string,
+  fallback: number,
+): number {
+  const v = cssVars[name];
+  if (v === undefined) return fallback;
+  if (v.startsWith("<")) return fallback;
+  // Strip `px` suffix and parse. Tolerate float, integer, or numeric strings.
+  const trimmed = v.endsWith("px") ? v.slice(0, -2) : v;
+  const n = Number(trimmed);
+  if (!Number.isFinite(n)) return fallback;
+  return n;
+}

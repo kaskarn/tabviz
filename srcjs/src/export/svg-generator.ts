@@ -57,7 +57,7 @@ import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distri
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
-import { getCssVars, readVar } from "$lib/theme/consumer-bridge";
+import { getCssVars, readVar, readVarPx } from "$lib/theme/consumer-bridge";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
@@ -1761,7 +1761,8 @@ function renderInterval(
   forestX: number = 0,
   forestWidth: number = Infinity,
   clipBounds?: [number, number],
-  isLog: boolean = false
+  isLog: boolean = false,
+  cssVars: Record<string, string> = {},
 ): string {
   // Build effective effects to render
   interface ResolvedEffect {
@@ -1813,8 +1814,8 @@ function renderInterval(
     return "";
   }
 
-  const baseSize = theme.plot.pointSize;
-  const lineWidth = theme.plot.lineWidth;
+  const baseSize = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize);
+  const lineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth);
   const defaultLineColor = theme.series?.[0]?.stroke ?? theme.accent.default;
 
   // Check if this is a summary row (should render diamond). summaryMarker is
@@ -4499,7 +4500,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           forestX,
           forestWidth,
           clipBounds,
-          isLog
+          isLog,
+          cssVars,
         ));
       }
     });
