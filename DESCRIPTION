@@ -77,6 +77,7 @@ Suggests:
     shiny (>= 1.8.0),
     miniUI,
     rstudioapi,
+    htmltools,
     systemfonts (>= 1.0.0),
     data.table,
     broom,

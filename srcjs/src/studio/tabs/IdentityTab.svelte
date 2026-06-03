@@ -7,6 +7,9 @@
   import { studioStore } from "../studio-store.svelte";
   import { PRESETS } from "../../lib/theme/theme-presets-inputs";
   import type { ThemeInputs } from "../../types/theme-inputs";
+  import OklchPicker from "../OklchPicker.svelte";
+
+  let pickerOpen = $state<null | "brand" | "accent" | "decorative">(null);
 
   // Apply a partial update to the working-copy inputs.
   function apply(label: string, patch: Partial<ThemeInputs>): void {
@@ -55,39 +58,75 @@
   <section>
     <h4>Anchors</h4>
     <div class="anchors">
-      <label class="anchor">
+      <div class="anchor">
         <span class="anchor-name">Brand</span>
-        <input
-          type="color"
-          value={inputs.brand}
-          oninput={(e) => apply("Brand color", { brand: (e.currentTarget as HTMLInputElement).value.toUpperCase() })}
-        />
+        <button
+          type="button"
+          class="swatch"
+          style:background={inputs.brand}
+          onclick={() => (pickerOpen = pickerOpen === "brand" ? null : "brand")}
+          aria-label="Edit brand color"
+        ></button>
         <code>{inputs.brand}</code>
-      </label>
-      <label class="anchor">
+        {#if pickerOpen === "brand"}
+          <div class="picker-anchor">
+            <OklchPicker
+              value={inputs.brand}
+              label="Brand"
+              oninput={(hex) => apply("Brand color", { brand: hex })}
+              onclose={() => (pickerOpen = null)}
+            />
+          </div>
+        {/if}
+      </div>
+      <div class="anchor">
         <span class="anchor-name">Accent</span>
-        <input
-          type="color"
-          value={inputs.accent ?? inputs.brand}
-          oninput={(e) => apply("Accent color", { accent: (e.currentTarget as HTMLInputElement).value.toUpperCase() })}
-        />
+        <button
+          type="button"
+          class="swatch"
+          style:background={inputs.accent ?? inputs.brand}
+          onclick={() => (pickerOpen = pickerOpen === "accent" ? null : "accent")}
+          aria-label="Edit accent color"
+        ></button>
         <code>{inputs.accent ?? "(mirrors brand)"}</code>
-      </label>
-      <label class="anchor">
+        {#if pickerOpen === "accent"}
+          <div class="picker-anchor">
+            <OklchPicker
+              value={inputs.accent ?? inputs.brand}
+              label="Accent"
+              oninput={(hex) => apply("Accent color", { accent: hex })}
+              onclose={() => (pickerOpen = null)}
+            />
+          </div>
+        {/if}
+      </div>
+      <div class="anchor">
         <span class="anchor-name">Decorative</span>
-        <input
-          type="color"
-          value={inputs.decorative ?? "#000000"}
+        <button
+          type="button"
+          class="swatch"
+          style:background={inputs.decorative ?? "transparent"}
           disabled={!inputs.decorative}
-          oninput={(e) => apply("Decorative color", { decorative: (e.currentTarget as HTMLInputElement).value.toUpperCase() })}
-        />
+          onclick={() => (pickerOpen = pickerOpen === "decorative" ? null : "decorative")}
+          aria-label="Edit decorative color"
+        ></button>
         <code>{inputs.decorative ?? "(off)"}</code>
         <button
           type="button"
           class="toggle"
           onclick={() => apply("Toggle decorative", { decorative: inputs.decorative ? null : "#7B9E89" })}
         >{inputs.decorative ? "Remove" : "Add"}</button>
-      </label>
+        {#if pickerOpen === "decorative" && inputs.decorative}
+          <div class="picker-anchor">
+            <OklchPicker
+              value={inputs.decorative}
+              label="Decorative"
+              oninput={(hex) => apply("Decorative color", { decorative: hex })}
+              onclose={() => (pickerOpen = null)}
+            />
+          </div>
+        {/if}
+      </div>
     </div>
   </section>
 
@@ -244,18 +283,31 @@
     grid-template-columns: 80px 36px 1fr auto;
     align-items: center;
     gap: 8px;
+    position: relative;
   }
-  .anchor-name {
-    font-size: 12px;
-    color: #475569;
-  }
-  .anchor input[type="color"] {
+  .swatch {
     width: 36px;
     height: 24px;
     padding: 0;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
     cursor: pointer;
+    background-clip: padding-box;
+  }
+  .swatch:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+  .picker-anchor {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20;
+    margin-top: 4px;
+  }
+  .anchor-name {
+    font-size: 12px;
+    color: #475569;
   }
   .anchor code {
     font-family: ui-monospace, monospace;

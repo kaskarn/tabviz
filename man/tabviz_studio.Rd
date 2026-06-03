@@ -8,6 +8,8 @@ tabviz_studio(x, ...)
 }
 \arguments{
 \item{x}{A \link{WebSpec} or \link{WebTheme}.}
+
+\item{...}{Reserved for future arguments; currently unused.}
 }
 \value{
 The edited object (WebSpec or WebTheme), or NULL on Cancel.

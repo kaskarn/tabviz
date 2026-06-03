@@ -930,3 +930,73 @@ After Stage 2 merge, this session closed out Stage 2 follow-ups (§4 texture kno
 **The editor substrate is in place.** Inspector + Spine work end-to-end against any resolved theme; the bridge attribute (`data-tv-token`) is being emitted by renderers. UI polish + remaining sections are sequential follow-up work.
 
 Stages 1, 2, and 3-substrate are LANDED on main and pushed to origin.
+
+---
+
+### 2026-06-03 (Stage 3 full pass) — tabviz_studio() LANDED + design pivot via critic agents
+
+After an ideation session with three frontend-design critic agents, the original "editor toggle on the embedded widget" framing was rejected. The agents made three load-bearing critiques:
+
+1. **The cascade should NOT be the primary interaction model.** Direct manipulation against semantic intent ("treatment color") beats exposing implementation as interface.
+2. **Editor and consumption are different contexts.** A reader of a knitted Quarto report should not see an editor affordance — those edits don't persist.
+3. **Slide-over rail breaks at small viewports.** Need responsive breakpoints.
+
+The synthesis was **studio mode**: a dedicated `tabviz_studio()` R function that launches a Shiny gadget where editing is always-on, with embedded widgets shipping zero editor chrome.
+
+**Locked design from session (with user picks):**
+
+| Area | Decision |
+|---|---|
+| Editor lives | `tabviz_studio()` Shiny gadget; embedded widgets ship zero chrome |
+| Function | S7 generic dispatched on spec or theme; `shiny::runGadget(viewer = paneViewer())` |
+| Edit scope | theme only; spec structure read-only |
+| Done/Cancel | Done returns edited; Cancel returns NULL |
+| Tab taxonomy | Identity / Rhythm / Encoding / Advanced (decision-altitude organization, not stationery-store) |
+| Preset story | Package presets + Your themes (`~/.tabviz/themes/`) |
+| OKLCH picker | Popover; live update on cursor move; chroma-clip Snap to sRGB |
+| Trace edit | Per-tier affordances; "Just change this color" escape hatch; inline mini-spine |
+| Snippet strip | Live pipe chain, click-to-copy, undo/redo |
+| Hover-wire | Static outline (no pulse) per vestibular concern; cap 8 visible |
+
+**Implementation commit `[Stage3]`:**
+
+R side (`R/studio.R`):
+- `tabviz_studio()` S7 generic on `(WebSpec | WebTheme)` dispatching to `.run_studio_gadget()`
+- `read_theme()` / `write_theme()` / `list_user_themes()` helpers
+- `~/.tabviz/themes/` default, override via `options(tabviz.theme_dir = ...)`
+- Suggests grow: shiny + miniUI + rstudioapi + htmltools
+
+TS side (`srcjs/src/studio/`):
+- `vite.config.studio.ts` → `inst/studio/studio.{js,css}` (127 KB)
+- `studio-store.svelte.ts`: working-copy ThemeInputs + 50-entry undo + dirty flag
+- `snippet-generator.ts`: diffs vs base, emits pipeable `set_*()` chain
+- `StudioShell.svelte`: grid layout (header / settings rail / chart / inspector / snippet strip)
+- `PresetHeader.svelte`: Revert/Save-as/Export/Cancel/Done; confirm-on-revert-when-dirty
+- `SettingsRail.svelte`: 4-tab nav (Identity / Rhythm / Encoding / Advanced)
+- `OklchPicker.svelte`: L×C field with OOG checkerboard, hue rail, hex input, Snap-to-sRGB
+- `StudioChart.svelte`: cssVars sampler placeholder (full TabvizPlot mount → follow-up)
+- `StudioInspector.svelte`: trace step list with per-tier affordance buttons + escape hatch
+- `SnippetStrip.svelte`: live R-code, undo/redo, copy-to-clipboard
+- `tabs/IdentityTab.svelte`: preset picker, anchor swatches → OKLCH picker, polarity/mode/shell/texture, advanced (neutral tint)
+- `tabs/RhythmTab.svelte`: density preset+factor, type scale, fonts
+- `tabs/EncodingTab.svelte`: status colors, sparkline schemes; placeholders for Lines/Series/Highlight/Annotations
+- `tabs/AdvancedTab.svelte`: hosts existing read-only RoleSpine
+
+CascadeInspector mount removed from TabvizPlot.svelte — embedded widgets now ship zero editor chrome per the philosophy pivot.
+
+**Test posture:**
+- 1247 bun tests + 1415 R tests pass
+- svelte-check clean
+- R CMD check 0 errors / 0 warnings / 1 informational note (pre-existing handoff.md)
+- Studio bundle 127 KB
+
+**Stage 3 follow-ups (out of this session's scope, in priority order):**
+
+1. **Full TabvizPlot mount in StudioChart** — mount the live widget against the working-copy theme so the chart re-renders on every edit. Requires the Shiny↔theme reactive bridge to plumb the studio's resolved theme back to a TabvizPlot mount.
+2. **Spine drag-to-rebind (§3d)** — always-visible left-edge grip + pointer capture + touch long-press + keyboard arrows.
+3. **OKLCH picker bottom-drawer breakpoint** — responsive at <900px viewports.
+4. **Inspector inline mini-spine** — when Rebind is clicked on a role step, expand a compact 3×11 grade picker inside the Inspector.
+5. **Pin-with-confirm dialog** — wire the modal that explains the cascade break + suggests upstream alternatives.
+6. **Sect §5 live-themed docs sheets, §6 delta serialization, §7 schema versioning** — separate sub-projects each.
+
+`tabviz_studio()` is operational as a substrate; the chart-side live preview gets wired next session. Branch state: main pushed to origin.

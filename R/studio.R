@@ -1,13 +1,13 @@
-# Stage 3 — tabviz_studio() editor gadget.
+# Stage 3 -- tabviz_studio() editor gadget.
 #
 # Opens an interactive theme editor as a Shiny gadget. Edits operate on
 # a working copy; the original input is untouched until Done returns
 # the edited value (or Cancel returns NULL).
 #
 # S7 generic dispatched on (WebSpec | WebTheme):
-#   - tabviz_studio(spec)  — chart renders against the user's data;
+#   - tabviz_studio(spec)  -- chart renders against the user's data;
 #                            edits theme bound to spec; returns updated spec.
-#   - tabviz_studio(theme) — opens with a sample spec; theme-only edit;
+#   - tabviz_studio(theme) -- opens with a sample spec; theme-only edit;
 #                            returns updated theme.
 #
 # Per Stage 3 design doc + ideation session 2026-06-03:
@@ -27,6 +27,7 @@
 #' wasn't assigned.
 #'
 #' @param x A [WebSpec] or [WebTheme].
+#' @param ... Reserved for future arguments; currently unused.
 #' @return The edited object (WebSpec or WebTheme), or NULL on Cancel.
 #' @export
 tabviz_studio <- S7::new_generic("tabviz_studio", "x")
@@ -47,7 +48,7 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
   result
 }
 
-# Internal launcher — sets up the gadget UI + server reactivity.
+# Internal launcher -- sets up the gadget UI + server reactivity.
 .run_studio_gadget <- function(spec, theme) {
   if (!requireNamespace("shiny", quietly = TRUE)) {
     cli::cli_abort(c(
@@ -142,8 +143,8 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
     ),
     theme = theme
   )
-  spec@labels$title <- "tabviz_studio — sample"
-  spec@labels$subtitle <- "Editing theme · sample data shown"
+  spec@labels$title <- "tabviz_studio -- sample"
+  spec@labels$subtitle <- "Editing theme - sample data shown"
   spec
 }
 
