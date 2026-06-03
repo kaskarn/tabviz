@@ -196,3 +196,44 @@ These are scoped intuitions noted in conversation but not yet sharp enough to ac
 - `bun test src/lib/theme/extract-svg-css.test.ts` passes (7 tests).
 - `bun test src/lib/theme/theme-runtime-css.test.ts` passes (5 tests).
 - Total: 980 pass across full bun suite.
+
+---
+
+### 2026-06-02 — Sprint continuation: M3 wire rewrite + M4 resolver capabilities
+
+**Internal commits landed (extending the kickoff session):**
+
+- `[M3] theme-wire.ts: rewrite — v4 override schema + role-binding API` — replaces v3 dotted-path pin/release with role-bindings; new `ThemeWire { $schema, name, inputs, roleOverrides }` shape; exports `createWire`, `setRoleBinding`, `pinTokenByName`, `releaseRole`, `releaseAllRoles`, `isRolePinned`, `getRoleBinding`, `getRoleProvenance`, `resolveWire`, `WIRE_SCHEMA`, `DEFAULT_ROLE_BINDINGS`. New error classes: `TokenNotPinnableError`, `RoleNotBindableError`. `resolveWire` still calls `buildThemeStructure` and ignores `roleOverrides` — the resolver rewrite (step 4 main commit, future session) plugs in actual override application.
+- `[M3] theme-store: migrate to v4 wire API` — `theme-store.svelte.ts` + `theme-store.plain.ts` both consume the new role-binding API. Exposed verbs: `setRoleBinding`, `pinTokenByName`, `releaseRole`, `releaseAllRoles`, `isRolePinned`, `getRoleBinding`, `getRoleProvenance`. Removed: `pinPath`, `releasePath`, `isPinned`, `inspect`. No production consumers affected (only the test files).
+- `[M3] tests: rewrite theme-wire + theme-store tests for v4 API` — 24 wire tests + 12 store tests cover the new surface, including error-class cases for off-ramp roles and non-role-sourced tokens.
+- `[M4] curves.ts: five ramp-shape curve functions` — linear/ease/smooth/log/exp pure functions; `DEFAULT_RAMP_CURVES` const (neutral=ease, brand=linear, accent=linear) per Q-P4.3 closure. 12 tests.
+- `[M4] alpha-ramp.ts: 11-step alpha companion ramp builder` — pure math emitting an 11-step alpha-progression OKLCH companion (`α = 0.03 + t^1.25 * 0.9`) for a ramp anchor. 7 tests.
+- `[M4] polarity.ts: applyPolarity (anchor L-reflection)` — `L → 1.1 − L` clamped to [0.04, 0.99]; involutive within [0.11, 0.99]; pure functions `reflectL`, `reflectHex`, `polarityOf`, `reflectAnchors`. Per Q-P4.1 closure. 12 tests.
+
+**Branch state at end of extended session:**
+- 1020 bun tests pass (was 989 after M3 wire rewrite + 31 new M4 capability tests).
+- `npm run check` clean: 0 errors, 0 warnings.
+- `npm run build:widget` succeeds (no consumer migration yet; bundle size unchanged).
+- Drift gate still passing: KNOWN_UNCONSUMED hasn't grown (the v4 capability modules don't introduce new CSS-var references).
+- v3 rendering path unchanged on the branch; substrate work is additive at the resolver level until the rewrite (step 4 main commit) ties it all together.
+
+**Observations from this session:**
+
+- **Nested comment-block parse gotcha.** Re-discovered: `/* ... /* ... */ ... */` patterns break TS parsing. Switched all section dividers in new modules to `// ── ... ──` line comments. Worth surfacing as a CLAUDE.md note if a future agent hits it.
+- **Drift gate false positives from doc comments.** `--tv-ramp-` appeared in an alpha-ramp.ts doc comment (`--tv-ramp-{ramp}-alpha-{grade}` template-syntax mention). The regex grabbed the `--tv-ramp-` partial. Worked around by removing the template syntax from the doc; longer-term we could tighten the regex to require trailing alphanumeric or scan comments more carefully. Logged here as a future refinement.
+- **DEFAULT_ROLE_BINDINGS placement.** Currently in `theme-wire.ts` so the wire can answer `getRoleBinding()` without a not-yet-rewritten resolver. Step 4 main commit may move this to `theme-resolve.ts` for tighter cohesion; the wire would then import from the resolver instead.
+
+**Next session pickup — step 4 main commit (resolver rewrite):**
+
+1. Add `polarity` field to `ThemeInputs` (new Tier-1 input). Existing `mode` field changes semantics from `"light" | "dark"` to `"standard" | "high-contrast" | "reduced-transparency"` per Q-P4.5.
+2. Add the new variant Tier-1 inputs: `head_style`, `title_style`, `rules`, `frame`, `first_col_style`, `curves` (record), `row_kinds` (per-kind structured). All flat on `ThemeInputs` per Q-P4.8.
+3. Add R-side `set_polarity` modifier; `set_mode` throws when called with `"dark"` per Q-P4.6 (clean break, no deprecation redirect).
+4. Rewrite `theme-resolve.ts` substantially: replace `buildRamps` with a polarity-applying version that uses curves; add `buildAlphaRamps` (composed of the M4 builder); add `resolveRoles` that consumes `wire.roleOverrides`; replace `buildThemeStructure` with `resolveTheme(wire)` returning `ResolvedTheme` (Stage 1 §10a shape).
+5. Wire up `emitCssVarsFromManifest` to consume the new resolved theme — TBD placeholders become real OKLCH/hex strings + spacing px.
+6. Delete or quarantine `theme-adapter.ts` per Stage 1 §10c.
+7. Update all consumers — heavy work; budgets a whole session at minimum.
+
+**State to verify in next session:**
+- 1020 bun tests pass; svelte-check clean; `npm run build:widget` succeeds.
+- All capability modules' tests pass: curves (12), alpha-ramp (7), polarity (12), drift gate (3), emit-manifest (5), theme-runtime-css (5), extract-svg-css (7), theme-wire (24), theme-store (12).
+- DEFAULT_ROLE_BINDINGS const in theme-wire.ts ready to be consumed by the new resolver.
