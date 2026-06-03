@@ -13,6 +13,7 @@
 // resolver path (tagged object → hex), and ship cluster + role types.
 
 import { oklchRamp, rampStep, pickInkOnBg, hexToOklch, oklchToHex } from "../oklch";
+import { curveFn } from "./curves";
 import type {
   ThemeInputs,
   TokenRamps,
@@ -88,7 +89,11 @@ function stepFromLCH(L: number, C: number, H: number): string {
  *
  *  L direction (light vs dark) is driven by `inputs.polarity` per the
  *  Q-P4.5 mode/polarity split (decisions log 2026-06-02). `inputs.mode`
- *  now means contrast mode (standard/HC/RT), not light/dark. */
+ *  now means contrast mode (standard/HC/RT), not light/dark.
+ *
+ *  Per-ramp curves come from `inputs.curves` (Q-P4.3 closure). When set,
+ *  the L progression for that ramp is curve-derived; when unset, falls
+ *  back to the hand-tuned LIGHT_RAMP_L. */
 export function buildRamps(inputs: ThemeInputs): TokenRamps {
   const polarity: "light" | "dark" = inputs.polarity ?? "light";
   const accent = inputs.accent ?? inputs.brand;
@@ -97,17 +102,23 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
   const tintHex = resolveNeutralTintHex(inputs, accent, decorative);
   const tintAmount = tintHex !== null ? (inputs.neutral_tint_strength ?? 0.04) : 0;
 
+  // Per-ramp curves; undefined = use hand-tuned LIGHT_RAMP_L.
+  const cN = inputs.curves?.neutral ? curveFn(inputs.curves.neutral) : undefined;
+  const cB = inputs.curves?.brand ? curveFn(inputs.curves.brand) : undefined;
+  const cA = inputs.curves?.accent ? curveFn(inputs.curves.accent) : undefined;
+
   const neutral = oklchRamp(NEUTRAL_SEED, {
     mode: polarity,
     chromaPeak: 0, // achromatic seed
     tintHex: tintHex ?? undefined,
     tintAmount,
+    curve: cN,
   });
 
-  const brand = oklchRamp(inputs.brand, { mode: polarity });
-  const accentRamp = oklchRamp(accent, { mode: polarity });
+  const brand = oklchRamp(inputs.brand, { mode: polarity, curve: cB });
+  const accentRamp = oklchRamp(accent, { mode: polarity, curve: cA });
   const decorativeRamp = decorative !== null
-    ? oklchRamp(decorative, { mode: polarity })
+    ? oklchRamp(decorative, { mode: polarity, curve: cA })  // decorative shares accent curve
     : null;
 
   const statusSeeds = {

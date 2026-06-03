@@ -369,6 +369,35 @@ const LIGHT_RAMP_L = [
 
 const DARK_RAMP_L = [...LIGHT_RAMP_L].reverse();
 
+/** Build a 12-step L progression by interpolating between the LIGHT_RAMP_L
+ *  endpoints through a user-supplied curve. Light mode runs paper→ink
+ *  (lightest → darkest); dark mode runs ink→paper (darkest → lightest).
+ *
+ *  When curve = (t) => t (linear), the result interpolates uniformly
+ *  between paper L (0.987) and ink L (0.180) — DIFFERENT from the
+ *  hand-tuned LIGHT_RAMP_L because the hand-tuned array is non-linear.
+ *  Pick this consciously per Q-P4.3 closure (Stage 1 §25). */
+function buildLProgressionFromCurve(
+  curve: (t: number) => number,
+  mode: "light" | "dark",
+): number[] {
+  const Lpaper = LIGHT_RAMP_L[0]!;   // 0.987
+  const Link = LIGHT_RAMP_L[11]!;    // 0.180
+  const out: number[] = [];
+  for (let i = 0; i < 12; i++) {
+    const t = i / 11;
+    const u = curve(t);
+    if (mode === "light") {
+      // paper at i=0, ink at i=11
+      out.push(Lpaper - u * (Lpaper - Link));
+    } else {
+      // ink at i=0, paper at i=11 (dark mode flips)
+      out.push(Link + u * (Lpaper - Link));
+    }
+  }
+  return out;
+}
+
 /** Chroma curve: peaks at step 9 (index 8), tapers parabolically. */
 function chromaAt(stepIndex: number, peakChroma: number): number {
   const peakIndex = 8; // step 9 (1-indexed) = index 8
@@ -377,6 +406,10 @@ function chromaAt(stepIndex: number, peakChroma: number): number {
   const falloff = Math.max(0.04, 1 - (distance * distance) / 25);
   return peakChroma * falloff;
 }
+
+/** Curve function for L-progression shaping. Maps `t ∈ [0, 1]` to
+ *  remapped value `∈ [0, 1]`. See `theme/curves.ts` for the named set. */
+export type LRampCurve = (t: number) => number;
 
 export interface RampOptions {
   /** Mode for L direction. Default `"light"`. */
@@ -387,6 +420,13 @@ export interface RampOptions {
   tintHex?: string;
   /** 0..0.10 typical. Default 0. */
   tintAmount?: number;
+  /** Optional L-progression curve. When unset, uses the hand-tuned
+   *  LIGHT_RAMP_L / DARK_RAMP_L arrays (the v3 behavior; perceptually
+   *  well-distributed). When set, the L values are derived dynamically
+   *  by interpolating between the fixed bounds [LIGHT_RAMP_L[0],
+   *  LIGHT_RAMP_L[11]] through the curve. Different curves produce
+   *  meaningfully different aesthetic feels (see `theme/curves.ts`). */
+  curve?: LRampCurve;
 }
 
 /**
@@ -408,7 +448,9 @@ export function oklchRamp(seed: string, options: RampOptions = {}): string[] {
   const seedLch = hexToOklch(seed);
   const mode = options.mode ?? "light";
   const chromaPeak = options.chromaPeak ?? seedLch.C;
-  const Ls = mode === "light" ? LIGHT_RAMP_L : DARK_RAMP_L;
+  const Ls = options.curve
+    ? buildLProgressionFromCurve(options.curve, mode)
+    : (mode === "light" ? LIGHT_RAMP_L : DARK_RAMP_L);
 
   const ramp: string[] = [];
   for (let i = 0; i < 12; i++) {
