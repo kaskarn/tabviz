@@ -331,3 +331,41 @@ Step 5 (row-kind height cascade) can land independently of these resolver refine
 - 1061 bun tests pass; svelte-check clean; npm run build:widget succeeds.
 - `inspectToken(resolveTheme(createWire({brand:"#0099CC"})), "row-base-bg")` returns a 3-step trace.
 - `listComponentTokens(resolveTheme(...))` returns 40+ entries with resolved values.
+
+---
+
+### 2026-06-02 — Sprint continuation: Q-P4.5 mode split + HC/RT transforms
+
+**Internal commits landed (extending into the resolver capabilities):**
+
+- `[M4] complete Q-P4.5 mode split` — `ThemeMode` type changed from `"light" | "dark"` to `"standard" | "high-contrast" | "reduced-transparency"`. Polarity now lives in its own field. Migrated 18 preset entries in `theme-presets-inputs.ts`, 5 test files, `ThemeControl.svelte` UI, `WebThemeArgs` in `theme-api.ts`, and `theme-resolve.ts::buildRamps` (now reads `inputs.polarity` for L direction).
+- `[M4] resolveTheme: HC + RT mode transforms via manifest.modes` — `resolveTokenValue` reads `inputs.mode` and applies the per-token mode behavior declared in `COMPONENT_TOKENS.modes`. `"drop"` emits `transparent`; `{swap: roleName}` reads from the swap role. Tests verify both behaviors plus orthogonal composition with polarity.
+- `[M4] resolveTheme: HC mode pushes border roles +2 grades` — `applyHcGradePush` extends the role-resolution path with the Stage 1 §23b border push. Five border-family roles (border-subtle / border / border-strong / focus-ring / accent-border) shift +2 grades under HC mode, clamped at 11. Composes correctly with cross-ramp role overrides.
+
+**Branch state at end of session:**
+- 1068 bun tests pass (was 1061 + 5 HC/RT manifest tests + 4 border-push tests + 2 polarity-default tests; with 4 redundant legacy-mode tests dropped during the migration).
+- svelte-check clean: 0 errors, 0 warnings.
+- `npm run build:widget` succeeds (732.55 kB; bundle size barely changed).
+
+**Capability surface after this session:**
+
+✓ Mode vocabulary is correctly split (polarity orthogonal to contrast mode)
+✓ HC mode drops wash fills to transparent (manifest-encoded)
+✓ HC mode pushes border roles +2 grades (resolver-level)
+✓ RT mode swaps translucent washes to opaque equivalents
+✓ All three modes compose orthogonally with polarity (light/dark)
+✓ All 18 production presets migrated to `polarity` field
+✓ ThemeControl UI surfaces "Polarity" instead of "Mode"
+
+**Next session — natural priorities (unchanged in priority order, fewer in scope):**
+
+1. **Curves integration into `oklchRamp`** (Stage 1 §25) — the curves module exists; not yet wired into the ramp builder.
+2. **Phase 5 row-kind height cascade** (Stage 1 §33–34) — layered resolution + dual affordance.
+3. **Phase 6 consumer migration** — `svg-generator.ts` cluster-by-cluster.
+
+The session's HC push implementation may be a good template for any other Stage 1 §23 mode-transform that arrives later (e.g., if we want fill-state grades to push under HC too, the pattern is established).
+
+**State to verify in next session:**
+- 1068 bun tests pass; svelte-check clean; npm run build:widget succeeds.
+- `resolveTheme(createWire({brand:"#0099CC", mode:"high-contrast"})).roles.border` returns ramps.neutral[8] (HC-pushed from default neutral.6).
+- `resolveTheme(createWire({brand:"#0099CC", mode:"high-contrast"})).cssVars["--tv-row-alt-bg"]` returns `"transparent"`.
