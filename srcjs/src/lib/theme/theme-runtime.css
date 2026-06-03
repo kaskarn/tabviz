@@ -114,11 +114,99 @@
 .tabviz-scope[data-first-col-style="default"] { }
 .tabviz-scope[data-first-col-style="bold"] { }
 
-/* data-shell-mode (Phase 4 / Stage 2): flush / raised / float / transparent */
-.tabviz-scope[data-shell-mode="flush"] { }
-.tabviz-scope[data-shell-mode="raised"] { }
-.tabviz-scope[data-shell-mode="float"] { }
-.tabviz-scope[data-shell-mode="transparent"] { }
+/* data-shell-mode (Stage 2 §2): the resolver emits per-mode values for
+ * `--tv-shell-*` and `--tv-paper-*` tokens based on inputs.shell_mode.
+ * The marker selectors document the four modes for the runtime + tests;
+ * the paint flows through the `.tv-shell` / `.tv-paper` selectors below. */
+.tabviz-scope[data-shell-mode="flush"] { /* via --tv-shell-* / --tv-paper-* */ }
+.tabviz-scope[data-shell-mode="raised"] { /* via --tv-shell-* / --tv-paper-* */ }
+.tabviz-scope[data-shell-mode="float"] { /* via --tv-shell-* / --tv-paper-* */ }
+.tabviz-scope[data-shell-mode="transparent"] { /* via --tv-shell-* / --tv-paper-* */ }
+
+/* data-shell-texture (Stage 2 §3): none / ruled / grid / dotted / grain.
+ * Paints atop the shell's background using --tv-shell-texture-{line,dot}. */
+.tabviz-scope[data-shell-texture="ruled"] .tv-shell {
+  background-image: repeating-linear-gradient(180deg,
+    transparent 0 28px,
+    var(--tv-shell-texture-line) 28px 29px);
+}
+.tabviz-scope[data-shell-texture="grid"] .tv-shell {
+  background-image:
+    repeating-linear-gradient(180deg, transparent 0 23px, var(--tv-shell-texture-line) 23px 24px),
+    repeating-linear-gradient(90deg,  transparent 0 23px, var(--tv-shell-texture-line) 23px 24px);
+}
+.tabviz-scope[data-shell-texture="dotted"] .tv-shell {
+  background-image: radial-gradient(var(--tv-shell-texture-dot) 1px, transparent 1.6px);
+  background-size: 15px 15px;
+}
+/* `grain` uses an inline SVG fractalNoise data-URI applied in JS where
+ * needed; pure-CSS grain isn't reliable across browsers. */
+
+/* data-mode="high-contrast" (Stage 2 §5 HC encoding fidelity). The wash
+ * fills already drop via the resolver's mode-aware paint tokens; these
+ * rules layer on the non-color encoding (caret glyph, ring chips, thicker
+ * emphasis bar) so semantic state survives loss of color. */
+.tabviz-scope[data-mode="high-contrast"] .hc-caret {
+  display: inline;
+  font-weight: 700;
+  margin-right: 0.25em;
+}
+.tabviz-scope:not([data-mode="high-contrast"]) .hc-caret {
+  display: none;
+}
+
+.tabviz-scope[data-mode="high-contrast"] .status-tag,
+.tabviz-scope[data-mode="high-contrast"] .pval-chip {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 var(--tv-hc-ring-width, 1.5px) currentColor;
+  padding: 1px 8px;
+}
+
+.tabviz-scope [data-row-token="emphasis"] .row-bar {
+  width: var(--tv-hc-bar-width, 3px);
+}
+
+/* sv-omit-begin */
+/* Stage 2 §7 browser-additive effects. These rules apply backdrop-filter
+ * (glass), gradient strips, and glow shadows; SVG export strips them via
+ * the sv-omit markers. SVG path emits structural equivalents (gradient
+ * defs, filter defs) where parity is desired. */
+
+.tabviz-scope[data-shell-surface="glass"] .tv-shell {
+  backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(150%);
+}
+
+.tabviz-scope .shell-strip {
+  height: 3px;
+  background: var(--tv-brand-gradient);
+}
+
+.tabviz-scope .tv-glow {
+  box-shadow: 0 0 10px var(--tv-brand-glow);
+}
+/* sv-omit-end */
+
+/* When the DOM/SVG output isn't yet wrapped in `.tv-shell` + `.tv-paper`,
+ * the rules below are inert. As Stage 2 §2 consumer migration plumbs the
+ * wrapping elements into TabvizPlot.svelte + svg-generator.ts, these
+ * selectors take effect automatically. */
+
+.tabviz-scope .tv-shell {
+  background: var(--tv-shell-bg);
+  border: 1px solid var(--tv-shell-border);
+  border-radius: var(--tv-shell-radius);
+  padding: var(--tv-shell-padding);
+  box-shadow: var(--tv-shell-shadow);
+}
+
+.tabviz-scope .tv-paper {
+  background: var(--tv-paper-bg);
+  border: 1px solid var(--tv-paper-border);
+  border-radius: var(--tv-paper-radius);
+  padding: var(--tv-paper-padding);
+  box-shadow: var(--tv-paper-shadow);
+}
 
 /* ============================================================================
  * ROW STATE

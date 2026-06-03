@@ -789,3 +789,100 @@ A focused deletion session can carry the remaining v3 surface out without functi
 Stages 2 (typography + shell/paper + textures + HC encoding) and 3 (editor architecture + Cascade Inspector + Spine UI) remain designed-but-not-built. Stage 4 (preset reimagining) is the natural next step once Stage 2 lands.
 
 Branch is at `5960eae` plus this doc commit; ready for merge to main.
+
+---
+
+### 2026-06-03 (Stage 2 kickoff) — typography cascade LANDED on `feat/theme-stage2`
+
+Stage 1 merged to main as `9c7f1c6`. Stage 2 §1 (typography cascade) now lands on `feat/theme-stage2`. Three commits:
+
+1. **`[Stage2.T1] typography cascade Tier 1 + Tier 2 + Tier 3 emission`** — foundational layer mirroring Stage 1's color cascade:
+   - **Tier 1 inputs (ThemeInputs extension)**: `type_base_size` (14), `type_scale_ratio` (1.2), `type_weights {regular/medium/semibold/bold}` (400/500/600/700). `fonts {body, display, mono}` already existed.
+   - **Tier 1 derived (`buildSizeScale`)**: 7-step modular scale (label/foot/body/head/subtitle/title/display) generated from `base × ratio^step`.
+   - **Tier 2 (`DEFAULT_TYPE_ROLES`)**: 10 named type roles composing `{family, size, weight, lh, track}`.
+   - **Tier 3 (manifest)**: 60 entries (10 roles × 6 per-role props) via `buildTypographyManifestEntries()`.
+   - **Resolver**: `resolveTypographyComputed(cssVar, inputs)` matches `--tv-text-{role}-{prop}` and emits via `resolveTypeRole()`. Routes typography BEFORE spacing-px branch so lh/track emit correctly.
+   - **Tests**: typography.test.ts (13 unit) + typography-integration.test.ts (11 integration).
+
+2. **`[Stage2.T1.R] R-side typography wrappers`** — R user surface:
+   - ThemeInputs S7 class grows 6 typography fields.
+   - Serialization packs into JSON wire as `type_base_size` / `type_scale_ratio` / `type_weights{}`.
+   - New `R/typography-api.R`: `set_fonts`, `set_type_scale`, `set_type_weights`.
+   - End-to-end verified: `theme_css_vars(set_fonts(cochrane, body = "Inter"))["--tv-text-title-font"]` → `"600 20.53px/1.12 Inter"`.
+
+3. (this commit) **`[docs] Stage 2 §1 typography LANDED`** — design doc status flip + this journal entry.
+
+**Branch state at end of session:**
+- `feat/theme-stage2` at `074c842`, 3 commits ahead of main (plus this doc commit).
+- 1196 bun tests + 309 R theme tests pass; svelte-check clean.
+- Stage 2 §1 typography cascade LANDED.
+
+**Stage 2 §§2-7 still designed-but-not-built:**
+- §2 Shell/paper two-surface model
+- §3 Surface textures (ruled/grid/dotted/grain)
+- §4 Texture knockouts
+- §5 HC encoding fidelity (caret glyphs, ring chips, bar thickening)
+- §6 Elevation shadows (SVG `<filter>` parity)
+- §7 Browser-additive effects (glass, gradient, glow)
+
+**Natural follow-ups:**
+1. Consumer migration of `theme.text.*` reads (~70 in svg-generator, ~40 in TabvizPlot) — pattern mirrors Stage 1; routes through `readVar(cssVars, "--tv-text-{role}-{prop}", v3fallback)` for SVG-attr consumers, bare `var()` for CSS templates.
+2. Stage 2 §2 shell/paper model — adds `data-shell-mode` attribute + 10 new shell/paper tokens.
+3. Stage 2 §5 HC encoding — caret glyphs as real `<text>` elements; load-bearing for accessibility.
+
+---
+
+### 2026-06-03 (Stage 2 closing session) — §1–§3 + §5–§7 substrate LANDED on `feat/theme-stage2`
+
+Stage 2 ships substantially complete in a single session arc. §4 (texture knockouts) is the natural follow-up since it composes with §3 textures + the SVG mask primitive once consumer migration plumbs the wrapping elements.
+
+**Commits landed on `feat/theme-stage2`:**
+
+| Commit | Scope |
+|---|---|
+| `[Stage2.T1]` | Typography Tier 1/2/3 + resolver — 60 cssVars |
+| `[Stage2.T1.R]` | R wrappers: set_fonts, set_type_scale, set_type_weights |
+| `[Stage2.T1.consumer]` | svg-generator typography sweep + readTypeFamily/Size/Weight bridge |
+| `[Stage2.2]` | Shell/paper two-surface model — 10 cssVars + 4 modes + set_shell_mode |
+| `[Stage2.6]` | Elevation shadow color tokens — 4 hue-aware rgba values |
+| `[Stage2.3]` | Surface textures (ruled / grid / dotted / grain) — 4 cssVars + svgTexturePattern |
+| `[Stage2.5]` | HC encoding fidelity — caret glyph + ring width + bar thickening |
+| `[Stage2.7]` | Browser-additive effects — gradient + glow + glass blur |
+| `[docs]` (this) | Stage 2 design doc status flip + journal closing entry |
+
+**Substrate landed:**
+
+- **Typography cascade** (§1): 60 Tier-3 cssVars (10 type roles × 6 properties: family/size/weight/lh/track + font shorthand). `typography.ts` module with `buildSizeScale` + `DEFAULT_TYPE_ROLES` + `resolveTypeRole`. Resolver routes `--tv-text-{role}-{prop}` patterns. R surface: `set_fonts` / `set_type_scale` / `set_type_weights`.
+
+- **Shell/paper** (§2): 10 Tier-3 cssVars (5 per surface: bg/border/shadow/radius/padding). 4 modes (flush / raised / float / transparent). `shell-paper.ts` module. R surface: `set_shell_mode`. CSS rules in `theme-runtime.css` apply via `.tv-shell` + `.tv-paper` selectors.
+
+- **Surface textures** (§3): 4 Tier-3 cssVars (shell/paper × line/dot). 5 textures (none/ruled/grid/dotted/grain). `textures.ts` module with `svgTexturePattern` SVG `<pattern>` emitter for ruled/grid/dotted/grain (incl. `feTurbulence` for grain). R surface: `set_shell_texture`. CSS rules paint via `[data-shell-texture]`.
+
+- **HC encoding fidelity** (§5): 3 Tier-3 cssVars (`--tv-hc-caret-char`, `--tv-hc-ring-width`, `--tv-hc-bar-width`). Resolver short-circuits these before kind dispatch and emits mode-dependent values (caret = `▸` under HC). CSS rules in `theme-runtime.css` activate the caret display + ring chip override + emphasis bar thickening under `[data-mode="high-contrast"]`.
+
+- **Elevation shadows** (§6): 4 Tier-3 cssVars (raised/overlay × near/far). `elevation.ts` module with `resolveElevationShadows(paperBg)` mixing paper hue with black at calibrated alphas. Both CSS box-shadow and SVG `<feFlood flood-color>` reference the same color tokens — guaranteeing browser ↔ SVG parity for elevation.
+
+- **Browser-additive effects** (§7): 3 Tier-3 cssVars (`--tv-brand-gradient`, `--tv-brand-glow`, `--tv-glass-blur`). Resolver derives gradient from brand ramp grades 8+10, glow from accent-solid @ alpha 0.4, glass blur = 16px const. CSS rules wrapped in `sv-omit-*` markers so SVG export degrades to flat equivalents automatically.
+
+**Test posture:**
+- 1237 bun tests + 1415 R tests pass; svelte-check clean; widget bundle stable at 235 kB.
+- Visual sweep on key themes (dark / cochrane / jama / lotr_elvish) clean.
+
+**Branch state at end of session:**
+- `feat/theme-stage2` at `416c9ba`, 11 commits ahead of main (plus this docs commit).
+- Substantially complete: §1, §2, §3, §5, §6, §7.
+- §4 (texture knockouts via SVG `<mask>`) deferred — composes with §3 textures; the substrate tokens for §3 are in place, the mask emission belongs with the SVG export's wrapped-text consumer migration.
+
+**What Stage 2 actually delivers:**
+1. **Typography parity** — color and type cascades now mirror each other. R can author display/body/mono fonts + modular size scale + weight axis; resolver emits 60 typography cssVars.
+2. **Shell/paper two-surface model** — chrome elevation, paper inset, drop shadows, transparent variants, all expressible via one `shell_mode` input.
+3. **Surface textures** — themeable ruled/grid/dotted/grain patterns with both CSS-side rules and SVG `<pattern>` parity.
+4. **HC fidelity** — caret glyph, ring chips, thicker bars preserve semantic encoding when color drops in HC mode.
+5. **Elevation shadows** — hue-aware shadow colors with browser ↔ SVG parity guarantee.
+6. **Additive effects** — glass, gradient, glow with graceful-degrade SVG strip via `sv-omit-*`.
+
+**Total Stage 2 token surface added: 84 cssVars** (60 typography + 10 shell/paper + 4 textures + 4 elevation + 3 HC + 3 additive).
+
+**§4 follow-up sketch:** Texture knockouts erase the texture pattern behind text so the text reads cleanly on textured surfaces. Browser CSS uses `background-clip: text` or background overlay; SVG uses `<mask>` referencing the text glyphs. Q-S2.5 chose `<mask>` over rect-per-text. Implementation pairs with the wrapped-text emission in svg-generator's renderUnifiedTableRow path.
+
+Branch ready to merge to main.

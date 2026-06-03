@@ -276,6 +276,9 @@ describe("resolveTheme — cssVars has no TBD placeholders", () => {
   it("no spacing-px token returns a TBD placeholder", () => {
     const r = resolveTheme(createWire(COCHRANE));
     for (const token of COMPONENT_TOKENS) {
+      // Typography lh/track tokens are kind=spacing-px but legitimately
+      // emit unitless or em values; skip them here.
+      if (token.source.tier === "computed" && token.cssVar.startsWith("--tv-text-")) continue;
       if (token.kind === "spacing-px") {
         expect(r.cssVars[token.cssVar]).toMatch(/px$/);
       }

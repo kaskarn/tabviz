@@ -388,7 +388,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Outer container padding (px)",
   },
 
-  // ── Text roles (Tier-3 typography tokens; Stage 2 expands these) ──────────
+  // ── Text roles (Tier-3 typography tokens) ──────────────────────────────────
+  // Color (fg) side of the typography roles. The typography family/size/weight/
+  // lh/track tokens follow per Stage 2 §1e.
   {
     cssVar: "--tv-text-title-fg",
     kind: "paint-color",
@@ -410,6 +412,209 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Footnote text color",
   },
+
+  // ── Stage 2 §2 — Shell/paper two-surface model ────────────────────────────
+  // Tier-3 tokens emitted by the resolver based on inputs.shell_mode.
+  // Five per surface: bg, border, shadow, radius, padding.
+  {
+    cssVar: "--tv-shell-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "shell/paper: shell.bg per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell (outer chrome) background. Resolves per shell_mode.",
+  },
+  {
+    cssVar: "--tv-shell-border",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: shell.border per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell border color. Resolves per shell_mode.",
+  },
+  {
+    cssVar: "--tv-shell-shadow",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: shell.shadow per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell box-shadow declaration (full CSS shadow string).",
+  },
+  {
+    cssVar: "--tv-shell-radius",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: shell radius per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell border-radius (px).",
+  },
+  {
+    cssVar: "--tv-shell-padding",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: shell padding per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell inner padding (px).",
+  },
+  {
+    cssVar: "--tv-paper-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "shell/paper: paper.bg per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper (inner data card) background. Resolves per shell_mode.",
+  },
+  {
+    cssVar: "--tv-paper-border",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: paper.border per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper border color.",
+  },
+  {
+    cssVar: "--tv-paper-shadow",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: paper.shadow per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper box-shadow declaration.",
+  },
+  {
+    cssVar: "--tv-paper-radius",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: paper radius per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper border-radius (px).",
+  },
+  {
+    cssVar: "--tv-paper-padding",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: paper padding per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper inner padding (px).",
+  },
+
+  // ── Stage 2 §7 — Browser-additive effects (graceful-degrade in SVG) ───────
+  // Glass, brand gradient, glow. Each token's browser-additive companion
+  // lives in the same scope; SVG export degrades to a flat/solid equivalent.
+  {
+    cssVar: "--tv-brand-gradient",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "brand gradient: brand → brand-deep" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Brand gradient stop pair (CSS linear-gradient or SVG <linearGradient>)",
+  },
+  {
+    cssVar: "--tv-brand-glow",
+    kind: "paint-color",
+    source: { tier: "computed", note: "brand glow: accent @ alpha 0.4" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Brand glow color for box-shadow / SVG <filter> emit",
+  },
+  {
+    cssVar: "--tv-glass-blur",
+    kind: "spacing-px",
+    source: { tier: "const", note: "glass backdrop-filter blur radius" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Glass blur radius (browser only; SVG degrades to no-blur)",
+  },
+
+  // ── Stage 2 §5 — HC encoding fidelity tokens ──────────────────────────────
+  // High-contrast mode drops translucent washes; these tokens preserve the
+  // semantic encoding on non-color channels (caret glyph, ring stroke, bar
+  // thickness). The resolver emits standard vs HC values per token.modes.
+  {
+    cssVar: "--tv-hc-caret-char",
+    kind: "paint-color",  // emitted as a character literal string
+    source: { tier: "const", note: "HC caret glyph (▸ / blank)" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Caret glyph emitted in emphasis rows under HC mode; empty string under standard",
+  },
+  {
+    cssVar: "--tv-hc-ring-width",
+    kind: "border-width",
+    source: { tier: "const", note: "HC chip ring stroke width" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Ring stroke width for status chips under HC mode (1.5px)",
+  },
+  {
+    cssVar: "--tv-hc-bar-width",
+    kind: "spacing-px",
+    source: { tier: "const", note: "HC emphasis-row bar thickness" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Emphasis-row vertical bar thickness — 3px standard, 4px under HC",
+  },
+
+  // ── Stage 2 §3 — Surface texture color tokens ─────────────────────────────
+  // Two color knobs drive all four textures (ruled / grid / dotted / grain).
+  // The selector + recipe live in theme-runtime.css; the colors come from
+  // the resolver tied to neutral grades.
+  {
+    cssVar: "--tv-shell-texture-line",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: faint hairline (neutral grade ~3)" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture line color (ruled / grid). Faint hairline on the surface.",
+  },
+  {
+    cssVar: "--tv-shell-texture-dot",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: dot color (neutral grade ~4)" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture dot color (dotted / grain). Slightly stronger than line.",
+  },
+  {
+    cssVar: "--tv-paper-texture-line",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: paper-side hairline" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture line color when texture lives on the paper surface.",
+  },
+  {
+    cssVar: "--tv-paper-texture-dot",
+    kind: "paint-color",
+    source: { tier: "computed", note: "texture: paper-side dot" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Texture dot color when texture lives on the paper surface.",
+  },
+
+  // ── Stage 2 §6 — Elevation shadow color tokens ────────────────────────────
+  // Hue-aware shadow colors derived from the paper bg's hue mixed with
+  // black. Browser CSS uses them in box-shadow; SVG export uses them as
+  // <feFlood flood-color> inside <filter> definitions. Same value, both
+  // surfaces — the parity guarantee.
+  {
+    cssVar: "--tv-shadow-raised-near",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 12% black, alpha 0.12" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Near shadow color for raised elevation (1-2 px softness)",
+  },
+  {
+    cssVar: "--tv-shadow-raised-far",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.08" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Far shadow color for raised elevation (6-20 px diffusion)",
+  },
+  {
+    cssVar: "--tv-shadow-overlay-near",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.18" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Near shadow color for overlay (modal/popover) elevation",
+  },
+  {
+    cssVar: "--tv-shadow-overlay-far",
+    kind: "paint-color",
+    source: { tier: "computed", note: "elevation: paper hue + 32% black, alpha 0.12" },
+    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    description: "Far shadow color for overlay elevation",
+  },
+
+  // ── Stage 2 — Typography Tier 3 (family/size/weight/lh/track per role) ────
+  // 10 type roles × 5 properties each + a `font` shorthand = 60 entries.
+  // Sourced from typography-tier-1 inputs via the resolver's
+  // resolveTypeRole() walker. Consumers read e.g.
+  //   font: var(--tv-text-title-font);
+  // or the individual properties:
+  //   font-family: var(--tv-text-title-family);
+  //   font-size:   var(--tv-text-title-size);
+  // etc.
+  ...buildTypographyManifestEntries(),
 
   // ── Accent (engagement layer) ─────────────────────────────────────────────
   {
@@ -481,7 +686,73 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Generic subtle border color. Mirrors role:border-subtle — use for hairlines, faint dividers",
   },
-] as const;
+];
+
+// ============================================================================
+// TYPOGRAPHY MANIFEST GENERATOR (Stage 2)
+// ============================================================================
+
+/** Generate the 60 Tier-3 typography manifest entries (10 type roles × 6
+ *  per-role properties: family/size/weight/lh/track + font shorthand).
+ *
+ *  Sourced from `lib/theme/typography.ts::DEFAULT_TYPE_ROLES` via the
+ *  resolver's resolveTypeRole walker. The `source.tier = "computed"` tag
+ *  marks these as derived rather than direct-role bindings — the resolver
+ *  reads typography-tier-1 inputs and produces the final values. */
+function buildTypographyManifestEntries(): ComponentToken[] {
+  const ROLES = [
+    "title", "subtitle", "heading", "body", "numeric",
+    "label", "caption", "footnote", "cell", "tick",
+  ] as const;
+  const entries: ComponentToken[] = [];
+  for (const role of ROLES) {
+    const base = `--tv-text-${role}` as const;
+    const consumedBy = ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"];
+    entries.push({
+      cssVar: `${base}-family`,
+      kind: "font-family",
+      source: { tier: "computed", note: `typography role:${role}` },
+      consumedBy,
+      description: `${role} font family stack`,
+    });
+    entries.push({
+      cssVar: `${base}-size`,
+      kind: "font-size",
+      source: { tier: "computed", note: `typography role:${role}` },
+      consumedBy,
+      description: `${role} font size (px)`,
+    });
+    entries.push({
+      cssVar: `${base}-weight`,
+      kind: "font-weight",
+      source: { tier: "computed", note: `typography role:${role}` },
+      consumedBy,
+      description: `${role} font weight`,
+    });
+    entries.push({
+      cssVar: `${base}-lh`,
+      kind: "spacing-px",
+      source: { tier: "computed", note: `typography role:${role} line-height` },
+      consumedBy,
+      description: `${role} line height (unitless or px)`,
+    });
+    entries.push({
+      cssVar: `${base}-track`,
+      kind: "spacing-px",
+      source: { tier: "computed", note: `typography role:${role} letter-spacing` },
+      consumedBy,
+      description: `${role} letter-spacing (CSS value, e.g. -0.022em)`,
+    });
+    entries.push({
+      cssVar: `${base}-font`,
+      kind: "font-family",  // `font` shorthand bundles family
+      source: { tier: "computed", note: `typography role:${role} shorthand` },
+      consumedBy,
+      description: `${role} CSS font shorthand (weight size/lh family)`,
+    });
+  }
+  return entries;
+}
 
 // ============================================================================
 // REVERSE LOOKUPS — built once at module load.
@@ -538,6 +809,17 @@ export const TOKENS_BY_CONSUMER: ReadonlyMap<string, readonly ComponentToken[]> 
 //   bun test src/lib/theme/component-tokens.drift.test.ts 2>&1 | awk '/^  \"/' | sort -u
 // ============================================================================
 export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
+  // ── Stage 2 typography (declared but consumers migrating in Stage 2 §1f)
+  ...buildTypographyManifestEntries().map((t) => t.cssVar),
+  // ── False positives: drift regex matches bare prefixes from template
+  // literals inside resolver / generator helpers. Not real references.
+  "--tv-text-",
+  "--tv-shell-",
+  "--tv-paper-",
+  "--tv-shadow-",
+  "--tv-shell-texture-",
+  "--tv-paper-texture-",
+
   // ── Row state
   "--tv-row-base-bg",
   "--tv-row-base-fg",

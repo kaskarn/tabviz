@@ -39,6 +39,16 @@ theme_inputs_to_json <- function(inputs) {
   # is reserved for accessibility modes (standard / high-contrast /
   # reduced-transparency); the R API will expose those via a future
   # `accessibility_mode` arg once Stage 2 lands them in the R surface.
+  # Stage 2 typography Tier 1 — pack only non-NA values to keep the wire
+  # compact. The TS resolver fills defaults (14 / 1.2 / 400-700).
+  type_weights <- list(
+    regular  = na_to_null(inputs@type_weight_regular),
+    medium   = na_to_null(inputs@type_weight_medium),
+    semibold = na_to_null(inputs@type_weight_semibold),
+    bold     = na_to_null(inputs@type_weight_bold)
+  )
+  type_weights <- type_weights[!vapply(type_weights, is.null, logical(1))]
+
   out <- list(
     brand                 = inputs@brand,
     accent                = na_to_null(inputs@accent),
@@ -53,7 +63,12 @@ theme_inputs_to_json <- function(inputs) {
     status                = if (length(status) > 0L) status else NULL,
     fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
     density               = inputs@density,
-    densityFactor         = if (inputs@density_factor != 1) inputs@density_factor else NULL
+    densityFactor         = if (inputs@density_factor != 1) inputs@density_factor else NULL,
+    shell_mode            = na_to_null(inputs@shell_mode),
+    shell_texture         = na_to_null(inputs@shell_texture),
+    type_base_size        = na_to_null(inputs@type_base_size),
+    type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
+    type_weights          = if (length(type_weights) > 0L) type_weights else NULL
   )
   out[!vapply(out, is.null, logical(1))]
 }

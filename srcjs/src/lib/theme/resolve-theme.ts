@@ -39,6 +39,14 @@ import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectHex } from "./polarity";
 import { pickInkOnBg } from "../oklch";
 import {
+  resolveTypographyInputs,
+  resolveTypeRole,
+  type TypeRoleName,
+} from "./typography";
+import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
+import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
+import { resolveTextureColors, textureKeyForCssVar } from "./textures";
+import {
   COMPONENT_TOKENS,
   type ComponentToken,
   type TokenSource,
@@ -237,6 +245,57 @@ function resolveTokenValue(
     return resolved.roles[beh.swap];
   }
 
+  // Stage 2 §5 HC fidelity tokens — short-circuit before kind dispatch
+  // so density/border-width branches don't capture them.
+  if (token.cssVar === "--tv-hc-caret-char") {
+    return resolved.inputs.mode === "high-contrast" ? "▸" : "";
+  }
+  if (token.cssVar === "--tv-hc-ring-width") {
+    return "1.5px";
+  }
+  if (token.cssVar === "--tv-hc-bar-width") {
+    return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
+  }
+
+  // Stage 2 §7 browser-additive effects.
+  if (token.cssVar === "--tv-brand-gradient") {
+    const brandSolid = resolved.roles["brand-solid"] ?? resolved.inputs.brand;
+    // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
+    const brandRamp = resolved.ramps.brand;
+    const a = brandRamp[7] ?? brandSolid;
+    const b = brandRamp[9] ?? brandSolid;
+    return `linear-gradient(90deg, ${a} 0%, ${b} 100%)`;
+  }
+  if (token.cssVar === "--tv-brand-glow") {
+    // rgba from accent-solid at alpha 0.4.
+    const accent = resolved.roles["accent-solid"] ?? resolved.inputs.brand;
+    if (accent.startsWith("#")) {
+      const h = accent.slice(1);
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, 0.4)`;
+    }
+    return accent;
+  }
+  if (token.cssVar === "--tv-glass-blur") {
+    return "16px";
+  }
+
+  // Stage 2 typography tokens always route through the typography resolver,
+  // regardless of kind. (`lh` and `track` are tagged spacing-px / size, but
+  // their values come from the type-role table, not density.)
+  if (token.source.tier === "computed") {
+    const typography = resolveTypographyComputed(token.cssVar, resolved.inputs);
+    if (typography !== null) return typography;
+    const shellPaper = resolveShellPaperComputed(token.cssVar, resolved);
+    if (shellPaper !== null) return shellPaper;
+    const elevation = resolveElevationComputed(token.cssVar, resolved);
+    if (elevation !== null) return elevation;
+    const texture = resolveTextureComputed(token.cssVar, resolved);
+    if (texture !== null) return texture;
+  }
+
   // Spacing-px tokens are resolved via the density table regardless of
   // source.tier — many are tagged `computed` because they derive from a
   // density × kind formula. The density preset comes from inputs.density;
@@ -259,13 +318,103 @@ function resolveTokenValue(
       return anchorHex ?? "<anchor-missing>";
     }
     case "computed":
-      // Computed sources are token-specific; non-spacing computed tokens
-      // get a placeholder until their per-token computation lands.
+      // Typography computed tokens were handled above. Other computed
+      // sources are token-specific; they fall through to placeholder.
       return "<computed>";
     case "const":
-      // Const sources have hard-coded values; the most common is "transparent".
+      // Const sources have hard-coded values. Stage 2 §5 HC-fidelity tokens
+      // also live here — their value depends on the active mode.
+      if (token.cssVar === "--tv-hc-caret-char") {
+        return resolved.inputs.mode === "high-contrast" ? "▸" : "";
+      }
+      if (token.cssVar === "--tv-hc-ring-width") {
+        return "1.5px";
+      }
+      if (token.cssVar === "--tv-hc-bar-width") {
+        return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
+      }
       if (source.note?.includes("transparent")) return "transparent";
       return "<const>";
+  }
+}
+
+/** Stage 2 typography resolver. Matches `--tv-text-{role}-{prop}` and emits
+ *  the typed value via `resolveTypeRole()`. Returns null when the cssVar
+ *  doesn't match the typography pattern so the caller falls through to
+ *  the placeholder path. */
+const TYPOGRAPHY_PROPS = ["family", "size", "weight", "lh", "track", "font"] as const;
+const TYPOGRAPHY_ROLE_NAMES = new Set<TypeRoleName>([
+  "title", "subtitle", "heading", "body", "numeric",
+  "label", "caption", "footnote", "cell", "tick",
+]);
+
+/** Stage 2 §3 texture color resolver. Matches `--tv-{surface}-texture-{line|dot}`
+ *  cssVars and emits the neutral-grade-derived value. Returns null when
+ *  the cssVar doesn't match. */
+function resolveTextureComputed(
+  cssVar: string,
+  resolved: { ramps: TokenRamps },
+): string | null {
+  const key = textureKeyForCssVar(cssVar);
+  if (key === null) return null;
+  return resolveTextureColors(resolved.ramps.neutral)[key];
+}
+
+/** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`
+ *  cssVars and emits hue-aware shadow colors mixed from the paper bg.
+ *  Returns null when the cssVar doesn't match. */
+function resolveElevationComputed(
+  cssVar: string,
+  resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
+): string | null {
+  const key = elevationKeyForCssVar(cssVar);
+  if (key === null) return null;
+  const sp = resolveShellPaper(resolved.inputs, {
+    surface:       resolved.roles.surface       ?? "#FFFFFF",
+    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+    border:        resolved.roles.border        ?? "#CCCCCC",
+    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+  });
+  const paperBg = sp.paperBg.startsWith("#") ? sp.paperBg : "#FFFFFF";
+  return resolveElevationShadows(paperBg)[key];
+}
+
+/** Stage 2 §2 shell/paper resolver. Matches `--tv-shell-*` and `--tv-paper-*`
+ *  cssVars and emits the corresponding value from resolveShellPaper().
+ *  Returns null when the cssVar doesn't match. */
+function resolveShellPaperComputed(
+  cssVar: string,
+  resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
+): string | null {
+  const key = shellPaperKeyForCssVar(cssVar);
+  if (key === null) return null;
+  const sp = resolveShellPaper(resolved.inputs, {
+    surface:       resolved.roles.surface       ?? "#FFFFFF",
+    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+    border:        resolved.roles.border        ?? "#CCCCCC",
+    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+  });
+  return sp[key];
+}
+
+function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string | null {
+  // Pattern: --tv-text-{role}-{prop}
+  const m = cssVar.match(/^--tv-text-([a-z]+)-([a-z]+)$/);
+  if (!m) return null;
+  const role = m[1] as TypeRoleName;
+  const prop = m[2];
+  if (!TYPOGRAPHY_ROLE_NAMES.has(role)) return null;
+  if (!TYPOGRAPHY_PROPS.includes(prop as (typeof TYPOGRAPHY_PROPS)[number])) return null;
+  const typo = resolveTypographyInputs(inputs);
+  const r = resolveTypeRole(role, typo);
+  switch (prop) {
+    case "family": return r.family;
+    case "size":   return `${r.size}px`;
+    case "weight": return String(r.weight);
+    case "lh":     return r.lh === null ? "normal" : String(r.lh);
+    case "track":  return r.track;
+    case "font":   return r.font;
+    default:       return null;
   }
 }
 

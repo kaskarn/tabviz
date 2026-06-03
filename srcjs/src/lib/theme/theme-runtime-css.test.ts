@@ -22,7 +22,7 @@ describe("theme-runtime.css raw import", () => {
     expect(css as string).toContain("sv-omit-end");
   });
 
-  it("contains all 10 scope-level data-* attribute selectors", () => {
+  it("contains all 11 scope-level data-* attribute selectors", () => {
     const scopeAttrs = [
       "data-mode",
       "data-polarity",
@@ -34,6 +34,7 @@ describe("theme-runtime.css raw import", () => {
       "data-banding",
       "data-first-col-style",
       "data-shell-mode",
+      "data-shell-texture",
     ];
     for (const attr of scopeAttrs) {
       expect(css as string).toContain(`[${attr}=`);

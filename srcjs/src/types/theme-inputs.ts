@@ -70,6 +70,45 @@ export interface ThemeInputs {
     mono?: string;
   };
 
+  /** Stage 2 §3 surface texture. Themeable background pattern applied to
+   *  the shell or paper. Four textures plus none:
+   *
+   *    none    — no texture (default)
+   *    ruled   — horizontal lines (notebook paper)
+   *    grid    — orthogonal grid (graph paper)
+   *    dotted  — dotted grid
+   *    grain   — pseudo-random noise (subtle paper texture)
+   *
+   *  Drives `[data-shell-texture]` selectors + 3 texture color tokens. */
+  shell_texture?: "none" | "ruled" | "grid" | "dotted" | "grain";
+
+  /** Stage 2 §2 shell/paper two-surface model. Controls the relationship
+   *  between the outer chrome (shell) and the inner data card (paper):
+   *
+   *    flush       — shell + paper share fill; no visible separation.
+   *    raised      — shell is a card; paper sits on it with elevation.
+   *    float       — shell transparent; paper floats with its own shadow.
+   *    transparent — shell transparent; no float shadow (minimal chrome).
+   *
+   *  Drives the `[data-shell-mode]` selectors in theme-runtime.css and the
+   *  10 shell/paper Tier-3 tokens. Default: "flush". */
+  shell_mode?: "flush" | "raised" | "float" | "transparent";
+
+  /** Stage 2 typography Tier 1 — anchor of the modular size scale (px).
+   *  Default 14. */
+  type_base_size?: number;
+  /** Stage 2 typography Tier 1 — exponential ratio between scale steps.
+   *  Default 1.2 (Major Third minus a hair, editorial rhythm). */
+  type_scale_ratio?: number;
+  /** Stage 2 typography Tier 1 — weight axis. Each role binds to one of
+   *  these four named weights. Defaults 400/500/600/700. */
+  type_weights?: {
+    regular?: number;
+    medium?: number;
+    semibold?: number;
+    bold?: number;
+  };
+
   /** Density preset (the curated spacing baseline). */
   density?: "compact" | "comfortable" | "spacious";
   /** Continuous multiplier on the density preset's spacing tokens — a fine
