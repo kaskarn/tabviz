@@ -4272,9 +4272,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           fill="${row.style.bg}"/>`);
       } else if (row.style?.type === "header") {
         // Header-type rows get a subtle muted background
+        const headerRowFill = readVar(cssVars, "--tv-text-subtle", theme.content.muted);
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-          fill="${theme.content.muted}" fill-opacity="0.1"/>`);
+          fill="${headerRowFill}" fill-opacity="0.1"/>`);
       } else if (semBundle?.bg) {
         // Semantic bundle background — semantic classes can request a
         // row bg via theme.semantics.<token>.bg. Rendered BEFORE the
@@ -4344,7 +4345,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Honor spec-level watermarkColor / watermarkOpacity (v0.20.1+); fall
       // back to foreground @ 0.07 for specs authored before those fields
       // existed.
-      const wmFill = spec.watermarkColor ?? theme.content.primary;
+      const wmFill = spec.watermarkColor ?? readVar(cssVars, "--tv-text", theme.content.primary);
       const wmOpacity = spec.watermarkOpacity ?? 0.07;
       parts.push(
         `<text x="${cx}" y="${cy}" ` +
