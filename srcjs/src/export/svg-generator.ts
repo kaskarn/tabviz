@@ -2229,7 +2229,8 @@ function renderVizBoxplot(
   vizWidth: number,
   options: VizBoxplotColumnOptions,
   xScale: Scale,
-  theme: WebTheme
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
 ): string {
   const parts: string[] = [];
   const effects = options.effects;
@@ -2284,9 +2285,9 @@ function renderVizBoxplot(
 
   // Default colors
   const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = theme.content.primary ?? "#1a1a1a";
-  const themeLineWidth = theme.plot.lineWidth ?? 1.5;
-  const outlierR = (theme.plot.pointSize ?? 6) * 0.4;
+  const lineColor = readVar(cssVars, "--tv-text", theme.content.primary) ?? "#1a1a1a";
+  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth ?? 1.5);
+  const outlierR = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize ?? 6) * 0.4;
 
   effects.forEach((effect, idx) => {
     const stats = effectStats[idx];
@@ -2372,7 +2373,8 @@ function renderVizViolin(
   vizWidth: number,
   options: VizViolinColumnOptions,
   xScale: Scale,
-  theme: WebTheme
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
 ): string {
   const parts: string[] = [];
   const effects = options.effects;
@@ -2419,8 +2421,8 @@ function renderVizViolin(
 
   // Default colors
   const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = theme.content.primary ?? "#1a1a1a";
-  const themeLineWidth = theme.plot.lineWidth ?? 1.5;
+  const lineColor = readVar(cssVars, "--tv-text", theme.content.primary) ?? "#1a1a1a";
+  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth ?? 1.5);
   // Violin outline reads thinner than a forest-plot stroke by convention;
   // scale from theme so bumping shapes.lineWidth still thickens the violin.
   const violinStrokeDefault = themeLineWidth * 0.33;
@@ -4609,7 +4611,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             vizWidth,
             opts,
             xScale,
-            theme
+            theme,
+            cssVars,
           ));
         }
       });
@@ -4644,7 +4647,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             vizWidth,
             opts,
             xScale,
-            theme
+            theme,
+            cssVars,
           ));
         }
       });
