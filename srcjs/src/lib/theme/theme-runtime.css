@@ -180,6 +180,22 @@
 }
 
 /* sv-omit-begin */
+/* Stage 3 §3c — Spine hover-wire. When the spine UI sets
+ * data-hovered-role on documentElement, elements painted by that role
+ * get a pulsing accent outline. The role → token mapping lives in JS
+ * (TOKENS_BY_ROLE); this CSS only applies the highlight. The browser-
+ * only sv-omit wrap keeps SVG export clean. */
+:root[data-hovered-role] .tabviz-scope [data-tv-token].tv-role-hovered {
+  outline: 2px solid var(--tv-accent, #2563eb);
+  outline-offset: 1px;
+  animation: tv-spine-pulse 1s ease-in-out infinite;
+}
+
+@keyframes tv-spine-pulse {
+  0%, 100% { outline-color: var(--tv-accent, #2563eb); }
+  50%      { outline-color: transparent; }
+}
+
 /* Stage 2 §7 browser-additive effects. These rules apply backdrop-filter
  * (glass), gradient strips, and glow shadows; SVG export strips them via
  * the sv-omit markers. SVG path emits structural equivalents (gradient
