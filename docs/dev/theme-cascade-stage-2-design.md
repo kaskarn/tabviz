@@ -1,9 +1,8 @@
 # Stage 2 design — typography cascade, shell/paper, surface effects, HC fidelity
 
-> **Status:** v0.2 — 2026-06-03. §1 typography cascade LANDED on `feat/theme-stage2`
-> (Tier 1 inputs + Tier 2 type roles + Tier 3 emission + R wrappers). Sections 2-7
-> (shell/paper, textures, knockouts, HC fidelity, elevation, additive effects) still
-> designed-but-not-built.
+> **Status:** v1.0 LANDED — 2026-06-03. Substrate complete for §1–§3 + §5–§7
+> on `feat/theme-stage2`. §4 (texture knockouts) is the natural follow-up
+> once consumer migration plumbs the textured surfaces into the SVG export.
 > **Builds on:** [`theme-cascade-stage-1-design.md`](theme-cascade-stage-1-design.md) — substrate (manifest, CSS-var wire, override schema, `data-*` variants, resolver capabilities, row-kind cascade).
 > **Parent vision:** [`theme-cascade-rework.md`](theme-cascade-rework.md) — §5 Stage 2 scope.
 
