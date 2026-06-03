@@ -188,7 +188,16 @@ function resolveRoleValue(
   return r[Math.max(0, Math.min(10, binding.grade - 1))]!;
 }
 
-/** Resolve a single component token to a CSS-var value. */
+/** Resolve a single component token to a CSS-var value, applying any
+ *  mode-specific transforms declared on the token's `modes` field.
+ *
+ *  Per Stage 1 §23 — mode transforms:
+ *    - "drop" → emits `transparent`
+ *    - { swap: roleName } → looks up `roles[roleName]` instead of the
+ *      token's normal source
+ *
+ *  The mode comes from `inputs.mode` (Q-P4.5 split — mode now means
+ *  contrast mode, not light/dark). */
 function resolveTokenValue(
   token: ComponentToken,
   resolved: {
@@ -197,6 +206,20 @@ function resolveTokenValue(
     inputs: ThemeInputs;
   },
 ): string {
+  // Mode-specific transforms — drop or swap based on the active mode.
+  const mode = resolved.inputs.mode;
+  if (mode === "high-contrast" && token.modes?.hc) {
+    const beh = token.modes.hc;
+    if (beh === "drop") return "transparent";
+    // beh is { swap: roleName }
+    return resolved.roles[beh.swap];
+  }
+  if (mode === "reduced-transparency" && token.modes?.rt) {
+    const beh = token.modes.rt;
+    if (beh === "drop") return "transparent";
+    return resolved.roles[beh.swap];
+  }
+
   // Spacing-px tokens are resolved via the density table regardless of
   // source.tier — many are tagged `computed` because they derive from a
   // density × kind formula. The full density-cascade integration lands

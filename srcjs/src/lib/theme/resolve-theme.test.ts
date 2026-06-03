@@ -180,6 +180,58 @@ describe("resolveTheme — off-ramp role resolution", () => {
   });
 });
 
+describe("resolveTheme — HC + RT mode transforms", () => {
+  it("HC mode drops tokens with modes.hc = 'drop' to transparent", () => {
+    const hcWire = createWire({
+      brand: "#0099CC",
+      mode: "high-contrast",
+    });
+    const r = resolveTheme(hcWire);
+    // --tv-row-alt-bg declares modes: { hc: "drop" }
+    expect(r.cssVars["--tv-row-alt-bg"]).toBe("transparent");
+  });
+
+  it("HC mode drops emphasis-bg (modes.hc = 'drop')", () => {
+    const hcWire = createWire({
+      brand: "#0099CC",
+      mode: "high-contrast",
+    });
+    const r = resolveTheme(hcWire);
+    // --tv-row-emphasis-bg has modes: { hc: "drop", rt: { swap: "fill-hover" } }
+    expect(r.cssVars["--tv-row-emphasis-bg"]).toBe("transparent");
+  });
+
+  it("RT mode swaps tokens with modes.rt = { swap: ... } to the swap role", () => {
+    const rtWire = createWire({
+      brand: "#0099CC",
+      mode: "reduced-transparency",
+    });
+    const r = resolveTheme(rtWire);
+    // --tv-row-emphasis-bg has modes: { rt: { swap: "fill-hover" } }
+    expect(r.cssVars["--tv-row-emphasis-bg"]).toBe(r.roles["fill-hover"]);
+  });
+
+  it("standard mode leaves manifest.modes behavior inert", () => {
+    const std = resolveTheme(createWire({ brand: "#0099CC", mode: "standard" }));
+    const hc = resolveTheme(createWire({ brand: "#0099CC", mode: "high-contrast" }));
+    // Tokens with HC behavior differ between modes
+    expect(std.cssVars["--tv-row-alt-bg"]).not.toBe(hc.cssVars["--tv-row-alt-bg"]);
+    // Tokens without HC behavior are stable
+    expect(std.cssVars["--tv-row-base-bg"]).toBe(hc.cssVars["--tv-row-base-bg"]);
+  });
+
+  it("polarity and mode compose orthogonally (dark + HC)", () => {
+    const darkHC = resolveTheme(createWire({
+      brand: "#0099CC",
+      polarity: "dark",
+      mode: "high-contrast",
+    }));
+    expect(darkHC.polarity).toBe("dark");
+    // HC still drops the alt-bg even under dark polarity
+    expect(darkHC.cssVars["--tv-row-alt-bg"]).toBe("transparent");
+  });
+});
+
 describe("resolveTheme — cssVars has no TBD placeholders", () => {
   it("no role-sourced token returns a TBD placeholder", () => {
     const r = resolveTheme(createWire(COCHRANE));
