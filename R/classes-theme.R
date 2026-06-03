@@ -89,6 +89,10 @@ ThemeInputs <- new_class(
     # named profile). 1 = profile unchanged. Clamped [0.5, 2] at resolution.
     density_factor  = new_property(class_numeric, default = 1),
 
+    # Stage 2 §2 shell/paper two-surface model. One of "flush" / "raised" /
+    # "float" / "transparent". NA defaults to "flush" at resolution.
+    shell_mode      = new_property(class_character, default = NA_character_),
+
     # Stage 2 typography Tier 1 (theme-cascade-stage-2-design.md §1b).
     # Base size + ratio drive the 7-step size scale (label/foot/body/head/
     # subtitle/title/display). NA defaults to 14 / 1.2 at resolution.

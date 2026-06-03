@@ -70,6 +70,18 @@ export interface ThemeInputs {
     mono?: string;
   };
 
+  /** Stage 2 §2 shell/paper two-surface model. Controls the relationship
+   *  between the outer chrome (shell) and the inner data card (paper):
+   *
+   *    flush       — shell + paper share fill; no visible separation.
+   *    raised      — shell is a card; paper sits on it with elevation.
+   *    float       — shell transparent; paper floats with its own shadow.
+   *    transparent — shell transparent; no float shadow (minimal chrome).
+   *
+   *  Drives the `[data-shell-mode]` selectors in theme-runtime.css and the
+   *  10 shell/paper Tier-3 tokens. Default: "flush". */
+  shell_mode?: "flush" | "raised" | "float" | "transparent";
+
   /** Stage 2 typography Tier 1 — anchor of the modular size scale (px).
    *  Default 14. */
   type_base_size?: number;

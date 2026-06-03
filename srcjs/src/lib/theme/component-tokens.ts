@@ -413,6 +413,80 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Footnote text color",
   },
 
+  // ── Stage 2 §2 — Shell/paper two-surface model ────────────────────────────
+  // Tier-3 tokens emitted by the resolver based on inputs.shell_mode.
+  // Five per surface: bg, border, shadow, radius, padding.
+  {
+    cssVar: "--tv-shell-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "shell/paper: shell.bg per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell (outer chrome) background. Resolves per shell_mode.",
+  },
+  {
+    cssVar: "--tv-shell-border",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: shell.border per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell border color. Resolves per shell_mode.",
+  },
+  {
+    cssVar: "--tv-shell-shadow",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: shell.shadow per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell box-shadow declaration (full CSS shadow string).",
+  },
+  {
+    cssVar: "--tv-shell-radius",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: shell radius per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell border-radius (px).",
+  },
+  {
+    cssVar: "--tv-shell-padding",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: shell padding per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Shell inner padding (px).",
+  },
+  {
+    cssVar: "--tv-paper-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "shell/paper: paper.bg per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper (inner data card) background. Resolves per shell_mode.",
+  },
+  {
+    cssVar: "--tv-paper-border",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: paper.border per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper border color.",
+  },
+  {
+    cssVar: "--tv-paper-shadow",
+    kind: "paint-color",
+    source: { tier: "computed", note: "shell/paper: paper.shadow per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper box-shadow declaration.",
+  },
+  {
+    cssVar: "--tv-paper-radius",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: paper radius per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper border-radius (px).",
+  },
+  {
+    cssVar: "--tv-paper-padding",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "shell/paper: paper padding per shell_mode" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
+    description: "Paper inner padding (px).",
+  },
+
   // ── Stage 2 — Typography Tier 3 (family/size/weight/lh/track per role) ────
   // 10 type roles × 5 properties each + a `font` shorthand = 60 entries.
   // Sourced from typography-tier-1 inputs via the resolver's
@@ -619,10 +693,11 @@ export const TOKENS_BY_CONSUMER: ReadonlyMap<string, readonly ComponentToken[]> 
 export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // ── Stage 2 typography (declared but consumers migrating in Stage 2 §1f)
   ...buildTypographyManifestEntries().map((t) => t.cssVar),
-  // ── False positive: drift regex matches the bare prefix `--tv-text-` from
-  // the template literal `${base}-family` inside buildTypographyManifestEntries.
-  // Not a real reference; grandfather to keep the gate green.
+  // ── False positives: drift regex matches bare prefixes from template
+  // literals inside resolver / generator helpers. Not real references.
   "--tv-text-",
+  "--tv-shell-",
+  "--tv-paper-",
 
   // ── Row state
   "--tv-row-base-bg",

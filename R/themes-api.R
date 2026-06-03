@@ -64,6 +64,7 @@ theme_inputs_to_json <- function(inputs) {
     fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
     density               = inputs@density,
     densityFactor         = if (inputs@density_factor != 1) inputs@density_factor else NULL,
+    shell_mode            = na_to_null(inputs@shell_mode),
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL

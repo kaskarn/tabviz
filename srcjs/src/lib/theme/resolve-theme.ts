@@ -43,6 +43,7 @@ import {
   resolveTypeRole,
   type TypeRoleName,
 } from "./typography";
+import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -248,6 +249,8 @@ function resolveTokenValue(
   if (token.source.tier === "computed") {
     const typography = resolveTypographyComputed(token.cssVar, resolved.inputs);
     if (typography !== null) return typography;
+    const shellPaper = resolveShellPaperComputed(token.cssVar, resolved);
+    if (shellPaper !== null) return shellPaper;
   }
 
   // Spacing-px tokens are resolved via the density table regardless of
@@ -291,6 +294,24 @@ const TYPOGRAPHY_ROLE_NAMES = new Set<TypeRoleName>([
   "title", "subtitle", "heading", "body", "numeric",
   "label", "caption", "footnote", "cell", "tick",
 ]);
+
+/** Stage 2 §2 shell/paper resolver. Matches `--tv-shell-*` and `--tv-paper-*`
+ *  cssVars and emits the corresponding value from resolveShellPaper().
+ *  Returns null when the cssVar doesn't match. */
+function resolveShellPaperComputed(
+  cssVar: string,
+  resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
+): string | null {
+  const key = shellPaperKeyForCssVar(cssVar);
+  if (key === null) return null;
+  const sp = resolveShellPaper(resolved.inputs, {
+    surface:       resolved.roles.surface       ?? "#FFFFFF",
+    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+    border:        resolved.roles.border        ?? "#CCCCCC",
+    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+  });
+  return sp[key];
+}
 
 function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string | null {
   // Pattern: --tv-text-{role}-{prop}
