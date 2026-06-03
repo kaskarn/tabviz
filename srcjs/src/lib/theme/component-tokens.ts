@@ -547,6 +547,7 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-border-table-color",
   "--tv-bottom-margin",
   "--tv-brand-ink",
+  "--tv-focus",
   "--tv-cell-padding-x",
   "--tv-cell-padding-y",
   "--tv-container-border",
