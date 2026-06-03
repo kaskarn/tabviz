@@ -357,21 +357,25 @@ import {
 /**
  * Walk the COMPONENT_TOKENS manifest and produce a CSS-var map.
  *
- * STUB IMPLEMENTATION (Stage 1 sprint kickoff): each entry produces a
- * placeholder value like `<TBD role:surface>` or `<TBD input:density>`
- * indicating where the resolver (step 4) will plug in the real value.
+ * Two overloads:
+ *   - With no argument: returns placeholder values (the original stub from
+ *     the M2 commit). Useful for testing manifest-dispatch shape without
+ *     a resolved theme.
+ *   - With a ResolvedTheme argument: returns the actual cssVars map from
+ *     the resolved theme. This is the real wire emission used by browser
+ *     DOM rendering and SVG export.
  *
- * After step 4 lands, this function consumes a ResolvedTheme parameter
- * (instead of being parameter-less) and returns real OKLCH/hex values
- * for paint tokens, scaled pixel values for spacing tokens, and so on.
- *
- * The intermediate signature with no theme parameter is intentional:
- * the resolver doesn't exist yet, and the stub validates the manifest's
- * dispatch shape without coupling to the (eventually-rewritten) resolver
- * pipeline. Step 4 will introduce `resolveTheme(wire): ResolvedTheme` and
- * change this function's signature to consume it.
+ * The latter is just `resolved.cssVars` — `resolveTheme()` walks the
+ * manifest as its final step (per Stage 1 §10b), so the map is already
+ * built inside the ResolvedTheme. We expose this function as a thin
+ * pass-through for callers that already have a ResolvedTheme; callers
+ * that don't have one should construct it via `resolveTheme(wire)`
+ * from `lib/theme/resolve-theme.ts`.
  */
-export function emitCssVarsFromManifest(): Record<string, string> {
+export function emitCssVarsFromManifest(
+  resolved?: { cssVars: Readonly<Record<string, string>> },
+): Record<string, string> {
+  if (resolved) return { ...resolved.cssVars };
   const out: Record<string, string> = {};
   for (const token of COMPONENT_TOKENS) {
     out[token.cssVar] = placeholderValue(token);
