@@ -92,6 +92,14 @@ export interface ThemeInputs {
     brand?: "linear" | "ease" | "smooth" | "log" | "exp";
     accent?: "linear" | "ease" | "smooth" | "log" | "exp";
   };
+
+  /** Per-row-kind theme defaults — currently only height ratio; Stage 2
+   *  paint fields (bg, fg, border, weight) extend this shape per Q10
+   *  closure. Layer 3 of the row-kind height cascade (Stage 1 §33). */
+  row_kinds?: Partial<Record<
+    "data" | "group_header" | "spacer" | "summary" | "header" | "panel",
+    { heightRatio?: number }
+  >>;
 }
 
 // ────────────────────────────────────────────────────────────────────
