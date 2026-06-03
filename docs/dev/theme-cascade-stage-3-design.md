@@ -1,6 +1,10 @@
 # Stage 3 design — editor architecture (Spine, Inspector, OKLCH picker, exports)
 
-> **Status:** v0.1 — 2026-06-02. Architectural articulation; UI-implementation details deferred to sprint planning.
+> **Status:** v0.5 — 2026-06-03. §2c (data-tv-token attribute), §2
+> (Cascade Inspector substrate), §3 (Role Spine read-only first pass)
+> LANDED on main. §§1/4/5/6/7 (Settings tab reorg, OKLCH picker, live
+> docs sheets, exports, schema versioning) designed-but-not-built; the
+> substrate primitives unlock them as follow-on UI work.
 > **Builds on:** [`theme-cascade-stage-1-design.md`](theme-cascade-stage-1-design.md) — substrate + capabilities. [`theme-cascade-stage-2-design.md`](theme-cascade-stage-2-design.md) — typography + surfaces.
 > **Parent vision:** [`theme-cascade-rework.md`](theme-cascade-rework.md) — §5 Stage 3 scope.
 

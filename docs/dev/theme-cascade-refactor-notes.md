@@ -886,3 +886,47 @@ Stage 2 ships substantially complete in a single session arc. §4 (texture knock
 **§4 follow-up sketch:** Texture knockouts erase the texture pattern behind text so the text reads cleanly on textured surfaces. Browser CSS uses `background-clip: text` or background overlay; SVG uses `<mask>` referencing the text glyphs. Q-S2.5 chose `<mask>` over rect-per-text. Implementation pairs with the wrapped-text emission in svg-generator's renderUnifiedTableRow path.
 
 Branch ready to merge to main.
+
+---
+
+### 2026-06-03 (Stage 3 kickoff + Stage 2 §4 closeout) — editor substrate LANDED on main
+
+After Stage 2 merge, this session closed out Stage 2 follow-ups (§4 texture knockouts), pushed to remote, and put the Stage 3 editor substrate in place on main directly.
+
+**Stage 2 closeout commits:**
+
+- **`[Stage2.4] texture knockouts`** — pre-mixed pad behind text on textured surfaces. 2 cssVars (`--tv-shell-text-knockout-bg`, `--tv-paper-text-knockout-bg`) plus `resolveTextureKnockoutBg(surfaceBg)` + `svgTextureKnockoutRect(x,y,w,h,surface)`. CSS rules under `[data-shell-texture]` paint `.tv-shell-text` with the knockout pad. Premix is hex-against-white at 78% so both CSS and SVG consume a literal hex.
+- **`[Stage2.fix] DESCRIPTION Collate`** — register typography-api.R, shell-paper-api.R, v4-inspect.R; R CMD check now passes cleanly (0E/0W/1 pre-existing informational NOTE).
+- **`[cleanup] theme-wire.ts docstrings`** — update stale Stage 1 stub references; no code changes.
+- **Pushed to `origin/main`** — Stage 1 + Stage 2 + cleanup is now upstream.
+
+**Stage 3 substrate commits:**
+
+- **`[Stage3.2c] data-tv-token attribute emission`** — the editor's load-bearing primitive. New `srcjs/src/lib/theme/token-attribution.ts` with `ELEMENT_TOKEN_ATTRIBUTION` (22-entry registry), `tokenForElement`, `dataTvTokenAttr`, `elementsForToken`. Pilot emission in TabvizPlot data-cell + svg-generator surface bg + row-alt banding.
+
+- **`[Stage3.2] Cascade Inspector substrate`** — docked panel + store + click tracer. `inspector-store.svelte.ts` ($state singleton) + `CascadeInspector.svelte` (docked panel, browser-only) + `tryTraceFromEvent` helper. 7 vitest cases.
+
+- **`[Stage3.3] Role Spine UI read-only first pass`** — `RoleSpine.svelte` three-column ramp display with role tokens at current `DEFAULT_ROLE_BINDINGS` positions. Hover sets `data-hovered-role`; click traces via `inspectorStore`. Drag-to-rebind (§3d) deferred.
+
+**Branch state at end of session:**
+- `main` at `833c7da`, pushed to `origin`.
+- 1247 bun tests + 7 vitest + 1415 R tests pass.
+- svelte-check clean; R CMD check clean (0E/0W/1 pre-existing NOTE).
+- Widget bundle 236 kB.
+
+**Stage 3 status table:**
+
+| Section | Status |
+|---|---|
+| §1 Settings panel tab reorg | not started |
+| §2 Cascade Inspector | LANDED (substrate) |
+| §2c data-tv-token attribute | LANDED (pilot — broader emission as renderers add it) |
+| §3 Role Spine UI | LANDED (read-only; drag-to-rebind deferred) |
+| §4 OKLCH picker | not started |
+| §5 Live-themed docs sheets | not started |
+| §6 Two-format export + delta serialization | not started |
+| §7 Schema versioning | not started |
+
+**The editor substrate is in place.** Inspector + Spine work end-to-end against any resolved theme; the bridge attribute (`data-tv-token`) is being emitted by renderers. UI polish + remaining sections are sequential follow-up work.
+
+Stages 1, 2, and 3-substrate are LANDED on main and pushed to origin.
