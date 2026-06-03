@@ -326,3 +326,70 @@ function _buildWidgetExtras(ctx: WidgetCSSContext): string {
       --tv-zoom: ${ctx.zoom};
     `.trim();
 }
+
+// ============================================================================
+// V4 SUBSTRATE — emitCssVarsFromManifest
+//
+// The new manifest-driven CSS-var emitter. Walks COMPONENT_TOKENS and
+// produces a Record<cssVar, value> map by dispatching on each entry's
+// `source.tier` (role / input / anchor / computed / const).
+//
+// This commit ships the STUB: every entry returns a placeholder value of
+// the form `<TBD source-description>`. The full implementation requires
+// the resolver capability surface (Phase 4 / step 4 of Stage 1 §40) to
+// produce role values, input echos, anchor OKLCH triples, and computed
+// derivations.
+//
+// The stub exists to:
+//   1. Validate the manifest-walking dispatch logic compiles against the
+//      Phase 1 manifest shape (component-tokens.ts).
+//   2. Let downstream consumers (svg-generator.ts, theme-runtime.css
+//      embedding) start migrating against the API surface while the
+//      resolver rewrite proceeds in parallel.
+//   3. Provide a single point where step 4's resolver hook-up lands.
+// ============================================================================
+
+import {
+  COMPONENT_TOKENS,
+  type ComponentToken,
+} from "./component-tokens";
+
+/**
+ * Walk the COMPONENT_TOKENS manifest and produce a CSS-var map.
+ *
+ * STUB IMPLEMENTATION (Stage 1 sprint kickoff): each entry produces a
+ * placeholder value like `<TBD role:surface>` or `<TBD input:density>`
+ * indicating where the resolver (step 4) will plug in the real value.
+ *
+ * After step 4 lands, this function consumes a ResolvedTheme parameter
+ * (instead of being parameter-less) and returns real OKLCH/hex values
+ * for paint tokens, scaled pixel values for spacing tokens, and so on.
+ *
+ * The intermediate signature with no theme parameter is intentional:
+ * the resolver doesn't exist yet, and the stub validates the manifest's
+ * dispatch shape without coupling to the (eventually-rewritten) resolver
+ * pipeline. Step 4 will introduce `resolveTheme(wire): ResolvedTheme` and
+ * change this function's signature to consume it.
+ */
+export function emitCssVarsFromManifest(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const token of COMPONENT_TOKENS) {
+    out[token.cssVar] = placeholderValue(token);
+  }
+  return out;
+}
+
+function placeholderValue(token: ComponentToken): string {
+  switch (token.source.tier) {
+    case "role":
+      return `<TBD role:${token.source.role}>`;
+    case "input":
+      return `<TBD input:${token.source.input}>`;
+    case "anchor":
+      return `<TBD anchor:${token.source.anchor}>`;
+    case "computed":
+      return `<TBD computed:${token.source.note}>`;
+    case "const":
+      return `<TBD const:${token.source.note}>`;
+  }
+}
