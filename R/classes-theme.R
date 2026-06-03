@@ -87,7 +87,19 @@ ThemeInputs <- new_class(
     density         = new_property(class_character, default = "comfortable"),
     # Continuous multiplier on the density preset's spacing (fine dial atop the
     # named profile). 1 = profile unchanged. Clamped [0.5, 2] at resolution.
-    density_factor  = new_property(class_numeric, default = 1)
+    density_factor  = new_property(class_numeric, default = 1),
+
+    # Stage 2 typography Tier 1 (theme-cascade-stage-2-design.md §1b).
+    # Base size + ratio drive the 7-step size scale (label/foot/body/head/
+    # subtitle/title/display). NA defaults to 14 / 1.2 at resolution.
+    type_base_size   = new_property(class_numeric,   default = NA_real_),
+    type_scale_ratio = new_property(class_numeric,   default = NA_real_),
+    # Weight axis — each type role binds to one of these named weights.
+    # NA defaults to 400/500/600/700 at resolution.
+    type_weight_regular  = new_property(class_numeric, default = NA_real_),
+    type_weight_medium   = new_property(class_numeric, default = NA_real_),
+    type_weight_semibold = new_property(class_numeric, default = NA_real_),
+    type_weight_bold     = new_property(class_numeric, default = NA_real_)
   ),
   validator = function(self) {
     if (!grepl(hex_pattern, self@brand)) {
