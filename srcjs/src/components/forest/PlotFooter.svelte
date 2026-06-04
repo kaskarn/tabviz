@@ -117,7 +117,7 @@
     margin: 0;
     font-size: var(--tv-text-caption-size, var(--tv-text-label-size, 0.75rem));
     font-weight: var(--tv-text-caption-weight, var(--tv-font-weight-normal, 400));
-    font-style: var(--tv-text-caption-italic, normal);
+    font-style: normal;
     color: var(--tv-text-muted, #64748b);
     line-height: 1.4;
     white-space: normal;
@@ -128,7 +128,7 @@
     margin: 4px 0 0;
     font-size: var(--tv-text-footnote-size, var(--tv-text-label-size, 0.75rem));
     font-weight: var(--tv-text-footnote-weight, var(--tv-font-weight-normal, 400));
-    font-style: var(--tv-text-footnote-italic, italic);
+    font-style: italic;
     color: var(--tv-text-subtle, #94a3b8);
     line-height: 1.4;
     white-space: normal;

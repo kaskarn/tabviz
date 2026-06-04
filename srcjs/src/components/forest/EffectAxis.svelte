@@ -214,7 +214,7 @@
         font-family="var(--tv-text-tick-family, var(--tv-text-body-family))"
         font-size="var(--tv-text-label-size, 0.75rem)"
         font-weight="var(--tv-text-tick-weight, 400)"
-        font-style="var(--tv-text-tick-italic, normal)"
+        font-style="normal"
       >
         {formatTick(tick)}
       </text>
@@ -231,7 +231,7 @@
       font-family="var(--tv-text-label-family, var(--tv-text-body-family))"
       font-size="var(--tv-text-label-size, 0.75rem)"
       font-weight="var(--tv-text-label-weight, 500)"
-      font-style="var(--tv-text-label-italic, normal)"
+      font-style="normal"
     >
       {axisLabel}
     </text>

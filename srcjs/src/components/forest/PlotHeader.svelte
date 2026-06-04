@@ -151,7 +151,7 @@
     font-family: var(--tv-text-title-family, var(--tv-text-body-family));
     font-size: var(--tv-text-title-size, var(--tv-text-title-size, 1rem));
     font-weight: var(--tv-text-title-weight, var(--tv-font-weight-bold, 600));
-    font-style: var(--tv-text-title-italic, normal);
+    font-style: normal;
     color: var(--tv-text-title-fg, var(--tv-text, #1a1a1a));
     line-height: 1.3;
     white-space: normal;
@@ -162,7 +162,7 @@
     margin: 4px 0 0;
     font-size: var(--tv-text-subtitle-size, var(--tv-text-body-size, 0.875rem));
     font-weight: var(--tv-text-subtitle-weight, var(--tv-font-weight-normal, 400));
-    font-style: var(--tv-text-subtitle-italic, normal);
+    font-style: normal;
     color: var(--tv-text-muted, #64748b);
     line-height: 1.4;
     white-space: normal;
