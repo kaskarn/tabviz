@@ -1,0 +1,61 @@
+# Google Fonts URL registry for tabviz presets.
+#
+# `web_font()` declarations were duplicated 5–7x for the most common
+# families (Inter, EB Garamond, Cinzel, Cormorant Garamond, JetBrains
+# Mono, Roboto). Even when the URL is byte-identical, having it in 7
+# files means 7 places to update when changing the requested weight
+# set. This registry pins each family's canonical URL once.
+#
+# Presets that want a non-standard weight set (e.g. Brutalist needs
+# 500;700;800;900 for the heavy stack) can still inline a custom URL,
+# or call `gf(family, weights)` to build one with the standard
+# `&display=swap` tail.
+
+#' Google Fonts URL builder for tabviz presets.
+#'
+#' Takes a family name + optional axis spec and returns the
+#' `https://fonts.googleapis.com/css2?...&display=swap` URL the
+#' presets pass to [web_font()]. Replaces spaces with `+` in the
+#' family name; appends `&display=swap` unconditionally.
+#'
+#' @param family Family name as authored by Google (e.g. `"Inter"`,
+#'   `"EB Garamond"`).
+#' @param spec Optional axis spec (e.g. `"wght@400;500;600;700"` or
+#'   `"ital,wght@0,400;0,500;0,600;1,400"`). NULL = no axis spec; the
+#'   browser receives all default axes.
+#' @return The full Google Fonts CSS2 URL.
+#' @keywords internal
+gf <- function(family, spec = NULL) {
+  family_q <- gsub(" ", "+", family, fixed = TRUE)
+  if (is.null(spec)) {
+    paste0("https://fonts.googleapis.com/css2?family=", family_q, "&display=swap")
+  } else {
+    paste0("https://fonts.googleapis.com/css2?family=", family_q, ":", spec,
+           "&display=swap")
+  }
+}
+
+# Canonical URLs for the families used by 2+ presets. Each entry is the
+# "standard" weight set we want across presets that share the font; a
+# preset can still inline a custom URL when its weight set differs
+# (Brutalist for Inter, Dwarven for EB Garamond with italics).
+FONT_URLS <- list(
+  inter          = gf("Inter",             "wght@400;500;600;700"),
+  inter_heavy    = gf("Inter",             "wght@500;700;800;900"),
+  eb_garamond    = gf("EB Garamond",       "ital,wght@0,400;0,500;0,600;1,400"),
+  eb_garamond_full = gf("EB Garamond",     "ital,wght@0,400;0,500;0,600;0,700;1,400"),
+  cinzel         = gf("Cinzel",            "wght@400;500;600;700"),
+  cormorant      = gf("Cormorant Garamond", "wght@400;500;600;700"),
+  cormorant_ital = gf("Cormorant Garamond", "ital,wght@0,400;0,500;0,600;1,400"),
+  jetbrains_mono = gf("JetBrains Mono",    "wght@400;500;600;700"),
+  jetbrains_mono_thin = gf("JetBrains Mono", "wght@400;500;600"),
+  roboto         = gf("Roboto",            "wght@400;500;600;700"),
+  roboto_flex    = gf("Roboto Flex",
+                      "opsz,wght@8..144,400;8..144,500;8..144,700"),
+  crimson_pro    = gf("Crimson Pro",       "wght@400;500;600;700"),
+  archivo        = gf("Archivo",           "wght@400;500;700;800"),
+  archivo_black  = gf("Archivo Black"),
+  italianno      = gf("Italianno"),
+  im_fell_english    = gf("IM Fell English",    "ital@0;1"),
+  im_fell_english_sc = gf("IM Fell English SC")
+)

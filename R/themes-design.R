@@ -27,8 +27,8 @@ web_theme_bauhaus <- function() {
     fonts_body = "'Archivo', 'Inter', 'Helvetica Neue', Helvetica, sans-serif",
     fonts_display = "'Archivo Black', 'Archivo', 'Helvetica Neue', sans-serif",
     web_fonts = list(
-      web_font("Archivo", "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&display=swap"),
-      web_font("Archivo Black", "https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap")
+      web_font("Archivo", FONT_URLS$archivo),
+      web_font("Archivo Black", FONT_URLS$archivo_black)
     ),
     curves = list(neutral = "smooth", brand = "smooth", accent = "smooth"),
     name = "bauhaus"
@@ -55,7 +55,7 @@ web_theme_swiss <- function() {
     fonts_body = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
     fonts_display = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
+      web_font("Inter", FONT_URLS$inter)
     ),
     curves = list(neutral = "linear"),
     name = "swiss"
@@ -83,7 +83,7 @@ web_theme_tufte <- function() {
     fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
     fonts_display = "'EB Garamond', Georgia, 'Times New Roman', serif",
     web_fonts = list(
-      web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap")
+      web_font("EB Garamond", FONT_URLS$eb_garamond)
     ),
     curves = list(neutral = "log"),
     name = "tufte"
@@ -110,7 +110,7 @@ web_theme_newsprint <- function() {
     fonts_body = "Georgia, 'Times New Roman', serif",
     fonts_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
     web_fonts = list(
-      web_font("Crimson Pro", "https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&display=swap")
+      web_font("Crimson Pro", FONT_URLS$crimson_pro)
     ),
     curves = list(neutral = "smooth", brand = "log"),
     name = "newsprint"
@@ -132,8 +132,8 @@ web_theme_solarized <- function() {
     fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
     fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
-      web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
+      web_font("Inter", FONT_URLS$inter),
+      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono_thin)
     ),
     curves = list(neutral = "smooth"),
     name = "solarized"
@@ -153,8 +153,8 @@ web_theme_solarized_dark <- function() {
     fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
     fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
-      web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
+      web_font("Inter", FONT_URLS$inter),
+      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono_thin)
     ),
     curves = list(neutral = "smooth"),
     name = "solarized_dark"
@@ -177,8 +177,8 @@ web_theme_tonal <- function() {
     fonts_body = "'Roboto', -apple-system, system-ui, sans-serif",
     fonts_display = "'Roboto Flex', 'Roboto', sans-serif",
     web_fonts = list(
-      web_font("Roboto", "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"),
-      web_font("Roboto Flex", "https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap")
+      web_font("Roboto", FONT_URLS$roboto),
+      web_font("Roboto Flex", FONT_URLS$roboto_flex)
     ),
     curves = list(neutral = "ease", brand = "ease", accent = "ease"),
     name = "tonal"
@@ -199,8 +199,8 @@ web_theme_tonal_dark <- function() {
     fonts_body = "'Roboto', -apple-system, system-ui, sans-serif",
     fonts_display = "'Roboto Flex', 'Roboto', sans-serif",
     web_fonts = list(
-      web_font("Roboto", "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"),
-      web_font("Roboto Flex", "https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap")
+      web_font("Roboto", FONT_URLS$roboto),
+      web_font("Roboto Flex", FONT_URLS$roboto_flex)
     ),
     curves = list(neutral = "ease", brand = "ease", accent = "ease"),
     name = "tonal_dark"
@@ -237,7 +237,7 @@ web_theme_synthwave <- function() {
     fonts_display = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
     fonts_mono = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
     web_fonts = list(
-      web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap")
+      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono)
     ),
     curves = list(neutral = "smooth", brand = "exp", accent = "exp"),
     effects = list(
@@ -272,7 +272,7 @@ web_theme_brutalist <- function() {
     fonts_body = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
     fonts_display = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap")
+      web_font("Inter", FONT_URLS$inter_heavy)
     ),
     curves = list(neutral = "linear"),
     geometry = list(
@@ -311,8 +311,8 @@ web_theme_atelier <- function() {
     fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
     fonts_display = "'Italianno', 'EB Garamond', Georgia, cursive, serif",
     web_fonts = list(
-      web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"),
-      web_font("Italianno", "https://fonts.googleapis.com/css2?family=Italianno&display=swap")
+      web_font("EB Garamond", FONT_URLS$eb_garamond),
+      web_font("Italianno", FONT_URLS$italianno)
     ),
     curves = list(neutral = "log"),
     name = "atelier"
@@ -338,8 +338,8 @@ web_theme_executive <- function() {
     fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
     fonts_display = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
-      web_font("Cormorant Garamond", "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap")
+      web_font("Inter", FONT_URLS$inter),
+      web_font("Cormorant Garamond", FONT_URLS$cormorant)
     ),
     curves = list(neutral = "ease", brand = "smooth"),
     name = "executive"

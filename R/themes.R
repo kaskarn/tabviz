@@ -73,7 +73,7 @@ web_theme_cochrane <- function() {
     categorical = "okabe_ito",
     fonts_body = "'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
+      web_font("Inter", FONT_URLS$inter)
     ),
     curves = list(neutral = "ease"),
     name = "cochrane"
@@ -166,7 +166,7 @@ web_theme_bmj <- function() {
     categorical = "okabe_ito",
     fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
     web_fonts = list(
-      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
+      web_font("Inter", FONT_URLS$inter)
     ),
     curves = list(neutral = "ease"),
     name = "bmj"

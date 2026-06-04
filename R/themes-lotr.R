@@ -28,9 +28,9 @@ web_theme_dwarven <- function() {
     fonts_display = "'Cinzel', 'EB Garamond', Georgia, serif",
     fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
-      web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"),
-      web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"),
-      web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
+      web_font("EB Garamond", FONT_URLS$eb_garamond_full),
+      web_font("Cinzel", FONT_URLS$cinzel),
+      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono_thin)
     ),
     curves = list(neutral = "log", brand = "log"),
     name = "dwarven"
@@ -58,8 +58,8 @@ web_theme_elvish <- function() {
     fonts_body = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
     fonts_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif",
     web_fonts = list(
-      web_font("Cormorant Garamond", "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"),
-      web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap")
+      web_font("Cormorant Garamond", FONT_URLS$cormorant_ital),
+      web_font("Cinzel", FONT_URLS$cinzel)
     ),
     curves = list(neutral = "exp", brand = "ease"),
     name = "elvish"
@@ -87,8 +87,8 @@ web_theme_hobbit <- function() {
     fonts_body = "'IM Fell English', Georgia, 'Times New Roman', serif",
     fonts_display = "'IM Fell English SC', Georgia, serif",
     web_fonts = list(
-      web_font("IM Fell English", "https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"),
-      web_font("IM Fell English SC", "https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap")
+      web_font("IM Fell English", FONT_URLS$im_fell_english),
+      web_font("IM Fell English SC", FONT_URLS$im_fell_english_sc)
     ),
     curves = list(neutral = "smooth", brand = "ease"),
     name = "hobbit"
