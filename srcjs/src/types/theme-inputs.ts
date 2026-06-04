@@ -129,7 +129,7 @@ export interface ThemeInputs {
   /** Continuous multiplier on the density preset's spacing tokens — a fine
    *  dial on top of the named profile (e.g. 0.9 = a touch tighter than
    *  comfortable). 1 = the profile unchanged. Clamped to [0.5, 2]. */
-  densityFactor?: number;
+  density_factor?: number;
 
   /** Per-ramp curve shape (linear / ease / smooth / log / exp). Reshapes
    *  the lightness progression across the 11 ramp grades. Defaults per

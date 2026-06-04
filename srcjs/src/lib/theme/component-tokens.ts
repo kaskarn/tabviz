@@ -46,6 +46,10 @@ export type TokenKind =
   | "font-weight"    // CSS font-weight (numeric)
   | "font-italic"    // CSS font-style flag (true/false → "italic"/"normal")
   | "font-figures"   // font-variant-numeric ("tabular" | "proportional")
+  | "font-line-height" // CSS line-height (unitless or "normal"); not a px value
+  | "font-track"     // CSS letter-spacing string (e.g. "-0.022em")
+  | "font-shorthand" // CSS `font` shorthand "weight size/lh family"
+  | "shadow"         // CSS box-shadow stack string ("0 1px 3px rgba(...)") — not a paint
   | "opacity"        // 0..1 scalar
   | "shape"          // marker-shape enum (renderer-side)
   | "flag";          // boolean (rendered as data-* attribute, NOT a CSS var)
@@ -273,7 +277,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
       "stores/slices/layout-zoom.svelte.ts",
       "lib/layout/table-metrics.ts",
     ],
-    description: "Default data-row height in px (density × densityFactor)",
+    description: "Default data-row height in px (density × density_factor)",
   },
   {
     cssVar: "--tv-spacing-header-height",
@@ -816,7 +820,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // Layered (near + far) using the same shadow tokens as Stage 2 §6.
   {
     cssVar: "--tv-emphasis-shadow",
-    kind: "paint-fill",
+    kind: "shadow",
     source: { tier: "computed", note: "box-shadow stack derived from inputs.effects.elevation" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     modes: { hc: "drop" },
@@ -867,21 +871,21 @@ function buildTypographyManifestEntries(): ComponentToken[] {
     });
     entries.push({
       cssVar: `${base}-lh`,
-      kind: "spacing-px",
+      kind: "font-line-height",
       source: { tier: "computed", note: `typography role:${role} line-height` },
       consumedBy,
-      description: `${role} line height (unitless or px)`,
+      description: `${role} line height (unitless or "normal")`,
     });
     entries.push({
       cssVar: `${base}-track`,
-      kind: "spacing-px",
+      kind: "font-track",
       source: { tier: "computed", note: `typography role:${role} letter-spacing` },
       consumedBy,
       description: `${role} letter-spacing (CSS value, e.g. -0.022em)`,
     });
     entries.push({
       cssVar: `${base}-font`,
-      kind: "font-family",  // `font` shorthand bundles family
+      kind: "font-shorthand",
       source: { tier: "computed", note: `typography role:${role} shorthand` },
       consumedBy,
       description: `${role} CSS font shorthand (weight size/lh family)`,
@@ -1027,7 +1031,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-badge-success",
   "--tv-badge-warning",
   "--tv-bg",
-  "--tv-border",
+  // --tv-border is now a real manifest entry (see line ~695); removed
+  // from the v3-legacy KNOWN_UNCONSUMED list per coherence audit §7.6.
   "--tv-border-",
   "--tv-border-col-style",
   "--tv-border-major-color",

@@ -332,12 +332,15 @@ function resolveTokenValue(
   // Spacing-px tokens are resolved via the density table regardless of
   // source.tier — many are tagged `computed` because they derive from a
   // density × kind formula. The density preset comes from inputs.density;
-  // inputs.densityFactor multiplies it (clamped [0.5, 2]).
+  // inputs.density_factor multiplies it (clamped [0.5, 2]).
   if (token.kind === "spacing-px") {
-    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.densityFactor);
+    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.density_factor);
   }
   if (token.kind === "border-width") {
-    return "1px";
+    // Density-table lookup mirrors the spacing-px branch above — PLOT_DIMS
+    // contains plot-line-width / hc-ring-width etc. Without this lookup
+    // every border-width token returned "1px" regardless of the table.
+    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.density_factor);
   }
 
   const source: TokenSource = token.source;
@@ -355,17 +358,10 @@ function resolveTokenValue(
       // sources are token-specific; they fall through to placeholder.
       return "<computed>";
     case "const":
-      // Const sources have hard-coded values. Stage 2 §5 HC-fidelity tokens
-      // also live here — their value depends on the active mode.
-      if (token.cssVar === "--tv-hc-caret-char") {
-        return resolved.inputs.mode === "high-contrast" ? "▸" : "";
-      }
-      if (token.cssVar === "--tv-hc-ring-width") {
-        return "1.5px";
-      }
-      if (token.cssVar === "--tv-hc-bar-width") {
-        return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
-      }
+      // HC-fidelity tokens (caret-char, ring-width, bar-width) are
+      // intercepted in the HC-fidelity short-circuit earlier in
+      // resolveTokenValue; the duplicate block that used to live here
+      // was dead code.
       if (source.note?.includes("transparent")) return "transparent";
       return "<const>";
   }
@@ -600,7 +596,7 @@ function resolveEffectsComputed(
 }
 
 /** Per-token density-driven default px value. Looks up the density preset
- *  (compact / comfortable / spacious), then multiplies by densityFactor
+ *  (compact / comfortable / spacious), then multiplies by density_factor
  *  (clamped [0.5, 2]). Mirrors theme-adapter.ts's DENSITY_SPACING +
  *  scaleSpacing for parity with the v3 path. */
 type DensityPreset = "compact" | "comfortable" | "spacious";

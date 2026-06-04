@@ -24,8 +24,8 @@ web_theme_bauhaus <- function() {
     type_base_size = 15,
     type_scale_ratio = 1.333,
     type_weights = list(regular = 400, medium = 500, semibold = 700, bold = 800),
-    font_body = "'Archivo', 'Inter', 'Helvetica Neue', Helvetica, sans-serif",
-    font_display = "'Archivo Black', 'Archivo', 'Helvetica Neue', sans-serif",
+    fonts_body = "'Archivo', 'Inter', 'Helvetica Neue', Helvetica, sans-serif",
+    fonts_display = "'Archivo Black', 'Archivo', 'Helvetica Neue', sans-serif",
     web_fonts = list(
       web_font("Archivo", "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&display=swap"),
       web_font("Archivo Black", "https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap")
@@ -52,8 +52,8 @@ web_theme_swiss <- function() {
     header_style = "bold",
     type_scale_ratio = 1.2,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    font_body = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
-    font_display = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
+    fonts_body = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
+    fonts_display = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
     ),
@@ -80,8 +80,8 @@ web_theme_tufte <- function() {
     shell_texture = "ruled",
     type_base_size = 13,
     type_scale_ratio = 1.15,
-    font_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
-    font_display = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'EB Garamond', Georgia, 'Times New Roman', serif",
     web_fonts = list(
       web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap")
     ),
@@ -107,8 +107,8 @@ web_theme_newsprint <- function() {
     categorical = "okabe_ito",
     shell_texture = "grain",
     type_scale_ratio = 1.2,
-    font_body = "Georgia, 'Times New Roman', serif",
-    font_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
+    fonts_body = "Georgia, 'Times New Roman', serif",
+    fonts_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
     web_fonts = list(
       web_font("Crimson Pro", "https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&display=swap")
     ),
@@ -129,8 +129,8 @@ web_theme_solarized <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
-    font_body = "'Inter', -apple-system, system-ui, sans-serif",
-    font_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
+    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
       web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
@@ -150,8 +150,8 @@ web_theme_solarized_dark <- function() {
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     polarity = "dark",
     categorical = "tableau10",
-    font_body = "'Inter', -apple-system, system-ui, sans-serif",
-    font_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
+    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
       web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
@@ -174,8 +174,8 @@ web_theme_tonal <- function() {
     categorical = "tableau10",
     shell_mode = "raised",
     type_scale_ratio = 1.25,
-    font_body = "'Roboto', -apple-system, system-ui, sans-serif",
-    font_display = "'Roboto Flex', 'Roboto', sans-serif",
+    fonts_body = "'Roboto', -apple-system, system-ui, sans-serif",
+    fonts_display = "'Roboto Flex', 'Roboto', sans-serif",
     web_fonts = list(
       web_font("Roboto", "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"),
       web_font("Roboto Flex", "https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap")
@@ -196,8 +196,8 @@ web_theme_tonal_dark <- function() {
     categorical = "tableau10",
     shell_mode = "raised",
     type_scale_ratio = 1.25,
-    font_body = "'Roboto', -apple-system, system-ui, sans-serif",
-    font_display = "'Roboto Flex', 'Roboto', sans-serif",
+    fonts_body = "'Roboto', -apple-system, system-ui, sans-serif",
+    fonts_display = "'Roboto Flex', 'Roboto', sans-serif",
     web_fonts = list(
       web_font("Roboto", "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"),
       web_font("Roboto Flex", "https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap")
@@ -233,9 +233,9 @@ web_theme_synthwave <- function() {
     type_base_size = 13,
     type_scale_ratio = 1.2,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    font_body = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
-    font_display = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
-    font_mono = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
+    fonts_body = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
+    fonts_display = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
+    fonts_mono = "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
     web_fonts = list(
       web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap")
     ),
@@ -269,8 +269,8 @@ web_theme_brutalist <- function() {
     type_base_size = 14,
     type_scale_ratio = 1.25,
     type_weights = list(regular = 500, medium = 700, semibold = 800, bold = 900),
-    font_body = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-    font_display = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    fonts_body = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    fonts_display = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap")
     ),
@@ -308,8 +308,8 @@ web_theme_atelier <- function() {
     shell_texture = "ruled",
     type_base_size = 13.5,
     type_scale_ratio = 1.333,
-    font_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
-    font_display = "'Italianno', 'EB Garamond', Georgia, cursive, serif",
+    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'Italianno', 'EB Garamond', Georgia, cursive, serif",
     web_fonts = list(
       web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"),
       web_font("Italianno", "https://fonts.googleapis.com/css2?family=Italianno&display=swap")
@@ -335,8 +335,8 @@ web_theme_executive <- function() {
     type_base_size = 14,
     type_scale_ratio = 1.333,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    font_body = "'Inter', -apple-system, system-ui, sans-serif",
-    font_display = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
+    fonts_display = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
       web_font("Cormorant Garamond", "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap")

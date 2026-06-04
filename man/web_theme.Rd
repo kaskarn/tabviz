@@ -10,6 +10,7 @@ web_theme(
   brand = DEFAULT_BRAND_HEX,
   accent = NULL,
   polarity = "light",
+  mode = "standard",
   categorical = "okabe_ito",
   sequential = "viridis",
   diverging = "rdbu",
@@ -17,9 +18,9 @@ web_theme(
   status_negative = NULL,
   status_warning = NULL,
   status_info = NULL,
-  font_body = NULL,
-  font_display = NULL,
-  font_mono = NULL,
+  fonts_body = NULL,
+  fonts_display = NULL,
+  fonts_mono = NULL,
   density = "comfortable",
   density_factor = 1,
   shell_mode = NULL,
@@ -50,6 +51,11 @@ mirrors brand at resolution.}
 \item{polarity}{\code{"light"} or \code{"dark"}. Polarity reflection inverts every
 anchor's L around the midpoint. Default \code{"light"}.}
 
+\item{mode}{Accessibility axis (orthogonal to polarity). One of
+\code{"standard"} / \code{"high-contrast"} / \code{"reduced-transparency"}. HC bumps
+border-widths +1px and drops every Phase D effect; RT keeps glow but
+swaps gradients to a flat surface fill. Default \code{"standard"}.}
+
 \item{categorical}{Named data scheme reference (Okabe-Ito default).}
 
 \item{sequential}{Named sequential scheme reference.}
@@ -59,8 +65,8 @@ anchor's L around the midpoint. Default \code{"light"}.}
 \item{status_positive, status_negative, status_warning, status_info}{Optional status anchor overrides (hex or \code{\link[=oklch]{oklch()}}). NULL defers to
 the TS resolver's defaults.}
 
-\item{font_body, font_display, font_mono}{Font stacks. font_display NULL
-mirrors font_body.}
+\item{fonts_body, fonts_display, fonts_mono}{Font stacks. fonts_display NULL
+mirrors fonts_body.}
 
 \item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
 

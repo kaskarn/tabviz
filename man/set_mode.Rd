@@ -2,21 +2,21 @@
 % Please edit documentation in R/themes-api.R
 \name{set_mode}
 \alias{set_mode}
-\title{Deprecated alias for \code{\link[=set_polarity]{set_polarity()}}. The R API previously named the
-light/dark switch \code{mode}; v4 reserves \code{mode} for the accessibility axis.}
+\title{Set the accessibility mode (HC / RT) and re-resolve.}
 \usage{
 set_mode(theme, mode)
 }
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{mode}{\code{"light"} or \code{"dark"}.}
+\item{mode}{\code{"standard"}, \code{"high-contrast"}, or \code{"reduced-transparency"}.}
 }
 \value{
 The re-resolved \link{WebTheme}.
 }
 \description{
-Deprecated alias for \code{\link[=set_polarity]{set_polarity()}}. The R API previously named the
-light/dark switch \code{mode}; v4 reserves \code{mode} for the accessibility axis.
+Accessibility is the axis orthogonal to polarity. High-contrast (HC)
+bumps border-widths +1px, drops every Phase D effect, and reroutes a
+few role bindings to higher-contrast grades. Reduced-transparency (RT)
+keeps glow but swaps gradients to a flat surface fill.
 }
-\keyword{internal}

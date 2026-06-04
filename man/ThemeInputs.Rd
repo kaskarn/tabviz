@@ -48,11 +48,11 @@ anchor. All-NA = TS resolver default.}
 
 \item{\code{status_info_L,status_info_C,status_info_H}}{Status info.}
 
-\item{\code{font_body}}{Font stack for body/cell/label text.}
+\item{\code{fonts_body}}{Font stack for body/cell/label text.}
 
-\item{\code{font_display}}{Font stack for title/subtitle. NA mirrors font_body.}
+\item{\code{fonts_display}}{Font stack for title/subtitle. NA mirrors fonts_body.}
 
-\item{\code{font_mono}}{Font stack for monospace/code. Optional.}
+\item{\code{fonts_mono}}{Font stack for monospace/code. Optional.}
 
 \item{\code{density}}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
 }}

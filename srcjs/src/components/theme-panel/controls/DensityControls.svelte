@@ -14,13 +14,13 @@
 
   const PRESETS = ["compact", "comfortable", "spacious"] as const;
   const density = $derived(inputs.density ?? "comfortable");
-  const factor  = $derived(inputs.densityFactor ?? 1);
+  const factor  = $derived(inputs.density_factor ?? 1);
 
   function setDensity(v: (typeof PRESETS)[number]): void {
     onchange({ ...inputs, density: v });
   }
   function setFactor(v: number): void {
-    onchange({ ...inputs, densityFactor: v });
+    onchange({ ...inputs, density_factor: v });
   }
 </script>
 

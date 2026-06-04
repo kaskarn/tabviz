@@ -85,9 +85,9 @@ validate_oklch_triple <- function(self, prefix, required = TRUE) {
 #' @field status_negative_L,status_negative_C,status_negative_H Status negative.
 #' @field status_warning_L,status_warning_C,status_warning_H Status warning.
 #' @field status_info_L,status_info_C,status_info_H Status info.
-#' @field font_body Font stack for body/cell/label text.
-#' @field font_display Font stack for title/subtitle. NA mirrors font_body.
-#' @field font_mono Font stack for monospace/code. Optional.
+#' @field fonts_body Font stack for body/cell/label text.
+#' @field fonts_display Font stack for title/subtitle. NA mirrors fonts_body.
+#' @field fonts_mono Font stack for monospace/code. Optional.
 #' @field density `"compact"`, `"comfortable"`, or `"spacious"`.
 #'
 #' @usage NULL
@@ -112,6 +112,11 @@ ThemeInputs <- new_class(
     anchors_accent_H = new_property(class_numeric, default = NA_real_),
 
     polarity        = new_property(class_character, default = "light"),
+    # Accessibility axis — orthogonal to polarity. Standard (default),
+    # high-contrast, reduced-transparency. The TS resolver branches on
+    # this in 7+ places (HC bumps borders, drops effects, reroutes role
+    # bindings; RT swaps gradients to solid).
+    mode            = new_property(class_character, default = "standard"),
 
     categorical     = new_property(class_character, default = "okabe_ito"),
     sequential      = new_property(class_character, default = "viridis"),
@@ -131,10 +136,10 @@ ThemeInputs <- new_class(
     status_info_C     = new_property(class_numeric, default = NA_real_),
     status_info_H     = new_property(class_numeric, default = NA_real_),
 
-    font_body       = new_property(class_character,
+    fonts_body       = new_property(class_character,
                                     default = "system-ui, -apple-system, sans-serif"),
-    font_display    = new_property(class_character, default = NA_character_),
-    font_mono       = new_property(class_character, default = NA_character_),
+    fonts_display    = new_property(class_character, default = NA_character_),
+    fonts_mono       = new_property(class_character, default = NA_character_),
 
     density         = new_property(class_character, default = "comfortable"),
     # Continuous multiplier on the density preset's spacing (fine dial atop the
@@ -151,9 +156,9 @@ ThemeInputs <- new_class(
     # Stage 1 §25 / Q-P4.3 — per-ramp curve shape. Each of "linear" / "ease" /
     # "smooth" / "log" / "exp". NA defaults: neutral=ease, brand=linear,
     # accent=linear (see DEFAULT_RAMP_CURVES in lib/theme/curves.ts).
-    curve_neutral  = new_property(class_character, default = NA_character_),
-    curve_brand    = new_property(class_character, default = NA_character_),
-    curve_accent   = new_property(class_character, default = NA_character_),
+    curves_neutral  = new_property(class_character, default = NA_character_),
+    curves_brand    = new_property(class_character, default = NA_character_),
+    curves_accent   = new_property(class_character, default = NA_character_),
 
     # Stage 2 typography Tier 1 (theme-cascade-stage-2-design.md §1b).
     # Base size + ratio drive the 7-step size scale (label/foot/body/head/
@@ -162,10 +167,10 @@ ThemeInputs <- new_class(
     type_scale_ratio = new_property(class_numeric,   default = NA_real_),
     # Weight axis — each type role binds to one of these named weights.
     # NA defaults to 400/500/600/700 at resolution.
-    type_weight_regular  = new_property(class_numeric, default = NA_real_),
-    type_weight_medium   = new_property(class_numeric, default = NA_real_),
-    type_weight_semibold = new_property(class_numeric, default = NA_real_),
-    type_weight_bold     = new_property(class_numeric, default = NA_real_),
+    type_weights_regular  = new_property(class_numeric, default = NA_real_),
+    type_weights_medium   = new_property(class_numeric, default = NA_real_),
+    type_weights_semibold = new_property(class_numeric, default = NA_real_),
+    type_weights_bold     = new_property(class_numeric, default = NA_real_),
 
     # Phase D — GEOMETRY axis. Numeric scale tokens that drive corner
     # softness + line weight. Optional; all NA → TS resolver defaults
@@ -204,6 +209,9 @@ ThemeInputs <- new_class(
     }
     if (!self@polarity %in% c("light", "dark")) {
       return("polarity must be 'light' or 'dark'")
+    }
+    if (!self@mode %in% c("standard", "high-contrast", "reduced-transparency")) {
+      return("mode must be 'standard', 'high-contrast', or 'reduced-transparency'")
     }
     if (!self@density %in% c("compact", "comfortable", "spacious")) {
       return("density must be 'compact', 'comfortable', or 'spacious'")
@@ -992,7 +1000,7 @@ WebTheme <- new_class(
 #' multiple widgets on a page).
 #'
 #' Theme authors are still responsible for referencing the loaded family
-#' in `font_body` / `font_display` (etc.). `web_font()` only declares the
+#' in `fonts_body` / `fonts_display` (etc.). `web_font()` only declares the
 #' load -- it doesn't change the theme's font stacks.
 #'
 #' Note: PNG/SVG export through `rsvg` does not fetch webfonts. The

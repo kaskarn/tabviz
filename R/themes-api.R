@@ -43,26 +43,26 @@ theme_inputs_to_json <- function(inputs) {
   status <- status[!vapply(status, is.null, logical(1))]
 
   fonts <- list(
-    body    = na_to_null(inputs@font_body),
-    display = na_to_null(inputs@font_display),
-    mono    = na_to_null(inputs@font_mono)
+    body    = na_to_null(inputs@fonts_body),
+    display = na_to_null(inputs@fonts_display),
+    mono    = na_to_null(inputs@fonts_mono)
   )
   fonts <- fonts[!vapply(fonts, is.null, logical(1))]
 
   # Stage 2 typography Tier 1 — pack only non-NA values to keep the wire
   # compact. The TS resolver fills defaults (14 / 1.2 / 400-700).
   type_weights <- list(
-    regular  = na_to_null(inputs@type_weight_regular),
-    medium   = na_to_null(inputs@type_weight_medium),
-    semibold = na_to_null(inputs@type_weight_semibold),
-    bold     = na_to_null(inputs@type_weight_bold)
+    regular  = na_to_null(inputs@type_weights_regular),
+    medium   = na_to_null(inputs@type_weights_medium),
+    semibold = na_to_null(inputs@type_weights_semibold),
+    bold     = na_to_null(inputs@type_weights_bold)
   )
   type_weights <- type_weights[!vapply(type_weights, is.null, logical(1))]
 
   curves <- list(
-    neutral = na_to_null(inputs@curve_neutral),
-    brand   = na_to_null(inputs@curve_brand),
-    accent  = na_to_null(inputs@curve_accent)
+    neutral = na_to_null(inputs@curves_neutral),
+    brand   = na_to_null(inputs@curves_brand),
+    accent  = na_to_null(inputs@curves_accent)
   )
   curves <- curves[!vapply(curves, is.null, logical(1))]
 
@@ -99,14 +99,14 @@ theme_inputs_to_json <- function(inputs) {
   out <- list(
     anchors               = anchors,
     polarity              = inputs@polarity,
-    mode                  = "standard",
+    mode                  = inputs@mode,
     categorical           = inputs@categorical,
     sequential            = inputs@sequential,
     diverging             = inputs@diverging,
     status                = if (length(status) > 0L) status else NULL,
     fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
     density               = inputs@density,
-    densityFactor         = if (inputs@density_factor != 1) inputs@density_factor else NULL,
+    density_factor        = if (inputs@density_factor != 1) inputs@density_factor else NULL,
     shell_mode            = na_to_null(inputs@shell_mode),
     shell_texture         = na_to_null(inputs@shell_texture),
     type_base_size        = na_to_null(inputs@type_base_size),
@@ -173,14 +173,18 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   mirrors brand at resolution.
 #' @param polarity `"light"` or `"dark"`. Polarity reflection inverts every
 #'   anchor's L around the midpoint. Default `"light"`.
+#' @param mode Accessibility axis (orthogonal to polarity). One of
+#'   `"standard"` / `"high-contrast"` / `"reduced-transparency"`. HC bumps
+#'   border-widths +1px and drops every Phase D effect; RT keeps glow but
+#'   swaps gradients to a flat surface fill. Default `"standard"`.
 #' @param categorical Named data scheme reference (Okabe-Ito default).
 #' @param sequential Named sequential scheme reference.
 #' @param diverging Named diverging scheme reference.
 #' @param status_positive,status_negative,status_warning,status_info
 #'   Optional status anchor overrides (hex or [oklch()]). NULL defers to
 #'   the TS resolver's defaults.
-#' @param font_body,font_display,font_mono Font stacks. font_display NULL
-#'   mirrors font_body.
+#' @param fonts_body,fonts_display,fonts_mono Font stacks. fonts_display NULL
+#'   mirrors fonts_body.
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
 #' @param density_factor Continuous multiplier on the density preset's spacing,
 #'   in `[0.5, 2]` (1 = preset unchanged) — a fine dial on top of the named
@@ -226,6 +230,7 @@ web_theme <- function(
     brand = DEFAULT_BRAND_HEX,
     accent = NULL,
     polarity = "light",
+    mode = "standard",
     categorical = "okabe_ito",
     sequential = "viridis",
     diverging = "rdbu",
@@ -233,9 +238,9 @@ web_theme <- function(
     status_negative = NULL,
     status_warning = NULL,
     status_info = NULL,
-    font_body = NULL,
-    font_display = NULL,
-    font_mono = NULL,
+    fonts_body = NULL,
+    fonts_display = NULL,
+    fonts_mono = NULL,
     density = "comfortable",
     density_factor = 1,
     shell_mode = NULL,
@@ -251,6 +256,7 @@ web_theme <- function(
     web_fonts = NULL,
     name = "custom") {
   checkmate::assert_choice(polarity, c("light", "dark"))
+  checkmate::assert_choice(mode, c("standard", "high-contrast", "reduced-transparency"))
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
@@ -289,6 +295,7 @@ web_theme <- function(
     anchors_brand_L = ab$L, anchors_brand_C = ab$C, anchors_brand_H = ab$H,
     anchors_accent_L = aa$L, anchors_accent_C = aa$C, anchors_accent_H = aa$H,
     polarity = polarity,
+    mode = mode,
     categorical = categorical,
     sequential = sequential,
     diverging = diverging,
@@ -296,22 +303,22 @@ web_theme <- function(
     status_negative_L = sn$L, status_negative_C = sn$C, status_negative_H = sn$H,
     status_warning_L  = sw$L, status_warning_C  = sw$C, status_warning_H  = sw$H,
     status_info_L     = si$L, status_info_C     = si$C, status_info_H     = si$H,
-    font_body       = font_body       %||% "system-ui, -apple-system, sans-serif",
-    font_display    = if (is.null(font_display)) NA_character_ else font_display,
-    font_mono       = if (is.null(font_mono))    NA_character_ else font_mono,
+    fonts_body       = fonts_body       %||% "system-ui, -apple-system, sans-serif",
+    fonts_display    = if (is.null(fonts_display)) NA_character_ else fonts_display,
+    fonts_mono       = if (is.null(fonts_mono))    NA_character_ else fonts_mono,
     density = density,
     density_factor = density_factor,
     shell_mode    = shell_mode    %||% NA_character_,
     shell_texture = shell_texture %||% NA_character_,
     type_base_size   = type_base_size   %||% NA_real_,
     type_scale_ratio = type_scale_ratio %||% NA_real_,
-    type_weight_regular  = type_weights$regular  %||% NA_real_,
-    type_weight_medium   = type_weights$medium   %||% NA_real_,
-    type_weight_semibold = type_weights$semibold %||% NA_real_,
-    type_weight_bold     = type_weights$bold     %||% NA_real_,
-    curve_neutral = curves$neutral %||% NA_character_,
-    curve_brand   = curves$brand   %||% NA_character_,
-    curve_accent  = curves$accent  %||% NA_character_,
+    type_weights_regular  = type_weights$regular  %||% NA_real_,
+    type_weights_medium   = type_weights$medium   %||% NA_real_,
+    type_weights_semibold = type_weights$semibold %||% NA_real_,
+    type_weights_bold     = type_weights$bold     %||% NA_real_,
+    curves_neutral = curves$neutral %||% NA_character_,
+    curves_brand   = curves$brand   %||% NA_character_,
+    curves_accent  = curves$accent  %||% NA_character_,
     # Phase D — geometry + effects (all optional; NA = TS resolver default).
     geometry_radius_sm    = geometry$radius$sm     %||% NA_real_,
     geometry_radius_md    = geometry$radius$md     %||% NA_real_,
@@ -414,15 +421,25 @@ set_polarity <- function(theme, polarity) {
   resolve_from_inputs(inputs, name = theme@name)
 }
 
-#' Deprecated alias for [set_polarity()]. The R API previously named the
-#' light/dark switch `mode`; v4 reserves `mode` for the accessibility axis.
+#' Set the accessibility mode (HC / RT) and re-resolve.
+#'
+#' Accessibility is the axis orthogonal to polarity. High-contrast (HC)
+#' bumps border-widths +1px, drops every Phase D effect, and reroutes a
+#' few role bindings to higher-contrast grades. Reduced-transparency (RT)
+#' keeps glow but swaps gradients to a flat surface fill.
+#'
 #' @param theme A [WebTheme].
-#' @param mode `"light"` or `"dark"`.
+#' @param mode `"standard"`, `"high-contrast"`, or `"reduced-transparency"`.
 #' @return The re-resolved [WebTheme].
-#' @keywords internal
 #' @export
 set_mode <- function(theme, mode) {
-  set_polarity(theme, mode)
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(mode, c("standard", "high-contrast", "reduced-transparency"))
+  inputs <- theme@inputs
+  inputs@mode <- mode
+  resolve_from_inputs(inputs, name = theme@name)
 }
 
 #' Set the categorical data scheme and re-resolve.
@@ -461,6 +478,161 @@ set_density <- function(theme, density = NULL, factor = NULL) {
   if (!is.null(factor)) {
     checkmate::assert_number(factor, lower = 0.5, upper = 2)
     inputs@density_factor <- factor
+  }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the sequential data scheme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param scheme Named sequential scheme reference.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_sequential <- function(theme, scheme) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(scheme)
+  inputs <- theme@inputs
+  inputs@sequential <- scheme
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the diverging data scheme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param scheme Named diverging scheme reference.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_diverging <- function(theme, scheme) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(scheme)
+  inputs <- theme@inputs
+  inputs@diverging <- scheme
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set per-ramp curve shapes and re-resolve.
+#'
+#' Per Stage 1 §25. Reshapes the L progression across the 11 ramp grades.
+#' NULL leaves a slot unchanged.
+#'
+#' @param theme A [WebTheme].
+#' @param neutral,brand,accent One of `"linear"` / `"ease"` / `"smooth"`
+#'   / `"log"` / `"exp"`, or `NULL` to leave unchanged.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_curves <- function(theme, neutral = NULL, brand = NULL, accent = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  valid <- c("linear", "ease", "smooth", "log", "exp")
+  checkmate::assert_choice(neutral, valid, null.ok = TRUE)
+  checkmate::assert_choice(brand,   valid, null.ok = TRUE)
+  checkmate::assert_choice(accent,  valid, null.ok = TRUE)
+  inputs <- theme@inputs
+  if (!is.null(neutral)) inputs@curves_neutral <- neutral
+  if (!is.null(brand))   inputs@curves_brand   <- brand
+  if (!is.null(accent))  inputs@curves_accent  <- accent
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set Phase D GEOMETRY axis (radius + border-width scales) and re-resolve.
+#'
+#' Each of `radius` and `border_width` is a named numeric list. Missing
+#' keys keep their current values; unspecified args leave everything
+#' unchanged. Defaults at resolution: radius `{sm=2, md=6, lg=10, pill=999}`,
+#' border_width `{hair=0.5, thin=1, regular=1.5, thick=2.5}`.
+#'
+#' @param theme A [WebTheme].
+#' @param radius Named numeric list with any of `sm`/`md`/`lg`/`pill` (px).
+#' @param border_width Named numeric list with any of `hair`/`thin`/`regular`/`thick` (px).
+#' @return The re-resolved [WebTheme].
+#' @export
+set_geometry <- function(theme, radius = NULL, border_width = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_list(radius, types = "numeric", null.ok = TRUE)
+  checkmate::assert_list(border_width, types = "numeric", null.ok = TRUE)
+  inputs <- theme@inputs
+  if (!is.null(radius)) {
+    if (!is.null(radius$sm))   inputs@geometry_radius_sm   <- radius$sm
+    if (!is.null(radius$md))   inputs@geometry_radius_md   <- radius$md
+    if (!is.null(radius$lg))   inputs@geometry_radius_lg   <- radius$lg
+    if (!is.null(radius$pill)) inputs@geometry_radius_pill <- radius$pill
+  }
+  if (!is.null(border_width)) {
+    if (!is.null(border_width$hair))    inputs@geometry_border_width_hair    <- border_width$hair
+    if (!is.null(border_width$thin))    inputs@geometry_border_width_thin    <- border_width$thin
+    if (!is.null(border_width$regular)) inputs@geometry_border_width_regular <- border_width$regular
+    if (!is.null(border_width$thick))   inputs@geometry_border_width_thick   <- border_width$thick
+  }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set Phase D EFFECTS axis (glow + gradient + elevation) and re-resolve.
+#'
+#' All args are optional; NULL leaves the slot unchanged.
+#'
+#' @param theme A [WebTheme].
+#' @param glow_intensity `"none"` / `"subtle"` / `"neon"`.
+#' @param glow_anchor `"brand"` / `"accent"`.
+#' @param gradient_shell_intensity `"none"` / `"subtle"` / `"vivid"`.
+#' @param gradient_shell_angle Numeric in `[0, 360]` (degrees).
+#' @param elevation `"none"` / `"soft"` / `"raised"` / `"float"`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_effects <- function(theme,
+                        glow_intensity = NULL,
+                        glow_anchor = NULL,
+                        gradient_shell_intensity = NULL,
+                        gradient_shell_angle = NULL,
+                        elevation = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(glow_intensity, c("none", "subtle", "neon"), null.ok = TRUE)
+  checkmate::assert_choice(glow_anchor, c("brand", "accent"), null.ok = TRUE)
+  checkmate::assert_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), null.ok = TRUE)
+  checkmate::assert_number(gradient_shell_angle, lower = 0, upper = 360, null.ok = TRUE)
+  checkmate::assert_choice(elevation, c("none", "soft", "raised", "float"), null.ok = TRUE)
+  inputs <- theme@inputs
+  if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
+  if (!is.null(glow_anchor))              inputs@effects_glow_anchor              <- glow_anchor
+  if (!is.null(gradient_shell_intensity)) inputs@effects_gradient_shell_intensity <- gradient_shell_intensity
+  if (!is.null(gradient_shell_angle))     inputs@effects_gradient_shell_angle     <- gradient_shell_angle
+  if (!is.null(elevation))                inputs@effects_elevation                <- elevation
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set status anchor overrides (positive / negative / warning / info) and re-resolve.
+#'
+#' Each arg accepts a hex string, an [oklch()] triple, or `NULL` (leaves
+#' the slot unchanged). The TS resolver falls back to curated defaults
+#' for any slot that was never set.
+#'
+#' @param theme A [WebTheme].
+#' @param positive,negative,warning,info Hex / [oklch()] / `NULL`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_status <- function(theme,
+                       positive = NULL, negative = NULL,
+                       warning = NULL, info = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  inputs <- theme@inputs
+  for (pair in list(
+    list(name = "positive", value = positive),
+    list(name = "negative", value = negative),
+    list(name = "warning",  value = warning),
+    list(name = "info",     value = info)
+  )) {
+    if (is.null(pair$value)) next
+    triple <- coerce_anchor(pair$value, paste0("status_", pair$name))
+    inputs <- set_anchor_on_inputs(inputs, paste0("status_", pair$name),
+                                   anchor_slots(triple))
   }
   resolve_from_inputs(inputs, name = theme@name)
 }

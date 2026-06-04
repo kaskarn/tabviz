@@ -98,8 +98,8 @@ describe("getCssVars — density + pin behavior", () => {
     expect(getCssVars(theme)["--tv-spacing-row-group-padding"]).toBe("40px");
   });
 
-  it("applies densityFactor scaling", () => {
-    const theme = buildTheme({ ...COCHRANE, density: "comfortable", densityFactor: 1.5 }, "t");
+  it("applies density_factor scaling", () => {
+    const theme = buildTheme({ ...COCHRANE, density: "comfortable", density_factor: 1.5 }, "t");
     // comfortable rowHeight 24 × 1.5 = 36
     expect(getCssVars(theme)["--tv-spacing-row-height"]).toBe("36px");
   });

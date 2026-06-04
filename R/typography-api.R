@@ -25,9 +25,9 @@ set_fonts <- function(theme, body = NULL, display = NULL, mono = NULL) {
   checkmate::assert_string(display, null.ok = TRUE)
   checkmate::assert_string(mono, null.ok = TRUE)
   inputs <- theme@inputs
-  if (!is.null(body))    inputs@font_body    <- body
-  if (!is.null(display)) inputs@font_display <- display
-  if (!is.null(mono))    inputs@font_mono    <- mono
+  if (!is.null(body))    inputs@fonts_body    <- body
+  if (!is.null(display)) inputs@fonts_display <- display
+  if (!is.null(mono))    inputs@fonts_mono    <- mono
   resolve_from_inputs(inputs, name = theme@name)
 }
 
@@ -75,9 +75,9 @@ set_type_weights <- function(theme, regular = NULL, medium = NULL,
   checkmate::assert_number(semibold, lower = 100, upper = 900, null.ok = TRUE)
   checkmate::assert_number(bold,     lower = 100, upper = 900, null.ok = TRUE)
   inputs <- theme@inputs
-  if (!is.null(regular))  inputs@type_weight_regular  <- regular
-  if (!is.null(medium))   inputs@type_weight_medium   <- medium
-  if (!is.null(semibold)) inputs@type_weight_semibold <- semibold
-  if (!is.null(bold))     inputs@type_weight_bold     <- bold
+  if (!is.null(regular))  inputs@type_weights_regular  <- regular
+  if (!is.null(medium))   inputs@type_weights_medium   <- medium
+  if (!is.null(semibold)) inputs@type_weights_semibold <- semibold
+  if (!is.null(bold))     inputs@type_weights_bold     <- bold
   resolve_from_inputs(inputs, name = theme@name)
 }

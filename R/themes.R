@@ -71,7 +71,7 @@ web_theme_cochrane <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    font_body = "'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif",
+    fonts_body = "'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
     ),
@@ -93,8 +93,8 @@ web_theme_lancet <- function() {
     categorical = "okabe_ito",
     shell_mode = "raised",
     type_scale_ratio = 1.25,
-    font_body = "Georgia, 'Times New Roman', serif",
-    font_display = "Georgia, 'Times New Roman', serif",
+    fonts_body = "Georgia, 'Times New Roman', serif",
+    fonts_display = "Georgia, 'Times New Roman', serif",
     curves = list(neutral = "smooth"),
     name = "lancet"
   )
@@ -115,7 +115,7 @@ web_theme_jama <- function() {
     density = "compact",
     type_base_size = 13,
     type_scale_ratio = 1.15,
-    font_body = "Arial, Helvetica, sans-serif",
+    fonts_body = "Arial, Helvetica, sans-serif",
     name = "jama"
   )
 }
@@ -129,8 +129,8 @@ web_theme_nejm <- function() {
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
     type_scale_ratio = 1.25,
-    font_body = "Georgia, 'Times New Roman', serif",
-    font_display = "Georgia, 'Times New Roman', serif",
+    fonts_body = "Georgia, 'Times New Roman', serif",
+    fonts_display = "Georgia, 'Times New Roman', serif",
     curves = list(brand = "smooth", neutral = "ease"),
     name = "nejm"
   )
@@ -164,7 +164,7 @@ web_theme_bmj <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    font_body = "'Inter', -apple-system, system-ui, sans-serif",
+    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
     ),

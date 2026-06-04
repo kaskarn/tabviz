@@ -62,8 +62,8 @@ export function buildSnippetSteps(
   if (edits.density !== base.density && edits.density !== undefined) {
     steps.push({ setter: "set_density", args: `density = ${rString(edits.density)}` });
   }
-  if (edits.densityFactor !== base.densityFactor && edits.densityFactor !== undefined) {
-    steps.push({ setter: "set_density", args: `factor = ${edits.densityFactor}` });
+  if (edits.density_factor !== base.density_factor && edits.density_factor !== undefined) {
+    steps.push({ setter: "set_density", args: `factor = ${edits.density_factor}` });
   }
   if (edits.shell_mode !== base.shell_mode && edits.shell_mode !== undefined) {
     steps.push({ setter: "set_shell_mode", args: rString(edits.shell_mode) });

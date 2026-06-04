@@ -209,7 +209,7 @@ export function buildTheme(
     numeric:  textRoleBody(fontBody, t.ink),
   };
 
-  const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.densityFactor);
+  const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.density_factor);
 
   const annotation: AnnotationCluster = {
     title: text.title,

@@ -267,7 +267,7 @@ export const TUFTE: ThemeInputs = defineInputs(
   {
     categorical: "greys",
     density: "compact",
-    densityFactor: 0.9,
+    density_factor: 0.9,
     shell_texture: "ruled",
     type_base_size: 13,
     type_scale_ratio: 1.15,
@@ -549,7 +549,7 @@ export const ATELIER: ThemeInputs = defineInputs(
   {
     categorical: "okabe_ito",
     density: "compact",
-    densityFactor: 0.92,
+    density_factor: 0.92,
     shell_texture: "ruled",
     type_base_size: 13.5,
     type_scale_ratio: 1.333,

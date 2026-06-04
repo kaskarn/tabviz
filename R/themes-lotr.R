@@ -24,9 +24,9 @@ web_theme_dwarven <- function() {
     type_base_size = 14,
     type_scale_ratio = 1.25,
     type_weights = list(regular = 400, medium = 500, semibold = 700, bold = 800),
-    font_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
-    font_display = "'Cinzel', 'EB Garamond', Georgia, serif",
-    font_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'Cinzel', 'EB Garamond', Georgia, serif",
+    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
       web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"),
       web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"),
@@ -55,8 +55,8 @@ web_theme_elvish <- function() {
     shell_texture = "ruled",
     type_base_size = 14,
     type_scale_ratio = 1.333,
-    font_body = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
-    font_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif",
+    fonts_body = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif",
     web_fonts = list(
       web_font("Cormorant Garamond", "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"),
       web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap")
@@ -84,8 +84,8 @@ web_theme_hobbit <- function() {
     shell_texture = "grain",
     type_base_size = 14,
     type_scale_ratio = 1.333,
-    font_body = "'IM Fell English', Georgia, 'Times New Roman', serif",
-    font_display = "'IM Fell English SC', Georgia, serif",
+    fonts_body = "'IM Fell English', Georgia, 'Times New Roman', serif",
+    fonts_display = "'IM Fell English SC', Georgia, serif",
     web_fonts = list(
       web_font("IM Fell English", "https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"),
       web_font("IM Fell English SC", "https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap")

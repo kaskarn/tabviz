@@ -10,7 +10,7 @@ terminal_theme <- web_theme(
   accent = "#00FF00",
   polarity = "dark",
   density = "comfortable",
-  font_body = "'Courier New', monospace",
+  fonts_body = "'Courier New', monospace",
   name = "terminal"
 )
 
