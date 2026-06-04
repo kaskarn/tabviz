@@ -10,6 +10,6 @@ web_theme_nature()
 A \link{WebTheme}.
 }
 \description{
-Subtle brand-tinted neutrals (0.03 strength) give the page a soft
-teal cast - the glossy-spread metaphor.
+Subtle brand-tinted neutrals via paperC/inkC bumps give the page a soft
+teal cast (the glossy-spread metaphor).
 }

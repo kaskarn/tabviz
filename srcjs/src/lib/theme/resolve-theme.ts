@@ -121,7 +121,7 @@ function derivePolarity(inputs: ThemeInputs): "light" | "dark" {
 /** Apply polarity reflection to the input anchors (Stage 1 §22). Returns
  *  a new ThemeInputs with `polarity` set and every anchor's L reflected
  *  around the polarity pivot when polarity is dark. C and H are unchanged. */
-function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
+export function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
   const polarity = derivePolarity(inputs);
   if (polarity === "light") return { ...inputs, polarity: "light" };
   return {

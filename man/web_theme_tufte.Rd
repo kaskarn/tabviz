@@ -12,4 +12,5 @@ A \link{WebTheme}.
 \description{
 Compact density x 0.9 factor for very tight rhythm; EB Garamond for
 the editorial-quiet body. Log curve grounds the ink-on-paper feel.
+Achromatic neutrals.
 }

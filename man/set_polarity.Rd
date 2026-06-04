@@ -15,7 +15,7 @@ set_polarity(theme, polarity)
 The re-resolved \link{WebTheme}.
 }
 \description{
-Alias for \code{\link[=set_mode]{set_mode()}} using the V4 substrate's polarity vocabulary
-(Stage 1 §40 — mode is now the accessibility axis (standard /
-high-contrast / reduced-transparency); polarity is the L-reflection axis).
+Polarity is the L-reflection axis: reflecting flips paper↔ink lightness
+around the midpoint. The orthogonal accessibility axis (mode = standard
+/ high-contrast / reduced-transparency) is plumbed separately.
 }

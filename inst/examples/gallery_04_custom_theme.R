@@ -8,7 +8,7 @@ library(dplyr)
 terminal_theme <- web_theme(
   brand = "#00FF00",
   accent = "#00FF00",
-  mode = "dark",
+  polarity = "dark",
   density = "comfortable",
   font_body = "'Courier New', monospace",
   name = "terminal"
@@ -36,6 +36,6 @@ forest_plot(
   null_value = 20,
   axis_label = "Response Latency (ms)",
   title = "Custom Theme: Terminal",
-  subtitle = "Built with web_theme(brand = ..., mode = 'dark')",
+  subtitle = "Built with web_theme(brand = ..., polarity = 'dark')",
   caption = "Monospace font; brand-mono palette via mode toggle"
 )

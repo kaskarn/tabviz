@@ -15,6 +15,57 @@ to_oklch <- function(hex) {
   farver::convert_colour(rgb, from = "rgb", to = "oklch")
 }
 
+#' Construct an OKLCH triple.
+#'
+#' Authoring helper for [web_theme()] anchor arguments. Returns a named
+#' list `list(L=, C=, H=)` that [web_theme()] accepts in place of a hex
+#' string. L in `[0, 1]`, C in `[0, ~0.4]`, H in `[0, 360)`.
+#'
+#' @param L Lightness, in `[0, 1]`.
+#' @param C Chroma, in `[0, 0.5]` (gamut depends on hue/lightness).
+#' @param H Hue, in degrees in `[0, 360)`.
+#' @return A list with elements `L`, `C`, `H`.
+#' @export
+oklch <- function(L, C, H) {
+  checkmate::assert_number(L, lower = 0, upper = 1)
+  checkmate::assert_number(C, lower = 0, upper = 0.5)
+  checkmate::assert_number(H, lower = 0, upper = 360)
+  list(L = L, C = C, H = H %% 360)
+}
+
+#' Convert a hex string to an OKLCH triple (`list(L=, C=, H=)`).
+#'
+#' Thin R wrapper over the same farver path used elsewhere in the package
+#' for OKLCH conversions. Useful when an author has a hex they want to
+#' express as an anchor.
+#'
+#' @param hex A 3-, 6-, or 8-digit hex color string.
+#' @return A list with elements `L`, `C`, `H`.
+#' @export
+hex_to_oklch <- function(hex) {
+  checkmate::assert_string(hex, pattern = hex_pattern)
+  lch <- to_oklch(hex)
+  list(L = unname(lch[1, 1]),
+       C = unname(lch[1, 2]),
+       H = unname(lch[1, 3]) %% 360)
+}
+
+# Internal — coerce an anchor argument from `web_theme()`. Accepts hex
+# strings, lists from `oklch()`, or NULL. Returns list(L, C, H) or NULL.
+coerce_anchor <- function(x, arg_name) {
+  if (is.null(x)) return(NULL)
+  if (is.character(x) && length(x) == 1L) return(hex_to_oklch(x))
+  if (is.list(x) && all(c("L", "C", "H") %in% names(x))) {
+    checkmate::assert_number(x$L, lower = 0, upper = 1, .var.name = paste0(arg_name, "$L"))
+    checkmate::assert_number(x$C, lower = 0, upper = 0.5, .var.name = paste0(arg_name, "$C"))
+    checkmate::assert_number(x$H, lower = 0, upper = 360, .var.name = paste0(arg_name, "$H"))
+    return(list(L = x$L, C = x$C, H = x$H %% 360))
+  }
+  cli::cli_abort(
+    "{.arg {arg_name}} must be a hex string or an {.fn oklch} triple, got {.cls {class(x)}}."
+  )
+}
+
 # Encode a 1x3 OKLCH matrix back to hex, reducing chroma if out-of-gamut.
 # Bisects on C (preserving L and H) until the resulting sRGB triplet sits
 # within [0, 255]. The bisection terminates in <= 40 iterations.

@@ -11,7 +11,7 @@ A \link{WebTheme}.
 }
 \description{
 Flush shell (no architecture); ruled texture (manuscript page lines);
-exp curve on neutral (lighter highs - the radiant page);
-decorative-tinted neutrals (soft mithril grey). Cormorant Garamond
-body + Cinzel display. Type scale 1.333 for the poetic rhythm.
+exp curve on neutral (lighter highs — the radiant page); decorative
+hue (#B8C2D6, mithril-grey) routed through neutrals. Cormorant
+Garamond body + Cinzel display. Type scale 1.333 for the poetic rhythm.
 }

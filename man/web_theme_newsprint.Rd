@@ -11,7 +11,7 @@ web_theme_newsprint()
 A \link{WebTheme}.
 }
 \description{
-Decorative-tinted neutrals at 0.08 strength give the warm paper
-feel; grain texture adds the paper grain. Log curve on brand for
-deep newspaper-ink contrast.
+Decorative hue (#B17D5F) routed through the neutrals via
+\code{neutral_hue_from} + elevated paperC/inkC give the warm paper feel.
+Log curve on brand for deep newspaper-ink contrast.
 }

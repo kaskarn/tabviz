@@ -28,56 +28,108 @@ make_color_validator <- function(slots) {
 
 # -- Tier 1: customer-facing inputs ---------------------------------------
 
-#' ThemeInputs: customer-facing theme authoring surface.
+# Validate one OKLCH triple (L/C/H slots). Required = both NA-illegal and
+# numeric-required; otherwise NA is allowed as "anchor not set" sentinel.
+# Returns NULL on success, an error string on failure.
+validate_oklch_triple <- function(self, prefix, required = TRUE) {
+  L <- S7::prop(self, paste0(prefix, "_L"))
+  C <- S7::prop(self, paste0(prefix, "_C"))
+  H <- S7::prop(self, paste0(prefix, "_H"))
+  all_na <- is.na(L) && is.na(C) && is.na(H)
+  if (all_na) {
+    if (required) {
+      return(paste0(prefix, " anchor is required (L/C/H may not all be NA)"))
+    }
+    return(NULL)
+  }
+  if (is.na(L) || L < 0 || L > 1) {
+    return(paste0(prefix, "_L must be a number in [0, 1], got ", L))
+  }
+  if (is.na(C) || C < 0 || C > 0.5) {
+    return(paste0(prefix, "_C must be a number in [0, 0.5], got ", C))
+  }
+  if (is.na(H) || H < 0 || H >= 360) {
+    return(paste0(prefix, "_H must be a number in [0, 360), got ", H))
+  }
+  NULL
+}
+
+#' ThemeInputs: customer-facing theme authoring surface (V4 anchors).
 #'
-#' The entire user authoring surface (locked design 2026-05-28). Every
-#' other token derives from these via the TS adapter
-#' (`srcjs/src/lib/theme-adapter.ts::buildTheme`), which calls the
-#' resolver in `srcjs/src/lib/theme-resolve.ts`.
+#' The entire user authoring surface. V4 vocabulary (Stage 1 §22): identity
+#' is four named OKLCH anchors (paper / ink / brand / optional accent)
+#' rather than a brand hex + neutral_tint knobs. Polarity reflection acts
+#' on each anchor's L; muted is a grade position on the relevant ramp.
+#' Status anchors carry the same OKLCH-triple shape for coherence.
 #'
-#' @field brand          Required brand seed hex; drives the brand ramp + identity.
-#' @field accent         Engagement seed hex (hover/selected/callouts). NA mirrors brand.
-#' @field decorative     Optional second color for two-color editorial themes.
-#'                       Drives structural bg tints (alt-row, dividers,
-#'                       row-group L1 band). NA = not set.
-#' @field mode           "light" or "dark". Inverts neutral ramp direction.
-#' @field neutral_tint   "untinted" | "brand" | "accent" | "decorative" | hex.
-#'                       Optional tint blend into low-chroma ramp ends.
-#' @field neutral_tint_strength  Numeric in `[0, 1]`. Default `0.04` (subtle
-#'                       clinical hint). `~1.0` makes the tint hex effectively
-#'                       the paper color (editorial-strong).
-#' @field categorical    Named data scheme reference (Okabe-Ito default).
-#' @field sequential     Named sequential scheme (viridis default).
-#' @field diverging      Named diverging scheme (rdbu default).
-#' @field status_positive Status positive seed. NA -> default.
-#' @field status_negative Status negative seed. NA -> default.
-#' @field status_warning  Status warning seed. NA -> default.
-#' @field status_info     Status info seed. NA -> default.
-#' @field font_body      Font stack for body/cell/label text.
-#' @field font_display   Font stack for title/subtitle. NA mirrors font_body.
-#' @field font_mono      Font stack for monospace/code. Optional.
-#' @field density        "compact", "comfortable", or "spacious".
+#' S7 doesn't compose well with nested objects, so each triple is unrolled
+#' into three flat numeric slots (`anchors_paper_L`, `anchors_paper_C`,
+#' `anchors_paper_H`, ...). [theme_inputs_to_json()] re-nests them on the
+#' wire so the TS resolver sees the canonical `anchors: { paper: {L,C,H},
+#' ... }` shape.
+#'
+#' @field anchors_paper_L,anchors_paper_C,anchors_paper_H Light-end neutral
+#'   anchor. Defines surface, paper_alt, paper_raised.
+#' @field anchors_ink_L,anchors_ink_C,anchors_ink_H Dark-end neutral anchor.
+#'   Defines text, text-muted, text-subtle.
+#' @field anchors_brand_L,anchors_brand_C,anchors_brand_H Identity hue.
+#'   Drives brand_solid, brand_text, header_bg.
+#' @field anchors_accent_L,anchors_accent_C,anchors_accent_H Optional
+#'   engagement hue (hover/selected/callouts). All-NA = defaults to brand.
+#' @field polarity `"light"` or `"dark"`. The L-reflection axis.
+#' @field categorical Named data scheme reference (Okabe-Ito default).
+#' @field sequential Named sequential scheme (viridis default).
+#' @field diverging Named diverging scheme (rdbu default).
+#' @field status_positive_L,status_positive_C,status_positive_H Status positive
+#'   anchor. All-NA = TS resolver default.
+#' @field status_negative_L,status_negative_C,status_negative_H Status negative.
+#' @field status_warning_L,status_warning_C,status_warning_H Status warning.
+#' @field status_info_L,status_info_C,status_info_H Status info.
+#' @field font_body Font stack for body/cell/label text.
+#' @field font_display Font stack for title/subtitle. NA mirrors font_body.
+#' @field font_mono Font stack for monospace/code. Optional.
+#' @field density `"compact"`, `"comfortable"`, or `"spacious"`.
 #'
 #' @usage NULL
 #' @export
 ThemeInputs <- new_class(
   "ThemeInputs",
   properties = list(
-    brand           = new_property(class_character, default = "#0099CC"),
-    accent          = new_property(class_character, default = NA_character_),
-    decorative      = new_property(class_character, default = NA_character_),
-    mode            = new_property(class_character, default = "light"),
-    neutral_tint    = new_property(class_character, default = "untinted"),
-    neutral_tint_strength = new_property(class_numeric, default = 0.04),
+    # Tier 1 anchors — four OKLCH triples. Defaults are the clinical
+    # baseline (cyan brand, off-white paper, ink-dark text); accent NA
+    # mirrors brand at resolution. L in [0,1], C in [0, 0.5], H in [0,360).
+    anchors_paper_L  = new_property(class_numeric, default = 0.987),
+    anchors_paper_C  = new_property(class_numeric, default = 0.005),
+    anchors_paper_H  = new_property(class_numeric, default = 235),
+    anchors_ink_L    = new_property(class_numeric, default = 0.180),
+    anchors_ink_C    = new_property(class_numeric, default = 0.010),
+    anchors_ink_H    = new_property(class_numeric, default = 235),
+    anchors_brand_L  = new_property(class_numeric, default = 0.665),
+    anchors_brand_C  = new_property(class_numeric, default = 0.130),
+    anchors_brand_H  = new_property(class_numeric, default = 235),
+    anchors_accent_L = new_property(class_numeric, default = NA_real_),
+    anchors_accent_C = new_property(class_numeric, default = NA_real_),
+    anchors_accent_H = new_property(class_numeric, default = NA_real_),
+
+    polarity        = new_property(class_character, default = "light"),
 
     categorical     = new_property(class_character, default = "okabe_ito"),
     sequential      = new_property(class_character, default = "viridis"),
     diverging       = new_property(class_character, default = "rdbu"),
 
-    status_positive = new_property(class_character, default = "#3F7D3F"),
-    status_negative = new_property(class_character, default = "#B33A3A"),
-    status_warning  = new_property(class_character, default = "#C68A2E"),
-    status_info     = new_property(class_character, default = "#1F77B4"),
+    # Status anchors — OklchTriples; all-NA = TS resolver default.
+    status_positive_L = new_property(class_numeric, default = NA_real_),
+    status_positive_C = new_property(class_numeric, default = NA_real_),
+    status_positive_H = new_property(class_numeric, default = NA_real_),
+    status_negative_L = new_property(class_numeric, default = NA_real_),
+    status_negative_C = new_property(class_numeric, default = NA_real_),
+    status_negative_H = new_property(class_numeric, default = NA_real_),
+    status_warning_L  = new_property(class_numeric, default = NA_real_),
+    status_warning_C  = new_property(class_numeric, default = NA_real_),
+    status_warning_H  = new_property(class_numeric, default = NA_real_),
+    status_info_L     = new_property(class_numeric, default = NA_real_),
+    status_info_C     = new_property(class_numeric, default = NA_real_),
+    status_info_H     = new_property(class_numeric, default = NA_real_),
 
     font_body       = new_property(class_character,
                                     default = "system-ui, -apple-system, sans-serif"),
@@ -116,37 +168,25 @@ ThemeInputs <- new_class(
     type_weight_bold     = new_property(class_numeric, default = NA_real_)
   ),
   validator = function(self) {
-    if (!grepl(hex_pattern, self@brand)) {
-      return(paste0("brand must be a hex color, got '", self@brand, "'"))
+    for (anchor in c("anchors_paper", "anchors_ink", "anchors_brand")) {
+      err <- validate_oklch_triple(self, anchor, required = TRUE)
+      if (!is.null(err)) return(err)
+    }
+    for (anchor in c("anchors_accent",
+                     "status_positive", "status_negative",
+                     "status_warning",  "status_info")) {
+      err <- validate_oklch_triple(self, anchor, required = FALSE)
+      if (!is.null(err)) return(err)
     }
     if (length(self@density_factor) != 1 || is.na(self@density_factor) ||
         self@density_factor < 0.5 || self@density_factor > 2) {
       return("density_factor must be a single number in [0.5, 2]")
     }
-    for (p in c("accent", "decorative", "status_positive", "status_negative",
-                "status_warning", "status_info")) {
-      v <- S7::prop(self, p)
-      if (!is.na(v) && !grepl(hex_pattern, v)) {
-        return(paste0(p, " must be a hex color or NA, got '", v, "'"))
-      }
-    }
-    nt <- self@neutral_tint
-    if (!nt %in% c("untinted", "brand", "accent", "decorative") &&
-        !grepl(hex_pattern, nt)) {
-      return(paste0(
-        "neutral_tint must be 'untinted', 'brand', 'accent', 'decorative', ",
-        "or a hex color, got '", nt, "'"
-      ))
-    }
-    if (!self@mode %in% c("light", "dark")) {
-      return("mode must be 'light' or 'dark'")
+    if (!self@polarity %in% c("light", "dark")) {
+      return("polarity must be 'light' or 'dark'")
     }
     if (!self@density %in% c("compact", "comfortable", "spacious")) {
       return("density must be 'compact', 'comfortable', or 'spacious'")
-    }
-    s <- self@neutral_tint_strength
-    if (length(s) != 1L || is.na(s) || s < 0 || s > 1) {
-      return("neutral_tint_strength must be a number in [0, 1]")
     }
     NULL
   }

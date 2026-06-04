@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-api.R
 \name{set_mode}
 \alias{set_mode}
-\title{Switch light/dark mode and re-resolve.}
+\title{Deprecated alias for \code{\link[=set_polarity]{set_polarity()}}. The R API previously named the
+light/dark switch \code{mode}; v4 reserves \code{mode} for the accessibility axis.}
 \usage{
 set_mode(theme, mode)
 }
@@ -15,5 +16,7 @@ set_mode(theme, mode)
 The re-resolved \link{WebTheme}.
 }
 \description{
-Switch light/dark mode and re-resolve.
+Deprecated alias for \code{\link[=set_polarity]{set_polarity()}}. The R API previously named the
+light/dark switch \code{mode}; v4 reserves \code{mode} for the accessibility axis.
 }
+\keyword{internal}

@@ -11,5 +11,5 @@ A \link{WebTheme}.
 }
 \description{
 Compact density + tight type (1.2 scale ratio). Inter (Helvetica-feel).
-Grid texture showcases the underlying grid system.
+Grid texture showcases the underlying grid system. Achromatic neutrals.
 }

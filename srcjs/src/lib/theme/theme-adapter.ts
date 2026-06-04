@@ -24,6 +24,7 @@
 
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
+import { applyPolarityToInputs } from "./resolve-theme";
 import { rampStep, oklchMix, oklchDarken, oklchToHex } from "../oklch";
 import type {
   WebTheme, Surfaces, Content, Dividers, AccentRoles,
@@ -85,12 +86,19 @@ function textRoleTitle(family: string, fg: string): TextRole {
   return { family, size: "1.25rem", weight: 600, figures: "proportional", fg, italic: false };
 }
 
-/** Build a resolved WebTheme from authoring inputs. */
+/** Build a resolved WebTheme from authoring inputs.
+ *
+ *  Applies polarity reflection (Stage 1 §22) before token resolution so a
+ *  preset declaring `polarity: "dark"` resolves with paper/ink swapped
+ *  (paper goes dark, ink goes light). `buildThemeStructure`/`buildRamps`
+ *  expect pre-reflected anchors — this is the wrapper responsible for
+ *  applying it on the R-side adapter path. */
 export function buildTheme(
   inputs: ThemeInputs,
   name = "custom",
 ): WebTheme {
-  const v3 = buildThemeStructure(inputs, name);
+  const reflected = applyPolarityToInputs(inputs);
+  const v3 = buildThemeStructure(reflected, name);
   const t = v3.tokens;
   const ramps = v3.ramps;
 
@@ -108,18 +116,18 @@ export function buildTheme(
       rampStep(ramps.neutral, 7),
       rampStep(ramps.neutral, 12),
     ],
-    primary: oklchToHex(inputs.anchors.brand),
+    primary: oklchToHex(reflected.anchors.brand),
     primaryDeep: rampStep(ramps.brand, 11),
     // Decorative dropped in V4; secondary now mirrors brand (themes that
     // want a distinct secondary surface bind it via role overrides).
-    secondary: oklchToHex(inputs.anchors.brand),
+    secondary: oklchToHex(reflected.anchors.brand),
     secondaryDeep: rampStep(ramps.brand, 11),
-    accent: oklchToHex(inputs.anchors.accent ?? inputs.anchors.brand),
+    accent: oklchToHex(reflected.anchors.accent ?? reflected.anchors.brand),
     accentDeep: rampStep(ramps.accent, 11),
-    statusPositive: inputs.status?.positive ? oklchToHex(inputs.status.positive) : "#3F7D3F",
-    statusNegative: inputs.status?.negative ? oklchToHex(inputs.status.negative) : "#B33A3A",
-    statusWarning:  inputs.status?.warning  ? oklchToHex(inputs.status.warning)  : "#C68A2E",
-    statusInfo:     inputs.status?.info     ? oklchToHex(inputs.status.info)     : "#1F77B4",
+    statusPositive: reflected.status?.positive ? oklchToHex(reflected.status.positive) : "#3F7D3F",
+    statusNegative: reflected.status?.negative ? oklchToHex(reflected.status.negative) : "#B33A3A",
+    statusWarning:  reflected.status?.warning  ? oklchToHex(reflected.status.warning)  : "#C68A2E",
+    statusInfo:     reflected.status?.info     ? oklchToHex(reflected.status.info)     : "#1F77B4",
     seriesAnchors: [
       rampStep(ramps.brand, 9),
       rampStep(ramps.accent, 9),

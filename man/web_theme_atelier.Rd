@@ -10,7 +10,8 @@ web_theme_atelier()
 A \link{WebTheme}.
 }
 \description{
-Compact density x 0.92 + decorative-tinted neutrals at 0.12 give
-the warm parchment paper feel. Italianno display for the
-calligraphic flourish; EB Garamond body for the inked text.
+Compact density x 0.92 + decorative hue (#A88B5C) routed through the
+neutrals at high paperC/inkC give the warm parchment paper feel.
+Italianno display for the calligraphic flourish; EB Garamond body
+for the inked text.
 }

@@ -17,7 +17,9 @@ test_that("every preset constructs a valid WebTheme", {
     t <- fn()
     expect_s7(t, "WebTheme")
     expect_s7(t@inputs, "ThemeInputs")
-    expect_match(t@inputs@brand, "^#[0-9A-Fa-f]{6}$")
+    expect_true(is.finite(t@inputs@anchors_brand_L))
+    expect_true(is.finite(t@inputs@anchors_brand_C))
+    expect_true(is.finite(t@inputs@anchors_brand_H))
     expect_match(t@surface@base, "^#[0-9A-Fa-f]{6}$")
     expect_match(t@content@primary, "^#[0-9A-Fa-f]{6}$")
   }
@@ -29,21 +31,27 @@ test_that("preset names match their constructor names", {
   expect_equal(web_theme_dark()@name, "dark")
 })
 
-test_that("Lancet preset has a decorative second color", {
+test_that("Lancet preset has a distinct accent anchor", {
+  # V4: decorative is dropped; the v3 lancet decorative (gold) folded
+  # into the accent anchor. Lancet's accent should differ from its brand.
   t <- web_theme_lancet()
-  expect_false(is.na(t@inputs@decorative))
-  expect_match(t@inputs@decorative, "^#[0-9A-Fa-f]{6}$")
+  expect_true(is.finite(t@inputs@anchors_accent_L))
+  expect_false(isTRUE(all.equal(t@inputs@anchors_accent_H,
+                                 t@inputs@anchors_brand_H)))
 })
 
-test_that("Cochrane preset has no decorative", {
+test_that("Cochrane preset's anchors all carry the brand hue", {
+  # V4: cochrane uses brand-hued neutrals (the default
+  # `neutral_hue_from = "brand"` derivation in derive_preset_anchors).
   t <- web_theme_cochrane()
-  expect_true(is.na(t@inputs@decorative))
+  expect_equal(t@inputs@anchors_paper_H, t@inputs@anchors_brand_H)
+  expect_equal(t@inputs@anchors_ink_H,   t@inputs@anchors_brand_H)
 })
 
-test_that("Dark preset has mode = dark", {
-  expect_equal(web_theme_dark()@inputs@mode, "dark")
-  expect_equal(web_theme_solarized_dark()@inputs@mode, "dark")
-  expect_equal(web_theme_tonal_dark()@inputs@mode, "dark")
+test_that("Dark preset has polarity = dark", {
+  expect_equal(web_theme_dark()@inputs@polarity, "dark")
+  expect_equal(web_theme_solarized_dark()@inputs@polarity, "dark")
+  expect_equal(web_theme_tonal_dark()@inputs@polarity, "dark")
 })
 
 test_that("JAMA preset uses brand_mono categorical", {

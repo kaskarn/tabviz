@@ -2,15 +2,14 @@
 % Please edit documentation in R/themes-api.R
 \name{web_theme}
 \alias{web_theme}
-\title{Build a theme from inputs.}
+\title{Build a theme from V4 anchors.}
 \usage{
 web_theme(
-  brand = "#0099CC",
+  paper = NULL,
+  ink = NULL,
+  brand = DEFAULT_BRAND_HEX,
   accent = NULL,
-  decorative = NULL,
-  mode = "light",
-  neutral_tint = "untinted",
-  neutral_tint_strength = 0.04,
+  polarity = "light",
   categorical = "okabe_ito",
   sequential = "viridis",
   diverging = "rdbu",
@@ -36,21 +35,18 @@ web_theme(
 )
 }
 \arguments{
-\item{brand}{Required hex brand seed.}
+\item{paper}{Light-end neutral anchor (hex or \code{\link[=oklch]{oklch()}} triple). Defines
+surface, paper_alt, paper_raised. Default: near-white at brand hue.}
 
-\item{accent}{Engagement seed (hover/selected/callouts). Default: mirrors brand.}
+\item{ink}{Dark-end neutral anchor. Defines text, text-muted, text-subtle.}
 
-\item{decorative}{Optional second color (alt-row tint, divider hue,
-row-group L1 band). Default: NULL.}
+\item{brand}{Identity hue. Drives brand_solid, brand_text, header_bg.}
 
-\item{mode}{\code{"light"} or \code{"dark"}. Default \code{"light"}.}
+\item{accent}{Optional engagement hue (hover/selected/callouts). NULL
+mirrors brand at resolution.}
 
-\item{neutral_tint}{\code{"untinted"}, \code{"brand"}, \code{"accent"}, \code{"decorative"},
-or a hex string. Default \code{"untinted"}.}
-
-\item{neutral_tint_strength}{Numeric in \verb{[0, 1]}. Default \code{0.04} (subtle
-hint). Push toward \code{~1.0} for editorial paper colors (literary cream,
-sepia, newsprint). Ignored when \code{neutral_tint = "untinted"}.}
+\item{polarity}{\code{"light"} or \code{"dark"}. Polarity reflection inverts every
+anchor's L around the midpoint. Default \code{"light"}.}
 
 \item{categorical}{Named data scheme reference (Okabe-Ito default).}
 
@@ -58,9 +54,10 @@ sepia, newsprint). Ignored when \code{neutral_tint = "untinted"}.}
 
 \item{diverging}{Named diverging scheme reference.}
 
-\item{status_positive, status_negative, status_warning, status_info}{Optional status color overrides.}
+\item{status_positive, status_negative, status_warning, status_info}{Optional status anchor overrides (hex or \code{\link[=oklch]{oklch()}}). NULL defers to
+the TS resolver's defaults.}
 
-\item{font_body, font_display, font_mono}{Font stacks. font_display NA
+\item{font_body, font_display, font_mono}{Font stacks. font_display NULL
 mirrors font_body.}
 
 \item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
@@ -105,8 +102,9 @@ accent=linear.}
 A fully-resolved \link{WebTheme}.
 }
 \description{
-The user-authoring surface. Pass a brand seed; everything else
-derives. Optional \code{accent} (engagement), \code{decorative} (second color
-for editorial two-color themes), \code{mode}, \code{categorical} (data scheme),
-fonts, and \code{density}.
+The user-authoring surface. V4 vocabulary: identity is four named OKLCH
+anchors — \code{paper}, \code{ink}, \code{brand}, optional \code{accent}. Each accepts a
+hex string OR an \code{\link[=oklch]{oklch()}} triple. Polarity reflection acts on each
+anchor's L. \code{accent} defaults to \code{brand} when unset. Status anchors
+(\verb{status_*}) take the same hex-or-\code{\link[=oklch]{oklch()}} form.
 }

@@ -35,7 +35,7 @@ full_monty <- tibble(
 )
 
 # Custom theme — amber brand on dark mode, spacious density
-monty_theme <- web_theme(brand = "#f59e0b", mode = "dark", density = "spacious")
+monty_theme <- web_theme(brand = "#f59e0b", polarity = "dark", density = "spacious")
 
 tabviz(
   full_monty,

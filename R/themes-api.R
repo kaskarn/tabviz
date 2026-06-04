@@ -5,17 +5,40 @@
 # cascade semantics. It takes authoring inputs and emits
 # the resolved theme shape the renderer consumes.
 
+# Internal — read a flat L/C/H trio off `inputs` and emit a nested
+# `list(L=, C=, H=)`. Returns NULL when all three slots are NA (anchor
+# unset). `required = TRUE` skips the all-NA check (the cascade anchors
+# paper/ink/brand must always emit).
+triple_to_json <- function(inputs, prefix, required = FALSE) {
+  L <- S7::prop(inputs, paste0(prefix, "_L"))
+  C <- S7::prop(inputs, paste0(prefix, "_C"))
+  H <- S7::prop(inputs, paste0(prefix, "_H"))
+  if (!required && is.na(L) && is.na(C) && is.na(H)) return(NULL)
+  list(L = L, C = C, H = H)
+}
+
 # Internal: serialize a ThemeInputs S7 object to the JSON shape that the
-# TS adapter expects. NA fields become NULL (omitted from JSON).
+# TS adapter expects. NA fields become NULL (omitted from JSON). V4
+# vocabulary: emits `anchors: { paper, ink, brand, accent? }` and
+# `status: { positive?, negative?, warning?, info? }` as nested OKLCH
+# triples; no `brand`/`accent`/`decorative`/`neutral_tint*` flat fields.
 theme_inputs_to_json <- function(inputs) {
   stopifnot(inherits(inputs, "tabviz::ThemeInputs"))
   na_to_null <- function(v) if (length(v) == 1L && is.na(v)) NULL else v
 
+  anchors <- list(
+    paper = triple_to_json(inputs, "anchors_paper", required = TRUE),
+    ink   = triple_to_json(inputs, "anchors_ink",   required = TRUE),
+    brand = triple_to_json(inputs, "anchors_brand", required = TRUE),
+    accent = triple_to_json(inputs, "anchors_accent")
+  )
+  anchors <- anchors[!vapply(anchors, is.null, logical(1))]
+
   status <- list(
-    positive = na_to_null(inputs@status_positive),
-    negative = na_to_null(inputs@status_negative),
-    warning  = na_to_null(inputs@status_warning),
-    info     = na_to_null(inputs@status_info)
+    positive = triple_to_json(inputs, "status_positive"),
+    negative = triple_to_json(inputs, "status_negative"),
+    warning  = triple_to_json(inputs, "status_warning"),
+    info     = triple_to_json(inputs, "status_info")
   )
   status <- status[!vapply(status, is.null, logical(1))]
 
@@ -26,19 +49,6 @@ theme_inputs_to_json <- function(inputs) {
   )
   fonts <- fonts[!vapply(fonts, is.null, logical(1))]
 
-  neutral_tint_out <- if (inputs@neutral_tint %in%
-                          c("untinted", "brand", "accent", "decorative")) {
-    inputs@neutral_tint
-  } else {
-    list(hex = inputs@neutral_tint)
-  }
-
-  # Q-P4.5 mode/polarity split (TS substrate sprint, M4 phase): R-side
-  # input @mode is the historical light/dark switch — it now serializes as
-  # `polarity` to match the TS substrate's polarity field. TS-side `mode`
-  # is reserved for accessibility modes (standard / high-contrast /
-  # reduced-transparency); the R API will expose those via a future
-  # `accessibility_mode` arg once Stage 2 lands them in the R surface.
   # Stage 2 typography Tier 1 — pack only non-NA values to keep the wire
   # compact. The TS resolver fills defaults (14 / 1.2 / 400-700).
   type_weights <- list(
@@ -57,13 +67,9 @@ theme_inputs_to_json <- function(inputs) {
   curves <- curves[!vapply(curves, is.null, logical(1))]
 
   out <- list(
-    brand                 = inputs@brand,
-    accent                = na_to_null(inputs@accent),
-    decorative            = na_to_null(inputs@decorative),
-    polarity              = inputs@mode,
+    anchors               = anchors,
+    polarity              = inputs@polarity,
     mode                  = "standard",
-    neutral_tint          = neutral_tint_out,
-    neutral_tint_strength = inputs@neutral_tint_strength,
     categorical           = inputs@categorical,
     sequential            = inputs@sequential,
     diverging             = inputs@diverging,
@@ -92,29 +98,56 @@ resolve_from_inputs <- function(inputs, name = "custom") {
   theme
 }
 
-#' Build a theme from inputs.
+# Default anchors for the clinical baseline (cyan brand). Drive the
+# `web_theme()` defaults below + the `ThemeInputs` slot defaults — pick
+# one source of truth here.
+DEFAULT_PAPER_ANCHOR <- list(L = 0.987, C = 0.005, H = 235)
+DEFAULT_INK_ANCHOR   <- list(L = 0.180, C = 0.010, H = 235)
+DEFAULT_BRAND_HEX    <- "#0099CC"
+
+# Internal — pack a list(L,C,H) (or NULL) into a 3-element vector of slot
+# values suitable for `S7::prop(inputs, ...) <- ...`. NULL → c(NA, NA, NA).
+anchor_slots <- function(triple) {
+  if (is.null(triple)) return(list(L = NA_real_, C = NA_real_, H = NA_real_))
+  list(L = triple$L, C = triple$C, H = triple$H)
+}
+
+# Internal — push a coerced anchor into the three slots on `inputs`. Uses
+# `S7::props<-` so all three updates apply before the validator runs; per-
+# property assignment would fail on a partial all-NA write (mid-update L
+# is NA while C/H are still real numbers).
+set_anchor_on_inputs <- function(inputs, prefix, triple) {
+  updates <- list()
+  updates[[paste0(prefix, "_L")]] <- triple$L
+  updates[[paste0(prefix, "_C")]] <- triple$C
+  updates[[paste0(prefix, "_H")]] <- triple$H
+  S7::props(inputs) <- updates
+  inputs
+}
+
+#' Build a theme from V4 anchors.
 #'
-#' The user-authoring surface. Pass a brand seed; everything else
-#' derives. Optional `accent` (engagement), `decorative` (second color
-#' for editorial two-color themes), `mode`, `categorical` (data scheme),
-#' fonts, and `density`.
+#' The user-authoring surface. V4 vocabulary: identity is four named OKLCH
+#' anchors — `paper`, `ink`, `brand`, optional `accent`. Each accepts a
+#' hex string OR an [oklch()] triple. Polarity reflection acts on each
+#' anchor's L. `accent` defaults to `brand` when unset. Status anchors
+#' (`status_*`) take the same hex-or-[oklch()] form.
 #'
-#' @param brand Required hex brand seed.
-#' @param accent Engagement seed (hover/selected/callouts). Default: mirrors brand.
-#' @param decorative Optional second color (alt-row tint, divider hue,
-#'   row-group L1 band). Default: NULL.
-#' @param mode `"light"` or `"dark"`. Default `"light"`.
-#' @param neutral_tint `"untinted"`, `"brand"`, `"accent"`, `"decorative"`,
-#'   or a hex string. Default `"untinted"`.
-#' @param neutral_tint_strength Numeric in `[0, 1]`. Default `0.04` (subtle
-#'   hint). Push toward `~1.0` for editorial paper colors (literary cream,
-#'   sepia, newsprint). Ignored when `neutral_tint = "untinted"`.
+#' @param paper Light-end neutral anchor (hex or [oklch()] triple). Defines
+#'   surface, paper_alt, paper_raised. Default: near-white at brand hue.
+#' @param ink Dark-end neutral anchor. Defines text, text-muted, text-subtle.
+#' @param brand Identity hue. Drives brand_solid, brand_text, header_bg.
+#' @param accent Optional engagement hue (hover/selected/callouts). NULL
+#'   mirrors brand at resolution.
+#' @param polarity `"light"` or `"dark"`. Polarity reflection inverts every
+#'   anchor's L around the midpoint. Default `"light"`.
 #' @param categorical Named data scheme reference (Okabe-Ito default).
 #' @param sequential Named sequential scheme reference.
 #' @param diverging Named diverging scheme reference.
 #' @param status_positive,status_negative,status_warning,status_info
-#'   Optional status color overrides.
-#' @param font_body,font_display,font_mono Font stacks. font_display NA
+#'   Optional status anchor overrides (hex or [oklch()]). NULL defers to
+#'   the TS resolver's defaults.
+#' @param font_body,font_display,font_mono Font stacks. font_display NULL
 #'   mirrors font_body.
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
 #' @param density_factor Continuous multiplier on the density preset's spacing,
@@ -145,12 +178,11 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #' @return A fully-resolved [WebTheme].
 #' @export
 web_theme <- function(
-    brand = "#0099CC",
+    paper = NULL,
+    ink = NULL,
+    brand = DEFAULT_BRAND_HEX,
     accent = NULL,
-    decorative = NULL,
-    mode = "light",
-    neutral_tint = "untinted",
-    neutral_tint_strength = 0.04,
+    polarity = "light",
     categorical = "okabe_ito",
     sequential = "viridis",
     diverging = "rdbu",
@@ -173,12 +205,7 @@ web_theme <- function(
     first_column_style = "default",
     web_fonts = NULL,
     name = "custom") {
-  checkmate::assert_string(brand)
-  checkmate::assert_string(accent, null.ok = TRUE)
-  checkmate::assert_string(decorative, null.ok = TRUE)
-  checkmate::assert_choice(mode, c("light", "dark"))
-  checkmate::assert_string(neutral_tint)
-  checkmate::assert_number(neutral_tint_strength, lower = 0, upper = 1)
+  checkmate::assert_choice(polarity, c("light", "dark"))
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
@@ -192,20 +219,36 @@ web_theme <- function(
   checkmate::assert_list(type_weights, null.ok = TRUE)
   checkmate::assert_list(curves, null.ok = TRUE)
 
+  paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
+  ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
+  brand_t  <- coerce_anchor(brand, "brand")
+  if (is.null(brand_t)) {
+    cli::cli_abort("{.arg brand} is required.")
+  }
+  accent_t <- coerce_anchor(accent, "accent")
+  status_p <- coerce_anchor(status_positive, "status_positive")
+  status_n <- coerce_anchor(status_negative, "status_negative")
+  status_w <- coerce_anchor(status_warning,  "status_warning")
+  status_i <- coerce_anchor(status_info,     "status_info")
+
+  ap <- anchor_slots(paper_t);  ai <- anchor_slots(ink_t)
+  ab <- anchor_slots(brand_t);  aa <- anchor_slots(accent_t)
+  sp <- anchor_slots(status_p); sn <- anchor_slots(status_n)
+  sw <- anchor_slots(status_w); si <- anchor_slots(status_i)
+
   inputs <- ThemeInputs(
-    brand = brand,
-    accent = if (is.null(accent)) NA_character_ else accent,
-    decorative = if (is.null(decorative)) NA_character_ else decorative,
-    mode = mode,
-    neutral_tint = neutral_tint,
-    neutral_tint_strength = neutral_tint_strength,
+    anchors_paper_L = ap$L, anchors_paper_C = ap$C, anchors_paper_H = ap$H,
+    anchors_ink_L   = ai$L, anchors_ink_C   = ai$C, anchors_ink_H   = ai$H,
+    anchors_brand_L = ab$L, anchors_brand_C = ab$C, anchors_brand_H = ab$H,
+    anchors_accent_L = aa$L, anchors_accent_C = aa$C, anchors_accent_H = aa$H,
+    polarity = polarity,
     categorical = categorical,
     sequential = sequential,
     diverging = diverging,
-    status_positive = status_positive %||% "#3F7D3F",
-    status_negative = status_negative %||% "#B33A3A",
-    status_warning  = status_warning  %||% "#C68A2E",
-    status_info     = status_info     %||% "#1F77B4",
+    status_positive_L = sp$L, status_positive_C = sp$C, status_positive_H = sp$H,
+    status_negative_L = sn$L, status_negative_C = sn$C, status_negative_H = sn$H,
+    status_warning_L  = sw$L, status_warning_C  = sw$C, status_warning_H  = sw$H,
+    status_info_L     = si$L, status_info_C     = si$C, status_info_H     = si$H,
     font_body       = font_body       %||% "system-ui, -apple-system, sans-serif",
     font_display    = if (is.null(font_display)) NA_character_ else font_display,
     font_mono       = if (is.null(font_mono))    NA_character_ else font_mono,
@@ -234,78 +277,91 @@ web_theme <- function(
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 
-#' Set the brand seed on a theme and re-resolve.
+# Internal — re-resolve `theme` after coercing an anchor argument and
+# pinning it under `prefix`. Anchor arg may be hex, oklch() triple, or
+# (for accent / status) NULL to clear.
+set_anchor_and_resolve <- function(theme, prefix, value, arg_name,
+                                   clearable = FALSE) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  inputs <- theme@inputs
+  triple <- if (clearable && is.null(value)) NULL else coerce_anchor(value, arg_name)
+  if (!clearable && is.null(triple)) {
+    cli::cli_abort("{.arg {arg_name}} must be a hex string or {.fn oklch} triple.")
+  }
+  slots <- anchor_slots(triple)
+  inputs <- set_anchor_on_inputs(inputs, prefix, slots)
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the paper anchor on a theme and re-resolve.
 #' @param theme A [WebTheme].
-#' @param brand New brand hex.
+#' @param paper Hex string or [oklch()] triple.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_paper <- function(theme, paper) {
+  set_anchor_and_resolve(theme, "anchors_paper", paper, "paper")
+}
+
+#' Set the ink anchor on a theme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param ink Hex string or [oklch()] triple.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_ink <- function(theme, ink) {
+  set_anchor_and_resolve(theme, "anchors_ink", ink, "ink")
+}
+
+#' Set the brand anchor on a theme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param brand Hex string or [oklch()] triple.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_brand <- function(theme, brand) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_string(brand)
-  inputs <- theme@inputs
-  inputs@brand <- brand
-  resolve_from_inputs(inputs, name = theme@name)
+  set_anchor_and_resolve(theme, "anchors_brand", brand, "brand")
 }
 
-#' Set the accent seed on a theme and re-resolve.
+#' Set the accent anchor on a theme and re-resolve.
 #' @param theme A [WebTheme].
-#' @param accent New accent hex.
+#' @param accent Hex string, [oklch()] triple, or `NULL` to clear (accent
+#'   then mirrors brand at resolution).
 #' @return The re-resolved [WebTheme].
 #' @export
 set_accent <- function(theme, accent) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_string(accent)
-  inputs <- theme@inputs
-  inputs@accent <- accent
-  resolve_from_inputs(inputs, name = theme@name)
-}
-
-#' Set the decorative seed (two-color editorial) on a theme and re-resolve.
-#' @param theme A [WebTheme].
-#' @param decorative New decorative hex (or NA to clear).
-#' @return The re-resolved [WebTheme].
-#' @export
-set_decorative <- function(theme, decorative) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_string(decorative, na.ok = TRUE)
-  inputs <- theme@inputs
-  inputs@decorative <- decorative
-  resolve_from_inputs(inputs, name = theme@name)
-}
-
-#' Switch light/dark mode and re-resolve.
-#' @param theme A [WebTheme].
-#' @param mode `"light"` or `"dark"`.
-#' @return The re-resolved [WebTheme].
-#' @export
-set_mode <- function(theme, mode) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_choice(mode, c("light", "dark"))
-  inputs <- theme@inputs
-  inputs@mode <- mode
-  resolve_from_inputs(inputs, name = theme@name)
+  set_anchor_and_resolve(theme, "anchors_accent", accent, "accent",
+                         clearable = TRUE)
 }
 
 #' Set the theme polarity (light/dark) and re-resolve.
 #'
-#' Alias for [set_mode()] using the V4 substrate's polarity vocabulary
-#' (Stage 1 §40 — mode is now the accessibility axis (standard /
-#' high-contrast / reduced-transparency); polarity is the L-reflection axis).
+#' Polarity is the L-reflection axis: reflecting flips paper↔ink lightness
+#' around the midpoint. The orthogonal accessibility axis (mode = standard
+#' / high-contrast / reduced-transparency) is plumbed separately.
 #'
 #' @param theme A [WebTheme].
 #' @param polarity `"light"` or `"dark"`.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_polarity <- function(theme, polarity) {
-  set_mode(theme, polarity)
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(polarity, c("light", "dark"))
+  inputs <- theme@inputs
+  inputs@polarity <- polarity
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Deprecated alias for [set_polarity()]. The R API previously named the
+#' light/dark switch `mode`; v4 reserves `mode` for the accessibility axis.
+#' @param theme A [WebTheme].
+#' @param mode `"light"` or `"dark"`.
+#' @return The re-resolved [WebTheme].
+#' @keywords internal
+#' @export
+set_mode <- function(theme, mode) {
+  set_polarity(theme, mode)
 }
 
 #' Set the categorical data scheme and re-resolve.
@@ -321,25 +377,6 @@ set_categorical <- function(theme, scheme) {
   checkmate::assert_string(scheme)
   inputs <- theme@inputs
   inputs@categorical <- scheme
-  resolve_from_inputs(inputs, name = theme@name)
-}
-
-#' Set the neutral tint strength and re-resolve.
-#'
-#' Span `0.04` (subtle clinical-journal hint) to `~1.0` (paper takes the
-#' tint hex as its essential color — editorial cream, sepia, newsprint).
-#'
-#' @param theme A [WebTheme].
-#' @param strength Numeric in `[0, 1]`.
-#' @return The re-resolved [WebTheme].
-#' @export
-set_neutral_tint_strength <- function(theme, strength) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_number(strength, lower = 0, upper = 1)
-  inputs <- theme@inputs
-  inputs@neutral_tint_strength <- strength
   resolve_from_inputs(inputs, name = theme@name)
 }
 

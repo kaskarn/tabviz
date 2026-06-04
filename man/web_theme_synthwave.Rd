@@ -12,6 +12,6 @@ A \link{WebTheme}.
 \description{
 Dark polarity + float shell + grid texture (the perspective-rail
 retro look). Monospace body (terminal vibe). Brand-tinted neutrals
-at 0.08 give the magenta drift. Exp curves on brand+accent for
-saturated neon mids.
+via elevated paperC/inkC give the magenta drift. Exp curves on
+brand+accent for saturated neon mids.
 }

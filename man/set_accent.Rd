@@ -2,18 +2,19 @@
 % Please edit documentation in R/themes-api.R
 \name{set_accent}
 \alias{set_accent}
-\title{Set the accent seed on a theme and re-resolve.}
+\title{Set the accent anchor on a theme and re-resolve.}
 \usage{
 set_accent(theme, accent)
 }
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{accent}{New accent hex.}
+\item{accent}{Hex string, \code{\link[=oklch]{oklch()}} triple, or \code{NULL} to clear (accent
+then mirrors brand at resolution).}
 }
 \value{
 The re-resolved \link{WebTheme}.
 }
 \description{
-Set the accent seed on a theme and re-resolve.
+Set the accent anchor on a theme and re-resolve.
 }

@@ -2,18 +2,18 @@
 % Please edit documentation in R/themes-api.R
 \name{set_brand}
 \alias{set_brand}
-\title{Set the brand seed on a theme and re-resolve.}
+\title{Set the brand anchor on a theme and re-resolve.}
 \usage{
 set_brand(theme, brand)
 }
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{brand}{New brand hex.}
+\item{brand}{Hex string or \code{\link[=oklch]{oklch()}} triple.}
 }
 \value{
 The re-resolved \link{WebTheme}.
 }
 \description{
-Set the brand seed on a theme and re-resolve.
+Set the brand anchor on a theme and re-resolve.
 }

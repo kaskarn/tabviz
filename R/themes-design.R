@@ -1,8 +1,10 @@
-# Design-movement preset constructors. Stage 4 reimagining
-# (2026-06-04): each preset showcases distinctive substrate features
-# (shell mode, surface texture, type scale, curves, density factor)
-# per the v4 cascade. Web fonts load per-preset so typography reads
-# as the movement intends.
+# Design-movement preset constructors.
+#
+# V4 (2026-06-04): anchors vocabulary. Editorial themes (Newsprint,
+# Solarized, Atelier) lean on warm-paper feel via paperC/inkC bumps and,
+# in some cases, route a decorative hue through the neutrals via
+# `neutral_hue_from = <hex>` — replacing the v3 neutral_tint +
+# neutral_tint_strength knobs.
 
 #' Bauhaus theme - geometric primary colors with raised + grid texture.
 #'
@@ -11,10 +13,9 @@
 #' @return A [WebTheme].
 #' @export
 web_theme_bauhaus <- function() {
+  a <- derive_preset_anchors("#D32023", "#FFCB05")
   web_theme(
-    brand = "#D32023",
-    decorative = "#2057A8",
-    accent = "#FFCB05",
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
     shell_mode = "raised",
     shell_texture = "grid",
@@ -37,13 +38,14 @@ web_theme_bauhaus <- function() {
 #' Swiss theme - International Typographic Style: red brand + grid texture.
 #'
 #' Compact density + tight type (1.2 scale ratio). Inter (Helvetica-feel).
-#' Grid texture showcases the underlying grid system.
+#' Grid texture showcases the underlying grid system. Achromatic neutrals.
 #' @return A [WebTheme].
 #' @export
 web_theme_swiss <- function() {
+  a <- derive_preset_anchors("#E30613", "#000000",
+                             neutral_hue_from = NA_character_)
   web_theme(
-    brand = "#E30613",
-    accent = "#000000",
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
     density = "compact",
     shell_texture = "grid",
@@ -64,12 +66,14 @@ web_theme_swiss <- function() {
 #'
 #' Compact density x 0.9 factor for very tight rhythm; EB Garamond for
 #' the editorial-quiet body. Log curve grounds the ink-on-paper feel.
+#' Achromatic neutrals.
 #' @return A [WebTheme].
 #' @export
 web_theme_tufte <- function() {
+  a <- derive_preset_anchors("#222222", "#888888",
+                             neutral_hue_from = NA_character_)
   web_theme(
-    brand = "#222222",
-    accent = "#888888",
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "greys",
     density = "compact",
     density_factor = 0.9,
@@ -89,18 +93,17 @@ web_theme_tufte <- function() {
 #' Newsprint theme - actual newspaper: grain texture, off-white paper,
 #' serif body, Crimson Pro display.
 #'
-#' Decorative-tinted neutrals at 0.08 strength give the warm paper
-#' feel; grain texture adds the paper grain. Log curve on brand for
-#' deep newspaper-ink contrast.
+#' Decorative hue (#B17D5F) routed through the neutrals via
+#' `neutral_hue_from` + elevated paperC/inkC give the warm paper feel.
+#' Log curve on brand for deep newspaper-ink contrast.
 #' @return A [WebTheme].
 #' @export
 web_theme_newsprint <- function() {
+  a <- derive_preset_anchors("#2C2C2C", "#5C8A3F",
+                             neutral_hue_from = "#B17D5F",
+                             paper_C = 0.016, ink_C = 0.018)
   web_theme(
-    brand = "#2C2C2C",
-    decorative = "#B17D5F",
-    accent = "#5C8A3F",
-    neutral_tint = "decorative",
-    neutral_tint_strength = 0.08,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
     shell_texture = "grain",
     type_scale_ratio = 1.2,
@@ -116,16 +119,15 @@ web_theme_newsprint <- function() {
 
 #' Solarized theme - Schoonover's editorial palette, light variant.
 #'
-#' Brand-tinted neutrals at 0.06 give the trademark warm yellow paper.
-#' Smooth curves on neutrals for the gentle yellow gradient.
+#' Brand-tinted neutrals via elevated paperC/inkC give the trademark warm
+#' yellow paper. Smooth curve on neutrals for the gentle gradient.
 #' @return A [WebTheme].
 #' @export
 web_theme_solarized <- function() {
+  a <- derive_preset_anchors("#268BD2", "#CB4B16",
+                             paper_C = 0.012, ink_C = 0.014)
   web_theme(
-    brand = "#268BD2",
-    accent = "#CB4B16",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.06,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
     font_body = "'Inter', -apple-system, system-ui, sans-serif",
     font_mono = "'JetBrains Mono', 'Fira Code', monospace",
@@ -142,12 +144,11 @@ web_theme_solarized <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_solarized_dark <- function() {
+  a <- derive_preset_anchors("#268BD2", "#CB4B16",
+                             paper_C = 0.012, ink_C = 0.014)
   web_theme(
-    brand = "#268BD2",
-    accent = "#CB4B16",
-    mode = "dark",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.06,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    polarity = "dark",
     categorical = "tableau10",
     font_body = "'Inter', -apple-system, system-ui, sans-serif",
     font_mono = "'JetBrains Mono', 'Fira Code', monospace",
@@ -167,9 +168,9 @@ web_theme_solarized_dark <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_tonal <- function() {
+  a <- derive_preset_anchors("#6750A4", "#7D5260")
   web_theme(
-    brand = "#6750A4",
-    accent = "#7D5260",
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
     shell_mode = "raised",
     type_scale_ratio = 1.25,
@@ -188,10 +189,10 @@ web_theme_tonal <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_tonal_dark <- function() {
+  a <- derive_preset_anchors("#D0BCFF", "#EFB8C8")
   web_theme(
-    brand = "#D0BCFF",
-    accent = "#EFB8C8",
-    mode = "dark",
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    polarity = "dark",
     categorical = "tableau10",
     shell_mode = "raised",
     type_scale_ratio = 1.25,
@@ -214,18 +215,16 @@ web_theme_tonal_dark <- function() {
 #'
 #' Dark polarity + float shell + grid texture (the perspective-rail
 #' retro look). Monospace body (terminal vibe). Brand-tinted neutrals
-#' at 0.08 give the magenta drift. Exp curves on brand+accent for
-#' saturated neon mids.
+#' via elevated paperC/inkC give the magenta drift. Exp curves on
+#' brand+accent for saturated neon mids.
 #' @return A [WebTheme].
 #' @export
 web_theme_synthwave <- function() {
+  a <- derive_preset_anchors("#FF00C8", "#FAFF00",
+                             paper_C = 0.016, ink_C = 0.020)
   web_theme(
-    brand = "#FF00C8",
-    decorative = "#00E5FF",
-    accent = "#FAFF00",
-    mode = "dark",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.08,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    polarity = "dark",
     categorical = "tableau10",
     shell_mode = "float",
     shell_texture = "grid",
@@ -245,18 +244,18 @@ web_theme_synthwave <- function() {
 
 #' Atelier theme - artist's studio: warm parchment, ink, ruled lines.
 #'
-#' Compact density x 0.92 + decorative-tinted neutrals at 0.12 give
-#' the warm parchment paper feel. Italianno display for the
-#' calligraphic flourish; EB Garamond body for the inked text.
+#' Compact density x 0.92 + decorative hue (#A88B5C) routed through the
+#' neutrals at high paperC/inkC give the warm parchment paper feel.
+#' Italianno display for the calligraphic flourish; EB Garamond body
+#' for the inked text.
 #' @return A [WebTheme].
 #' @export
 web_theme_atelier <- function() {
+  a <- derive_preset_anchors("#2D2A26", "#8B3A3A",
+                             neutral_hue_from = "#A88B5C",
+                             paper_C = 0.024, ink_C = 0.024)
   web_theme(
-    brand = "#2D2A26",
-    decorative = "#A88B5C",
-    accent = "#8B3A3A",
-    neutral_tint = "decorative",
-    neutral_tint_strength = 0.12,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
     density = "compact",
     density_factor = 0.92,
@@ -282,9 +281,9 @@ web_theme_atelier <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_executive <- function() {
+  a <- derive_preset_anchors("#1E3A5F", "#C9A961")
   web_theme(
-    brand = "#1E3A5F",
-    accent = "#C9A961",
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "wong",
     shell_mode = "raised",
     type_base_size = 14,

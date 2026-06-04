@@ -4,56 +4,52 @@
 # classes (Surfaces, Content, Dividers, …) are internal data shapes for
 # the resolved WebTheme.
 
-test_that("ThemeInputs constructs with defaults", {
+test_that("ThemeInputs constructs with defaults (V4 anchors)", {
   inp <- ThemeInputs()
   expect_true(inherits(inp, "tabviz::ThemeInputs"))
-  expect_equal(inp@brand, "#0099CC")
-  expect_true(is.na(inp@accent))
-  expect_true(is.na(inp@decorative))
-  expect_equal(inp@mode, "light")
-  expect_equal(inp@neutral_tint, "untinted")
+  # paper/ink/brand must be set; accent NA-by-default (mirrors brand).
+  expect_true(is.finite(inp@anchors_paper_L))
+  expect_true(is.finite(inp@anchors_ink_L))
+  expect_true(is.finite(inp@anchors_brand_L))
+  expect_true(is.na(inp@anchors_accent_L))
+  expect_equal(inp@polarity, "light")
   expect_equal(inp@categorical, "okabe_ito")
   expect_equal(inp@density, "comfortable")
 })
 
-test_that("ThemeInputs accepts explicit values", {
+test_that("ThemeInputs accepts explicit OKLCH triples", {
   inp <- ThemeInputs(
-    brand = "#003DA5",
-    accent = "#A6792A",
-    decorative = "#A6792A",
-    mode = "light",
-    neutral_tint = "brand",
+    anchors_paper_L = 0.95, anchors_paper_C = 0.02, anchors_paper_H = 220,
+    anchors_ink_L   = 0.15, anchors_ink_C   = 0.02, anchors_ink_H   = 220,
+    anchors_brand_L = 0.45, anchors_brand_C = 0.18, anchors_brand_H = 220,
+    anchors_accent_L = 0.65, anchors_accent_C = 0.15, anchors_accent_H = 60,
+    polarity = "light",
     categorical = "tableau10",
     density = "compact"
   )
-  expect_equal(inp@brand, "#003DA5")
-  expect_equal(inp@decorative, "#A6792A")
-  expect_equal(inp@neutral_tint, "brand")
+  expect_equal(inp@anchors_brand_H, 220)
+  expect_equal(inp@anchors_accent_H, 60)
   expect_equal(inp@categorical, "tableau10")
   expect_equal(inp@density, "compact")
 })
 
-test_that("ThemeInputs rejects bad hex", {
-  expect_error(ThemeInputs(brand = "blue"), "brand must be a hex")
-  expect_error(ThemeInputs(accent = "notahex"), "accent must be a hex")
-  expect_error(ThemeInputs(decorative = "rgb(0,0,0)"), "decorative must be a hex")
+test_that("ThemeInputs validates anchor ranges", {
+  expect_error(ThemeInputs(anchors_brand_L = 2.0), "anchors_brand_L")
+  expect_error(ThemeInputs(anchors_brand_C = -0.1), "anchors_brand_C")
+  expect_error(ThemeInputs(anchors_brand_H = 400), "anchors_brand_H")
 })
 
-test_that("ThemeInputs accepts NA for optional fields", {
-  inp <- ThemeInputs(brand = "#000000", accent = NA_character_)
-  expect_true(is.na(inp@accent))
+test_that("ThemeInputs accepts all-NA accent (mirrors brand at resolution)", {
+  inp <- ThemeInputs(
+    anchors_accent_L = NA_real_,
+    anchors_accent_C = NA_real_,
+    anchors_accent_H = NA_real_
+  )
+  expect_true(is.na(inp@anchors_accent_L))
 })
 
-test_that("ThemeInputs neutral_tint accepts enum or hex", {
-  expect_error(ThemeInputs(neutral_tint = "rainbow"), "neutral_tint must be")
-  inp <- ThemeInputs(neutral_tint = "#888888")
-  expect_equal(inp@neutral_tint, "#888888")
-  inp2 <- ThemeInputs(neutral_tint = "brand")
-  expect_equal(inp2@neutral_tint, "brand")
-})
-
-test_that("ThemeInputs rejects bad mode and density", {
-  expect_error(ThemeInputs(mode = "auto"), "mode must be")
+test_that("ThemeInputs rejects bad polarity and density", {
+  expect_error(ThemeInputs(polarity = "auto"), "polarity must be")
   expect_error(ThemeInputs(density = "tight"), "density must be")
 })
 
