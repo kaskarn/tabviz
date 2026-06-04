@@ -7,17 +7,28 @@
   import { studioStore } from "../studio-store.svelte";
   import { PRESETS } from "../../lib/theme/theme-presets-inputs";
   import type { ThemeInputs } from "../../types/theme-inputs";
+  import { hexToOklch, oklchToHex } from "../../lib/oklch";
+  import { legacyInputsView, applyV3Patch, type V3InputsPatch } from "../../lib/theme/legacy-v3-adapter";
   import OklchPicker from "../OklchPicker.svelte";
 
   let pickerOpen = $state<null | "brand" | "accent" | "decorative">(null);
 
-  // Apply a partial update to the working-copy inputs.
-  function apply(label: string, patch: Partial<ThemeInputs>): void {
+  // Apply a partial update to the working-copy inputs. V3-style hex
+  // patches (brand/accent/decorative) route through applyV3Patch;
+  // everything else passes through unchanged.
+  function apply(label: string, patch: V3InputsPatch): void {
     if (!studioStore.inputs) return;
-    studioStore.apply({ ...studioStore.inputs, ...patch }, label);
+    studioStore.apply(applyV3Patch(studioStore.inputs, patch), label);
   }
 
   const inputs = $derived(studioStore.inputs);
+  // V3-shape view of inputs so the existing template can read hex strings
+  // for brand/accent/decorative without rewriting the markup.
+  const v3 = $derived(inputs ? legacyInputsView(inputs) : null);
+  // Brand hex for the preset chips (preset-side anchors → hex projection).
+  function presetBrand(p: ThemeInputs): string {
+    return oklchToHex(p.anchors.brand);
+  }
 
   let advancedOpen = $state(false);
 
@@ -42,7 +53,7 @@
           class:active={studioStore.baseName === name}
           onclick={() => loadPreset(name, presetInputs as ThemeInputs)}
         >
-          <span class="chip-swatch" style:background={(presetInputs as ThemeInputs).brand}></span>
+          <span class="chip-swatch" style:background={presetBrand(presetInputs as ThemeInputs)}></span>
           <span class="chip-name">{name}</span>
         </button>
       {/each}
@@ -63,15 +74,15 @@
         <button
           type="button"
           class="swatch"
-          style:background={inputs.brand}
+          style:background={v3?.brand}
           onclick={() => (pickerOpen = pickerOpen === "brand" ? null : "brand")}
           aria-label="Edit brand color"
         ></button>
-        <code>{inputs.brand}</code>
-        {#if pickerOpen === "brand"}
+        <code>{v3?.brand ?? "—"}</code>
+        {#if pickerOpen === "brand" && v3}
           <div class="picker-anchor">
             <OklchPicker
-              value={inputs.brand}
+              value={v3.brand}
               label="Brand"
               oninput={(hex) => apply("Brand color", { brand: hex })}
               onclose={() => (pickerOpen = null)}
@@ -84,15 +95,15 @@
         <button
           type="button"
           class="swatch"
-          style:background={inputs.accent ?? inputs.brand}
+          style:background={v3?.accent ?? v3?.brand}
           onclick={() => (pickerOpen = pickerOpen === "accent" ? null : "accent")}
           aria-label="Edit accent color"
         ></button>
-        <code>{inputs.accent ?? "(mirrors brand)"}</code>
-        {#if pickerOpen === "accent"}
+        <code>{inputs?.anchors.accent ? v3?.accent : "(mirrors brand)"}</code>
+        {#if pickerOpen === "accent" && v3}
           <div class="picker-anchor">
             <OklchPicker
-              value={inputs.accent ?? inputs.brand}
+              value={v3.accent}
               label="Accent"
               oninput={(hex) => apply("Accent color", { accent: hex })}
               onclose={() => (pickerOpen = null)}
@@ -105,27 +116,12 @@
         <button
           type="button"
           class="swatch"
-          style:background={inputs.decorative ?? "transparent"}
-          disabled={!inputs.decorative}
-          onclick={() => (pickerOpen = pickerOpen === "decorative" ? null : "decorative")}
-          aria-label="Edit decorative color"
+          style:background="transparent"
+          disabled
+          aria-label="V4 dropped decorative"
         ></button>
-        <code>{inputs.decorative ?? "(off)"}</code>
-        <button
-          type="button"
-          class="toggle"
-          onclick={() => apply("Toggle decorative", { decorative: inputs.decorative ? null : "#7B9E89" })}
-        >{inputs.decorative ? "Remove" : "Add"}</button>
-        {#if pickerOpen === "decorative" && inputs.decorative}
-          <div class="picker-anchor">
-            <OklchPicker
-              value={inputs.decorative}
-              label="Decorative"
-              oninput={(hex) => apply("Decorative color", { decorative: hex })}
-              onclose={() => (pickerOpen = null)}
-            />
-          </div>
-        {/if}
+        <code>(V4: dropped)</code>
+        <button type="button" class="toggle" disabled>—</button>
       </div>
     </div>
   </section>
@@ -191,24 +187,16 @@
     </button>
     {#if advancedOpen}
       <div class="advanced">
-        <h4>Neutral tint</h4>
-        <select
-          value={typeof inputs.neutral_tint === "string" ? inputs.neutral_tint : "custom"}
-          onchange={(e) => apply("Neutral tint", { neutral_tint: (e.currentTarget as HTMLSelectElement).value as "untinted" | "brand" | "accent" | "decorative" })}
-        >
+        <!-- V4 dropped neutral_tint / neutral_tint_strength; the paper +
+             ink anchor chroma replace them. Controls left inert until
+             Phase B retires the v3 panel. -->
+        <h4>Neutral tint <small>(V4: dropped)</small></h4>
+        <select value="untinted" disabled>
           <option value="untinted">Untinted</option>
-          <option value="brand">Brand</option>
-          <option value="accent">Accent</option>
-          <option value="decorative">Decorative</option>
         </select>
         <label>
-          Strength {inputs.neutral_tint_strength ?? 0.04}
-          <input
-            type="range"
-            min="0" max="1" step="0.01"
-            value={inputs.neutral_tint_strength ?? 0.04}
-            oninput={(e) => apply("Tint strength", { neutral_tint_strength: parseFloat((e.currentTarget as HTMLInputElement).value) })}
-          />
+          Strength 0
+          <input type="range" min="0" max="1" step="0.01" value="0" disabled />
         </label>
       </div>
     {/if}

@@ -88,17 +88,16 @@ function textRoleTitle(family: string, fg: string): TextRole {
 
 /** Build a resolved WebTheme from authoring inputs.
  *
- *  Applies polarity reflection (Stage 1 §22) before token resolution so a
- *  preset declaring `polarity: "dark"` resolves with paper/ink swapped
- *  (paper goes dark, ink goes light). `buildThemeStructure`/`buildRamps`
- *  expect pre-reflected anchors — this is the wrapper responsible for
- *  applying it on the R-side adapter path. */
+ *  `buildThemeStructure` applies polarity reflection (Stage 1 §22)
+ *  internally; we re-apply it here only to keep the resolvedInputs block
+ *  below (primary, accent, status, ...) in sync with the reflected
+ *  anchors that downstream tokens were built from. */
 export function buildTheme(
   inputs: ThemeInputs,
   name = "custom",
 ): WebTheme {
   const reflected = applyPolarityToInputs(inputs);
-  const v3 = buildThemeStructure(reflected, name);
+  const v3 = buildThemeStructure(inputs, name);
   const t = v3.tokens;
   const ramps = v3.ramps;
 

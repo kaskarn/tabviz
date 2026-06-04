@@ -6,9 +6,9 @@ import {
   SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES,
 } from "./data-schemes";
 import { buildRamps } from "./theme/theme-resolve";
-import type { ThemeInputs } from "../types/theme-inputs";
+import { inputsFromHex } from "./theme/theme-presets-inputs";
 
-const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE = inputsFromHex({ brand: "#0099CC", accent: "#C8553D" });
 
 describe("categorical schemes — fixed palettes", () => {
   it("Okabe-Ito has 8 colors", () => {

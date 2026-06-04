@@ -10,7 +10,7 @@ import {
   resolveTypographyInputs,
   resolveTypeRole,
 } from "./typography";
-import type { ThemeInputs } from "../../types/theme-inputs";
+import { inputsFromHex } from "./theme-presets-inputs";
 
 describe("buildSizeScale", () => {
   it("produces 7 ordered steps when ratio > 1", () => {
@@ -44,7 +44,7 @@ describe("buildSizeScale", () => {
 
 describe("resolveTypographyInputs", () => {
   it("applies defaults when fields absent", () => {
-    const r = resolveTypographyInputs({ brand: "#000" } as ThemeInputs);
+    const r = resolveTypographyInputs(inputsFromHex({ brand: "#000" }));
     expect(r.baseSize).toBe(DEFAULT_TYPE_BASE_SIZE);
     expect(r.ratio).toBe(DEFAULT_TYPE_SCALE_RATIO);
     expect(r.weights).toEqual({ ...DEFAULT_TYPE_WEIGHTS });
@@ -54,13 +54,12 @@ describe("resolveTypographyInputs", () => {
   });
 
   it("honors per-field overrides", () => {
-    const r = resolveTypographyInputs({
-      brand: "#000",
+    const r = resolveTypographyInputs(inputsFromHex({ brand: "#000" }, {
       fonts: { body: "Inter", display: "Cinzel", mono: "JetBrains Mono" },
       type_base_size: 16,
       type_scale_ratio: 1.333,
       type_weights: { regular: 350 },
-    } as ThemeInputs);
+    }));
     expect(r.baseSize).toBe(16);
     expect(r.ratio).toBeCloseTo(1.333);
     expect(r.weights.regular).toBe(350);
@@ -72,7 +71,7 @@ describe("resolveTypographyInputs", () => {
 });
 
 describe("resolveTypeRole", () => {
-  const resolved = resolveTypographyInputs({ brand: "#000" } as ThemeInputs);
+  const resolved = resolveTypographyInputs(inputsFromHex({ brand: "#000" }));
 
   it("title role uses display family + title size + semibold weight", () => {
     const r = resolveTypeRole("title", resolved);
@@ -124,7 +123,7 @@ describe("DEFAULT_TYPE_ROLES coverage", () => {
   });
 
   it("each role references a valid family + scale step + weight", () => {
-    const resolved = resolveTypographyInputs({ brand: "#000" } as ThemeInputs);
+    const resolved = resolveTypographyInputs(inputsFromHex({ brand: "#000" }));
     for (const [name, role] of Object.entries(DEFAULT_TYPE_ROLES)) {
       expect(["display", "body", "mono"]).toContain(role.family);
       expect(["label", "foot", "body", "head", "subtitle", "title", "display"]).toContain(role.size);

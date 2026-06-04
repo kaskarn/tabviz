@@ -93,7 +93,7 @@ type PresetRest = Omit<ThemeInputs, "anchors" | "polarity">;
 
 /** Compose anchors (derived from seeds) with the rest of the preset
  *  inputs. The `polarity` from seeds is honored. */
-function defineInputs(
+export function defineInputs(
   seeds: PresetIdentitySeeds,
   rest: PresetRest = {},
 ): ThemeInputs {
@@ -103,6 +103,13 @@ function defineInputs(
     ...rest,
   };
 }
+
+/** Convenience alias for tests + UI shims that still author in v3-style hex
+ *  shortcuts. Same shape as `defineInputs` — `{ brand: "#X", accent?: "#Y", … }`
+ *  in, fully-resolved v4 `ThemeInputs` (with `anchors`) out. */
+export const inputsFromHex = defineInputs;
+
+export type { PresetIdentitySeeds };
 
 // ────────────────────────────────────────────────────────────────────
 // Journals (mono-identity, restrained clinical authority)

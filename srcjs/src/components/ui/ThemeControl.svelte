@@ -18,10 +18,12 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import type { ThemeInputs } from "$types/theme-inputs";
+  import type { ThemeInputs, OklchTriple } from "$types/theme-inputs";
   import { FONT_PRESETS } from "$lib/font-presets";
   import { CATEGORICAL_SCHEMES, SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES } from "$lib/data-schemes";
   import { buildRamps } from "$lib/theme/theme-resolve";
+  import { legacyInputsView, applyV3Patch, type V3InputsPatch } from "$lib/theme/legacy-v3-adapter";
+  import { hexToOklch, oklchToHex } from "$lib/oklch";
   import ColorField from "./ColorField.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
@@ -40,35 +42,56 @@
   const inputs = $derived(
     (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null
   );
+  // Transient v3-shape view of the v4 inputs (Phase B replaces this whole
+  // file with the v4 ThemePanel). Reads project anchors → flat hex; writes
+  // route v3-style patches through applyV3Patch.
+  const v3 = $derived(inputs ? legacyInputsView(inputs) : null);
+
+  // Status anchors live as OKLCH triples in V4; expose them as hex for the
+  // v3 ColorField widgets that still author in hex.
+  function statusHex(triple: OklchTriple | undefined, fallback: string): string {
+    return triple ? oklchToHex(triple) : fallback;
+  }
 
   // Coalesce rapid input edits into a single rebuild. The adapter +
   // re-render path is fast enough that the debounce is mostly to avoid
   // burning compute on color-picker hover scrubs.
-  let pendingPatch: Partial<ThemeInputs> = {};
+  let pendingPatch: V3InputsPatch = {};
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  function commit(patch: Partial<ThemeInputs>): void {
+  function flushPending(): void {
+    if (!inputs) { pendingPatch = {}; return; }
+    const next = applyV3Patch(inputs, pendingPatch);
+    pendingPatch = {};
+    debounceTimer = null;
+    store.setAuthoringInputs(next);
+  }
+  function commit(patch: V3InputsPatch): void {
     pendingPatch = { ...pendingPatch, ...patch };
     if (debounceTimer != null) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      const next = pendingPatch;
-      pendingPatch = {};
-      debounceTimer = null;
-      store.setAuthoringInputs(next);
-    }, 150);
+    debounceTimer = setTimeout(flushPending, 150);
   }
   // Immediate commit — for terminal events (toggles, dropdowns) where
   // the debounce just slows perceived response.
-  function commitNow(patch: Partial<ThemeInputs>): void {
+  function commitNow(patch: V3InputsPatch): void {
     if (debounceTimer != null) { clearTimeout(debounceTimer); debounceTimer = null; }
-    const merged = { ...pendingPatch, ...patch };
-    pendingPatch = {};
-    store.setAuthoringInputs(merged);
+    pendingPatch = { ...pendingPatch, ...patch };
+    flushPending();
+  }
+  // Status writes: ColorField gives hex; V4 status fields are OklchTriple.
+  // Build a status patch by lifting hex → triple per slot.
+  function commitStatus(slot: "positive" | "negative" | "warning" | "info", hex: string | null): void {
+    if (!inputs) return;
+    const triple = hex ? hexToOklch(hex) : undefined;
+    const next: ThemeInputs = {
+      ...inputs,
+      status: { ...(inputs.status ?? {}), [slot]: triple },
+    };
+    store.setAuthoringInputs(next);
   }
 
-  // Decorative slot — empty until clicked. Tracked locally so the
-  // ColorField only renders after activation; the brand seed is used
-  // as the initial value so the user has a starting point.
-  const decorativeActive = $derived(inputs?.decorative != null);
+  // Decorative slot was dropped in V4; the legacy view always reports it
+  // as null. Kept for the v3 panel UI until Phase B replaces it.
+  const decorativeActive = $derived(v3?.decorative != null);
 
   // Pill segments
   const MODE_SEG = [
@@ -110,13 +133,14 @@
   }));
 
   function neutralTintMode(): "untinted" | "brand" | "accent" | "decorative" {
-    const t = inputs?.neutral_tint ?? "untinted";
+    // V4 dropped the neutral_tint enum; always reports untinted.
+    const t = v3?.neutral_tint ?? "untinted";
     if (typeof t === "string") {
       if (t === "untinted" || t === "brand" || t === "accent" || t === "decorative") return t;
     }
     return "untinted";
   }
-  const tintStrength = $derived(inputs?.neutral_tint_strength ?? 0.04);
+  const tintStrength = $derived(v3?.neutral_tint_strength ?? 0);
   const tintActive   = $derived(neutralTintMode() !== "untinted");
 
   // Live 12-step ramps for the visualization strips. Recomputed on every
@@ -140,9 +164,9 @@
     2: "accent_subtle", 7: "series[3]", 9: "accent · series[1]",
     10: "accent_hover", 11: "accent_active",
   };
-  const DECORATIVE_USAGE: Record<number, string> = {
-    2: "decorative_subtle", 9: "decorative", 11: "decorative_chrome",
-  };
+  // V4 dropped the decorative ramp; usage map kept inert until Phase B
+  // retires the v3 panel.
+  // const DECORATIVE_USAGE: Record<number, string> = {};
   function tipFor(usage: Record<number, string>, step: number, hex: string): string {
     const u = usage[step];
     return u ? `step ${step} · ${hex} → ${u}` : `step ${step} · ${hex}`;
@@ -157,7 +181,8 @@
   const neutralSwatches = $derived(ramps?.neutral ?? []);
   const brandSwatches   = $derived(ramps?.brand ?? []);
   const accentSwatches  = $derived(ramps?.accent ?? []);
-  const decorativeSwatches = $derived(ramps?.decorative ?? null);
+  // V4 has no decorative ramp. The const is gone; references to it
+  // were removed alongside the v3 ramp viz row.
 
   // Active variant + bag for the cluster-pin Advanced section. Derived
   // up here because `{@const}` must be an immediate child of a control
@@ -291,46 +316,49 @@
       </Field>
 
       <Field label="Brand" hint="Title, bold header, series[0]">
-        <ColorField label="" value={inputs.brand}
+        <ColorField label="" value={v3?.brand ?? "#0099CC"}
           onchange={(v) => commit({ brand: v })}
           swatches={colors(ACCENT_SWATCHES)} />
       </Field>
 
       <Field label="Accent" hint="Hover, selected, callouts">
-        <ColorField label="" value={inputs.accent ?? inputs.brand}
+        <ColorField label="" value={v3?.accent ?? v3?.brand ?? "#0099CC"}
           onchange={(v) => commit({ accent: v })}
           swatches={colors(ACCENT_SWATCHES)} />
       </Field>
 
-      <Field label="Decorative" hint="Optional 2nd color (editorial themes)">
+      <Field label="Decorative" hint="V4 dropped this; surface kept until Phase B retires the v3 panel.">
         {#if decorativeActive}
-          <ColorField label="" value={inputs.decorative ?? inputs.brand}
-            onchange={(v) => commit({ decorative: v })}
+          <ColorField label="" value={v3?.decorative ?? v3?.brand ?? "#0099CC"}
+            onchange={(_) => { /* V4 has no decorative anchor — no-op */ }}
             swatches={colors(ACCENT_SWATCHES)} />
         {:else}
-          <button type="button" class="decorative-add"
-            onclick={() => commitNow({ decorative: inputs.brand })}>+ add</button>
+          <button type="button" class="decorative-add" disabled
+            title="V4 has no decorative anchor (deleted in Phase B)">+ add</button>
         {/if}
       </Field>
 
-      <Field label="Neutral tint" hint="Optional hue blended into the paper/ink ramp">
+      <!-- V4 dropped the neutral_tint enum + strength knob; the controls
+           below are inert placeholders kept so the v3 layout still renders
+           until Phase B retires the v3 panel. -->
+      <Field label="Neutral tint" hint="V4: dropped (paper/ink anchor chroma replaces this)">
         <Pill
           value={neutralTintMode()}
           segments={NEUTRAL_TINT_SEG}
           ariaLabel="Neutral tint source"
-          onchange={(v) => commitNow({ neutral_tint: v as "untinted" | "brand" | "accent" | "decorative" })}
+          onchange={(_) => { /* no-op in V4 */ }}
         />
       </Field>
 
-      <Field label="Tint strength" hint="Subtle (0.04) ↔ editorial (~1.0)">
+      <Field label="Tint strength" hint="V4: dropped">
         <Knob
           value={tintStrength}
           min={0}
           max={1}
           step={0.01}
           track
-          disabled={!tintActive}
-          onchange={(v) => v != null && commit({ neutral_tint_strength: v })}
+          disabled={true}
+          onchange={(_) => { /* no-op in V4 */ }}
         />
       </Field>
 
@@ -369,18 +397,7 @@
               {/each}
             </div>
           </div>
-          {#if ramps.decorative}
-            <div class="ramp-row">
-              <span class="ramp-label">decorative</span>
-              <div class="ramp" role="list">
-                {#each ramps.decorative as hex, i (i)}
-                  <span class="ramp-step" role="listitem"
-                    style:background-color={hex}
-                    title={tipFor(DECORATIVE_USAGE, i + 1, hex)}></span>
-                {/each}
-              </div>
-            </div>
-          {/if}
+          <!-- V4 dropped the decorative ramp; swatches array always null. -->
         </div>
       {/if}
     </Section>
@@ -488,26 +505,29 @@
       </div>
     </Accordion>
 
-    <!-- ── Status colors ───────────────────────────────────────────── -->
+    <!-- ── Status colors ─────────────────────────────────────────────
+         V4: status anchors are OKLCH triples; the v3 ColorField speaks
+         hex. statusHex projects the triple back, commitStatus lifts the
+         picker hex through hexToOklch on write. -->
     <Accordion title="Status colors" hint="Tufte-minimal defaults" open={false}>
       <Field label="Positive">
-        <ColorField label="" value={inputs.status?.positive ?? theme.status?.positive ?? "#3F7D3F"}
-          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), positive: v } })}
+        <ColorField label="" value={statusHex(inputs.status?.positive, theme.status?.positive ?? "#3F7D3F")}
+          onchange={(v) => commitStatus("positive", v)}
           swatches={colors(STATUS_SWATCHES)} />
       </Field>
       <Field label="Negative">
-        <ColorField label="" value={inputs.status?.negative ?? theme.status?.negative ?? "#B33A3A"}
-          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), negative: v } })}
+        <ColorField label="" value={statusHex(inputs.status?.negative, theme.status?.negative ?? "#B33A3A")}
+          onchange={(v) => commitStatus("negative", v)}
           swatches={colors(STATUS_SWATCHES)} />
       </Field>
       <Field label="Warning">
-        <ColorField label="" value={inputs.status?.warning ?? theme.status?.warning ?? "#C68A2E"}
-          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), warning: v } })}
+        <ColorField label="" value={statusHex(inputs.status?.warning, theme.status?.warning ?? "#C68A2E")}
+          onchange={(v) => commitStatus("warning", v)}
           swatches={colors(STATUS_SWATCHES)} />
       </Field>
       <Field label="Info">
-        <ColorField label="" value={inputs.status?.info ?? theme.status?.info ?? "#1F77B4"}
-          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), info: v } })}
+        <ColorField label="" value={statusHex(inputs.status?.info, theme.status?.info ?? "#1F77B4")}
+          onchange={(v) => commitStatus("info", v)}
           swatches={colors(STATUS_SWATCHES)} />
       </Field>
     </Accordion>

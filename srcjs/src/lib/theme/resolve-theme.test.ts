@@ -4,9 +4,11 @@ import { describe, it, expect } from "bun:test";
 import { resolveTheme } from "./resolve-theme";
 import { createWire, setRoleBinding } from "./theme-wire";
 import { COMPONENT_TOKENS } from "./component-tokens";
+import { inputsFromHex } from "./theme-presets-inputs";
+import { hexToOklch } from "../oklch";
 import type { ThemeInputs } from "../../types/theme-inputs";
 
-const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE: ThemeInputs = inputsFromHex({ brand: "#0099CC", accent: "#C8553D" });
 
 describe("resolveTheme — pipeline composition", () => {
   it("resolves an empty wire to a complete ResolvedTheme", () => {
@@ -94,12 +96,12 @@ describe("resolveTheme — overrides", () => {
 
 describe("resolveTheme — polarity", () => {
   it("polarity defaults to 'light' when neither polarity nor mode is set", () => {
-    const r = resolveTheme(createWire({ brand: "#0099CC" }));
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" })));
     expect(r.polarity).toBe("light");
   });
 
   it("polarity='dark' reflects anchors and produces a dark theme", () => {
-    const wire = createWire({ brand: "#0099CC", polarity: "dark" });
+    const wire = createWire(inputsFromHex({ brand: "#0099CC", polarity: "dark" }));
     const r = resolveTheme(wire);
     expect(r.polarity).toBe("dark");
     // Paper anchor (neutral.1) should be near-black under dark polarity
@@ -109,13 +111,13 @@ describe("resolveTheme — polarity", () => {
   });
 
   it("polarity='dark' produces different ramps than 'light'", () => {
-    const rL = resolveTheme(createWire({ brand: "#0099CC", polarity: "light" }));
-    const rD = resolveTheme(createWire({ brand: "#0099CC", polarity: "dark" }));
+    const rL = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC", polarity: "light" })));
+    const rD = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC", polarity: "dark" })));
     expect(rL.ramps.neutral[0]).not.toBe(rD.ramps.neutral[0]);
   });
 
   it("polarity field defaults to light when unset", () => {
-    const r = resolveTheme(createWire({ brand: "#0099CC" }));
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" })));
     expect(r.polarity).toBe("light");
   });
 });
@@ -148,12 +150,12 @@ describe("resolveTheme — off-ramp role resolution", () => {
   });
 
   it("status anchor inputs propagate into the resolved status roles", () => {
-    const baseR = resolveTheme(createWire({ brand: "#0099CC" }));
+    const baseR = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" })));
     const customR = resolveTheme(
-      createWire({
-        brand: "#0099CC",
-        status: { positive: "#0033AA" },  // custom positive
-      }),
+      createWire(inputsFromHex({ brand: "#0099CC" }, {
+        // status anchors are OklchTriple in v4; convert from hex for the test
+        status: { positive: hexToOklch("#0033AA") },
+      })),
     );
     // Custom positive seed should produce different pos-* values
     expect(customR.roles["pos-solid"]).not.toBe(baseR.roles["pos-solid"]);
@@ -182,38 +184,35 @@ describe("resolveTheme — off-ramp role resolution", () => {
 
 describe("resolveTheme — HC + RT mode transforms", () => {
   it("HC mode drops tokens with modes.hc = 'drop' to transparent", () => {
-    const hcWire = createWire({
-      brand: "#0099CC",
+    const hcWire = createWire(inputsFromHex({ brand: "#0099CC" }, {
       mode: "high-contrast",
-    });
+    }));
     const r = resolveTheme(hcWire);
     // --tv-row-alt-bg declares modes: { hc: "drop" }
     expect(r.cssVars["--tv-row-alt-bg"]).toBe("transparent");
   });
 
   it("HC mode drops emphasis-bg (modes.hc = 'drop')", () => {
-    const hcWire = createWire({
-      brand: "#0099CC",
+    const hcWire = createWire(inputsFromHex({ brand: "#0099CC" }, {
       mode: "high-contrast",
-    });
+    }));
     const r = resolveTheme(hcWire);
     // --tv-row-emphasis-bg has modes: { hc: "drop", rt: { swap: "fill-hover" } }
     expect(r.cssVars["--tv-row-emphasis-bg"]).toBe("transparent");
   });
 
   it("RT mode swaps tokens with modes.rt = { swap: ... } to the swap role", () => {
-    const rtWire = createWire({
-      brand: "#0099CC",
+    const rtWire = createWire(inputsFromHex({ brand: "#0099CC" }, {
       mode: "reduced-transparency",
-    });
+    }));
     const r = resolveTheme(rtWire);
     // --tv-row-emphasis-bg has modes: { rt: { swap: "fill-hover" } }
     expect(r.cssVars["--tv-row-emphasis-bg"]).toBe(r.roles["fill-hover"]);
   });
 
   it("standard mode leaves manifest.modes behavior inert", () => {
-    const std = resolveTheme(createWire({ brand: "#0099CC", mode: "standard" }));
-    const hc = resolveTheme(createWire({ brand: "#0099CC", mode: "high-contrast" }));
+    const std = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "standard" })));
+    const hc = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "high-contrast" })));
     // Tokens with HC behavior differ between modes
     expect(std.cssVars["--tv-row-alt-bg"]).not.toBe(hc.cssVars["--tv-row-alt-bg"]);
     // Tokens without HC behavior are stable
@@ -221,19 +220,17 @@ describe("resolveTheme — HC + RT mode transforms", () => {
   });
 
   it("polarity and mode compose orthogonally (dark + HC)", () => {
-    const darkHC = resolveTheme(createWire({
-      brand: "#0099CC",
-      polarity: "dark",
+    const darkHC = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC", polarity: "dark" }, {
       mode: "high-contrast",
-    }));
+    })));
     expect(darkHC.polarity).toBe("dark");
     // HC still drops the alt-bg even under dark polarity
     expect(darkHC.cssVars["--tv-row-alt-bg"]).toBe("transparent");
   });
 
   it("HC pushes border roles +2 grades (Stage 1 §23b)", () => {
-    const std = resolveTheme(createWire({ brand: "#0099CC", mode: "standard" }));
-    const hc = resolveTheme(createWire({ brand: "#0099CC", mode: "high-contrast" }));
+    const std = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "standard" })));
+    const hc = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "high-contrast" })));
     // border-subtle default is neutral.6; HC pushes to neutral.8
     expect(std.roles["border-subtle"]).toBe(std.ramps.neutral[5]!);
     expect(hc.roles["border-subtle"]).toBe(hc.ramps.neutral[7]!);
@@ -247,15 +244,15 @@ describe("resolveTheme — HC + RT mode transforms", () => {
 
   it("HC border push clamps at grade 11 for already-high bindings", () => {
     // Pin border to grade 10; HC push would target 12 but clamps to 11
-    const wire = createWire({ brand: "#0099CC", mode: "high-contrast" });
+    const wire = createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "high-contrast" }));
     const wirePinned = setRoleBinding(wire, "border", "neutral", 10);
     const r = resolveTheme(wirePinned);
     expect(r.roles.border).toBe(r.ramps.neutral[10]!);
   });
 
   it("HC push leaves non-border roles unchanged", () => {
-    const std = resolveTheme(createWire({ brand: "#0099CC", mode: "standard" }));
-    const hc = resolveTheme(createWire({ brand: "#0099CC", mode: "high-contrast" }));
+    const std = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "standard" })));
+    const hc = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { mode: "high-contrast" })));
     // surface, fill, text — none are border roles; should match across modes
     expect(std.roles.surface).toBe(hc.roles.surface);
     expect(std.roles.fill).toBe(hc.roles.fill);

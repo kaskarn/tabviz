@@ -26,21 +26,22 @@ describe("PRESETS — 21 preset registry", () => {
   });
 });
 
-describe("Preset structural correctness", () => {
-  it("every preset has a valid brand hex", () => {
+describe("Preset structural correctness (V4 anchors)", () => {
+  it("every preset has a valid brand anchor (OKLCH triple)", () => {
     for (const [name, inputs] of Object.entries(PRESETS)) {
-      expect(inputs.brand).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      expect(typeof inputs.anchors.brand.L).toBe("number");
+      expect(typeof inputs.anchors.brand.C).toBe("number");
+      expect(typeof inputs.anchors.brand.H).toBe("number");
       void name;
     }
   });
 
-  it("two-color themes (Lancet, Bauhaus, Dwarven, Elvish, Hobbit, Newsprint) have decorative", () => {
-    expect(LANCET.decorative).toBeTruthy();
-    expect(PRESETS.bauhaus!.decorative).toBeTruthy();
-    expect(PRESETS.dwarven!.decorative).toBeTruthy();
-    expect(PRESETS.elvish!.decorative).toBeTruthy();
-    expect(PRESETS.hobbit!.decorative).toBeTruthy();
-    expect(PRESETS.newsprint!.decorative).toBeTruthy();
+  it("every preset has paper + ink anchors", () => {
+    for (const [name, inputs] of Object.entries(PRESETS)) {
+      expect(typeof inputs.anchors.paper.L).toBe("number");
+      expect(typeof inputs.anchors.ink.L).toBe("number");
+      void name;
+    }
   });
 
   it("dark themes have polarity: dark", () => {
@@ -76,15 +77,17 @@ describe("Preset resolution — APCA invariants hold for every preset", () => {
   });
 });
 
-describe("Two-color editorial themes produce visually distinct decorative chrome", () => {
-  it("Lancet decorative_chrome differs from brand", () => {
-    const t = buildThemeStructure(LANCET, "lancet");
-    expect(t.tokens.decorative_chrome).not.toBe(t.tokens.brand);
+describe("V4 has no decorative anchor — Lancet's v3 gold folded into accent", () => {
+  it("Lancet accent differs from brand", () => {
+    // V3 had a separate decorative anchor for two-color themes; V4 folds
+    // the second hue into accent (or threads it through neutrals via
+    // neutralHueFrom for editorial paper themes like Newsprint/Hobbit).
+    expect(LANCET.anchors.accent).toBeDefined();
+    expect(LANCET.anchors.accent!.H).not.toBe(LANCET.anchors.brand.H);
   });
 
-  it("themes WITHOUT decorative fall back to brand for decorative_chrome", () => {
+  it("buildThemeStructure no longer emits a `decorative` ramp", () => {
     const t = buildThemeStructure(COCHRANE, "cochrane");
-    // No decorative, so decorative_chrome derives from brand
-    expect(t.ramps.decorative).toBeNull();
+    expect(t.ramps).not.toHaveProperty("decorative");
   });
 });

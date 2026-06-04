@@ -4,10 +4,10 @@ import {
   resolveRole, resolveRoleRecipe, activeRole, resolveActiveRole,
   roleMarkOpacity, bundleIsActive,
 } from "./roles";
-import type { ThemeInputs } from "../types/theme-inputs";
 import { ref } from "../types/theme-inputs";
+import { inputsFromHex } from "./theme/theme-presets-inputs";
 
-const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE = inputsFromHex({ brand: "#0099CC", accent: "#C8553D" });
 
 describe("resolveRole — recipe → hex bundle", () => {
   it("emphasis: fg resolves to ink token + weight 600", () => {

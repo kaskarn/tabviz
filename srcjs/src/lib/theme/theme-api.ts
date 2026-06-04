@@ -87,10 +87,17 @@ export function webTheme(args: WebThemeArgs = {}): WebTheme {
 // Name-string resolver (for tabviz({ theme: "lancet" }))
 // ────────────────────────────────────────────────────────────────────
 
+/** Overrides shape for ThemeRef. Same as `Partial<ThemeInputs>` except
+ *  `anchors` is `Partial<ThemeAnchors>` (any subset of paper/ink/brand/
+ *  accent) so callers can override just one anchor and inherit the rest. */
+export type ThemeRefOverrides = Partial<Omit<ThemeInputs, "anchors">> & {
+  anchors?: Partial<ThemeInputs["anchors"]>;
+};
+
 export type ThemeRef =
   | PresetName
   | WebTheme
-  | { extend: PresetName; overrides?: Partial<ThemeInputs> };
+  | { extend: PresetName; overrides?: ThemeRefOverrides };
 
 export function resolveThemeRef(ref: ThemeRef): WebTheme {
   if (typeof ref === "string") {
@@ -98,7 +105,17 @@ export function resolveThemeRef(ref: ThemeRef): WebTheme {
   }
   if (isResolvedTheme(ref)) return ref;
   const baseInputs = PRESETS[ref.extend];
-  return buildTheme({ ...baseInputs, ...ref.overrides }, ref.extend);
+  // V4: anchors deep-merge so a partial `{ anchors: { brand } }` override
+  // inherits the base's paper/ink/accent.
+  const mergedAnchors = ref.overrides?.anchors
+    ? { ...baseInputs.anchors, ...ref.overrides.anchors }
+    : baseInputs.anchors;
+  const merged: ThemeInputs = {
+    ...baseInputs,
+    ...ref.overrides,
+    anchors: mergedAnchors,
+  };
+  return buildTheme(merged, ref.extend);
 }
 
 function isResolvedTheme(x: unknown): x is WebTheme {

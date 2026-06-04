@@ -5,6 +5,7 @@ import { describe, it, expect } from "bun:test";
 import { buildRamps } from "./theme-resolve";
 import { resolveTheme } from "./resolve-theme";
 import { createWire } from "./theme-wire";
+import { inputsFromHex } from "./theme-presets-inputs";
 import { oklchRamp } from "../oklch";
 import { CURVES } from "./curves";
 import { hexToOklch } from "../oklch";
@@ -66,7 +67,7 @@ describe("oklchRamp — curve option", () => {
 });
 
 describe("buildRamps — inputs.curves wiring", () => {
-  const baseInputs: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+  const baseInputs: ThemeInputs = inputsFromHex({ brand: "#0099CC", accent: "#C8553D" });
 
   it("ramps differ when inputs.curves.brand is set", () => {
     const base = buildRamps(baseInputs);
@@ -89,26 +90,18 @@ describe("buildRamps — inputs.curves wiring", () => {
     expect(base.accent[5]).toBe(withBrandLog.accent[5]);
   });
 
-  it("decorative ramp shares the accent curve", () => {
-    const inputs: ThemeInputs = {
-      brand: "#0099CC",
-      decorative: "#A6792A",
-      curves: { accent: "log" },
-    };
-    const r = buildRamps(inputs);
-    // decorative should exist and be computed via log curve (same as accent)
-    expect(r.decorative).not.toBeNull();
-    expect(r.decorative!.length).toBe(12);
-  });
+  // v4 NOTE: the legacy `decorative` ramp/anchor is gone — every theme
+  // now lives on neutral/brand/accent. The former
+  // "decorative ramp shares the accent curve" assertion no longer has a
+  // counterpart and was removed in A.6.
 });
 
 describe("resolveTheme — curves propagate through cssVars", () => {
   it("inputs.curves alters mid-ramp role values", () => {
-    const base = resolveTheme(createWire({ brand: "#0099CC" }));
-    const curved = resolveTheme(createWire({
-      brand: "#0099CC",
+    const base = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" })));
+    const curved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, {
       curves: { neutral: "log" },
-    }));
+    })));
     // cell-border sources from role 'border-subtle' = neutral.6 (mid ramp);
     // the log curve shifts neutral L distribution most at the middle steps.
     expect(base.cssVars["--tv-cell-border"]).not.toBe(curved.cssVars["--tv-cell-border"]);
@@ -117,11 +110,10 @@ describe("resolveTheme — curves propagate through cssVars", () => {
   it("paper-end (grade 1) is stable across curves", () => {
     // Only grade 1 (= internal index 0 = Lpaper) is a true endpoint of the
     // curve. Higher grades land at interior L values and shift with curve.
-    const base = resolveTheme(createWire({ brand: "#0099CC" }));
-    const curved = resolveTheme(createWire({
-      brand: "#0099CC",
+    const base = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" })));
+    const curved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, {
       curves: { neutral: "log" },
-    }));
+    })));
     expect(base.cssVars["--tv-row-base-bg"]).toBe(curved.cssVars["--tv-row-base-bg"]);
   });
 });

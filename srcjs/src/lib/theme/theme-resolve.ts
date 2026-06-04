@@ -15,6 +15,7 @@ import {
   hexToOklch, oklchToHex,
 } from "../oklch";
 import { curveFn } from "./curves";
+import { applyPolarityToInputs } from "./resolve-theme";
 import type {
   ThemeInputs,
   OklchTriple,
@@ -479,12 +480,16 @@ export function buildThemeStructure(
   inputs: ThemeInputs,
   name = "custom",
 ): ThemeStructure {
-  const ramps = buildRamps(inputs);
+  // Apply polarity reflection (Stage 1 §22) up front so every consumer
+  // of buildThemeStructure — buildTheme adapter, resolveWire, direct
+  // callers — sees the reflected anchors before ramp generation.
+  const reflected = applyPolarityToInputs(inputs);
+  const ramps = buildRamps(reflected);
   const tokens = resolveAllTokens(ramps);
   return {
     schemaVersion: 4,
     name,
-    inputs,
+    inputs: reflected,
     ramps,
     tokens,
     roles: defaultRoles(),

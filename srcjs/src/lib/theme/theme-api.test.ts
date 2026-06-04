@@ -4,6 +4,7 @@ import {
   themeDwarven, themeElvish, themeHobbit,
   webTheme, resolveThemeRef,
 } from "./theme-api";
+import { hexToOklch } from "../oklch";
 
 describe("preset constructors", () => {
   test("all preset constructors resolve without throwing", () => {
@@ -29,24 +30,29 @@ describe("preset constructors", () => {
 describe("webTheme", () => {
   test("with no args returns a cochrane-shaped theme", () => {
     const t = webTheme();
-    expect(t.schemaVersion).toBe(2);
     expect(t.name).toBe("custom");
   });
 
-  test("brand overlay seeds a new brand ramp", () => {
-    const t = webTheme({ brand: "#FF0000" });
+  test("brand anchor overlay seeds a new brand ramp", () => {
+    const t = webTheme({ anchors: { brand: hexToOklch("#FF0000") } });
     expect(t.inputs.primary).toBe("#FF0000");
   });
 
   test("baseTheme inherits inputs not overridden", () => {
-    const t = webTheme({ baseTheme: "lancet", brand: "#FF0000" });
+    const t = webTheme({
+      baseTheme: "lancet",
+      anchors: { brand: hexToOklch("#FF0000") },
+    });
     expect(t.inputs.primary).toBe("#FF0000");
     expect(t.name).toBe("custom");
   });
 
   test("polarity dark applies", () => {
-    const t = webTheme({ brand: "#1F3A5F", polarity: "dark" });
-    expect(t.schemaVersion).toBe(2);
+    const t = webTheme({
+      anchors: { brand: hexToOklch("#1F3A5F") },
+      polarity: "dark",
+    });
+    expect(t.name).toBe("custom");
   });
 });
 
@@ -63,7 +69,10 @@ describe("resolveThemeRef", () => {
   });
 
   test("extend + overrides applies on top of base", () => {
-    const t = resolveThemeRef({ extend: "cochrane", overrides: { brand: "#FF0000" } });
+    const t = resolveThemeRef({
+      extend: "cochrane",
+      overrides: { anchors: { brand: hexToOklch("#FF0000") } },
+    });
     expect(t.inputs.primary).toBe("#FF0000");
   });
 });
