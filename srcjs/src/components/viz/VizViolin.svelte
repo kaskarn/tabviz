@@ -4,6 +4,7 @@
   import { computeKDE, computeQuartiles, normalizeKDE } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
+  import { getCssVars, readContentPrimary } from "$lib/theme/consumer-bridge";
 
   interface Props {
     row: Row;
@@ -120,7 +121,7 @@
         {@const ms = getMarkerStyle(effect, idx)}
         {@const opacity = getEffectOpacity(effect)}
         {@const path = generateViolinPath(kde, violinCenterY, violinConfig.maxWidth)}
-        {@const defaultLineColor = theme?.content?.primary ?? "#1a1a1a"}
+        {@const defaultLineColor = theme ? readContentPrimary(getCssVars(theme)) : "#1a1a1a"}
         {@const lineColor = ms.stroke ?? defaultLineColor}
         {@const themeLineWidth = theme?.plot?.lineWidth ?? 1.5}
         {@const violinStrokeW = ms.stroke ? ms.strokeWidth : themeLineWidth * 0.33}

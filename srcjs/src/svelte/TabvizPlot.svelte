@@ -89,6 +89,7 @@
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
+  import { getCssVars, readSurfaceBg, readAccentDefault } from "$lib/theme/consumer-bridge";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
   import { NUMERIC_COLUMN_TYPES } from "../schema/columns";
@@ -592,8 +593,9 @@
   // Uses solid colors (pre-blended with background) to avoid transparency artifacts
   function getGroupBackground(level: number, theme: WebTheme | undefined): string {
     const rg = theme?.rowGroup;
-    const primary = theme?.accent?.default ?? "#0891b2";
-    const bg = theme?.surface?.base ?? "#ffffff";
+    const cv = theme ? getCssVars(theme) : {};
+    const primary = readAccentDefault(cv);
+    const bg = readSurfaceBg(cv);
 
     // Get explicit background if set, otherwise compute from primary
     const tier = level === 1 ? rg?.L1 : level === 2 ? rg?.L2 : rg?.L3;
@@ -1875,13 +1877,13 @@
                       {@const annX = markerX + offset}
                       {@const sz = 5 * (customAnn.size ?? 1)}
                       {#if customAnn.shape === "circle"}
-                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
+                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "square"}
-                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
+                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "triangle"}
-                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
+                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
                       {:else if customAnn.shape === "star"}
-                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={theme?.surface?.base ?? "white"} stroke-width="0.5" />
+                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
                       {/if}
                     {/if}
                   {/if}

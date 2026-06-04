@@ -21,6 +21,7 @@
 import { contrastRatio } from "../oklch";
 import type { WebTheme } from "../../types/theme-resolved";
 import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
+import { getCssVars, readVar, readSurfaceBg, readContentPrimary } from "./consumer-bridge";
 
 // Header text is bold (weight=600) and lives in chrome bands rather than
 // dense reading flow, so WCAG AA Large (3.0) is the applicable bar.
@@ -62,40 +63,55 @@ export class ThemeValidationError extends Error {
  * `ThemeValidationError` on failure; returns void on success.
  */
 export function validateResolvedTheme(theme: WebTheme): void {
+  // Validate against the v4 cssVars — the canonical resolved values.
+  // The v3 chrome (theme.surface/content/divider/header.X) is a config
+  // bridge populated by buildThemeStructure; using v4 cssVars here
+  // avoids the hidden drift between the two resolvers and means the
+  // contrast check operates on what the renderer actually paints.
+  const cv = getCssVars(theme);
+  const surfaceBg = readSurfaceBg(cv);
+  const text      = readContentPrimary(cv);
+  const headerLightBg = readVar(cv, "--tv-header-light-bg", surfaceBg) ?? surfaceBg;
+  const headerLightFg = readVar(cv, "--tv-header-light-fg", text)      ?? text;
+  const headerTintBg  = readVar(cv, "--tv-header-tint-bg",  surfaceBg) ?? surfaceBg;
+  const headerTintFg  = readVar(cv, "--tv-header-tint-fg",  text)      ?? text;
+  const headerFillBg  = readVar(cv, "--tv-header-fill-bg",  surfaceBg) ?? surfaceBg;
+  const headerFillFg  = readVar(cv, "--tv-header-fill-fg",  text)      ?? text;
+
   const invariants: Invariant[] = [
     {
-      name: "header bold band: header.bold.fg must read on header.bold.bg",
-      fg: theme.header.bold.fg,
-      bg: theme.header.bold.bg,
-      path: ["header.bold.fg", "header.bold.bg", "content.inverse", "inputs.primaryDeep"],
+      name: "header bold (fill) band: header-fill-fg must read on header-fill-bg",
+      fg: headerFillFg,
+      bg: headerFillBg,
+      path: ["--tv-header-fill-fg", "--tv-header-fill-bg"],
       minRatio: WCAG_AA_LARGE,
     },
     {
-      name: "column-group bold band: columnGroup.bold.fg must read on columnGroup.bold.bg",
-      fg: theme.columnGroup.bold.fg,
-      bg: theme.columnGroup.bold.bg,
-      path: ["columnGroup.bold.fg", "columnGroup.bold.bg", "content.inverse", "inputs.secondaryDeep"],
+      name: "column-group bold band: shares header-fill in v4",
+      fg: headerFillFg,
+      bg: headerFillBg,
+      path: ["--tv-header-fill-fg", "--tv-header-fill-bg"],
       minRatio: WCAG_AA_LARGE,
     },
     {
-      name: "header tint band: header.tint.fg must read on header.tint.bg",
-      fg: theme.header.tint.fg,
-      bg: theme.header.tint.bg,
-      path: ["header.tint.fg", "header.tint.bg", "content.primary", "inputs.primaryDeep"],
+      name: "header tint band: header-tint-fg must read on header-tint-bg",
+      fg: headerTintFg,
+      bg: headerTintBg,
+      path: ["--tv-header-tint-fg", "--tv-header-tint-bg"],
       minRatio: WCAG_AA_LARGE,
     },
     {
-      name: "leaf header light band: header.light.fg must read on surface.base",
-      fg: theme.header.light.fg,
-      bg: theme.surface.base,
-      path: ["header.light.fg", "content.primary", "surface.base"],
+      name: "leaf header light band: header-light-fg must read on header-light-bg",
+      fg: headerLightFg,
+      bg: headerLightBg,
+      path: ["--tv-header-light-fg", "--tv-header-light-bg"],
       minRatio: WCAG_AA_NORMAL,
     },
     {
-      name: "default cell text: content.primary must read on surface.base",
-      fg: theme.content.primary,
-      bg: theme.surface.base,
-      path: ["content.primary", "surface.base"],
+      name: "default cell text: --tv-text must read on --tv-surface-bg",
+      fg: text,
+      bg: surfaceBg,
+      path: ["--tv-text", "--tv-surface-bg"],
       minRatio: WCAG_AA_NORMAL,
     },
   ];

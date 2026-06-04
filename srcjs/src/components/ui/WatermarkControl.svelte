@@ -5,6 +5,7 @@
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import { resolveSwatches } from "$lib/swatches";
+  import { getCssVars, readContentPrimary } from "$lib/theme/consumer-bridge";
 
   interface Props {
     store: TabvizStore;
@@ -13,7 +14,9 @@
   const { store }: Props = $props();
 
   const watermark = $derived(store.spec?.watermark ?? "");
-  const fallbackColor = $derived(store.spec?.theme?.content?.primary ?? "#1a1a1a");
+  const fallbackColor = $derived(
+    store.spec?.theme ? readContentPrimary(getCssVars(store.spec.theme)) : "#1a1a1a",
+  );
   const color    = $derived(store.spec?.watermarkColor   ?? fallbackColor);
   const opacity  = $derived(store.spec?.watermarkOpacity ?? 0.07);
   const swatches = $derived(resolveSwatches(store.spec?.theme));

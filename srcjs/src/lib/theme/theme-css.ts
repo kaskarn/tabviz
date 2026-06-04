@@ -24,6 +24,10 @@ import { VIZ_MARGIN } from "../axis-utils";
 import { createWire } from "./theme-wire";
 import { resolveTheme } from "./resolve-theme";
 import {
+  getCssVars, readContentPrimary, readContentMuted,
+  readDividerStrong, readAccentDefault,
+} from "./consumer-bridge";
+import {
   TEXT_MEASUREMENT,
   BADGE_VARIANTS,
   generateCSSVariables,
@@ -138,6 +142,15 @@ function _buildThemeCSSImpl(theme: WebTheme): string {
   // ───────────────────────────────────────────────────────────────────────
 
   const v4Body = _emitV4CssVarsBody(theme);
+  // Compute v4 cssVars once for fallback paths in the v3 tail — eliminates
+  // the v3-chrome read drift (e.g. theme.content.primary was slightly
+  // different from --tv-text in the v4 manifest because the two resolvers
+  // diverged at the 4th decimal of OKLCH).
+  const cv = getCssVars(theme);
+  const v4Text         = readContentPrimary(cv);
+  const v4TextSubtle   = readContentMuted(cv);
+  const v4Border       = readDividerStrong(cv);
+  const v4Accent       = readAccentDefault(cv);
 
   const headerVariant = activeHeaderVariant(theme);
   const firstColBold = theme.variants?.firstColumnStyle === "bold";
@@ -162,17 +175,17 @@ ${v4Body}
             Each cluster has a follow-up task to add the manifest entry
             and convert these to aliases. */
       /* Header variant active row (header-light vs header-bold etc.). */
-      --tv-header-rule:         ${headerVariant.rule ?? theme.divider.strong};
-      --tv-row-group-rule:      ${theme.rowGroup?.L1?.rule ?? theme.divider.strong};
-      --tv-text-title-fg:       ${theme.text.title?.fg     ?? theme.content.primary};
-      --tv-axis-label-fg:       ${theme.plot?.axisLabel?.fg ?? theme.content.muted};
-      --tv-axis-tick-fg:        ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
+      --tv-header-rule:         ${headerVariant.rule ?? v4Border};
+      --tv-row-group-rule:      ${theme.rowGroup?.L1?.rule ?? v4Border};
+      --tv-text-title-fg:       ${theme.text.title?.fg     ?? v4Text};
+      --tv-axis-label-fg:       ${theme.plot?.axisLabel?.fg ?? v4TextSubtle};
+      --tv-axis-tick-fg:        ${theme.plot?.tickLabel?.fg ?? v4TextSubtle};
       --tv-header-bg:           ${headerVariant.bg};
       --tv-header-fg:           ${headerVariant.fg};
-      --tv-summary-fill:        ${theme.series?.[0]?.fill ?? theme.accent.default};
-      --tv-summary-border:      ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-semantic-muted-fg:   ${theme.row.muted?.fg    ?? theme.content.muted};
-      --tv-semantic-accent-fg:  ${theme.row.accent?.fg   ?? theme.accent.default};
+      --tv-summary-fill:        ${theme.series?.[0]?.fill ?? v4Accent};
+      --tv-summary-border:      ${theme.series?.[0]?.stroke ?? v4Accent};
+      --tv-semantic-muted-fg:   ${theme.row.muted?.fg    ?? v4TextSubtle};
+      --tv-semantic-accent-fg:  ${theme.row.accent?.fg   ?? v4Accent};
       --tv-semantic-muted-bg:   ${theme.row.muted?.bg    ?? "transparent"};
       --tv-semantic-accent-bg:  ${theme.row.accent?.bg   ?? "transparent"};
       /* Per-role italic — Coh.22 dropped italic from v4 typography.
