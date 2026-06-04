@@ -173,26 +173,6 @@ web_theme_bmj <- function() {
   )
 }
 
-#' Dark theme - blue brand, pink accent, float shell.
-#'
-#' Removes chrome so the paper appears to drift on its own elevation
-#' shadow. Log curve deepens darks; ease on brand+accent keeps callouts
-#' vivid.
-#' @return A [WebTheme].
-#' @export
-web_theme_dark <- function() {
-  a <- derive_preset_anchors("#89B4FA", "#F38BA8")
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    polarity = "dark",
-    categorical = "okabe_ito",
-    shell_mode = "float",
-    curves = list(neutral = "log", brand = "ease", accent = "ease"),
-    name = "dark"
-  )
-}
-
-
 #' Available theme presets, organized by category.
 #'
 #' @return A nested list: category -> list of resolved [WebTheme] objects.
@@ -205,7 +185,9 @@ package_themes <- function() {
       jama      = web_theme_jama(),
       nejm      = web_theme_nejm(),
       nature    = web_theme_nature(),
-      bmj       = web_theme_bmj(),
+      bmj       = web_theme_bmj()
+    ),
+    modes = list(
       dark      = web_theme_dark()
     ),
     design = list(

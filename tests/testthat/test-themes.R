@@ -60,8 +60,9 @@ test_that("JAMA preset uses brand_mono categorical", {
 
 test_that("package_themes() registry exposes all categories", {
   reg <- package_themes()
-  expect_setequal(names(reg), c("journals", "design", "lotr", "showcase"))
-  expect_length(reg$journals, 7L)
+  expect_setequal(names(reg), c("journals", "modes", "design", "lotr", "showcase"))
+  expect_length(reg$journals, 6L)
+  expect_length(reg$modes, 1L)
   expect_length(reg$design, 8L)
   expect_length(reg$lotr, 3L)
   expect_length(reg$showcase, 4L)
