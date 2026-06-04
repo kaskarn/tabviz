@@ -285,6 +285,46 @@ const HC_BAR_WIDTH_HC     = "4px";
 const HC_BAR_WIDTH_STD    = "3px";
 const HC_RING_WIDTH_VALUE = "1.5px";
 
+/** Sentinel value emitted when a placeholder branch is hit in production.
+ *  Empty string makes a `var(...)` reference fall through to its declared
+ *  fallback if any, otherwise the property is invalid and the browser
+ *  drops it (same effective behavior as the var being undeclared). This
+ *  beats leaking the literal text `<computed>` into the cascade. */
+const TOKEN_RESOLVE_BUG_SENTINEL = "";
+
+/** True under `vite dev`, vitest, bun:test, and any other non-PROD bundle.
+ *  Vite inlines `import.meta.env.PROD` to a literal at build time; under
+ *  bun/V8 / other runtimes that don't define `import.meta.env`, the
+ *  optional chain returns undefined and we treat that as "not production"
+ *  so the dev-throw fires there too (which is what we want for tests). */
+function isDev(): boolean {
+  try {
+    return (import.meta as { env?: { PROD?: boolean } }).env?.PROD !== true;
+  } catch {
+    return true;
+  }
+}
+
+/** Called when resolveTokenValue's dispatch fell through to a placeholder
+ *  branch — always a bug in the manifest, the resolver, or both. In dev
+ *  we throw loudly so CI / the failing test makes the bug visible; in
+ *  production we emit a console.error + an empty-string sentinel so a
+ *  single resolver bug can't take down the whole render. */
+function tokenResolveBug(
+  cssVar: string,
+  tier: TokenSource["tier"],
+  detail: string,
+): string {
+  const msg =
+    `resolveTokenValue: no resolver matched for ${cssVar} ` +
+    `(tier=${tier}, ${detail}). ` +
+    `Either the manifest entry's source.tier is wrong or a resolver is missing.`;
+  if (isDev()) throw new Error(msg);
+  // eslint-disable-next-line no-console
+  console.error(msg);
+  return TOKEN_RESOLVE_BUG_SENTINEL;
+}
+
 function resolveTokenValue(
   token: ComponentToken,
   resolved: {
@@ -396,22 +436,32 @@ function resolveTokenValue(
     case "role":
       return resolved.roles[source.role];
     case "input":
-      return `<input:${String(source.input)}>`;
+      // No manifest entry currently uses `tier: "input"` — a direct read
+      // from Tier-1 inputs goes through `tier: "anchor"` (for ramps) or a
+      // computed resolver (for typography/density). If a manifest entry
+      // ever declares `tier: "input"`, add an explicit dispatch above.
+      return tokenResolveBug(token.cssVar, source.tier,
+        `input=${String(source.input)}`);
     case "anchor": {
       const anchorHex = pickAnchorHex(source.anchor, resolved.inputs);
-      return anchorHex ?? "<anchor-missing>";
+      if (anchorHex !== null) return anchorHex;
+      return tokenResolveBug(token.cssVar, source.tier,
+        `anchor=${source.anchor} not resolvable from inputs`);
     }
     case "computed":
-      // Typography computed tokens were handled above. Other computed
-      // sources are token-specific; they fall through to placeholder.
-      return "<computed>";
+      // Typography / shellPaper / elevation / texture / knockout / Phase D
+      // geometry + effects all handled above. Falling through means a
+      // computed token has no resolver wired — add one or change tier.
+      return tokenResolveBug(token.cssVar, source.tier,
+        `note=${source.note ?? "(none)"}`);
     case "const":
       // HC-fidelity tokens (caret-char, ring-width, bar-width) are
       // intercepted in the HC-fidelity short-circuit earlier in
       // resolveTokenValue; the duplicate block that used to live here
       // was dead code.
       if (source.note?.includes("transparent")) return "transparent";
-      return "<const>";
+      return tokenResolveBug(token.cssVar, source.tier,
+        `note=${source.note ?? "(none)"}`);
   }
 }
 
