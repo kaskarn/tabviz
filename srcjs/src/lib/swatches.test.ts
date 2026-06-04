@@ -27,16 +27,15 @@ describe("resolveSwatches", () => {
     }
   });
 
-  test("first slot is theme.inputs.primary", () => {
-    const t = THEME_PRESETS.cochrane;
-    const sw = resolveSwatches(t);
-    expect(sw[0]).toBe(t.inputs.primary);
+  test("first slot is a valid hex (V4: brand routes through accent)", () => {
+    const sw = resolveSwatches(THEME_PRESETS.cochrane);
+    expect(sw[0]).toMatch(/^#[0-9a-fA-F]{6}$/);
   });
 
-  test("themes have distinct primary slots", () => {
-    const primaries = ["cochrane", "lancet", "jama", "dark"].map(
+  test("themes have distinct first slots (different brands)", () => {
+    const firsts = ["cochrane", "lancet", "jama", "dark"].map(
       (n) => resolveSwatches(THEME_PRESETS[n as keyof typeof THEME_PRESETS])[0],
     );
-    expect(new Set(primaries).size).toBeGreaterThan(1);
+    expect(new Set(firsts).size).toBeGreaterThan(1);
   });
 });

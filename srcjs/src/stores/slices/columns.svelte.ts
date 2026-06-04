@@ -55,6 +55,9 @@ import {
   SPACING,
   TEXT_MEASUREMENT,
 } from "$lib/rendering-constants";
+import {
+  getCssVars, readVarPx, readBodyFamily, readBodySize,
+} from "$lib/theme/consumer-bridge";
 
 /**
  * Set of ids reserved for the store's internal use — colliding with these
@@ -493,8 +496,9 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const spec = deps.getSpec();
     if (!spec || typeof document === "undefined") return;
 
-    const fontFamily = spec.theme.text.body.family;
-    let fontSize: string = spec.theme.text.body.size as string;
+    const cssVars = getCssVars(spec.theme);
+    const fontFamily = readBodyFamily(cssVars);
+    let fontSize: string = readBodySize(cssVars);
 
     if (typeof fontSize === "string" && (fontSize.endsWith("rem") || fontSize.endsWith("em"))) {
       const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
@@ -531,8 +535,9 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const baseFontSize = parseFloat(fontSize) || 14;
     const headerFontSizePx = baseFontSize * headerFontScale;
 
-    const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
-    const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
+    const cssVars = getCssVars(spec.theme);
+    const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
+    const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", 8) * 2;
 
     // ── rank+top-K helpers ─────────────────────────────────────────────
     // Column auto-width = max over header + every cell. We don't need
@@ -649,7 +654,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       // theme.rowGroup.indentPerLevel (TabvizPlot:1723, svg-generator:1534),
       // NOT the legacy SPACING.INDENT_PER_LEVEL (12). Budget label width with
       // the same value so columns don't under-size at indent depth.
-      const indentPx = spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
+      const indentPx = readVarPx(getCssVars(spec.theme), "--tv-spacing-indent-per-level", SPACING.INDENT_PER_LEVEL);
 
       const groupDepths = new Map<string, number>();
       for (const group of spec.data.groups) {

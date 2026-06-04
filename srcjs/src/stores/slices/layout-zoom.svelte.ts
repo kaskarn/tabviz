@@ -55,6 +55,9 @@ import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
 import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
+import {
+  getCssVars, readVarPx, readBodySize, readLabelSize,
+} from "$lib/theme/consumer-bridge";
 import type { RowKind } from "$lib/layout/row-kind";
 
 /**
@@ -222,17 +225,18 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const wrapLineCounts = deps.getWrapLineCounts();
     const targetAspect = deps.getTargetAspect();
 
-    const naturalRowHeight = spec.theme.spacing.rowHeight;
+    const cssVars = getCssVars(spec.theme);
+    const naturalRowHeight = readVarPx(cssVars, "--tv-spacing-row-height", 34);
     let rowHeight = naturalRowHeight;
     const lineHeight = LINE_HEIGHT;
-    const headerFontSize = parseFontSize(spec.theme.text.body.size);
+    const headerFontSize = parseFontSize(readBodySize(cssVars));
     const headerDepthForLayout = anyForestColumnGroups(spec.columns) ? 2 : 1;
     const headerHeight = computeHeaderHeight({
       bodyFontPx: headerFontSize,
-      themeHeaderHeight: spec.theme.spacing.headerHeight,
+      themeHeaderHeight: readVarPx(cssVars, "--tv-spacing-header-height", 34),
       headerDepth: headerDepthForLayout,
     });
-    const axisGap = spec.theme.spacing.axisGap ?? DEFAULT_AXIS_GAP;
+    const axisGap = readVarPx(cssVars, "--tv-spacing-axis-gap", DEFAULT_AXIS_GAP);
     // Axis band is reserved only when a column actually renders an x-axis
     // strip (forest or any viz_*). Converged with the SVG backend (2026-06):
     // previously the DOM reserved axis height unconditionally, over-tall for
@@ -248,9 +252,9 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       return false;
     });
     const axisGeom = computeAxisLayout(
-      { fontSizeSm: spec.theme.text.label.size, lineHeight: 1.5 },
+      { fontSizeSm: readLabelSize(cssVars), lineHeight: 1.5 },
       someColumnHasAxisLabel,
-      spec.theme.plot.tickMarkLength,
+      readVarPx(cssVars, "--tv-plot-tick-mark-length", 5),
     );
     const axisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisGeom.axisRegionHeight);
     const hasForest = forestColumns.length > 0;
@@ -280,7 +284,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         displayRows.length + (hasOverallForBudget ? 1.5 : 0);
       const approxRowsHeight = effectiveRowSlots * naturalRowHeight;
       const approxChromeHeight =
-        headerHeight + axisHeight + spec.theme.spacing.padding * 2;
+        headerHeight + axisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2;
       const approxNaturalHeight = approxRowsHeight + approxChromeHeight;
       const approxNaturalWidth = effectiveWidth;
       const naturalAspect = approxNaturalWidth > 0 && approxNaturalHeight > 0
@@ -316,7 +320,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       // Height ladder (direction-aware). Mirrors
       // generateSVGForAspectTarget in svg-generator.ts.
       const heightDelta = targetHeight - approxNaturalHeight;
-      const bodyFontSize = parseFontSize(spec.theme.text.body.size);
+      const bodyFontSize = parseFontSize(readBodySize(cssVars));
       const MIN_ROW_HEIGHT = Math.max(
         ASPECT.MIN_ROW_HEIGHT.FLOOR,
         Math.round(bodyFontSize * ASPECT.MIN_ROW_HEIGHT.LINE_FACTOR) + ASPECT.MIN_ROW_HEIGHT.PAD,
@@ -399,7 +403,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     });
     const flexWidths = resolveFlexWidths(
       flexSpecs,
-      Math.max(0, layoutWidth - spec.theme.spacing.padding * 2),
+      Math.max(0, layoutWidth - readVarPx(cssVars, "--tv-spacing-padding", 8) * 2),
     ).widths;
     const hasOverall = !!spec.data.overall;
 
@@ -408,15 +412,15 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // anchored via the rowPaddedAfter derived in the main store). Spacer
     // rows stay half-height. Wrap-enabled cells inflate height to fit
     // line counts up to the column's `wrap` cap.
-    const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
-    const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.text.body.size) * lineHeight);
+    const rowGroupPadding = readVarPx(cssVars, "--tv-spacing-row-group-padding", 0);
+    const dataLineHeightPx = Math.ceil(parseFontSize(readBodySize(cssVars)) * lineHeight);
 
     // Per-row intrinsic content height (predicted estimator path). Measured
     // overrides from the DOM are layered on top via getMeasuredRowHeights().
     const predictedContent = computeContentHeights(allColumns, spec.data.rows, {
       rowHeight,
       lineHeight,
-      fontSize: parseFontSize(spec.theme.text.body.size),
+      fontSize: parseFontSize(readBodySize(cssVars)),
     });
     const contentHeights = mergeMeasuredHeights(predictedContent, measuredRowHeights);
 
@@ -448,7 +452,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // Stable natural aspect — pre-mutation reference for the slider.
     const stableNaturalRowsHeight = displayRows.length * naturalRowHeight;
     const stableNaturalChromeHeight =
-      headerHeight + axisHeight + spec.theme.spacing.padding * 2;
+      headerHeight + axisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2;
     const stableNaturalHeight = stableNaturalRowsHeight + stableNaturalChromeHeight;
     const stableNaturalAspect = stableNaturalHeight > 0
       ? effectiveWidth / stableNaturalHeight
@@ -461,7 +465,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
     return {
       totalWidth: layoutWidth,
-      totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + spec.theme.spacing.padding * 2),
+      totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2),
       flexWidths,
       chromeScale,
       aspectTargetWidth,
@@ -489,6 +493,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const DEFAULT_COLUMN_WIDTH = 100;
     const allColumns = deps.getAllColumns();
     const columnWidths = deps.getColumnWidths();
+    const cssVars = getCssVars(spec.theme);
 
     // The intrinsic ("wants") width = Σ per-column naturals + padding (forest is
     // a column here, via its designed natural). The fit math scales down when the
@@ -502,7 +507,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         ?? DEFAULT_COLUMN_WIDTH;
       total += natural;
     }
-    return total + spec.theme.spacing.padding * 2;
+    return total + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2;
   });
 
   // ── Fit + actualScale ──────────────────────────────────────────────────
