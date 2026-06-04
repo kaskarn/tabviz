@@ -24,4 +24,8 @@
 #   4. For minor bumps: ensure additive-only — older readers must keep working.
 #   5. Run `devtools::test()` (test-wire-version asserts sync) and visual tests.
 
-WIRE_FORMAT_VERSION <- "1.0"
+# v1.2 (2026-06-04): additive Phase D substrate extensions — `geometry`
+# (radius + border-width scales) and `effects` (glow + gradient-shell +
+# elevation) optional input blocks. Mode-aware (HC drops effects; RT
+# flattens gradient). Additive at the inputs layer; presets opt in.
+WIRE_FORMAT_VERSION <- "1.2"

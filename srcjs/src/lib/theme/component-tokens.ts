@@ -46,6 +46,10 @@ export type TokenKind =
   | "font-weight"    // CSS font-weight (numeric)
   | "font-italic"    // CSS font-style flag (true/false → "italic"/"normal")
   | "font-figures"   // font-variant-numeric ("tabular" | "proportional")
+  | "font-line-height" // CSS line-height (unitless or "normal"); not a px value
+  | "font-track"     // CSS letter-spacing string (e.g. "-0.022em")
+  | "font-shorthand" // CSS `font` shorthand "weight size/lh family"
+  | "shadow"         // CSS box-shadow stack string ("0 1px 3px rgba(...)") — not a paint
   | "opacity"        // 0..1 scalar
   | "shape"          // marker-shape enum (renderer-side)
   | "flag";          // boolean (rendered as data-* attribute, NOT a CSS var)
@@ -273,7 +277,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
       "stores/slices/layout-zoom.svelte.ts",
       "lib/layout/table-metrics.ts",
     ],
-    description: "Default data-row height in px (density × densityFactor)",
+    description: "Default data-row height in px (density × density_factor)",
   },
   {
     cssVar: "--tv-spacing-header-height",
@@ -705,6 +709,123 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Generic subtle border color. Mirrors role:border-subtle — use for hairlines, faint dividers",
   },
+
+  // ── Phase D — GEOMETRY · radius scale ─────────────────────────────────────
+  // Four corner-softness values driven from inputs.geometry.radius. Polarity
+  // and accessibility-mode agnostic; HC keeps radii unchanged.
+  {
+    cssVar: "--tv-radius-sm",
+    kind: "spacing-px",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Small corner radius — chip pills, badge ornaments. Default 2px.",
+  },
+  {
+    cssVar: "--tv-radius-md",
+    kind: "spacing-px",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Medium corner radius — buttons, controls. Default 6px.",
+  },
+  {
+    cssVar: "--tv-radius-lg",
+    kind: "spacing-px",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Large corner radius — panels, cards, paper. Default 10px.",
+  },
+  {
+    cssVar: "--tv-radius-pill",
+    kind: "spacing-px",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Pill radius — chips, tags. Default 999px (effectively round).",
+  },
+
+  // ── Phase D — GEOMETRY · border-width scale ───────────────────────────────
+  // HC mode bumps each value by +1px to compensate for the reduced colour cue.
+  {
+    cssVar: "--tv-border-width-hair",
+    kind: "border-width",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    modes: { hc: { swap: "border-strong" } },
+    description: "Hairline width — gridlines, alt-row dividers. Default 0.5px.",
+  },
+  {
+    cssVar: "--tv-border-width-thin",
+    kind: "border-width",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Thin width — default rules. Default 1px.",
+  },
+  {
+    cssVar: "--tv-border-width-regular",
+    kind: "border-width",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Regular width — header rules. Default 1.5px.",
+  },
+  {
+    cssVar: "--tv-border-width-thick",
+    kind: "border-width",
+    source: { tier: "input", input: "geometry" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Thick width — emphasis bars, callout borders. Default 2.5px.",
+  },
+
+  // ── Phase D — EFFECTS · glow ──────────────────────────────────────────────
+  // Browser-additive. Drawn from the requested anchor ramp at grade 9
+  // (peak chroma) with mode-aware blur/spread. HC drops to transparent.
+  {
+    cssVar: "--tv-glow-color",
+    kind: "paint-color",
+    source: { tier: "computed", note: "anchor ramp grade 9 (brand or accent per inputs.effects.glow_anchor)" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    modes: { hc: "drop" },
+    description: "Glow / box-shadow tint color. None when effects.glow_intensity = 'none'.",
+  },
+  {
+    cssVar: "--tv-glow-blur",
+    kind: "spacing-px",
+    source: { tier: "input", input: "effects" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    modes: { hc: "drop" },
+    description: "Glow blur radius. 0 / 8px / 18px for none / subtle / neon.",
+  },
+  {
+    cssVar: "--tv-glow-spread",
+    kind: "spacing-px",
+    source: { tier: "input", input: "effects" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    modes: { hc: "drop" },
+    description: "Glow spread. 0 / 1px / 3px for none / subtle / neon.",
+  },
+
+  // ── Phase D — EFFECTS · gradient shell ────────────────────────────────────
+  // Two-stop linear gradient applied to the shell background. Stops are
+  // brand[8]/accent[9] derived per intensity. HC drops; RT swaps to the
+  // mid-stop solid for a usable but flat surface.
+  {
+    cssVar: "--tv-shell-gradient",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "linear-gradient from brand ramp + accent ramp per inputs.effects.gradient_shell_intensity" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    modes: { hc: "drop", rt: { swap: "surface" } },
+    description: "Optional shell gradient background. 'none' when intensity = 'none'.",
+  },
+
+  // ── Phase D — EFFECTS · elevation ─────────────────────────────────────────
+  // Card-style shadow stack independent of the existing shell elevation.
+  // Layered (near + far) using the same shadow tokens as Stage 2 §6.
+  {
+    cssVar: "--tv-emphasis-shadow",
+    kind: "shadow",
+    source: { tier: "computed", note: "box-shadow stack derived from inputs.effects.elevation" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    modes: { hc: "drop" },
+    description: "Optional emphasis-row box-shadow. 'none' when elevation = 'none'.",
+  },
 ];
 
 // ============================================================================
@@ -750,21 +871,21 @@ function buildTypographyManifestEntries(): ComponentToken[] {
     });
     entries.push({
       cssVar: `${base}-lh`,
-      kind: "spacing-px",
+      kind: "font-line-height",
       source: { tier: "computed", note: `typography role:${role} line-height` },
       consumedBy,
-      description: `${role} line height (unitless or px)`,
+      description: `${role} line height (unitless or "normal")`,
     });
     entries.push({
       cssVar: `${base}-track`,
-      kind: "spacing-px",
+      kind: "font-track",
       source: { tier: "computed", note: `typography role:${role} letter-spacing` },
       consumedBy,
       description: `${role} letter-spacing (CSS value, e.g. -0.022em)`,
     });
     entries.push({
       cssVar: `${base}-font`,
-      kind: "font-family",  // `font` shorthand bundles family
+      kind: "font-shorthand",
       source: { tier: "computed", note: `typography role:${role} shorthand` },
       consumedBy,
       description: `${role} CSS font shorthand (weight size/lh family)`,
@@ -838,6 +959,23 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-shadow-",
   "--tv-shell-texture-",
   "--tv-paper-texture-",
+  // Phase D bare prefixes from template literals in GeometrySamples viz.
+  "--tv-radius-",
+  "--tv-border-width-",
+  // Coherence pass — bare prefix from density-presets.ts's snakeToCssVar
+  // template literal. The expanded cssVars (--tv-spacing-row-height etc.)
+  // are real manifest entries; this allow-lists the literal-prefix match.
+  "--tv-spacing-",
+
+  // ── Phase D — geometry + effects (declared D2; consumers wire up in D4).
+  // Shrink this block as TabvizPlot.svelte + svg-generator.ts start
+  // reading the new tokens.
+  "--tv-radius-md",
+  "--tv-radius-pill",
+  "--tv-border-width-thin",
+  "--tv-border-width-regular",
+  "--tv-glow-blur",
+  "--tv-glow-spread",
 
   // ── Row state
   "--tv-row-base-bg",
@@ -897,7 +1035,8 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-badge-success",
   "--tv-badge-warning",
   "--tv-bg",
-  "--tv-border",
+  // --tv-border is now a real manifest entry (see line ~695); removed
+  // from the v3-legacy KNOWN_UNCONSUMED list per coherence audit §7.6.
   "--tv-border-",
   "--tv-border-col-style",
   "--tv-border-major-color",

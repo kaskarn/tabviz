@@ -1,6 +1,8 @@
-# LOTR-editorial preset constructors. Stage 4 reimagining (2026-06-04):
-# the storytelling showpieces lean hard into substrate features
-# (shell mode, surface texture, curves, neutral-tinted paper feel).
+# LOTR-editorial preset constructors.
+#
+# V4 (2026-06-04): anchors vocabulary. The storytelling showpieces lean
+# hard into substrate features (shell mode, surface texture, curves) +
+# tinted-paper feel via paperC/inkC or `neutral_hue_from`.
 
 #' Dwarven theme - forge, stone, dark gold.
 #'
@@ -11,26 +13,24 @@
 #' @return A [WebTheme].
 #' @export
 web_theme_dwarven <- function() {
+  a <- derive_preset_anchors("#7A4E22", "#C0B000",
+                             paper_C = 0.012, ink_C = 0.014)
   web_theme(
-    brand = "#7A4E22",
-    decorative = "#D4A955",
-    accent = "#C0B000",
-    mode = "dark",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.06,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    polarity = "dark",
     categorical = "okabe_ito",
     shell_mode = "raised",
     shell_texture = "dotted",
     type_base_size = 14,
     type_scale_ratio = 1.25,
     type_weights = list(regular = 400, medium = 500, semibold = 700, bold = 800),
-    font_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
-    font_display = "'Cinzel', 'EB Garamond', Georgia, serif",
-    font_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'Cinzel', 'EB Garamond', Georgia, serif",
+    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
     web_fonts = list(
-      web_font("EB Garamond", "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"),
-      web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"),
-      web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
+      web_font("EB Garamond", FONT_URLS$eb_garamond_full),
+      web_font("Cinzel", FONT_URLS$cinzel),
+      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono_thin)
     ),
     curves = list(neutral = "log", brand = "log"),
     name = "dwarven"
@@ -40,27 +40,26 @@ web_theme_dwarven <- function() {
 #' Elvish theme - ethereal, flowing, illuminated manuscript.
 #'
 #' Flush shell (no architecture); ruled texture (manuscript page lines);
-#' exp curve on neutral (lighter highs - the radiant page);
-#' decorative-tinted neutrals (soft mithril grey). Cormorant Garamond
-#' body + Cinzel display. Type scale 1.333 for the poetic rhythm.
+#' exp curve on neutral (lighter highs — the radiant page); decorative
+#' hue (#B8C2D6, mithril-grey) routed through neutrals. Cormorant
+#' Garamond body + Cinzel display. Type scale 1.333 for the poetic rhythm.
 #' @return A [WebTheme].
 #' @export
 web_theme_elvish <- function() {
+  a <- derive_preset_anchors("#1F3A5F", "#F0CB8A",
+                             neutral_hue_from = "#B8C2D6",
+                             paper_C = 0.010, ink_C = 0.012)
   web_theme(
-    brand = "#1F3A5F",
-    decorative = "#B8C2D6",
-    accent = "#F0CB8A",
-    neutral_tint = "decorative",
-    neutral_tint_strength = 0.04,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
     shell_texture = "ruled",
     type_base_size = 14,
     type_scale_ratio = 1.333,
-    font_body = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
-    font_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif",
+    fonts_body = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif",
     web_fonts = list(
-      web_font("Cormorant Garamond", "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"),
-      web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap")
+      web_font("Cormorant Garamond", FONT_URLS$cormorant_ital),
+      web_font("Cinzel", FONT_URLS$cinzel)
     ),
     curves = list(neutral = "exp", brand = "ease"),
     name = "elvish"
@@ -69,27 +68,27 @@ web_theme_elvish <- function() {
 
 #' Hobbit theme - warm hearth, paper, comfort.
 #'
-#' Flush shell; grain texture (paper-and-wool); high decorative-tint
-#' strength makes neutrals noticeably cream. IM Fell English (Caslon-
-#' feel) for body. Type scale 1.333 for storytelling rhythm.
+#' Flush shell; grain texture (paper-and-wool); decorative hue (#6B8E3D)
+#' routed through neutrals at high paperC/inkC makes the paper noticeably
+#' cream. IM Fell English (Caslon-feel) body. Type scale 1.333 for
+#' storytelling rhythm.
 #' @return A [WebTheme].
 #' @export
 web_theme_hobbit <- function() {
+  a <- derive_preset_anchors("#A6633E", "#7A4527",
+                             neutral_hue_from = "#6B8E3D",
+                             paper_C = 0.020, ink_C = 0.022)
   web_theme(
-    brand = "#A6633E",
-    decorative = "#6B8E3D",
-    accent = "#7A4527",
-    neutral_tint = "decorative",
-    neutral_tint_strength = 0.10,
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
     shell_texture = "grain",
     type_base_size = 14,
     type_scale_ratio = 1.333,
-    font_body = "'IM Fell English', Georgia, 'Times New Roman', serif",
-    font_display = "'IM Fell English SC', Georgia, serif",
+    fonts_body = "'IM Fell English', Georgia, 'Times New Roman', serif",
+    fonts_display = "'IM Fell English SC', Georgia, serif",
     web_fonts = list(
-      web_font("IM Fell English", "https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"),
-      web_font("IM Fell English SC", "https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap")
+      web_font("IM Fell English", FONT_URLS$im_fell_english),
+      web_font("IM Fell English SC", FONT_URLS$im_fell_english_sc)
     ),
     curves = list(neutral = "smooth", brand = "ease"),
     name = "hobbit"

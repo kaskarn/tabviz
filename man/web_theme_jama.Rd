@@ -11,5 +11,5 @@ A \link{WebTheme}.
 }
 \description{
 Tight type scale (1.15) + smaller base size (13) for the dense
-scientific-table look.
+scientific-table look. Achromatic neutrals.
 }

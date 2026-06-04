@@ -5,78 +5,135 @@
 # cascade semantics. It takes authoring inputs and emits
 # the resolved theme shape the renderer consumes.
 
+# Internal — read a flat L/C/H trio off `inputs` and emit a nested
+# `list(L=, C=, H=)`. Returns NULL when all three slots are NA (anchor
+# unset). `required = TRUE` skips the all-NA check (the cascade anchors
+# paper/ink/brand must always emit).
+triple_to_json <- function(inputs, prefix, required = FALSE) {
+  L <- S7::prop(inputs, paste0(prefix, "_L"))
+  C <- S7::prop(inputs, paste0(prefix, "_C"))
+  H <- S7::prop(inputs, paste0(prefix, "_H"))
+  if (!required && is.na(L) && is.na(C) && is.na(H)) return(NULL)
+  list(L = L, C = C, H = H)
+}
+
 # Internal: serialize a ThemeInputs S7 object to the JSON shape that the
-# TS adapter expects. NA fields become NULL (omitted from JSON).
+# TS adapter expects. NA fields become NULL (omitted from JSON). V4
+# vocabulary: emits `anchors: { paper, ink, brand, accent? }` and
+# `status: { positive?, negative?, warning?, info? }` as nested OKLCH
+# triples; no `brand`/`accent`/`decorative`/`neutral_tint*` flat fields.
 theme_inputs_to_json <- function(inputs) {
   stopifnot(inherits(inputs, "tabviz::ThemeInputs"))
   na_to_null <- function(v) if (length(v) == 1L && is.na(v)) NULL else v
 
+  anchors <- list(
+    paper = triple_to_json(inputs, "anchors_paper", required = TRUE),
+    ink   = triple_to_json(inputs, "anchors_ink",   required = TRUE),
+    brand = triple_to_json(inputs, "anchors_brand", required = TRUE),
+    accent = triple_to_json(inputs, "anchors_accent")
+  )
+  anchors <- anchors[!vapply(anchors, is.null, logical(1))]
+
   status <- list(
-    positive = na_to_null(inputs@status_positive),
-    negative = na_to_null(inputs@status_negative),
-    warning  = na_to_null(inputs@status_warning),
-    info     = na_to_null(inputs@status_info)
+    positive = triple_to_json(inputs, "status_positive"),
+    negative = triple_to_json(inputs, "status_negative"),
+    warning  = triple_to_json(inputs, "status_warning"),
+    info     = triple_to_json(inputs, "status_info")
   )
   status <- status[!vapply(status, is.null, logical(1))]
 
   fonts <- list(
-    body    = na_to_null(inputs@font_body),
-    display = na_to_null(inputs@font_display),
-    mono    = na_to_null(inputs@font_mono)
+    body    = na_to_null(inputs@fonts_body),
+    display = na_to_null(inputs@fonts_display),
+    mono    = na_to_null(inputs@fonts_mono)
   )
   fonts <- fonts[!vapply(fonts, is.null, logical(1))]
 
-  neutral_tint_out <- if (inputs@neutral_tint %in%
-                          c("untinted", "brand", "accent", "decorative")) {
-    inputs@neutral_tint
-  } else {
-    list(hex = inputs@neutral_tint)
-  }
-
-  # Q-P4.5 mode/polarity split (TS substrate sprint, M4 phase): R-side
-  # input @mode is the historical light/dark switch — it now serializes as
-  # `polarity` to match the TS substrate's polarity field. TS-side `mode`
-  # is reserved for accessibility modes (standard / high-contrast /
-  # reduced-transparency); the R API will expose those via a future
-  # `accessibility_mode` arg once Stage 2 lands them in the R surface.
   # Stage 2 typography Tier 1 — pack only non-NA values to keep the wire
   # compact. The TS resolver fills defaults (14 / 1.2 / 400-700).
   type_weights <- list(
-    regular  = na_to_null(inputs@type_weight_regular),
-    medium   = na_to_null(inputs@type_weight_medium),
-    semibold = na_to_null(inputs@type_weight_semibold),
-    bold     = na_to_null(inputs@type_weight_bold)
+    regular  = na_to_null(inputs@type_weights_regular),
+    medium   = na_to_null(inputs@type_weights_medium),
+    semibold = na_to_null(inputs@type_weights_semibold),
+    bold     = na_to_null(inputs@type_weights_bold)
   )
   type_weights <- type_weights[!vapply(type_weights, is.null, logical(1))]
 
   curves <- list(
-    neutral = na_to_null(inputs@curve_neutral),
-    brand   = na_to_null(inputs@curve_brand),
-    accent  = na_to_null(inputs@curve_accent)
+    neutral = na_to_null(inputs@curves_neutral),
+    brand   = na_to_null(inputs@curves_brand),
+    accent  = na_to_null(inputs@curves_accent)
   )
   curves <- curves[!vapply(curves, is.null, logical(1))]
 
+  # Phase D — geometry: re-nest the flat S7 slots into nested radius +
+  # border_width objects on the wire. Omit absent leaves so the TS
+  # resolver applies its defaults.
+  drop_null <- function(x) x[!vapply(x, is.null, logical(1))]
+  geom_radius <- drop_null(list(
+    sm   = na_to_null(inputs@geometry_radius_sm),
+    md   = na_to_null(inputs@geometry_radius_md),
+    lg   = na_to_null(inputs@geometry_radius_lg),
+    pill = na_to_null(inputs@geometry_radius_pill)
+  ))
+  geom_bw <- drop_null(list(
+    hair    = na_to_null(inputs@geometry_border_width_hair),
+    thin    = na_to_null(inputs@geometry_border_width_thin),
+    regular = na_to_null(inputs@geometry_border_width_regular),
+    thick   = na_to_null(inputs@geometry_border_width_thick)
+  ))
+  geometry_out <- drop_null(list(
+    radius       = if (length(geom_radius) > 0L) geom_radius else NULL,
+    border_width = if (length(geom_bw) > 0L) geom_bw else NULL
+  ))
+
+  # Phase D — effects.
+  effects_out <- drop_null(list(
+    glow_intensity           = na_to_null(inputs@effects_glow_intensity),
+    glow_anchor              = na_to_null(inputs@effects_glow_anchor),
+    gradient_shell_intensity = na_to_null(inputs@effects_gradient_shell_intensity),
+    gradient_shell_angle     = na_to_null(inputs@effects_gradient_shell_angle),
+    elevation                = na_to_null(inputs@effects_elevation)
+  ))
+
+  # Phase 5 / Stage 1 §33 — row_kinds. Re-nest flat slots into
+  # row_kinds: { data: { heightRatio }, group_header: ..., ... } on the
+  # wire. Omit kinds whose heightRatio is NA so the TS layout falls back
+  # to its intrinsic ratio.
+  row_kinds_entry <- function(slot) {
+    v <- na_to_null(S7::prop(inputs, slot))
+    if (is.null(v)) return(NULL)
+    list(heightRatio = v)
+  }
+  row_kinds_out <- drop_null(list(
+    data         = row_kinds_entry("row_kinds_data_height_ratio"),
+    group_header = row_kinds_entry("row_kinds_group_header_height_ratio"),
+    spacer       = row_kinds_entry("row_kinds_spacer_height_ratio"),
+    summary      = row_kinds_entry("row_kinds_summary_height_ratio"),
+    header       = row_kinds_entry("row_kinds_header_height_ratio"),
+    panel        = row_kinds_entry("row_kinds_panel_height_ratio")
+  ))
+
   out <- list(
-    brand                 = inputs@brand,
-    accent                = na_to_null(inputs@accent),
-    decorative            = na_to_null(inputs@decorative),
-    polarity              = inputs@mode,
-    mode                  = "standard",
-    neutral_tint          = neutral_tint_out,
-    neutral_tint_strength = inputs@neutral_tint_strength,
+    anchors               = anchors,
+    polarity              = inputs@polarity,
+    mode                  = inputs@mode,
     categorical           = inputs@categorical,
     sequential            = inputs@sequential,
     diverging             = inputs@diverging,
     status                = if (length(status) > 0L) status else NULL,
     fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
     density               = inputs@density,
-    densityFactor         = if (inputs@density_factor != 1) inputs@density_factor else NULL,
+    density_factor        = if (inputs@density_factor != 1) inputs@density_factor else NULL,
     shell_mode            = na_to_null(inputs@shell_mode),
     shell_texture         = na_to_null(inputs@shell_texture),
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
-    curves                = if (length(curves) > 0L) curves else NULL
+    curves                = if (length(curves) > 0L) curves else NULL,
+    geometry              = if (length(geometry_out) > 0L) geometry_out else NULL,
+    effects               = if (length(effects_out)  > 0L) effects_out  else NULL,
+    row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -92,30 +149,64 @@ resolve_from_inputs <- function(inputs, name = "custom") {
   theme
 }
 
-#' Build a theme from inputs.
+# Default anchors for the clinical baseline (cyan brand). Sourced from
+# R/theme-defaults.R::THEME_DEFAULTS.
+DEFAULT_PAPER_ANCHOR <- list(L = THEME_DEFAULTS$paper_L,
+                             C = THEME_DEFAULTS$paper_C,
+                             H = THEME_DEFAULTS$paper_H)
+DEFAULT_INK_ANCHOR   <- list(L = THEME_DEFAULTS$ink_L,
+                             C = THEME_DEFAULTS$ink_C,
+                             H = THEME_DEFAULTS$ink_H)
+DEFAULT_BRAND_HEX    <- THEME_DEFAULTS$brand_hex
+
+# Internal — pack a list(L,C,H) (or NULL) into a 3-element vector of slot
+# values suitable for `S7::prop(inputs, ...) <- ...`. NULL → c(NA, NA, NA).
+anchor_slots <- function(triple) {
+  if (is.null(triple)) return(list(L = NA_real_, C = NA_real_, H = NA_real_))
+  list(L = triple$L, C = triple$C, H = triple$H)
+}
+
+# Internal — push a coerced anchor into the three slots on `inputs`. Uses
+# `S7::props<-` so all three updates apply before the validator runs; per-
+# property assignment would fail on a partial all-NA write (mid-update L
+# is NA while C/H are still real numbers).
+set_anchor_on_inputs <- function(inputs, prefix, triple) {
+  updates <- list()
+  updates[[paste0(prefix, "_L")]] <- triple$L
+  updates[[paste0(prefix, "_C")]] <- triple$C
+  updates[[paste0(prefix, "_H")]] <- triple$H
+  S7::props(inputs) <- updates
+  inputs
+}
+
+#' Build a theme from V4 anchors.
 #'
-#' The user-authoring surface. Pass a brand seed; everything else
-#' derives. Optional `accent` (engagement), `decorative` (second color
-#' for editorial two-color themes), `mode`, `categorical` (data scheme),
-#' fonts, and `density`.
+#' The user-authoring surface. V4 vocabulary: identity is four named OKLCH
+#' anchors — `paper`, `ink`, `brand`, optional `accent`. Each accepts a
+#' hex string OR an [oklch()] triple. Polarity reflection acts on each
+#' anchor's L. `accent` defaults to `brand` when unset. Status anchors
+#' (`status_*`) take the same hex-or-[oklch()] form.
 #'
-#' @param brand Required hex brand seed.
-#' @param accent Engagement seed (hover/selected/callouts). Default: mirrors brand.
-#' @param decorative Optional second color (alt-row tint, divider hue,
-#'   row-group L1 band). Default: NULL.
-#' @param mode `"light"` or `"dark"`. Default `"light"`.
-#' @param neutral_tint `"untinted"`, `"brand"`, `"accent"`, `"decorative"`,
-#'   or a hex string. Default `"untinted"`.
-#' @param neutral_tint_strength Numeric in `[0, 1]`. Default `0.04` (subtle
-#'   hint). Push toward `~1.0` for editorial paper colors (literary cream,
-#'   sepia, newsprint). Ignored when `neutral_tint = "untinted"`.
+#' @param paper Light-end neutral anchor (hex or [oklch()] triple). Defines
+#'   surface, paper_alt, paper_raised. Default: near-white at brand hue.
+#' @param ink Dark-end neutral anchor. Defines text, text-muted, text-subtle.
+#' @param brand Identity hue. Drives brand_solid, brand_text, header_bg.
+#' @param accent Optional engagement hue (hover/selected/callouts). NULL
+#'   mirrors brand at resolution.
+#' @param polarity `"light"` or `"dark"`. Polarity reflection inverts every
+#'   anchor's L around the midpoint. Default `"light"`.
+#' @param mode Accessibility axis (orthogonal to polarity). One of
+#'   `"standard"` / `"high-contrast"` / `"reduced-transparency"`. HC bumps
+#'   border-widths +1px and drops every Phase D effect; RT keeps glow but
+#'   swaps gradients to a flat surface fill. Default `"standard"`.
 #' @param categorical Named data scheme reference (Okabe-Ito default).
 #' @param sequential Named sequential scheme reference.
 #' @param diverging Named diverging scheme reference.
 #' @param status_positive,status_negative,status_warning,status_info
-#'   Optional status color overrides.
-#' @param font_body,font_display,font_mono Font stacks. font_display NA
-#'   mirrors font_body.
+#'   Optional status anchor overrides (hex or [oklch()]). NULL defers to
+#'   the TS resolver's defaults.
+#' @param fonts_body,fonts_display,fonts_mono Font stacks. fonts_display NULL
+#'   mirrors fonts_body.
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
 #' @param density_factor Continuous multiplier on the density preset's spacing,
 #'   in `[0.5, 2]` (1 = preset unchanged) — a fine dial on top of the named
@@ -136,6 +227,24 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #'   `neutral`, `brand`, `accent` keyed to `"linear"` / `"ease"` / `"smooth"`
 #'   / `"log"` / `"exp"`. NULL defaults: neutral=ease, brand=linear,
 #'   accent=linear.
+#' @param geometry Phase D GEOMETRY axis — named list with optional `radius`
+#'   (named list of `sm`/`md`/`lg`/`pill` numeric px) and `border_width`
+#'   (named list of `hair`/`thin`/`regular`/`thick` numeric px). Drives
+#'   corner softness + line weight across the widget. NULL = TS defaults
+#'   (2/6/10/999 px radius, 0.5/1/1.5/2.5 px border-width).
+#' @param effects Phase D EFFECTS axis — named list with optional
+#'   `glow_intensity` (`"none"` / `"subtle"` / `"neon"`), `glow_anchor`
+#'   (`"brand"` / `"accent"`), `gradient_shell_intensity` (`"none"` /
+#'   `"subtle"` / `"vivid"`), `gradient_shell_angle` (degrees 0-360),
+#'   `elevation` (`"none"` / `"soft"` / `"raised"` / `"float"`). NULL =
+#'   no effects (the safe editorial baseline). HC mode drops all effects.
+#' @param row_kinds Per-row-kind theme-default `heightRatio` map. Named
+#'   list whose keys are row-kind names (`data`, `group_header`, `spacer`,
+#'   `summary`, `header`, `panel`) and whose values are themselves
+#'   named lists with `heightRatio` (numeric, multiplies the base row
+#'   height). Layer 3 of the row-kind height cascade (Stage 1 §33);
+#'   constructor `row_heights=` and user pins layer above this. NULL =
+#'   row-kind intrinsics apply.
 #' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
 #' @param first_column_style First (label) column treatment: `"default"`,
@@ -145,12 +254,12 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #' @return A fully-resolved [WebTheme].
 #' @export
 web_theme <- function(
-    brand = "#0099CC",
+    paper = NULL,
+    ink = NULL,
+    brand = DEFAULT_BRAND_HEX,
     accent = NULL,
-    decorative = NULL,
-    mode = "light",
-    neutral_tint = "untinted",
-    neutral_tint_strength = 0.04,
+    polarity = "light",
+    mode = "standard",
     categorical = "okabe_ito",
     sequential = "viridis",
     diverging = "rdbu",
@@ -158,9 +267,9 @@ web_theme <- function(
     status_negative = NULL,
     status_warning = NULL,
     status_info = NULL,
-    font_body = NULL,
-    font_display = NULL,
-    font_mono = NULL,
+    fonts_body = NULL,
+    fonts_display = NULL,
+    fonts_mono = NULL,
     density = "comfortable",
     density_factor = 1,
     shell_mode = NULL,
@@ -169,16 +278,15 @@ web_theme <- function(
     type_scale_ratio = NULL,
     type_weights = NULL,
     curves = NULL,
+    geometry = NULL,
+    effects = NULL,
+    row_kinds = NULL,
     header_style = "light",
     first_column_style = "default",
     web_fonts = NULL,
     name = "custom") {
-  checkmate::assert_string(brand)
-  checkmate::assert_string(accent, null.ok = TRUE)
-  checkmate::assert_string(decorative, null.ok = TRUE)
-  checkmate::assert_choice(mode, c("light", "dark"))
-  checkmate::assert_string(neutral_tint)
-  checkmate::assert_number(neutral_tint_strength, lower = 0, upper = 1)
+  checkmate::assert_choice(polarity, c("light", "dark"))
+  checkmate::assert_choice(mode, c("standard", "high-contrast", "reduced-transparency"))
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
@@ -191,37 +299,78 @@ web_theme <- function(
   checkmate::assert_number(type_scale_ratio, lower = 1.05, upper = 1.6, null.ok = TRUE)
   checkmate::assert_list(type_weights, null.ok = TRUE)
   checkmate::assert_list(curves, null.ok = TRUE)
+  checkmate::assert_list(geometry, null.ok = TRUE)
+  checkmate::assert_list(effects, null.ok = TRUE)
+  checkmate::assert_list(row_kinds, null.ok = TRUE)
+
+  paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
+  ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
+  brand_t  <- coerce_anchor(brand, "brand")
+  if (is.null(brand_t)) {
+    cli::cli_abort("{.arg brand} is required.")
+  }
+  accent_t <- coerce_anchor(accent, "accent")
+  status_p <- coerce_anchor(status_positive, "status_positive")
+  status_n <- coerce_anchor(status_negative, "status_negative")
+  status_w <- coerce_anchor(status_warning,  "status_warning")
+  status_i <- coerce_anchor(status_info,     "status_info")
+
+  ap <- anchor_slots(paper_t);  ai <- anchor_slots(ink_t)
+  ab <- anchor_slots(brand_t);  aa <- anchor_slots(accent_t)
+  sp <- anchor_slots(status_p); sn <- anchor_slots(status_n)
+  sw <- anchor_slots(status_w); si <- anchor_slots(status_i)
 
   inputs <- ThemeInputs(
-    brand = brand,
-    accent = if (is.null(accent)) NA_character_ else accent,
-    decorative = if (is.null(decorative)) NA_character_ else decorative,
+    anchors_paper_L = ap$L, anchors_paper_C = ap$C, anchors_paper_H = ap$H,
+    anchors_ink_L   = ai$L, anchors_ink_C   = ai$C, anchors_ink_H   = ai$H,
+    anchors_brand_L = ab$L, anchors_brand_C = ab$C, anchors_brand_H = ab$H,
+    anchors_accent_L = aa$L, anchors_accent_C = aa$C, anchors_accent_H = aa$H,
+    polarity = polarity,
     mode = mode,
-    neutral_tint = neutral_tint,
-    neutral_tint_strength = neutral_tint_strength,
     categorical = categorical,
     sequential = sequential,
     diverging = diverging,
-    status_positive = status_positive %||% "#3F7D3F",
-    status_negative = status_negative %||% "#B33A3A",
-    status_warning  = status_warning  %||% "#C68A2E",
-    status_info     = status_info     %||% "#1F77B4",
-    font_body       = font_body       %||% "system-ui, -apple-system, sans-serif",
-    font_display    = if (is.null(font_display)) NA_character_ else font_display,
-    font_mono       = if (is.null(font_mono))    NA_character_ else font_mono,
+    status_positive_L = sp$L, status_positive_C = sp$C, status_positive_H = sp$H,
+    status_negative_L = sn$L, status_negative_C = sn$C, status_negative_H = sn$H,
+    status_warning_L  = sw$L, status_warning_C  = sw$C, status_warning_H  = sw$H,
+    status_info_L     = si$L, status_info_C     = si$C, status_info_H     = si$H,
+    fonts_body       = fonts_body       %||% "system-ui, -apple-system, sans-serif",
+    fonts_display    = if (is.null(fonts_display)) NA_character_ else fonts_display,
+    fonts_mono       = if (is.null(fonts_mono))    NA_character_ else fonts_mono,
     density = density,
     density_factor = density_factor,
     shell_mode    = shell_mode    %||% NA_character_,
     shell_texture = shell_texture %||% NA_character_,
     type_base_size   = type_base_size   %||% NA_real_,
     type_scale_ratio = type_scale_ratio %||% NA_real_,
-    type_weight_regular  = type_weights$regular  %||% NA_real_,
-    type_weight_medium   = type_weights$medium   %||% NA_real_,
-    type_weight_semibold = type_weights$semibold %||% NA_real_,
-    type_weight_bold     = type_weights$bold     %||% NA_real_,
-    curve_neutral = curves$neutral %||% NA_character_,
-    curve_brand   = curves$brand   %||% NA_character_,
-    curve_accent  = curves$accent  %||% NA_character_
+    type_weights_regular  = type_weights$regular  %||% NA_real_,
+    type_weights_medium   = type_weights$medium   %||% NA_real_,
+    type_weights_semibold = type_weights$semibold %||% NA_real_,
+    type_weights_bold     = type_weights$bold     %||% NA_real_,
+    curves_neutral = curves$neutral %||% NA_character_,
+    curves_brand   = curves$brand   %||% NA_character_,
+    curves_accent  = curves$accent  %||% NA_character_,
+    # Phase D — geometry + effects (all optional; NA = TS resolver default).
+    geometry_radius_sm    = geometry$radius$sm     %||% NA_real_,
+    geometry_radius_md    = geometry$radius$md     %||% NA_real_,
+    geometry_radius_lg    = geometry$radius$lg     %||% NA_real_,
+    geometry_radius_pill  = geometry$radius$pill   %||% NA_real_,
+    geometry_border_width_hair    = geometry$border_width$hair    %||% NA_real_,
+    geometry_border_width_thin    = geometry$border_width$thin    %||% NA_real_,
+    geometry_border_width_regular = geometry$border_width$regular %||% NA_real_,
+    geometry_border_width_thick   = geometry$border_width$thick   %||% NA_real_,
+    effects_glow_intensity         = effects$glow_intensity         %||% NA_character_,
+    effects_glow_anchor            = effects$glow_anchor            %||% NA_character_,
+    effects_gradient_shell_intensity = effects$gradient_shell_intensity %||% NA_character_,
+    effects_gradient_shell_angle   = effects$gradient_shell_angle   %||% NA_real_,
+    effects_elevation              = effects$elevation              %||% NA_character_,
+    # row_kinds — extract heightRatio per kind from the nested named list.
+    row_kinds_data_height_ratio         = row_kinds$data$heightRatio         %||% NA_real_,
+    row_kinds_group_header_height_ratio = row_kinds$group_header$heightRatio %||% NA_real_,
+    row_kinds_spacer_height_ratio       = row_kinds$spacer$heightRatio       %||% NA_real_,
+    row_kinds_summary_height_ratio      = row_kinds$summary$heightRatio      %||% NA_real_,
+    row_kinds_header_height_ratio       = row_kinds$header$heightRatio       %||% NA_real_,
+    row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style
@@ -234,78 +383,101 @@ web_theme <- function(
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 
-#' Set the brand seed on a theme and re-resolve.
+# Internal — re-resolve `theme` after coercing an anchor argument and
+# pinning it under `prefix`. Anchor arg may be hex, oklch() triple, or
+# (for accent / status) NULL to clear.
+set_anchor_and_resolve <- function(theme, prefix, value, arg_name,
+                                   clearable = FALSE) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  inputs <- theme@inputs
+  triple <- if (clearable && is.null(value)) NULL else coerce_anchor(value, arg_name)
+  if (!clearable && is.null(triple)) {
+    cli::cli_abort("{.arg {arg_name}} must be a hex string or {.fn oklch} triple.")
+  }
+  slots <- anchor_slots(triple)
+  inputs <- set_anchor_on_inputs(inputs, prefix, slots)
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the paper anchor on a theme and re-resolve.
 #' @param theme A [WebTheme].
-#' @param brand New brand hex.
+#' @param paper Hex string or [oklch()] triple.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_paper <- function(theme, paper) {
+  set_anchor_and_resolve(theme, "anchors_paper", paper, "paper")
+}
+
+#' Set the ink anchor on a theme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param ink Hex string or [oklch()] triple.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_ink <- function(theme, ink) {
+  set_anchor_and_resolve(theme, "anchors_ink", ink, "ink")
+}
+
+#' Set the brand anchor on a theme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param brand Hex string or [oklch()] triple.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_brand <- function(theme, brand) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_string(brand)
-  inputs <- theme@inputs
-  inputs@brand <- brand
-  resolve_from_inputs(inputs, name = theme@name)
+  set_anchor_and_resolve(theme, "anchors_brand", brand, "brand")
 }
 
-#' Set the accent seed on a theme and re-resolve.
+#' Set the accent anchor on a theme and re-resolve.
 #' @param theme A [WebTheme].
-#' @param accent New accent hex.
+#' @param accent Hex string, [oklch()] triple, or `NULL` to clear (accent
+#'   then mirrors brand at resolution).
 #' @return The re-resolved [WebTheme].
 #' @export
 set_accent <- function(theme, accent) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_string(accent)
-  inputs <- theme@inputs
-  inputs@accent <- accent
-  resolve_from_inputs(inputs, name = theme@name)
-}
-
-#' Set the decorative seed (two-color editorial) on a theme and re-resolve.
-#' @param theme A [WebTheme].
-#' @param decorative New decorative hex (or NA to clear).
-#' @return The re-resolved [WebTheme].
-#' @export
-set_decorative <- function(theme, decorative) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_string(decorative, na.ok = TRUE)
-  inputs <- theme@inputs
-  inputs@decorative <- decorative
-  resolve_from_inputs(inputs, name = theme@name)
-}
-
-#' Switch light/dark mode and re-resolve.
-#' @param theme A [WebTheme].
-#' @param mode `"light"` or `"dark"`.
-#' @return The re-resolved [WebTheme].
-#' @export
-set_mode <- function(theme, mode) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_choice(mode, c("light", "dark"))
-  inputs <- theme@inputs
-  inputs@mode <- mode
-  resolve_from_inputs(inputs, name = theme@name)
+  set_anchor_and_resolve(theme, "anchors_accent", accent, "accent",
+                         clearable = TRUE)
 }
 
 #' Set the theme polarity (light/dark) and re-resolve.
 #'
-#' Alias for [set_mode()] using the V4 substrate's polarity vocabulary
-#' (Stage 1 §40 — mode is now the accessibility axis (standard /
-#' high-contrast / reduced-transparency); polarity is the L-reflection axis).
+#' Polarity is the L-reflection axis: reflecting flips paper↔ink lightness
+#' around the midpoint. The orthogonal accessibility axis (mode = standard
+#' / high-contrast / reduced-transparency) is plumbed separately.
 #'
 #' @param theme A [WebTheme].
 #' @param polarity `"light"` or `"dark"`.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_polarity <- function(theme, polarity) {
-  set_mode(theme, polarity)
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(polarity, c("light", "dark"))
+  inputs <- theme@inputs
+  inputs@polarity <- polarity
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the accessibility mode (HC / RT) and re-resolve.
+#'
+#' Accessibility is the axis orthogonal to polarity. High-contrast (HC)
+#' bumps border-widths +1px, drops every Phase D effect, and reroutes a
+#' few role bindings to higher-contrast grades. Reduced-transparency (RT)
+#' keeps glow but swaps gradients to a flat surface fill.
+#'
+#' @param theme A [WebTheme].
+#' @param mode `"standard"`, `"high-contrast"`, or `"reduced-transparency"`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_mode <- function(theme, mode) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(mode, c("standard", "high-contrast", "reduced-transparency"))
+  inputs <- theme@inputs
+  inputs@mode <- mode
+  resolve_from_inputs(inputs, name = theme@name)
 }
 
 #' Set the categorical data scheme and re-resolve.
@@ -321,25 +493,6 @@ set_categorical <- function(theme, scheme) {
   checkmate::assert_string(scheme)
   inputs <- theme@inputs
   inputs@categorical <- scheme
-  resolve_from_inputs(inputs, name = theme@name)
-}
-
-#' Set the neutral tint strength and re-resolve.
-#'
-#' Span `0.04` (subtle clinical-journal hint) to `~1.0` (paper takes the
-#' tint hex as its essential color — editorial cream, sepia, newsprint).
-#'
-#' @param theme A [WebTheme].
-#' @param strength Numeric in `[0, 1]`.
-#' @return The re-resolved [WebTheme].
-#' @export
-set_neutral_tint_strength <- function(theme, strength) {
-  if (!inherits(theme, "tabviz::WebTheme")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
-  }
-  checkmate::assert_number(strength, lower = 0, upper = 1)
-  inputs <- theme@inputs
-  inputs@neutral_tint_strength <- strength
   resolve_from_inputs(inputs, name = theme@name)
 }
 
@@ -364,6 +517,194 @@ set_density <- function(theme, density = NULL, factor = NULL) {
     checkmate::assert_number(factor, lower = 0.5, upper = 2)
     inputs@density_factor <- factor
   }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the sequential data scheme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param scheme Named sequential scheme reference.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_sequential <- function(theme, scheme) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(scheme)
+  inputs <- theme@inputs
+  inputs@sequential <- scheme
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set the diverging data scheme and re-resolve.
+#' @param theme A [WebTheme].
+#' @param scheme Named diverging scheme reference.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_diverging <- function(theme, scheme) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(scheme)
+  inputs <- theme@inputs
+  inputs@diverging <- scheme
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set per-ramp curve shapes and re-resolve.
+#'
+#' Per Stage 1 §25. Reshapes the L progression across the 11 ramp grades.
+#' NULL leaves a slot unchanged.
+#'
+#' @param theme A [WebTheme].
+#' @param neutral,brand,accent One of `"linear"` / `"ease"` / `"smooth"`
+#'   / `"log"` / `"exp"`, or `NULL` to leave unchanged.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_curves <- function(theme, neutral = NULL, brand = NULL, accent = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  valid <- c("linear", "ease", "smooth", "log", "exp")
+  checkmate::assert_choice(neutral, valid, null.ok = TRUE)
+  checkmate::assert_choice(brand,   valid, null.ok = TRUE)
+  checkmate::assert_choice(accent,  valid, null.ok = TRUE)
+  inputs <- theme@inputs
+  if (!is.null(neutral)) inputs@curves_neutral <- neutral
+  if (!is.null(brand))   inputs@curves_brand   <- brand
+  if (!is.null(accent))  inputs@curves_accent  <- accent
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set Phase D GEOMETRY axis (radius + border-width scales) and re-resolve.
+#'
+#' Each of `radius` and `border_width` is a named numeric list. Missing
+#' keys keep their current values; unspecified args leave everything
+#' unchanged. Defaults at resolution: radius `{sm=2, md=6, lg=10, pill=999}`,
+#' border_width `{hair=0.5, thin=1, regular=1.5, thick=2.5}`.
+#'
+#' @param theme A [WebTheme].
+#' @param radius Named numeric list with any of `sm`/`md`/`lg`/`pill` (px).
+#' @param border_width Named numeric list with any of `hair`/`thin`/`regular`/`thick` (px).
+#' @return The re-resolved [WebTheme].
+#' @export
+set_geometry <- function(theme, radius = NULL, border_width = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_list(radius, types = "numeric", null.ok = TRUE)
+  checkmate::assert_list(border_width, types = "numeric", null.ok = TRUE)
+  inputs <- theme@inputs
+  if (!is.null(radius)) {
+    if (!is.null(radius$sm))   inputs@geometry_radius_sm   <- radius$sm
+    if (!is.null(radius$md))   inputs@geometry_radius_md   <- radius$md
+    if (!is.null(radius$lg))   inputs@geometry_radius_lg   <- radius$lg
+    if (!is.null(radius$pill)) inputs@geometry_radius_pill <- radius$pill
+  }
+  if (!is.null(border_width)) {
+    if (!is.null(border_width$hair))    inputs@geometry_border_width_hair    <- border_width$hair
+    if (!is.null(border_width$thin))    inputs@geometry_border_width_thin    <- border_width$thin
+    if (!is.null(border_width$regular)) inputs@geometry_border_width_regular <- border_width$regular
+    if (!is.null(border_width$thick))   inputs@geometry_border_width_thick   <- border_width$thick
+  }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set Phase D EFFECTS axis (glow + gradient + elevation) and re-resolve.
+#'
+#' All args are optional; NULL leaves the slot unchanged.
+#'
+#' @param theme A [WebTheme].
+#' @param glow_intensity `"none"` / `"subtle"` / `"neon"`.
+#' @param glow_anchor `"brand"` / `"accent"`.
+#' @param gradient_shell_intensity `"none"` / `"subtle"` / `"vivid"`.
+#' @param gradient_shell_angle Numeric in `[0, 360]` (degrees).
+#' @param elevation `"none"` / `"soft"` / `"raised"` / `"float"`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_effects <- function(theme,
+                        glow_intensity = NULL,
+                        glow_anchor = NULL,
+                        gradient_shell_intensity = NULL,
+                        gradient_shell_angle = NULL,
+                        elevation = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(glow_intensity, c("none", "subtle", "neon"), null.ok = TRUE)
+  checkmate::assert_choice(glow_anchor, c("brand", "accent"), null.ok = TRUE)
+  checkmate::assert_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), null.ok = TRUE)
+  checkmate::assert_number(gradient_shell_angle, lower = 0, upper = 360, null.ok = TRUE)
+  checkmate::assert_choice(elevation, c("none", "soft", "raised", "float"), null.ok = TRUE)
+  inputs <- theme@inputs
+  if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
+  if (!is.null(glow_anchor))              inputs@effects_glow_anchor              <- glow_anchor
+  if (!is.null(gradient_shell_intensity)) inputs@effects_gradient_shell_intensity <- gradient_shell_intensity
+  if (!is.null(gradient_shell_angle))     inputs@effects_gradient_shell_angle     <- gradient_shell_angle
+  if (!is.null(elevation))                inputs@effects_elevation                <- elevation
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set status anchor overrides (positive / negative / warning / info) and re-resolve.
+#'
+#' Each arg accepts a hex string, an [oklch()] triple, or `NULL` (leaves
+#' the slot unchanged). The TS resolver falls back to curated defaults
+#' for any slot that was never set.
+#'
+#' @param theme A [WebTheme].
+#' @param positive,negative,warning,info Hex / [oklch()] / `NULL`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_status <- function(theme,
+                       positive = NULL, negative = NULL,
+                       warning = NULL, info = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  inputs <- theme@inputs
+  for (pair in list(
+    list(name = "positive", value = positive),
+    list(name = "negative", value = negative),
+    list(name = "warning",  value = warning),
+    list(name = "info",     value = info)
+  )) {
+    if (is.null(pair$value)) next
+    triple <- coerce_anchor(pair$value, paste0("status_", pair$name))
+    inputs <- set_anchor_on_inputs(inputs, paste0("status_", pair$name),
+                                   anchor_slots(triple))
+  }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set per-row-kind theme-default heightRatios and re-resolve.
+#'
+#' Layer 3 of the row-kind height cascade (Stage 1 §33). Each arg is
+#' the multiplier on the base row height for that row kind; NULL leaves
+#' a kind unchanged. Constructor `row_heights=` and interactive user
+#' pins layer above this, so a theme that pins `group_header = 1.3`
+#' still respects per-spec overrides.
+#'
+#' @param theme A [WebTheme].
+#' @param data,group_header,spacer,summary,header,panel Numeric
+#'   `heightRatio` multipliers (typically ~0.5 to 3), or `NULL`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_row_kinds <- function(theme,
+                          data = NULL, group_header = NULL, spacer = NULL,
+                          summary = NULL, header = NULL, panel = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  for (arg in list(data = data, group_header = group_header, spacer = spacer,
+                   summary = summary, header = header, panel = panel)) {
+    if (!is.null(arg)) checkmate::assert_number(arg, lower = 0, upper = 10)
+  }
+  inputs <- theme@inputs
+  if (!is.null(data))         inputs@row_kinds_data_height_ratio         <- data
+  if (!is.null(group_header)) inputs@row_kinds_group_header_height_ratio <- group_header
+  if (!is.null(spacer))       inputs@row_kinds_spacer_height_ratio       <- spacer
+  if (!is.null(summary))      inputs@row_kinds_summary_height_ratio      <- summary
+  if (!is.null(header))       inputs@row_kinds_header_height_ratio       <- header
+  if (!is.null(panel))        inputs@row_kinds_panel_height_ratio        <- panel
   resolve_from_inputs(inputs, name = theme@name)
 }
 

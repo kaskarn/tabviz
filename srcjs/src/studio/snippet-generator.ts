@@ -7,7 +7,15 @@
 //
 // Used by the live snippet strip + the on-close console echo.
 
-import type { ThemeInputs } from "../types/theme-inputs";
+import type { ThemeInputs, OklchTriple } from "../types/theme-inputs";
+import { oklchToHex } from "../lib/oklch";
+
+/** Compare two OKLCH triples for value equality. */
+function triplesEqual(a: OklchTriple | undefined, b: OklchTriple | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.L === b.L && a.C === b.C && a.H === b.H;
+}
 
 /** A single diff step in the snippet chain. */
 export interface SnippetStep {
@@ -27,14 +35,21 @@ export function buildSnippetSteps(
 ): SnippetStep[] {
   const steps: SnippetStep[] = [];
 
-  if (edits.brand !== base.brand) {
-    steps.push({ setter: "set_brand", args: rString(edits.brand) });
+  // V4 anchors — emit set_paper/set_ink/set_brand/set_accent when the
+  // corresponding anchor's OKLCH triple has changed.
+  if (!triplesEqual(edits.anchors.paper, base.anchors.paper)) {
+    steps.push({ setter: "set_paper", args: rString(oklchToHex(edits.anchors.paper)) });
   }
-  if (edits.accent !== base.accent && edits.accent !== undefined) {
-    steps.push({ setter: "set_accent", args: rString(edits.accent) });
+  if (!triplesEqual(edits.anchors.ink, base.anchors.ink)) {
+    steps.push({ setter: "set_ink", args: rString(oklchToHex(edits.anchors.ink)) });
   }
-  if (edits.decorative !== base.decorative && edits.decorative !== undefined && edits.decorative !== null) {
-    steps.push({ setter: "set_decorative", args: rString(edits.decorative) });
+  if (!triplesEqual(edits.anchors.brand, base.anchors.brand)) {
+    steps.push({ setter: "set_brand", args: rString(oklchToHex(edits.anchors.brand)) });
+  }
+  if (!triplesEqual(edits.anchors.accent, base.anchors.accent)) {
+    if (edits.anchors.accent) {
+      steps.push({ setter: "set_accent", args: rString(oklchToHex(edits.anchors.accent)) });
+    }
   }
   // Polarity: R-side input @mode mirrors polarity per Stage 1's mode/polarity split.
   // The studio uses inputs.polarity (Stage 1 §22); R serializes as `mode = ...`.
@@ -47,8 +62,8 @@ export function buildSnippetSteps(
   if (edits.density !== base.density && edits.density !== undefined) {
     steps.push({ setter: "set_density", args: `density = ${rString(edits.density)}` });
   }
-  if (edits.densityFactor !== base.densityFactor && edits.densityFactor !== undefined) {
-    steps.push({ setter: "set_density", args: `factor = ${edits.densityFactor}` });
+  if (edits.density_factor !== base.density_factor && edits.density_factor !== undefined) {
+    steps.push({ setter: "set_density", args: `factor = ${edits.density_factor}` });
   }
   if (edits.shell_mode !== base.shell_mode && edits.shell_mode !== undefined) {
     steps.push({ setter: "set_shell_mode", args: rString(edits.shell_mode) });
@@ -74,14 +89,9 @@ export function buildSnippetSteps(
     }
   }
 
-  // Neutral tint
-  if (edits.neutral_tint !== base.neutral_tint && edits.neutral_tint !== undefined) {
-    const v = typeof edits.neutral_tint === "string" ? rString(edits.neutral_tint) : rString(edits.neutral_tint.hex);
-    steps.push({ setter: "set_neutral_tint", args: `tint = ${v}` });
-  }
-  if (edits.neutral_tint_strength !== base.neutral_tint_strength && edits.neutral_tint_strength !== undefined) {
-    steps.push({ setter: "set_neutral_tint", args: `strength = ${edits.neutral_tint_strength}` });
-  }
+  // V4 dropped neutral_tint*; the tint surface area now lives on the
+  // paper/ink anchors directly (their C component). Set via set_paper /
+  // set_ink — handled above.
 
   return steps;
 }

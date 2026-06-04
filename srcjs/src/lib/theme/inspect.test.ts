@@ -4,9 +4,10 @@ import { describe, it, expect } from "bun:test";
 import { inspectToken, formatTrace, listComponentTokens } from "./inspect";
 import { resolveTheme } from "./resolve-theme";
 import { createWire, setRoleBinding } from "./theme-wire";
+import { inputsFromHex } from "./theme-presets-inputs";
 import type { ThemeInputs } from "../../types/theme-inputs";
 
-const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE: ThemeInputs = inputsFromHex({ brand: "#0099CC", accent: "#C8553D" });
 
 describe("inspectToken — trace walk", () => {
   const resolved = resolveTheme(createWire(COCHRANE));

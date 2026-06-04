@@ -408,14 +408,21 @@ export interface WebFont {
 }
 
 /**
- * The v2 wire shape that R emits via `serialize_theme()`. Every field
- * here is what the renderer reads at consumption time — no resolution
- * happens JS-side; the R cascade (`resolve_theme`) fills NA-defaults
- * before serialization.
+ * Resolved theme blob — what the renderer reads at consumption time.
+ * R emits this via `serialize_theme()`; TS authoring emits it via
+ * `buildTheme()`. No further resolution happens JS-side; the R cascade
+ * (`resolve_theme`) fills NA-defaults before serialization.
+ *
+ * `schemaVersion: 4` aligns with the V4 substrate (per Stage 1 §22).
+ * Was at `2` through v3; bumped during the coherence pass to match
+ * `ThemeStructure.schemaVersion` in `theme-inputs.ts`. The only
+ * runtime consumer of this value is `isResolvedTheme` (the discriminator
+ * used by `resolveThemeRef` to distinguish a resolved blob from a
+ * preset-extend ref).
  */
 export interface WebTheme {
-  /** Wire schema discriminator. R emits `2`. */
-  schemaVersion: 2;
+  /** Wire schema discriminator. Renderer + R both emit `4` post-coherence. */
+  schemaVersion: 4;
   name: string;
   webFonts: WebFont[];
   /**

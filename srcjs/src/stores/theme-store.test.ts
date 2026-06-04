@@ -7,21 +7,22 @@
 import { describe, it, expect } from "bun:test";
 import { createThemeStoreV3Plain } from "./theme-store.plain";
 import { COCHRANE, LANCET } from "../lib/theme/theme-presets-inputs";
+import { hexToOklch, oklchToHex } from "../lib/oklch";
 
 describe("ThemeStore — reactive theme store", () => {
   it("initializes from inputs", () => {
     const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
     expect(s.wire.name).toBe("cochrane");
-    expect(s.wire.inputs.brand).toBe("#0099CC");
+    expect(oklchToHex(s.wire.inputs.anchors.brand)).toBe("#0099CC");
     expect(s.wire.$schema).toBe("tabviz-theme/v4");
-    expect(s.theme.schemaVersion).toBe(3); // pre-step-4 resolver still emits v3 structure
+    expect(s.theme.schemaVersion).toBe(4);
     expect(s.theme.tokens.ink).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });
 
   it("setInput updates the resolved theme", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
     const before = s.theme.tokens.brand;
-    s.setInput("brand", "#FF0000");
+    s.setInput("anchors", { ...s.wire.inputs.anchors, brand: hexToOklch("#FF0000") });
     const after = s.theme.tokens.brand;
     expect(after).not.toBe(before);
   });
@@ -76,9 +77,10 @@ describe("ThemeStore — reactive theme store", () => {
     const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
     s.reset(LANCET, "lancet");
     expect(s.wire.name).toBe("lancet");
-    expect(s.wire.inputs.brand).toBe("#00407A");
-    expect(s.wire.inputs.decorative).toBe("#A6792A");
-    expect(s.theme.ramps.decorative).not.toBeNull();
+    expect(oklchToHex(s.wire.inputs.anchors.brand)).toBe("#00407A");
+    // V4: Lancet's v3 gold (#A6792A) lives on the accent anchor.
+    expect(s.wire.inputs.anchors.accent).toBeDefined();
+    expect(oklchToHex(s.wire.inputs.anchors.accent!)).toBe("#A6792A");
   });
 
   it("reset clears role overrides while keeping inputs", () => {
@@ -100,10 +102,10 @@ describe("ThemeStore — reactive theme store", () => {
 });
 
 describe("ThemeStore — input changes propagate to derived clusters", () => {
-  it("changing brand changes the resolved brand token", () => {
+  it("changing brand anchor changes the resolved brand token", () => {
     const s = createThemeStoreV3Plain(COCHRANE);
     const before = s.theme.tokens.brand;
-    s.setInput("brand", "#FF0000");
+    s.setInput("anchors", { ...s.wire.inputs.anchors, brand: hexToOklch("#FF0000") });
     const after = s.theme.tokens.brand;
     expect(after).not.toBe(before);
   });
@@ -113,12 +115,5 @@ describe("ThemeStore — input changes propagate to derived clusters", () => {
     const lightNeutral = s.theme.ramps.neutral[0]!;
     const darkNeutral = s.theme.ramps.neutral[11]!;
     expect([lightNeutral, darkNeutral]).toContain(s.theme.tokens.brand_ink);
-  });
-
-  it("adding decorative produces decorative ramp", () => {
-    const s = createThemeStoreV3Plain(COCHRANE);
-    expect(s.theme.ramps.decorative).toBeNull();
-    s.setInput("decorative", "#A6792A");
-    expect(s.theme.ramps.decorative).not.toBeNull();
   });
 });

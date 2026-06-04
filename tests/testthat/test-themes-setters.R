@@ -11,11 +11,18 @@ test_that("set_header_style / set_first_column_style assign the variant", {
 })
 
 test_that("set_inputs updates inputs and re-resolves", {
+  # V4: brand is an OKLCH triple (unrolled into three flat slots), so
+  # set_inputs takes the slot names directly. set_brand(theme, "#hex") is
+  # the user-facing shortcut.
   t <- web_theme_cochrane()
-  t2 <- set_inputs(t, brand = "#1F3A5F", density = "spacious")
-  expect_equal(t2@inputs@brand, "#1F3A5F")
+  t2 <- set_inputs(t,
+                   anchors_brand_L = 0.40,
+                   anchors_brand_C = 0.10,
+                   anchors_brand_H = 250,
+                   density = "spacious")
+  expect_equal(t2@inputs@anchors_brand_L, 0.40)
+  expect_equal(t2@inputs@anchors_brand_H, 250)
   expect_equal(t2@inputs@density, "spacious")
-  # re-resolution actually ran: spacing reflects the new density preset
   expect_true(S7::S7_inherits(t2, WebTheme))
 })
 
@@ -39,7 +46,8 @@ test_that("set_theme_field indexes list properties (series), despite c() coercio
 })
 
 test_that("set_theme_field under inputs re-resolves the cascade", {
+  # V4: brand anchor's L slot is the most-targeted leaf below `inputs`.
   t <- web_theme_cochrane()
-  t2 <- set_theme_field(t, c("inputs", "brand"), "#FF0000")
-  expect_equal(t2@inputs@brand, "#FF0000")
+  t2 <- set_theme_field(t, c("inputs", "anchors_brand_L"), 0.45)
+  expect_equal(t2@inputs@anchors_brand_L, 0.45)
 })

@@ -1,0 +1,112 @@
+---
+title: "tabviz Studio"
+page-layout: full
+toc: false
+code-tools: false
+include-after-body:
+  - text: |
+      <script>
+        // Studio page: make Quarto's chrome go away and let the studio
+        // claim the viewport. We intentionally do this client-side rather
+        // than via Quarto theming so the rest of the site is unaffected.
+        document.documentElement.classList.add("studio-page");
+        document.body.classList.add("studio-page");
+      </script>
+format:
+  html:
+    css: styles.css
+    include-in-header:
+      - text: |
+          <link rel="stylesheet" href="studio-assets/studio.css">
+          <style>
+            /* Studio page: full-bleed; hide Quarto chrome entirely. */
+            html, body {
+              margin: 0;
+              padding: 0;
+              height: 100vh;
+              overflow: hidden;
+              background: #ffffff;
+            }
+            header.quarto-title-block,
+            #title-block-header,
+            .quarto-title-block,
+            .nav-footer,
+            header#quarto-header,
+            nav.navbar { display: none !important; }
+            main.content,
+            div.quarto-content,
+            .page-columns,
+            #quarto-content,
+            #quarto-document-content {
+              padding: 0 !important;
+              margin: 0 !important;
+              max-width: none !important;
+              display: block !important;
+              grid-template-columns: none !important;
+              grid-template-rows: none !important;
+              grid-template-areas: none !important;
+              height: 100vh !important;
+            }
+            /* Quarto's Bootstrap CSS pins <aside>, <main>, sidebar columns
+               to named grid lines (body-end / page-end / etc.). Those rules
+               cascade into the studio shell and push the settings rail to
+               the wrong column. Force any descendant of the mount back to
+               normal flow positioning. */
+            #tabviz-studio-mount,
+            #tabviz-studio-mount * {
+              grid-column: auto !important;
+              grid-row: auto !important;
+              grid-area: auto !important;
+            }
+            #tabviz-studio-mount {
+              position: fixed;
+              inset: 0;
+              background: #ffffff;
+              overflow: hidden;
+              z-index: 1;
+            }
+          </style>
+---
+
+```{r setup-studio-assets}
+#| include: false
+#| echo: false
+# Stage the studio bundle into the site's resource tree so the page can
+# load it via a relative <script>/<link>. Bundle is built separately
+# (cd srcjs && npm run build:studio); this just copies it locally.
+dest <- "studio-assets"
+dir.create(dest, showWarnings = FALSE, recursive = TRUE)
+src <- system.file("studio", package = "tabviz")
+if (!nzchar(src)) src <- file.path("..", "inst", "studio")
+for (f in c("studio.js", "studio.css")) {
+  ok <- file.copy(file.path(src, f), file.path(dest, f), overwrite = TRUE)
+  if (!isTRUE(ok)) warning("studio: failed to stage ", f, " from ", src)
+}
+```
+
+```{=html}
+<div id="tabviz-studio-mount" data-host="docs-static">
+  <noscript>
+    <p style="padding:24px;font-family:sans-serif;color:#555;">
+      tabviz Studio needs JavaScript enabled.
+    </p>
+  </noscript>
+  <p id="tabviz-studio-fallback" style="padding:24px;font-family:sans-serif;color:#888;">
+    Loading studio…
+  </p>
+</div>
+<script>
+  // Inline probe: confirms that *some* JS runs on this page. If you see
+  // this log but not "[tabviz_studio] entry loaded", the bundle failed
+  // to parse or fetch.
+  console.log("[studio-page] inline probe ran");
+  window.__tabvizStudioProbe = true;
+  // Catch any error from the bundle load itself.
+  window.addEventListener("error", (e) => {
+    console.error("[studio-page] window error:", e.message, e.filename, e.lineno);
+    const el = document.getElementById("tabviz-studio-fallback");
+    if (el) el.textContent = "Studio bundle error: " + e.message;
+  });
+</script>
+<script src="studio-assets/studio.js"></script>
+```

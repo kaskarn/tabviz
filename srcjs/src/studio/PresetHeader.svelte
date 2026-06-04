@@ -1,18 +1,28 @@
 <!--
   Stage 3 — PresetHeader.svelte
   Sticky top band: studio title · based on <preset> · dirty dot
-                   [Revert] [Save as…] [Export ▾] [Cancel] [Done]
+  Action buttons depend on host:
+  - Shiny gadget: [Revert] [Save as…] [Export ▾] [Cancel] [Done]
+  - Static (docs/forge): [Revert] [Export ▾] (Done/Cancel hidden;
+    Export is the primary egress, with Copy R code / Copy JSON /
+    Download .json acting against the live snippet).
 -->
 <script lang="ts">
+  import { studioStore } from "./studio-store.svelte";
+
   const {
     baseName,
     dirty,
+    isStatic,
+    snippet,
     onRevert,
     onDone,
     onCancel,
   }: {
     baseName: string;
     dirty: boolean;
+    isStatic: boolean;
+    snippet: string;
     onRevert: () => void;
     onDone: () => void;
     onCancel: () => void;
@@ -20,6 +30,14 @@
 
   let exportOpen = $state(false);
   let saveOpen = $state(false);
+  let toastMsg = $state<string | null>(null);
+  let toastTimer = $state<ReturnType<typeof setTimeout> | null>(null);
+
+  function flashToast(msg: string): void {
+    toastMsg = msg;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => (toastMsg = null), 2000);
+  }
 
   function confirmRevert(): void {
     if (dirty) {
@@ -28,15 +46,52 @@
     onRevert();
   }
 
-  // Stage 3 save-as: writes to ~/.tabviz/themes/<name>.json via R
-  // round-trip (the gadget's Shiny custom-input mechanism). Stub for now.
   function handleSaveAs(name: string): void {
     if (!name) return;
     const win = window as unknown as { Shiny?: { setInputValue: (k: string, v: unknown, opts?: { priority?: string }) => void } };
     if (win.Shiny) {
       win.Shiny.setInputValue("studio_save_as", name, { priority: "event" });
+    } else {
+      // Static mode: download the JSON locally with the given name.
+      downloadJson(`${name}.json`);
+      flashToast(`Downloaded ${name}.json`);
     }
     saveOpen = false;
+  }
+
+  async function copyRCode(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(snippet);
+      flashToast("R code copied");
+    } catch {
+      flashToast("Copy failed — clipboard unavailable");
+    }
+    exportOpen = false;
+  }
+
+  async function copyJson(): Promise<void> {
+    if (!studioStore.inputs) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(studioStore.inputs, null, 2));
+      flashToast("Theme JSON copied");
+    } catch {
+      flashToast("Copy failed — clipboard unavailable");
+    }
+    exportOpen = false;
+  }
+
+  function downloadJson(filename = "theme.json"): void {
+    if (!studioStore.inputs) return;
+    const blob = new Blob([JSON.stringify(studioStore.inputs, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    exportOpen = false;
   }
 </script>
 
@@ -48,27 +103,38 @@
     {#if dirty}
       <span class="dirty" title="Unsaved changes since {baseName} was loaded">●</span>
     {/if}
+    {#if isStatic}
+      <span class="badge-static" title="Running in static mode — no R bridge">forge</span>
+    {/if}
   </div>
 
   <div class="actions">
     <button type="button" onclick={confirmRevert} disabled={!dirty}>Revert</button>
-    <button type="button" onclick={() => (saveOpen = !saveOpen)}>Save as…</button>
+    <button type="button" onclick={() => (saveOpen = !saveOpen)}>
+      {isStatic ? "Download as…" : "Save as…"}
+    </button>
     <div class="export-wrap">
-      <button type="button" onclick={() => (exportOpen = !exportOpen)}>Export ▾</button>
+      <button
+        type="button"
+        class:primary={isStatic}
+        onclick={() => (exportOpen = !exportOpen)}
+      >Export ▾</button>
       {#if exportOpen}
         <div class="menu">
-          <button type="button" onclick={() => { exportOpen = false; }}>Copy R code</button>
-          <button type="button" onclick={() => { exportOpen = false; }}>Copy JSON</button>
-          <button type="button" onclick={() => { exportOpen = false; }}>Download .json</button>
+          <button type="button" onclick={copyRCode}>Copy R code</button>
+          <button type="button" onclick={copyJson}>Copy JSON</button>
+          <button type="button" onclick={() => downloadJson()}>Download .json</button>
         </div>
       {/if}
     </div>
-    <button type="button" onclick={onCancel}>Cancel</button>
-    <button type="button" class="done" onclick={onDone}>Done</button>
+    {#if !isStatic}
+      <button type="button" onclick={onCancel}>Cancel</button>
+      <button type="button" class="done" onclick={onDone}>Done</button>
+    {/if}
   </div>
 
   {#if saveOpen}
-    <div class="save-popover" role="dialog" aria-label="Save as preset">
+    <div class="save-popover" role="dialog" aria-label={isStatic ? "Download as" : "Save as preset"}>
       <label>
         Name
         <input
@@ -81,6 +147,10 @@
         />
       </label>
     </div>
+  {/if}
+
+  {#if toastMsg}
+    <div class="toast" role="status">{toastMsg}</div>
   {/if}
 </header>
 
@@ -107,6 +177,16 @@
     color: #f59e0b;
     font-size: 16px;
     line-height: 1;
+  }
+  .badge-static {
+    background: #6750A4;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
   }
   .actions {
     display: flex;
@@ -135,6 +215,14 @@
     border-color: #1d4ed8;
   }
   button.done:hover {
+    background: #1d4ed8;
+  }
+  button.primary {
+    background: #2563eb;
+    color: #fff;
+    border-color: #1d4ed8;
+  }
+  button.primary:hover {
     background: #1d4ed8;
   }
   .export-wrap {
@@ -187,5 +275,18 @@
     border-radius: 4px;
     font-size: 13px;
     min-width: 180px;
+  }
+  .toast {
+    position: fixed;
+    bottom: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 14px;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12.5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
   }
 </style>

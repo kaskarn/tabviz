@@ -30,14 +30,24 @@
  * `--tv-*` namespace and validate visual fidelity end-to-end.
  */
 
-import type { ThemeInputs, TokenRamps } from "../../types/theme-inputs";
+import type { ThemeInputs, OklchTriple, TokenRamps } from "../../types/theme-inputs";
 import type { RoleName } from "../../types/theme-roles";
 import type { ThemeWire } from "./theme-wire";
 import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
-import { reflectHex } from "./polarity";
-import { pickInkOnBg } from "../oklch";
+import { reflectL } from "./polarity";
+import { pickInkOnBg, oklchToHex } from "../oklch";
+
+/** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
+function reflectAnchor(a: OklchTriple): OklchTriple {
+  return { L: reflectL(a.L), C: a.C, H: a.H };
+}
+
+/** Optional anchor — reflect if present, else pass through. */
+function reflectAnchorMaybe(a: OklchTriple | undefined): OklchTriple | undefined {
+  return a ? reflectAnchor(a) : undefined;
+}
 import {
   resolveTypographyInputs,
   resolveTypeRole,
@@ -46,6 +56,7 @@ import {
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
 import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } from "./textures";
+import { validateThemeInputs } from "./theme-validate";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -108,24 +119,27 @@ function derivePolarity(inputs: ThemeInputs): "light" | "dark" {
   return inputs.polarity ?? "light";
 }
 
-/** Apply polarity reflection to the input anchor hexes (Stage 1 §22).
- *  Returns a new ThemeInputs with `polarity` set and anchors reflected
- *  when polarity is dark. */
-function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
+/** Apply polarity reflection to the input anchors (Stage 1 §22). Returns
+ *  a new ThemeInputs with `polarity` set and every anchor's L reflected
+ *  around the polarity pivot when polarity is dark. C and H are unchanged. */
+export function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
   const polarity = derivePolarity(inputs);
   if (polarity === "light") return { ...inputs, polarity: "light" };
   return {
     ...inputs,
     polarity: "dark",
-    brand: reflectHex(inputs.brand),
-    accent: inputs.accent ? reflectHex(inputs.accent) : undefined,
-    decorative: inputs.decorative ? reflectHex(inputs.decorative) : null,
+    anchors: {
+      paper: reflectAnchor(inputs.anchors.paper),
+      ink:   reflectAnchor(inputs.anchors.ink),
+      brand: reflectAnchor(inputs.anchors.brand),
+      accent: reflectAnchorMaybe(inputs.anchors.accent),
+    },
     status: inputs.status
       ? {
-          positive: inputs.status.positive ? reflectHex(inputs.status.positive) : undefined,
-          negative: inputs.status.negative ? reflectHex(inputs.status.negative) : undefined,
-          warning: inputs.status.warning ? reflectHex(inputs.status.warning) : undefined,
-          info: inputs.status.info ? reflectHex(inputs.status.info) : undefined,
+          positive: reflectAnchorMaybe(inputs.status.positive),
+          negative: reflectAnchorMaybe(inputs.status.negative),
+          warning:  reflectAnchorMaybe(inputs.status.warning),
+          info:     reflectAnchorMaybe(inputs.status.info),
         }
       : undefined,
   };
@@ -259,7 +273,8 @@ function resolveTokenValue(
 
   // Stage 2 §7 browser-additive effects.
   if (token.cssVar === "--tv-brand-gradient") {
-    const brandSolid = resolved.roles["brand-solid"] ?? resolved.inputs.brand;
+    const brandHex = oklchToHex(resolved.inputs.anchors.brand);
+    const brandSolid = resolved.roles["brand-solid"] ?? brandHex;
     // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
     const brandRamp = resolved.ramps.brand;
     const a = brandRamp[7] ?? brandSolid;
@@ -268,7 +283,8 @@ function resolveTokenValue(
   }
   if (token.cssVar === "--tv-brand-glow") {
     // rgba from accent-solid at alpha 0.4.
-    const accent = resolved.roles["accent-solid"] ?? resolved.inputs.brand;
+    const brandHex = oklchToHex(resolved.inputs.anchors.brand);
+    const accent = resolved.roles["accent-solid"] ?? brandHex;
     if (accent.startsWith("#")) {
       const h = accent.slice(1);
       const r = parseInt(h.slice(0, 2), 16);
@@ -280,6 +296,22 @@ function resolveTokenValue(
   }
   if (token.cssVar === "--tv-glass-blur") {
     return "16px";
+  }
+
+  // ── Phase D — GEOMETRY (radius + border-width) ─────────────────────────
+  // Direct projection from inputs.geometry with defaults baked here so
+  // every preset gets sensible values without per-preset opt-in.
+  {
+    const g = resolveGeometryComputed(token.cssVar, resolved.inputs);
+    if (g !== null) return g;
+  }
+
+  // ── Phase D — EFFECTS (glow + gradient + shadow) ───────────────────────
+  // Derived from anchor ramps. Mode-aware behaviour rides on token.modes
+  // (HC drops, RT swaps) so the dispatcher above already handled it.
+  {
+    const e = resolveEffectsComputed(token.cssVar, resolved);
+    if (e !== null) return e;
   }
 
   // Stage 2 typography tokens always route through the typography resolver,
@@ -301,12 +333,15 @@ function resolveTokenValue(
   // Spacing-px tokens are resolved via the density table regardless of
   // source.tier — many are tagged `computed` because they derive from a
   // density × kind formula. The density preset comes from inputs.density;
-  // inputs.densityFactor multiplies it (clamped [0.5, 2]).
+  // inputs.density_factor multiplies it (clamped [0.5, 2]).
   if (token.kind === "spacing-px") {
-    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.densityFactor);
+    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.density_factor);
   }
   if (token.kind === "border-width") {
-    return "1px";
+    // Density-table lookup mirrors the spacing-px branch above — PLOT_DIMS
+    // contains plot-line-width / hc-ring-width etc. Without this lookup
+    // every border-width token returned "1px" regardless of the table.
+    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.density_factor);
   }
 
   const source: TokenSource = token.source;
@@ -324,17 +359,10 @@ function resolveTokenValue(
       // sources are token-specific; they fall through to placeholder.
       return "<computed>";
     case "const":
-      // Const sources have hard-coded values. Stage 2 §5 HC-fidelity tokens
-      // also live here — their value depends on the active mode.
-      if (token.cssVar === "--tv-hc-caret-char") {
-        return resolved.inputs.mode === "high-contrast" ? "▸" : "";
-      }
-      if (token.cssVar === "--tv-hc-ring-width") {
-        return "1.5px";
-      }
-      if (token.cssVar === "--tv-hc-bar-width") {
-        return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
-      }
+      // HC-fidelity tokens (caret-char, ring-width, bar-width) are
+      // intercepted in the HC-fidelity short-circuit earlier in
+      // resolveTokenValue; the duplicate block that used to live here
+      // was dead code.
       if (source.note?.includes("transparent")) return "transparent";
       return "<const>";
   }
@@ -449,61 +477,138 @@ function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string 
   }
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Phase D — geometry + effects resolvers
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Default radius scale (px). Editorial-soft baseline; brutalist-style
+ *  presets pin smaller values per-key. */
+const DEFAULT_RADIUS: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["radius"]>> = {
+  sm: 2, md: 6, lg: 10, pill: 999,
+};
+
+/** Default border-width scale (px). Newspaper-hairline baseline. */
+const DEFAULT_BORDER_WIDTH: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["border_width"]>> = {
+  hair: 0.5, thin: 1, regular: 1.5, thick: 2.5,
+};
+
+/** Direct projection of inputs.geometry into the four radius + four border-
+ *  width cssVars. HC mode bumps border-width by +1px to compensate for the
+ *  reduced colour cue (the existing token.modes.hc swap on hair handles the
+ *  drop-from-hairline-to-strong path; everything else just gets thicker
+ *  here). */
+function resolveGeometryComputed(cssVar: string, inputs: ThemeInputs): string | null {
+  const g = inputs.geometry;
+  const isHc = inputs.mode === "high-contrast";
+
+  // Radius
+  if (cssVar === "--tv-radius-sm")   return `${g?.radius?.sm   ?? DEFAULT_RADIUS.sm}px`;
+  if (cssVar === "--tv-radius-md")   return `${g?.radius?.md   ?? DEFAULT_RADIUS.md}px`;
+  if (cssVar === "--tv-radius-lg")   return `${g?.radius?.lg   ?? DEFAULT_RADIUS.lg}px`;
+  if (cssVar === "--tv-radius-pill") return `${g?.radius?.pill ?? DEFAULT_RADIUS.pill}px`;
+
+  // Border-width — `hair` is special-cased by token.modes.hc above (drops to
+  // border-strong); the rest just thicken under HC.
+  const hcBump = isHc ? 1 : 0;
+  if (cssVar === "--tv-border-width-hair")
+    return `${(g?.border_width?.hair    ?? DEFAULT_BORDER_WIDTH.hair)    + hcBump}px`;
+  if (cssVar === "--tv-border-width-thin")
+    return `${(g?.border_width?.thin    ?? DEFAULT_BORDER_WIDTH.thin)    + hcBump}px`;
+  if (cssVar === "--tv-border-width-regular")
+    return `${(g?.border_width?.regular ?? DEFAULT_BORDER_WIDTH.regular) + hcBump}px`;
+  if (cssVar === "--tv-border-width-thick")
+    return `${(g?.border_width?.thick   ?? DEFAULT_BORDER_WIDTH.thick)   + hcBump}px`;
+
+  return null;
+}
+
+/** Convert a hex `#rrggbb` to an `rgba(...)` string at the given alpha. */
+function hexToRgba(hex: string, alpha: number): string {
+  if (!hex.startsWith("#") || hex.length !== 7) return hex;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** Phase D effects projection. Glow + gradient + emphasis-shadow derive
+ *  from anchor ramps with mode-aware behaviour delegated to the
+ *  dispatcher (token.modes.hc / .rt). */
+function resolveEffectsComputed(
+  cssVar: string,
+  resolved: { ramps: TokenRamps; inputs: ThemeInputs },
+): string | null {
+  const fx = resolved.inputs.effects;
+  const polarity = derivePolarity(resolved.inputs);
+
+  // ── Glow ──────────────────────────────────────────────────────────────
+  if (cssVar === "--tv-glow-color") {
+    const intensity = fx?.glow_intensity ?? "none";
+    if (intensity === "none") return "transparent";
+    const anchor = fx?.glow_anchor ?? "brand";
+    const ramp = anchor === "accent" ? resolved.ramps.accent : resolved.ramps.brand;
+    // Peak-chroma grade 9 (index 8) reads as the saturated mid hue.
+    const peak = ramp[8] ?? ramp[ramp.length - 1] ?? "#000000";
+    // Dark polarity reads neon-bright at higher alpha; light reads softer.
+    const alpha = intensity === "neon"
+      ? (polarity === "dark" ? 0.85 : 0.55)
+      : (polarity === "dark" ? 0.50 : 0.30);
+    return hexToRgba(peak, alpha);
+  }
+  if (cssVar === "--tv-glow-blur") {
+    const intensity = fx?.glow_intensity ?? "none";
+    return intensity === "neon" ? "18px"
+         : intensity === "subtle" ? "8px"
+         : "0px";
+  }
+  if (cssVar === "--tv-glow-spread") {
+    const intensity = fx?.glow_intensity ?? "none";
+    return intensity === "neon" ? "3px"
+         : intensity === "subtle" ? "1px"
+         : "0px";
+  }
+
+  // ── Gradient shell ────────────────────────────────────────────────────
+  if (cssVar === "--tv-shell-gradient") {
+    const intensity = fx?.gradient_shell_intensity ?? "none";
+    if (intensity === "none") return "transparent";
+    const angle = fx?.gradient_shell_angle ?? 90;
+    const fromIdx = intensity === "vivid" ? 8 : 5;   // brand chroma peak / mid
+    const toIdx   = intensity === "vivid" ? 8 : 3;   // accent chroma peak / soft
+    const from = resolved.ramps.brand[fromIdx]  ?? resolved.ramps.brand[8]  ?? "#000000";
+    const to   = resolved.ramps.accent[toIdx]   ?? resolved.ramps.accent[8] ?? "#FFFFFF";
+    return `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`;
+  }
+
+  // ── Emphasis shadow ───────────────────────────────────────────────────
+  if (cssVar === "--tv-emphasis-shadow") {
+    const elev = fx?.elevation ?? "none";
+    if (elev === "none") return "none";
+    // Stack a near + far shadow per Stage 2 §6 convention. Near uses the
+    // brand-peak hue at low alpha to keep colour identity in the elevation.
+    const peak = resolved.ramps.brand[9] ?? "#1c1a17";
+    const near = hexToRgba(peak, 0.15);
+    const far  = hexToRgba(peak, 0.08);
+    const k = elev === "float" ? 1.6 : elev === "raised" ? 1.2 : 0.8;
+    return `0 ${k * 1}px ${k * 3}px ${near}, 0 ${k * 4}px ${k * 12}px ${far}`;
+  }
+
+  return null;
+}
+
 /** Per-token density-driven default px value. Looks up the density preset
- *  (compact / comfortable / spacious), then multiplies by densityFactor
+ *  (compact / comfortable / spacious), then multiplies by density_factor
  *  (clamped [0.5, 2]). Mirrors theme-adapter.ts's DENSITY_SPACING +
  *  scaleSpacing for parity with the v3 path. */
-type DensityPreset = "compact" | "comfortable" | "spacious";
+// Density px scales live in density-presets.ts as a single source of
+// truth; both the v3 adapter (theme-adapter.ts) and this v4 resolver
+// project from there so they can't drift.
+import { densityPresetAsCssVars, type DensityPreset } from "./density-presets";
 
 const DENSITY_PRESETS: Record<DensityPreset, Record<string, number>> = {
-  compact: {
-    "--tv-spacing-row-height": 20,
-    "--tv-spacing-header-height": 26,
-    "--tv-spacing-padding": 8,
-    "--tv-spacing-cell-padding-x": 8,
-    "--tv-spacing-cell-padding-y": 0,
-    "--tv-spacing-axis-gap": 8,
-    "--tv-spacing-column-group-padding": 6,
-    "--tv-spacing-row-group-padding": 8,
-    "--tv-spacing-header-gap": 8,
-    "--tv-spacing-footer-gap": 6,
-    "--tv-spacing-title-subtitle-gap": 10,
-    "--tv-spacing-bottom-margin": 12,
-    "--tv-spacing-indent-per-level": 14,
-    "--tv-spacing-container-padding": 0,
-  },
-  comfortable: {
-    "--tv-spacing-row-height": 24,
-    "--tv-spacing-header-height": 32,
-    "--tv-spacing-padding": 12,
-    "--tv-spacing-cell-padding-x": 10,
-    "--tv-spacing-cell-padding-y": 0,
-    "--tv-spacing-axis-gap": 12,
-    "--tv-spacing-column-group-padding": 8,
-    "--tv-spacing-row-group-padding": 12,
-    "--tv-spacing-header-gap": 12,
-    "--tv-spacing-footer-gap": 8,
-    "--tv-spacing-title-subtitle-gap": 13,
-    "--tv-spacing-bottom-margin": 16,
-    "--tv-spacing-indent-per-level": 16,
-    "--tv-spacing-container-padding": 0,
-  },
-  spacious: {
-    "--tv-spacing-row-height": 30,
-    "--tv-spacing-header-height": 40,
-    "--tv-spacing-padding": 16,
-    "--tv-spacing-cell-padding-x": 14,
-    "--tv-spacing-cell-padding-y": 0,
-    "--tv-spacing-axis-gap": 16,
-    "--tv-spacing-column-group-padding": 12,
-    "--tv-spacing-row-group-padding": 16,
-    "--tv-spacing-header-gap": 16,
-    "--tv-spacing-footer-gap": 12,
-    "--tv-spacing-title-subtitle-gap": 18,
-    "--tv-spacing-bottom-margin": 22,
-    "--tv-spacing-indent-per-level": 20,
-    "--tv-spacing-container-padding": 0,
-  },
+  compact:     densityPresetAsCssVars("compact"),
+  comfortable: densityPresetAsCssVars("comfortable"),
+  spacious:    densityPresetAsCssVars("spacious"),
 };
 
 // Plot-dim tokens don't scale with density per v3 conventions.
@@ -527,25 +632,22 @@ function tokenDensityPx(
   return `${Math.round(base * f)}px`;
 }
 
-/** Resolve an anchor name to its hex value from inputs. */
+/** Resolve an anchor name to its hex value from V4 inputs. */
 function pickAnchorHex(
   anchor: string,
   inputs: ThemeInputs,
 ): string | null {
+  const a = inputs.anchors;
   switch (anchor) {
-    case "brand": return inputs.brand;
-    case "accent": return inputs.accent ?? null;
-    case "decorative": return inputs.decorative ?? null;
-    case "accent-anchor": return inputs.accent ?? inputs.brand;
-    case "status-positive": return inputs.status?.positive ?? null;
-    case "status-negative": return inputs.status?.negative ?? null;
-    case "status-warning": return inputs.status?.warning ?? null;
-    case "status-info": return inputs.status?.info ?? null;
-    // paper / ink anchors come from the neutral ramp after polarity; not
-    // directly accessible from inputs.
-    case "paper":
-    case "ink":
-      return null;
+    case "paper":  return oklchToHex(a.paper);
+    case "ink":    return oklchToHex(a.ink);
+    case "brand":  return oklchToHex(a.brand);
+    case "accent": return a.accent ? oklchToHex(a.accent) : null;
+    case "accent-anchor": return oklchToHex(a.accent ?? a.brand);
+    case "status-positive": return inputs.status?.positive ? oklchToHex(inputs.status.positive) : null;
+    case "status-negative": return inputs.status?.negative ? oklchToHex(inputs.status.negative) : null;
+    case "status-warning":  return inputs.status?.warning  ? oklchToHex(inputs.status.warning)  : null;
+    case "status-info":     return inputs.status?.info     ? oklchToHex(inputs.status.info)     : null;
     default:
       return null;
   }
@@ -570,6 +672,11 @@ function pickAnchorHex(
  * Inspector + Spine UI.
  */
 export function resolveTheme(wire: ThemeWire): ResolvedTheme {
+  // Inputs validation runs first so authoring mistakes (out-of-range
+  // anchor triples, typo'd enum values, unknown effects intensity, ...)
+  // surface as a structured error before the resolver wastes work or
+  // silently produces a broken cssVars map. Mirrors R's S7 validator.
+  validateThemeInputs(wire.inputs);
   const polarity = derivePolarity(wire.inputs);
   const reflected = applyPolarityToInputs(wire.inputs);
 
@@ -578,10 +685,12 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
 
   // Build alpha companions from each ramp's anchor (grade 9 ≈ the "solid"
   // step). The alpha builder takes a hex; we feed it the ramp's step-9 hex.
+  const brandHex = oklchToHex(reflected.anchors.brand);
+  const accentHex = oklchToHex(reflected.anchors.accent ?? reflected.anchors.brand);
   const alphaRamps = {
     neutralAlpha: buildAlphaRamp(ramps12.neutral[8] ?? "#888888"),
-    brandAlpha: buildAlphaRamp(ramps12.brand[8] ?? wire.inputs.brand),
-    accentAlpha: buildAlphaRamp(ramps12.accent[8] ?? wire.inputs.accent ?? wire.inputs.brand),
+    brandAlpha: buildAlphaRamp(ramps12.brand[8] ?? brandHex),
+    accentAlpha: buildAlphaRamp(ramps12.accent[8] ?? accentHex),
   };
 
   // Pre-compute off-ramp context:
@@ -590,7 +699,7 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
   //     "text on a colored solid" surface in widget output.
   //   - status: lifted from the existing buildRamps output (5-step per
   //     status).
-  const brandSolid = ramps12.brand[8] ?? wire.inputs.brand;
+  const brandSolid = ramps12.brand[8] ?? brandHex;
   const textOnSolidCandidates = [
     ramps12.neutral[0]!,
     ramps12.neutral[11]!,

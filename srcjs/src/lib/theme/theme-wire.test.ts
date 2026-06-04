@@ -22,8 +22,9 @@ import {
   DEFAULT_ROLE_BINDINGS,
 } from "./theme-wire";
 import type { ThemeInputs } from "../../types/theme-inputs";
+import { inputsFromHex } from "./theme-presets-inputs";
 
-const COCHRANE: ThemeInputs = { brand: "#0099CC", accent: "#C8553D" };
+const COCHRANE: ThemeInputs = inputsFromHex({ brand: "#0099CC", accent: "#C8553D" });
 
 describe("createWire — initial state", () => {
   it("has the v4 schema, name, inputs, and empty roleOverrides", () => {
@@ -174,7 +175,7 @@ describe("pinTokenByName — friendly lookup", () => {
 describe("resolveWire — pre-step-4 behavior", () => {
   it("resolves an empty wire to a ThemeStructure", () => {
     const theme = resolveWire(createWire(COCHRANE, "cochrane"));
-    expect(theme.schemaVersion).toBe(3);
+    expect(theme.schemaVersion).toBe(4);
     expect(theme.name).toBe("cochrane");
     expect(theme.tokens.ink).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });

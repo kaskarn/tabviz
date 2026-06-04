@@ -1,20 +1,26 @@
 /**
- * Construction-time theme validation — TS port of `R/utils-theme-validate.R`.
+ * Theme validation utilities. Two distinct layers:
  *
- * Runs at the end of `resolveTheme()` and verifies the contrast invariants
- * required for legibility of bold-band header rows, accent semantic fills,
- * etc. Throws a `ThemeValidationError` listing every failed invariant with
- * the cascade path the user can override to fix it.
+ *   1. `validateThemeInputs(inputs)` — construction-time check of
+ *      authoring-input ranges + enums (anchor L/C/H bounds, density
+ *      enum, geometry numeric ranges, effects enum membership).
+ *      Mirrors `R/classes-theme.R::ThemeInputs`' S7 validator, so a TS
+ *      author hand-rolling inputs hits the same errors an R author
+ *      hits via S7. Throws `ThemeInputsValidationError`.
  *
- * Defensive check against malformed user overrides (`setThemeField`,
- * hand-rolled `webTheme()` overrides). The resolver's defaults always
- * satisfy these invariants. Skipping validation is supported via
- * `resolveTheme(draft, { validate: false })` for tests that use synthetic
- * high-saturation colors.
+ *   2. `validateResolvedTheme(theme)` — post-resolution check of
+ *      contrast invariants for the bold-band header rows, accent
+ *      semantic fills, etc. (TS port of `R/utils-theme-validate.R`).
+ *      Throws `ThemeValidationError`.
+ *
+ * Skipping resolved-theme validation is supported via
+ * `resolveTheme(draft, { validate: false })` for tests that use
+ * synthetic high-saturation colors.
  */
 
 import { contrastRatio } from "../oklch";
 import type { WebTheme } from "../../types/theme-resolved";
+import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
 
 // Header text is bold (weight=600) and lives in chrome bands rather than
 // dense reading flow, so WCAG AA Large (3.0) is the applicable bar.
@@ -113,4 +119,115 @@ export function validateResolvedTheme(theme: WebTheme): void {
   if (failures.length > 0) {
     throw new ThemeValidationError(failures);
   }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Inputs validation — mirrors R `classes-theme.R::ThemeInputs` S7 validator
+// ────────────────────────────────────────────────────────────────────────────
+
+export class ThemeInputsValidationError extends Error {
+  problems: string[];
+  constructor(problems: string[]) {
+    super(`ThemeInputs failed ${problems.length} validation check${problems.length === 1 ? "" : "s"}.\n${problems.map((p) => "  - " + p).join("\n")}`);
+    this.name = "ThemeInputsValidationError";
+    this.problems = problems;
+  }
+}
+
+const POLARITY_VALUES = ["light", "dark"] as const;
+const MODE_VALUES = ["standard", "high-contrast", "reduced-transparency"] as const;
+const DENSITY_VALUES = ["compact", "comfortable", "spacious"] as const;
+const SHELL_MODE_VALUES = ["flush", "raised", "float", "transparent"] as const;
+const SHELL_TEXTURE_VALUES = ["none", "ruled", "grid", "dotted", "grain"] as const;
+const CURVE_VALUES = ["linear", "ease", "smooth", "log", "exp"] as const;
+const GLOW_INTENSITY_VALUES = ["none", "subtle", "neon"] as const;
+const GLOW_ANCHOR_VALUES = ["brand", "accent"] as const;
+const GRADIENT_INTENSITY_VALUES = ["none", "subtle", "vivid"] as const;
+const ELEVATION_VALUES = ["none", "soft", "raised", "float"] as const;
+
+function checkTriple(triple: OklchTriple | undefined, name: string, problems: string[], required: boolean): void {
+  if (triple === undefined) {
+    if (required) problems.push(`${name}: required, got undefined`);
+    return;
+  }
+  if (typeof triple.L !== "number" || triple.L < 0 || triple.L > 1) {
+    problems.push(`${name}.L must be a number in [0, 1], got ${triple.L}`);
+  }
+  if (typeof triple.C !== "number" || triple.C < 0 || triple.C > 0.5) {
+    problems.push(`${name}.C must be a number in [0, 0.5], got ${triple.C}`);
+  }
+  if (typeof triple.H !== "number" || triple.H < 0 || triple.H >= 360) {
+    problems.push(`${name}.H must be a number in [0, 360), got ${triple.H}`);
+  }
+}
+
+function checkEnum<T extends readonly string[]>(
+  value: T[number] | undefined, choices: T, name: string, problems: string[],
+): void {
+  if (value === undefined) return;
+  if (!(choices as readonly string[]).includes(value)) {
+    problems.push(`${name} must be one of [${choices.join(", ")}], got '${value}'`);
+  }
+}
+
+function checkRange(
+  value: number | undefined, lo: number, hi: number, name: string, problems: string[],
+): void {
+  if (value === undefined) return;
+  if (typeof value !== "number" || value < lo || value > hi) {
+    problems.push(`${name} must be a number in [${lo}, ${hi}], got ${value}`);
+  }
+}
+
+/**
+ * Validate authoring-input ranges + enum memberships. Mirrors the R
+ * `ThemeInputs` S7 validator. Call before passing inputs into the
+ * resolver — catches typo'd enum values, out-of-range OKLCH triples,
+ * and other authoring mistakes that the type system can't catch.
+ */
+export function validateThemeInputs(inputs: ThemeInputs): void {
+  const p: string[] = [];
+
+  // Anchors — paper / ink / brand required; accent optional.
+  checkTriple(inputs.anchors?.paper, "anchors.paper", p, true);
+  checkTriple(inputs.anchors?.ink,   "anchors.ink",   p, true);
+  checkTriple(inputs.anchors?.brand, "anchors.brand", p, true);
+  checkTriple(inputs.anchors?.accent, "anchors.accent", p, false);
+
+  // Status — all optional.
+  checkTriple(inputs.status?.positive, "status.positive", p, false);
+  checkTriple(inputs.status?.negative, "status.negative", p, false);
+  checkTriple(inputs.status?.warning,  "status.warning",  p, false);
+  checkTriple(inputs.status?.info,     "status.info",     p, false);
+
+  // Enums
+  checkEnum(inputs.polarity, POLARITY_VALUES, "polarity", p);
+  checkEnum(inputs.mode, MODE_VALUES, "mode", p);
+  checkEnum(inputs.density, DENSITY_VALUES, "density", p);
+  checkEnum(inputs.shell_mode, SHELL_MODE_VALUES, "shell_mode", p);
+  checkEnum(inputs.shell_texture, SHELL_TEXTURE_VALUES, "shell_texture", p);
+  checkEnum(inputs.curves?.neutral, CURVE_VALUES, "curves.neutral", p);
+  checkEnum(inputs.curves?.brand,   CURVE_VALUES, "curves.brand",   p);
+  checkEnum(inputs.curves?.accent,  CURVE_VALUES, "curves.accent",  p);
+  checkEnum(inputs.effects?.glow_intensity, GLOW_INTENSITY_VALUES, "effects.glow_intensity", p);
+  checkEnum(inputs.effects?.glow_anchor, GLOW_ANCHOR_VALUES, "effects.glow_anchor", p);
+  checkEnum(inputs.effects?.gradient_shell_intensity, GRADIENT_INTENSITY_VALUES, "effects.gradient_shell_intensity", p);
+  checkEnum(inputs.effects?.elevation, ELEVATION_VALUES, "effects.elevation", p);
+
+  // Numeric ranges
+  checkRange(inputs.density_factor, 0.5, 2, "density_factor", p);
+  checkRange(inputs.type_base_size, 8, 32, "type_base_size", p);
+  checkRange(inputs.type_scale_ratio, 1.05, 1.6, "type_scale_ratio", p);
+  for (const k of ["regular", "medium", "semibold", "bold"] as const) {
+    checkRange(inputs.type_weights?.[k], 100, 900, `type_weights.${k}`, p);
+  }
+  for (const k of ["sm", "md", "lg", "pill"] as const) {
+    checkRange(inputs.geometry?.radius?.[k], 0, 999, `geometry.radius.${k}`, p);
+  }
+  for (const k of ["hair", "thin", "regular", "thick"] as const) {
+    checkRange(inputs.geometry?.border_width?.[k], 0, 999, `geometry.border_width.${k}`, p);
+  }
+  checkRange(inputs.effects?.gradient_shell_angle, 0, 360, "effects.gradient_shell_angle", p);
+
+  if (p.length > 0) throw new ThemeInputsValidationError(p);
 }

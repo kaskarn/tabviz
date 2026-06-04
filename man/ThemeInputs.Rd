@@ -2,32 +2,36 @@
 % Please edit documentation in R/classes-theme.R
 \name{ThemeInputs}
 \alias{ThemeInputs}
-\title{ThemeInputs: customer-facing theme authoring surface.}
+\title{ThemeInputs: customer-facing theme authoring surface (V4 anchors).}
 \description{
-The entire user authoring surface (locked design 2026-05-28). Every
-other token derives from these via the TS adapter
-(\code{srcjs/src/lib/theme-adapter.ts::buildTheme}), which calls the
-resolver in \code{srcjs/src/lib/theme-resolve.ts}.
+The entire user authoring surface. V4 vocabulary (Stage 1 §22): identity
+is four named OKLCH anchors (paper / ink / brand / optional accent)
+rather than a brand hex + neutral_tint knobs. Polarity reflection acts
+on each anchor's L; muted is a grade position on the relevant ramp.
+Status anchors carry the same OKLCH-triple shape for coherence.
+}
+\details{
+S7 doesn't compose well with nested objects, so each triple is unrolled
+into three flat numeric slots (\code{anchors_paper_L}, \code{anchors_paper_C},
+\code{anchors_paper_H}, ...). \code{\link[=theme_inputs_to_json]{theme_inputs_to_json()}} re-nests them on the
+wire so the TS resolver sees the canonical \verb{anchors: \{ paper: \{L,C,H\}, ... \}} shape.
 }
 \section{Fields}{
 
 \describe{
-\item{\code{brand}}{Required brand seed hex; drives the brand ramp + identity.}
+\item{\code{anchors_paper_L,anchors_paper_C,anchors_paper_H}}{Light-end neutral
+anchor. Defines surface, paper_alt, paper_raised.}
 
-\item{\code{accent}}{Engagement seed hex (hover/selected/callouts). NA mirrors brand.}
+\item{\code{anchors_ink_L,anchors_ink_C,anchors_ink_H}}{Dark-end neutral anchor.
+Defines text, text-muted, text-subtle.}
 
-\item{\code{decorative}}{Optional second color for two-color editorial themes.
-Drives structural bg tints (alt-row, dividers,
-row-group L1 band). NA = not set.}
+\item{\code{anchors_brand_L,anchors_brand_C,anchors_brand_H}}{Identity hue.
+Drives brand_solid, brand_text, header_bg.}
 
-\item{\code{mode}}{"light" or "dark". Inverts neutral ramp direction.}
+\item{\code{anchors_accent_L,anchors_accent_C,anchors_accent_H}}{Optional
+engagement hue (hover/selected/callouts). All-NA = defaults to brand.}
 
-\item{\code{neutral_tint}}{"untinted" | "brand" | "accent" | "decorative" | hex.
-Optional tint blend into low-chroma ramp ends.}
-
-\item{\code{neutral_tint_strength}}{Numeric in \verb{[0, 1]}. Default \code{0.04} (subtle
-clinical hint). \code{~1.0} makes the tint hex effectively
-the paper color (editorial-strong).}
+\item{\code{polarity}}{\code{"light"} or \code{"dark"}. The L-reflection axis.}
 
 \item{\code{categorical}}{Named data scheme reference (Okabe-Ito default).}
 
@@ -35,20 +39,21 @@ the paper color (editorial-strong).}
 
 \item{\code{diverging}}{Named diverging scheme (rdbu default).}
 
-\item{\code{status_positive}}{Status positive seed. NA -> default.}
+\item{\code{status_positive_L,status_positive_C,status_positive_H}}{Status positive
+anchor. All-NA = TS resolver default.}
 
-\item{\code{status_negative}}{Status negative seed. NA -> default.}
+\item{\code{status_negative_L,status_negative_C,status_negative_H}}{Status negative.}
 
-\item{\code{status_warning}}{Status warning seed. NA -> default.}
+\item{\code{status_warning_L,status_warning_C,status_warning_H}}{Status warning.}
 
-\item{\code{status_info}}{Status info seed. NA -> default.}
+\item{\code{status_info_L,status_info_C,status_info_H}}{Status info.}
 
-\item{\code{font_body}}{Font stack for body/cell/label text.}
+\item{\code{fonts_body}}{Font stack for body/cell/label text.}
 
-\item{\code{font_display}}{Font stack for title/subtitle. NA mirrors font_body.}
+\item{\code{fonts_display}}{Font stack for title/subtitle. NA mirrors fonts_body.}
 
-\item{\code{font_mono}}{Font stack for monospace/code. Optional.}
+\item{\code{fonts_mono}}{Font stack for monospace/code. Optional.}
 
-\item{\code{density}}{"compact", "comfortable", or "spacious".}
+\item{\code{density}}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
 }}
 

@@ -10,12 +10,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { studioStore } from "./studio-store.svelte";
-  import { inspectorStore } from "../stores/inspector-store.svelte";
   import PresetHeader from "./PresetHeader.svelte";
-  import SettingsRail from "./SettingsRail.svelte";
   import StudioChart from "./StudioChart.svelte";
-  import StudioInspector from "./StudioInspector.svelte";
   import SnippetStrip from "./SnippetStrip.svelte";
+  import ThemeControlsStrip from "../components/theme-panel/ThemeControlsStrip.svelte";
+  import CascadeView from "../components/theme-panel/CascadeView.svelte";
   import { buildSnippetSteps, formatSnippet } from "./snippet-generator";
 
   // Initial spec + theme come from data-* attributes on the mount element.
@@ -102,21 +101,45 @@
       win.Shiny.setInputValue("studio_cancel", true, { priority: "event" });
     }
   }
+
+  /** Static mode = no Shiny gadget host. Done/Cancel are hidden; Export is
+   *  the primary egress. Detected once on mount (the value never changes
+   *  during a session). */
+  const isStatic = $derived(typeof window !== "undefined"
+    && !(window as unknown as { Shiny?: unknown }).Shiny);
 </script>
 
 <div class="studio">
   <PresetHeader
     baseName={studioStore.baseName}
     dirty={studioStore.dirty}
+    {isStatic}
+    snippet={snippetText}
     onRevert={() => studioStore.revert()}
     onDone={handleDone}
     onCancel={handleCancel}
   />
 
   <div class="studio-main">
-    <SettingsRail />
-    <StudioChart spec={initialSpec} />
-    <StudioInspector />
+    {#if studioStore.inputs}
+      <aside class="controls-rail">
+        <ThemeControlsStrip
+          inputs={studioStore.inputs}
+          onchange={(next) => studioStore.apply(next, "Edit")}
+        />
+      </aside>
+      <main class="cascade-main">
+        <div class="live-preview">
+          <StudioChart spec={initialSpec} />
+        </div>
+        <CascadeView
+          inputs={studioStore.inputs}
+          resolved={studioStore.resolved ?? undefined}
+        />
+      </main>
+    {:else}
+      <div class="theme-panel-placeholder">Loading theme…</div>
+    {/if}
   </div>
 
   <SnippetStrip
@@ -141,20 +164,44 @@
 
   .studio-main {
     display: grid;
-    grid-template-columns: 320px 1fr auto;
+    grid-template-columns: minmax(320px, 380px) 1fr;
     overflow: hidden;
     min-height: 0;
+    background: #ffffff;
+  }
+  .controls-rail {
+    overflow-y: auto;
+    border-right: 1px solid #e2e8f0;
+    background: #ffffff;
+  }
+  .cascade-main {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #ffffff;
+    min-height: 0;
+  }
+  .live-preview {
+    flex: 0 0 auto;
+    height: min(560px, 50vh);
+    border-bottom: 1px solid #e2e8f0;
+    background: #fafafa;
+    overflow: hidden;
+  }
+  .live-preview > :global(.studio-chart) {
+    height: 100%;
+  }
+  .theme-panel-placeholder {
+    padding: 24px;
+    color: #475569;
+    font-style: italic;
   }
 
-  @media (max-width: 900px) {
-    .studio-main {
-      grid-template-columns: 240px 1fr auto;
-    }
-  }
-
-  @media (max-width: 600px) {
+  @media (max-width: 1000px) {
     .studio-main {
       grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
     }
+    .controls-rail { border-right: 0; border-bottom: 1px solid #e2e8f0; }
   }
 </style>

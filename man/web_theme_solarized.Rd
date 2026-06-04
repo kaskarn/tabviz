@@ -10,6 +10,6 @@ web_theme_solarized()
 A \link{WebTheme}.
 }
 \description{
-Brand-tinted neutrals at 0.06 give the trademark warm yellow paper.
-Smooth curves on neutrals for the gentle yellow gradient.
+Brand-tinted neutrals via elevated paperC/inkC give the trademark warm
+yellow paper. Smooth curve on neutrals for the gentle gradient.
 }

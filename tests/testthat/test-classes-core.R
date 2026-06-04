@@ -172,14 +172,17 @@ test_that("web_theme_jama creates valid theme", {
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "jama")
   expect_match(theme@content@primary, "^#[0-9A-Fa-f]{6}$")
-  expect_equal(theme@inputs@brand, "#000000")
+  # V4: jama brand is black (L = 0, C = 0). Anchor presence sufficient.
+  expect_equal(theme@inputs@anchors_brand_L, 0)
 })
 
 test_that("web_theme_lancet creates valid theme", {
   theme <- web_theme_lancet()
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "lancet")
-  expect_equal(toupper(theme@inputs@brand), "#00407A")
+  # V4: lancet brand is navy — chromatic, mid-low L.
+  expect_lt(theme@inputs@anchors_brand_L, 0.5)
+  expect_gt(theme@inputs@anchors_brand_C, 0.05)
 })
 
 # Column helper tests
@@ -210,7 +213,9 @@ test_that("web_theme_cochrane creates valid theme", {
   theme <- web_theme_cochrane()
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "cochrane")
-  expect_equal(toupper(theme@inputs@brand), "#0099CC")
+  # V4: cochrane brand seeds from #0099CC — cyan hue (~230°), mid L, high C.
+  expect_gt(theme@inputs@anchors_brand_C, 0.10)
+  expect_true(theme@inputs@anchors_brand_H > 200 && theme@inputs@anchors_brand_H < 260)
   expect_false(theme@layout@container_border)
 })
 

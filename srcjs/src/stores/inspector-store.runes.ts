@@ -4,6 +4,7 @@ import { expect, test, describe } from "vitest";
 import { inspectorStore, tryTraceFromEvent } from "./inspector-store.svelte";
 import { resolveTheme } from "$lib/theme/resolve-theme";
 import { createWire } from "$lib/theme/theme-wire";
+import { inputsFromHex } from "$lib/theme/theme-presets-inputs";
 
 describe("inspectorStore", () => {
   test("starts closed and empty", () => {
@@ -15,7 +16,7 @@ describe("inspectorStore", () => {
   });
 
   test("trace() opens the panel and populates a trace", () => {
-    const resolved = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const resolved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     inspectorStore.trace("--tv-row-base-bg", resolved);
     expect(inspectorStore.state.open).toBe(true);
     expect(inspectorStore.state.cssVar).toBe("--tv-row-base-bg");
@@ -23,7 +24,7 @@ describe("inspectorStore", () => {
   });
 
   test("clearTrace() empties the trace but keeps the panel open", () => {
-    const resolved = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const resolved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     inspectorStore.trace("--tv-row-base-bg", resolved);
     inspectorStore.clearTrace();
     expect(inspectorStore.state.open).toBe(true);
@@ -32,7 +33,7 @@ describe("inspectorStore", () => {
   });
 
   test("close() resets all state", () => {
-    const resolved = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const resolved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     inspectorStore.trace("--tv-row-base-bg", resolved);
     inspectorStore.close();
     expect(inspectorStore.state.open).toBe(false);
@@ -51,7 +52,7 @@ describe("inspectorStore", () => {
 describe("tryTraceFromEvent", () => {
   test("returns false when no data-tv-token in the ancestor chain", () => {
     inspectorStore.close();
-    const resolved = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const resolved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     const el = document.createElement("div");
     const event = { target: el } as unknown as Event;
     expect(tryTraceFromEvent(event, resolved)).toBe(false);
@@ -59,7 +60,7 @@ describe("tryTraceFromEvent", () => {
 
   test("returns true and traces when ancestor has data-tv-token", () => {
     inspectorStore.close();
-    const resolved = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const resolved = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     const parent = document.createElement("div");
     parent.setAttribute("data-tv-token", "row-base-bg");
     const child = document.createElement("span");

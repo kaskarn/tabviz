@@ -10,7 +10,8 @@ web_theme_hobbit()
 A \link{WebTheme}.
 }
 \description{
-Flush shell; grain texture (paper-and-wool); high decorative-tint
-strength makes neutrals noticeably cream. IM Fell English (Caslon-
-feel) for body. Type scale 1.333 for storytelling rhythm.
+Flush shell; grain texture (paper-and-wool); decorative hue (#6B8E3D)
+routed through neutrals at high paperC/inkC makes the paper noticeably
+cream. IM Fell English (Caslon-feel) body. Type scale 1.333 for
+storytelling rhythm.
 }

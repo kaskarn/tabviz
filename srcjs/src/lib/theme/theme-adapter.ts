@@ -24,7 +24,8 @@
 
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
-import { rampStep, oklchMix, oklchDarken } from "../oklch";
+import { applyPolarityToInputs } from "./resolve-theme";
+import { rampStep, oklchMix, oklchDarken, oklchToHex } from "../oklch";
 import type {
   WebTheme, Surfaces, Content, Dividers, AccentRoles,
   StatusColors, Semantics, SlotRole, TextRole, TextRoles,
@@ -34,28 +35,15 @@ import type {
   ResolvedInputs, ThemeVariants,
 } from "../../types/theme-resolved";
 
-const DENSITY_SPACING: Record<"compact" | "comfortable" | "spacious", SpacingTokens> = {
-  compact: {
-    rowHeight: 20, headerHeight: 26, padding: 8, containerPadding: 0,
-    axisGap: 8, columnGroupPadding: 6, rowGroupPadding: 8,
-    cellPaddingX: 8, cellPaddingY: 0, groupPadding: 6,
-    footerGap: 6, titleSubtitleGap: 10,
-    headerGap: 8, bottomMargin: 12, indentPerLevel: 14,
-  },
-  comfortable: {
-    rowHeight: 24, headerHeight: 32, padding: 12, containerPadding: 0,
-    axisGap: 12, columnGroupPadding: 8, rowGroupPadding: 12,
-    cellPaddingX: 10, cellPaddingY: 0, groupPadding: 8,
-    footerGap: 8, titleSubtitleGap: 13,
-    headerGap: 12, bottomMargin: 16, indentPerLevel: 16,
-  },
-  spacious: {
-    rowHeight: 30, headerHeight: 40, padding: 16, containerPadding: 0,
-    axisGap: 16, columnGroupPadding: 12, rowGroupPadding: 16,
-    cellPaddingX: 14, cellPaddingY: 0, groupPadding: 12,
-    footerGap: 12, titleSubtitleGap: 18,
-    headerGap: 16, bottomMargin: 22, indentPerLevel: 20,
-  },
+// Density px scales live in density-presets.ts as a single source of
+// truth; both the v3 adapter (this file) and the v4 resolver
+// (resolve-theme.ts) project from there so they can't drift.
+import { densityPresetAsSpacingTokens, type DensityPreset } from "./density-presets";
+
+const DENSITY_SPACING: Record<DensityPreset, SpacingTokens> = {
+  compact:     densityPresetAsSpacingTokens("compact")     as unknown as SpacingTokens,
+  comfortable: densityPresetAsSpacingTokens("comfortable") as unknown as SpacingTokens,
+  spacious:    densityPresetAsSpacingTokens("spacious")    as unknown as SpacingTokens,
 };
 
 /** Scale every dimensional spacing token by the continuous density factor (a
@@ -85,11 +73,17 @@ function textRoleTitle(family: string, fg: string): TextRole {
   return { family, size: "1.25rem", weight: 600, figures: "proportional", fg, italic: false };
 }
 
-/** Build a resolved WebTheme from authoring inputs. */
+/** Build a resolved WebTheme from authoring inputs.
+ *
+ *  `buildThemeStructure` applies polarity reflection (Stage 1 §22)
+ *  internally; we re-apply it here only to keep the resolvedInputs block
+ *  below (primary, accent, status, ...) in sync with the reflected
+ *  anchors that downstream tokens were built from. */
 export function buildTheme(
   inputs: ThemeInputs,
   name = "custom",
 ): WebTheme {
+  const reflected = applyPolarityToInputs(inputs);
   const v3 = buildThemeStructure(inputs, name);
   const t = v3.tokens;
   const ramps = v3.ramps;
@@ -108,18 +102,18 @@ export function buildTheme(
       rampStep(ramps.neutral, 7),
       rampStep(ramps.neutral, 12),
     ],
-    primary: inputs.brand,
+    primary: oklchToHex(reflected.anchors.brand),
     primaryDeep: rampStep(ramps.brand, 11),
-    secondary: inputs.decorative ?? inputs.brand,
-    secondaryDeep: inputs.decorative
-      ? rampStep(ramps.decorative!, 11)
-      : rampStep(ramps.brand, 11),
-    accent: inputs.accent ?? inputs.brand,
+    // Decorative dropped in V4; secondary now mirrors brand (themes that
+    // want a distinct secondary surface bind it via role overrides).
+    secondary: oklchToHex(reflected.anchors.brand),
+    secondaryDeep: rampStep(ramps.brand, 11),
+    accent: oklchToHex(reflected.anchors.accent ?? reflected.anchors.brand),
     accentDeep: rampStep(ramps.accent, 11),
-    statusPositive: inputs.status?.positive ?? "#3F7D3F",
-    statusNegative: inputs.status?.negative ?? "#B33A3A",
-    statusWarning: inputs.status?.warning ?? "#C68A2E",
-    statusInfo: inputs.status?.info ?? "#1F77B4",
+    statusPositive: reflected.status?.positive ? oklchToHex(reflected.status.positive) : "#3F7D3F",
+    statusNegative: reflected.status?.negative ? oklchToHex(reflected.status.negative) : "#B33A3A",
+    statusWarning:  reflected.status?.warning  ? oklchToHex(reflected.status.warning)  : "#C68A2E",
+    statusInfo:     reflected.status?.info     ? oklchToHex(reflected.status.info)     : "#1F77B4",
     seriesAnchors: [
       rampStep(ramps.brand, 9),
       rampStep(ramps.accent, 9),
@@ -202,7 +196,7 @@ export function buildTheme(
     numeric:  textRoleBody(fontBody, t.ink),
   };
 
-  const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.densityFactor);
+  const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.density_factor);
 
   const annotation: AnnotationCluster = {
     title: text.title,
@@ -220,8 +214,8 @@ export function buildTheme(
 
   const columnGroup: HeaderCluster = {
     light: { bg: t.paper, fg: t.ink, rule: t.rule_strong },
-    tint:  { bg: t.decorative_subtle, fg: t.ink, rule: t.rule_strong },
-    bold:  { bg: t.decorative_chrome, fg: t.brand_ink, rule: t.rule_strong },
+    tint:  { bg: t.brand_subtle, fg: t.ink, rule: t.rule_strong },
+    bold:  { bg: t.brand, fg: t.brand_ink, rule: t.rule_strong },
     text:  { ...text.body, weight: 500 },
   };
 
@@ -335,7 +329,7 @@ export function buildTheme(
   };
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 4,
     name,
     webFonts: [],
     lightDarkPair: null,

@@ -4,6 +4,7 @@ import { describe, it, expect } from "bun:test";
 import { resolveTextureColors, textureKeyForCssVar, svgTexturePattern } from "./textures";
 import { resolveTheme } from "./resolve-theme";
 import { createWire } from "./theme-wire";
+import { inputsFromHex } from "./theme-presets-inputs";
 
 describe("resolveTextureColors", () => {
   it("returns 4 colors keyed on neutral grade", () => {
@@ -100,7 +101,7 @@ describe("texture knockouts (Stage 2 §4)", () => {
   it("knockout cssVars resolve to hex when shell-mode produces a hex surface", async () => {
     const { resolveTheme } = await import("./resolve-theme");
     const { createWire } = await import("./theme-wire");
-    const r = resolveTheme(createWire({ brand: "#0099CC", shell_mode: "raised" }, "t"));
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { shell_mode: "raised" }), "t"));
     expect(r.cssVars["--tv-shell-text-knockout-bg"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
     expect(r.cssVars["--tv-paper-text-knockout-bg"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });
@@ -108,14 +109,14 @@ describe("texture knockouts (Stage 2 §4)", () => {
   it("flush mode → shell knockout is transparent fallback (shellBg is transparent)", async () => {
     const { resolveTheme } = await import("./resolve-theme");
     const { createWire } = await import("./theme-wire");
-    const r = resolveTheme(createWire({ brand: "#0099CC", shell_mode: "flush" }, "t"));
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, { shell_mode: "flush" }), "t"));
     expect(r.cssVars["--tv-shell-text-knockout-bg"]).toContain("rgba");
   });
 });
 
 describe("texture → cssVars integration", () => {
   it("emits 4 texture cssVars", () => {
-    const r = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     expect(r.cssVars["--tv-shell-texture-line"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
     expect(r.cssVars["--tv-shell-texture-dot"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
     expect(r.cssVars["--tv-paper-texture-line"]).toMatch(/^#[0-9A-Fa-f]{6}$/);

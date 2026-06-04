@@ -1,24 +1,26 @@
-// Theme resolver — builds tokens/roles/clusters from inputs.
+// Theme resolver — builds tokens/roles/clusters from V4 anchors.
 //
-// 
-// 
-// `~/.claude/plans/theme-rationalization.md`.
+// V4 anchor cascade:
+//   inputs.anchors.{ paper, ink, brand, accent? } → TokenRamps:
+//     neutral: OKLCH interpolation from paper → ink
+//     brand:   oklchRamp seeded from brand anchor
+//     accent:  oklchRamp seeded from accent (or brand) anchor
+//     status:  5-step ramp per status anchor
 //
-// PR A scope (this file):
-//   - buildRamps(inputs) → TokenRamps (T0 layer)
-//   - resolveToken(name, ramps, mode) → hex string (T2 layer — demo subset)
-//   - APCA-aware on-X pair derivation (brand_ink, accent_ink, *_ink)
-//
-// PR B will expand the T2 token map to the full vocabulary, add the ref()
-// resolver path (tagged object → hex), and ship cluster + role types.
+//   resolveToken(name, ramps, mode) → hex (T2 layer — demo subset)
+//   APCA-aware on-X pair derivation (brand_ink, accent_ink, *_ink)
 
-import { oklchRamp, rampStep, pickInkOnBg, hexToOklch, oklchToHex } from "../oklch";
+import {
+  oklchRamp, oklchInterpolateRamp, rampStep, pickInkOnBg,
+  hexToOklch, oklchToHex,
+} from "../oklch";
 import { curveFn } from "./curves";
+import { applyPolarityToInputs } from "./resolve-theme";
 import type {
   ThemeInputs,
+  OklchTriple,
   TokenRamps,
   TokenName,
-  ThemeMode,
   ColorRef,
   ThemeStructure,
   ThemeRoles,
@@ -30,33 +32,28 @@ import { ref } from "../../types/theme-inputs";
 // Defaults
 // ────────────────────────────────────────────────────────────────────
 
-const DEFAULT_STATUS = {
-  positive: "#3F7D3F",
-  negative: "#B33A3A",
-  warning: "#C68A2E",
-  info: "#1F77B4",
-} as const;
+/** Default status anchors as OKLCH triples (curated semantic colors). */
+const DEFAULT_STATUS_ANCHORS: Record<
+  "positive" | "negative" | "warning" | "info",
+  OklchTriple
+> = {
+  positive: { L: 0.50, C: 0.13, H: 145 },  // ≈ #3F7D3F
+  negative: { L: 0.50, C: 0.17, H: 25 },   // ≈ #B33A3A
+  warning:  { L: 0.65, C: 0.13, H: 65 },   // ≈ #C68A2E
+  info:     { L: 0.50, C: 0.13, H: 240 },  // ≈ #1F77B4
+};
 
-const NEUTRAL_SEED = "#888888"; // achromatic seed; tinting drives hue if any
+/** Resolve a possibly-undefined status anchor to a concrete triple. */
+function statusAnchor(
+  inputs: ThemeInputs,
+  key: "positive" | "negative" | "warning" | "info",
+): OklchTriple {
+  return inputs.status?.[key] ?? DEFAULT_STATUS_ANCHORS[key];
+}
 
 // ────────────────────────────────────────────────────────────────────
 // T0 — Ramp builder
 // ────────────────────────────────────────────────────────────────────
-
-/** Resolve a neutral tint setting against the inputs into a concrete hex (or null). */
-function resolveNeutralTintHex(
-  inputs: ThemeInputs,
-  accent: string,
-  decorative: string | null,
-): string | null {
-  const tint = inputs.neutral_tint ?? "untinted";
-  if (tint === "untinted") return null;
-  if (tint === "brand") return inputs.brand;
-  if (tint === "accent") return accent;
-  if (tint === "decorative") return decorative ?? inputs.brand;
-  if (typeof tint === "object" && "hex" in tint) return tint.hex;
-  return null;
-}
 
 /** Build a 5-step status palette (just lightness variations for now; PR E refines).
  *  Takes polarity (the L direction) rather than the v3 mode. */
@@ -85,59 +82,58 @@ function stepFromLCH(L: number, C: number, H: number): string {
   return oklchToHex({ L, C, H });
 }
 
-/** Build T0 ramps from T1 inputs.
+/** Build T0 ramps from V4 anchors.
  *
- *  L direction (light vs dark) is driven by `inputs.polarity` per the
- *  Q-P4.5 mode/polarity split (decisions log 2026-06-02). `inputs.mode`
- *  now means contrast mode (standard/HC/RT), not light/dark.
+ *  L direction (light vs dark) is driven by `inputs.polarity`. The
+ *  resolver pipeline applies polarity reflection (anchor L flip) BEFORE
+ *  calling buildRamps, so by the time we arrive here paper.L > ink.L in
+ *  light mode and paper.L < ink.L in dark mode. The neutral ramp
+ *  interpolates paper → ink directly; chromatic ramps still use
+ *  oklchRamp's hand-tuned L progression seeded at the anchor's hex.
  *
  *  Per-ramp curves come from `inputs.curves` (Q-P4.3 closure). When set,
  *  the L progression for that ramp is curve-derived; when unset, falls
- *  back to the hand-tuned LIGHT_RAMP_L. */
+ *  back to the hand-tuned LIGHT_RAMP_L (chromatic) or linear (neutral).
+ *
+ *  `inputs.mode` is the accessibility axis (standard/HC/RT), polarity-
+ *  orthogonal. */
 export function buildRamps(inputs: ThemeInputs): TokenRamps {
   const polarity: "light" | "dark" = inputs.polarity ?? "light";
-  const accent = inputs.accent ?? inputs.brand;
-  const decorative = inputs.decorative ?? null;
 
-  const tintHex = resolveNeutralTintHex(inputs, accent, decorative);
-  const tintAmount = tintHex !== null ? (inputs.neutral_tint_strength ?? 0.04) : 0;
+  // Tier 1 anchors as OKLCH triples + their hex projections for the
+  // chromatic ramp builder (which expects a hex seed).
+  const paper = inputs.anchors.paper;
+  const ink = inputs.anchors.ink;
+  const brand = inputs.anchors.brand;
+  const accent = inputs.anchors.accent ?? brand;
+  const brandHex = oklchToHex(brand);
+  const accentHex = oklchToHex(accent);
 
-  // Per-ramp curves; undefined = use hand-tuned LIGHT_RAMP_L.
+  // Per-ramp curves; undefined = use hand-tuned LIGHT_RAMP_L (chromatic)
+  // or linear (neutral).
   const cN = inputs.curves?.neutral ? curveFn(inputs.curves.neutral) : undefined;
   const cB = inputs.curves?.brand ? curveFn(inputs.curves.brand) : undefined;
   const cA = inputs.curves?.accent ? curveFn(inputs.curves.accent) : undefined;
 
-  const neutral = oklchRamp(NEUTRAL_SEED, {
-    mode: polarity,
-    chromaPeak: 0, // achromatic seed
-    tintHex: tintHex ?? undefined,
-    tintAmount,
-    curve: cN,
-  });
+  // Neutral ramp: OKLCH interpolation paper → ink. Every step lies on
+  // the line between the two neutral anchors.
+  const neutral = oklchInterpolateRamp(paper, ink, { curve: cN });
 
-  const brand = oklchRamp(inputs.brand, { mode: polarity, curve: cB });
-  const accentRamp = oklchRamp(accent, { mode: polarity, curve: cA });
-  const decorativeRamp = decorative !== null
-    ? oklchRamp(decorative, { mode: polarity, curve: cA })  // decorative shares accent curve
-    : null;
-
-  const statusSeeds = {
-    positive: inputs.status?.positive ?? DEFAULT_STATUS.positive,
-    negative: inputs.status?.negative ?? DEFAULT_STATUS.negative,
-    warning: inputs.status?.warning ?? DEFAULT_STATUS.warning,
-    info: inputs.status?.info ?? DEFAULT_STATUS.info,
-  };
+  // Chromatic ramps still ride the hand-tuned chromatic L progression
+  // (LIGHT_RAMP_L / DARK_RAMP_L) so the chroma peak lands at step 9.
+  // A future revision (Phase D) can rebase these on paper.L → ink.L too.
+  const brandRamp = oklchRamp(brandHex, { mode: polarity, curve: cB });
+  const accentRamp = oklchRamp(accentHex, { mode: polarity, curve: cA });
 
   return {
     neutral,
-    brand,
+    brand: brandRamp,
     accent: accentRamp,
-    decorative: decorativeRamp,
     status: {
-      positive: buildStatusRamp(statusSeeds.positive, polarity),
-      negative: buildStatusRamp(statusSeeds.negative, polarity),
-      warning: buildStatusRamp(statusSeeds.warning, polarity),
-      info: buildStatusRamp(statusSeeds.info, polarity),
+      positive: buildStatusRamp(oklchToHex(statusAnchor(inputs, "positive")), polarity),
+      negative: buildStatusRamp(oklchToHex(statusAnchor(inputs, "negative")), polarity),
+      warning:  buildStatusRamp(oklchToHex(statusAnchor(inputs, "warning")),  polarity),
+      info:     buildStatusRamp(oklchToHex(statusAnchor(inputs, "info")),     polarity),
     },
   };
 }
@@ -224,16 +220,6 @@ export function resolveToken(
       );
     }
 
-    // Decorative — falls back to brand subtle when not set
-    case "decorative_subtle":
-      return ramps.decorative !== null
-        ? rampStep(ramps.decorative, 2)
-        : rampStep(ramps.brand, 2);
-    case "decorative_chrome":
-      return ramps.decorative !== null
-        ? rampStep(ramps.decorative, 6)
-        : rampStep(ramps.brand, 6);
-
     // Lines
     case "rule_subtle":    return rampStep(ramps.neutral, 6);
     case "rule_strong":    return rampStep(ramps.neutral, 7);
@@ -289,7 +275,6 @@ export function resolveAllTokens(
     "ink", "ink_muted", "ink_subtle", "ink_disabled",
     "brand", "brand_hover", "brand_active", "brand_subtle", "brand_ink", "brand_ink_muted",
     "accent", "accent_subtle", "accent_ink", "accent_ink_muted",
-    "decorative_subtle", "decorative_chrome",
     "rule_subtle", "rule_strong",
     "positive", "positive_ink",
     "negative", "negative_ink",
@@ -307,8 +292,8 @@ export function resolveAllTokens(
 
 const HEX_PATTERN = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
 
-/** Match `ramp.NN` form: brand.9, neutral.3, accent.2, decorative.10. */
-const RAMP_STEP_RE = /^(neutral|brand|accent|decorative)\.(\d+)$/;
+/** Match `ramp.NN` form: brand.9, neutral.3, accent.2. */
+const RAMP_STEP_RE = /^(neutral|brand|accent)\.(\d+)$/;
 
 function isHex(s: string): boolean {
   return HEX_PATTERN.test(s);
@@ -317,13 +302,11 @@ function isHex(s: string): boolean {
 function resolveRampStepRef(refStr: string, ramps: TokenRamps): string | null {
   const m = RAMP_STEP_RE.exec(refStr);
   if (!m) return null;
-  const ramp = m[1] as "neutral" | "brand" | "accent" | "decorative";
+  const ramp = m[1] as "neutral" | "brand" | "accent";
   const step = parseInt(m[2]!, 10);
-  let r: string[] | null;
-  if (ramp === "neutral") r = ramps.neutral;
-  else if (ramp === "brand") r = ramps.brand;
-  else if (ramp === "accent") r = ramps.accent;
-  else r = ramps.decorative ?? ramps.brand;
+  const r = ramp === "neutral" ? ramps.neutral
+          : ramp === "brand"   ? ramps.brand
+          : ramps.accent;
   return rampStep(r, step);
 }
 
@@ -432,8 +415,8 @@ export function defaultClusters(): ClustersInputs {
     },
     columnGroup: {
       light: { bg: ref("paper"),               fg: ref("ink"),            rule: ref("rule_strong") },
-      tint:  { bg: ref("decorative_subtle"),   fg: ref("ink"),            rule: ref("rule_strong") },
-      bold:  { bg: ref("decorative_chrome"),   fg: ref("brand_ink"),      rule: ref("rule_strong") },
+      tint:  { bg: ref("brand_subtle"),  fg: ref("ink"),       rule: ref("rule_strong") },
+      bold:  { bg: ref("brand"),         fg: ref("brand_ink"), rule: ref("rule_strong") },
     },
     rowGroup: {
       L1: { bg: ref("brand_subtle"),  fg: ref("ink"),       rule: ref("rule_strong"), fontWeight: 600 },
@@ -497,12 +480,16 @@ export function buildThemeStructure(
   inputs: ThemeInputs,
   name = "custom",
 ): ThemeStructure {
-  const ramps = buildRamps(inputs);
+  // Apply polarity reflection (Stage 1 §22) up front so every consumer
+  // of buildThemeStructure — buildTheme adapter, resolveWire, direct
+  // callers — sees the reflected anchors before ramp generation.
+  const reflected = applyPolarityToInputs(inputs);
+  const ramps = buildRamps(reflected);
   const tokens = resolveAllTokens(ramps);
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     name,
-    inputs,
+    inputs: reflected,
     ramps,
     tokens,
     roles: defaultRoles(),

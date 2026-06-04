@@ -4,6 +4,7 @@ import { describe, it, expect } from "bun:test";
 import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
 import { resolveTheme } from "./resolve-theme";
 import { createWire } from "./theme-wire";
+import { inputsFromHex } from "./theme-presets-inputs";
 
 describe("resolveElevationShadows", () => {
   it("returns 4 hue-aware rgba colors for a white paper", () => {
@@ -48,7 +49,7 @@ describe("elevationKeyForCssVar", () => {
 
 describe("elevation → cssVars integration", () => {
   it("emits 4 shadow cssVars", () => {
-    const r = resolveTheme(createWire({ brand: "#0099CC" }, "t"));
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     expect(r.cssVars["--tv-shadow-raised-near"]).toContain("rgba");
     expect(r.cssVars["--tv-shadow-raised-far"]).toContain("rgba");
     expect(r.cssVars["--tv-shadow-overlay-near"]).toContain("rgba");
@@ -56,8 +57,8 @@ describe("elevation → cssVars integration", () => {
   });
 
   it("dark polarity gives different shadow base than light", () => {
-    const light = resolveTheme(createWire({ brand: "#0099CC", polarity: "light" }, "t"));
-    const dark  = resolveTheme(createWire({ brand: "#0099CC", polarity: "dark" }, "t"));
+    const light = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC", polarity: "light" }), "t"));
+    const dark  = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC", polarity: "dark" }), "t"));
     expect(light.cssVars["--tv-shadow-raised-near"])
       .not.toBe(dark.cssVars["--tv-shadow-raised-near"]);
   });

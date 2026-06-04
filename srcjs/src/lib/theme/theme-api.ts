@@ -37,6 +37,7 @@ export const themeDwarven       = (): WebTheme => buildTheme(PRESETS.dwarven,   
 export const themeElvish        = (): WebTheme => buildTheme(PRESETS.elvish,          "elvish");
 export const themeHobbit        = (): WebTheme => buildTheme(PRESETS.hobbit,          "hobbit");
 export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave,       "synthwave");
+export const themeBrutalist     = (): WebTheme => buildTheme(PRESETS.brutalist,       "brutalist");
 export const themeAtelier       = (): WebTheme => buildTheme(PRESETS.atelier,         "atelier");
 export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive,       "executive");
 
@@ -46,12 +47,9 @@ export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive, 
 
 export interface WebThemeArgs {
   name?: string;
-  /** Brand seed. Powers the brand ramp and identity tokens. */
-  brand?: string;
-  /** Engagement seed (hover/selected/callouts). Defaults to brand. */
-  accent?: string;
-  /** Optional second color for two-color editorial themes. */
-  decorative?: string;
+  /** Partial anchor overrides. Each anchor is an OKLCH triple {L, C, H};
+   *  missing anchors inherit from the base preset. */
+  anchors?: Partial<ThemeInputs["anchors"]>;
   mode?: "standard" | "high-contrast" | "reduced-transparency";
   polarity?: "light" | "dark";
   density?: "compact" | "comfortable" | "spacious";
@@ -59,13 +57,13 @@ export interface WebThemeArgs {
   sequential?: string;
   diverging?: string;
   fonts?: { body?: string; display?: string; mono?: string };
-  status?: { positive?: string; negative?: string; warning?: string; info?: string };
+  status?: ThemeInputs["status"];
   /** Base preset name; defaults to `"cochrane"`. */
   baseTheme?: PresetName;
 }
 
 const INPUT_KEYS: readonly (keyof ThemeInputs)[] = [
-  "brand", "accent", "decorative", "mode", "polarity", "neutral_tint",
+  "anchors", "mode", "polarity",
   "categorical", "sequential", "diverging", "status", "fonts", "density",
 ];
 
@@ -77,7 +75,12 @@ export function webTheme(args: WebThemeArgs = {}): WebTheme {
     const v = (args as Record<string, unknown>)[k as string];
     if (v !== undefined) (overlay as Record<string, unknown>)[k as string] = v;
   }
-  const inputs: ThemeInputs = { ...baseInputs, ...overlay };
+  // Anchors deep-merge: partial anchor overrides inherit unspecified slots
+  // from the base preset.
+  const mergedAnchors = args.anchors
+    ? { ...baseInputs.anchors, ...args.anchors }
+    : baseInputs.anchors;
+  const inputs: ThemeInputs = { ...baseInputs, ...overlay, anchors: mergedAnchors };
   return buildTheme(inputs, args.name ?? "custom");
 }
 
@@ -85,10 +88,17 @@ export function webTheme(args: WebThemeArgs = {}): WebTheme {
 // Name-string resolver (for tabviz({ theme: "lancet" }))
 // ────────────────────────────────────────────────────────────────────
 
+/** Overrides shape for ThemeRef. Same as `Partial<ThemeInputs>` except
+ *  `anchors` is `Partial<ThemeAnchors>` (any subset of paper/ink/brand/
+ *  accent) so callers can override just one anchor and inherit the rest. */
+export type ThemeRefOverrides = Partial<Omit<ThemeInputs, "anchors">> & {
+  anchors?: Partial<ThemeInputs["anchors"]>;
+};
+
 export type ThemeRef =
   | PresetName
   | WebTheme
-  | { extend: PresetName; overrides?: Partial<ThemeInputs> };
+  | { extend: PresetName; overrides?: ThemeRefOverrides };
 
 export function resolveThemeRef(ref: ThemeRef): WebTheme {
   if (typeof ref === "string") {
@@ -96,11 +106,25 @@ export function resolveThemeRef(ref: ThemeRef): WebTheme {
   }
   if (isResolvedTheme(ref)) return ref;
   const baseInputs = PRESETS[ref.extend];
-  return buildTheme({ ...baseInputs, ...ref.overrides }, ref.extend);
+  // V4: anchors deep-merge so a partial `{ anchors: { brand } }` override
+  // inherits the base's paper/ink/accent.
+  const mergedAnchors = ref.overrides?.anchors
+    ? { ...baseInputs.anchors, ...ref.overrides.anchors }
+    : baseInputs.anchors;
+  const merged: ThemeInputs = {
+    ...baseInputs,
+    ...ref.overrides,
+    anchors: mergedAnchors,
+  };
+  return buildTheme(merged, ref.extend);
 }
 
+// `WebTheme.schemaVersion = 4` post-coherence (was at `2` through v3).
+// Aligned with `ThemeStructure.schemaVersion = 4` so both versions track
+// the V4 substrate together. The wire-spec version (`CURRENT_VERSION` in
+// spec/index.ts, currently 1.2) is unrelated.
 function isResolvedTheme(x: unknown): x is WebTheme {
-  return typeof x === "object" && x !== null && (x as { schemaVersion?: number }).schemaVersion === 2;
+  return typeof x === "object" && x !== null && (x as { schemaVersion?: number }).schemaVersion === 4;
 }
 
 export type { ThemeInputs, WebTheme };
