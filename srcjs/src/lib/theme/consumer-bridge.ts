@@ -191,3 +191,85 @@ export function readTypeWeight(
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// V3→V4 cutover helpers — color clusters.
+//
+// Each cluster (content / divider / accent / surface / row) gets a tiny
+// helper that wraps the cssVar read with a literal sensible fallback.
+// The fallback exists only for type safety (string return); per the
+// readVar dev-throw + render-smoke gate (test-render-smoke.R), it never
+// fires in production flows — every renderer-mounted theme has
+// `authoringInputs` set, which guarantees the full v4 manifest is in
+// cssVars. The literal defaults are sized for a generic editorial
+// light-theme (cochrane-shaped) so any future surprise fallback at
+// least renders something legible rather than transparent.
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Read --tv-text (body/cell foreground). Replaces v3 `theme.content.primary`. */
+export function readContentPrimary(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-text", "#1a1a1a") ?? "#1a1a1a";
+}
+
+/** Read --tv-text-muted. Replaces v3 `theme.content.secondary`. */
+export function readContentSecondary(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-text-muted", "#666666") ?? "#666666";
+}
+
+/** Read --tv-text-subtle. Replaces v3 `theme.content.muted`. */
+export function readContentMuted(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-text-subtle", "#999999") ?? "#999999";
+}
+
+/** Read --tv-cell-border. Replaces v3 `theme.divider.subtle`. */
+export function readDividerSubtle(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-cell-border", "#e5e5e5") ?? "#e5e5e5";
+}
+
+/** Read --tv-border. Replaces v3 `theme.divider.strong`. */
+export function readDividerStrong(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-border", "#999999") ?? "#999999";
+}
+
+/** Read --tv-accent. Replaces v3 `theme.accent.default`. */
+export function readAccentDefault(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-accent", "#0066CC") ?? "#0066CC";
+}
+
+/** Read --tv-surface-bg. Replaces v3 `theme.surface.base`. */
+export function readSurfaceBg(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-surface-bg", "#FFFFFF") ?? "#FFFFFF";
+}
+
+/** Read --tv-row-alt-bg. Replaces v3 `theme.row.alt.bg`. */
+export function readRowAltBg(cssVars: Record<string, string>): string {
+  return readVar(cssVars, "--tv-row-alt-bg", "#F7F7F7") ?? "#F7F7F7";
+}
+
+// Typography shorthand helpers — eliminate the most common v3 paths
+// (theme.text.body.family, theme.text.body.size, theme.text.label.size,
+// theme.text.cell.size). All return CSS-dimension strings to match the
+// type expected by SVG attribute interpolation and the parseFontSize
+// utility.
+
+/** Read --tv-text-body-family. Replaces v3 `theme.text.body.family`. */
+export function readBodyFamily(cssVars: Record<string, string>): string {
+  return readTypeFamily(cssVars, "body",
+    "system-ui, -apple-system, sans-serif");
+}
+
+/** Read --tv-text-body-size. Replaces v3 `theme.text.body.size` (a
+ *  dimension string the consumer normally passes to parseFontSize). */
+export function readBodySize(cssVars: Record<string, string>): string {
+  return readTypeSize(cssVars, "body", "14px");
+}
+
+/** Read --tv-text-label-size. Replaces v3 `theme.text.label.size`. */
+export function readLabelSize(cssVars: Record<string, string>): string {
+  return readTypeSize(cssVars, "label", "10.5px");
+}
+
+/** Read --tv-text-cell-size. Replaces v3 `theme.text.cell.size`. */
+export function readCellSize(cssVars: Record<string, string>): string {
+  return readTypeSize(cssVars, "cell", "14px");
+}

@@ -57,7 +57,14 @@ import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distri
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
-import { getCssVars, readVar, readVarPx, readTypeFamily, readTypeSize, readTypeWeight } from "$lib/theme/consumer-bridge";
+import {
+  getCssVars, readVar, readVarPx,
+  readTypeFamily, readTypeSize, readTypeWeight,
+  readContentPrimary, readContentSecondary, readContentMuted,
+  readDividerSubtle, readDividerStrong,
+  readAccentDefault, readSurfaceBg, readRowAltBg,
+  readBodyFamily, readBodySize, readLabelSize, readCellSize,
+} from "$lib/theme/consumer-bridge";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
@@ -300,10 +307,7 @@ function calculateSvgAutoWidths(
 ): Map<string, number> {
   const widths = new Map<string, number>();
   const cssVarsLocal = getCssVars(spec.theme);
-  // bodySizeStr stays at v3 value so the string-equality check against
-  // headerExplicit retains v3 semantics (preserving the 5% header scale-up
-  // path). fontSize itself routes through v4 cssVars.
-  const bodySizeStr = spec.theme.text.body.size;
+  const bodySizeStr = readBodySize(cssVarsLocal);
   const fontSize = parseFontSize(readTypeSize(cssVarsLocal, "body", bodySizeStr));
   // Header cells: use the explicit theme.header.text.size when it's been
   // pinned distinct from body.size; otherwise apply the historical 5%
@@ -321,8 +325,8 @@ function calculateSvgAutoWidths(
   // Padding values from theme (not hardcoded magic numbers). v4 cssVars when
   // available; v3 fallback otherwise.
   const cssVars = getCssVars(spec.theme);
-  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", spec.theme.spacing.cellPaddingX ?? 10) * 2;
-  const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", spec.theme.spacing.groupPadding ?? 8) * 2;
+  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
+  const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", 8) * 2;
 
   // ========================================================================
   // PHASE 1: Measure leaf column content
@@ -515,16 +519,13 @@ function countGroupDescendantRows(
  */
 function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
   const cssVarsLocal = getCssVars(spec.theme);
-  // bodySizeStr stays at v3 value for the string-equality check; fontSize
-  // routes through v4 (see calculateSvgAutoWidths for the same pattern).
-  const bodySizeStr = spec.theme.text.body.size;
+  const bodySizeStr = readBodySize(cssVarsLocal);
   const fontSize = parseFontSize(readTypeSize(cssVarsLocal, "body", bodySizeStr));
   // Canonical indent token: the renderer indents by
   // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
   // Budget label width with the same value so it doesn't under-size at depth.
   // v4 reads --tv-spacing-indent-per-level (kept in sync with rowGroup.indentPerLevel).
-  const indentPx = readVarPx(cssVarsLocal, "--tv-spacing-indent-per-level",
-    spec.theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
+  const indentPx = readVarPx(cssVarsLocal, "--tv-spacing-indent-per-level", SPACING.INDENT_PER_LEVEL);
   // Header in the primary (label) column is rendered bold at the same scaled
   // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
   // a long primary header doesn't squeeze the label column and trigger
@@ -536,7 +537,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   // Use theme-based padding (not hardcoded magic numbers)
   const cssVars = getCssVars(spec.theme);
-  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
   let maxWidth = 0;
 
   // Build group depth map for calculating row indentation
@@ -600,7 +601,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
       if (showGroupCounts) {
         const rowCount = countGroupDescendantRows(group.id, groups, spec.data.rows);
         const countText = `(${rowCount})`;
-        const countFontSize = fontSize * 0.75; // matches theme.text.label.size
+        const countFontSize = fontSize * 0.75; // matches readLabelSize(cssVars)
         countWidth = estimateTextWidth(countText, countFontSize) + GROUP_HEADER.GAP;
       }
 
@@ -659,8 +660,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // numbers. When theme.authoringInputs is unavailable, cssVars is empty and
   // every readVarPx call falls back to theme.spacing.* — identical behavior.
   const cssVars = getCssVars(theme);
-  const rowHeight = readVarPx(cssVars, "--tv-spacing-row-height", theme.spacing.rowHeight);
-  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
+  const rowHeight = readVarPx(cssVars, "--tv-spacing-row-height", 34);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
@@ -678,8 +679,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // (× headerFontScale × line-height) needs — matches tabvizStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
   const effectiveHeaderHeight = computeHeaderHeight({
-    bodyFontPx: parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size)),
-    themeHeaderHeight: readVarPx(cssVars, "--tv-spacing-header-height", theme.spacing.headerHeight),
+    bodyFontPx: parseFontSize(readBodySize(cssVars)),
+    themeHeaderHeight: readVarPx(cssVars, "--tv-spacing-header-height", 34),
     headerDepth,
   });
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
@@ -701,16 +702,16 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // constants tuned for the default font profile, which truncated the
   // title (or padded too much) when users picked larger / smaller fonts.
   const lineHeight = 1.5;
-  const titleHeight = hasTitle ? textRegionHeight(theme.text.subtitle.size, lineHeight) : 0;
-  const subtitleHeight = hasSubtitle ? textRegionHeight(theme.text.body.size, lineHeight) : 0;
+  const titleHeight = hasTitle ? textRegionHeight(readTypeSize(cssVars, "subtitle", "16.8px"), lineHeight) : 0;
+  const subtitleHeight = hasSubtitle ? textRegionHeight(readBodySize(cssVars), lineHeight) : 0;
   // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
   // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
   // padding = 6+1+6).
-  const titleSubtitleGap = (hasTitle && hasSubtitle) ? readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", theme.spacing.titleSubtitleGap ?? 13) : 0;
+  const titleSubtitleGap = (hasTitle && hasSubtitle) ? readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", 13) : 0;
   const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
 
-  const captionHeight = hasCaption ? textRegionHeight(theme.text.label.size, lineHeight) : 0;
-  const footnoteHeight = hasFootnote ? textRegionHeight(theme.text.label.size, lineHeight) : 0;
+  const captionHeight = hasCaption ? textRegionHeight(readLabelSize(cssVars), lineHeight) : 0;
+  const footnoteHeight = hasFootnote ? textRegionHeight(readLabelSize(cssVars), lineHeight) : 0;
   // Pre-spacing above the caption is already supplied by `footerGap`;
   // adding `padding` here too double-counted the air between axis end
   // and caption text. Remove and let footerGap own that gap exclusively.
@@ -767,8 +768,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   });
   const wrapLineCounts: Record<string, number> = {};
   if (wrapEnabledCols.length > 0) {
-    const dataFontSize = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
-    const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
+    const dataFontSize = parseFontSize(readBodySize(cssVars));
+    const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
     for (const row of spec.data.rows) {
       let maxLines = 1;
       for (const col of wrapEnabledCols) {
@@ -799,14 +800,14 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Group-header rows take the themed `rowGroupPadding` (mirrors the
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
-  const rowGroupPadding = readVarPx(cssVars, "--tv-spacing-row-group-padding", theme.spacing.rowGroupPadding ?? 0);
-  const dataLineHeightPx = Math.ceil(parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size)) * LINE_HEIGHT);
+  const rowGroupPadding = readVarPx(cssVars, "--tv-spacing-row-group-padding", 0);
+  const dataLineHeightPx = Math.ceil(parseFontSize(readBodySize(cssVars)) * LINE_HEIGHT);
   // Per-row intrinsic content height (stacked pictograms, tall icons,
   // multi-effect forest, sparkline/img) — estimator path for V8/export.
   const contentHeights = computeContentHeights(allColumns, spec.data.rows, {
     rowHeight,
     lineHeight: LINE_HEIGHT,
-    fontSize: parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size)),
+    fontSize: parseFontSize(readBodySize(cssVars)),
   });
   // Details panels are content-driven; V8 has no DOM to measure, so size each
   // from its wrapped plain-text line count. Wrap width = the canvas width
@@ -815,7 +816,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   {
     const panelCanvasW = options.width ?? LAYOUT.DEFAULT_WIDTH;
     const panelInner = panelInnerWidth(panelCanvasW, padding);
-    const panelFontPx = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
+    const panelFontPx = parseFontSize(readBodySize(cssVars));
     for (const dr of displayRows) {
       if (dr.type !== "panel") continue;
       const lines = wrapPanelLines(dr.content, panelInner, panelFontPx);
@@ -902,7 +903,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
   // no bottom axis, so reserving ~76px of axis height caused truncation.
-  const axisGap = readVarPx(cssVars, "--tv-spacing-axis-gap", theme.spacing.axisGap ?? DEFAULT_AXIS_GAP);
+  const axisGap = readVarPx(cssVars, "--tv-spacing-axis-gap", DEFAULT_AXIS_GAP);
   const hasAxisColumn = allColumns.some(
     c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
   );
@@ -919,9 +920,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     return false;
   });
   const axisLayout = computeAxisLayout(
-    { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
+    { fontSizeSm: readLabelSize(cssVars), lineHeight: 1.5 },
     someColumnHasAxisLabel,
-    theme.plot.tickMarkLength,
+    readVarPx(cssVars, "--tv-plot-tick-mark-length", 5),
   );
   const webAxisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisLayout.axisRegionHeight);
   // Include the themed footer gap when there's a footer to render — the
@@ -931,12 +932,12 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // (where `webAxisHeight === 0` meant less buffer space to absorb the
   // mismatch).
   const footerGap = (spec.labels?.caption || spec.labels?.footnote)
-    ? readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
+    ? readVarPx(cssVars, "--tv-spacing-footer-gap", 8)
     : 0;
   // Bottom margin: themable via spacing.bottom_margin (default 16 to
   // mirror the prior LAYOUT.BOTTOM_MARGIN constant).
-  const bottomMargin = readVarPx(cssVars, "--tv-spacing-bottom-margin", theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN);
-  const headerGap = readVarPx(cssVars, "--tv-spacing-header-gap", theme.spacing.headerGap ?? 12);
+  const bottomMargin = readVarPx(cssVars, "--tv-spacing-bottom-margin", LAYOUT.BOTTOM_MARGIN);
+  const headerGap = readVarPx(cssVars, "--tv-spacing-header-gap", 12);
   const totalHeight = headerTextHeight + padding +
     headerGap +
     headerHeight + plotHeight +
@@ -982,8 +983,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // the axis region in the export.
     footerY: headerTextHeight + padding + headerGap
            + headerHeight + plotHeight + webAxisHeight
-           + readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8)
-           + Math.round(parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size)) * 0.85),
+           + readVarPx(cssVars, "--tv-spacing-footer-gap", 8)
+           + Math.round(parseFontSize(readLabelSize(cssVars)) * 0.85),
     axisGap,
     rowsHeight,
     autoWidths,
@@ -1420,7 +1421,7 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings
     scale: forestSettings.scale,
     nullValue: forestSettings.nullValue,
     forestWidth,
-    pointSize: spec.theme.plot.pointSize,
+    pointSize: readVarPx(getCssVars(spec.theme), "--tv-plot-point-size", 6),
     effects: forestSettings.effects,
     pointCol: forestSettings.pointCol,
     lowerCol: forestSettings.lowerCol,
@@ -1441,20 +1442,16 @@ function renderHeader(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
-  const subtitleFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
-  const separatorStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
+  const subtitleFg = readContentSecondary(cssVars);
+  const separatorStroke = readDividerSubtle(cssVars);
 
   if (spec.labels?.title) {
-    const fontSize = parseFontSize(readTypeSize(cssVars, "title", theme.text.subtitle.size));
+    const fontSize = parseFontSize(readTypeSize(cssVars, "title", readTypeSize(cssVars, "subtitle", "16.8px")));
     const titleFamily = readTypeFamily(cssVars, "title",
-      theme.text.title?.family ?? theme.text.body.family);
+      readTypeFamily(cssVars, "title", readBodyFamily(cssVars)));
     const titleWeight = readTypeWeight(cssVars, "title", 600);
-    const titleFg = readVar(
-      cssVars,
-      "--tv-text-title-fg",
-      theme.text.title?.fg ?? theme.content.primary,
-    );
+    const titleFg = readVar(cssVars, "--tv-text-title-fg", readContentPrimary(cssVars));
     lines.push(`<text x="${padding}" y="${layout.titleY}"
       font-family="${titleFamily}"
       font-size="${fontSize}px"
@@ -1463,8 +1460,8 @@ function renderHeader(
   }
 
   if (spec.labels?.subtitle) {
-    const fontSize = parseFontSize(readTypeSize(cssVars, "subtitle", theme.text.body.size));
-    const subtitleFamily = readTypeFamily(cssVars, "subtitle", theme.text.body.family);
+    const fontSize = parseFontSize(readTypeSize(cssVars, "subtitle", readBodySize(cssVars)));
+    const subtitleFamily = readTypeFamily(cssVars, "subtitle", readBodyFamily(cssVars));
     const subtitleWeight = readTypeWeight(cssVars, "subtitle", 400);
     lines.push(`<text x="${padding}" y="${layout.subtitleY}"
       font-family="${subtitleFamily}"
@@ -1477,7 +1474,7 @@ function renderHeader(
   // Web CSS has 6px padding-top on subtitle after the border, so position separator
   // to leave 6px gap between it and the subtitle text top
   if (spec.labels?.title && spec.labels?.subtitle) {
-    const subtitleFontSize = parseFontSize(readTypeSize(cssVars, "subtitle", theme.text.body.size));
+    const subtitleFontSize = parseFontSize(readTypeSize(cssVars, "subtitle", readBodySize(cssVars)));
     const subtitleAscent = subtitleFontSize * 0.75; // Approximate ascent (text top from baseline)
     const separatorY = layout.subtitleY - subtitleAscent - 6; // 6px gap like web CSS padding-top
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
@@ -1495,18 +1492,18 @@ function renderFooter(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const padding = readVarPx(cssVars, "--tv-spacing-padding", theme.spacing.padding);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
   let y = layout.footerY;
-  const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
-  const captionFg = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
-  const footnoteFg = readVar(cssVars, "--tv-text-footnote-fg", theme.content.muted);
+  const borderStroke = readDividerSubtle(cssVars);
+  const captionFg = readContentSecondary(cssVars);
+  const footnoteFg = readVar(cssVars, "--tv-text-footnote-fg", readContentMuted(cssVars));
 
   // Draw footer border (1px) when caption or footnote exists, matching web view's PlotFooter border-top
   const hasFooter = !!spec.labels?.caption || !!spec.labels?.footnote;
   if (hasFooter) {
     // Border sits `footer_gap` above the text baseline — footerY already
     // includes the themed gap.
-    const gap = readVarPx(cssVars, "--tv-spacing-footer-gap", theme.spacing.footerGap ?? 8);
+    const gap = readVarPx(cssVars, "--tv-spacing-footer-gap", 8);
     const borderY = layout.footerY - gap;
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${borderY}" y2="${borderY}"
@@ -1514,21 +1511,21 @@ function renderFooter(
   }
 
   if (spec.labels?.caption) {
-    const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
+    const fontSize = parseFontSize(readLabelSize(cssVars));
     lines.push(`<text x="${padding}" y="${y}"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+      font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px"
       font-weight="${400}"
       fill="${captionFg}">${escapeXml(spec.labels.caption)}</text>`);
     // Advance Y by the caption's actual line height — derived from
     // typography rather than the hardcoded 16px constant.
-    y += textRegionHeight(theme.text.label.size, 1.5);
+    y += textRegionHeight(readLabelSize(cssVars), 1.5);
   }
 
   if (spec.labels?.footnote) {
-    const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
+    const fontSize = parseFontSize(readLabelSize(cssVars));
     lines.push(`<text x="${padding}" y="${y}"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+      font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px"
       font-weight="${400}"
       font-style="italic"
@@ -1552,14 +1549,14 @@ function renderDetailsPanel(
   theme: WebTheme,
   cssVars: Record<string, string>,
 ): string {
-  const fontPx = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
+  const fontPx = parseFontSize(readBodySize(cssVars));
   const lineH = Math.ceil(fontPx * LINE_HEIGHT);
   const lines = wrapPanelLines(content, panelInnerWidth(canvasWidth, padding), fontPx);
-  const surfaceBase = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
-  const bg = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg) ?? surfaceBase;
-  const fg = readVar(cssVars, "--tv-text", theme.content.primary);
-  const dividerSubtle = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
-  const family = theme.text.body.family;
+  const surfaceBase = readSurfaceBg(cssVars);
+  const bg = readRowAltBg(cssVars) ?? surfaceBase;
+  const fg = readContentPrimary(cssVars);
+  const dividerSubtle = readDividerSubtle(cssVars);
+  const family = readBodyFamily(cssVars);
   const out: string[] = [];
   out.push(`<rect x="0" y="${y}" width="${canvasWidth}" height="${rowHeight}" fill="${bg}" />`);
   out.push(`<line x1="0" y1="${y + rowHeight}" x2="${canvasWidth}" y2="${y + rowHeight}" stroke="${dividerSubtle}" stroke-width="1" />`);
@@ -1588,9 +1585,9 @@ function renderGroupHeader(
   const lines: string[] = [];
 
   // Group-header colors (v4 cssVars → v3 fallback).
-  const labelFg = readVar(cssVars, "--tv-text", theme.content.primary);
-  const countFg = readVar(cssVars, "--tv-text-subtle", theme.content.muted);
-  const borderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+  const labelFg = readContentPrimary(cssVars);
+  const countFg = readContentMuted(cssVars);
+  const borderStroke = readDividerSubtle(cssVars);
 
   // Get level-based styling (depth is 0-indexed, level is 1-indexed)
   const level = depth + 1;
@@ -1598,7 +1595,7 @@ function renderGroupHeader(
              : level === 2 ? theme.rowGroup.L2
              : theme.rowGroup.L3;
 
-  const fontSize = parseFontSize(tier.text?.size ?? theme.text.body.size);
+  const fontSize = parseFontSize(tier.text?.size ?? readBodySize(cssVars));
   const fontWeight = tier.text?.weight ?? (level === 1 ? 600 : level === 2 ? 500 : 400);
   const italic = tier.text?.italic ?? false;
   let background: string | null = tier.bg ?? null;
@@ -1622,7 +1619,7 @@ function renderGroupHeader(
 
   // Use row center - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
-  const indent = depth * (theme.rowGroup.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
+  const indent = depth * readVarPx(cssVars, "--tv-spacing-indent-per-level", SPACING.INDENT_PER_LEVEL);
 
   // Group header background. When the caller passes renderBackground=false,
   // banding's row-paint pass is already filling this row at the group's
@@ -1645,10 +1642,10 @@ function renderGroupHeader(
 
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
-  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
   const labelX = x + cellPadX + indent;
   lines.push(`<text class="cell-text" dominant-baseline="central" x="${labelX}" y="${textY}"
-    font-family="${theme.text.body.family}"
+    font-family="${readBodyFamily(cssVars)}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
     fill="${labelFg}">${escapeXml(label)}</text>`);
@@ -1658,11 +1655,11 @@ function renderGroupHeader(
   if (rowCount > 0) {
     // Use smart measurement: canvas in browser, estimation in V8/Node
     // measureTextWidth handles font-weight adjustment internally
-    const labelWidth = measureTextWidth(label, fontSize, theme.text.body.family, fontWeight);
+    const labelWidth = measureTextWidth(label, fontSize, readBodyFamily(cssVars), fontWeight);
     const countX = labelX + labelWidth + 6; // 6px gap (matches web's flex gap)
-    const countFontSize = parseFontSize(theme.text.label.size ?? "0.75rem");
+    const countFontSize = parseFontSize(readLabelSize(cssVars) ?? "0.75rem");
     lines.push(`<text class="cell-text" dominant-baseline="central" x="${countX}" y="${textY}"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+      font-family="${readBodyFamily(cssVars)}"
       font-size="${countFontSize}px"
       font-weight="${400}"
       fill="${countFg}">(${rowCount})</text>`);
@@ -1692,25 +1689,27 @@ function renderGroupHeader(
 // the same logic as more cells migrate.
 function makeThemeResolver(theme: WebTheme, cssVars: Record<string, string> = {}): StyleResolver {
   const fontFamily: Record<string, string> = {
-    base:    theme.text.body.family,
-    display: theme.text.title.family,
-    number:  theme.text.body.family,  // theme-controlled tabular handled via figures
+    base:    readBodyFamily(cssVars),
+    display: readTypeFamily(cssVars, "title", readBodyFamily(cssVars)),
+    number:  readBodyFamily(cssVars),  // theme-controlled tabular handled via figures
     mono:    "ui-monospace, SFMono-Regular, monospace",
   };
   const fontSize: Record<string, number> = {
-    major: parseFontSizeUtil(theme.text.body.size  ?? "1rem"),
-    base:  parseFontSizeUtil(theme.text.cell.size  ?? "0.875rem"),
-    minor: parseFontSizeUtil(theme.text.label.size ?? "0.75rem"),
+    major: parseFontSizeUtil(readBodySize(cssVars)  ?? "1rem"),
+    base:  parseFontSizeUtil(readCellSize(cssVars)  ?? "0.875rem"),
+    minor: parseFontSizeUtil(readLabelSize(cssVars) ?? "0.75rem"),
   };
   const color: Record<string, string> = {
-    primary:   readVar(cssVars, "--tv-text", theme.content.primary) ?? theme.content.primary,
-    secondary: readVar(cssVars, "--tv-text-muted", theme.content.secondary) ?? theme.content.secondary,
-    muted:     readVar(cssVars, "--tv-text-subtle", theme.content.muted) ?? theme.content.muted,
-    accent:    theme.accent.default,
+    primary:   readContentPrimary(cssVars),
+    secondary: readContentSecondary(cssVars),
+    muted:     readContentMuted(cssVars),
+    accent:    readAccentDefault(cssVars),
   };
   const bg: Record<string, string> = {
     base:   "transparent",
-    muted:  readVar(cssVars, "--tv-cell-border", theme.divider.subtle) ?? theme.divider.subtle,
+    muted:  readDividerSubtle(cssVars),
+    // TODO(v3→v4): `accent.tintSubtle` (accent at low alpha) has no
+    // dedicated manifest entry yet — add an accent-subtle token.
     accent: theme.accent.tintSubtle,
   };
   const weight: Record<string, number> = {
@@ -1836,9 +1835,9 @@ function renderInterval(
     return "";
   }
 
-  const baseSize = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize);
-  const lineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth);
-  const accentDefault = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
+  const baseSize = readVarPx(cssVars, "--tv-plot-point-size", 6);
+  const lineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
+  const accentDefault = readAccentDefault(cssVars);
   const defaultLineColor = theme.series?.[0]?.stroke ?? accentDefault;
 
   // Check if this is a summary row (should render diamond). summaryMarker is
@@ -2133,7 +2132,7 @@ function renderDiamond(
     `${xP},${yPosition + halfHeight}`,
   ].join(" ");
 
-  const accentDefault = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
+  const accentDefault = readAccentDefault(cssVars);
   return `<polygon points="${points}"
     fill="${theme.series?.[0]?.fill ?? accentDefault}"
     stroke="${theme.series?.[0]?.stroke ?? accentDefault}"
@@ -2153,6 +2152,7 @@ function renderVizAnnotations(
   annotations: Annotation[] | null | undefined,
   xScale: Scale,
   vizX: number,
+  cssVars: Record<string, string>,
   plotY: number,
   rowsHeight: number,
   theme: WebTheme,
@@ -2162,7 +2162,7 @@ function renderVizAnnotations(
   // Reference lines are structural scaffolding (null effect / baseline),
   // so they default to divider.strong (secondary-tinted) — same as the
   // forest plot's null line. Frees accent for actual layered emphasis.
-  const refDefault = theme.divider?.strong ?? "#94a3b8";
+  const refDefault = readDividerStrong(cssVars);
   for (const ann of annotations) {
     if (ann.type !== "reference_line") continue;
     const x = vizX + xScale(ann.x);
@@ -2310,9 +2310,9 @@ function renderVizBoxplot(
 
   // Default colors
   const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = readVar(cssVars, "--tv-text", theme.content.primary) ?? "#1a1a1a";
-  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth ?? 1.5);
-  const outlierR = readVarPx(cssVars, "--tv-plot-point-size", theme.plot.pointSize ?? 6) * 0.4;
+  const lineColor = readContentPrimary(cssVars) ?? "#1a1a1a";
+  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
+  const outlierR = readVarPx(cssVars, "--tv-plot-point-size", 6) * 0.4;
 
   effects.forEach((effect, idx) => {
     const stats = effectStats[idx];
@@ -2446,8 +2446,8 @@ function renderVizViolin(
 
   // Default colors
   const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = readVar(cssVars, "--tv-text", theme.content.primary) ?? "#1a1a1a";
-  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", theme.plot.lineWidth ?? 1.5);
+  const lineColor = readContentPrimary(cssVars) ?? "#1a1a1a";
+  const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
   // Violin outline reads thinner than a forest-plot stroke by convention;
   // scale from theme so bumping shapes.lineWidth still thickens the violin.
   const violinStrokeDefault = themeLineWidth * 0.33;
@@ -2591,33 +2591,33 @@ function renderVizAxis(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
+  const fontSize = parseFontSize(readLabelSize(cssVars));
   const axisGeom = computeAxisLayout(
-    { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
+    { fontSizeSm: readLabelSize(cssVars), lineHeight: 1.5 },
     !!axisLabel,
-    theme.plot.tickMarkLength,
+    readVarPx(cssVars, "--tv-plot-tick-mark-length", 5),
   );
 
   // Plot scaffold colors (v4 cssVars → v3 fallback chain).
   const axisLineColor = readVar(
     cssVars,
     "--tv-plot-axis-line",
-    theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle,
+    theme.plot?.axisLine ?? readDividerStrong(cssVars),
   );
   const tickMarkColor = readVar(
     cssVars,
     "--tv-plot-tick-mark",
-    theme.plot?.tickMark ?? theme.divider.subtle,
+    theme.plot?.tickMark ?? readDividerSubtle(cssVars),
   );
   const tickLabelFg = readVar(
     cssVars,
     "--tv-text-muted",
-    theme.plot?.tickLabel?.fg ?? theme.content.secondary,
+    theme.plot?.tickLabel?.fg ?? readContentSecondary(cssVars),
   );
   const axisLabelFg = readVar(
     cssVars,
     "--tv-text-muted",
-    theme.plot?.axisLabel?.fg ?? theme.content.secondary,
+    theme.plot?.axisLabel?.fg ?? readContentSecondary(cssVars),
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2695,7 +2695,7 @@ function renderVizAxis(
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+      font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px"
       font-weight="${400}"
       fill="${tickLabelFg}">${label}</text>`);
@@ -2705,7 +2705,7 @@ function renderVizAxis(
   if (axisLabel) {
     lines.push(`<text x="${vizX + vizWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+      font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px"
       font-weight="${500}"
       fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
@@ -2735,39 +2735,35 @@ function renderForestAxis(
     : SPACING.DEFAULT_TICK_COUNT;
 
   const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, forestWidth, baseTicks);
-  const fontSize = parseFontSize(readTypeSize(cssVars, "label", theme.text.label.size));
+  const fontSize = parseFontSize(readLabelSize(cssVars));
   const axisGeom = computeAxisLayout(
-    { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
+    { fontSizeSm: readLabelSize(cssVars), lineHeight: 1.5 },
     !!axisLabel,
-    theme.plot.tickMarkLength,
+    readVarPx(cssVars, "--tv-plot-tick-mark-length", 5),
   );
 
   // Plot scaffold colors (v4 cssVars → v3 fallback chain).
   const axisLineColor = readVar(
     cssVars,
     "--tv-plot-axis-line",
-    theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle,
+    theme.plot?.axisLine ?? readDividerStrong(cssVars),
   );
   const tickMarkColor = readVar(
     cssVars,
     "--tv-plot-tick-mark",
-    theme.plot?.tickMark ?? theme.divider.subtle,
+    theme.plot?.tickMark ?? readDividerSubtle(cssVars),
   );
   const tickLabelFg = readVar(
     cssVars,
     "--tv-text-muted",
-    theme.plot?.tickLabel?.fg ?? theme.content.secondary,
+    theme.plot?.tickLabel?.fg ?? readContentSecondary(cssVars),
   );
   const axisLabelFg = readVar(
     cssVars,
     "--tv-text-muted",
-    theme.plot?.axisLabel?.fg ?? theme.content.secondary,
+    theme.plot?.axisLabel?.fg ?? readContentSecondary(cssVars),
   );
-  const gridlineColor = readVar(
-    cssVars,
-    "--tv-border-subtle",
-    theme.divider.subtle,
-  );
+  const gridlineColor = readVar(cssVars, "--tv-border-subtle", readDividerSubtle(cssVars));
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
 
@@ -2810,9 +2806,9 @@ function renderForestAxis(
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
       stroke="${tickMarkColor}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
-      font-family="${theme.plot?.tickLabel?.family ?? theme.text.tick?.family ?? theme.text.body.family}"
+      font-family="${theme.plot?.tickLabel?.family ?? readTypeFamily(cssVars, "tick", readBodyFamily(cssVars))}"
       font-size="${fontSize}px"
-      font-weight="${theme.plot?.tickLabel?.weight ?? theme.text.tick?.weight ?? 400}"
+      font-weight="${theme.plot?.tickLabel?.weight ?? readTypeWeight(cssVars, "tick", 400)}"
       font-style="${(theme.plot?.tickLabel?.italic ?? theme.text.tick?.italic) ? "italic" : "normal"}"
       fill="${tickLabelFg}">${formatTick(tick)}</text>`);
   }
@@ -2821,9 +2817,9 @@ function renderForestAxis(
   if (axisLabel) {
     lines.push(`<text x="${forestX + forestWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${theme.plot?.axisLabel?.family ?? theme.text.label?.family ?? theme.text.body.family}"
+      font-family="${theme.plot?.axisLabel?.family ?? readTypeFamily(cssVars, "label", readBodyFamily(cssVars))}"
       font-size="${fontSize}px"
-      font-weight="${theme.plot?.axisLabel?.weight ?? theme.text.label?.weight ?? 500}"
+      font-weight="${theme.plot?.axisLabel?.weight ?? readTypeWeight(cssVars, "label", 500)}"
       font-style="${(theme.plot?.axisLabel?.italic ?? theme.text.label?.italic) ? "italic" : "normal"}"
       fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
@@ -2853,19 +2849,19 @@ function renderUnifiedColumnHeaders(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const baseFontSize = parseFontSize(readTypeSize(cssVars, "body", theme.text.body.size));
+  const baseFontSize = parseFontSize(readBodySize(cssVars));
   // Header cells: prefer explicit theme.header.text.size when pinned
   // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
   const headerExplicit = theme.header?.text?.size;
-  const bodySizeStr = theme.text.body.size;
+  const bodySizeStr = readBodySize(cssVars);
   const fontSize = (headerExplicit && headerExplicit !== bodySizeStr)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(baseFontSize * 1.05 * 100) / 100;
-  const fontFamily = theme.header?.text?.family ?? theme.text.body.family;
+  const fontFamily = theme.header?.text?.family ?? readBodyFamily(cssVars);
   // All header cells use bold weight to match web view CSS.
   const fontWeight = theme.header?.text?.weight ?? 600;
   const boldWeight = 600;
-  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
   const hasGroups = hasColumnGroups(columnDefs);
 
   // Use row center - dominant-baseline:central handles vertical alignment
@@ -2927,7 +2923,7 @@ function renderUnifiedColumnHeaders(
     }
 
     // Draw borders under groups (matches web view: .group-row { border-bottom: 1px solid var(--tv-border) })
-    const groupBorderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+    const groupBorderStroke = readDividerSubtle(cssVars);
     for (const border of groupBorders) {
       lines.push(`<line x1="${border.x1}" x2="${border.x2}"
         y1="${y + row1Height}" y2="${y + row1Height}"
@@ -3020,9 +3016,9 @@ function renderUnifiedTableRow(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(readTypeSize(cssVars, "cell", theme.text.body.size));
-  const cellFamily = readTypeFamily(cssVars, "cell", theme.text.body.family);
-  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10);
+  const fontSize = parseFontSize(readTypeSize(cssVars, "cell", readBodySize(cssVars)));
+  const cellFamily = readTypeFamily(cssVars, "cell", readBodyFamily(cssVars));
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
@@ -3031,8 +3027,8 @@ function renderUnifiedTableRow(
   const cellFgDefault: string = readVar(
     cssVars,
     "--tv-cell-fg",
-    theme.cell.fg ?? theme.content.primary,
-  ) ?? theme.content.primary;
+    theme.cell.fg ?? readContentPrimary(cssVars),
+  ) ?? readContentPrimary(cssVars);
 
   // Render label. Semantic bundles (theme.semantics.{emphasis|muted|accent})
   // drive fg / font_weight / font_style when the row carries the matching
@@ -3060,7 +3056,7 @@ function renderUnifiedTableRow(
   // Don't truncate labels - they're the primary row identifier and the width
   // was already computed to fit them (either by browser measurement or SVG estimation)
   lines.push(`<text class="cell-text" dominant-baseline="central" x="${x + cellPadX + indent}" y="${textY}"
-    font-family="${theme.text.body.family}"
+    font-family="${readBodyFamily(cssVars)}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
     font-style="${fontStyle}"
@@ -3072,18 +3068,18 @@ function renderUnifiedTableRow(
     const badgeFontSize = fontSize * BADGE.FONT_SCALE;
     const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
     // Use smart measurement for accurate label width
-    const labelTextWidth = measureTextWidth(row.label, fontSize, theme.text.body.family, fontWeight);
+    const labelTextWidth = measureTextWidth(row.label, fontSize, readBodyFamily(cssVars), fontWeight);
     const badgeX = x + cellPadX + indent + labelTextWidth + BADGE.GAP;
-    const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
+    const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, readBodyFamily(cssVars), 600);
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
 
-    const accentColor = readVar(cssVars, "--tv-accent", theme.accent.default) ?? theme.accent.default;
+    const accentColor = readAccentDefault(cssVars);
     lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
       rx="3" fill="${accentColor}" opacity="0.15"/>`);
     lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+      font-family="${readBodyFamily(cssVars)}"
       font-size="${badgeFontSize}px"
       font-weight="${600}"
       fill="${accentColor}">${escapeXml(badgeText)}</text>`);
@@ -3173,7 +3169,7 @@ function renderUnifiedTableRow(
         // textY (rough approximation: subtract half the tree height).
         const originY = textY - out.height / 2;
         lines.push(
-          `<g font-family="${theme.text.body.family}" font-size="${fontSize}px" ` +
+          `<g font-family="${readBodyFamily(cssVars)}" font-size="${fontSize}px" ` +
           `font-weight="${cellFontWeight}" font-style="${cellFontStyle}" fill="${cellColor}" ` +
           `transform="translate(${originX} ${originY})">${out.markup}</g>`,
         );
@@ -3221,7 +3217,7 @@ function renderUnifiedTableRow(
     const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
     if (wrapEnabled) {
       const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
-      const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", theme.spacing.cellPaddingX ?? 10) * 2;
+      const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
       const contentWidth = Math.max(1, width - cellPadding);
       const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
       const lineHeight = 1.5;
@@ -3231,7 +3227,7 @@ function renderUnifiedTableRow(
       for (let li = 0; li < wrappedLines.length; li++) {
         const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
         lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${lineY}"
-          font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+          font-family="${readBodyFamily(cssVars)}"
           font-size="${fontSize}px"
           font-weight="${cellFontWeight}"
           font-style="${cellFontStyle}"
@@ -3240,7 +3236,7 @@ function renderUnifiedTableRow(
       }
     } else {
       lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${textY}"
-        font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
+        font-family="${readBodyFamily(cssVars)}"
         font-size="${fontSize}px"
         font-weight="${cellFontWeight}"
         font-style="${cellFontStyle}"
@@ -3405,11 +3401,11 @@ function renderReferenceLine(
     stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
-    const labelColor = readVar(cssVars, "--tv-text-muted", theme.content.secondary);
+    const labelColor = readContentSecondary(cssVars);
     const ty = labelY ?? y1 - 4;
     svg += `<text x="${x}" y="${ty}" text-anchor="middle"
-      font-family="${readTypeFamily(cssVars, "body", theme.text.body.family)}"
-      font-size="${theme.text.label.size}"
+      font-family="${readBodyFamily(cssVars)}"
+      font-size="${readLabelSize(cssVars)}"
       font-weight="${500}"
       fill="${labelColor}">${escapeXml(label)}</text>`;
   }
@@ -3671,7 +3667,8 @@ export function computeLayoutMetrics(
   validateSpec(spec);
 
   const theme = spec.theme;
-  const padding = theme.spacing.padding;
+  const cssVars = getCssVars(theme);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
   const forestSettings = getForestColumnSettings(spec);
   const layout = computeLayout(spec, options, forestSettings.nullValue);
 
@@ -3730,14 +3727,14 @@ export function computeLayoutMetrics(
     rowsHeight: layout.rowsHeight,
     mainY: layout.mainY,
     spacing: {
-      rowHeight: theme.spacing.rowHeight,
-      headerHeight: theme.spacing.headerHeight,
-      cellPaddingX: theme.spacing.cellPaddingX ?? 10,
-      cellPaddingY: theme.spacing.cellPaddingY ?? 0,
-      rowGroupPadding: theme.spacing.rowGroupPadding ?? 0,
-      indentPerLevel: theme.spacing.indentPerLevel ?? SPACING.INDENT_PER_LEVEL,
+      rowHeight:       readVarPx(cssVars, "--tv-spacing-row-height", 34),
+      headerHeight:    readVarPx(cssVars, "--tv-spacing-header-height", 34),
+      cellPaddingX:    readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10),
+      cellPaddingY:    readVarPx(cssVars, "--tv-spacing-cell-padding-y", 0),
+      rowGroupPadding: readVarPx(cssVars, "--tv-spacing-row-group-padding", 0),
+      indentPerLevel:  readVarPx(cssVars, "--tv-spacing-indent-per-level", SPACING.INDENT_PER_LEVEL),
       padding,
-      axisGap: theme.spacing.axisGap ?? 12,
+      axisGap:         readVarPx(cssVars, "--tv-spacing-axis-gap", 12),
     },
     rows,
     columns,
@@ -3857,7 +3854,7 @@ function generateSVGForAspectTarget(
   // MIN_ROW_HEIGHT keeps text readable when shrinking. 1.4 × font + 4
   // matches the line-height + 4 px breathing pattern used in
   // computeAxisLayout / measureWrap. Falls back to 14 px floor.
-  const bodyFontSize = parseFontSize(spec.theme.text.body.size);
+  const bodyFontSize = parseFontSize(readBodySize(getCssVars(spec.theme)));
   const MIN_ROW_HEIGHT = minRowHeightFor(bodyFontSize);
 
   // Phase 7D: auto-wrap loop. When the target is taller than natural,
@@ -3994,7 +3991,7 @@ function generateSVGForAspectTarget(
   // each column's width so the inner render reproduces it exactly. Replaces the
   // old single-forest absorption + non-flex scale; matches the DOM aspect path.
   // (docs/dev/multi-flex-columns.md)
-  const aspectPadding = spec.theme.spacing.padding ?? 16;
+  const aspectPadding = readVarPx(getCssVars(spec.theme), "--tv-spacing-padding", 16);
   const aspectPrimaryId = getPrimaryColumn(spec.columns)?.id;
   const aspectFlexSpecs: ColumnWidthSpec[] = allColumns
     .filter((c) => c.id !== aspectPrimaryId)
@@ -4112,14 +4109,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   }
 
   const theme = spec.theme;
-  const padding = theme.spacing.padding;
-
-  // Phase 6 consumer migration — pilot.
-  // Compute the v4 cssVars map from the theme's authoring inputs (when
-  // present). Consumers read via readVar(cssVars, varName, fallback)
-  // so v3 specs without authoringInputs continue to work via the v3 path.
-  // See `srcjs/src/lib/theme/consumer-bridge.ts`.
   const cssVars = getCssVars(theme);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
@@ -4196,7 +4187,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 </style>`);
 
   // Background
-  const surfaceBgResolved = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+  const surfaceBgResolved = readSurfaceBg(cssVars);
   const bgColor = options.backgroundColor ?? surfaceBgResolved;
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}" data-tv-token="surface-bg"/>`);
 
@@ -4204,7 +4195,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
   if (theme.layout.containerBorder !== false) {
     const borderRadius = theme.layout.containerBorderRadius ?? 8;
-    const containerBorderStroke = readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+    const containerBorderStroke = readDividerSubtle(cssVars);
     parts.push(`<rect x="0.5" y="0.5"
       width="${layout.totalWidth - 1}" height="${layout.totalHeight - 1}"
       fill="none" stroke="${containerBorderStroke}" stroke-width="1"
@@ -4217,8 +4208,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Top table border - frames column headers (symmetric with header bottom border)
   const headerBorderW = 2;
   const headerVariantRule = activeHeaderVariant(theme).rule
-    ?? readVar(cssVars, "--tv-border", theme.divider.strong)
-    ?? readVar(cssVars, "--tv-cell-border", theme.divider.subtle);
+    ?? readDividerStrong(cssVars)
+    ?? readDividerSubtle(cssVars);
   if (headerBorderW > 0) {
     parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${layout.mainY}" y2="${layout.mainY}"
@@ -4306,7 +4297,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           fill="${row.style.bg}"/>`);
       } else if (row.style?.type === "header") {
         // Header-type rows get a subtle muted background
-        const headerRowFill = readVar(cssVars, "--tv-text-subtle", theme.content.muted);
+        const headerRowFill = readContentMuted(cssVars);
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
           fill="${headerRowFill}" fill-opacity="0.1"/>`);
@@ -4322,8 +4313,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         // Alternating row banding (only paint the "odd" band — even rows
         // inherit the container background, matching the web widget).
         // Phase 6: row-alt-bg + surface-bg both via cssVars.
-        const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
-        const surfaceBg = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+        const bgColor = readRowAltBg(cssVars);
+        const surfaceBg = readSurfaceBg(cssVars);
         if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
@@ -4347,8 +4338,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // edge-to-edge here.
       if (bandIdx === 1) {
         // Phase 6: row-alt-bg + surface-bg both via cssVars.
-        const bgColor = readVar(cssVars, "--tv-row-alt-bg", theme.row.alt.bg);
-        const surfaceBg = readVar(cssVars, "--tv-surface-bg", theme.surface.base);
+        const bgColor = readRowAltBg(cssVars);
+        const surfaceBg = readSurfaceBg(cssVars);
         if (bgColor !== surfaceBg) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
@@ -4379,13 +4370,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Honor spec-level watermarkColor / watermarkOpacity (v0.20.1+); fall
       // back to foreground @ 0.07 for specs authored before those fields
       // existed.
-      const wmFill = spec.watermarkColor ?? readVar(cssVars, "--tv-text", theme.content.primary);
+      const wmFill = spec.watermarkColor ?? readContentPrimary(cssVars);
       const wmOpacity = spec.watermarkOpacity ?? 0.07;
       parts.push(
         `<text x="${cx}" y="${cy}" ` +
         `transform="rotate(${angleDeg.toFixed(2)} ${cx} ${cy})" ` +
         `text-anchor="middle" dominant-baseline="middle" ` +
-        `font-family="${theme.text.body.family}" ` +
+        `font-family="${readBodyFamily(cssVars)}" ` +
         `font-size="${fontSize.toFixed(1)}" font-weight="700" ` +
         `fill="${wmFill}" fill-opacity="${wmOpacity}" ` +
         `style="pointer-events:none; user-select:none">${escapeXml(spec.watermark)}</text>`
@@ -4443,7 +4434,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       plotY,
       plotY + layout.rowsHeight,
       "dashed",
-      readVar(cssVars, "--tv-text-subtle", theme.content.muted) ?? theme.content.muted,
+      readContentMuted(cssVars),
       theme,
       undefined,
       1,
@@ -4474,7 +4465,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           // Reference lines are structural scaffolding — default to
           // divider.strong (secondary-tinted) to match other plot lines
           // and free accent for actual layered emphasis.
-          ann.color ?? theme.divider?.strong ?? theme.accent.default,
+          ann.color ?? readDividerStrong(cssVars),
           theme,
           ann.label,
           ann.width ?? 1,
@@ -4600,7 +4591,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       parts.push(`<g clip-path="url(#${clipId})">`);
       // Reference-line annotations (drawn behind bars)
-      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight, theme));
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, cssVars, plotY, layout.rowsHeight, theme));
       // Render bars for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -4635,7 +4626,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       parts.push(`<g clip-path="url(#${clipId})">`);
       // Reference-line annotations (drawn behind boxes)
-      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight, theme));
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, cssVars, plotY, layout.rowsHeight, theme));
       // Render boxplots for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -4671,7 +4662,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       parts.push(`<g clip-path="url(#${clipId})">`);
       // Reference-line annotations (drawn behind violins)
-      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight, theme));
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, cssVars, plotY, layout.rowsHeight, theme));
       // Render violins for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -4770,7 +4761,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         // CSS). Pass the visible-band height so text Y-centerline
         // doesn't drift into the empty separator strip.
         const trailingPad = layout.rowPaddedAfter[i]
-          ? (theme.spacing.rowGroupPadding ?? 0)
+          ? readVarPx(cssVars, "--tv-spacing-row-group-padding", 0)
           : 0;
         const contentHeight = rowHeight - trailingPad;
         // Render unified row (label + all columns in order)
