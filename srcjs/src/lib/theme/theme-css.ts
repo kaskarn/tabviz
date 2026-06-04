@@ -152,14 +152,6 @@ function _buildThemeCSSImpl(theme: WebTheme): string {
   return `
       /* ── V4 manifest cssVars — canonical source of theme values. */
 ${v4Body}
-      /* Status — anchor to v4 brand/border until status anchors get
-         dedicated manifest entries. Themes that set theme.status.* fall
-         through to BADGE_VARIANTS at v3 time; once status anchors are
-         in the manifest, drop these in favor of var(--tv-status-*-solid). */
-      --tv-status-positive:     ${theme.status?.positive ?? BADGE_VARIANTS.success};
-      --tv-status-warning:      ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
-      --tv-status-negative:     ${theme.status?.negative ?? BADGE_VARIANTS.error};
-      --tv-status-info:         ${theme.status?.info     ?? BADGE_VARIANTS.info};
       /* Literal font-weight constants — utility classes read these. */
       --tv-font-weight-normal:  400;
       --tv-font-weight-bold:    600;

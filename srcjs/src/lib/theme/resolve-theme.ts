@@ -285,6 +285,15 @@ const HC_BAR_WIDTH_HC     = "4px";
 const HC_BAR_WIDTH_STD    = "3px";
 const HC_RING_WIDTH_VALUE = "1.5px";
 
+/** Fallback hex when an optional status anchor isn't set on inputs.
+ *  Mirrors theme-css.ts's `BADGE_VARIANTS` fallback for the v3 emission. */
+const STATUS_ANCHOR_FALLBACK: Record<string, string> = {
+  "status-positive": "#16A34A",
+  "status-negative": "#DC2626",
+  "status-warning":  "#D97706",
+  "status-info":     "#2563EB",
+};
+
 /** Sentinel value emitted when a placeholder branch is hit in production.
  *  Empty string makes a `var(...)` reference fall through to its declared
  *  fallback if any, otherwise the property is invalid and the browser
@@ -445,6 +454,11 @@ function resolveTokenValue(
     case "anchor": {
       const anchorHex = pickAnchorHex(source.anchor, resolved.inputs);
       if (anchorHex !== null) return anchorHex;
+      // Status anchors are optional inputs. When the theme doesn't set
+      // them, fall back to the BADGE_VARIANTS palette so badges/icons
+      // render correctly. The mapping mirrors theme-css.ts's v3 emission.
+      const statusFallback = STATUS_ANCHOR_FALLBACK[source.anchor];
+      if (statusFallback !== undefined) return statusFallback;
       return tokenResolveBug(token.cssVar, source.tier,
         `anchor=${source.anchor} not resolvable from inputs`);
     }

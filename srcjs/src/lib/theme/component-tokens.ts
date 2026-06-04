@@ -653,6 +653,38 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Accent fill (translucent wash for callout/highlight)",
   },
 
+  // ── Status colors ────────────────────────────────────────────────────────
+  // Sourced from inputs.status.X anchors via pickAnchorHex; fall back to
+  // a STATUS_ANCHOR_FALLBACK palette when the input is unset.
+  {
+    cssVar: "--tv-status-positive",
+    kind: "paint-color",
+    source: { tier: "anchor", anchor: "status-positive" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
+    description: "Status: positive / success color",
+  },
+  {
+    cssVar: "--tv-status-negative",
+    kind: "paint-color",
+    source: { tier: "anchor", anchor: "status-negative" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
+    description: "Status: negative / error color",
+  },
+  {
+    cssVar: "--tv-status-warning",
+    kind: "paint-color",
+    source: { tier: "anchor", anchor: "status-warning" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
+    description: "Status: warning color",
+  },
+  {
+    cssVar: "--tv-status-info",
+    kind: "paint-color",
+    source: { tier: "anchor", anchor: "status-info" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
+    description: "Status: info color",
+  },
+
   // ── Generic T2 role passthroughs (consumer migration helpers) ─────────────
   // These mirror Tier-2 roles 1:1 with no Tier-3 specialization. Consumers
   // reading e.g. theme.surface.base / theme.content.primary / theme.content.muted
@@ -1133,10 +1165,9 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-semantic-style",
   "--tv-semantic-weight",
   "--tv-status-",
-  "--tv-status-info",
-  "--tv-status-negative",
-  "--tv-status-positive",
-  "--tv-status-warning",
+  // --tv-status-{positive,negative,warning,info} are now real manifest
+  // entries (see line ~660). Removed from the v3-legacy grandfather
+  // list per coherence audit §7.5.
   "--tv-summary-border",
   "--tv-summary-fill",
   "--tv-surface-alt",
