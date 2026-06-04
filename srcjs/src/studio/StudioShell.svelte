@@ -10,12 +10,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { studioStore } from "./studio-store.svelte";
-  import { inspectorStore } from "../stores/inspector-store.svelte";
   import PresetHeader from "./PresetHeader.svelte";
-  import SettingsRail from "./SettingsRail.svelte";
   import StudioChart from "./StudioChart.svelte";
-  import StudioInspector from "./StudioInspector.svelte";
   import SnippetStrip from "./SnippetStrip.svelte";
+  import ThemePanel from "../components/theme-panel/ThemePanel.svelte";
   import { buildSnippetSteps, formatSnippet } from "./snippet-generator";
 
   // Initial spec + theme come from data-* attributes on the mount element.
@@ -122,9 +120,17 @@
   />
 
   <div class="studio-main">
-    <SettingsRail />
+    {#if studioStore.inputs}
+      <ThemePanel
+        inputs={studioStore.inputs}
+        onchange={(next) => studioStore.apply(next, "Edit")}
+        resolved={studioStore.resolved ?? undefined}
+        inspectDefault={true}
+      />
+    {:else}
+      <div class="theme-panel-placeholder">Loading theme…</div>
+    {/if}
     <StudioChart spec={initialSpec} />
-    <StudioInspector />
   </div>
 
   <SnippetStrip
@@ -149,14 +155,23 @@
 
   .studio-main {
     display: grid;
-    grid-template-columns: 320px 1fr auto;
+    grid-template-columns: minmax(380px, 460px) 1fr;
     overflow: hidden;
     min-height: 0;
+  }
+  .studio-main :global(.theme-panel) {
+    overflow-y: auto;
+    border-right: 1px solid #e2e8f0;
+  }
+  .theme-panel-placeholder {
+    padding: 24px;
+    color: #475569;
+    font-style: italic;
   }
 
   @media (max-width: 900px) {
     .studio-main {
-      grid-template-columns: 240px 1fr auto;
+      grid-template-columns: minmax(320px, 380px) 1fr;
     }
   }
 
