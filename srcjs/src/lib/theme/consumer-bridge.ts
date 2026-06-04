@@ -124,7 +124,7 @@ export function readVarPx(
 
 /** Stage 2 §1 typography role names. */
 export type TypeRoleName =
-  | "title" | "subtitle" | "heading" | "body" | "numeric"
+  | "title" | "subtitle" | "body" | "numeric"
   | "label" | "caption" | "footnote" | "cell" | "tick";
 
 /** Read a typography role's `family` cssVar with v3 fallback (a

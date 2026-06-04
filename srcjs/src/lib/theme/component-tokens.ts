@@ -628,15 +628,13 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Far shadow color for overlay elevation",
   },
 
-  // ── Stage 2 — Typography Tier 3 (family/size/weight/lh/track per role) ────
-  // 10 type roles × 5 properties each + a `font` shorthand = 60 entries.
-  // Sourced from typography-tier-1 inputs via the resolver's
-  // resolveTypeRole() walker. Consumers read e.g.
-  //   font: var(--tv-text-title-font);
-  // or the individual properties:
+  // ── Stage 2 — Typography Tier 3 (family/size/weight per role) ────────────
+  // 9 type roles × 3 properties = 27 entries. Sourced from typography-
+  // tier-1 inputs via the resolver's resolveTypeRole() walker. Consumers:
   //   font-family: var(--tv-text-title-family);
   //   font-size:   var(--tv-text-title-size);
-  // etc.
+  //   font-weight: var(--tv-text-title-weight);
+  // (lh/track/font shorthand were dropped in Coh.22 — zero consumers.)
   ...buildTypographyManifestEntries(),
 
   // ── Accent (engagement layer) ─────────────────────────────────────────────
@@ -832,8 +830,18 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
 // TYPOGRAPHY MANIFEST GENERATOR (Stage 2)
 // ============================================================================
 
-/** Generate the 60 Tier-3 typography manifest entries (10 type roles × 6
- *  per-role properties: family/size/weight/lh/track + font shorthand).
+/** Generate the 27 Tier-3 typography manifest entries (9 type roles × 3
+ *  per-role properties: family/size/weight).
+ *
+ *  Rationalized in Coh.22: the original 10×6 = 60 surface was over-specified
+ *  vs. what renderers actually read. The `heading` role had zero consumers;
+ *  the `lh` / `track` / `font` props had zero consumers across all roles
+ *  (they're computed inside resolveTypeRole but never surfaced as CSS that
+ *  any DOM element reads). Audit: 16/60 consumed before the trim. Post-trim:
+ *  16/27 consumed; the remaining 11 are intentional dense-grid headroom so
+ *  adding a new typography knob to a renderer doesn't require reopening the
+ *  manifest. Those 11 live in KNOWN_UNCONSUMED as the explicit
+ *  TYPOGRAPHY_HEADROOM_UNCONSUMED list.
  *
  *  Sourced from `lib/theme/typography.ts::DEFAULT_TYPE_ROLES` via the
  *  resolver's resolveTypeRole walker. The `source.tier = "computed"` tag
@@ -841,7 +849,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
  *  reads typography-tier-1 inputs and produces the final values. */
 function buildTypographyManifestEntries(): ComponentToken[] {
   const ROLES = [
-    "title", "subtitle", "heading", "body", "numeric",
+    "title", "subtitle", "body", "numeric",
     "label", "caption", "footnote", "cell", "tick",
   ] as const;
   const entries: ComponentToken[] = [];
@@ -868,27 +876,6 @@ function buildTypographyManifestEntries(): ComponentToken[] {
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
       description: `${role} font weight`,
-    });
-    entries.push({
-      cssVar: `${base}-lh`,
-      kind: "font-line-height",
-      source: { tier: "computed", note: `typography role:${role} line-height` },
-      consumedBy,
-      description: `${role} line height (unitless or "normal")`,
-    });
-    entries.push({
-      cssVar: `${base}-track`,
-      kind: "font-track",
-      source: { tier: "computed", note: `typography role:${role} letter-spacing` },
-      consumedBy,
-      description: `${role} letter-spacing (CSS value, e.g. -0.022em)`,
-    });
-    entries.push({
-      cssVar: `${base}-font`,
-      kind: "font-shorthand",
-      source: { tier: "computed", note: `typography role:${role} shorthand` },
-      consumedBy,
-      description: `${role} CSS font shorthand (weight size/lh family)`,
     });
   }
   return entries;
@@ -949,8 +936,24 @@ export const TOKENS_BY_CONSUMER: ReadonlyMap<string, readonly ComponentToken[]> 
 //   bun test src/lib/theme/component-tokens.drift.test.ts 2>&1 | awk '/^  \"/' | sort -u
 // ============================================================================
 export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
-  // ── Stage 2 typography (declared but consumers migrating in Stage 2 §1f)
-  ...buildTypographyManifestEntries().map((t) => t.cssVar),
+  // ── Stage 2 typography — INTENTIONAL DENSE-GRID HEADROOM.
+  // The typography manifest emits 9 roles × {family, size, weight} = 27
+  // entries (see buildTypographyManifestEntries above + Coh.22 rationale).
+  // 16 of those are read by renderers today. The 11 below are emitted as
+  // headroom: a renderer can opt into them without reopening the manifest.
+  // Re-derive: every (role, prop) in the dense generator that doesn't
+  // appear in a non-test consumer grep. List built 2026-06-04.
+  "--tv-text-body-size",
+  "--tv-text-body-weight",
+  "--tv-text-caption-family",
+  "--tv-text-cell-family",
+  "--tv-text-cell-size",
+  "--tv-text-footnote-family",
+  "--tv-text-label-size",
+  "--tv-text-numeric-size",
+  "--tv-text-numeric-weight",
+  "--tv-text-subtitle-family",
+  "--tv-text-tick-size",
   // ── False positives: drift regex matches bare prefixes from template
   // literals inside resolver / generator helpers. Not real references.
   "--tv-text-",

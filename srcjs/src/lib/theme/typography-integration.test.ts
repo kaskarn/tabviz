@@ -1,5 +1,9 @@
 // Stage 2 — typography integration test.
 // Verifies the resolver emits typography cssVars sourced from typography.ts.
+//
+// Rationalized in Coh.22: the manifest emits 9 roles × {family, size, weight}
+// = 27 entries. lh/track/font props were dropped (no renderer reads them);
+// the `heading` role was dropped (zero consumers, redundant with subtitle).
 
 import { describe, it, expect } from "bun:test";
 import { resolveTheme } from "./resolve-theme";
@@ -7,11 +11,11 @@ import { createWire } from "./theme-wire";
 import { inputsFromHex } from "./theme-presets-inputs";
 
 describe("typography → cssVars integration", () => {
-  it("emits all 60 typography tokens (10 roles × 6 props)", () => {
+  it("emits all 27 typography tokens (9 roles × 3 props)", () => {
     const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "test"));
-    const roles = ["title", "subtitle", "heading", "body", "numeric",
+    const roles = ["title", "subtitle", "body", "numeric",
                    "label", "caption", "footnote", "cell", "tick"];
-    const props = ["family", "size", "weight", "lh", "track", "font"];
+    const props = ["family", "size", "weight"];
     for (const role of roles) {
       for (const prop of props) {
         const key = `--tv-text-${role}-${prop}`;
@@ -19,6 +23,15 @@ describe("typography → cssVars integration", () => {
         expect(r.cssVars[key]).not.toMatch(/^<computed/);
       }
     }
+  });
+
+  it("does NOT emit dropped lh/track/font props or heading role", () => {
+    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "test"));
+    expect(r.cssVars["--tv-text-title-lh"]).toBeUndefined();
+    expect(r.cssVars["--tv-text-body-font"]).toBeUndefined();
+    expect(r.cssVars["--tv-text-title-track"]).toBeUndefined();
+    expect(r.cssVars["--tv-text-heading-family"]).toBeUndefined();
+    expect(r.cssVars["--tv-text-heading-size"]).toBeUndefined();
   });
 
   it("title family = display font", () => {
@@ -59,33 +72,5 @@ describe("typography → cssVars integration", () => {
       type_weights: { semibold: 550 },
     }), "t"));
     expect(r.cssVars["--tv-text-title-weight"]).toBe("550");
-  });
-
-  it("font shorthand assembles weight size/lh family", () => {
-    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, {
-      fonts: { display: "Cinzel" },
-      type_base_size: 14,
-    }), "t"));
-    const font = r.cssVars["--tv-text-title-font"];
-    expect(font).toContain("600");      // semibold
-    expect(font).toContain("Cinzel");
-    expect(font).toMatch(/\d+px\/\d/);   // size/lh
-  });
-
-  it("body role omits lh from font shorthand (lh = null in default table)", () => {
-    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
-    const bodyFont = r.cssVars["--tv-text-body-font"];
-    expect(bodyFont).not.toContain("/");  // no /lh segment
-    expect(bodyFont).toMatch(/^\d+ \d+(\.\d+)?px /);
-  });
-
-  it("body lh emits 'normal' (lh = null)", () => {
-    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
-    expect(r.cssVars["--tv-text-body-lh"]).toBe("normal");
-  });
-
-  it("title lh emits the numeric value (1.12)", () => {
-    const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
-    expect(r.cssVars["--tv-text-title-lh"]).toBe("1.12");
   });
 });

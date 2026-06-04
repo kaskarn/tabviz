@@ -28,7 +28,6 @@
   const ROLES: Role[] = [
     { key: "title",    base: "text-title",    family: "display", sample: "Change in primary endpoint" },
     { key: "subtitle", base: "text-subtitle", family: "body",    sample: "A randomised controlled trial" },
-    { key: "heading",  base: "text-heading",  family: "body",    sample: "Treatment arm" },
     { key: "body",     base: "text-body",     family: "body",    sample: "Compound A, 50 mg" },
     { key: "numeric",  base: "text-numeric",  family: "mono",    sample: "−8.4 (−10.1 to −6.7)" },
     { key: "label",    base: "text-label",    family: "mono",    sample: "TABLE 2" },

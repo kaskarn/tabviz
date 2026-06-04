@@ -3,7 +3,7 @@
 // Mirrors the color cascade's three-tier structure:
 //   Tier 1 inputs:    fonts trio + type_base_size + type_scale_ratio + weights
 //   Tier 1 derived:   7-step size scale (label/foot/body/head/subtitle/title/display)
-//   Tier 2 roles:     10 named roles (title/subtitle/heading/body/numeric/label/
+//   Tier 2 roles:     9 named roles (title/subtitle/body/numeric/label/
 //                     caption/footnote/cell/tick)
 //   Tier 3 tokens:    --tv-text-{role}-{family|size|weight|lh|track} + font shorthand
 //
@@ -25,11 +25,11 @@ export type SizeScaleStep =
 /** Tier 1 → Tier 1-derived: the resolved size scale. */
 export type SizeScale = Readonly<Record<SizeScaleStep, number>>;
 
-/** Named type roles (Tier 2 typography). */
+/** Named type roles (Tier 2 typography). The `heading` role was dropped in
+ *  Coh.22 (rationalization) — zero consumers; subtitle+title cover the slot. */
 export type TypeRoleName =
   | "title"
   | "subtitle"
-  | "heading"
   | "body"
   | "numeric"
   | "label"
@@ -54,7 +54,6 @@ export interface TypeRole {
 export const DEFAULT_TYPE_ROLES: Readonly<Record<TypeRoleName, TypeRole>> = {
   title:    { family: "display", size: "title",    weight: "semibold", lh: 1.12, track: "-0.022em" },
   subtitle: { family: "body",    size: "subtitle", weight: "regular",  lh: 1.34, track: "-0.01em" },
-  heading:  { family: "body",    size: "head",     weight: "semibold", lh: 1.2,  track: "-0.004em" },
   body:     { family: "body",    size: "body",     weight: "regular",  lh: null, track: "0" },
   numeric:  { family: "mono",    size: "body",     weight: "regular",  lh: null, track: "0" },
   label:    { family: "mono",    size: "label",    weight: "bold",     lh: 1,    track: "0.06em" },

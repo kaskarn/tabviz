@@ -114,8 +114,8 @@ describe("resolveTypeRole", () => {
 });
 
 describe("DEFAULT_TYPE_ROLES coverage", () => {
-  it("defines all 10 named roles", () => {
-    const names = ["title", "subtitle", "heading", "body", "numeric", "label",
+  it("defines all 9 named roles", () => {
+    const names = ["title", "subtitle", "body", "numeric", "label",
                    "caption", "footnote", "cell", "tick"] as const;
     for (const n of names) {
       expect(DEFAULT_TYPE_ROLES[n]).toBeDefined();

@@ -419,9 +419,9 @@ function resolveTokenValue(
  *  the typed value via `resolveTypeRole()`. Returns null when the cssVar
  *  doesn't match the typography pattern so the caller falls through to
  *  the placeholder path. */
-const TYPOGRAPHY_PROPS = ["family", "size", "weight", "lh", "track", "font"] as const;
+const TYPOGRAPHY_PROPS = ["family", "size", "weight"] as const;
 const TYPOGRAPHY_ROLE_NAMES = new Set<TypeRoleName>([
-  "title", "subtitle", "heading", "body", "numeric",
+  "title", "subtitle", "body", "numeric",
   "label", "caption", "footnote", "cell", "tick",
 ]);
 
@@ -517,9 +517,6 @@ function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string 
     case "family": return r.family;
     case "size":   return `${r.size}px`;
     case "weight": return String(r.weight);
-    case "lh":     return r.lh === null ? "normal" : String(r.lh);
-    case "track":  return r.track;
-    case "font":   return r.font;
     default:       return null;
   }
 }
