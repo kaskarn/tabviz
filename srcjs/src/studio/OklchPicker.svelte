@@ -9,7 +9,7 @@
 -->
 <script lang="ts">
   import { hexToOklch, oklchToHex } from "$lib/oklch";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
 
   const {
     value,
@@ -49,10 +49,18 @@
   const inGamut = $derived(isInSRGB(L, C, H));
 
   // Inputs callback whenever the picker value changes.
+  //
+  // The emit is wrapped in `untrack(...)` so the function-reference change
+  // on `oninput` (the parent re-binds a fresh arrow per render) doesn't
+  // re-register `oninput` as a dependency. Without this, every cascade
+  // re-render after we emit would invalidate this effect and re-emit the
+  // same hex, hitting Svelte's effect_update_depth_exceeded guard.
   $effect(() => {
     if (!mounted) return;
-    if (inGamut) {
-      oninput(liveHex.toUpperCase());
+    const ok = inGamut;
+    const hex = liveHex.toUpperCase();
+    if (ok) {
+      untrack(() => oninput(hex));
     }
   });
 

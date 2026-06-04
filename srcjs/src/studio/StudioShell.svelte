@@ -167,19 +167,29 @@
     grid-template-columns: minmax(320px, 380px) 1fr;
     overflow: hidden;
     min-height: 0;
+    background: #ffffff;
   }
   .controls-rail {
     overflow-y: auto;
     border-right: 1px solid #e2e8f0;
+    background: #ffffff;
   }
   .cascade-main {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
+    background: #ffffff;
+    min-height: 0;
   }
   .live-preview {
-    padding: 16px 18px;
+    flex: 0 0 auto;
+    height: min(560px, 50vh);
     border-bottom: 1px solid #e2e8f0;
+    background: #fafafa;
+    overflow: hidden;
+  }
+  .live-preview > :global(.studio-chart) {
+    height: 100%;
   }
   .theme-panel-placeholder {
     padding: 24px;
