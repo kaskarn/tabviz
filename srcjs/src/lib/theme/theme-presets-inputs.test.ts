@@ -3,9 +3,9 @@ import { PRESETS, preset, COCHRANE, LANCET, DARK } from "./theme-presets-inputs"
 import { buildThemeStructure } from "./theme-resolve";
 import { apcaLc } from "../oklch";
 
-describe("PRESETS — 18 preset registry", () => {
-  it("registers all 18 presets", () => {
-    expect(Object.keys(PRESETS).length).toBe(18);
+describe("PRESETS — 21 preset registry", () => {
+  it("registers all 21 presets", () => {
+    expect(Object.keys(PRESETS).length).toBe(21);
   });
 
   it("includes all expected names", () => {
@@ -14,6 +14,7 @@ describe("PRESETS — 18 preset registry", () => {
       "bauhaus", "swiss", "tufte", "newsprint",
       "solarized", "solarized_dark", "tonal", "tonal_dark",
       "dwarven", "elvish", "hobbit",
+      "synthwave", "atelier", "executive",
     ];
     for (const name of expected) {
       expect(PRESETS).toHaveProperty(name);

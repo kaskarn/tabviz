@@ -2,8 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_bauhaus}
 \alias{web_theme_bauhaus}
-\title{Bauhaus theme — red brand, blue structural decorative, yellow accent,
-bold header band. Archivo (geometric sans, Bauhaus-feel).}
+\title{Bauhaus theme - geometric primary colors with raised + grid texture.}
 \usage{
 web_theme_bauhaus()
 }
@@ -11,6 +10,6 @@ web_theme_bauhaus()
 A \link{WebTheme}.
 }
 \description{
-Bauhaus theme — red brand, blue structural decorative, yellow accent,
-bold header band. Archivo (geometric sans, Bauhaus-feel).
+Archivo Black display, bold type scale (1.333), smooth curves
+across all three ramps for the bold modular Bauhaus rhythm.
 }

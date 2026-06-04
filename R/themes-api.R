@@ -49,6 +49,13 @@ theme_inputs_to_json <- function(inputs) {
   )
   type_weights <- type_weights[!vapply(type_weights, is.null, logical(1))]
 
+  curves <- list(
+    neutral = na_to_null(inputs@curve_neutral),
+    brand   = na_to_null(inputs@curve_brand),
+    accent  = na_to_null(inputs@curve_accent)
+  )
+  curves <- curves[!vapply(curves, is.null, logical(1))]
+
   out <- list(
     brand                 = inputs@brand,
     accent                = na_to_null(inputs@accent),
@@ -68,7 +75,8 @@ theme_inputs_to_json <- function(inputs) {
     shell_texture         = na_to_null(inputs@shell_texture),
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
-    type_weights          = if (length(type_weights) > 0L) type_weights else NULL
+    type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
+    curves                = if (length(curves) > 0L) curves else NULL
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -112,6 +120,22 @@ resolve_from_inputs <- function(inputs, name = "custom") {
 #' @param density_factor Continuous multiplier on the density preset's spacing,
 #'   in `[0.5, 2]` (1 = preset unchanged) — a fine dial on top of the named
 #'   profile (e.g. `0.9` for a touch tighter).
+#' @param shell_mode Stage 2 shell/paper two-surface model. One of
+#'   `"flush"` / `"raised"` / `"float"` / `"transparent"`. NULL defaults to
+#'   `"flush"` at resolution.
+#' @param shell_texture Stage 2 surface texture. One of `"none"` /
+#'   `"ruled"` / `"grid"` / `"dotted"` / `"grain"`. NULL defaults to `"none"`.
+#' @param type_base_size Stage 2 typography Tier 1 — anchor of the modular
+#'   size scale (px). NULL defaults to 14.
+#' @param type_scale_ratio Stage 2 typography Tier 1 — exponential ratio
+#'   between scale steps. NULL defaults to 1.2.
+#' @param type_weights Stage 2 typography Tier 1 — named numeric list with
+#'   any of `regular`, `medium`, `semibold`, `bold`. NULL defaults to
+#'   400/500/600/700.
+#' @param curves Stage 1 §25 per-ramp curve shape — named list with any of
+#'   `neutral`, `brand`, `accent` keyed to `"linear"` / `"ease"` / `"smooth"`
+#'   / `"log"` / `"exp"`. NULL defaults: neutral=ease, brand=linear,
+#'   accent=linear.
 #' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
 #' @param first_column_style First (label) column treatment: `"default"`,
@@ -139,6 +163,12 @@ web_theme <- function(
     font_mono = NULL,
     density = "comfortable",
     density_factor = 1,
+    shell_mode = NULL,
+    shell_texture = NULL,
+    type_base_size = NULL,
+    type_scale_ratio = NULL,
+    type_weights = NULL,
+    curves = NULL,
     header_style = "light",
     first_column_style = "default",
     web_fonts = NULL,
@@ -155,6 +185,12 @@ web_theme <- function(
   checkmate::assert_choice(header_style, c("light", "tint", "bold"))
   checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
   checkmate::assert_string(name)
+  checkmate::assert_choice(shell_mode, c("flush", "raised", "float", "transparent"), null.ok = TRUE)
+  checkmate::assert_choice(shell_texture, c("none", "ruled", "grid", "dotted", "grain"), null.ok = TRUE)
+  checkmate::assert_number(type_base_size, lower = 8, upper = 32, null.ok = TRUE)
+  checkmate::assert_number(type_scale_ratio, lower = 1.05, upper = 1.6, null.ok = TRUE)
+  checkmate::assert_list(type_weights, null.ok = TRUE)
+  checkmate::assert_list(curves, null.ok = TRUE)
 
   inputs <- ThemeInputs(
     brand = brand,
@@ -174,7 +210,18 @@ web_theme <- function(
     font_display    = if (is.null(font_display)) NA_character_ else font_display,
     font_mono       = if (is.null(font_mono))    NA_character_ else font_mono,
     density = density,
-    density_factor = density_factor
+    density_factor = density_factor,
+    shell_mode    = shell_mode    %||% NA_character_,
+    shell_texture = shell_texture %||% NA_character_,
+    type_base_size   = type_base_size   %||% NA_real_,
+    type_scale_ratio = type_scale_ratio %||% NA_real_,
+    type_weight_regular  = type_weights$regular  %||% NA_real_,
+    type_weight_medium   = type_weights$medium   %||% NA_real_,
+    type_weight_semibold = type_weights$semibold %||% NA_real_,
+    type_weight_bold     = type_weights$bold     %||% NA_real_,
+    curve_neutral = curves$neutral %||% NA_character_,
+    curve_brand   = curves$brand   %||% NA_character_,
+    curve_accent  = curves$accent  %||% NA_character_
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style

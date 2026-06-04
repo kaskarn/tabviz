@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_solarized_dark}
 \alias{web_theme_solarized_dark}
-\title{Solarized theme (dark).}
+\title{Solarized Dark theme - dark polarity sibling of Solarized.}
 \usage{
 web_theme_solarized_dark()
 }
@@ -10,5 +10,5 @@ web_theme_solarized_dark()
 A \link{WebTheme}.
 }
 \description{
-Solarized theme (dark).
+Solarized Dark theme - dark polarity sibling of Solarized.
 }

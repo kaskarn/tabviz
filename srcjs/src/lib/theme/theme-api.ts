@@ -36,6 +36,9 @@ export const themeTonalDark     = (): WebTheme => buildTheme(PRESETS.tonal_dark,
 export const themeDwarven       = (): WebTheme => buildTheme(PRESETS.dwarven,         "dwarven");
 export const themeElvish        = (): WebTheme => buildTheme(PRESETS.elvish,          "elvish");
 export const themeHobbit        = (): WebTheme => buildTheme(PRESETS.hobbit,          "hobbit");
+export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave,       "synthwave");
+export const themeAtelier       = (): WebTheme => buildTheme(PRESETS.atelier,         "atelier");
+export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive,       "executive");
 
 // ────────────────────────────────────────────────────────────────────
 // webTheme: custom theme constructor (mirrors R::web_theme)

@@ -1000,3 +1000,86 @@ CascadeInspector mount removed from TabvizPlot.svelte — embedded widgets now s
 6. **Sect §5 live-themed docs sheets, §6 delta serialization, §7 schema versioning** — separate sub-projects each.
 
 `tabviz_studio()` is operational as a substrate; the chart-side live preview gets wired next session. Branch state: main pushed to origin.
+
+---
+
+### 2026-06-04 (Stage 4) — preset reimagining LANDED on `origin/main`
+
+Stage 4 was scoped in the rework vision as the post-substrate preset
+overhaul: reimagine each preset against the v4 substrate capabilities,
+make them distinctive, and showcase package features. The user's brief
+was explicit: "bold" + "distinctive" + "showcase package features."
+
+**What landed:**
+
+1. **All 18 existing presets reimagined** with feature mixes that match
+   their personality:
+   - **Cochrane / BMJ** — clean clinical, ease curve on neutrals.
+   - **Lancet** — raised shell + type scale 1.25 (the cover/long-form feel).
+   - **JAMA** — compact density + type scale 1.15 + base size 13 (dense academic).
+   - **NEJM** — type scale 1.25 + smooth+ease curves (prose rhythm).
+   - **Nature** — raised shell + ruled texture + brand-tinted neutrals (glossy spread).
+   - **Dark** — float shell + log curve on neutral (deep darks; ease on brand/accent for vivid callouts).
+   - **Bauhaus** — raised shell + grid texture + Archivo Black display + type scale 1.333 + smooth curves on all three ramps.
+   - **Swiss** — compact + grid texture + tight type + Inter (showcase the underlying grid).
+   - **Tufte** — density factor 0.9 + ruled texture + EB Garamond + log curve (ink-on-paper).
+   - **Newsprint** — grain texture + decorative-tint at 0.08 + Crimson Pro display.
+   - **Solarized / Solarized Dark** — brand-tinted neutrals at 0.06 (the trademark warm yellow paper).
+   - **Tonal / Tonal Dark** — raised shell + Roboto Flex + ease curves (Material You feel).
+   - **Dwarven** — DARK polarity + raised + dotted texture + log curves + Cinzel display (forge cavern).
+   - **Elvish** — flush + ruled texture + Cormorant Garamond + exp curve on neutrals (lighter highs, illuminated page).
+   - **Hobbit** — flush + grain texture + decorative-tint at 0.10 + IM Fell English + scale 1.333 (warm hearth).
+
+2. **Three NEW showcase themes added** (`showcase` category in
+   `package_themes()`):
+   - **Synthwave** — neon-on-deep-space: DARK + float shell + grid
+     texture + JetBrains Mono monospace + magenta/cyan/yellow palette +
+     exp curves on brand+accent for saturated neon mids. Shows what
+     happens when every Stage 2 feature pushes in the same aesthetic
+     direction.
+   - **Atelier** — artist's studio: compact × 0.92 + ruled texture +
+     decorative-tinted neutrals at 0.12 (warm parchment) + Italianno
+     calligraphic display + EB Garamond body + log curve on neutral.
+   - **Executive** — Material card meets boardroom: raised shell + Inter
+     body + Cormorant Garamond display (serif title on sans body) +
+     type scale 1.333 + smooth brand curve.
+
+3. **R-side surface extensions** to support the new feature mix:
+   - `web_theme()` grows `shell_mode`, `shell_texture`, `type_base_size`,
+     `type_scale_ratio`, `type_weights`, `curves` args. All optional;
+     NULL defaults preserve v3 behavior. Refactored repetitive `if (is.null(x)) NA_x else x` patterns to use the local `%||%` operator.
+   - `ThemeInputs` S7 class grows `curve_neutral`, `curve_brand`, `curve_accent` properties (mirroring the per-ramp curves).
+   - Serialization packs them on the JSON wire (curves as `{neutral, brand, accent}`).
+   - 18 preset constructors (`web_theme_cochrane()` through `web_theme_hobbit()`) rewritten with full Stage 2/3 args + Google Fonts via `web_font()`.
+   - 3 new preset constructors added (`web_theme_synthwave()`, `web_theme_atelier()`, `web_theme_executive()`).
+   - `package_themes()` gains the `showcase` category.
+
+4. **TS side** — 18 presets reimagined in `theme-presets-inputs.ts`; 3 new added; PRESETS registry grows to 21 entries; `theme-api.ts` exposes 3 new constructors (`themeSynthwave`, `themeAtelier`, `themeExecutive`); authoring barrel re-exports them.
+
+5. **3 new showcase R example files** to drive visual regression on the new themes:
+   - `inst/examples/showcase_synthwave.R` (server health dashboard)
+   - `inst/examples/showcase_atelier.R` (Renaissance pigment inventory)
+   - `inst/examples/showcase_executive.R` (Q3 board summary)
+
+**Test posture:**
+- 1248 bun tests + 1440 R tests pass
+- svelte-check clean
+- R CMD check: **0 errors / 0 warnings / 1 informational note** (pre-existing handoff.md)
+- 60-PNG visual regression sweep: 0 failed, 60 success
+
+**Visuals sampled (all distinct):**
+- Dwarven now renders pure DARK with raised dotted texture (the forge cavern, not the previous parchment)
+- Elvish keeps its light parchment but with ruled lines visible
+- Hobbit reads as warm cream paper with grain texture
+- Synthwave is full neon-on-deep-space, monospace, magenta-cyan-yellow trio
+- Atelier reads as warm parchment with serif body and Italianno display
+- Executive is the slate + soft gold raised-card boardroom feel
+
+**Branch state:** `main` at `[Stage4]` commit, pushed to `origin/main`.
+
+**Stage 4 follow-ups** (out of this session's scope):
+- Light/dark pairs of every preset for the editor's polarity toggle.
+- A preset diff visualizer in the studio (compare two presets side-by-side).
+- Web-font load preloading + offline-fallback strategy for the showcase themes.
+- Per-preset semantic-bundle tuning (emphasis / muted / accent bg+fg per preset's voice).
+- Visual baseline freeze + diff-on-PR for the gallery.

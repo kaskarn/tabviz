@@ -96,6 +96,13 @@ ThemeInputs <- new_class(
     # "grain". NA defaults to "none".
     shell_texture   = new_property(class_character, default = NA_character_),
 
+    # Stage 1 §25 / Q-P4.3 — per-ramp curve shape. Each of "linear" / "ease" /
+    # "smooth" / "log" / "exp". NA defaults: neutral=ease, brand=linear,
+    # accent=linear (see DEFAULT_RAMP_CURVES in lib/theme/curves.ts).
+    curve_neutral  = new_property(class_character, default = NA_character_),
+    curve_brand    = new_property(class_character, default = NA_character_),
+    curve_accent   = new_property(class_character, default = NA_character_),
+
     # Stage 2 typography Tier 1 (theme-cascade-stage-2-design.md §1b).
     # Base size + ratio drive the 7-step size scale (label/foot/body/head/
     # subtitle/title/display). NA defaults to 14 / 1.2 at resolution.

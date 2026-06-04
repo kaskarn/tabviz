@@ -1,42 +1,31 @@
-# Built-in preset constructors — journals + dark mode.
-#
-# Each preset is a thin wrapper around web_theme(). Identity rides on
-# four axes:
-#   1. brand / accent / decorative seeds (color)
-#   2. neutral_tint + tint_strength (chrome cast: hint vs cream)
-#   3. header_style (light / tint / bold)
-#   4. font_body / font_display (typography)
-#
-# Tint strengths are tuned so journal themes (clinical) read as "off-
-# white paper with a hint of brand" rather than "branded paper": values
-# in 0.03-0.06 are subtle, 0.10-0.15 are editorial, 0.18+ is strong.
+# Journal preset constructors + the canonical dark mode + the package
+# preset registry. Stage 4 reimagining (2026-06-04): each preset
+# showcases distinctive substrate features (shell mode, surface texture,
+# type scale, curves, web fonts) per the v4 cascade.
 
-#' Cochrane theme — heritage teal on subtly-tinted paper.
+#' Cochrane theme - cyan brand, orange accent.
 #'
-#' Cochrane teal as brand; warm coral accent. Inter sans-serif.
-#' General-purpose; reads well in systematic-review tables.
-#'
+#' Vanilla baseline. Ease curve on neutrals for smooth gradation.
 #' @return A [WebTheme].
 #' @export
 web_theme_cochrane <- function() {
   web_theme(
     brand = "#0099CC",
     accent = "#C8553D",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.04,
+    categorical = "okabe_ito",
     font_body = "'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif",
     web_fonts = list(
       web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
     ),
+    curves = list(neutral = "ease"),
     name = "cochrane"
   )
 }
 
-#' Lancet theme — two-color editorial (navy + gold) with cream paper.
+#' Lancet theme - navy + gold editorial gravitas.
 #'
-#' Source Serif Pro for body; Crimson Pro for display (warmer editorial
-#' serif than the system Georgia fallback).
-#'
+#' Raised shell evokes the cover feel; serif typography with elevated
+#' scale ratio gives long-form journal rhythm.
 #' @return A [WebTheme].
 #' @export
 web_theme_lancet <- function() {
@@ -44,25 +33,20 @@ web_theme_lancet <- function() {
     brand = "#00407A",
     decorative = "#A6792A",
     accent = "#A6792A",
-    neutral_tint = "decorative",
-    neutral_tint_strength = 0.12,
-    header_style = "tint",
-    font_body = "'Source Serif Pro', Georgia, 'Times New Roman', serif",
-    font_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
-    web_fonts = list(
-      web_font("Source Serif Pro", "https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600&display=swap"),
-      web_font("Crimson Pro", "https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap")
-    ),
+    categorical = "okabe_ito",
+    shell_mode = "raised",
+    type_scale_ratio = 1.25,
+    font_body = "Georgia, 'Times New Roman', serif",
+    font_display = "Georgia, 'Times New Roman', serif",
+    curves = list(neutral = "smooth"),
     name = "lancet"
   )
 }
 
-#' JAMA theme — black-and-white print-ready.
+#' JAMA theme - black ink, mono palette, compact density.
 #'
-#' Pure black brand; brand_mono categorical for distinct grayscale series.
-#' Ultra-compact density. Arial typography. Untinted paper — JAMA's
-#' identity is the absence of color.
-#'
+#' Tight type scale (1.15) + smaller base size (13) for the dense
+#' scientific-table look.
 #' @return A [WebTheme].
 #' @export
 web_theme_jama <- function() {
@@ -71,72 +55,72 @@ web_theme_jama <- function() {
     accent = "#000000",
     categorical = "brand_mono",
     density = "compact",
-    font_body = "'Helvetica Neue', Helvetica, Arial, sans-serif",
-    font_display = "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    type_base_size = 13,
+    type_scale_ratio = 1.15,
+    font_body = "Arial, Helvetica, sans-serif",
     name = "jama"
   )
 }
 
-#' NEJM theme — crimson with subtle warm paper and tint headers.
-#'
-#' Spectral for body + display — a warm transitional serif that reads
-#' as more "editorial" than the system Georgia fallback.
-#'
+#' NEJM theme - crimson brand + slate accent, classic medical serif.
 #' @return A [WebTheme].
 #' @export
 web_theme_nejm <- function() {
   web_theme(
     brand = "#BD2F2F",
     accent = "#1B5377",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.04,
-    header_style = "tint",
-    font_body = "'Spectral', Georgia, 'Times New Roman', serif",
-    font_display = "'Spectral', Georgia, 'Times New Roman', serif",
-    web_fonts = list(
-      web_font("Spectral", "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;700&display=swap")
-    ),
+    categorical = "okabe_ito",
+    type_scale_ratio = 1.25,
+    font_body = "Georgia, 'Times New Roman', serif",
+    font_display = "Georgia, 'Times New Roman', serif",
+    curves = list(brand = "smooth", neutral = "ease"),
     name = "nejm"
   )
 }
 
-#' Nature theme — teal-deep with amber accent. Source Sans body.
+#' Nature theme - teal brand + amber accent, raised shell + ruled texture.
+#'
+#' Subtle brand-tinted neutrals (0.03 strength) give the page a soft
+#' teal cast - the glossy-spread metaphor.
 #' @return A [WebTheme].
 #' @export
 web_theme_nature <- function() {
   web_theme(
     brand = "#005A6C",
     accent = "#E8A427",
+    categorical = "okabe_ito",
+    shell_mode = "raised",
+    shell_texture = "ruled",
     neutral_tint = "brand",
-    neutral_tint_strength = 0.04,
-    font_body = "'Source Sans 3', -apple-system, system-ui, sans-serif",
-    font_display = "'Source Sans 3', -apple-system, system-ui, sans-serif",
-    web_fonts = list(
-      web_font("Source Sans 3", "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&display=swap")
-    ),
+    neutral_tint_strength = 0.03,
+    type_scale_ratio = 1.25,
+    curves = list(brand = "smooth"),
     name = "nature"
   )
 }
 
-#' BMJ theme — clean blue with vermillion accent. IBM Plex Sans body.
+#' BMJ theme - clean clinical blue + red accent.
 #' @return A [WebTheme].
 #' @export
 web_theme_bmj <- function() {
   web_theme(
     brand = "#2A6EBB",
     accent = "#E33B3B",
-    neutral_tint = "brand",
-    neutral_tint_strength = 0.04,
-    font_body = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
-    font_display = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
+    categorical = "okabe_ito",
+    font_body = "'Inter', -apple-system, system-ui, sans-serif",
     web_fonts = list(
-      web_font("IBM Plex Sans", "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap")
+      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap")
     ),
+    curves = list(neutral = "ease"),
     name = "bmj"
   )
 }
 
-#' Dark theme — Catppuccin-inspired dark mode default.
+#' Dark theme - blue brand, pink accent, float shell.
+#'
+#' Removes chrome so the paper appears to drift on its own elevation
+#' shadow. Log curve deepens darks; ease on brand+accent keeps callouts
+#' vivid.
 #' @return A [WebTheme].
 #' @export
 web_theme_dark <- function() {
@@ -146,6 +130,9 @@ web_theme_dark <- function() {
     mode = "dark",
     neutral_tint = "brand",
     neutral_tint_strength = 0.06,
+    categorical = "okabe_ito",
+    shell_mode = "float",
+    curves = list(neutral = "log", brand = "ease", accent = "ease"),
     name = "dark"
   )
 }
@@ -180,6 +167,11 @@ package_themes <- function() {
       dwarven = web_theme_dwarven(),
       elvish  = web_theme_elvish(),
       hobbit  = web_theme_hobbit()
+    ),
+    showcase = list(
+      synthwave = web_theme_synthwave(),
+      atelier   = web_theme_atelier(),
+      executive = web_theme_executive()
     )
   )
 }
@@ -189,6 +181,10 @@ package_themes <- function() {
 #' @return A named list of [WebTheme] objects.
 #' @export
 theme_registry <- function() {
-  registry <- package_themes()
-  unlist(registry, recursive = FALSE)
+  cats <- package_themes()
+  flat <- list()
+  for (cat in cats) {
+    for (nm in names(cat)) flat[[nm]] <- cat[[nm]]
+  }
+  flat
 }

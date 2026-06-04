@@ -2,8 +2,7 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_dwarven}
 \alias{web_theme_dwarven}
-\title{Dwarven theme — bronze brand, warm gold decorative, tint header band.
-EB Garamond body; UnifrakturMaguntia display.}
+\title{Dwarven theme - forge, stone, dark gold.}
 \usage{
 web_theme_dwarven()
 }
@@ -11,6 +10,8 @@ web_theme_dwarven()
 A \link{WebTheme}.
 }
 \description{
-Dwarven theme — bronze brand, warm gold decorative, tint header band.
-EB Garamond body; UnifrakturMaguntia display.
+DARK polarity (the deep mountain forge); raised shell (carved
+monolith); dotted texture (chiseled stone); log curves (the rich
+dark gradient of cave-fire shadow). Cinzel display (carved capitals);
+EB Garamond body (formal script).
 }

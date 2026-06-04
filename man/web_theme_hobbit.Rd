@@ -2,8 +2,7 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_hobbit}
 \alias{web_theme_hobbit}
-\title{Hobbit theme — warm earthen brand, foliage-green decorative,
-tint header band. IM Fell English body + display.}
+\title{Hobbit theme - warm hearth, paper, comfort.}
 \usage{
 web_theme_hobbit()
 }
@@ -11,6 +10,7 @@ web_theme_hobbit()
 A \link{WebTheme}.
 }
 \description{
-Hobbit theme — warm earthen brand, foliage-green decorative,
-tint header band. IM Fell English body + display.
+Flush shell; grain texture (paper-and-wool); high decorative-tint
+strength makes neutrals noticeably cream. IM Fell English (Caslon-
+feel) for body. Type scale 1.333 for storytelling rhythm.
 }

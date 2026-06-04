@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_dark}
 \alias{web_theme_dark}
-\title{Dark theme — Catppuccin-inspired dark mode default.}
+\title{Dark theme - blue brand, pink accent, float shell.}
 \usage{
 web_theme_dark()
 }
@@ -10,5 +10,7 @@ web_theme_dark()
 A \link{WebTheme}.
 }
 \description{
-Dark theme — Catppuccin-inspired dark mode default.
+Removes chrome so the paper appears to drift on its own elevation
+shadow. Log curve deepens darks; ease on brand+accent keeps callouts
+vivid.
 }

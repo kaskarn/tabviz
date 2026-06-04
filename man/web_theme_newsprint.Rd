@@ -2,8 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_newsprint}
 \alias{web_theme_newsprint}
-\title{Newsprint theme — warm decorative tint; serif body; tint header band.
-Old Standard TT for body (newsprint serif).}
+\title{Newsprint theme - actual newspaper: grain texture, off-white paper,
+serif body, Crimson Pro display.}
 \usage{
 web_theme_newsprint()
 }
@@ -11,6 +11,7 @@ web_theme_newsprint()
 A \link{WebTheme}.
 }
 \description{
-Newsprint theme — warm decorative tint; serif body; tint header band.
-Old Standard TT for body (newsprint serif).
+Decorative-tinted neutrals at 0.08 strength give the warm paper
+feel; grain texture adds the paper grain. Log curve on brand for
+deep newspaper-ink contrast.
 }

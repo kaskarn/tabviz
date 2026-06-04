@@ -2,8 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_swiss}
 \alias{web_theme_swiss}
-\title{Swiss theme — red brand on neutral grid; bold header band.
-Inter (geometric sans) for body + display.}
+\title{Swiss theme - International Typographic Style: red brand + grid texture.}
 \usage{
 web_theme_swiss()
 }
@@ -11,6 +10,6 @@ web_theme_swiss()
 A \link{WebTheme}.
 }
 \description{
-Swiss theme — red brand on neutral grid; bold header band.
-Inter (geometric sans) for body + display.
+Compact density + tight type (1.2 scale ratio). Inter (Helvetica-feel).
+Grid texture showcases the underlying grid system.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tonal_dark}
 \alias{web_theme_tonal_dark}
-\title{Tonal theme (dark) — M3-inspired tonal palette.}
+\title{Tonal Dark theme - dark polarity sibling of Tonal.}
 \usage{
 web_theme_tonal_dark()
 }
@@ -10,5 +10,5 @@ web_theme_tonal_dark()
 A \link{WebTheme}.
 }
 \description{
-Tonal theme (dark) — M3-inspired tonal palette.
+Tonal Dark theme - dark polarity sibling of Tonal.
 }

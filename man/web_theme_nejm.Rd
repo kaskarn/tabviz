@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes.R
 \name{web_theme_nejm}
 \alias{web_theme_nejm}
-\title{NEJM theme — crimson with subtle warm paper and tint headers.}
+\title{NEJM theme - crimson brand + slate accent, classic medical serif.}
 \usage{
 web_theme_nejm()
 }
@@ -10,6 +10,5 @@ web_theme_nejm()
 A \link{WebTheme}.
 }
 \description{
-Spectral for body + display — a warm transitional serif that reads
-as more "editorial" than the system Georgia fallback.
+NEJM theme - crimson brand + slate accent, classic medical serif.
 }

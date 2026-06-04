@@ -2,8 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tufte}
 \alias{web_theme_tufte}
-\title{Tufte theme — minimal greys; compact density. ET Book-inspired
-Crimson Pro serif for body.}
+\title{Tufte theme - data-ink minimum: ruled texture, italic serif body, tight.}
 \usage{
 web_theme_tufte()
 }
@@ -11,6 +10,6 @@ web_theme_tufte()
 A \link{WebTheme}.
 }
 \description{
-Tufte theme — minimal greys; compact density. ET Book-inspired
-Crimson Pro serif for body.
+Compact density x 0.9 factor for very tight rhythm; EB Garamond for
+the editorial-quiet body. Log curve grounds the ink-on-paper feel.
 }

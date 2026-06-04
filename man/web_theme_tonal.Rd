@@ -2,7 +2,8 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_tonal}
 \alias{web_theme_tonal}
-\title{Tonal theme (light) — M3-inspired tonal palette. Roboto Flex.}
+\title{Tonal theme - Material You-style: raised shell, soft elevation,
+friendly type rhythm.}
 \usage{
 web_theme_tonal()
 }
@@ -10,5 +11,5 @@ web_theme_tonal()
 A \link{WebTheme}.
 }
 \description{
-Tonal theme (light) — M3-inspired tonal palette. Roboto Flex.
+Roboto family + ease curves give the characteristic Material You feel.
 }

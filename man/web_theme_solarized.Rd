@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-design.R
 \name{web_theme_solarized}
 \alias{web_theme_solarized}
-\title{Solarized theme (light). Source Sans 3 body.}
+\title{Solarized theme - Schoonover's editorial palette, light variant.}
 \usage{
 web_theme_solarized()
 }
@@ -10,5 +10,6 @@ web_theme_solarized()
 A \link{WebTheme}.
 }
 \description{
-Solarized theme (light). Source Sans 3 body.
+Brand-tinted neutrals at 0.06 give the trademark warm yellow paper.
+Smooth curves on neutrals for the gentle yellow gradient.
 }

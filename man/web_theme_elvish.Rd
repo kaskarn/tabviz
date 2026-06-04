@@ -2,8 +2,7 @@
 % Please edit documentation in R/themes-lotr.R
 \name{web_theme_elvish}
 \alias{web_theme_elvish}
-\title{Elvish theme — starlit navy brand, mithril silver decorative.
-Cormorant Garamond body; Cinzel display.}
+\title{Elvish theme - ethereal, flowing, illuminated manuscript.}
 \usage{
 web_theme_elvish()
 }
@@ -11,6 +10,8 @@ web_theme_elvish()
 A \link{WebTheme}.
 }
 \description{
-Elvish theme — starlit navy brand, mithril silver decorative.
-Cormorant Garamond body; Cinzel display.
+Flush shell (no architecture); ruled texture (manuscript page lines);
+exp curve on neutral (lighter highs - the radiant page);
+decorative-tinted neutrals (soft mithril grey). Cormorant Garamond
+body + Cinzel display. Type scale 1.333 for the poetic rhythm.
 }

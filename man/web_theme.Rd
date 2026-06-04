@@ -23,6 +23,12 @@ web_theme(
   font_mono = NULL,
   density = "comfortable",
   density_factor = 1,
+  shell_mode = NULL,
+  shell_texture = NULL,
+  type_base_size = NULL,
+  type_scale_ratio = NULL,
+  type_weights = NULL,
+  curves = NULL,
   header_style = "light",
   first_column_style = "default",
   web_fonts = NULL,
@@ -62,6 +68,28 @@ mirrors font_body.}
 \item{density_factor}{Continuous multiplier on the density preset's spacing,
 in \verb{[0.5, 2]} (1 = preset unchanged) — a fine dial on top of the named
 profile (e.g. \code{0.9} for a touch tighter).}
+
+\item{shell_mode}{Stage 2 shell/paper two-surface model. One of
+\code{"flush"} / \code{"raised"} / \code{"float"} / \code{"transparent"}. NULL defaults to
+\code{"flush"} at resolution.}
+
+\item{shell_texture}{Stage 2 surface texture. One of \code{"none"} /
+\code{"ruled"} / \code{"grid"} / \code{"dotted"} / \code{"grain"}. NULL defaults to \code{"none"}.}
+
+\item{type_base_size}{Stage 2 typography Tier 1 — anchor of the modular
+size scale (px). NULL defaults to 14.}
+
+\item{type_scale_ratio}{Stage 2 typography Tier 1 — exponential ratio
+between scale steps. NULL defaults to 1.2.}
+
+\item{type_weights}{Stage 2 typography Tier 1 — named numeric list with
+any of \code{regular}, \code{medium}, \code{semibold}, \code{bold}. NULL defaults to
+400/500/600/700.}
+
+\item{curves}{Stage 1 §25 per-ramp curve shape — named list with any of
+\code{neutral}, \code{brand}, \code{accent} keyed to \code{"linear"} / \code{"ease"} / \code{"smooth"}
+/ \code{"log"} / \code{"exp"}. NULL defaults: neutral=ease, brand=linear,
+accent=linear.}
 
 \item{header_style}{Header chrome treatment: \code{"light"}, \code{"tint"}, or
 \code{"bold"}. Default \code{"light"}.}
