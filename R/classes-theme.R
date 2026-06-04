@@ -190,7 +190,19 @@ ThemeInputs <- new_class(
     effects_glow_anchor            = new_property(class_character, default = NA_character_),
     effects_gradient_shell_intensity = new_property(class_character, default = NA_character_),
     effects_gradient_shell_angle   = new_property(class_numeric,   default = NA_real_),
-    effects_elevation              = new_property(class_character, default = NA_character_)
+    effects_elevation              = new_property(class_character, default = NA_character_),
+
+    # Phase 5 / Stage 1 §33 — per-row-kind theme-default heightRatios. Layer
+    # 3 of the row-kind height cascade (see srcjs/src/lib/layout/
+    # row-kind-heights.ts). NA = TS layout falls back to the row-kind
+    # intrinsic ratio (layer 2). Authors typically pin one or two — e.g.
+    # group_header = 1.3 for editorial layouts with weightier dividers.
+    row_kinds_data_height_ratio         = new_property(class_numeric, default = NA_real_),
+    row_kinds_group_header_height_ratio = new_property(class_numeric, default = NA_real_),
+    row_kinds_spacer_height_ratio       = new_property(class_numeric, default = NA_real_),
+    row_kinds_summary_height_ratio      = new_property(class_numeric, default = NA_real_),
+    row_kinds_header_height_ratio       = new_property(class_numeric, default = NA_real_),
+    row_kinds_panel_height_ratio        = new_property(class_numeric, default = NA_real_)
   ),
   validator = function(self) {
     for (anchor in c("anchors_paper", "anchors_ink", "anchors_brand")) {
@@ -246,6 +258,18 @@ ThemeInputs <- new_class(
     el <- self@effects_elevation
     if (!is.na(el) && !el %in% c("none", "soft", "raised", "float")) {
       return("effects_elevation must be 'none', 'soft', 'raised', or 'float'")
+    }
+    # row_kinds — each heightRatio must be a positive finite number when set.
+    for (slot in c("row_kinds_data_height_ratio",
+                   "row_kinds_group_header_height_ratio",
+                   "row_kinds_spacer_height_ratio",
+                   "row_kinds_summary_height_ratio",
+                   "row_kinds_header_height_ratio",
+                   "row_kinds_panel_height_ratio")) {
+      v <- S7::prop(self, slot)
+      if (!is.na(v) && (v <= 0 || v > 10)) {
+        return(paste0(slot, " must be a positive number in (0, 10], got ", v))
+      }
     }
     NULL
   }

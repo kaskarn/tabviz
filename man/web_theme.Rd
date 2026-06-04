@@ -31,6 +31,7 @@ web_theme(
   curves = NULL,
   geometry = NULL,
   effects = NULL,
+  row_kinds = NULL,
   header_style = "light",
   first_column_style = "default",
   web_fonts = NULL,
@@ -108,6 +109,14 @@ corner softness + line weight across the widget. NULL = TS defaults
 \code{"subtle"} / \code{"vivid"}), \code{gradient_shell_angle} (degrees 0-360),
 \code{elevation} (\code{"none"} / \code{"soft"} / \code{"raised"} / \code{"float"}). NULL =
 no effects (the safe editorial baseline). HC mode drops all effects.}
+
+\item{row_kinds}{Per-row-kind theme-default \code{heightRatio} map. Named
+list whose keys are row-kind names (\code{data}, \code{group_header}, \code{spacer},
+\code{summary}, \code{header}, \code{panel}) and whose values are themselves
+named lists with \code{heightRatio} (numeric, multiplies the base row
+height). Layer 3 of the row-kind height cascade (Stage 1 §33);
+constructor \verb{row_heights=} and user pins layer above this. NULL =
+row-kind intrinsics apply.}
 
 \item{header_style}{Header chrome treatment: \code{"light"}, \code{"tint"}, or
 \code{"bold"}. Default \code{"light"}.}

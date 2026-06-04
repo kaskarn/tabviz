@@ -96,6 +96,24 @@ theme_inputs_to_json <- function(inputs) {
     elevation                = na_to_null(inputs@effects_elevation)
   ))
 
+  # Phase 5 / Stage 1 §33 — row_kinds. Re-nest flat slots into
+  # row_kinds: { data: { heightRatio }, group_header: ..., ... } on the
+  # wire. Omit kinds whose heightRatio is NA so the TS layout falls back
+  # to its intrinsic ratio.
+  row_kinds_entry <- function(slot) {
+    v <- na_to_null(S7::prop(inputs, slot))
+    if (is.null(v)) return(NULL)
+    list(heightRatio = v)
+  }
+  row_kinds_out <- drop_null(list(
+    data         = row_kinds_entry("row_kinds_data_height_ratio"),
+    group_header = row_kinds_entry("row_kinds_group_header_height_ratio"),
+    spacer       = row_kinds_entry("row_kinds_spacer_height_ratio"),
+    summary      = row_kinds_entry("row_kinds_summary_height_ratio"),
+    header       = row_kinds_entry("row_kinds_header_height_ratio"),
+    panel        = row_kinds_entry("row_kinds_panel_height_ratio")
+  ))
+
   out <- list(
     anchors               = anchors,
     polarity              = inputs@polarity,
@@ -114,7 +132,8 @@ theme_inputs_to_json <- function(inputs) {
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
     curves                = if (length(curves) > 0L) curves else NULL,
     geometry              = if (length(geometry_out) > 0L) geometry_out else NULL,
-    effects               = if (length(effects_out)  > 0L) effects_out  else NULL
+    effects               = if (length(effects_out)  > 0L) effects_out  else NULL,
+    row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -216,6 +235,13 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `"subtle"` / `"vivid"`), `gradient_shell_angle` (degrees 0-360),
 #'   `elevation` (`"none"` / `"soft"` / `"raised"` / `"float"`). NULL =
 #'   no effects (the safe editorial baseline). HC mode drops all effects.
+#' @param row_kinds Per-row-kind theme-default `heightRatio` map. Named
+#'   list whose keys are row-kind names (`data`, `group_header`, `spacer`,
+#'   `summary`, `header`, `panel`) and whose values are themselves
+#'   named lists with `heightRatio` (numeric, multiplies the base row
+#'   height). Layer 3 of the row-kind height cascade (Stage 1 §33);
+#'   constructor `row_heights=` and user pins layer above this. NULL =
+#'   row-kind intrinsics apply.
 #' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
 #' @param first_column_style First (label) column treatment: `"default"`,
@@ -251,6 +277,7 @@ web_theme <- function(
     curves = NULL,
     geometry = NULL,
     effects = NULL,
+    row_kinds = NULL,
     header_style = "light",
     first_column_style = "default",
     web_fonts = NULL,
@@ -271,6 +298,7 @@ web_theme <- function(
   checkmate::assert_list(curves, null.ok = TRUE)
   checkmate::assert_list(geometry, null.ok = TRUE)
   checkmate::assert_list(effects, null.ok = TRUE)
+  checkmate::assert_list(row_kinds, null.ok = TRUE)
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
   ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
@@ -332,7 +360,14 @@ web_theme <- function(
     effects_glow_anchor            = effects$glow_anchor            %||% NA_character_,
     effects_gradient_shell_intensity = effects$gradient_shell_intensity %||% NA_character_,
     effects_gradient_shell_angle   = effects$gradient_shell_angle   %||% NA_real_,
-    effects_elevation              = effects$elevation              %||% NA_character_
+    effects_elevation              = effects$elevation              %||% NA_character_,
+    # row_kinds — extract heightRatio per kind from the nested named list.
+    row_kinds_data_height_ratio         = row_kinds$data$heightRatio         %||% NA_real_,
+    row_kinds_group_header_height_ratio = row_kinds$group_header$heightRatio %||% NA_real_,
+    row_kinds_spacer_height_ratio       = row_kinds$spacer$heightRatio       %||% NA_real_,
+    row_kinds_summary_height_ratio      = row_kinds$summary$heightRatio      %||% NA_real_,
+    row_kinds_header_height_ratio       = row_kinds$header$heightRatio       %||% NA_real_,
+    row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style
@@ -634,6 +669,39 @@ set_status <- function(theme,
     inputs <- set_anchor_on_inputs(inputs, paste0("status_", pair$name),
                                    anchor_slots(triple))
   }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
+#' Set per-row-kind theme-default heightRatios and re-resolve.
+#'
+#' Layer 3 of the row-kind height cascade (Stage 1 §33). Each arg is
+#' the multiplier on the base row height for that row kind; NULL leaves
+#' a kind unchanged. Constructor `row_heights=` and interactive user
+#' pins layer above this, so a theme that pins `group_header = 1.3`
+#' still respects per-spec overrides.
+#'
+#' @param theme A [WebTheme].
+#' @param data,group_header,spacer,summary,header,panel Numeric
+#'   `heightRatio` multipliers (typically ~0.5 to 3), or `NULL`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_row_kinds <- function(theme,
+                          data = NULL, group_header = NULL, spacer = NULL,
+                          summary = NULL, header = NULL, panel = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  for (arg in list(data = data, group_header = group_header, spacer = spacer,
+                   summary = summary, header = header, panel = panel)) {
+    if (!is.null(arg)) checkmate::assert_number(arg, lower = 0, upper = 10)
+  }
+  inputs <- theme@inputs
+  if (!is.null(data))         inputs@row_kinds_data_height_ratio         <- data
+  if (!is.null(group_header)) inputs@row_kinds_group_header_height_ratio <- group_header
+  if (!is.null(spacer))       inputs@row_kinds_spacer_height_ratio       <- spacer
+  if (!is.null(summary))      inputs@row_kinds_summary_height_ratio      <- summary
+  if (!is.null(header))       inputs@row_kinds_header_height_ratio       <- header
+  if (!is.null(panel))        inputs@row_kinds_panel_height_ratio        <- panel
   resolve_from_inputs(inputs, name = theme@name)
 }
 
