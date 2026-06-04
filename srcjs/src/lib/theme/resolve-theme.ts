@@ -162,9 +162,16 @@ interface OffRampContext {
   readonly status: TokenRamps["status"];
 }
 
-/** Apply HC mode's border-grade push. Per Stage 1 §23b: under
- *  high-contrast, border roles push by +2 grades so the dividers gain
- *  visual force. Other roles pass through unchanged. */
+/** Apply HC mode's border-grade push (Layer A of the HC behavior
+ *  inventory in `resolveTokenValue`'s docstring). Under high-contrast,
+ *  border roles push by +2 grades so dividers gain visual force; other
+ *  roles pass through unchanged.
+ *
+ *  Operates on RoleBinding (not on a component token), because the
+ *  conceptually-correct level is the role-to-grade binding — any
+ *  consumer token reading the pushed role inherits the bumped value
+ *  for free. Not migratable to per-token `token.modes` declarations
+ *  without adding roles at grades 9 and 10. Per Stage 1 §23b. */
 function applyHcGradePush(role: RoleName, binding: RoleBinding): RoleBinding {
   if (role === "border-subtle" || role === "border" || role === "border-strong"
       || role === "focus-ring" || role === "accent-border") {
@@ -237,6 +244,47 @@ function resolveRoleValue(
  *
  *  The mode comes from `inputs.mode` (Q-P4.5 split — mode now means
  *  contrast mode, not light/dark). */
+/**
+ * HC mode behavior lives at FOUR layers, each operating on a distinct
+ * scope. They don't compose into a single token.modes declaration
+ * because they operate on different artifacts:
+ *
+ *   Layer A — role binding (applyHcGradePush, in resolveRoleValue):
+ *     pushes border-* roles +2 grades so dividers gain force. Operates
+ *     on RoleBinding before role-value resolution. Can't migrate to
+ *     token.modes because the +2 push for `border` (g7→g9) and
+ *     `border-strong` (g8→g10) would need roles at grades 9/10 that
+ *     don't exist in the role catalog.
+ *
+ *   Layer B — declarative token.modes (this function, lines below):
+ *     drop or swap a token's value under HC/RT. The general
+ *     mechanism; new tokens prefer this. Examples: `--tv-row-alt-bg`
+ *     drops under HC; `--tv-row-emphasis-bg` drops under HC and
+ *     swaps to fill-hover under RT.
+ *
+ *   Layer C — HC fidelity tokens (the named constants below): the
+ *     three `caret-char`, `ring-width`, and `bar-width` tokens in the
+ *     hc-fidelity cluster, whose VALUE changes with mode (not just a
+ *     drop-or-swap). The token.modes schema only carries drop/swap,
+ *     not value substitution; keep inline until that schema extends.
+ *
+ *   Layer D — Phase D geometry hcBump (in resolveGeometryComputed):
+ *     adds +1px to every border-width under HC. The token.modes
+ *     schema doesn't support arithmetic transforms; keep inline.
+ *
+ * If a future schema gains `{value: string}` or `{add: number}`, layer
+ * C + D become migratable; layer A stays as-is (it's at the wrong
+ * abstraction for per-token declaration).
+ */
+
+// Layer-C HC fidelity values — pulled to named constants so each
+// token's mode-dependent value is a one-line read rather than buried
+// in if-chain text.
+const HC_CARET_CHAR_VALUE = "▸";
+const HC_BAR_WIDTH_HC     = "4px";
+const HC_BAR_WIDTH_STD    = "3px";
+const HC_RING_WIDTH_VALUE = "1.5px";
+
 function resolveTokenValue(
   token: ComponentToken,
   resolved: {
@@ -245,12 +293,11 @@ function resolveTokenValue(
     inputs: ThemeInputs;
   },
 ): string {
-  // Mode-specific transforms — drop or swap based on the active mode.
+  // Layer B — declarative token.modes drop/swap.
   const mode = resolved.inputs.mode;
   if (mode === "high-contrast" && token.modes?.hc) {
     const beh = token.modes.hc;
     if (beh === "drop") return "transparent";
-    // beh is { swap: roleName }
     return resolved.roles[beh.swap];
   }
   if (mode === "reduced-transparency" && token.modes?.rt) {
@@ -259,16 +306,16 @@ function resolveTokenValue(
     return resolved.roles[beh.swap];
   }
 
-  // Stage 2 §5 HC fidelity tokens — short-circuit before kind dispatch
+  // Layer C — HC fidelity tokens. Short-circuit before kind dispatch
   // so density/border-width branches don't capture them.
   if (token.cssVar === "--tv-hc-caret-char") {
-    return resolved.inputs.mode === "high-contrast" ? "▸" : "";
+    return mode === "high-contrast" ? HC_CARET_CHAR_VALUE : "";
   }
   if (token.cssVar === "--tv-hc-ring-width") {
-    return "1.5px";
+    return HC_RING_WIDTH_VALUE;
   }
   if (token.cssVar === "--tv-hc-bar-width") {
-    return resolved.inputs.mode === "high-contrast" ? "4px" : "3px";
+    return mode === "high-contrast" ? HC_BAR_WIDTH_HC : HC_BAR_WIDTH_STD;
   }
 
   // Stage 2 §7 browser-additive effects.
@@ -492,11 +539,16 @@ const DEFAULT_BORDER_WIDTH: Required<NonNullable<NonNullable<ThemeInputs["geomet
   hair: 0.5, thin: 1, regular: 1.5, thick: 2.5,
 };
 
-/** Direct projection of inputs.geometry into the four radius + four border-
- *  width cssVars. HC mode bumps border-width by +1px to compensate for the
- *  reduced colour cue (the existing token.modes.hc swap on hair handles the
- *  drop-from-hairline-to-strong path; everything else just gets thicker
- *  here). */
+/** Direct projection of inputs.geometry into the four radius + four
+ *  border-width cssVars.
+ *
+ *  HC behavior here is Layer D of the HC inventory in `resolveTokenValue`'s
+ *  docstring: border-width gets +1px under HC to compensate for the reduced
+ *  colour cue. Not migratable to `token.modes` declarations because the
+ *  current schema only carries drop/swap, not arithmetic transforms. The
+ *  +1px bump is uniform across hair/thin/regular/thick so a single
+ *  per-token declaration wouldn't even be cleaner than the centralized
+ *  `hcBump` here. */
 function resolveGeometryComputed(cssVar: string, inputs: ThemeInputs): string | null {
   const g = inputs.geometry;
   const isHc = inputs.mode === "high-contrast";
@@ -507,8 +559,11 @@ function resolveGeometryComputed(cssVar: string, inputs: ThemeInputs): string | 
   if (cssVar === "--tv-radius-lg")   return `${g?.radius?.lg   ?? DEFAULT_RADIUS.lg}px`;
   if (cssVar === "--tv-radius-pill") return `${g?.radius?.pill ?? DEFAULT_RADIUS.pill}px`;
 
-  // Border-width — `hair` is special-cased by token.modes.hc above (drops to
-  // border-strong); the rest just thicken under HC.
+  // Border-width — `hair` is also special-cased by the manifest entry's
+  // `modes.hc: { swap: "border-strong" }` so under HC the token swaps to
+  // a stronger role instead of just bumping; the +1px here applies for
+  // the brief moment before the dispatcher's drop/swap fires. The rest
+  // just thicken under HC.
   const hcBump = isHc ? 1 : 0;
   if (cssVar === "--tv-border-width-hair")
     return `${(g?.border_width?.hair    ?? DEFAULT_BORDER_WIDTH.hair)    + hcBump}px`;
