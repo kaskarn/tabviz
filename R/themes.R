@@ -70,7 +70,7 @@ web_theme_cochrane <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    fonts_body = "'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif",
+    fonts_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
     web_fonts = list(
       web_font("Inter", FONT_URLS$inter)
     ),
@@ -163,7 +163,7 @@ web_theme_bmj <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
+    fonts_body = "Inter, -apple-system, system-ui, sans-serif",
     web_fonts = list(
       web_font("Inter", FONT_URLS$inter)
     ),

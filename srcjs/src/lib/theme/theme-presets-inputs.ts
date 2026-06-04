@@ -172,7 +172,7 @@ export const NEJM: ThemeInputs = defineInputs(
       body: "Georgia, 'Times New Roman', serif",
       display: "Georgia, 'Times New Roman', serif",
     },
-    curves: { brand: "smooth", neutral: "ease" },
+    curves: { neutral: "ease", brand: "smooth" },
   },
 );
 

@@ -24,9 +24,9 @@ web_theme_dwarven <- function() {
     type_base_size = 14,
     type_scale_ratio = 1.25,
     type_weights = list(regular = 400, medium = 500, semibold = 700, bold = 800),
-    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_body = "'EB Garamond', Georgia, serif",
     fonts_display = "'Cinzel', 'EB Garamond', Georgia, serif",
-    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_mono = "'JetBrains Mono', monospace",
     web_fonts = list(
       web_font("EB Garamond", FONT_URLS$eb_garamond_full),
       web_font("Cinzel", FONT_URLS$cinzel),
@@ -55,7 +55,7 @@ web_theme_elvish <- function() {
     shell_texture = "ruled",
     type_base_size = 14,
     type_scale_ratio = 1.333,
-    fonts_body = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    fonts_body = "'Cormorant Garamond', Georgia, serif",
     fonts_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif",
     web_fonts = list(
       web_font("Cormorant Garamond", FONT_URLS$cormorant_ital),
@@ -84,7 +84,7 @@ web_theme_hobbit <- function() {
     shell_texture = "grain",
     type_base_size = 14,
     type_scale_ratio = 1.333,
-    fonts_body = "'IM Fell English', Georgia, 'Times New Roman', serif",
+    fonts_body = "'IM Fell English', Georgia, serif",
     fonts_display = "'IM Fell English SC', Georgia, serif",
     web_fonts = list(
       web_font("IM Fell English", FONT_URLS$im_fell_english),

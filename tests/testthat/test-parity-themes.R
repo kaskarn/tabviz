@@ -29,23 +29,8 @@
 # need alignment). Removing an entry should make the test still pass
 # — meaning the divergence has been resolved.
 .KNOWN_DIVERGENCES <- list(
-  # `fonts` mismatches: R preset font stacks single-quote single-word
-  # families ('Inter') where TS leaves them bare (Inter). CSS accepts
-  # both but the wire strings differ. Follow-up task: standardize on
-  # bare-single-word + quoted-multi-word, mirror both sides.
-  cochrane  = c("fonts"),
-  bmj       = c("fonts"),
-  bauhaus   = c("fonts"),
-  swiss     = c("fonts"),
-  tufte     = c("fonts"),
-  dwarven   = c("fonts"),
-  elvish    = c("fonts"),
-  hobbit    = c("fonts"),
-  atelier   = c("fonts"),
-  executive = c("fonts"),
-  # NEJM: curves recipe drift between R and TS. Real semantic
-  # divergence — preset constructors need to agree on the recipe.
-  nejm      = c("curves")
+  # Empty — all known divergences closed. New divergences trigger
+  # test failure with a "preset 'X' has new R↔TS divergence" message.
 )
 
 # Compare two anchor triples with per-axis tolerance. For achromatic

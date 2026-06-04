@@ -24,8 +24,8 @@ web_theme_bauhaus <- function() {
     type_base_size = 15,
     type_scale_ratio = 1.333,
     type_weights = list(regular = 400, medium = 500, semibold = 700, bold = 800),
-    fonts_body = "'Archivo', 'Inter', 'Helvetica Neue', Helvetica, sans-serif",
-    fonts_display = "'Archivo Black', 'Archivo', 'Helvetica Neue', sans-serif",
+    fonts_body = "'Archivo', Inter, -apple-system, system-ui, sans-serif",
+    fonts_display = "'Archivo Black', 'Archivo', sans-serif",
     web_fonts = list(
       web_font("Archivo", FONT_URLS$archivo),
       web_font("Archivo Black", FONT_URLS$archivo_black)
@@ -52,8 +52,8 @@ web_theme_swiss <- function() {
     header_style = "bold",
     type_scale_ratio = 1.2,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    fonts_body = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
-    fonts_display = "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
+    fonts_body = "'Inter', -apple-system, system-ui, 'Helvetica Neue', sans-serif",
+    fonts_display = "'Inter', -apple-system, system-ui, 'Helvetica Neue', sans-serif",
     web_fonts = list(
       web_font("Inter", FONT_URLS$inter)
     ),
@@ -80,8 +80,8 @@ web_theme_tufte <- function() {
     shell_texture = "ruled",
     type_base_size = 13,
     type_scale_ratio = 1.15,
-    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
-    fonts_display = "'EB Garamond', Georgia, 'Times New Roman', serif",
+    fonts_body = "'EB Garamond', Georgia, serif",
+    fonts_display = "'EB Garamond', Georgia, serif",
     web_fonts = list(
       web_font("EB Garamond", FONT_URLS$eb_garamond)
     ),

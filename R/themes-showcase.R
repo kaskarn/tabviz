@@ -106,8 +106,8 @@ web_theme_atelier <- function() {
     shell_texture = "ruled",
     type_base_size = 13.5,
     type_scale_ratio = 1.333,
-    fonts_body = "'EB Garamond', Georgia, 'Times New Roman', serif",
-    fonts_display = "'Italianno', 'EB Garamond', Georgia, cursive, serif",
+    fonts_body = "'EB Garamond', Georgia, serif",
+    fonts_display = "'Italianno', 'EB Garamond', cursive, serif",
     web_fonts = list(
       web_font("EB Garamond", FONT_URLS$eb_garamond),
       web_font("Italianno", FONT_URLS$italianno)
@@ -141,7 +141,7 @@ web_theme_executive <- function() {
     type_scale_ratio = 1.333,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
     fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
-    fonts_display = "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    fonts_display = "'Cormorant Garamond', Georgia, serif",
     web_fonts = list(
       web_font("Inter", FONT_URLS$inter),
       web_font("Cormorant Garamond", FONT_URLS$cormorant)
