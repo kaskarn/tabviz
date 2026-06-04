@@ -66,6 +66,36 @@ theme_inputs_to_json <- function(inputs) {
   )
   curves <- curves[!vapply(curves, is.null, logical(1))]
 
+  # Phase D — geometry: re-nest the flat S7 slots into nested radius +
+  # border_width objects on the wire. Omit absent leaves so the TS
+  # resolver applies its defaults.
+  drop_null <- function(x) x[!vapply(x, is.null, logical(1))]
+  geom_radius <- drop_null(list(
+    sm   = na_to_null(inputs@geometry_radius_sm),
+    md   = na_to_null(inputs@geometry_radius_md),
+    lg   = na_to_null(inputs@geometry_radius_lg),
+    pill = na_to_null(inputs@geometry_radius_pill)
+  ))
+  geom_bw <- drop_null(list(
+    hair    = na_to_null(inputs@geometry_border_width_hair),
+    thin    = na_to_null(inputs@geometry_border_width_thin),
+    regular = na_to_null(inputs@geometry_border_width_regular),
+    thick   = na_to_null(inputs@geometry_border_width_thick)
+  ))
+  geometry_out <- drop_null(list(
+    radius       = if (length(geom_radius) > 0L) geom_radius else NULL,
+    border_width = if (length(geom_bw) > 0L) geom_bw else NULL
+  ))
+
+  # Phase D — effects.
+  effects_out <- drop_null(list(
+    glow_intensity           = na_to_null(inputs@effects_glow_intensity),
+    glow_anchor              = na_to_null(inputs@effects_glow_anchor),
+    gradient_shell_intensity = na_to_null(inputs@effects_gradient_shell_intensity),
+    gradient_shell_angle     = na_to_null(inputs@effects_gradient_shell_angle),
+    elevation                = na_to_null(inputs@effects_elevation)
+  ))
+
   out <- list(
     anchors               = anchors,
     polarity              = inputs@polarity,
@@ -82,7 +112,9 @@ theme_inputs_to_json <- function(inputs) {
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
-    curves                = if (length(curves) > 0L) curves else NULL
+    curves                = if (length(curves) > 0L) curves else NULL,
+    geometry              = if (length(geometry_out) > 0L) geometry_out else NULL,
+    effects               = if (length(effects_out)  > 0L) effects_out  else NULL
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -169,6 +201,17 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `neutral`, `brand`, `accent` keyed to `"linear"` / `"ease"` / `"smooth"`
 #'   / `"log"` / `"exp"`. NULL defaults: neutral=ease, brand=linear,
 #'   accent=linear.
+#' @param geometry Phase D GEOMETRY axis — named list with optional `radius`
+#'   (named list of `sm`/`md`/`lg`/`pill` numeric px) and `border_width`
+#'   (named list of `hair`/`thin`/`regular`/`thick` numeric px). Drives
+#'   corner softness + line weight across the widget. NULL = TS defaults
+#'   (2/6/10/999 px radius, 0.5/1/1.5/2.5 px border-width).
+#' @param effects Phase D EFFECTS axis — named list with optional
+#'   `glow_intensity` (`"none"` / `"subtle"` / `"neon"`), `glow_anchor`
+#'   (`"brand"` / `"accent"`), `gradient_shell_intensity` (`"none"` /
+#'   `"subtle"` / `"vivid"`), `gradient_shell_angle` (degrees 0-360),
+#'   `elevation` (`"none"` / `"soft"` / `"raised"` / `"float"`). NULL =
+#'   no effects (the safe editorial baseline). HC mode drops all effects.
 #' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
 #' @param first_column_style First (label) column treatment: `"default"`,
@@ -201,6 +244,8 @@ web_theme <- function(
     type_scale_ratio = NULL,
     type_weights = NULL,
     curves = NULL,
+    geometry = NULL,
+    effects = NULL,
     header_style = "light",
     first_column_style = "default",
     web_fonts = NULL,
@@ -218,6 +263,8 @@ web_theme <- function(
   checkmate::assert_number(type_scale_ratio, lower = 1.05, upper = 1.6, null.ok = TRUE)
   checkmate::assert_list(type_weights, null.ok = TRUE)
   checkmate::assert_list(curves, null.ok = TRUE)
+  checkmate::assert_list(geometry, null.ok = TRUE)
+  checkmate::assert_list(effects, null.ok = TRUE)
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
   ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
@@ -264,7 +311,21 @@ web_theme <- function(
     type_weight_bold     = type_weights$bold     %||% NA_real_,
     curve_neutral = curves$neutral %||% NA_character_,
     curve_brand   = curves$brand   %||% NA_character_,
-    curve_accent  = curves$accent  %||% NA_character_
+    curve_accent  = curves$accent  %||% NA_character_,
+    # Phase D — geometry + effects (all optional; NA = TS resolver default).
+    geometry_radius_sm    = geometry$radius$sm     %||% NA_real_,
+    geometry_radius_md    = geometry$radius$md     %||% NA_real_,
+    geometry_radius_lg    = geometry$radius$lg     %||% NA_real_,
+    geometry_radius_pill  = geometry$radius$pill   %||% NA_real_,
+    geometry_border_width_hair    = geometry$border_width$hair    %||% NA_real_,
+    geometry_border_width_thin    = geometry$border_width$thin    %||% NA_real_,
+    geometry_border_width_regular = geometry$border_width$regular %||% NA_real_,
+    geometry_border_width_thick   = geometry$border_width$thick   %||% NA_real_,
+    effects_glow_intensity         = effects$glow_intensity         %||% NA_character_,
+    effects_glow_anchor            = effects$glow_anchor            %||% NA_character_,
+    effects_gradient_shell_intensity = effects$gradient_shell_intensity %||% NA_character_,
+    effects_gradient_shell_angle   = effects$gradient_shell_angle   %||% NA_real_,
+    effects_elevation              = effects$elevation              %||% NA_character_
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style

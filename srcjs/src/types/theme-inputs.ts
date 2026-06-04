@@ -149,6 +149,49 @@ export interface ThemeInputs {
     "data" | "group_header" | "spacer" | "summary" | "header" | "panel",
     { heightRatio?: number }
   >>;
+
+  /** Phase D — GEOMETRY cascade axis.
+   *
+   *  Numeric scale tokens that drive corner softness + line weight across
+   *  the widget. Tier 1 input → Tier 2 roles (radius-card, radius-pill,
+   *  border-width-rule, border-width-emphasis) → Tier 3 component tokens
+   *  (--tv-radius-{sm,md,lg,pill}, --tv-border-width-{hair,thin,regular,
+   *  thick}).
+   *
+   *  In HC mode all border-widths bump (`+1px`) to compensate for the
+   *  reduced colour cue; radius is unchanged. */
+  geometry?: {
+    radius?: {
+      sm?: number;     // 2 px default — small chips, pill ornaments
+      md?: number;     // 6 px default — buttons, controls
+      lg?: number;     // 10 px default — panels, cards, paper
+      pill?: number;   // 999 px default — chip pills, tags
+    };
+    border_width?: {
+      hair?: number;    // 0.5 px — gridlines, alt-row dividers
+      thin?: number;    // 1 px — default rules
+      regular?: number; // 1.5 px — header rules
+      thick?: number;   // 2.5 px — emphasis bars, callout borders
+    };
+  };
+
+  /** Phase D — EFFECTS cascade axis.
+   *
+   *  Optional visual layers that dramatise the cascade without being
+   *  semantic-load-bearing. Mode-aware: HC drops every effect to "none";
+   *  RT keeps glow but flattens gradient.
+   *
+   *  glow_anchor picks which ramp the glow draws its colour from (the
+   *  resolver reads ramp[9] as the saturated peak). gradient_shell stops
+   *  derive from brand+accent ramps at the requested intensity grade. */
+  effects?: {
+    glow_intensity?: "none" | "subtle" | "neon";
+    glow_anchor?: "brand" | "accent";
+    gradient_shell_intensity?: "none" | "subtle" | "vivid";
+    gradient_shell_angle?: number;   // degrees; default 90 (left-to-right)
+    /** Card shadow elevation preset. "none" / "soft" / "raised" / "float". */
+    elevation?: "none" | "soft" | "raised" | "float";
+  };
 }
 
 // ────────────────────────────────────────────────────────────────────

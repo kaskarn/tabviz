@@ -28,6 +28,8 @@ web_theme(
   type_scale_ratio = NULL,
   type_weights = NULL,
   curves = NULL,
+  geometry = NULL,
+  effects = NULL,
   header_style = "light",
   first_column_style = "default",
   web_fonts = NULL,
@@ -87,6 +89,19 @@ any of \code{regular}, \code{medium}, \code{semibold}, \code{bold}. NULL default
 \code{neutral}, \code{brand}, \code{accent} keyed to \code{"linear"} / \code{"ease"} / \code{"smooth"}
 / \code{"log"} / \code{"exp"}. NULL defaults: neutral=ease, brand=linear,
 accent=linear.}
+
+\item{geometry}{Phase D GEOMETRY axis — named list with optional \code{radius}
+(named list of \code{sm}/\code{md}/\code{lg}/\code{pill} numeric px) and \code{border_width}
+(named list of \code{hair}/\code{thin}/\code{regular}/\code{thick} numeric px). Drives
+corner softness + line weight across the widget. NULL = TS defaults
+(2/6/10/999 px radius, 0.5/1/1.5/2.5 px border-width).}
+
+\item{effects}{Phase D EFFECTS axis — named list with optional
+\code{glow_intensity} (\code{"none"} / \code{"subtle"} / \code{"neon"}), \code{glow_anchor}
+(\code{"brand"} / \code{"accent"}), \code{gradient_shell_intensity} (\code{"none"} /
+\code{"subtle"} / \code{"vivid"}), \code{gradient_shell_angle} (degrees 0-360),
+\code{elevation} (\code{"none"} / \code{"soft"} / \code{"raised"} / \code{"float"}). NULL =
+no effects (the safe editorial baseline). HC mode drops all effects.}
 
 \item{header_style}{Header chrome treatment: \code{"light"}, \code{"tint"}, or
 \code{"bold"}. Default \code{"light"}.}

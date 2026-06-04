@@ -225,6 +225,7 @@ package_themes <- function() {
     ),
     showcase = list(
       synthwave = web_theme_synthwave(),
+      brutalist = web_theme_brutalist(),
       atelier   = web_theme_atelier(),
       executive = web_theme_executive()
     )

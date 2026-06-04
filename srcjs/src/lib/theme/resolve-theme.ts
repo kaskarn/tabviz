@@ -297,6 +297,22 @@ function resolveTokenValue(
     return "16px";
   }
 
+  // ── Phase D — GEOMETRY (radius + border-width) ─────────────────────────
+  // Direct projection from inputs.geometry with defaults baked here so
+  // every preset gets sensible values without per-preset opt-in.
+  {
+    const g = resolveGeometryComputed(token.cssVar, resolved.inputs);
+    if (g !== null) return g;
+  }
+
+  // ── Phase D — EFFECTS (glow + gradient + shadow) ───────────────────────
+  // Derived from anchor ramps. Mode-aware behaviour rides on token.modes
+  // (HC drops, RT swaps) so the dispatcher above already handled it.
+  {
+    const e = resolveEffectsComputed(token.cssVar, resolved);
+    if (e !== null) return e;
+  }
+
   // Stage 2 typography tokens always route through the typography resolver,
   // regardless of kind. (`lh` and `track` are tagged spacing-px / size, but
   // their values come from the type-role table, not density.)
@@ -462,6 +478,125 @@ function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string 
     case "font":   return r.font;
     default:       return null;
   }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Phase D — geometry + effects resolvers
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Default radius scale (px). Editorial-soft baseline; brutalist-style
+ *  presets pin smaller values per-key. */
+const DEFAULT_RADIUS: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["radius"]>> = {
+  sm: 2, md: 6, lg: 10, pill: 999,
+};
+
+/** Default border-width scale (px). Newspaper-hairline baseline. */
+const DEFAULT_BORDER_WIDTH: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["border_width"]>> = {
+  hair: 0.5, thin: 1, regular: 1.5, thick: 2.5,
+};
+
+/** Direct projection of inputs.geometry into the four radius + four border-
+ *  width cssVars. HC mode bumps border-width by +1px to compensate for the
+ *  reduced colour cue (the existing token.modes.hc swap on hair handles the
+ *  drop-from-hairline-to-strong path; everything else just gets thicker
+ *  here). */
+function resolveGeometryComputed(cssVar: string, inputs: ThemeInputs): string | null {
+  const g = inputs.geometry;
+  const isHc = inputs.mode === "high-contrast";
+
+  // Radius
+  if (cssVar === "--tv-radius-sm")   return `${g?.radius?.sm   ?? DEFAULT_RADIUS.sm}px`;
+  if (cssVar === "--tv-radius-md")   return `${g?.radius?.md   ?? DEFAULT_RADIUS.md}px`;
+  if (cssVar === "--tv-radius-lg")   return `${g?.radius?.lg   ?? DEFAULT_RADIUS.lg}px`;
+  if (cssVar === "--tv-radius-pill") return `${g?.radius?.pill ?? DEFAULT_RADIUS.pill}px`;
+
+  // Border-width — `hair` is special-cased by token.modes.hc above (drops to
+  // border-strong); the rest just thicken under HC.
+  const hcBump = isHc ? 1 : 0;
+  if (cssVar === "--tv-border-width-hair")
+    return `${(g?.border_width?.hair    ?? DEFAULT_BORDER_WIDTH.hair)    + hcBump}px`;
+  if (cssVar === "--tv-border-width-thin")
+    return `${(g?.border_width?.thin    ?? DEFAULT_BORDER_WIDTH.thin)    + hcBump}px`;
+  if (cssVar === "--tv-border-width-regular")
+    return `${(g?.border_width?.regular ?? DEFAULT_BORDER_WIDTH.regular) + hcBump}px`;
+  if (cssVar === "--tv-border-width-thick")
+    return `${(g?.border_width?.thick   ?? DEFAULT_BORDER_WIDTH.thick)   + hcBump}px`;
+
+  return null;
+}
+
+/** Convert a hex `#rrggbb` to an `rgba(...)` string at the given alpha. */
+function hexToRgba(hex: string, alpha: number): string {
+  if (!hex.startsWith("#") || hex.length !== 7) return hex;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** Phase D effects projection. Glow + gradient + emphasis-shadow derive
+ *  from anchor ramps with mode-aware behaviour delegated to the
+ *  dispatcher (token.modes.hc / .rt). */
+function resolveEffectsComputed(
+  cssVar: string,
+  resolved: { ramps: TokenRamps; inputs: ThemeInputs },
+): string | null {
+  const fx = resolved.inputs.effects;
+  const polarity = derivePolarity(resolved.inputs);
+
+  // ── Glow ──────────────────────────────────────────────────────────────
+  if (cssVar === "--tv-glow-color") {
+    const intensity = fx?.glow_intensity ?? "none";
+    if (intensity === "none") return "transparent";
+    const anchor = fx?.glow_anchor ?? "brand";
+    const ramp = anchor === "accent" ? resolved.ramps.accent : resolved.ramps.brand;
+    // Peak-chroma grade 9 (index 8) reads as the saturated mid hue.
+    const peak = ramp[8] ?? ramp[ramp.length - 1] ?? "#000000";
+    // Dark polarity reads neon-bright at higher alpha; light reads softer.
+    const alpha = intensity === "neon"
+      ? (polarity === "dark" ? 0.85 : 0.55)
+      : (polarity === "dark" ? 0.50 : 0.30);
+    return hexToRgba(peak, alpha);
+  }
+  if (cssVar === "--tv-glow-blur") {
+    const intensity = fx?.glow_intensity ?? "none";
+    return intensity === "neon" ? "18px"
+         : intensity === "subtle" ? "8px"
+         : "0px";
+  }
+  if (cssVar === "--tv-glow-spread") {
+    const intensity = fx?.glow_intensity ?? "none";
+    return intensity === "neon" ? "3px"
+         : intensity === "subtle" ? "1px"
+         : "0px";
+  }
+
+  // ── Gradient shell ────────────────────────────────────────────────────
+  if (cssVar === "--tv-shell-gradient") {
+    const intensity = fx?.gradient_shell_intensity ?? "none";
+    if (intensity === "none") return "transparent";
+    const angle = fx?.gradient_shell_angle ?? 90;
+    const fromIdx = intensity === "vivid" ? 8 : 5;   // brand chroma peak / mid
+    const toIdx   = intensity === "vivid" ? 8 : 3;   // accent chroma peak / soft
+    const from = resolved.ramps.brand[fromIdx]  ?? resolved.ramps.brand[8]  ?? "#000000";
+    const to   = resolved.ramps.accent[toIdx]   ?? resolved.ramps.accent[8] ?? "#FFFFFF";
+    return `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`;
+  }
+
+  // ── Emphasis shadow ───────────────────────────────────────────────────
+  if (cssVar === "--tv-emphasis-shadow") {
+    const elev = fx?.elevation ?? "none";
+    if (elev === "none") return "none";
+    // Stack a near + far shadow per Stage 2 §6 convention. Near uses the
+    // brand-peak hue at low alpha to keep colour identity in the elevation.
+    const peak = resolved.ramps.brand[9] ?? "#1c1a17";
+    const near = hexToRgba(peak, 0.15);
+    const far  = hexToRgba(peak, 0.08);
+    const k = elev === "float" ? 1.6 : elev === "raised" ? 1.2 : 0.8;
+    return `0 ${k * 1}px ${k * 3}px ${near}, 0 ${k * 4}px ${k * 12}px ${far}`;
+  }
+
+  return null;
 }
 
 /** Per-token density-driven default px value. Looks up the density preset

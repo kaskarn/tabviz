@@ -165,7 +165,27 @@ ThemeInputs <- new_class(
     type_weight_regular  = new_property(class_numeric, default = NA_real_),
     type_weight_medium   = new_property(class_numeric, default = NA_real_),
     type_weight_semibold = new_property(class_numeric, default = NA_real_),
-    type_weight_bold     = new_property(class_numeric, default = NA_real_)
+    type_weight_bold     = new_property(class_numeric, default = NA_real_),
+
+    # Phase D — GEOMETRY axis. Numeric scale tokens that drive corner
+    # softness + line weight. Optional; all NA → TS resolver defaults
+    # (2/6/10/999 px radius, 0.5/1/1.5/2.5 px border-width).
+    geometry_radius_sm   = new_property(class_numeric, default = NA_real_),
+    geometry_radius_md   = new_property(class_numeric, default = NA_real_),
+    geometry_radius_lg   = new_property(class_numeric, default = NA_real_),
+    geometry_radius_pill = new_property(class_numeric, default = NA_real_),
+    geometry_border_width_hair    = new_property(class_numeric, default = NA_real_),
+    geometry_border_width_thin    = new_property(class_numeric, default = NA_real_),
+    geometry_border_width_regular = new_property(class_numeric, default = NA_real_),
+    geometry_border_width_thick   = new_property(class_numeric, default = NA_real_),
+
+    # Phase D — EFFECTS axis. Optional visual dramatisation knobs. Mode-
+    # aware (HC drops every effect; RT keeps glow, flattens gradient).
+    effects_glow_intensity         = new_property(class_character, default = NA_character_),
+    effects_glow_anchor            = new_property(class_character, default = NA_character_),
+    effects_gradient_shell_intensity = new_property(class_character, default = NA_character_),
+    effects_gradient_shell_angle   = new_property(class_numeric,   default = NA_real_),
+    effects_elevation              = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
     for (anchor in c("anchors_paper", "anchors_ink", "anchors_brand")) {
@@ -187,6 +207,37 @@ ThemeInputs <- new_class(
     }
     if (!self@density %in% c("compact", "comfortable", "spacious")) {
       return("density must be 'compact', 'comfortable', or 'spacious'")
+    }
+    # Phase D — geometry numeric ranges (px).
+    for (slot in c("geometry_radius_sm", "geometry_radius_md",
+                   "geometry_radius_lg", "geometry_radius_pill",
+                   "geometry_border_width_hair", "geometry_border_width_thin",
+                   "geometry_border_width_regular", "geometry_border_width_thick")) {
+      v <- S7::prop(self, slot)
+      if (!is.na(v) && (v < 0 || v > 999)) {
+        return(paste0(slot, " must be in [0, 999], got ", v))
+      }
+    }
+    # Phase D — effects enum validation.
+    gi <- self@effects_glow_intensity
+    if (!is.na(gi) && !gi %in% c("none", "subtle", "neon")) {
+      return("effects_glow_intensity must be 'none', 'subtle', or 'neon'")
+    }
+    ga <- self@effects_glow_anchor
+    if (!is.na(ga) && !ga %in% c("brand", "accent")) {
+      return("effects_glow_anchor must be 'brand' or 'accent'")
+    }
+    gsi <- self@effects_gradient_shell_intensity
+    if (!is.na(gsi) && !gsi %in% c("none", "subtle", "vivid")) {
+      return("effects_gradient_shell_intensity must be 'none', 'subtle', or 'vivid'")
+    }
+    gsa <- self@effects_gradient_shell_angle
+    if (!is.na(gsa) && (gsa < 0 || gsa > 360)) {
+      return("effects_gradient_shell_angle must be in [0, 360]")
+    }
+    el <- self@effects_elevation
+    if (!is.na(el) && !el %in% c("none", "soft", "raised", "float")) {
+      return("effects_elevation must be 'none', 'soft', 'raised', or 'float'")
     }
     NULL
   }

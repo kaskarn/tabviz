@@ -1,17 +1,14 @@
 <!--
   ThemeControl — widget settings-panel Theme tab.
 
-  Phase B (V4 substrate): the entire v3 panel (Identity / Structure /
-  Data palettes / Typography / Status / Advanced sections, ~500 LOC)
-  was replaced by the shared ThemePanel component used by the studio
-  gadget. ThemePanel reads/writes ThemeInputs directly; this file is a
-  thin adapter that locates the authoring inputs on the resolved theme
-  and forwards edits through the store's setAuthoringInputs setter.
+  Mounts only the controls strip — never the cascade visualization. The
+  pedagogical cascade lives in the studio gadget (CascadeView.svelte);
+  the cog-icon drawer is a compact editing surface.
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeInputs } from "$types/theme-inputs";
-  import ThemePanel from "../theme-panel/ThemePanel.svelte";
+  import ThemeControlsStrip from "../theme-panel/ThemeControlsStrip.svelte";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -23,7 +20,7 @@
 </script>
 
 {#if inputs}
-  <ThemePanel
+  <ThemeControlsStrip
     {inputs}
     onchange={(next) => store.setAuthoringInputs(next)}
   />

@@ -216,7 +216,9 @@ web_theme_tonal_dark <- function() {
 #' Dark polarity + float shell + grid texture (the perspective-rail
 #' retro look). Monospace body (terminal vibe). Brand-tinted neutrals
 #' via elevated paperC/inkC give the magenta drift. Exp curves on
-#' brand+accent for saturated neon mids.
+#' brand+accent for saturated neon mids. Phase D: neon glow on the
+#' accent anchor + vivid brand-to-accent gradient shell + raised
+#' elevation — the full effects stack.
 #' @return A [WebTheme].
 #' @export
 web_theme_synthwave <- function() {
@@ -238,7 +240,51 @@ web_theme_synthwave <- function() {
       web_font("JetBrains Mono", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap")
     ),
     curves = list(neutral = "smooth", brand = "exp", accent = "exp"),
+    effects = list(
+      glow_intensity = "neon",
+      glow_anchor = "accent",
+      gradient_shell_intensity = "vivid",
+      gradient_shell_angle = 110,
+      elevation = "raised"
+    ),
     name = "synthwave"
+  )
+}
+
+#' Brutalist theme - radius-zero, thick rules, no effects.
+#'
+#' The substrate smoke test for the Phase D GEOMETRY axis. Achromatic
+#' neutrals, ink-and-paper contrast, exposed grid texture, no
+#' softening. Heavy weights, compact density, no glow/gradient.
+#' @return A [WebTheme].
+#' @export
+web_theme_brutalist <- function() {
+  a <- derive_preset_anchors("#000000", "#000000",
+                             neutral_hue_from = NA_character_)
+  web_theme(
+    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    categorical = "greys",
+    density = "compact",
+    shell_texture = "grid",
+    type_base_size = 14,
+    type_scale_ratio = 1.25,
+    type_weights = list(regular = 500, medium = 700, semibold = 800, bold = 900),
+    font_body = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    font_display = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    web_fonts = list(
+      web_font("Inter", "https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap")
+    ),
+    curves = list(neutral = "linear"),
+    geometry = list(
+      radius       = list(sm = 0, md = 0, lg = 0, pill = 0),
+      border_width = list(hair = 1, thin = 1.5, regular = 2, thick = 3)
+    ),
+    effects = list(
+      glow_intensity = "none",
+      gradient_shell_intensity = "none",
+      elevation = "none"
+    ),
+    name = "brutalist"
   )
 }
 

@@ -13,5 +13,7 @@ A \link{WebTheme}.
 Dark polarity + float shell + grid texture (the perspective-rail
 retro look). Monospace body (terminal vibe). Brand-tinted neutrals
 via elevated paperC/inkC give the magenta drift. Exp curves on
-brand+accent for saturated neon mids.
+brand+accent for saturated neon mids. Phase D: neon glow on the
+accent anchor + vivid brand-to-accent gradient shell + raised
+elevation — the full effects stack.
 }

@@ -13,7 +13,7 @@ EXPECTED_THEME_NAMES <- c(
   "bauhaus", "swiss", "tufte", "newsprint",
   "solarized", "solarized_dark", "tonal", "tonal_dark",
   "dwarven", "elvish", "hobbit",
-  "synthwave", "atelier", "executive"
+  "synthwave", "brutalist", "atelier", "executive"
 )
 
 # snake_case → camelCase builder symbol.

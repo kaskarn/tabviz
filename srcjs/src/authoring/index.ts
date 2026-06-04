@@ -57,7 +57,7 @@ export {
   themeBauhaus, themeSwiss, themeTufte, themeNewsprint,
   themeSolarized, themeSolarizedDark, themeTonal, themeTonalDark,
   themeDwarven, themeElvish, themeHobbit,
-  themeSynthwave, themeAtelier, themeExecutive,
+  themeSynthwave, themeBrutalist, themeAtelier, themeExecutive,
   webTheme, resolveThemeRef,
 } from "../lib/theme/theme-api";
 

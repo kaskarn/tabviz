@@ -2519,7 +2519,11 @@
     color: var(--tv-text, var(--tv-fg));
     background: var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg)));
     border: var(--tv-container-border, none);
-    border-radius: var(--tv-container-border-radius, 8px);
+    border-radius: var(--tv-container-border-radius, var(--tv-radius-lg, 8px));
+    /* Phase D — optional gradient surface paints over the solid background
+       when effects.gradient_shell_intensity != "none". HC drops, RT swaps
+       to a flat surface fill. */
+    background-image: var(--tv-shell-gradient, none);
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
     display: flex;
     flex-direction: column;
@@ -3059,6 +3063,29 @@
     color: var(--tv-semantic-fg, inherit);
     font-weight: var(--tv-semantic-weight, inherit);
     font-style: var(--tv-semantic-style, inherit);
+  }
+
+  /* Phase D — emphasis row picks up the optional box-shadow + glow stack.
+     Both default to none / transparent so themes that don't opt into
+     effects see no visual change. HC mode drops both via token.modes.hc
+     at resolve time. */
+  :global(.tabviz-container .data-cell.row-active-emphasis) {
+    box-shadow:
+      var(--tv-emphasis-shadow, none),
+      0 0 var(--tv-glow-blur, 0) var(--tv-glow-spread, 0) var(--tv-glow-color, transparent);
+  }
+
+  /* Phase D — alternating row dividers honour the hair border-width when
+     a theme pins it (rare; most themes keep the default 0.5px hairline). */
+  :global(.tabviz-container .data-row.row-odd) {
+    border-top-width: var(--tv-border-width-hair, 0.5px);
+  }
+
+  /* Phase D — callouts + emphasis bars pick up the thick border-width
+     scale when set (Blueprint-style themes). */
+  :global(.tabviz-container .callout-emphasis) {
+    border-width: var(--tv-border-width-thick, 2.5px);
+    border-radius: var(--tv-radius-sm, 2px);
   }
 
   /* Muted token: lighter, reduced prominence. The fg already shifts to

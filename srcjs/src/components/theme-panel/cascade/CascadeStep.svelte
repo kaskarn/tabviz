@@ -56,7 +56,7 @@
       <span class="chip">
         <span class="chip-cat">{category}</span>
         <span class="chip-dot">·</span>
-        <span class="chip-facet">{facet}</span>
+        <span class="chip-facet" data-facet={facet}>{facet}</span>
       </span>
       <h3>{heading}</h3>
     </div>
@@ -143,4 +143,8 @@
   .cascade-step[data-category="tier-3"]    { --cat-bg: #1c1a17; --cat-fg: #eef5f4; --cat-faint: #eef5f4; --cat-rule: #b6cfcc; --cat-cat: #3f6f6b; }
   .cascade-step[data-category="scale"]     { --cat-bg: #1c1a17; --cat-fg: #f0f4f8; --cat-faint: #f0f4f8; --cat-rule: #b9c7d8; --cat-cat: #3d5878; }
   .cascade-step[data-category="resilience"] { --cat-bg: #1c1a17; --cat-fg: #fceee9; --cat-faint: #fceee9; --cat-rule: #e5b9aa; --cat-cat: #a04c34; }
+  /* GEOMETRY + EFFECTS sit under TIER 1 but use distinct facet tones so
+     the chip identifies the axis at a glance. */
+  .cascade-step[data-category="tier-1"]:has(.chip-facet:where([data-facet="GEOMETRY"])) { --cat-rule: #c4dbc4; --cat-cat: #3f7045; }
+  .cascade-step[data-category="tier-1"]:has(.chip-facet:where([data-facet="EFFECTS"]))  { --cat-rule: #e5c8e9; --cat-cat: #7a3d92; }
 </style>

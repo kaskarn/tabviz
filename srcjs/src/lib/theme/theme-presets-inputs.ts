@@ -468,7 +468,8 @@ export const HOBBIT: ThemeInputs = defineInputs(
 /** Synthwave — neon-on-deep-space. Dark polarity; float shell; grid
  *  texture (perspective rail). Monospace body. Brand-tinted neutrals
  *  (the magenta drift). Exp curves on brand + accent for saturated
- *  mids — the neon glow. */
+ *  mids — the neon glow. Phase D: full effects stack (neon glow on
+ *  accent + vivid brand→accent gradient + raised elevation). */
 export const SYNTHWAVE: ThemeInputs = defineInputs(
   {
     brand: "#FF00C8",
@@ -491,6 +492,46 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
       mono: "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
     },
     curves: { neutral: "smooth", brand: "exp", accent: "exp" },
+    effects: {
+      glow_intensity: "neon",
+      glow_anchor: "accent",
+      gradient_shell_intensity: "vivid",
+      gradient_shell_angle: 110,
+      elevation: "raised",
+    },
+  },
+);
+
+/** Brutalist — radius-zero, thick rules, no effects. The substrate
+ *  smoke test for the GEOMETRY axis. Achromatic neutrals, ink-and-paper
+ *  contrast, exposed grid texture. */
+export const BRUTALIST: ThemeInputs = defineInputs(
+  {
+    brand: "#000000",
+    accent: "#000000",
+    neutralHueFrom: null,
+  },
+  {
+    categorical: "greys",
+    density: "compact",
+    shell_texture: "grid",
+    type_base_size: 14,
+    type_scale_ratio: 1.25,
+    type_weights: { regular: 500, medium: 700, semibold: 800, bold: 900 },
+    fonts: {
+      body: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      display: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    },
+    curves: { neutral: "linear" },
+    geometry: {
+      radius:       { sm: 0, md: 0, lg: 0, pill: 0 },
+      border_width: { hair: 1, thin: 1.5, regular: 2, thick: 3 },
+    },
+    effects: {
+      glow_intensity: "none",
+      gradient_shell_intensity: "none",
+      elevation: "none",
+    },
   },
 );
 
@@ -563,6 +604,7 @@ export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
   elvish:          ELVISH,
   hobbit:          HOBBIT,
   synthwave:       SYNTHWAVE,
+  brutalist:       BRUTALIST,
   atelier:         ATELIER,
   executive:       EXECUTIVE,
 };

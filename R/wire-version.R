@@ -24,9 +24,8 @@
 #   4. For minor bumps: ensure additive-only — older readers must keep working.
 #   5. Run `devtools::test()` (test-wire-version asserts sync) and visual tests.
 
-# v1.1 (2026-06-04): additive ThemeInputs migration to the V4 anchors
-# vocabulary — `anchors: { paper, ink, brand, accent? }` as OKLCH triples
-# replace the flat `brand`/`accent`/`decorative` hex fields and
-# `neutral_tint*` knobs. Polarity reflection acts on each anchor's L.
-# Additive at the inputs layer; no compatibility shim (pre-release).
-WIRE_FORMAT_VERSION <- "1.1"
+# v1.2 (2026-06-04): additive Phase D substrate extensions — `geometry`
+# (radius + border-width scales) and `effects` (glow + gradient-shell +
+# elevation) optional input blocks. Mode-aware (HC drops effects; RT
+# flattens gradient). Additive at the inputs layer; presets opt in.
+WIRE_FORMAT_VERSION <- "1.2"

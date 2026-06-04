@@ -13,7 +13,8 @@
   import PresetHeader from "./PresetHeader.svelte";
   import StudioChart from "./StudioChart.svelte";
   import SnippetStrip from "./SnippetStrip.svelte";
-  import ThemePanel from "../components/theme-panel/ThemePanel.svelte";
+  import ThemeControlsStrip from "../components/theme-panel/ThemeControlsStrip.svelte";
+  import CascadeView from "../components/theme-panel/CascadeView.svelte";
   import { buildSnippetSteps, formatSnippet } from "./snippet-generator";
 
   // Initial spec + theme come from data-* attributes on the mount element.
@@ -121,16 +122,24 @@
 
   <div class="studio-main">
     {#if studioStore.inputs}
-      <ThemePanel
-        inputs={studioStore.inputs}
-        onchange={(next) => studioStore.apply(next, "Edit")}
-        resolved={studioStore.resolved ?? undefined}
-        inspectDefault={true}
-      />
+      <aside class="controls-rail">
+        <ThemeControlsStrip
+          inputs={studioStore.inputs}
+          onchange={(next) => studioStore.apply(next, "Edit")}
+        />
+      </aside>
+      <main class="cascade-main">
+        <div class="live-preview">
+          <StudioChart spec={initialSpec} />
+        </div>
+        <CascadeView
+          inputs={studioStore.inputs}
+          resolved={studioStore.resolved ?? undefined}
+        />
+      </main>
     {:else}
       <div class="theme-panel-placeholder">Loading theme…</div>
     {/if}
-    <StudioChart spec={initialSpec} />
   </div>
 
   <SnippetStrip
@@ -155,13 +164,22 @@
 
   .studio-main {
     display: grid;
-    grid-template-columns: minmax(560px, 760px) 1fr;
+    grid-template-columns: minmax(320px, 380px) 1fr;
     overflow: hidden;
     min-height: 0;
   }
-  .studio-main :global(.theme-panel) {
+  .controls-rail {
     overflow-y: auto;
     border-right: 1px solid #e2e8f0;
+  }
+  .cascade-main {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow-y: auto;
+  }
+  .live-preview {
+    padding: 16px 18px;
+    border-bottom: 1px solid #e2e8f0;
   }
   .theme-panel-placeholder {
     padding: 24px;
@@ -169,15 +187,11 @@
     font-style: italic;
   }
 
-  @media (max-width: 1200px) {
-    .studio-main {
-      grid-template-columns: minmax(420px, 480px) 1fr;
-    }
-  }
-
-  @media (max-width: 600px) {
+  @media (max-width: 1000px) {
     .studio-main {
       grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
     }
+    .controls-rail { border-right: 0; border-bottom: 1px solid #e2e8f0; }
   }
 </style>

@@ -9,7 +9,7 @@ ALL_PRESET_FNS <- list(
   web_theme_solarized, web_theme_solarized_dark,
   web_theme_tonal, web_theme_tonal_dark,
   web_theme_dwarven, web_theme_elvish, web_theme_hobbit,
-  web_theme_synthwave, web_theme_atelier, web_theme_executive
+  web_theme_synthwave, web_theme_brutalist, web_theme_atelier, web_theme_executive
 )
 
 test_that("every preset constructs a valid WebTheme", {
@@ -64,7 +64,7 @@ test_that("package_themes() registry exposes all categories", {
   expect_length(reg$journals, 7L)
   expect_length(reg$design, 8L)
   expect_length(reg$lotr, 3L)
-  expect_length(reg$showcase, 3L)
+  expect_length(reg$showcase, 4L)
 })
 
 test_that("theme_registry returns flat name-to-theme map", {

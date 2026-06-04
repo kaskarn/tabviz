@@ -42,6 +42,7 @@ PRESET_PAIRS <- list(
   elvish         = list(r = web_theme_elvish,         ts = "themeElvish"),
   hobbit         = list(r = web_theme_hobbit,         ts = "themeHobbit"),
   synthwave      = list(r = web_theme_synthwave,      ts = "themeSynthwave"),
+  brutalist      = list(r = web_theme_brutalist,      ts = "themeBrutalist"),
   atelier        = list(r = web_theme_atelier,        ts = "themeAtelier"),
   executive      = list(r = web_theme_executive,      ts = "themeExecutive")
 )

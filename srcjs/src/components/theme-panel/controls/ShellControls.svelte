@@ -1,6 +1,6 @@
 <!--
-  Shell mode (flush / raised / float / transparent) + surface texture
-  (none / ruled / grid / dotted / grain). Stage 2 §2-§3 controls.
+  ShellControls — Stage 2 §2 shell/paper two-surface model.
+  flush / raised / float / transparent.
 -->
 <script lang="ts">
   import type { ThemeInputs } from "$types/theme-inputs";
@@ -14,16 +14,10 @@
   } = $props();
 
   const SHELL_MODES = ["flush", "raised", "float", "transparent"] as const;
-  const TEXTURES   = ["none", "ruled", "grid", "dotted", "grain"] as const;
-
-  const shellMode    = $derived(inputs.shell_mode ?? "flush");
-  const shellTexture = $derived(inputs.shell_texture ?? "none");
+  const shellMode = $derived(inputs.shell_mode ?? "flush");
 
   function setShellMode(v: (typeof SHELL_MODES)[number]): void {
     onchange({ ...inputs, shell_mode: v });
-  }
-  function setShellTexture(v: (typeof TEXTURES)[number]): void {
-    onchange({ ...inputs, shell_texture: v });
   }
 </script>
 
@@ -33,14 +27,6 @@
     <div class="seg" role="radiogroup" aria-label="Shell mode">
       {#each SHELL_MODES as m (m)}
         <button type="button" class:on={shellMode === m} onclick={() => setShellMode(m)}>{m}</button>
-      {/each}
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">Texture</span>
-    <div class="seg" role="radiogroup" aria-label="Surface texture">
-      {#each TEXTURES as t (t)}
-        <button type="button" class:on={shellTexture === t} onclick={() => setShellTexture(t)}>{t}</button>
       {/each}
     </div>
   </div>
