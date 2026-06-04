@@ -100,6 +100,19 @@ export function resolveFromInputs(inputs: _ThemeInputs): _ResolvedTheme {
   return _resolveTheme(_createWire(inputs, "inspect"));
 }
 
+import { PRESETS as _PRESETS } from "../lib/theme/theme-presets-inputs";
+
+/** Return a preset's raw `ThemeInputs` (NOT the projected `ResolvedTheme`).
+ *  Used by the R↔TS parity test to compare input shapes directly, bypassing
+ *  the `buildTheme` adapter that flattens through v3 vocabulary. */
+export function inputsForPreset(name: string): _ThemeInputs {
+  const inputs = (_PRESETS as Record<string, _ThemeInputs>)[name];
+  if (inputs === undefined) {
+    throw new Error(`inputsForPreset: no preset "${name}"`);
+  }
+  return inputs;
+}
+
 // Contrast probe for the R-side `contrast_report(theme)` wrapper.
 import { apcaLc as _apcaLc } from "../lib/oklch";
 export { apcaContrast, apcaLc } from "../lib/oklch";

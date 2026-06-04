@@ -42,8 +42,13 @@ theme_inputs_to_json <- function(inputs) {
   )
   status <- status[!vapply(status, is.null, logical(1))]
 
+  # Drop the system-ui default for fonts_body — the TS resolver supplies
+  # the same fallback when fonts.body is missing (resolveTypographyInputs
+  # in srcjs/src/lib/theme/typography.ts). Wire stays symmetric.
+  fonts_body <- na_to_null(inputs@fonts_body)
+  if (identical(fonts_body, "system-ui, -apple-system, sans-serif")) fonts_body <- NULL
   fonts <- list(
-    body    = na_to_null(inputs@fonts_body),
+    body    = fonts_body,
     display = na_to_null(inputs@fonts_display),
     mono    = na_to_null(inputs@fonts_mono)
   )
@@ -114,16 +119,24 @@ theme_inputs_to_json <- function(inputs) {
     panel        = row_kinds_entry("row_kinds_panel_height_ratio")
   ))
 
+  # Drop fields whose value matches the TS resolver default so the wire
+  # carries only what the author/preset explicitly set. R's S7 slots
+  # always have a default value (validators need one), but emitting them
+  # would diverge from TS presets that simply omit unset fields.
+  default_or_null <- function(v, default) {
+    if (length(v) == 1L && !is.na(v) && identical(v, default)) NULL else v
+  }
+
   out <- list(
     anchors               = anchors,
-    polarity              = inputs@polarity,
-    mode                  = inputs@mode,
+    polarity              = default_or_null(inputs@polarity, "light"),
+    mode                  = default_or_null(inputs@mode, "standard"),
     categorical           = inputs@categorical,
-    sequential            = inputs@sequential,
-    diverging             = inputs@diverging,
+    sequential            = default_or_null(inputs@sequential, "viridis"),
+    diverging             = default_or_null(inputs@diverging, "rdbu"),
     status                = if (length(status) > 0L) status else NULL,
     fonts                 = if (length(fonts)  > 0L) fonts  else NULL,
-    density               = inputs@density,
+    density               = default_or_null(inputs@density, "comfortable"),
     density_factor        = if (inputs@density_factor != 1) inputs@density_factor else NULL,
     shell_mode            = na_to_null(inputs@shell_mode),
     shell_texture         = na_to_null(inputs@shell_texture),

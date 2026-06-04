@@ -92,14 +92,17 @@ function deriveAnchors(seeds: PresetIdentitySeeds): ThemeInputs["anchors"] {
 type PresetRest = Omit<ThemeInputs, "anchors" | "polarity">;
 
 /** Compose anchors (derived from seeds) with the rest of the preset
- *  inputs. The `polarity` from seeds is honored. */
+ *  inputs. Polarity is emitted only when seeds explicitly opted into
+ *  dark (the resolver defaults missing polarity to "light"); this keeps
+ *  the wire symmetric with R's serializer, which drops `polarity:
+ *  "light"` as a no-op default. */
 export function defineInputs(
   seeds: PresetIdentitySeeds,
   rest: PresetRest = {},
 ): ThemeInputs {
   return {
     anchors: deriveAnchors(seeds),
-    polarity: seeds.polarity ?? "light",
+    ...(seeds.polarity ? { polarity: seeds.polarity } : {}),
     ...rest,
   };
 }
