@@ -163,7 +163,7 @@
     pointer-events: auto;
     width: min(420px, 100%);
     padding: 18px 20px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 12px;
     box-shadow:
@@ -186,7 +186,7 @@
     margin: 0 0 6px 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .message {
@@ -219,7 +219,7 @@
   }
 
   .cancel-btn:hover {
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 20%, var(--tv-border, #e2e8f0));
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 6%, transparent);
   }
@@ -227,7 +227,7 @@
   .confirm-btn {
     border: 1px solid transparent;
     background: var(--tv-accent, #2563eb);
-    color: var(--tv-bg, #ffffff);
+    color: var(--tv-surface-bg, #ffffff);
   }
 
   .confirm-btn:hover {

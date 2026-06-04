@@ -293,7 +293,7 @@ export interface PictogramColumnOptions {
   domain?: [number, number] | null;  // Remap raw value → [0, maxGlyphs] (rating mode)
   halfGlyphs?: boolean;              // Allow 0.5 fills on the boundary glyph
   color?: string | null;             // Filled color; null → var(--tv-accent)
-  emptyColor?: string | null;        // Ghost color; null → var(--tv-muted)
+  emptyColor?: string | null;        // Ghost color; null → var(--tv-text-subtle)
   size?: "sm" | "base" | "lg";
   layout?: "row" | "stack";
   valueLabel?: false | true | "leading" | "trailing";
@@ -311,7 +311,7 @@ export interface RingColumnOptions {
   maxValue?: number;             // input range end (default 1)
   color?: string | string[] | null;  // single color OR vector paired with thresholds
   thresholds?: number[] | null;  // breakpoints in raw input units
-  trackColor?: string | null;    // unfilled ring color; null → var(--tv-muted)
+  trackColor?: string | null;    // unfilled ring color; null → var(--tv-text-subtle)
   size?: "sm" | "base" | "lg";
   showLabel?: boolean;
   labelFormat?: "percent" | "decimal" | "integer";

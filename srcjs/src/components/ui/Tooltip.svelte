@@ -96,8 +96,8 @@
     min-width: 160px;
     max-width: 280px;
     padding: 6px 10px;
-    background: var(--tv-fg, #1a1a1a);
-    color: var(--tv-bg, #fff);
+    background: var(--tv-text, #1a1a1a);
+    color: var(--tv-surface-bg, #fff);
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     font-size: 0.7rem;

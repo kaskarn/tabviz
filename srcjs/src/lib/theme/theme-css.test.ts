@@ -1,4 +1,6 @@
-// buildThemeCSS — v3 stylesheet + v4 cssVars append (Phase 6).
+// buildThemeCSS — v4 cssVars emission + small v3-vocabulary tail
+// (status colors, font-weight constants, header variants — see
+// theme-css.ts for the v3-only tail's full inventory).
 
 import { describe, it, expect } from "bun:test";
 import { buildThemeCSS } from "./theme-css";
@@ -6,12 +8,13 @@ import { buildTheme } from "./theme-adapter";
 import { COCHRANE } from "./theme-presets-inputs";
 
 describe("buildThemeCSS", () => {
-  it("includes v3 names (DOM render path consumers)", () => {
+  it("emits v4 manifest var names", () => {
     const css = buildThemeCSS(buildTheme(COCHRANE, "cochrane"));
-    expect(css).toContain("--tv-fg:");
-    expect(css).toContain("--tv-bg:");
-    expect(css).toContain("--tv-row-bg:");
+    // v4 names — bg/fg/border/row-base/etc. live entirely in the v4 manifest.
+    expect(css).toContain("--tv-surface-bg:");
+    expect(css).toContain("--tv-text:");
     expect(css).toContain("--tv-border:");
+    expect(css).toContain("--tv-row-base-bg:");
   });
 
   it("appends v4 cssVars from theme.authoringInputs", () => {

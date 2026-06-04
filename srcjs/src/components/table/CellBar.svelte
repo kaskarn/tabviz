@@ -22,7 +22,7 @@
   // paint > theme brand default. Bars are chrome that should ride brand
   // identity unless explicitly recolored.
   const barColor = $derived(
-    options?.color ?? colorOverride ?? "var(--tv-primary, var(--tv-accent, #2563eb))"
+    options?.color ?? colorOverride ?? "var(--tv-accent, var(--tv-accent, #2563eb))"
   );
   const scale = $derived(options?.scale ?? "linear");
 
@@ -78,7 +78,7 @@
   }
 
   .bar-label {
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    font-size: var(--tv-text-label-size, 0.75rem);
     font-variant-numeric: tabular-nums;
     min-width: 32px;
     text-align: right;

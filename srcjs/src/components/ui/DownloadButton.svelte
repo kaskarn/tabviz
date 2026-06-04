@@ -175,7 +175,7 @@
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -183,7 +183,7 @@
 
   .download-btn:hover {
     background: var(--tv-hover-bg, #e2e8f0);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .download-btn:disabled {
@@ -194,7 +194,7 @@
     /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 140px;
     padding: 4px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -210,7 +210,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     font-size: 13px;
     text-align: left;
     cursor: pointer;

@@ -60,7 +60,7 @@
     padding: 0 8px;
     border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 35%, transparent);
     border-radius: 11px;
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-surface-bg, #ffffff));
     color: var(--tv-accent, #2563eb);
     font-size: 11px;
     font-weight: 600;
@@ -70,7 +70,7 @@
   }
 
   .aspect-lock-pill:hover {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 20%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 20%, var(--tv-surface-bg, #ffffff));
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 55%, transparent);
   }
 

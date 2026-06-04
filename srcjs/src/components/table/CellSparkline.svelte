@@ -21,7 +21,7 @@
   // Resolution order: per-column user override > per-row/cell semantic
   // paint > theme primary identity.
   const chartColor = $derived(
-    options?.color ?? colorOverride ?? "var(--tv-primary, var(--tv-accent, #2563eb))"
+    options?.color ?? colorOverride ?? "var(--tv-accent, var(--tv-accent, #2563eb))"
   );
   const chartWidth = 60;
 

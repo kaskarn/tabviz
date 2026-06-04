@@ -108,14 +108,14 @@
     /* Top padding is themable via `spacing.footer_gap` (R) /
        `spacing.footerGap` (JS) so authors can tighten or loosen the gap
        between the plot / axis region and the caption band. */
-    padding: var(--tv-footer-gap, 8px) 12px 12px 2px;
+    padding: var(--tv-spacing-footer-gap, 8px) 12px 12px 2px;
     border-top: 1px solid var(--tv-border, #e2e8f0);
     position: relative;
   }
 
   .plot-caption {
     margin: 0;
-    font-size: var(--tv-text-caption-size, var(--tv-font-size-sm, 0.75rem));
+    font-size: var(--tv-text-caption-size, var(--tv-text-label-size, 0.75rem));
     font-weight: var(--tv-text-caption-weight, var(--tv-font-weight-normal, 400));
     font-style: var(--tv-text-caption-italic, normal);
     color: var(--tv-text-muted, #64748b);
@@ -126,10 +126,10 @@
 
   .plot-footnote {
     margin: 4px 0 0;
-    font-size: var(--tv-text-footnote-size, var(--tv-font-size-sm, 0.75rem));
+    font-size: var(--tv-text-footnote-size, var(--tv-text-label-size, 0.75rem));
     font-weight: var(--tv-text-footnote-weight, var(--tv-font-weight-normal, 400));
     font-style: var(--tv-text-footnote-italic, italic);
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;

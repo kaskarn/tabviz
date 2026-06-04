@@ -53,9 +53,9 @@
   .value {
     min-width: 48px;
     text-align: right;
-    font-family: var(--tv-font-mono, ui-monospace, "IBM Plex Mono", monospace);
+    font-family: var(--tv-text-numeric-family, ui-monospace, "IBM Plex Mono", monospace);
     font-size: 11px;
-    color: var(--tv-fg, #1f1f1f);
+    color: var(--tv-text, #1f1f1f);
     font-variant-numeric: tabular-nums;
   }
   .suffix {

@@ -300,7 +300,7 @@
     padding: 0 8px;
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     color: var(--tv-text-muted, #64748b);
     font-size: 11px;
     font-weight: 500;
@@ -310,7 +310,7 @@
 
   .zoom-trigger-btn:hover {
     background: var(--tv-hover-bg, #e2e8f0);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .zoom-text {
@@ -322,7 +322,7 @@
     /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 200px;
     padding: 8px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.08);
@@ -345,7 +345,7 @@
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 4px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -353,7 +353,7 @@
 
   .zoom-btn:hover {
     background: var(--tv-hover-bg, #e2e8f0);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .zoom-slider {
@@ -429,7 +429,7 @@
 
   .aspect-value.at-natural {
     font-style: italic;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
   }
 
   .aspect-slider {
@@ -500,7 +500,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     font-size: 12px;
     text-align: left;
     cursor: pointer;
@@ -537,7 +537,7 @@
   .checkbox-hint {
     margin-left: auto;
     font-size: 10px;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
   }
 
   .divider {
@@ -552,7 +552,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
   }
 
 </style>

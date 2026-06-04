@@ -56,9 +56,9 @@
   // semantic markerFill (accent/emphasis/muted) when active — slots in
   // below explicit column-level color but above theme default.
   const filledColor = $derived(
-    cellStyle?.color ?? options?.color ?? colorOverride ?? "var(--tv-secondary, var(--tv-primary))"
+    cellStyle?.color ?? options?.color ?? colorOverride ?? "var(--tv-accent, var(--tv-accent))"
   );
-  const emptyColor = $derived(options?.emptyColor ?? "var(--tv-muted)");
+  const emptyColor = $derived(options?.emptyColor ?? "var(--tv-text-subtle)");
   const isMutedRow = $derived(cellStyle?.muted === true);
 
   // ----- glyph resolution ---------------------------------------------------
@@ -237,14 +237,14 @@
 
   .pictogram-label {
     font-variant-numeric: tabular-nums;
-    color: var(--tv-cell-fg, var(--tv-fg));
+    color: var(--tv-text);
   }
   .size-sm .pictogram-label { font-size: 0.75em; }
   .size-base .pictogram-label { font-size: 0.85em; }
   .size-lg .pictogram-label { font-size: 1em; }
 
   .pictogram-na {
-    color: var(--tv-muted);
+    color: var(--tv-text-subtle);
     font-style: italic;
   }
 </style>

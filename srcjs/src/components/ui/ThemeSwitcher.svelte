@@ -306,7 +306,7 @@
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -314,14 +314,14 @@
 
   .theme-btn:hover {
     background: var(--tv-hover-bg, #e2e8f0);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .theme-dropdown {
     /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 160px;
     padding: 4px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -333,7 +333,7 @@
     gap: 2px;
     margin: 0 0 4px 0;
     padding: 0 0 4px 0;
-    border-bottom: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 8%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--tv-text, #1a1a1a) 8%, transparent);
   }
   .tab {
     appearance: none;
@@ -349,8 +349,8 @@
     transition: background-color 0.12s ease, color 0.12s ease;
   }
   .tab:hover:not(.active) {
-    background: color-mix(in srgb, var(--tv-fg, #1a1a1a) 6%, transparent);
-    color: var(--tv-fg, #1a1a1a);
+    background: color-mix(in srgb, var(--tv-text, #1a1a1a) 6%, transparent);
+    color: var(--tv-text, #1a1a1a);
   }
   .tab.active {
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, transparent);
@@ -366,7 +366,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     font-size: 13px;
     text-align: left;
     cursor: pointer;
@@ -404,7 +404,7 @@
     align-items: center;
     border-radius: 4px;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-text, #1a1a1a) 18%, transparent);
   }
   .swatch {
     display: block;

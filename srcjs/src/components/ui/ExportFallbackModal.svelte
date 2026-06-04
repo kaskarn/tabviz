@@ -206,7 +206,7 @@
     pointer-events: auto;
     width: min(520px, 100%);
     padding: 18px 20px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 12px;
     box-shadow:
@@ -229,7 +229,7 @@
     margin: 0 0 6px 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .hint {
@@ -246,7 +246,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.75rem;
     line-height: 1.4;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     background: color-mix(in srgb, var(--tv-border, #e2e8f0) 30%, transparent);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
@@ -279,7 +279,7 @@
     padding: 1px 5px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.8em;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     background: color-mix(in srgb, var(--tv-border, #e2e8f0) 50%, transparent);
     border-radius: 4px;
   }
@@ -307,7 +307,7 @@
   }
 
   .ghost-btn:hover {
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 20%, var(--tv-border, #e2e8f0));
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 6%, transparent);
   }
@@ -315,7 +315,7 @@
   .primary-btn {
     border: 1px solid transparent;
     background: var(--tv-accent, #2563eb);
-    color: var(--tv-bg, #ffffff);
+    color: var(--tv-surface-bg, #ffffff);
   }
 
   .primary-btn:hover {

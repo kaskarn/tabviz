@@ -57,7 +57,7 @@
 
   .label {
     font-size: 0.75rem;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;

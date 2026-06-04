@@ -53,7 +53,7 @@
     padding: 3px 8px;
     font-family: inherit;
     font-size: 11px;
-    color: var(--tv-fg, #1f1f1f);
+    color: var(--tv-text, #1f1f1f);
     cursor: pointer;
     border-right: 1px solid var(--tv-border, #d6d2c6);
     transition: background 80ms ease;
@@ -63,8 +63,8 @@
     background: var(--tv-hover-bg, rgba(0, 0, 0, 0.04));
   }
   .seg button.active {
-    background: var(--tv-fg, #1f1f1f);
-    color: var(--tv-bg, #fff);
+    background: var(--tv-text, #1f1f1f);
+    color: var(--tv-surface-bg, #fff);
   }
   .seg button:focus-visible {
     outline: 2px solid var(--tv-accent, #b53a1f);

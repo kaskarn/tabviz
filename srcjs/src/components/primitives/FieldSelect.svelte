@@ -50,10 +50,10 @@
     padding: 3px 6px;
     border: 1px solid var(--tv-border, #d6d2c6);
     border-radius: 3px;
-    background: var(--tv-bg, #fff);
+    background: var(--tv-surface-bg, #fff);
     font-family: inherit;
     font-size: 11px;
-    color: var(--tv-fg, #1f1f1f);
+    color: var(--tv-text, #1f1f1f);
   }
   .field-select:focus {
     outline: none;

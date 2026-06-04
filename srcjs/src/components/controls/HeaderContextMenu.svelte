@@ -110,7 +110,7 @@
   .header-ctx-menu {
     position: fixed;
     min-width: 180px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.14);
@@ -118,7 +118,7 @@
     padding: 4px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     display: flex;
     flex-direction: column;
     gap: 1px;
@@ -143,7 +143,7 @@
     border-radius: 4px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     cursor: pointer;
   }
   .ctx-item:hover,
@@ -152,7 +152,7 @@
     outline: none;
   }
   .ctx-item.destructive {
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
   .ctx-item.destructive:hover {
     background: rgba(220, 38, 38, 0.08);

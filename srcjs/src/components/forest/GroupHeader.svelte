@@ -59,7 +59,7 @@
     gap: 6px;
     padding: 4px 0;
     user-select: none;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .group-header.italic {
@@ -86,7 +86,7 @@
 
   .group-count {
     font-weight: var(--tv-font-weight-normal, 400);
-    color: var(--tv-muted, #94a3b8);
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    color: var(--tv-text-subtle, #94a3b8);
+    font-size: var(--tv-text-label-size, 0.75rem);
   }
 </style>

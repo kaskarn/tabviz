@@ -1819,7 +1819,7 @@
               x2={colScale(nullValue)}
               y1={0}
               y2={rowsAreaHeight}
-              stroke="var(--tv-text-subtle, var(--tv-muted))"
+              stroke="var(--tv-text-subtle)"
               stroke-width="1"
               stroke-dasharray="4,4"
             />
@@ -1835,7 +1835,7 @@
                   x2={colScale(annotation.x)}
                   y1={0}
                   y2={rowsAreaHeight}
-                  stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
+                  stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
                   stroke-width={annotation.width ?? 1.5}
                   stroke-opacity={annotation.opacity ?? 0.6}
                   stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -1850,7 +1850,7 @@
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
                     fill={annotation.color ?? theme?.text?.label?.fg ?? "var(--tv-text-muted)"}
-                    font-size={theme?.text?.label?.size ?? "var(--tv-font-size-sm)"}
+                    font-size={theme?.text?.label?.size ?? "var(--tv-text-label-size)"}
                     font-weight={theme?.text?.label?.weight ?? 500}
                   >
                     {annotation.label}
@@ -2007,7 +2007,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
+                      stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2095,7 +2095,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
+                      stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2183,7 +2183,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
+                      stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2512,12 +2512,12 @@
 
   :global(.tabviz-container) {
     position: relative; /* Needed for toolbar positioning */
-    font-family: var(--tv-font-family);
-    font-size: var(--tv-font-size-base);
+    font-family: var(--tv-text-body-family);
+    font-size: var(--tv-text-body-size);
     /* v4 substrate cssVars preferred; v3 fallback (--tv-fg / --tv-bg)
        remains until step 10's v3-emitter cleanup. */
-    color: var(--tv-text, var(--tv-fg));
-    background: var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg)));
+    color: var(--tv-text);
+    background: var(--tv-surface-bg, var(--tv-surface-bg));
     border: var(--tv-container-border, none);
     border-radius: var(--tv-container-border-radius, var(--tv-radius-lg, 8px));
     /* Phase D — optional gradient surface paints over the solid background
@@ -2560,10 +2560,10 @@
      can extend padding-bottom without re-declaring the whole shorthand. */
   :global(.tabviz-container.auto-fit) {
     width: 100%;
-    padding-top: var(--tv-container-padding, 16px);
-    padding-left: var(--tv-container-padding, 16px);
-    padding-right: var(--tv-container-padding, 16px);
-    padding-bottom: calc(var(--tv-container-padding, 16px) + var(--tv-bottom-margin, 0px));
+    padding-top: var(--tv-spacing-container-padding, 16px);
+    padding-left: var(--tv-spacing-container-padding, 16px);
+    padding-right: var(--tv-spacing-container-padding, 16px);
+    padding-bottom: calc(var(--tv-spacing-container-padding, 16px) + var(--tv-spacing-bottom-margin, 0px));
     /* Hide overflow - container is explicitly sized to scaled dimensions */
     overflow: hidden;
   }
@@ -2588,10 +2588,10 @@
   /* No auto-fit: render at zoom level, scrollbars if needed */
   :global(.tabviz-container:not(.auto-fit)) {
     overflow: auto;
-    padding-top: var(--tv-container-padding, 16px);
-    padding-left: var(--tv-container-padding, 16px);
-    padding-right: var(--tv-container-padding, 16px);
-    padding-bottom: calc(var(--tv-container-padding, 16px) + var(--tv-bottom-margin, 0px));
+    padding-top: var(--tv-spacing-container-padding, 16px);
+    padding-left: var(--tv-spacing-container-padding, 16px);
+    padding-right: var(--tv-spacing-container-padding, 16px);
+    padding-bottom: calc(var(--tv-spacing-container-padding, 16px) + var(--tv-spacing-bottom-margin, 0px));
   }
 
   :global(.tabviz-container:not(.auto-fit)) .tabviz-scalable {
@@ -2670,7 +2670,7 @@
      (`solid` or `none` depending on layout). Colors come from
      theme.borders.minor. */
   .grid-cell {
-    padding: 0 var(--tv-cell-padding-x);
+    padding: 0 var(--tv-spacing-cell-padding-x);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
@@ -2683,11 +2683,11 @@
     border-right-width: var(--tv-row-border-width, 1px);
     border-right-style: var(--tv-border-col-style, none);
     border-right-color: var(--tv-border-minor-color, var(--tv-cell-border, var(--tv-border)));
-    color: var(--tv-cell-fg, var(--tv-text, var(--tv-fg)));
+    color: var(--tv-text, var(--tv-text));
     /* Row background: --tv-row-base-bg (v4) | --tv-row-bg (v3) | container bg.
        Separate from --tv-surface-bg so users can tint rows distinct from the
        outer container without flipping the whole widget. */
-    background: var(--tv-row-base-bg, var(--tv-row-bg, var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg)))));
+    background: var(--tv-row-base-bg, var(--tv-row-base-bg, var(--tv-surface-bg, var(--tv-surface-bg))));
   }
 
   /* Header cells - use row height for multi-row headers. Background is
@@ -2696,15 +2696,15 @@
      --tv-row-bg so existing themes render identically. */
   .header-cell {
     min-height: var(--tv-header-row-height);
-    font-family: var(--tv-text-header-family, var(--tv-font-family));
+    font-family: var(--tv-text-header-family, var(--tv-text-body-family));
     font-weight: var(--tv-text-header-weight, var(--tv-font-weight-bold, 600));
     font-style: var(--tv-text-header-italic, normal);
-    font-size: var(--tv-text-header-size, calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05)));
+    font-size: var(--tv-text-header-size, calc(var(--tv-text-body-size, 0.875rem) * var(--tv-header-font-scale, 1.05)));
     border-bottom-width: var(--tv-header-border-width, 2px);
     border-bottom-style: var(--tv-border-major-style, solid);
     border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
-    background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-surface-bg, var(--tv-bg))));
-    color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
+    background: var(--tv-header-bg, var(--tv-row-base-bg, var(--tv-surface-bg)));
+    color: var(--tv-header-fg, var(--tv-text));
     position: relative;
     /* Fill sub-pixel hairline gaps between adjacent cells when the
        header has a non-default bg (e.g. bold variant's primary-deep
@@ -2725,7 +2725,7 @@
        JAMA's divider.subtle is pure black, which made the hover bg
        unreadable against the unchanged dark text (GH #4). The 12%
        mix mirrors .group-row:hover / .data-cell.editable:hover. */
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-surface-bg, var(--tv-bg)));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-surface-bg));
   }
 
   /* Primary (leftmost) column header — MAJOR bottom (same as leaf headers). */
@@ -2742,8 +2742,8 @@
     justify-content: center;
     font-weight: var(--tv-font-weight-bold, 600);
     text-align: center;
-    padding-left: var(--tv-group-padding, 8px);
-    padding-right: var(--tv-group-padding, 8px);
+    padding-left: var(--tv-spacing-column-group-padding, 8px);
+    padding-right: var(--tv-spacing-column-group-padding, 8px);
     border-bottom-width: var(--tv-row-border-width, 1px);
     border-bottom-style: var(--tv-border-row-style, solid);
     border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
@@ -2802,7 +2802,7 @@
      figures when the theme doesn't pin numeric (resolver guarantees the
      wire field is always present). */
   .numeric-cell {
-    font-family: var(--tv-text-numeric-family, var(--tv-font-family));
+    font-family: var(--tv-text-numeric-family, var(--tv-text-body-family));
     font-feature-settings: var(--tv-text-numeric-figures, "tnum");
   }
 
@@ -2882,7 +2882,7 @@
   .axis-cell {
     height: var(--tv-axis-height);
     border-bottom: none;
-    background: var(--tv-surface-bg, var(--tv-bg));
+    background: var(--tv-surface-bg);
     padding: 0;
     border-top-width: var(--tv-table-border-width, 0);
     border-top-style: var(--tv-table-border-style, none);
@@ -2969,34 +2969,34 @@
     border-bottom: 0;
   }
   .grid-cell.row-padded-after {
-    padding-bottom: var(--tv-row-group-padding, 0px);
+    padding-bottom: var(--tv-spacing-row-group-padding, 0px);
   }
   .grid-cell.group-row-bordered {
     border-bottom: var(--tv-group-border-width, 1px) solid var(--tv-row-group-rule, var(--tv-border));
   }
 
   .group-row:hover {
-    background: color-mix(in srgb, var(--tv-text-subtle, var(--tv-muted)) 15%, transparent) !important;
+    background: color-mix(in srgb, var(--tv-text-subtle) 15%, transparent) !important;
   }
 
   /* Hovered row styling - uses accent color for better visibility */
   .data-cell.hovered {
-    background: color-mix(in srgb, var(--tv-accent) 12%, var(--tv-surface-bg, var(--tv-bg)));
+    background: color-mix(in srgb, var(--tv-accent) 12%, var(--tv-surface-bg));
     cursor: pointer;
   }
 
   /* Editable cells: cursor + faint tint on hover so users know to double-click */
   .data-cell.editable:hover {
-    background: color-mix(in srgb, var(--tv-accent) 6%, var(--tv-surface-bg, var(--tv-bg)));
+    background: color-mix(in srgb, var(--tv-accent) 6%, var(--tv-surface-bg));
     cursor: text;
   }
   .data-cell.editable.hovered:hover {
-    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-accent) 6%, var(--tv-surface-bg, var(--tv-bg))));
+    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-accent) 6%, var(--tv-surface-bg)));
   }
 
   /* Spacer row styling */
   .spacer-row {
-    height: calc(var(--tv-row-height) / 2);
+    height: calc(var(--tv-spacing-row-height) / 2);
     border-bottom: none;
     visibility: hidden;
   }
@@ -3008,18 +3008,18 @@
   .tabviz-empty {
     padding: 24px;
     text-align: center;
-    color: var(--tv-text-subtle, var(--tv-muted));
+    color: var(--tv-text-subtle);
   }
 
   /* Row type styles (applied to data-cell elements) */
   .row-header {
     font-weight: var(--tv-font-weight-bold, 600);
-    background: color-mix(in srgb, var(--tv-text-subtle, var(--tv-muted)) 10%, var(--tv-surface-bg, var(--tv-bg)));
+    background: color-mix(in srgb, var(--tv-text-subtle) 10%, var(--tv-surface-bg));
   }
 
   .row-summary {
     font-weight: var(--tv-font-weight-bold, 600);
-    border-top: 2px solid var(--tv-divider-strong, var(--tv-border));
+    border-top: 2px solid var(--tv-border, var(--tv-border));
   }
   /* Summary rows visually span all columns (one "Overall" value
      across the row). Column dividers on data cells would slice the
@@ -3107,15 +3107,15 @@
   .row-badge {
     margin-left: 6px;
     padding: 1px 6px;
-    font-size: var(--tv-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-surface-bg, var(--tv-surface-bg, var(--tv-bg))));
+    font-size: var(--tv-text-label-size, 0.75rem);
+    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-surface-bg, var(--tv-surface-bg)));
     border-radius: 4px;
     color: var(--tv-accent);
   }
 
   /* Alternating row banding */
   .row-odd {
-    background: var(--tv-row-alt-bg, var(--tv-alt-bg));
+    background: var(--tv-row-alt-bg);
   }
 
   /* Pagination controls — sit between the plot body and the footer.
@@ -3127,7 +3127,7 @@
     padding: 6px 12px;
     border-top: 1px solid var(--tv-border, #e2e8f0);
     color: var(--tv-text-muted, #64748b);
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    font-size: var(--tv-text-label-size, 0.75rem);
     user-select: none;
   }
   .pager-btn {
@@ -3138,14 +3138,14 @@
     height: 24px;
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
-    background: var(--tv-surface-bg, var(--tv-bg, #fff));
+    background: var(--tv-surface-bg, var(--tv-surface-bg, #fff));
     color: var(--tv-text, #1f2937);
     border-radius: 4px;
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
   }
   .pager-btn:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, var(--tv-bg, #fff)));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, var(--tv-surface-bg, #fff)));
     border-color: var(--tv-accent, #2563eb);
     color: var(--tv-accent, #2563eb);
   }
@@ -3165,21 +3165,21 @@
     margin-left: auto;
     padding: 3px 10px;
     border: 1px solid var(--tv-border, #e2e8f0);
-    background: var(--tv-surface-bg, var(--tv-bg, #fff));
+    background: var(--tv-surface-bg, var(--tv-surface-bg, #fff));
     color: var(--tv-text-muted, #64748b);
     border-radius: 4px;
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    font-size: var(--tv-text-label-size, 0.75rem);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
   }
   .pager-mode-btn:hover {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, var(--tv-bg, #fff)));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, var(--tv-surface-bg, #fff)));
     border-color: var(--tv-accent, #2563eb);
     color: var(--tv-accent, #2563eb);
   }
   .pager-mode-btn.active {
     background: var(--tv-accent, #2563eb);
-    color: var(--tv-surface-bg, var(--tv-bg, #fff));
+    color: var(--tv-surface-bg, var(--tv-surface-bg, #fff));
     border-color: var(--tv-accent, #2563eb);
   }
 
@@ -3187,10 +3187,10 @@
   .tabviz-details-panel {
     grid-column: 1 / -1;
     padding: 8px 12px 10px;
-    background: var(--tv-surface-alt, var(--tv-alt-bg, #f8fafc));
+    background: var(--tv-surface-alt, var(--tv-row-alt-bg, #f8fafc));
     border-bottom: 1px solid var(--tv-border, #e2e8f0);
     color: var(--tv-text, var(--tv-content-primary, #1a1a1a));
-    font-size: var(--tv-font-size-sm, 0.8125rem);
+    font-size: var(--tv-text-label-size, 0.8125rem);
     line-height: 1.5;
     overflow-wrap: anywhere;
   }

@@ -80,14 +80,14 @@
     width: 320px;
     max-height: 60vh;
     overflow: auto;
-    background: var(--tv-surface-bg, var(--tv-bg, #fff));
-    color: var(--tv-text, var(--tv-fg, #1a1a1a));
+    background: var(--tv-surface-bg, var(--tv-surface-bg, #fff));
+    color: var(--tv-text, var(--tv-text, #1a1a1a));
     border: 1px solid var(--tv-cell-border, var(--tv-border, #e2e8f0));
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     padding: 12px;
     z-index: 9999;
-    font-family: var(--tv-font-family, system-ui, sans-serif);
+    font-family: var(--tv-text-body-family, system-ui, sans-serif);
     font-size: 12.5px;
   }
 
@@ -124,7 +124,7 @@
   .active-token code {
     display: block;
     padding: 4px 8px;
-    background: var(--tv-row-alt-bg, var(--tv-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, var(--tv-row-alt-bg, #f8fafc));
     border-radius: 4px;
     font-family: ui-monospace, monospace;
     font-size: 11.5px;
@@ -177,7 +177,7 @@
     margin-top: 8px;
   }
   .full-trace pre {
-    background: var(--tv-row-alt-bg, var(--tv-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, var(--tv-row-alt-bg, #f8fafc));
     padding: 6px;
     border-radius: 4px;
     font-size: 11px;

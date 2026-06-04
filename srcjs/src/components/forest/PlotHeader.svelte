@@ -127,7 +127,7 @@
        theme.spacing.headerGap via the --tv-header-gap CSS var so the
        Spacing tab + R API can tune it. Falls back to the historical 4px
        when the var is not set. */
-    padding: 12px 8px var(--tv-header-gap, 4px) 2px;
+    padding: 12px 8px var(--tv-spacing-header-gap, 4px) 2px;
   }
 
 
@@ -148,11 +148,11 @@
     margin: 0;
     padding: 0 0 0.15rem 0;
     border: none;
-    font-family: var(--tv-text-title-family, var(--tv-font-family));
-    font-size: var(--tv-text-title-size, var(--tv-font-size-lg, 1rem));
+    font-family: var(--tv-text-title-family, var(--tv-text-body-family));
+    font-size: var(--tv-text-title-size, var(--tv-text-title-size, 1rem));
     font-weight: var(--tv-text-title-weight, var(--tv-font-weight-bold, 600));
     font-style: var(--tv-text-title-italic, normal);
-    color: var(--tv-text-title-fg, var(--tv-fg, #1a1a1a));
+    color: var(--tv-text-title-fg, var(--tv-text, #1a1a1a));
     line-height: 1.3;
     white-space: normal;
     word-wrap: break-word;
@@ -160,7 +160,7 @@
 
   .plot-subtitle {
     margin: 4px 0 0;
-    font-size: var(--tv-text-subtitle-size, var(--tv-font-size-base, 0.875rem));
+    font-size: var(--tv-text-subtitle-size, var(--tv-text-body-size, 0.875rem));
     font-weight: var(--tv-text-subtitle-weight, var(--tv-font-weight-normal, 400));
     font-style: var(--tv-text-subtitle-italic, normal);
     color: var(--tv-text-muted, #64748b);
@@ -184,7 +184,7 @@
      6+1+6 chain. */
   .has-both .plot-subtitle {
     border-top: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 30%, transparent);
-    padding-top: calc(var(--tv-title-subtitle-gap, 13px) - 1px);
+    padding-top: calc(var(--tv-spacing-title-subtitle-gap, 13px) - 1px);
     margin-top: 0;
   }
 

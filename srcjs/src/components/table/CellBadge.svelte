@@ -41,14 +41,14 @@
     if (Array.isArray(thresholds) && thresholds.length > 0 && typeof value === "number") {
       const stops = (() => {
         if (Array.isArray(colors) && colors.length === thresholds.length + 1) return colors;
-        if (thresholds.length === 1) return ["var(--tv-secondary)", "var(--tv-status-negative)"];
+        if (thresholds.length === 1) return ["var(--tv-accent)", "var(--tv-status-negative)"];
         if (thresholds.length === 2)
           return ["var(--tv-status-positive)", "var(--tv-status-warning)", "var(--tv-status-negative)"];
-        return ["var(--tv-secondary)"];
+        return ["var(--tv-accent)"];
       })();
       let idx = 0;
       for (const t of thresholds) { if (value >= t) idx++; else break; }
-      return stops[Math.min(idx, stops.length - 1)] ?? "var(--tv-secondary)";
+      return stops[Math.min(idx, stops.length - 1)] ?? "var(--tv-accent)";
     }
 
     // Mapping path (existing behavior).
@@ -63,14 +63,14 @@
         case "warning": return "var(--tv-status-warning, #f59e0b)";
         case "error":   return "var(--tv-status-negative, #dc2626)";
         case "info":    return "var(--tv-status-info, #2563eb)";
-        case "muted":   return "var(--tv-muted, #64748b)";
+        case "muted":   return "var(--tv-text-subtle, #64748b)";
         // "default" variant means "use the engagement color" — accent.
         // Lets authors flag THE special value (e.g. the Ring-bearer) so
         // it pops in accent without needing a hex literal.
-        default:        return "var(--tv-accent, var(--tv-primary, #2563eb))";
+        default:        return "var(--tv-accent, var(--tv-accent, #2563eb))";
       }
     }
-    return colorOverride ?? "var(--tv-secondary, var(--tv-primary, #2563eb))";
+    return colorOverride ?? "var(--tv-accent, var(--tv-accent, #2563eb))";
   });
 
   const sizeClass = $derived(size === "sm" ? "badge-sm" : "badge-base");
@@ -90,7 +90,7 @@
     class:badge-outline={outline}
     style:background-color={outline
       ? "transparent"
-      : `color-mix(in srgb, ${badgeColor} 15%, var(--tv-bg, #fff))`}
+      : `color-mix(in srgb, ${badgeColor} 15%, var(--tv-surface-bg, #fff))`}
     style:color={badgeColor}
     style:border-color={outline ? badgeColor : "transparent"}
   >

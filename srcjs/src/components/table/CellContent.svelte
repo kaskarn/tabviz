@@ -71,12 +71,12 @@
      null, preserving pre-v0.20.1 visuals. */
   .cell-emphasis {
     font-weight: var(--tv-font-weight-bold, 600);
-    color: var(--tv-semantic-emphasis-fg, var(--tv-fg, #1a1a1a));
+    color: var(--tv-semantic-emphasis-fg, var(--tv-text, #1a1a1a));
     background-color: var(--tv-semantic-emphasis-bg, transparent);
   }
 
   .cell-muted {
-    color: var(--tv-semantic-muted-fg, var(--tv-muted, #94a3b8));
+    color: var(--tv-semantic-muted-fg, var(--tv-text-subtle, #94a3b8));
     background-color: var(--tv-semantic-muted-bg, transparent);
   }
 
@@ -92,8 +92,8 @@
   .cell-badge {
     margin-left: 4px;
     padding: 1px 6px;
-    font-size: var(--tv-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-bg));
+    font-size: var(--tv-text-label-size, 0.75rem);
+    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-surface-bg));
     border-radius: 4px;
     color: var(--tv-accent);
   }

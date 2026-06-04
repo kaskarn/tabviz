@@ -26,7 +26,7 @@
   const showLabel = $derived(options?.showLabel ?? true);
   const labelFormat = $derived(options?.labelFormat ?? "percent");
   const labelDecimals = $derived(options?.labelDecimals ?? 0);
-  const trackColor = $derived(options?.trackColor ?? "var(--tv-muted)");
+  const trackColor = $derived(options?.trackColor ?? "var(--tv-text-subtle)");
   const isMutedRow = $derived(cellStyle?.muted === true);
 
   // ----- value handling -----------------------------------------------------
@@ -53,7 +53,7 @@
     if (!thresholds || thresholds.length === 0) {
       if (typeof color === "string") return color;
       if (Array.isArray(color) && color.length === 1) return color[0];
-      return colorOverride ?? "var(--tv-secondary, var(--tv-primary))";
+      return colorOverride ?? "var(--tv-accent, var(--tv-accent))";
     }
     // Threshold path: find the color slot for this value.
     // Threshold defaults when user passed only `thresholds`, not `color`:
@@ -62,10 +62,10 @@
     //  3+ thresholds → no auto-default, fall back to single secondary
     const stops = (() => {
       if (Array.isArray(color) && color.length === thresholds.length + 1) return color;
-      if (thresholds.length === 1) return ["var(--tv-secondary)", "var(--tv-status-negative)"];
+      if (thresholds.length === 1) return ["var(--tv-accent)", "var(--tv-status-negative)"];
       if (thresholds.length === 2)
         return ["var(--tv-status-positive)", "var(--tv-status-warning)", "var(--tv-status-negative)"];
-      return ["var(--tv-secondary)"];
+      return ["var(--tv-accent)"];
     })();
     if (numericValue == null) return stops[0];
     let idx = 0;
@@ -169,14 +169,14 @@
 
   .ring-label {
     font-variant-numeric: tabular-nums;
-    color: var(--tv-cell-fg, var(--tv-fg));
+    color: var(--tv-text);
   }
   .size-sm .ring-label { font-size: 0.7em; }
   .size-base .ring-label { font-size: 0.85em; }
   .size-lg .ring-label { font-size: 1em; }
 
   .ring-na {
-    color: var(--tv-muted);
+    color: var(--tv-text-subtle);
     font-style: italic;
   }
 </style>

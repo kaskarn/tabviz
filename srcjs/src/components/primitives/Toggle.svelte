@@ -32,7 +32,7 @@
     padding: 0;
     border: 1px solid var(--tv-border, #d6d2c6);
     border-radius: 8px;
-    background: var(--tv-surface-muted, var(--tv-alt-bg, #f0eeec));
+    background: var(--tv-surface-muted, var(--tv-row-alt-bg, #f0eeec));
     cursor: pointer;
     transition: background 100ms ease, border-color 100ms ease;
   }
@@ -59,7 +59,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--tv-bg, #fff);
+    background: var(--tv-surface-bg, #fff);
     transition: transform 120ms ease;
   }
   .dot.on {

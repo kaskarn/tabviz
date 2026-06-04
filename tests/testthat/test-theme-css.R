@@ -15,13 +15,16 @@ THEMES <- c(
 )
 
 # A handful of `--tv-*` tokens the runtime always emits — sanity-checks the
-# bundle is producing the full block, not a stub.
+# bundle is producing the full block, not a stub. Names migrated to v4
+# manifest vocabulary after the Svelte/CSS sweep (Coh.70) collapsed the
+# v3 aliases into their v4 manifest equivalents.
 REQUIRED_TOKENS <- c(
-  "--tv-bg:", "--tv-fg:", "--tv-accent:", "--tv-border:",
-  "--tv-row-bg:", "--tv-header-bg:", "--tv-cell-fg:",
-  "--tv-font-family:", "--tv-row-height:", "--tv-cell-padding-x:",
+  "--tv-surface-bg:", "--tv-text:", "--tv-accent:", "--tv-border:",
+  "--tv-row-base-bg:", "--tv-header-bg:",
+  "--tv-text-body-family:", "--tv-spacing-row-height:",
+  "--tv-spacing-cell-padding-x:",
   "--tv-status-positive:", "--tv-status-negative:",
-  "--tv-divider-strong:", "--tv-axis-line:"
+  "--tv-plot-axis-line:"
 )
 
 for (name in THEMES) {
@@ -63,7 +66,7 @@ test_that("tabviz_theme_css(): accepts a WebSpec (extracts its theme)", {
   expect_s7_class(spec, WebSpec)
   css <- tabviz_theme_css(spec)
   expect_type(css, "character")
-  expect_match(css, "--tv-bg:", fixed = TRUE)
+  expect_match(css, "--tv-surface-bg:", fixed = TRUE)
 })
 
 test_that("tabviz_theme_css(): rejects non-theme, non-spec arguments", {

@@ -266,7 +266,7 @@
     position: absolute;
     inset: 0;
     z-index: 10010;
-    background: color-mix(in srgb, var(--tv-fg, #0f172a) 12%, transparent);
+    background: color-mix(in srgb, var(--tv-text, #0f172a) 12%, transparent);
     border: none;
     padding: 0;
     cursor: pointer;
@@ -287,10 +287,10 @@
     background:
       radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 65%),
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.07  0 0 0 0 0.05  0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
-      var(--tv-bg, #faf7f0);
+      var(--tv-surface-bg, #faf7f0);
     border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     box-shadow:
-      -24px 0 48px -12px color-mix(in srgb, var(--tv-fg, #0f172a) 12%, transparent),
+      -24px 0 48px -12px color-mix(in srgb, var(--tv-text, #0f172a) 12%, transparent),
       -2px 0 0 0 color-mix(in srgb, var(--tv-accent, #2563eb) 5%, transparent);
     display: flex;
     flex-direction: column;
@@ -404,8 +404,8 @@
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--tv-bg, #ffffff) 0%, transparent),
-      var(--tv-bg, #ffffff)
+      color-mix(in srgb, var(--tv-surface-bg, #ffffff) 0%, transparent),
+      var(--tv-surface-bg, #ffffff)
     );
     opacity: 0;
     transition: opacity 0.18s ease;

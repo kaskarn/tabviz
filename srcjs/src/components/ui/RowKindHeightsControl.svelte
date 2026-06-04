@@ -136,7 +136,7 @@
     font-size: 12px;
   }
   .kind-label {
-    color: var(--tv-cell-fg, currentColor);
+    color: var(--tv-text, currentColor);
   }
   .kind-prov {
     font-size: 10px;

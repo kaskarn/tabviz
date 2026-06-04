@@ -604,7 +604,7 @@
   .type-menu, .type-submenu {
     position: fixed;
     min-width: 172px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.16);
@@ -612,7 +612,7 @@
     padding: 3px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     display: flex;
     flex-direction: column;
     gap: 1px;
@@ -638,7 +638,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--tv-muted, #64748b);
+    color: var(--tv-text-subtle, #64748b);
   }
 
   .search-row {
@@ -652,8 +652,8 @@
     padding: 4px 6px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--tv-fg, #1a1a1a);
-    background: var(--tv-bg, #ffffff);
+    color: var(--tv-text, #1a1a1a);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 4px;
     outline: none;
@@ -676,7 +676,7 @@
     border-radius: 4px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     cursor: pointer;
     transition: background-color 0.08s ease, color 0.08s ease;
   }
@@ -693,14 +693,14 @@
 
   .menu-item.disabled,
   .sub-item.disabled {
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
     cursor: not-allowed;
     opacity: 0.55;
   }
 
   .breadcrumb {
     font-size: 10.5px;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
     white-space: nowrap;
   }
   .menu-item.focused .breadcrumb,
@@ -711,14 +711,14 @@
 
   .empty-hint {
     padding: 8px 10px;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
     font-style: italic;
     font-size: 11.5px;
   }
 
   .caret {
     flex-shrink: 0;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
   }
   .menu-item.active .caret,
   .menu-item:hover:not(.disabled) .caret,
@@ -732,7 +732,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
   }
   .sub-group-label:not(:first-child) {
     margin-top: 3px;

@@ -152,68 +152,25 @@ function _buildThemeCSSImpl(theme: WebTheme): string {
   return `
       /* ── V4 manifest cssVars — canonical source of theme values. */
 ${v4Body}
-      /* ── V3 ALIASES → V4 manifest (single emission; drift eliminated).
-            Each line: keep the v3 var name for existing Svelte/CSS
-            consumers, but the VALUE comes from a v4 manifest var.
-            Migrate Svelte consumers to v4 names; once the last
-            consumer of a v3 name migrates, delete that alias line. */
-      --tv-bg:                  var(--tv-surface-bg);
-      --tv-fg:                  var(--tv-text);
-      --tv-muted:               var(--tv-text-subtle);
-      --tv-primary:             var(--tv-accent);
-      --tv-primary-deep:        var(--tv-accent);
-      --tv-secondary:           var(--tv-accent);
-      --tv-secondary-deep:      var(--tv-accent);
-      --tv-divider-strong:      var(--tv-border);
-      --tv-hover-bg:            color-mix(in srgb, var(--tv-accent) 8%, var(--tv-surface-bg));
-      --tv-row-bg:              var(--tv-row-base-bg);
-      --tv-alt-bg:              var(--tv-row-alt-bg);
-      --tv-cell-fg:             var(--tv-text);
-      --tv-semantic-emphasis-fg: var(--tv-row-emphasis-fg);
-      --tv-semantic-emphasis-bg: var(--tv-row-emphasis-bg);
       /* Status — anchor to v4 brand/border until status anchors get
          dedicated manifest entries. Themes that set theme.status.* fall
          through to BADGE_VARIANTS at v3 time; once status anchors are
-         in the manifest, replace these with var(--tv-status-*-solid). */
+         in the manifest, drop these in favor of var(--tv-status-*-solid). */
       --tv-status-positive:     ${theme.status?.positive ?? BADGE_VARIANTS.success};
       --tv-status-warning:      ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
       --tv-status-negative:     ${theme.status?.negative ?? BADGE_VARIANTS.error};
       --tv-status-info:         ${theme.status?.info     ?? BADGE_VARIANTS.info};
-      --tv-badge-success:       var(--tv-status-positive);
-      --tv-badge-warning:       var(--tv-status-warning);
-      --tv-badge-error:         var(--tv-status-negative);
-      --tv-badge-info:          var(--tv-status-info);
-      --tv-badge-muted:         var(--tv-text-subtle);
-      /* Typography — alias v3 generic names to v4 per-role manifest vars. */
-      --tv-font-family:         var(--tv-text-body-family);
-      --tv-font-mono:           var(--tv-text-numeric-family);
-      --tv-font-size-base:      var(--tv-text-body-size);
-      --tv-font-size-sm:        var(--tv-text-label-size);
-      --tv-font-size-lg:        var(--tv-text-title-size);
+      /* Typography numeric/header sizes + literal font-weights.
+         Read by .cell-text + utility classes; kept as literals (not
+         aliased) until callers either migrate to per-role manifest
+         vars or these become manifest entries. */
       --tv-font-weight-normal:  400;
       --tv-font-weight-medium:  500;
       --tv-font-weight-bold:    600;
       --tv-line-height:         1.5;
       --tv-header-font-scale:   1.05;
-      /* Spacing — alias v3 short names to v4 manifest spacing vars. */
-      --tv-row-height:          var(--tv-spacing-row-height);
-      --tv-row-group-padding:   var(--tv-spacing-row-group-padding);
-      --tv-padding:             var(--tv-spacing-padding);
-      --tv-container-padding:   var(--tv-spacing-container-padding);
-      --tv-cell-padding-x:      var(--tv-spacing-cell-padding-x);
       --tv-cell-padding-y:      0px;
-      --tv-axis-gap:            var(--tv-spacing-axis-gap);
-      --tv-group-padding:       var(--tv-spacing-column-group-padding);
-      --tv-footer-gap:          var(--tv-spacing-footer-gap);
-      --tv-bottom-margin:       var(--tv-spacing-bottom-margin);
-      --tv-title-subtitle-gap:  var(--tv-spacing-title-subtitle-gap);
-      --tv-header-gap:          var(--tv-spacing-header-gap);
       --tv-viz-margin:          ${VIZ_MARGIN}px;
-      /* Plot dims — alias v3 short names to v4 manifest plot vars. */
-      --tv-point-size:          var(--tv-plot-point-size);
-      --tv-line-width:          var(--tv-plot-line-width);
-      --tv-axis-line:           var(--tv-plot-axis-line);
-      --tv-axis-tick:           var(--tv-plot-tick-mark);
 
       /* ── V3-only — still computed from theme.X.Y (no v4 equivalent yet).
             Each cluster has a follow-up task to add the manifest entry

@@ -292,9 +292,9 @@
     box-sizing: border-box;
     padding: 2px 6px;
     font: inherit;
-    font-size: var(--tv-font-size-base, 13px);
-    background: var(--tv-bg, #ffffff);
-    color: var(--tv-fg, #1a1a1a);
+    font-size: var(--tv-text-body-size, 13px);
+    background: var(--tv-surface-bg, #ffffff);
+    color: var(--tv-text, #1a1a1a);
     border: 2px solid var(--tv-accent, #2563eb);
     border-radius: 3px;
     outline: none;
@@ -306,7 +306,7 @@
     position: fixed;
     z-index: 10003;
     padding: 10px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 8px 24px -4px rgba(0,0,0,0.15);
@@ -315,7 +315,7 @@
     gap: 8px;
     min-width: 180px;
     font-size: 12px;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
   .edit-popover-title { font-weight: 600; font-size: 12px; }
   .edit-popover label {
@@ -325,7 +325,7 @@
   .edit-popover input[type="number"] {
     font-size: 12px; padding: 5px 7px;
     border: 1px solid var(--tv-border, #e2e8f0); border-radius: 4px;
-    background: var(--tv-bg, #ffffff); color: var(--tv-fg, #1a1a1a);
+    background: var(--tv-surface-bg, #ffffff); color: var(--tv-text, #1a1a1a);
   }
   .edit-popover input.invalid { border-color: #dc2626; }
   .edit-popover input:focus { outline: none; border-color: var(--tv-accent, #2563eb); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
@@ -334,6 +334,6 @@
     padding: 4px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; font-family: inherit;
   }
   .edit-popover-footer .primary { background: var(--tv-accent, #2563eb); border: 1px solid var(--tv-accent, #2563eb); color: #fff; }
-  .edit-popover-footer .secondary { background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-fg, #1a1a1a); }
+  .edit-popover-footer .secondary { background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-text, #1a1a1a); }
   .edit-popover-footer .secondary:hover { background: var(--tv-hover-bg, #f1f5f9); }
 </style>

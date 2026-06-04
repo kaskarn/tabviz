@@ -43,7 +43,7 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   p {

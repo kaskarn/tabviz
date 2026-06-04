@@ -180,8 +180,8 @@
   .schema-form {
     width: 320px;
     padding: 0 12px;
-    background: var(--tv-bg, #fff);
-    color: var(--tv-fg, #1f1f1f);
+    background: var(--tv-surface-bg, #fff);
+    color: var(--tv-text, #1f1f1f);
     font-family: inherit;
   }
 </style>

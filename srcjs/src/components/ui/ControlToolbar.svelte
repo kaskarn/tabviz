@@ -96,10 +96,10 @@
        DownloadButton autoposition their popovers with viewport coords) and
        drag their popovers to the toolbar's local origin, which also gets
        clipped by the container's overflow:hidden in narrow widgets. */
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-surface-bg, #ffffff));
     border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 18%, transparent);
     box-shadow:
-      0 1px 2px color-mix(in srgb, var(--tv-fg, #0f172a) 6%, transparent),
+      0 1px 2px color-mix(in srgb, var(--tv-text, #0f172a) 6%, transparent),
       0 4px 12px -4px color-mix(in srgb, var(--tv-accent, #2563eb) 18%, transparent);
     transition: opacity 0.18s ease;
   }
@@ -146,7 +146,7 @@
   :global(.tabviz-container > .control-toolbar button.active:not(.paint-btn)),
   :global(.tabviz-container > .control-toolbar button[aria-expanded="true"]:not(.paint-btn)) {
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 85%, transparent) !important;
-    color: var(--tv-bg, #ffffff) !important;
+    color: var(--tv-surface-bg, #ffffff) !important;
   }
 
   /* Paint-mode button wears the accent color at full saturation when

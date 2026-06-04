@@ -182,7 +182,7 @@
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -190,11 +190,11 @@
 
   .fullscreen-btn:hover {
     background: var(--tv-hover-bg, #e2e8f0);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .fullscreen-btn[aria-pressed="true"] {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 18%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 18%, var(--tv-surface-bg, #ffffff));
     color: var(--tv-accent, #2563eb);
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 40%, var(--tv-border, #e2e8f0));
   }
@@ -239,7 +239,7 @@
        auto-fit rule wins and scaled content past 80vh gets clipped with no
        scrollbar to recover. */
     overflow: auto !important;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border-radius: 12px;
     box-shadow:
       0 24px 64px -12px rgba(0, 0, 0, 0.45),

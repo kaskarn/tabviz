@@ -197,7 +197,7 @@
     border-radius: 4px;
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
     border-left: 3px solid var(--tv-accent, #2563eb);
-    color: var(--tv-fg, #0f172a);
+    color: var(--tv-text, #0f172a);
     font-size: 11px;
     font-style: italic;
     line-height: 1.4;

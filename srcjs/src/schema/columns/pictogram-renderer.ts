@@ -216,7 +216,7 @@ const pictogramSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => 
   if (labelPos === "leading") {
     pieces.push(
       `<text x="${cursorX}" y="${totalH / 2}" ` +
-      `font-size="${labelFontPx}" fill="var(--tv-cell-fg, var(--tv-fg))" ` +
+      `font-size="${labelFontPx}" fill="var(--tv-text)" ` +
       `dominant-baseline="middle" text-anchor="start">${labelText}</text>`,
     );
     cursorX += labelW;
@@ -237,7 +237,7 @@ const pictogramSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => 
     const lx = isStack ? cursorX + glyphPx + 4 : cursorX + trackW + 4;
     pieces.push(
       `<text x="${lx}" y="${totalH / 2}" ` +
-      `font-size="${labelFontPx}" fill="var(--tv-cell-fg, var(--tv-fg))" ` +
+      `font-size="${labelFontPx}" fill="var(--tv-text)" ` +
       `dominant-baseline="middle" text-anchor="start">${labelText}</text>`,
     );
   }

@@ -53,7 +53,7 @@
   .field-hint {
     font-size: 10px;
     font-style: italic;
-    color: var(--tv-muted, #aaa39a);
+    color: var(--tv-text-subtle, #aaa39a);
     white-space: nowrap;
   }
 </style>

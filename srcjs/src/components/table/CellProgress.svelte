@@ -20,7 +20,7 @@
   // Resolution order: per-column user override > per-row/cell semantic
   // paint > theme brand default.
   const barColor = $derived(
-    options?.color ?? colorOverride ?? "var(--tv-primary, var(--tv-accent, #2563eb))"
+    options?.color ?? colorOverride ?? "var(--tv-accent, var(--tv-accent, #2563eb))"
   );
   const scale = $derived(options?.scale ?? "linear");
 
@@ -78,7 +78,7 @@
   }
 
   .progress-label {
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    font-size: var(--tv-text-label-size, 0.75rem);
     font-variant-numeric: tabular-nums;
     min-width: 32px;
     text-align: right;

@@ -132,6 +132,6 @@
     padding: 2px 6px;
     font-variant-numeric: tabular-nums;
     border-radius: 2px;
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    font-size: var(--tv-text-label-size, 0.75rem);
   }
 </style>

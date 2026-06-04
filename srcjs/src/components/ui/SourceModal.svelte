@@ -272,7 +272,7 @@
     max-height: min(82vh, 760px);
     display: flex;
     flex-direction: column;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 12px;
     box-shadow:
@@ -303,7 +303,7 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .title-block .sub {
@@ -329,7 +329,7 @@
 
   .close:hover {
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 10%, transparent);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .tab-bar {
@@ -353,7 +353,7 @@
   }
 
   .tab:hover {
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .tab.active {
@@ -370,7 +370,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.78rem;
     line-height: 1.55;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 5%, transparent);
     border-bottom: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 60%, transparent);
     white-space: pre;
@@ -392,13 +392,13 @@
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--tv-accent, #2563eb);
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 6%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 6%, var(--tv-surface-bg, #ffffff));
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
   .copy-btn:hover {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 14%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 14%, var(--tv-surface-bg, #ffffff));
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 35%, transparent);
   }
 </style>

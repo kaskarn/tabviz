@@ -215,10 +215,10 @@
   .filter-popover {
     position: fixed;
     min-width: 220px; max-width: 280px; padding: 10px;
-    background: var(--tv-bg, #ffffff); border: 1px solid var(--tv-border, #e2e8f0);
+    background: var(--tv-surface-bg, #ffffff); border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px; box-shadow: 0 8px 24px -4px rgba(0,0,0,0.12);
     z-index: 10002;
-    font-weight: normal; font-size: 12px; color: var(--tv-fg, #1a1a1a);
+    font-weight: normal; font-size: 12px; color: var(--tv-text, #1a1a1a);
     display: flex; flex-direction: column; gap: 8px;
     overflow-y: auto;
   }
@@ -231,7 +231,7 @@
   .filter-popover select {
     width: 100%; padding: 5px 7px; font-size: 12px;
     border: 1px solid var(--tv-border, #e2e8f0); border-radius: 4px;
-    background: var(--tv-bg, #ffffff); color: var(--tv-fg, #1a1a1a);
+    background: var(--tv-surface-bg, #ffffff); color: var(--tv-text, #1a1a1a);
     font-family: inherit; box-sizing: border-box;
   }
   .filter-popover input:focus, .filter-popover select:focus {
@@ -253,7 +253,7 @@
   }
   .filter-footer .primary:hover { filter: brightness(0.95); }
   .filter-footer .secondary {
-    background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-fg, #1a1a1a);
+    background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-text, #1a1a1a);
   }
   .filter-footer .secondary:hover { background: var(--tv-hover-bg, #f1f5f9); }
 </style>

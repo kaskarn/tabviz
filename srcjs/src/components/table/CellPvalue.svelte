@@ -93,7 +93,7 @@
 
   .pvalue-stars {
     font-size: 0.9em;
-    color: var(--tv-primary, var(--tv-accent, #2563eb));
+    color: var(--tv-accent, var(--tv-accent, #2563eb));
     font-weight: 600;
   }
   /* Significant p-values used to auto-bold the number — removed: rely on
@@ -111,11 +111,11 @@
 
   .cell-emphasis {
     font-weight: var(--tv-font-weight-bold, 600);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
 
   .cell-muted {
-    color: var(--tv-muted, #94a3b8);
+    color: var(--tv-text-subtle, #94a3b8);
   }
 
   .cell-accent {

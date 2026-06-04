@@ -49,10 +49,10 @@
     padding: 3px 6px;
     border: 1px solid var(--tv-border, #d6d2c6);
     border-radius: 3px;
-    background: var(--tv-bg, #fff);
+    background: var(--tv-surface-bg, #fff);
     font-family: inherit;
     font-size: 11px;
-    color: var(--tv-fg, #1f1f1f);
+    color: var(--tv-text, #1f1f1f);
   }
   .text-input:focus {
     outline: none;
@@ -60,7 +60,7 @@
     box-shadow: 0 0 0 2px var(--tv-hover-bg, rgba(0, 0, 0, 0.06));
   }
   .text-input::placeholder {
-    color: var(--tv-muted, #aaa39a);
+    color: var(--tv-text-subtle, #aaa39a);
     font-style: italic;
   }
   .text-input:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -69,7 +69,7 @@
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
-    color: var(--tv-fg, #1f1f1f);
+    color: var(--tv-text, #1f1f1f);
     text-align: left;
   }
   .acc-header:hover { color: var(--tv-accent, #b53a1f); }

@@ -56,15 +56,15 @@
      CSS-var hook (--tv-font-size-*) so themes can override; the SVG renderer
      and width budget use CELL_GEOMETRY.icon.px instead (absolute, no var). */
   .icon-sm {
-    font-size: var(--tv-font-size-sm, 0.75rem);
+    font-size: var(--tv-text-label-size, 0.75rem);
   }
 
   .icon-base {
-    font-size: var(--tv-font-size-base, 0.875rem);
+    font-size: var(--tv-text-body-size, 0.875rem);
   }
 
   .icon-lg {
-    font-size: var(--tv-font-size-lg, 1rem);
+    font-size: var(--tv-text-title-size, 1rem);
   }
 
   /* xl is intended for editorial / pictographic single-glyph cells

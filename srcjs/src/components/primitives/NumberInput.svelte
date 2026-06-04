@@ -74,10 +74,10 @@
     padding: 3px 6px;
     border: 1px solid var(--tv-border, #d6d2c6);
     border-radius: 3px;
-    background: var(--tv-bg, #fff);
-    font-family: var(--tv-font-mono, ui-monospace, "IBM Plex Mono", monospace);
+    background: var(--tv-surface-bg, #fff);
+    font-family: var(--tv-text-numeric-family, ui-monospace, "IBM Plex Mono", monospace);
     font-size: 11px;
-    color: var(--tv-fg, #1f1f1f);
+    color: var(--tv-text, #1f1f1f);
     text-align: right;
   }
   input:focus {
@@ -86,7 +86,7 @@
     box-shadow: 0 0 0 2px var(--tv-hover-bg, rgba(0, 0, 0, 0.06));
   }
   input::placeholder {
-    color: var(--tv-muted, #aaa39a);
+    color: var(--tv-text-subtle, #aaa39a);
     font-style: italic;
   }
   input:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -102,7 +102,7 @@
   }
 
   .suffix {
-    font-family: var(--tv-font-mono, ui-monospace, "IBM Plex Mono", monospace);
+    font-family: var(--tv-text-numeric-family, ui-monospace, "IBM Plex Mono", monospace);
     font-size: 10px;
     color: var(--tv-text-muted, #7a7466);
   }

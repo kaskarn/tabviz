@@ -173,7 +173,7 @@
     display: flex;
     gap: 12px;
     padding: 12px;
-    background: var(--tv-surface-bg, var(--tv-bg, #fff));
+    background: var(--tv-surface-bg, var(--tv-surface-bg, #fff));
     border: 1px solid var(--tv-cell-border, var(--tv-border, #e2e8f0));
     border-radius: 6px;
   }
@@ -234,13 +234,13 @@
     gap: 3px;
     padding: 1px 5px 1px 2px;
     border-radius: 3px;
-    background: var(--tv-row-alt-bg, var(--tv-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, var(--tv-row-alt-bg, #f8fafc));
     border: 1px solid var(--tv-cell-border, var(--tv-border, #e2e8f0));
     font-size: 10px;
     line-height: 1.2;
     cursor: grab;
     user-select: none;
-    color: var(--tv-text, var(--tv-fg, #1a1a1a));
+    color: var(--tv-text, var(--tv-text, #1a1a1a));
     transition: outline 0.12s ease, background 0.12s ease, opacity 0.12s ease;
   }
   .role-token:hover {

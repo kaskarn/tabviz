@@ -152,14 +152,14 @@
     padding: 0;
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
   .trigger:hover {
     background: var(--tv-hover-bg, #e2e8f0);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
   }
   .trigger:focus-visible {
     outline: none;
@@ -174,8 +174,8 @@
     width: 7px;
     height: 7px;
     border-radius: 999px;
-    border: 1px solid var(--tv-bg, #ffffff);
-    box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--tv-fg, #1a1a1a) 30%, transparent);
+    border: 1px solid var(--tv-surface-bg, #ffffff);
+    box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--tv-text, #1a1a1a) 30%, transparent);
   }
 
   /* Popover — Portal-rendered to escape the .tabviz-container's
@@ -186,7 +186,7 @@
     z-index: 10003;
     width: 220px;
     padding: 8px;
-    background: var(--tv-bg, #ffffff);
+    background: var(--tv-surface-bg, #ffffff);
     border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 18%, var(--tv-border, #e2e8f0));
     border-radius: 8px;
     box-shadow: 0 8px 24px -4px color-mix(in srgb, #0f172a 25%, transparent);
@@ -219,7 +219,7 @@
     border: 1px solid transparent;
     border-radius: 5px;
     background: transparent;
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text, #1a1a1a);
     font-size: 0.7rem;
     font-weight: 500;
     text-align: left;
@@ -230,7 +230,7 @@
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
   }
   .token-cell.selected {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 14%, var(--tv-bg, #ffffff));
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 14%, var(--tv-surface-bg, #ffffff));
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 35%, transparent);
     color: var(--tv-accent, #2563eb);
     font-weight: 600;
@@ -240,7 +240,7 @@
     width: 10px;
     height: 10px;
     border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 25%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-text, #1a1a1a) 25%, transparent);
   }
   .label {
     line-height: 1;
@@ -288,7 +288,7 @@
     user-select: none;
   }
   .scope-text.active {
-    color: var(--tv-bg, #ffffff);
+    color: var(--tv-surface-bg, #ffffff);
     font-weight: 600;
   }
   .scope-switch:focus-visible {
