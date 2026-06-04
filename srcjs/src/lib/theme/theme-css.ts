@@ -160,16 +160,10 @@ ${v4Body}
       --tv-status-warning:      ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
       --tv-status-negative:     ${theme.status?.negative ?? BADGE_VARIANTS.error};
       --tv-status-info:         ${theme.status?.info     ?? BADGE_VARIANTS.info};
-      /* Typography numeric/header sizes + literal font-weights.
-         Read by .cell-text + utility classes; kept as literals (not
-         aliased) until callers either migrate to per-role manifest
-         vars or these become manifest entries. */
+      /* Literal font-weight constants — utility classes read these. */
       --tv-font-weight-normal:  400;
-      --tv-font-weight-medium:  500;
       --tv-font-weight-bold:    600;
-      --tv-line-height:         1.5;
       --tv-header-font-scale:   1.05;
-      --tv-cell-padding-y:      0px;
       --tv-viz-margin:          ${VIZ_MARGIN}px;
 
       /* ── V3-only — still computed from theme.X.Y (no v4 equivalent yet).
@@ -183,35 +177,20 @@ ${v4Body}
       --tv-axis-tick-fg:        ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
       --tv-header-bg:           ${headerVariant.bg};
       --tv-header-fg:           ${headerVariant.fg};
-      --tv-interval-line:       ${theme.series?.[0]?.stroke ?? theme.accent.default};
       --tv-summary-fill:        ${theme.series?.[0]?.fill ?? theme.accent.default};
       --tv-summary-border:      ${theme.series?.[0]?.stroke ?? theme.accent.default};
       --tv-semantic-muted-fg:   ${theme.row.muted?.fg    ?? theme.content.muted};
       --tv-semantic-accent-fg:  ${theme.row.accent?.fg   ?? theme.accent.default};
       --tv-semantic-muted-bg:   ${theme.row.muted?.bg    ?? "transparent"};
       --tv-semantic-accent-bg:  ${theme.row.accent?.bg   ?? "transparent"};
-      /* Per-role italic — Coh.22 dropped italic from v4 typography;
-         emit "normal" everywhere as a kill-row. Drop these lines
-         (and the CSS that reads them) when the Svelte side is purged. */
-      --tv-text-title-italic:    normal;
-      --tv-text-subtitle-italic: normal;
-      --tv-text-caption-italic:  normal;
-      --tv-text-footnote-italic: normal;
-      --tv-text-cell-italic:     normal;
-      --tv-text-header-italic:   normal;
-      --tv-text-tick-italic:     normal;
-      --tv-text-label-italic:    normal;
-      /* Per-role weight/size/family for roles that aren't in the v4
-         9-role typography matrix (header, cell-weight, label-weight). */
-      --tv-text-title-weight:    ${theme.text.title.weight ?? 600};
-      --tv-text-title-size:      ${theme.text.title.size ?? "1.25rem"};
-      --tv-text-subtitle-weight: ${theme.text.subtitle.weight ?? 400};
-      --tv-text-subtitle-size:   ${theme.text.subtitle.size ?? "1rem"};
-      --tv-text-caption-weight:  ${theme.text.caption.weight ?? 400};
-      --tv-text-caption-size:    ${theme.text.caption.size ?? "0.75rem"};
-      --tv-text-footnote-weight: ${theme.text.footnote.weight ?? 400};
-      --tv-text-footnote-size:   ${theme.text.footnote.size ?? "0.75rem"};
-      --tv-text-cell-weight:     ${theme.text.cell.weight ?? 400};
+      /* Per-role italic — Coh.22 dropped italic from v4 typography.
+         CSS consumers read italic with an inline "normal" fallback,
+         so no emission needed. Drop the consumer CSS reads once
+         italic is intentionally re-added (or never). */
+      /* Per-role size/weight/family for the 9 v4 typography roles
+         (title/subtitle/body/numeric/label/caption/footnote/cell/tick)
+         are emitted by the v4 manifest above — no v3 emission needed. */
+      /* Header role: not in the v4 9-role matrix. */
       --tv-text-header-weight:   ${theme.header.text.weight ?? 600};
       --tv-text-header-family:   ${theme.header.text?.family ?? theme.text.body.family};
       --tv-text-header-size:     ${
@@ -220,10 +199,6 @@ ${v4Body}
           : `calc(${theme.text.body.size} * 1.05)`
       };
       --tv-text-column-group-weight: ${theme.columnGroup?.text?.weight ?? 600};
-      --tv-text-tick-weight:     ${theme.text.tick.weight ?? 400};
-      --tv-text-tick-family:     ${theme.text.tick?.family ?? theme.text.body.family};
-      --tv-text-label-weight:    ${theme.text.label.weight ?? 400};
-      --tv-text-label-family:    ${theme.text.label?.family ?? theme.text.body.family};
       --tv-text-numeric-figures: ${theme.text.numeric?.figures === "proportional" ? "normal" : "tnum"};
       /* First-column variant — applied to .primary-cell. */
       --tv-first-col-bg:         ${firstColBg};
