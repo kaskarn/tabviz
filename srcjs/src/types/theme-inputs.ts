@@ -223,13 +223,25 @@ export interface TokenRamps {
   };
 }
 
-// ────────────────────────────────────────────────────────────────────
-// T2 — Semantic token vocabulary (addressable names)
-// ────────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════
+// V3 LEGACY VOCABULARY — used ONLY by `theme-resolve.ts::buildThemeStructure`
+// (still called from theme-adapter.ts to populate the v3 chrome fields
+// theme-css.ts's user-config tail reads from).
 //
-// PR A defines the demo subset (paper / paper_alt / ink / ink_muted /
-// brand / brand_ink) to prove the model. PR B expands to the full
-// vocabulary listed in the rationalization plan.
+// New code MUST NOT import from this section. The v4 substrate uses
+// `lib/theme/component-tokens.ts` for the token manifest,
+// `lib/theme/role-bindings.ts` for the role catalog, and
+// `lib/theme/resolve-theme.ts` for the v4 resolver. The v3 types below
+// stay alive because deleting them requires deleting buildThemeStructure
+// (and migrating the borders/firstColumn/headerVariant/semantic.row
+// clusters of theme-css.ts to v4 manifest entries — tasks #72-#74).
+//
+// When the v3 chrome clusters fully migrate, this entire section
+// (TokenName through ClustersInputs) gets deleted along with
+// theme-resolve.ts.
+// ════════════════════════════════════════════════════════════════════
+
+/** @deprecated v3 vocabulary — see V3 LEGACY VOCABULARY header above. */
 
 export type TokenName =
   // Surfaces
@@ -267,32 +279,36 @@ export type TokenName =
   | "info"
   | "info_ink";
 
-/** Numeric ramp-step references (programmatic addressability): `neutral.3`, `brand.9`, etc. */
+/** Numeric ramp-step references (programmatic addressability): `neutral.3`, `brand.9`, etc.
+ *  @deprecated v3 vocabulary. */
 export type RampStepRef =
   | `neutral.${number}`
   | `brand.${number}`
   | `accent.${number}`;
 
-/** Color reference. Tagged-object form is canonical; plain string accepted by resolvers. */
+/** Color reference. Tagged-object form is canonical; plain string accepted by resolvers.
+ *  @deprecated v3 vocabulary. */
 export type ColorRef =
   | { ref: TokenName | RampStepRef; alpha?: number }
   | { hex: string; alpha?: number };
 
-/** Convenience constructor — `ref("ink_muted")` or `ref("brand.9")`. */
+/** @deprecated v3 vocabulary — convenience constructor for ColorRef. */
 export function ref(name: TokenName | RampStepRef, alpha?: number): ColorRef {
   return alpha === undefined ? { ref: name } : { ref: name, alpha };
 }
 
-/** Hex literal as a tagged-object ref (rare — plain string usually works). */
+/** @deprecated v3 vocabulary — hex literal as a tagged-object ref. */
 export function lit(hex: string, alpha?: number): ColorRef {
   return alpha === undefined ? { hex } : { hex, alpha };
 }
 
 // ────────────────────────────────────────────────────────────────────
-// T3 — Paint roles (fixed canonical recipes)
+// V3 — Paint roles (fixed canonical recipes)
 // ────────────────────────────────────────────────────────────────────
 
-/** Fixed canonical role vocabulary. Themes redefine recipes; cannot add roles. */
+/** @deprecated v3 vocabulary — fixed canonical role vocabulary. Themes
+ *  redefine recipes; cannot add roles. Distinct from the v4 `RoleName`
+ *  in `types/theme-roles.ts` (which has a broader role catalog). */
 export type RoleName =
   | "emphasis"
   | "muted"
@@ -304,7 +320,7 @@ export type RoleName =
   | "warning"
   | "info";
 
-/** A paint-role recipe — how a role looks when applied to a target. */
+/** @deprecated v3 vocabulary — paint-role recipe. */
 export interface PaintRole {
   bg?: ColorRef | string | null;
   fg?: ColorRef | string | null;
@@ -315,23 +331,27 @@ export interface PaintRole {
   fontStyle?: "normal" | "italic" | null;
 }
 
+/** @deprecated v3 vocabulary. */
 export type ThemeRoles = Record<RoleName, PaintRole>;
 
 // ────────────────────────────────────────────────────────────────────
-// T4 — Component clusters (low-level bindings; reference T2 via refs)
+// V3 — Component clusters (low-level bindings; reference T2 via refs)
 // ────────────────────────────────────────────────────────────────────
 
+/** @deprecated v3 cluster — see V3 LEGACY VOCABULARY header. */
 export interface RowStateInputs {
   bg: ColorRef | string | null;
   fg: ColorRef | string | null;
 }
 
+/** @deprecated v3 cluster. */
 export interface HeaderVariantInputs {
   bg: ColorRef | string | null;
   fg: ColorRef | string | null;
   rule: ColorRef | string | null;
 }
 
+/** @deprecated v3 cluster. */
 export interface HeaderClusterInputs {
   light: HeaderVariantInputs;
   tint: HeaderVariantInputs;
@@ -340,6 +360,7 @@ export interface HeaderClusterInputs {
 
 export type ColumnGroupClusterInputs = HeaderClusterInputs;
 
+/** @deprecated v3 cluster. */
 export interface RowGroupTierInputs {
   bg: ColorRef | string | null;
   fg: ColorRef | string | null;
@@ -347,12 +368,14 @@ export interface RowGroupTierInputs {
   fontWeight: number | null;
 }
 
+/** @deprecated v3 cluster. */
 export interface RowGroupClusterInputs {
   L1: RowGroupTierInputs;
   L2: RowGroupTierInputs;
   L3: RowGroupTierInputs;
 }
 
+/** @deprecated v3 cluster. */
 export interface RowClusterInputs {
   base: RowStateInputs;
   alt: RowStateInputs;
@@ -363,12 +386,14 @@ export interface RowClusterInputs {
   borderWidth: number;
 }
 
+/** @deprecated v3 cluster. */
 export interface CellClusterInputs {
   bg: ColorRef | string | null;
   fg: ColorRef | string | null;
   border: ColorRef | string | null;
 }
 
+/** @deprecated v3 cluster. */
 export interface FirstColumnVariantInputs {
   bg: ColorRef | string | null;
   fg: ColorRef | string | null;
@@ -376,11 +401,13 @@ export interface FirstColumnVariantInputs {
   weight: number | null;
 }
 
+/** @deprecated v3 cluster. */
 export interface FirstColumnClusterInputs {
   default: FirstColumnVariantInputs;
   bold: FirstColumnVariantInputs;
 }
 
+/** @deprecated v3 cluster. */
 export interface PlotScaffoldInputs {
   bg: ColorRef | string | null;
   axisLine: ColorRef | string | null;
@@ -392,12 +419,14 @@ export interface PlotScaffoldInputs {
   pointSize: number;
 }
 
+/** @deprecated v3 cluster. */
 export interface MarkRecipeInputs {
   body: string;       // slot-bundle field name
   outline: string;
   line: string;
 }
 
+/** @deprecated v3 cluster. */
 export interface MarksRecipesInputs {
   forest: MarkRecipeInputs;
   summary: MarkRecipeInputs;
@@ -407,6 +436,7 @@ export interface MarksRecipesInputs {
   lollipop: MarkRecipeInputs;
 }
 
+/** @deprecated v3 cluster. */
 export interface ClustersInputs {
   header: HeaderClusterInputs;
   columnGroup: ColumnGroupClusterInputs;

@@ -21,14 +21,13 @@
 export type RampName = "neutral" | "brand" | "accent";
 
 /** Tier-1 anchor identifier — the OKLCH seed values from which ramps and
- *  roles derive. `paper` and `ink` are the polar neutrals; `brand`,
- *  `decorative`, and `accent-anchor` seed the chromatic ramps; status
- *  anchors seed the semantic status roles independently. */
+ *  roles derive. `paper` and `ink` are the polar neutrals; `brand` and
+ *  `accent-anchor` seed the chromatic ramps; status anchors seed the
+ *  semantic status roles independently. */
 export type AnchorName =
   | "paper"
   | "ink"
   | "brand"
-  | "decorative"
   | "accent-anchor"
   | "status-positive"
   | "status-negative"
@@ -180,6 +179,6 @@ export const ALL_CURVES: readonly CurveName[] = [
 
 /** All anchor names enumerated. */
 export const ALL_ANCHORS: readonly AnchorName[] = [
-  "paper", "ink", "brand", "decorative", "accent-anchor",
+  "paper", "ink", "brand", "accent-anchor",
   "status-positive", "status-negative", "status-warning", "status-info",
 ];
