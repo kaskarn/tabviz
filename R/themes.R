@@ -10,12 +10,11 @@
 # shell mode, surface texture, density factor, per-ramp curves) layers
 # on top via the rest of the `web_theme()` args.
 
-# Paper L in light polarity. Matches LIGHT_RAMP_L[0] so a default brand-
-# tinted preset reads at the same paper lightness as v3. Mirrors
-# DEFAULT_PAPER_L in theme-presets-inputs.ts.
-PRESET_PAPER_L <- 0.987
-# Ink L in light polarity. Matches LIGHT_RAMP_L[11].
-PRESET_INK_L <- 0.180
+# Paper / ink L defaults sourced from R/theme-defaults.R (the R-side
+# default-value registry). Mirrors DEFAULT_PAPER_L / DEFAULT_INK_L in
+# theme-presets-inputs.ts.
+PRESET_PAPER_L <- THEME_DEFAULTS$paper_L
+PRESET_INK_L   <- THEME_DEFAULTS$ink_L
 
 # Derive the four V4 anchors from v3-style hex seeds. Mirrors the TS
 # `deriveAnchors` in theme-presets-inputs.ts so R and TS presets emit

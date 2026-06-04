@@ -149,12 +149,15 @@ resolve_from_inputs <- function(inputs, name = "custom") {
   theme
 }
 
-# Default anchors for the clinical baseline (cyan brand). Drive the
-# `web_theme()` defaults below + the `ThemeInputs` slot defaults — pick
-# one source of truth here.
-DEFAULT_PAPER_ANCHOR <- list(L = 0.987, C = 0.005, H = 235)
-DEFAULT_INK_ANCHOR   <- list(L = 0.180, C = 0.010, H = 235)
-DEFAULT_BRAND_HEX    <- "#0099CC"
+# Default anchors for the clinical baseline (cyan brand). Sourced from
+# R/theme-defaults.R::THEME_DEFAULTS.
+DEFAULT_PAPER_ANCHOR <- list(L = THEME_DEFAULTS$paper_L,
+                             C = THEME_DEFAULTS$paper_C,
+                             H = THEME_DEFAULTS$paper_H)
+DEFAULT_INK_ANCHOR   <- list(L = THEME_DEFAULTS$ink_L,
+                             C = THEME_DEFAULTS$ink_C,
+                             H = THEME_DEFAULTS$ink_H)
+DEFAULT_BRAND_HEX    <- THEME_DEFAULTS$brand_hex
 
 # Internal — pack a list(L,C,H) (or NULL) into a 3-element vector of slot
 # values suitable for `S7::prop(inputs, ...) <- ...`. NULL → c(NA, NA, NA).
