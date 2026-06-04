@@ -155,7 +155,7 @@
 
   .studio-main {
     display: grid;
-    grid-template-columns: minmax(380px, 460px) 1fr;
+    grid-template-columns: minmax(560px, 760px) 1fr;
     overflow: hidden;
     min-height: 0;
   }
@@ -169,9 +169,9 @@
     font-style: italic;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1200px) {
     .studio-main {
-      grid-template-columns: minmax(320px, 380px) 1fr;
+      grid-template-columns: minmax(420px, 480px) 1fr;
     }
   }
 
