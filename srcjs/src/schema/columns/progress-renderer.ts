@@ -14,6 +14,11 @@ import { normalizeValue } from "../../lib/scale-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { parseFontSize } from "../../lib/typography-layout";
 import { SPACING } from "../../lib/rendering-constants";
+import {
+  getCssVars, readVarPx,
+  readAccentDefault, readDividerSubtle, readContentPrimary,
+  readBodyFamily, readBodySize,
+} from "../../lib/theme/consumer-bridge";
 
 interface ProgressOptions {
   maxValue?: number;
@@ -37,8 +42,8 @@ function resolveProgressColor(
   return opts?.color
     ?? cellBundle?.markerFill
     ?? rowBundle?.markerFill
-    ?? theme.inputs?.primary
-    ?? theme.accent.default;
+    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`.
+    ?? readAccentDefault(getCssVars(theme));
 }
 
 const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
@@ -58,13 +63,14 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
 
   // Cell width budget: caller supplies ctx.cellWidth (the column width).
   // Bar area = cell width minus left+right padding minus label reservation.
+  const cssVars = getCssVars(theme);
   const cellWidth = ctx?.cellWidth ?? 100;
-  const cellPadX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
   const labelReserved = showLabel ? PROGRESS_LABEL_WIDTH : 0;
   const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
   const barWidth = Math.max(0, ratio * barAreaWidth);
   const totalWidth = cellWidth - cellPadX * 2;
-  const fontSize = parseFontSize(theme.text.body.size);
+  const fontSize = parseFontSize(readBodySize(cssVars));
   const labelFontSize = fontSize * 0.9;
   const height = Math.max(PROGRESS_BAR_HEIGHT, showLabel ? labelFontSize : PROGRESS_BAR_HEIGHT);
 
@@ -72,7 +78,7 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   // Track
   pieces.push(
     `<rect x="0" y="${(height - PROGRESS_BAR_HEIGHT) / 2}" width="${barAreaWidth}" height="${PROGRESS_BAR_HEIGHT}" ` +
-    `fill="${theme.divider.subtle}" opacity="0.5" rx="${PROGRESS_BAR_RADIUS}"/>`,
+    `fill="${readDividerSubtle(cssVars)}" opacity="0.5" rx="${PROGRESS_BAR_RADIUS}"/>`,
   );
   // Fill
   pieces.push(
@@ -83,9 +89,9 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
     pieces.push(
       `<text class="cell-text" dominant-baseline="central" ` +
       `x="${totalWidth}" y="${height / 2}" ` +
-      `font-family="${theme.text.body.family}" ` +
+      `font-family="${readBodyFamily(cssVars)}" ` +
       `font-size="${labelFontSize}px" font-weight="400" ` +
-      `text-anchor="end" fill="${theme.content.primary}">${Math.round(pct)}%</text>`,
+      `text-anchor="end" fill="${readContentPrimary(cssVars)}">${Math.round(pct)}%</text>`,
     );
   }
   return { kind: "svg", markup: pieces.join(""), width: totalWidth, height };

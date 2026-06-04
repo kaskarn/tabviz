@@ -81,10 +81,10 @@ describe("badge renderer — color resolution", () => {
     expect(color.length).toBeGreaterThan(0);
   });
 
-  test("falls back to identity secondary when no rule matches", () => {
+  test("falls back to brand accent when no rule matches (V4: decorative/secondary dropped)", () => {
     const color = resolveBadgeColor("X", "X", {}, theme, undefined, undefined);
-    const secondary = (theme.inputs as { secondary?: string }).secondary;
-    if (secondary) expect(color).toBe(secondary);
+    // V4: glyphDefault = readAccentDefault(cssVars). Just check we got a hex.
+    expect(color).toMatch(/^#[0-9a-fA-F]{6}$/);
   });
 });
 

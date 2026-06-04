@@ -20,6 +20,7 @@ import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { escapeXml } from "../../lib/svg-text-utils";
+import { getCssVars, readAccentDefault, readBodyFamily } from "../../lib/theme/consumer-bridge";
 import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 interface IconOptions {
@@ -41,8 +42,8 @@ function resolveIconColor(
   return iconOpts?.color
     ?? cellBundle?.markerFill
     ?? rowBundle?.markerFill
-    ?? theme.inputs?.primary
-    ?? theme.accent.default;
+    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`.
+    ?? readAccentDefault(getCssVars(theme));
 }
 
 function resolveIconText(
@@ -76,7 +77,7 @@ const iconSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   // correct cell location.
   const markup =
     `<text x="0" y="${px / 2}" ` +
-    `font-family="${theme.text.body.family}" ` +
+    `font-family="${readBodyFamily(getCssVars(theme))}" ` +
     `font-size="${px}px" fill="${color}" ` +
     `dominant-baseline="middle" text-anchor="start">${escapeXml(iconText)}</text>`;
   return { kind: "svg", markup, width: px, height: px };

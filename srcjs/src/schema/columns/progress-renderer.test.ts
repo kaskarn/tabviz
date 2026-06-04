@@ -30,9 +30,8 @@ describe("progress renderer — color cascade", () => {
     expect(resolveProgressColor({ color: "#abc" }, undefined, undefined, theme)).toBe("#abc");
   });
 
-  test("falls back to theme.inputs.primary", () => {
-    const primary = theme.inputs?.primary;
-    if (primary) expect(resolveProgressColor({}, undefined, undefined, theme)).toBe(primary);
+  test("falls back to brand accent (V4: theme.inputs.primary cascade dropped)", () => {
+    expect(resolveProgressColor({}, undefined, undefined, theme)).toMatch(/^#[0-9a-fA-F]{6}$/);
   });
 });
 

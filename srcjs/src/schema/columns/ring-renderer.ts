@@ -13,6 +13,9 @@ import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { CELL_GEOMETRY } from "../../lib/rendering-constants";
+import {
+  getCssVars, readAccentDefault, readContentMuted, readContentPrimary,
+} from "../../lib/theme/consumer-bridge";
 
 interface RingOptions {
   minValue?: number;
@@ -36,9 +39,8 @@ function resolveFilledColor(
   cellStyle: Parameters<typeof resolveSemanticBundle>[0],
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
 ): string {
-  const glyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
-    ?? (theme.inputs as { primary?: string } | undefined)?.primary
-    ?? theme.accent.default;
+  // V3→V4: was `inputs.secondary ?? inputs.primary ?? theme.accent.default`.
+  const glyphDefault = readAccentDefault(getCssVars(theme));
   const cellBundle = resolveSemanticBundle(cellStyle, theme);
   const rowBundle = resolveSemanticBundle(rowStyle, theme);
   const override = cellBundle?.markerFill ?? rowBundle?.markerFill ?? null;
@@ -92,7 +94,8 @@ const ringSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const showLabel = opts.showLabel ?? true;
   const labelFormat = opts.labelFormat ?? "percent";
   const labelDecimals = opts.labelDecimals ?? 0;
-  const trackColor = opts.trackColor ?? theme.content.muted;
+  const cssVars = getCssVars(theme);
+  const trackColor = opts.trackColor ?? readContentMuted(cssVars);
   const filledColor = resolveFilledColor(value, opts, theme, ctx?.cellStyle, undefined);
   const fraction = maxV > minV ? Math.max(0, Math.min(1, (value - minV) / (maxV - minV))) : 0;
 
@@ -126,7 +129,7 @@ const ringSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   if (showLabel) {
     pieces.push(
       `<text x="${diameter + 4}" y="${diameter / 2}" ` +
-      `font-size="${labelFontPx}" fill="${theme.content.primary}" ` +
+      `font-size="${labelFontPx}" fill="${readContentPrimary(cssVars)}" ` +
       `dominant-baseline="middle" text-anchor="start">${labelText}</text>`,
     );
   }

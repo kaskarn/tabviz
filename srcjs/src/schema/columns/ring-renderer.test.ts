@@ -59,12 +59,9 @@ describe("ring renderer — color resolution", () => {
     expect(c).toBe("#xyz");
   });
 
-  test("falls back to identity secondary", () => {
-    const secondary = (theme.inputs as { secondary?: string }).secondary;
-    if (secondary) {
-      const c = resolveFilledColor(0.5, {} as never, theme, undefined, undefined);
-      expect(c).toBe(secondary);
-    }
+  test("falls back to brand accent (V4: identity-secondary cascade dropped)", () => {
+    const c = resolveFilledColor(0.5, {} as never, theme, undefined, undefined);
+    expect(c).toMatch(/^#[0-9a-fA-F]{6}$/);
   });
 });
 

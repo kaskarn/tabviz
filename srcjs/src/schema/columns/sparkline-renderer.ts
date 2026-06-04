@@ -17,6 +17,7 @@ import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { computeSparklinePoints, catmullRomPath } from "../../lib/sparkline-utils";
+import { getCssVars, readVarPx, readAccentDefault } from "../../lib/theme/consumer-bridge";
 import { SPARKLINE, SPACING } from "../../lib/rendering-constants";
 
 interface SparklineOptions {
@@ -36,8 +37,8 @@ function resolveSparkColor(
   return opts?.color
     ?? cellBundle?.markerFill
     ?? rowBundle?.markerFill
-    ?? (theme.inputs as { primary?: string } | undefined)?.primary
-    ?? theme.accent.default;
+    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`.
+    ?? readAccentDefault(getCssVars(theme));
 }
 
 function buildBarMarkup(points: [number, number][], sparkH: number, x: number, y: number, w: number, color: string): string {
@@ -99,7 +100,7 @@ const sparklineSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => 
   // width; mirror that here. The renderer emits at (0,0) so the box
   // starts at x=0; SPACING.TEXT_PADDING is reserved on each side.
   const cellWidth = ctx?.cellWidth ?? 100;
-  const padX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
+  const padX = readVarPx(getCssVars(theme), "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
   const innerW = Math.max(0, cellWidth - padX * 2);
   const points = computeSparklinePoints(data, padX, 0, innerW, height);
 

@@ -36,6 +36,10 @@ import { parseFontSize } from "../../lib/typography-layout";
 import { measureTextWidth } from "../../lib/width-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { escapeXml } from "../../lib/svg-text-utils";
+import {
+  getCssVars, readAccentDefault, readContentMuted,
+  readBodyFamily, readBodySize,
+} from "../../lib/theme/consumer-bridge";
 
 interface BadgeOptions {
   variants?: Record<string, string>;
@@ -60,8 +64,10 @@ function resolveBadgeColor(
   cellStyle: Parameters<typeof resolveSemanticBundle>[0],
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
 ): string {
-  const inputs = theme.inputs as { secondary?: string; primary?: string } | undefined;
-  const glyphDefault = inputs?.secondary ?? inputs?.primary ?? theme.accent.default;
+  const cssVars = getCssVars(theme);
+  // V3→V4: was `inputs?.secondary ?? inputs?.primary ?? theme.accent.default`.
+  // Decorative/secondary dropped in V4; brand is the identity default.
+  const glyphDefault = readAccentDefault(cssVars);
 
   const cellBundle = resolveSemanticBundle(cellStyle, theme);
   const rowBundle = resolveSemanticBundle(rowStyle, theme);
@@ -97,12 +103,12 @@ function resolveBadgeColor(
     // so spreading the hardcoded BADGE_VARIANTS hex here drifted exports from
     // the live widget. BADGE_VARIANTS stays as the per-color fallback.
     const variantColors: Record<string, string> = {
-      default: theme.accent.default,
+      default: readAccentDefault(cssVars),
       success: theme.status?.positive ?? BADGE_VARIANTS.success,
       warning: theme.status?.warning ?? BADGE_VARIANTS.warning,
       error: theme.status?.negative ?? BADGE_VARIANTS.error,
       info: theme.status?.info ?? BADGE_VARIANTS.info,
-      muted: theme.content.muted,
+      muted: readContentMuted(cssVars),
     };
     color = variantColors[variant] ?? glyphDefault;
   }
@@ -114,10 +120,11 @@ function computeBadgeGeometry(
   shape: "pill" | "circle" | "square",
   theme: WebTheme,
 ): BadgeGeometry {
-  const baseFontSize = parseFontSize(theme.text.body.size);
+  const cssVars = getCssVars(theme);
+  const baseFontSize = parseFontSize(readBodySize(cssVars));
   const fontSize = baseFontSize * BADGE.FONT_SCALE;
   const height = fontSize + BADGE.PADDING * 2;
-  const textWidth = measureTextWidth(text, fontSize, theme.text.body.family, 600);
+  const textWidth = measureTextWidth(text, fontSize, readBodyFamily(cssVars), 600);
   // Circle / square shapes are 1:1 aspect — use height as the
   // controlling dimension so "1" and "12" render the same diameter.
   const aspectShape = shape === "circle" || shape === "square";
@@ -139,6 +146,7 @@ function buildBadgeMarkup(
   geom: BadgeGeometry,
   theme: WebTheme,
 ): string {
+  const cssVars = getCssVars(theme);
   const { width, height, radius, fontSize } = geom;
   const shapeAttrs = outline
     ? `fill="none" stroke="${color}" stroke-width="1.5"`
@@ -147,7 +155,7 @@ function buildBadgeMarkup(
   const label =
     `<text class="cell-text" dominant-baseline="central" ` +
     `x="${width / 2}" y="${height / 2}" text-anchor="middle" ` +
-    `font-family="${theme.text.body.family}" font-size="${fontSize}px" ` +
+    `font-family="${readBodyFamily(cssVars)}" font-size="${fontSize}px" ` +
     `font-weight="600" fill="${color}">${escapeXml(text)}</text>`;
   return rect + label;
 }

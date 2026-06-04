@@ -19,6 +19,7 @@ import type { RenderComponent, RenderSvg, CellFormatter } from "../render-types"
 import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
 import CellPictogram from "../../components/table/CellPictogram.svelte";
+import { getCssVars, readAccentDefault, readContentMuted } from "../../lib/theme/consumer-bridge";
 import { resolveGlyph } from "../../lib/glyph-registry";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { CELL_GEOMETRY } from "../../lib/rendering-constants";
@@ -71,15 +72,15 @@ function resolvePictoColors(
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): { filled: string; empty: string } {
-  const glyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
-    ?? (theme.inputs as { primary?: string } | undefined)?.primary
-    ?? theme.accent.default;
+  // V3→V4: was `inputs.secondary ?? inputs.primary ?? theme.accent.default`.
+  const cssVars = getCssVars(theme);
+  const glyphDefault = readAccentDefault(cssVars);
   const cellBundle = resolveSemanticBundle(cellStyle, theme);
   const rowBundle = resolveSemanticBundle(rowStyle, theme);
   const override = cellBundle?.markerFill ?? rowBundle?.markerFill ?? null;
   return {
     filled: opts.color ?? override ?? glyphDefault,
-    empty: opts.emptyColor ?? theme.content.muted,
+    empty: opts.emptyColor ?? readContentMuted(cssVars),
   };
 }
 

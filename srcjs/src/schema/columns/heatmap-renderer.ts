@@ -14,6 +14,9 @@ import type { RenderComponent, RenderSvg, CellFormatter } from "../render-types"
 import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
 import CellHeatmap from "../../components/table/CellHeatmap.svelte";
+import {
+  getCssVars, readContentPrimary, readBodyFamily, readBodySize,
+} from "../../lib/theme/consumer-bridge";
 import { normalizeValue } from "../../lib/scale-utils";
 import { parseFontSize } from "../../lib/typography-layout";
 
@@ -104,9 +107,10 @@ const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
     : normalizeValue(value, minValue, maxValue, scale);
   const { hex: bgColor, rgb } = interpolatePalette(palette, normalized);
   const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
-  const textColor = luminance > 0.5 ? theme.content.primary : "#ffffff";
+  const cssVars = getCssVars(theme);
+  const textColor = luminance > 0.5 ? readContentPrimary(cssVars) : "#ffffff";
 
-  const fontSize = parseFontSize(theme.text.body.size);
+  const fontSize = parseFontSize(readBodySize(cssVars));
   const cellWidth = ctx?.cellWidth ?? 100;
   const rowH = ctx?.rowHeight ?? 24;
 
@@ -120,7 +124,7 @@ const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
     pieces.push(
       `<text class="cell-text" dominant-baseline="central" ` +
       `x="${cellWidth / 2}" y="${rowH / 2}" ` +
-      `font-family="${theme.text.body.family}" ` +
+      `font-family="${readBodyFamily(cssVars)}" ` +
       `font-size="${fontSize * 0.9}px" font-weight="400" ` +
       `text-anchor="middle" fill="${textColor}">${value.toFixed(decimals)}</text>`,
     );

@@ -23,6 +23,11 @@ import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { parseFontSize } from "../../lib/typography-layout";
 import { normalizeValue } from "../../lib/scale-utils";
 import { BAR, SPACING } from "../../lib/rendering-constants";
+import {
+  getCssVars, readVarPx,
+  readAccentDefault, readDividerSubtle, readContentPrimary,
+  readBodyFamily, readBodySize,
+} from "../../lib/theme/consumer-bridge";
 
 interface BarOptions {
   maxValue?: number;
@@ -42,8 +47,9 @@ function resolveBarColor(
   return opts?.color
     ?? cellBundle?.markerFill
     ?? rowBundle?.markerFill
-    ?? (theme.inputs as { primary?: string } | undefined)?.primary
-    ?? theme.accent.default;
+    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`. Brand is now
+    // the identity default; v4 routes brand-derived color through accent.
+    ?? readAccentDefault(getCssVars(theme));
 }
 
 function formatBarLabel(value: number): string {
@@ -81,14 +87,15 @@ const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const maxValue = opts?.maxValue ?? ctx?.columnSummary?.max ?? 100;
   const scale = opts?.scale ?? "linear";
   const showLabel = opts?.showLabel ?? true;
+  const cssVars = getCssVars(theme);
   const color = resolveBarColor(opts, ctx?.cellStyle, undefined, theme);
-  const trackColor = theme.divider.subtle ?? "#e2e8f0";
+  const trackColor = readDividerSubtle(cssVars);
 
-  const fontSize = parseFontSize(theme.text.body.size);
+  const fontSize = parseFontSize(readBodySize(cssVars));
   const labelFontSize = fontSize * BAR.LABEL_SCALE;
   const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
   const cellWidth = ctx?.cellWidth ?? 100;
-  const cellPadX = theme.spacing.cellPaddingX ?? SPACING.TEXT_PADDING;
+  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
   const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
   const fillRatio = normalizeValue(value, 0, maxValue, scale);
   const fillWidth = Math.max(0, fillRatio * barAreaWidth);
@@ -112,9 +119,9 @@ const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
     pieces.push(
       `<text class="cell-text" dominant-baseline="central" ` +
       `x="${totalWidth}" y="${rowH / 2}" ` +
-      `font-family="${theme.text.body.family}" ` +
+      `font-family="${readBodyFamily(cssVars)}" ` +
       `font-size="${labelFontSize}px" font-weight="400" ` +
-      `text-anchor="end" fill="${theme.content.primary}">${labelText}</text>`,
+      `text-anchor="end" fill="${readContentPrimary(cssVars)}">${labelText}</text>`,
     );
   }
   return { kind: "svg", markup: pieces.join(""), width: cellWidth - cellPadX * 2, height: rowH };
