@@ -537,7 +537,9 @@ export const BRUTALIST: ThemeInputs = defineInputs(
 
 /** Atelier — artist's studio: warm parchment, ink, ruled. Compact ×
  *  0.92 density; decorative-tinted neutrals at high strength (warm
- *  parchment); ruled texture; Italianno display. */
+ *  parchment); ruled texture; Italianno display. Subtle warm glow on
+ *  the rust accent + soft paper-shadow elevation give the page-on-desk
+ *  feel without breaking the editorial restraint. */
 export const ATELIER: ThemeInputs = defineInputs(
   {
     brand: "#2D2A26",
@@ -558,12 +560,19 @@ export const ATELIER: ThemeInputs = defineInputs(
       display: "'Italianno', 'EB Garamond', cursive, serif",
     },
     curves: { neutral: "log" },
+    effects: {
+      glow_intensity: "subtle",
+      glow_anchor: "accent",
+      elevation: "soft",
+    },
   },
 );
 
 /** Executive — slate + soft gold, raised. Material card meets the
  *  boardroom. Inter body, Cormorant Garamond display (serif title on
- *  sans body — the "executive summary" feel). */
+ *  sans body — the "executive summary" feel). Float elevation lifts the
+ *  card off the page; subtle gradient on the shell gives the premium
+ *  material-card sheen without becoming decorative. */
 export const EXECUTIVE: ThemeInputs = defineInputs(
   { brand: "#1E3A5F", accent: "#C9A961" },
   {
@@ -577,6 +586,11 @@ export const EXECUTIVE: ThemeInputs = defineInputs(
       display: "'Cormorant Garamond', Georgia, serif",
     },
     curves: { neutral: "ease", brand: "smooth" },
+    effects: {
+      gradient_shell_intensity: "subtle",
+      gradient_shell_angle: 145,
+      elevation: "float",
+    },
   },
 );
 

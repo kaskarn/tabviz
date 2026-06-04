@@ -89,7 +89,9 @@ web_theme_brutalist <- function() {
 #' Compact density x 0.92 + decorative hue (#A88B5C) routed through the
 #' neutrals at high paperC/inkC give the warm parchment paper feel.
 #' Italianno display for the calligraphic flourish; EB Garamond body
-#' for the inked text.
+#' for the inked text. Subtle warm glow on the rust accent + soft
+#' paper-shadow elevation give the page-on-desk feel without breaking
+#' the editorial restraint.
 #' @return A [WebTheme].
 #' @export
 web_theme_atelier <- function() {
@@ -111,6 +113,11 @@ web_theme_atelier <- function() {
       web_font("Italianno", FONT_URLS$italianno)
     ),
     curves = list(neutral = "log"),
+    effects = list(
+      glow_intensity = "subtle",
+      glow_anchor = "accent",
+      elevation = "soft"
+    ),
     name = "atelier"
   )
 }
@@ -119,7 +126,9 @@ web_theme_atelier <- function() {
 #'
 #' Material card meets boardroom: Inter body, Cormorant Garamond
 #' display (the "executive summary" serif-title-on-sans-body feel).
-#' Type scale 1.333 + smooth brand curve for the crisp rhythm.
+#' Type scale 1.333 + smooth brand curve for the crisp rhythm. Float
+#' elevation lifts the card off the page; subtle gradient on the shell
+#' gives the premium material-card sheen without becoming decorative.
 #' @return A [WebTheme].
 #' @export
 web_theme_executive <- function() {
@@ -138,6 +147,11 @@ web_theme_executive <- function() {
       web_font("Cormorant Garamond", FONT_URLS$cormorant)
     ),
     curves = list(neutral = "ease", brand = "smooth"),
+    effects = list(
+      gradient_shell_intensity = "subtle",
+      gradient_shell_angle = 145,
+      elevation = "float"
+    ),
     name = "executive"
   )
 }
