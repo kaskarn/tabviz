@@ -342,7 +342,7 @@ export function buildTheme(
   };
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 4,
     name,
     webFonts: [],
     lightDarkPair: null,

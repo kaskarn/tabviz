@@ -56,6 +56,7 @@ import {
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
 import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } from "./textures";
+import { validateThemeInputs } from "./theme-validate";
 import {
   COMPONENT_TOKENS,
   type ComponentToken,
@@ -713,6 +714,11 @@ function pickAnchorHex(
  * Inspector + Spine UI.
  */
 export function resolveTheme(wire: ThemeWire): ResolvedTheme {
+  // Inputs validation runs first so authoring mistakes (out-of-range
+  // anchor triples, typo'd enum values, unknown effects intensity, ...)
+  // surface as a structured error before the resolver wastes work or
+  // silently produces a broken cssVars map. Mirrors R's S7 validator.
+  validateThemeInputs(wire.inputs);
   const polarity = derivePolarity(wire.inputs);
   const reflected = applyPolarityToInputs(wire.inputs);
 

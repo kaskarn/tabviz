@@ -423,6 +423,12 @@ export interface ClustersInputs {
 // ────────────────────────────────────────────────────────────────────
 
 export interface ThemeStructure {
+  /** V4 substrate intermediate-structure version (per Stage 1 §22).
+   *  Aligns with `WebTheme.schemaVersion = 4` (theme-resolved.ts) post-
+   *  coherence-pass — both track the V4 substrate together. Distinct
+   *  from `CURRENT_VERSION` in `srcjs/src/spec/index.ts` (the wire-spec
+   *  version, currently 1.2), which versions the *spec* shape, not the
+   *  *theme* shape. */
   schemaVersion: 4;
   name: string;
   inputs: ThemeInputs;

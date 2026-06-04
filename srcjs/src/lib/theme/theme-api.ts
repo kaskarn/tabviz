@@ -119,8 +119,12 @@ export function resolveThemeRef(ref: ThemeRef): WebTheme {
   return buildTheme(merged, ref.extend);
 }
 
+// `WebTheme.schemaVersion = 4` post-coherence (was at `2` through v3).
+// Aligned with `ThemeStructure.schemaVersion = 4` so both versions track
+// the V4 substrate together. The wire-spec version (`CURRENT_VERSION` in
+// spec/index.ts, currently 1.2) is unrelated.
 function isResolvedTheme(x: unknown): x is WebTheme {
-  return typeof x === "object" && x !== null && (x as { schemaVersion?: number }).schemaVersion === 2;
+  return typeof x === "object" && x !== null && (x as { schemaVersion?: number }).schemaVersion === 4;
 }
 
 export type { ThemeInputs, WebTheme };
