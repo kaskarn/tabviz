@@ -40,6 +40,44 @@ test_that("each v2 preset renders to PNG via the dispatch path", {
   }
 })
 
+test_that("V3 fallback path in readVar is dead — every render hits only v4 cssVars", {
+  # Cutover gate (T2.1 in v4-coherence-audit). consumer-bridge.ts's
+  # `readVar(cssVars, var, v3_fallback)` is supposed to be a transitional
+  # shim — the v4 path (cssVars) wins, the v3 fallback only fires if a
+  # manifest entry is missing or a theme was built without
+  # `authoringInputs`. This test toggles a dev-throw inside readVar and
+  # renders a representative spec; any v3 fallback hit fails the test.
+  # Holds the cutover state in place: nobody can re-introduce v3
+  # dependence without CI catching it.
+  skip_if_not_installed()
+  ctx <- tabviz_v8()
+  ctx$call("callBuilder", "setReadVarDevThrow", "true")
+  on.exit(ctx$call("callBuilder", "setReadVarDevThrow", "false"), add = TRUE)
+
+  df <- data.frame(
+    Site = c("A", "B", "C"),
+    est = c(0.7, 1.0, 0.85),
+    lo = c(0.5, 0.8, 0.6),
+    hi = c(0.9, 1.2, 1.1)
+  )
+  tmpdir <- tempfile("v3-deadcode-")
+  dir.create(tmpdir)
+  on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
+
+  for (preset in c("cochrane", "dark", "synthwave", "executive")) {
+    ctor <- get(paste0("web_theme_", preset))
+    spec <- tabviz(
+      df, label = "Site",
+      columns = list(viz_forest(point = "est", lower = "lo", upper = "hi")),
+      theme = ctor(),
+      .spec_only = TRUE
+    )
+    outfile <- file.path(tmpdir, paste0(preset, ".png"))
+    expect_no_error(save_plot(spec, outfile, width = 500, scale = 1))
+    expect_true(file.exists(outfile), info = preset)
+  }
+})
+
 test_that("tabviz preserves theme bold header bg through wire", {
   skip_if_not_installed()
   df <- data.frame(Site = "A", est = 0.5, lo = 0.3, hi = 0.7)

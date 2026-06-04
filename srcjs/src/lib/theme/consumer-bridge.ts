@@ -96,10 +96,42 @@ export function readVar(
   fallback: string | null | undefined,
 ): string | null | undefined {
   const v = cssVars[name];
-  if (v === undefined) return fallback;
-  if (v.startsWith("<")) return fallback;  // placeholder
+  if (v === undefined) {
+    // V3 fallback path. In dev, throw if we got here — every theme that
+    // ships through buildTheme has authoringInputs set, and getCssVars
+    // emits the full manifest. Hitting fallback means either (a) a
+    // missing manifest entry (drift gate would catch it) or (b) a code
+    // path constructing a theme without authoringInputs (the cutover
+    // task to find + fix).
+    if (isReadVarDevThrow()) {
+      throw new Error(
+        `readVar: cssVar "${name}" is missing — v3 fallback path hit. ` +
+        `Either the manifest doesn't declare it, or a theme was built ` +
+        `without going through buildTheme/resolveTheme. Fix the missing ` +
+        `cssVar; do not rely on the v3 fallback.`,
+      );
+    }
+    return fallback;
+  }
+  if (v.startsWith("<")) {
+    // Placeholder; resolver bug. Coh.23 already throws at the source.
+    if (isReadVarDevThrow()) {
+      throw new Error(
+        `readVar: cssVar "${name}" resolved to placeholder "${v}". ` +
+        `This is a resolver-dispatch bug — fix resolve-theme.ts.`,
+      );
+    }
+    return fallback;
+  }
   return v;
 }
+
+/** Internal toggle so the dev-throw above can be turned on/off without
+ *  conditional compilation. Defaults off (preserves current behavior);
+ *  the v3→v4 cutover smoke test opts in via `setReadVarDevThrow(true)`. */
+let _readVarDevThrow = false;
+function isReadVarDevThrow(): boolean { return _readVarDevThrow; }
+export function setReadVarDevThrow(on: boolean): void { _readVarDevThrow = on; }
 
 /** Read a dimensional (px) cssVar with a numeric v3 fallback.
  *

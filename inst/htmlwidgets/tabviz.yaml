@@ -1,8 +1,13 @@
 # tabviz htmlwidgets configuration
 # The binding is tabviz.js (loaded automatically by htmlwidgets)
 # CSS is declared as a stylesheet dependency
+#
+# `version:` below is htmlwidgets' cache-buster: bump it when the
+# stylesheet changes meaningfully so browsers re-fetch. Keep in sync
+# with DESCRIPTION's `Version:` line — the R package release version
+# is the canonical source.
 dependencies:
   - name: tabviz-styles
-    version: "0.3.0"
+    version: "0.36.0"
     src: htmlwidgets
     stylesheet: tabviz.css

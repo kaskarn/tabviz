@@ -78,7 +78,7 @@ export type { TokenInspection, TokenSummary, TraceStep } from "../lib/theme/insp
 
 // Bridge: build the v4 cssVars map for a given resolved WebTheme. R wraps
 // this as `theme_css_vars(theme)` for at-a-glance inspection of the wire.
-export { getCssVars } from "../lib/theme/consumer-bridge";
+export { getCssVars, setReadVarDevThrow } from "../lib/theme/consumer-bridge";
 
 // V4 resolver + wire — exposed for R wrappers that need to build a
 // `ResolvedTheme` from `ThemeInputs` in one call (the R inspection

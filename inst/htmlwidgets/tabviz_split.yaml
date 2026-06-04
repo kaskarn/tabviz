@@ -1,8 +1,11 @@
 # tabviz_split htmlwidgets configuration
 # Split forest widget with sidebar navigation
 # The binding is tabviz_split.js (loaded automatically by htmlwidgets)
+#
+# `version:` is htmlwidgets' cache-buster — keep in sync with
+# DESCRIPTION's `Version:` line.
 dependencies:
   - name: tabviz-split-styles
-    version: "0.3.0"
+    version: "0.36.0"
     src: htmlwidgets
     stylesheet: tabviz_split.css
