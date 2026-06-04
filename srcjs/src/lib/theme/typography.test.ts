@@ -78,8 +78,6 @@ describe("resolveTypeRole", () => {
     expect(r.family).toBe(resolved.fonts.display);
     expect(r.size).toBe(resolved.scale.title);
     expect(r.weight).toBe(DEFAULT_TYPE_WEIGHTS.semibold);
-    expect(r.lh).toBe(1.12);
-    expect(r.track).toBe("-0.022em");
   });
 
   it("numeric role uses mono family + body size", () => {
@@ -89,27 +87,13 @@ describe("resolveTypeRole", () => {
     expect(r.weight).toBe(DEFAULT_TYPE_WEIGHTS.regular);
   });
 
-  it("font shorthand omits line-height when role.lh is null", () => {
-    const r = resolveTypeRole("body", resolved);
-    expect(r.lh).toBeNull();
-    expect(r.font).not.toContain("/");
-    expect(r.font).toMatch(/^\d+ \d+(\.\d+)?px [^/]+$/);
-  });
-
-  it("font shorthand includes line-height when role.lh is set", () => {
-    const r = resolveTypeRole("title", resolved);
-    expect(r.lh).toBe(1.12);
-    expect(r.font).toContain("/1.12");
-  });
-
   it("respects a custom role table", () => {
     const customTable = {
       ...DEFAULT_TYPE_ROLES,
-      title: { ...DEFAULT_TYPE_ROLES.title, weight: "bold" as const, lh: 1.0 },
+      title: { ...DEFAULT_TYPE_ROLES.title, weight: "bold" as const },
     };
     const r = resolveTypeRole("title", resolved, customTable);
     expect(r.weight).toBe(DEFAULT_TYPE_WEIGHTS.bold);
-    expect(r.lh).toBe(1.0);
   });
 });
 

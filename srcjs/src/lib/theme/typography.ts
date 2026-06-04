@@ -39,28 +39,29 @@ export type TypeRoleName =
   | "tick"
   ;
 
-/** Tier 2 type role recipe — composes font family slot + scale step + weight +
- *  line-height + tracking. Line-height of `null` defers to a density-derived
- *  default (e.g. cell rows use the cascade's row-height ratio). */
+/** Tier 2 type role recipe — composes font family slot + scale step + weight.
+ *  `lh` (line-height) and `track` (letter-spacing) were dropped in Coh.22:
+ *  no renderer reads either, and `lh = null` deferred to a "density-derived
+ *  default" that was never implemented. If line-height or letter-spacing
+ *  need a role-aware knob, add it back here AND wire a consumer reading
+ *  `--tv-text-{role}-{lh|track}` in the same change. */
 export interface TypeRole {
   family: "display" | "body" | "mono";
   size: SizeScaleStep;
   weight: "regular" | "medium" | "semibold" | "bold";
-  lh: number | null;
-  track: string;
 }
 
-/** Default role bindings — verbatim from stage-2-design.md §1d. */
+/** Default role bindings. */
 export const DEFAULT_TYPE_ROLES: Readonly<Record<TypeRoleName, TypeRole>> = {
-  title:    { family: "display", size: "title",    weight: "semibold", lh: 1.12, track: "-0.022em" },
-  subtitle: { family: "body",    size: "subtitle", weight: "regular",  lh: 1.34, track: "-0.01em" },
-  body:     { family: "body",    size: "body",     weight: "regular",  lh: null, track: "0" },
-  numeric:  { family: "mono",    size: "body",     weight: "regular",  lh: null, track: "0" },
-  label:    { family: "mono",    size: "label",    weight: "bold",     lh: 1,    track: "0.06em" },
-  caption:  { family: "body",    size: "foot",     weight: "regular",  lh: 1.5,  track: "0" },
-  footnote: { family: "body",    size: "foot",     weight: "regular",  lh: 1.5,  track: "0" },
-  cell:     { family: "body",    size: "body",     weight: "regular",  lh: null, track: "0" },
-  tick:     { family: "mono",    size: "foot",     weight: "regular",  lh: 1,    track: "0" },
+  title:    { family: "display", size: "title",    weight: "semibold" },
+  subtitle: { family: "body",    size: "subtitle", weight: "regular"  },
+  body:     { family: "body",    size: "body",     weight: "regular"  },
+  numeric:  { family: "mono",    size: "body",     weight: "regular"  },
+  label:    { family: "mono",    size: "label",    weight: "bold"     },
+  caption:  { family: "body",    size: "foot",     weight: "regular"  },
+  footnote: { family: "body",    size: "foot",     weight: "regular"  },
+  cell:     { family: "body",    size: "body",     weight: "regular"  },
+  tick:     { family: "mono",    size: "foot",     weight: "regular"  },
 };
 
 /** Tier 1 typography inputs (defaults). The values match v3 conventions: base
@@ -129,20 +130,11 @@ export function resolveTypeRole(
   family: string;
   size: number;
   weight: number;
-  lh: number | null;
-  track: string;
-  font: string;
 } {
   const role = roleTable[roleName];
-  const family = resolved.fonts[role.family];
-  const size = resolved.scale[role.size];
-  const weight = resolved.weights[role.weight];
-  const lh = role.lh;
-  const track = role.track;
-  // CSS `font` shorthand: weight size/lh family. When lh is null, omit the
-  // line-height segment so descendants inherit naturally.
-  const font = lh !== null
-    ? `${weight} ${size}px/${lh} ${family}`
-    : `${weight} ${size}px ${family}`;
-  return { family, size, weight, lh, track, font };
+  return {
+    family: resolved.fonts[role.family],
+    size: resolved.scale[role.size],
+    weight: resolved.weights[role.weight],
+  };
 }
