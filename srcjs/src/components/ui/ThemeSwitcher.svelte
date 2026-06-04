@@ -5,6 +5,11 @@
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
+  import {
+    getCssVars,
+    readAccentDefault, readSurfaceBg, readContentPrimary,
+    readBodyFamily, readTypeFamily,
+  } from "$lib/theme/consumer-bridge";
 
   // The wire shape from R supports two forms:
   // * Flat:        Record<string, WebTheme>
@@ -113,22 +118,26 @@
     accent: string; background: string; foreground: string;
   } {
     const t = lookupTheme(name);
-    const inputs = (t?.inputs ?? {}) as { primary?: string; secondary?: string; accent?: string };
-    const primary    = inputs.primary    ?? t?.surface?.base    ?? "#cbd5e1";
-    const secondary  = inputs.secondary  ?? primary;
-    const accent     = inputs.accent     ?? "#94a3b8";
-    const background = t?.surface?.base    ?? "#ffffff";
-    const foreground = t?.content?.primary ?? "#1a1a1a";
+    if (!t) return { primary: "#cbd5e1", secondary: "#cbd5e1", accent: "#94a3b8", background: "#ffffff", foreground: "#1a1a1a" };
+    const cv = getCssVars(t);
+    // V4: brand routes through accent for layered emphasis; identity-
+    // secondary cascade collapsed (mono themes get same value twice).
+    const accent     = readAccentDefault(cv);
+    const primary    = accent;
+    const secondary  = accent;
+    const background = readSurfaceBg(cv);
+    const foreground = readContentPrimary(cv);
     return { primary, secondary, accent, background, foreground };
   }
 
   // Theme name renders in the theme's own display face when available, so
-  // the dropdown advertises typographic flavor at a glance. fontDisplay
-  // takes precedence over fontBody (more characterful for headings) and
-  // both fall through to the host --tv-font-family CSS var.
+  // the dropdown advertises typographic flavor at a glance. Title family
+  // takes precedence over body (more characterful for headings).
   function fontFor(name: string): string | undefined {
     const t = lookupTheme(name);
-    return t?.inputs?.fontDisplay ?? t?.inputs?.fontBody ?? undefined;
+    if (!t) return undefined;
+    const cv = getCssVars(t);
+    return readTypeFamily(cv, "title", readBodyFamily(cv));
   }
 
   // Eager-load every available theme's web fonts so previews don't flash

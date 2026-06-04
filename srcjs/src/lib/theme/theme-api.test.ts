@@ -4,7 +4,7 @@ import {
   themeDwarven, themeElvish, themeHobbit,
   webTheme, resolveThemeRef,
 } from "./theme-api";
-import { hexToOklch } from "../oklch";
+import { hexToOklch, oklchToHex } from "../oklch";
 
 describe("preset constructors", () => {
   test("all preset constructors resolve without throwing", () => {
@@ -18,7 +18,8 @@ describe("preset constructors", () => {
   });
 
   test("cochrane has expected brand seed", () => {
-    expect(themeCochrane().inputs.primary).toBe("#0099CC");
+    const t = themeCochrane();
+    expect(t.authoringInputs && oklchToHex(t.authoringInputs.anchors.brand).toUpperCase()).toBe("#0099CC");
   });
 
   test("preset name is preserved", () => {
@@ -35,7 +36,8 @@ describe("webTheme", () => {
 
   test("brand anchor overlay seeds a new brand ramp", () => {
     const t = webTheme({ anchors: { brand: hexToOklch("#FF0000") } });
-    expect(t.inputs.primary).toBe("#FF0000");
+    // Brand hex round-trips via authoringInputs anchors.
+    expect(t.authoringInputs && oklchToHex(t.authoringInputs.anchors.brand).toUpperCase()).toBe("#FF0000");
   });
 
   test("baseTheme inherits inputs not overridden", () => {
@@ -43,7 +45,8 @@ describe("webTheme", () => {
       baseTheme: "lancet",
       anchors: { brand: hexToOklch("#FF0000") },
     });
-    expect(t.inputs.primary).toBe("#FF0000");
+    // Brand hex round-trips via authoringInputs anchors.
+    expect(t.authoringInputs && oklchToHex(t.authoringInputs.anchors.brand).toUpperCase()).toBe("#FF0000");
     expect(t.name).toBe("custom");
   });
 
@@ -73,6 +76,7 @@ describe("resolveThemeRef", () => {
       extend: "cochrane",
       overrides: { anchors: { brand: hexToOklch("#FF0000") } },
     });
-    expect(t.inputs.primary).toBe("#FF0000");
+    // Brand hex round-trips via authoringInputs anchors.
+    expect(t.authoringInputs && oklchToHex(t.authoringInputs.anchors.brand).toUpperCase()).toBe("#FF0000");
   });
 });

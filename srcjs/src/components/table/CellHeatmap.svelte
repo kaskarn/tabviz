@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { HeatmapColumnOptions, WebTheme } from "$types";
   import { normalizeValue } from "$lib/scale-utils";
+  import { getCssVars, readAccentDefault, readSurfaceBg } from "$lib/theme/consumer-bridge";
 
   interface Props {
     value: number | undefined | null;
@@ -13,19 +14,19 @@
 
   const { value, options, minValue, maxValue, naText, theme }: Props = $props();
 
-  // Default palette: derive light → dark from the theme's primary identity.
-  // Light end is a very pale tint (primary mixed into surface base), dark
-  // end is primary_deep when the theme pins it. Falls back to the historical
-  // blue palette only when no theme is supplied (test/dev contexts).
+  // Default palette: derive light → dark from the theme's accent identity
+  // (V4: brand routes through accent for layered emphasis). Light end is
+  // a very pale tint (accent mixed into surface), dark end is the accent
+  // itself. Falls back to the historical blue palette only when no theme
+  // is supplied (test/dev contexts).
   const palette = $derived.by((): string[] => {
     if (options?.palette) return options.palette;
-    const inputs = theme?.inputs as { primary?: string; primaryDeep?: string } | undefined;
-    const surface = (theme?.surface as { base?: string } | undefined)?.base ?? "#ffffff";
-    const primary = inputs?.primary;
-    const primaryDeep = inputs?.primaryDeep ?? primary;
-    if (!primary || !primaryDeep) return ["#f7fbff", "#08306b"];
-    const light = mixHex(primary, surface, 0.92);
-    return [light, primaryDeep];
+    if (!theme) return ["#f7fbff", "#08306b"];
+    const cv = getCssVars(theme);
+    const accent = readAccentDefault(cv);
+    const surface = readSurfaceBg(cv);
+    const light = mixHex(accent, surface, 0.92);
+    return [light, accent];
   });
 
   // Lightweight sRGB hex mix — enough for a 2-stop gradient default. The

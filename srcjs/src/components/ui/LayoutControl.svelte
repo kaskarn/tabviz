@@ -13,6 +13,7 @@
   import ColorField from "./ColorField.svelte";
   import BandingControl from "./BandingControl.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
+  import { getCssVars, readAccentDefault, readSurfaceBg } from "$lib/theme/consumer-bridge";
 
   interface Props {
     store: TabvizStore;
@@ -102,15 +103,15 @@
   // L1 bg strength (16% under "light", 24% under "tint"/"bold"). Re-derive
   // the cached L1/L2/L3 bg so the visible band tracks the new variant.
   function surfaceBaseline(): string {
-    return theme?.surface?.base ?? "#ffffff";
+    return theme ? readSurfaceBg(getCssVars(theme)) : "#ffffff";
   }
   function currentSecondaryDeep(): string {
-    const sd = inputs?.secondaryDeep as string | undefined;
-    if (sd) return sd;
-    const pd = inputs?.primaryDeep as string | undefined;
-    if (pd) return pd;
-    const p = inputs?.primary as string | undefined;
-    return p ? oklchDarken(p, 0.15) : "#475569";
+    // V4: brand routes through accent for layered emphasis; identity-
+    // secondary cascade dropped. Darken the accent to recover the
+    // "deeper than identity" feel the v3 cascade used to pick.
+    if (!theme) return "#475569";
+    const accent = readAccentDefault(getCssVars(theme));
+    return oklchDarken(accent, 0.15);
   }
   function changeHeaderStyle(value: string) {
     setVariant("headerStyle", value);
@@ -183,8 +184,9 @@
          strictly equal-width and pixel-rhythmic. Density uses the
          line-stack glyph-segment (agents flagged it doesn't need card
          footprint). -->
-    {@const primaryDeep = (inputs?.primaryDeep as string | undefined) ?? "#1F2937"}
-    {@const primary = (inputs?.primary as string | undefined) ?? "#0891B2"}
+    {@const accent = theme ? readAccentDefault(getCssVars(theme)) : "#0891B2"}
+    {@const primary = accent}
+    {@const primaryDeep = theme ? oklchDarken(accent, 0.15) : "#1F2937"}
 
     <Field label="Density">
       <div class="layout-pickers" role="radiogroup" aria-label="Density">

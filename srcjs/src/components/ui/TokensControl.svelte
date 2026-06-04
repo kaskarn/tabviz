@@ -14,6 +14,7 @@
   import ColorField from "./ColorField.svelte";
   import BooleanField from "./BooleanField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
+  import { getCssVars, readAccentDefault, readSurfaceBg } from "$lib/theme/consumer-bridge";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
   import { oklchMix } from "$lib/oklch";
   import { PAPER_SWATCHES, INK_SWATCHES, NEUTRAL_SWATCHES, ACCENT_SWATCHES, colors } from "./swatch-palettes";
@@ -60,8 +61,9 @@
   }
   function resetSemanticFill() {
     clearOver(["semantic", "fill"]);
-    const accent = theme?.accent?.default ?? "#8B5CF6";
-    const lightest = (theme?.inputs?.neutral as string[] | undefined)?.[0] ?? "#FFFFFF";
+    const cv = theme ? getCssVars(theme) : {};
+    const accent = theme ? readAccentDefault(cv) : "#8B5CF6";
+    const lightest = theme ? readSurfaceBg(cv) : "#FFFFFF";
     const value = oklchMix(accent, lightest, 0.80);
     setDerived(["semantic", "fill"], value);
     setDerived(["row", "fill", "bg"], value);

@@ -125,29 +125,40 @@ export interface MarkRecipe {
 // Tier 1 — customer-facing inputs
 // ────────────────────────────────────────────────────────────────────
 
+/**
+ * Compat shim — V3 ResolvedInputs (pre-V4 cascade). Populated by
+ * `theme-adapter.ts::buildTheme` for components that haven't yet
+ * migrated to reading from `authoringInputs.anchors` / cssVars
+ * helpers. Reading from this is **deprecated**; new code should
+ * use:
+ *   - color/identity: `readAccentDefault(getCssVars(theme))`
+ *   - status: `var(--tv-status-X)` or status anchors
+ *   - typography: `readBodyFamily(cssVars)` etc.
+ *   - series anchors: TODO — needs a v4 helper
+ *   - slot style: TODO — currently lives only here
+ *
+ * Active follow-ups for the remaining consumers:
+ *   - components/ui/LayoutControl.svelte: primaryDeep / seriesAnchors / slotStyle
+ *   - components/ui/TokensControl.svelte: neutral
+ *   - components/table/CellHeatmap.svelte: primary / primaryDeep
+ *   - svelte/SplitTabvizPlot.svelte: primary fallback
+ */
 export interface ResolvedInputs {
-  /** 5-step neutral ramp, lightest to darkest. */
   neutral: string[];
-  // Identity (2-tier mirror chain).
   primary: string;
   primaryDeep: string | null;
   secondary: string | null;
   secondaryDeep: string | null;
-  // Engagement (orthogonal to identity).
   accent: string;
   accentDeep: string | null;
-  // Status semantics.
   statusPositive: string;
   statusNegative: string;
   statusWarning: string;
   statusInfo: string | null;
-  /** Series anchors — palette for pooled-effect slots. */
   seriesAnchors: string[];
-  // Typography inputs.
   fontBody: string;
   fontDisplay: string | null;
   fontMono: string | null;
-  /** "fill_with_darker_stroke" | "flat_fill" | "outlined" — viz mark style. */
   slotStyle: "fill_with_darker_stroke" | "flat_fill" | "outlined";
 }
 
@@ -433,13 +444,15 @@ export interface WebTheme {
    */
   lightDarkPair: string | null;
   variants: ThemeVariants;
+  /** @deprecated v3 compat shim — see `ResolvedInputs` docstring for
+   *  the migration matrix per remaining consumer. */
   inputs: ResolvedInputs;
   /**
-   * The V3 authoring inputs that produced this theme (brand, accent,
-   * decorative, mode, density, neutral_tint, neutral_tint_strength,
-   * fonts, status, data schemes). Round-trips with the theme so the
-   * settings panel can read them, edit, and rebuild via `buildTheme()`.
-   * Optional for compat with hand-constructed wire blobs that skip it.
+   * The Tier-1 authoring inputs that produced this theme (anchors,
+   * polarity, mode, density, fonts, type_*, curves, geometry, effects,
+   * status, schemes). Round-trips with the theme so the settings panel
+   * can read them, edit, and rebuild via `buildTheme()`. The v4 cssVars
+   * map is built from these — see `lib/theme/resolve-theme.ts`.
    */
   authoringInputs?: import("./theme-inputs").ThemeInputs;
   axis: AxisConfig;

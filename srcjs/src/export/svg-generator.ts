@@ -1602,13 +1602,10 @@ function renderGroupHeader(
   const borderBottom = tier.borderBottom ?? false;
 
   // Fallback when the resolver didn't populate rowGroup.LN.bg: tint
-  // from secondary (post-2026-04-29 cascade — accent is reserved for
-  // emphasis layers and must not paint structural chrome).
+  // from accent (V4: brand routes through accent; identity-secondary
+  // cascade dropped per CLAUDE.md V4 vocabulary).
   if (!background) {
-    const tint = theme.inputs?.secondaryDeep
-      ?? theme.inputs?.secondary
-      ?? theme.inputs?.primary
-      ?? "#000000";
+    const tint = readAccentDefault(cssVars);
     const opacity = level === 1 ? 0.15 : level === 2 ? 0.10 : 0.06;
     const hex = tint.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);

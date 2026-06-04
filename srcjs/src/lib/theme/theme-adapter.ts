@@ -75,10 +75,12 @@ function textRoleTitle(family: string, fg: string): TextRole {
 
 /** Build a resolved WebTheme from authoring inputs.
  *
- *  `buildThemeStructure` applies polarity reflection (Stage 1 §22)
- *  internally; we re-apply it here only to keep the resolvedInputs block
- *  below (primary, accent, status, ...) in sync with the reflected
- *  anchors that downstream tokens were built from. */
+ *  `buildThemeStructure` (v3) populates the v3 chrome fields the
+ *  remaining tail of theme-css.ts + TabvizPlot reads from (borders,
+ *  firstColumn, headerVariant, semantic.row, etc.). Polarity is also
+ *  re-applied locally to back-fill the small set of v3-shaped
+ *  computations (series anchors, text-role fonts) that still need
+ *  the reflected ramps. */
 export function buildTheme(
   inputs: ThemeInputs,
   name = "custom",
@@ -92,8 +94,11 @@ export function buildTheme(
   const fontDisplay = inputs.fonts?.display ?? fontBody;
   const fontMono = inputs.fonts?.mono ?? "ui-monospace, monospace";
 
-  // Resolved inputs block — Tier-1 values frozen alongside the resolved
-  // theme so consumers can read brand/accent/etc. without re-derivation.
+  // V3 compat shim — populated for the small set of remaining consumers
+  // (LayoutControl / TokensControl / CellHeatmap / SplitTabvizPlot)
+  // that haven't yet migrated to authoringInputs.anchors / cssVars
+  // helpers. See `ResolvedInputs` docstring in theme-resolved.ts for
+  // the per-consumer migration matrix.
   const resolvedInputs: ResolvedInputs = {
     neutral: [
       rampStep(ramps.neutral, 1),
