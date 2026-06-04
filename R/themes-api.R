@@ -553,11 +553,12 @@ set_diverging <- function(theme, scheme) {
 #' Set per-ramp curve shapes and re-resolve.
 #'
 #' Per Stage 1 §25. Reshapes the L progression across the 11 ramp grades.
-#' NULL leaves a slot unchanged.
 #'
 #' @param theme A [WebTheme].
 #' @param neutral,brand,accent One of `"linear"` / `"ease"` / `"smooth"`
-#'   / `"log"` / `"exp"`, or `NULL` to leave unchanged.
+#'   / `"log"` / `"exp"`, `NA` to clear (TS resolver falls back to its
+#'   default: neutral=ease, brand=linear, accent=linear), or `NULL` to
+#'   leave unchanged.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_curves <- function(theme, neutral = NULL, brand = NULL, accent = NULL) {
@@ -565,9 +566,15 @@ set_curves <- function(theme, neutral = NULL, brand = NULL, accent = NULL) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   valid <- c("linear", "ease", "smooth", "log", "exp")
-  checkmate::assert_choice(neutral, valid, null.ok = TRUE)
-  checkmate::assert_choice(brand,   valid, null.ok = TRUE)
-  checkmate::assert_choice(accent,  valid, null.ok = TRUE)
+  na_or_choice <- function(v, arg) {
+    if (is.null(v)) return(NULL)
+    if (length(v) == 1L && is.na(v)) return(NA_character_)
+    checkmate::assert_choice(v, valid, .var.name = arg)
+    v
+  }
+  neutral <- na_or_choice(neutral, "neutral")
+  brand   <- na_or_choice(brand,   "brand")
+  accent  <- na_or_choice(accent,  "accent")
   inputs <- theme@inputs
   if (!is.null(neutral)) inputs@curves_neutral <- neutral
   if (!is.null(brand))   inputs@curves_brand   <- brand
@@ -611,7 +618,9 @@ set_geometry <- function(theme, radius = NULL, border_width = NULL) {
 
 #' Set Phase D EFFECTS axis (glow + gradient + elevation) and re-resolve.
 #'
-#' All args are optional; NULL leaves the slot unchanged.
+#' Each arg accepts an enum string / numeric value, `NA` to clear back
+#' to the TS resolver's default (typically `"none"` / `0`), or `NULL`
+#' to leave the slot unchanged.
 #'
 #' @param theme A [WebTheme].
 #' @param glow_intensity `"none"` / `"subtle"` / `"neon"`.
@@ -630,11 +639,23 @@ set_effects <- function(theme,
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_choice(glow_intensity, c("none", "subtle", "neon"), null.ok = TRUE)
-  checkmate::assert_choice(glow_anchor, c("brand", "accent"), null.ok = TRUE)
-  checkmate::assert_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), null.ok = TRUE)
-  checkmate::assert_number(gradient_shell_angle, lower = 0, upper = 360, null.ok = TRUE)
-  checkmate::assert_choice(elevation, c("none", "soft", "raised", "float"), null.ok = TRUE)
+  na_or_choice <- function(v, choices, arg) {
+    if (is.null(v)) return(NULL)
+    if (length(v) == 1L && is.na(v)) return(NA_character_)
+    checkmate::assert_choice(v, choices, .var.name = arg)
+    v
+  }
+  na_or_number <- function(v, lo, hi, arg) {
+    if (is.null(v)) return(NULL)
+    if (length(v) == 1L && is.na(v)) return(NA_real_)
+    checkmate::assert_number(v, lower = lo, upper = hi, .var.name = arg)
+    v
+  }
+  glow_intensity           <- na_or_choice(glow_intensity, c("none", "subtle", "neon"), "glow_intensity")
+  glow_anchor              <- na_or_choice(glow_anchor, c("brand", "accent"), "glow_anchor")
+  gradient_shell_intensity <- na_or_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), "gradient_shell_intensity")
+  gradient_shell_angle     <- na_or_number(gradient_shell_angle, 0, 360, "gradient_shell_angle")
+  elevation                <- na_or_choice(elevation, c("none", "soft", "raised", "float"), "elevation")
   inputs <- theme@inputs
   if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
   if (!is.null(glow_anchor))              inputs@effects_glow_anchor              <- glow_anchor
@@ -646,12 +667,14 @@ set_effects <- function(theme,
 
 #' Set status anchor overrides (positive / negative / warning / info) and re-resolve.
 #'
-#' Each arg accepts a hex string, an [oklch()] triple, or `NULL` (leaves
-#' the slot unchanged). The TS resolver falls back to curated defaults
-#' for any slot that was never set.
+#' Each arg accepts a hex string, an [oklch()] triple, `NA` (clear the
+#' override; TS resolver falls back to its curated default), or `NULL`
+#' (leave the slot unchanged — the default — so partial updates touch
+#' only the args you pass).
 #'
 #' @param theme A [WebTheme].
-#' @param positive,negative,warning,info Hex / [oklch()] / `NULL`.
+#' @param positive,negative,warning,info Hex / [oklch()] / `NA` to clear
+#'   / `NULL` to leave unchanged.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_status <- function(theme,
@@ -668,9 +691,15 @@ set_status <- function(theme,
     list(name = "info",     value = info)
   )) {
     if (is.null(pair$value)) next
-    triple <- coerce_anchor(pair$value, paste0("status_", pair$name))
-    inputs <- set_anchor_on_inputs(inputs, paste0("status_", pair$name),
-                                   anchor_slots(triple))
+    prefix <- paste0("status_", pair$name)
+    # NA clears the override back to TS-resolver default (all three
+    # L/C/H slots NA = anchor unset).
+    if (length(pair$value) == 1L && is.na(pair$value)) {
+      inputs <- set_anchor_on_inputs(inputs, prefix, anchor_slots(NULL))
+      next
+    }
+    triple <- coerce_anchor(pair$value, prefix)
+    inputs <- set_anchor_on_inputs(inputs, prefix, anchor_slots(triple))
   }
   resolve_from_inputs(inputs, name = theme@name)
 }

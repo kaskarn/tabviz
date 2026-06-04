@@ -15,13 +15,15 @@ set_status(
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{positive, negative, warning, info}{Hex / \code{\link[=oklch]{oklch()}} / \code{NULL}.}
+\item{positive, negative, warning, info}{Hex / \code{\link[=oklch]{oklch()}} / \code{NA} to clear
+/ \code{NULL} to leave unchanged.}
 }
 \value{
 The re-resolved \link{WebTheme}.
 }
 \description{
-Each arg accepts a hex string, an \code{\link[=oklch]{oklch()}} triple, or \code{NULL} (leaves
-the slot unchanged). The TS resolver falls back to curated defaults
-for any slot that was never set.
+Each arg accepts a hex string, an \code{\link[=oklch]{oklch()}} triple, \code{NA} (clear the
+override; TS resolver falls back to its curated default), or \code{NULL}
+(leave the slot unchanged — the default — so partial updates touch
+only the args you pass).
 }
