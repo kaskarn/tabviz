@@ -49,6 +49,8 @@ docs/dev/*.html
 docs/deep-dives/*.html
 docs/index.html
 docs/cheatsheet.html
+docs/studio.html
+docs/studio-assets/
 .quarto/
 **/*_cache/
 cran-comments.md

@@ -23,6 +23,8 @@ website:
             href: concepts/schema-system.qmd
           - text: "Theming Manifesto"
             href: concepts/theming-manifesto.qmd
+      - text: "Studio"
+        href: studio.qmd
       - text: "Cheatsheet"
         href: cheatsheet.qmd
       - text: "Gallery"

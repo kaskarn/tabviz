@@ -4,7 +4,7 @@
   spec.theme is replaced on every studioStore.inputs change.
 -->
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { studioStore } from "./studio-store.svelte";
   import { createTabvizStore } from "../stores/tabvizStore.svelte";
   import { buildTheme } from "../lib/theme/theme-adapter";
@@ -26,19 +26,25 @@
     }
   });
 
-  // Reactive: whenever studio inputs change, rebuild the theme and patch spec.
+  // Reactive: whenever studio inputs change, rebuild the theme and patch
+  // spec. The read of `store.spec` is untracked — otherwise this effect
+  // would re-trigger itself (it writes to store.spec via setSpec), creating
+  // an infinite loop that hangs the main thread.
   $effect(() => {
     if (!initialized) return;
     if (!studioStore.inputs) return;
-    const currentSpec = store.spec;
-    if (!currentSpec) return;
-    try {
-      const newTheme = buildTheme(studioStore.inputs, studioStore.baseName) as unknown as WebSpec["theme"];
-      store.setSpec({ ...currentSpec, theme: newTheme });
-    } catch (e) {
-      // Theme build failed — leave the chart on its previous theme.
-      console.warn("[StudioChart] buildTheme failed:", e);
-    }
+    const inputs = studioStore.inputs;
+    const baseName = studioStore.baseName;
+    untrack(() => {
+      const currentSpec = store.spec;
+      if (!currentSpec) return;
+      try {
+        const newTheme = buildTheme(inputs, baseName) as unknown as WebSpec["theme"];
+        store.setSpec({ ...currentSpec, theme: newTheme });
+      } catch (e) {
+        console.warn("[StudioChart] buildTheme failed:", e);
+      }
+    });
   });
 </script>
 

@@ -102,12 +102,20 @@
       win.Shiny.setInputValue("studio_cancel", true, { priority: "event" });
     }
   }
+
+  /** Static mode = no Shiny gadget host. Done/Cancel are hidden; Export is
+   *  the primary egress. Detected once on mount (the value never changes
+   *  during a session). */
+  const isStatic = $derived(typeof window !== "undefined"
+    && !(window as unknown as { Shiny?: unknown }).Shiny);
 </script>
 
 <div class="studio">
   <PresetHeader
     baseName={studioStore.baseName}
     dirty={studioStore.dirty}
+    {isStatic}
+    snippet={snippetText}
     onRevert={() => studioStore.revert()}
     onDone={handleDone}
     onCancel={handleCancel}
