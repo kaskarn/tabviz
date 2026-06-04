@@ -3019,13 +3019,10 @@ function renderUnifiedTableRow(
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
-  // Default cell foreground: v4 cssVars → v3 fallback. The row.style.color +
-  // semantic-bundle fg paths win over the default per-site below.
-  const cellFgDefault: string = readVar(
-    cssVars,
-    "--tv-cell-fg",
-    theme.cell.fg ?? readContentPrimary(cssVars),
-  ) ?? readContentPrimary(cssVars);
+  // Default cell foreground. The row.style.color + semantic-bundle fg
+  // paths win over the default per-site below.
+  const cellFgDefault: string = readVar(cssVars, "--tv-cell-fg", readContentPrimary(cssVars))
+    ?? readContentPrimary(cssVars);
 
   // Render label. Semantic bundles (theme.semantics.{emphasis|muted|accent})
   // drive fg / font_weight / font_style when the row carries the matching

@@ -159,7 +159,7 @@ ${n.map(r=>"  - "+r).join(`
           font-weight="${y}"
           text-anchor="${F}"
           fill="${Xe(i).fg}">${pe(I)}</text>`)}W+=x}}return h.join(`
-`)}function Us(e,t,n,r,o,i,a,l,s,c,d,u=[],h=new Map,p=new Map,b=null,g={}){var N,B,W,O,x,H,T,D,F;const f=[],m=ie(Ve(g,"cell",Me(g)));ct(g,"cell",ae(g));const y=J(g,"--tv-spacing-cell-padding-x",10),k=r+o/2,A=ve(g,"--tv-cell-fg",i.cell.fg??Ue(g))??Ue(g),_=((N=i.rowGroup)==null?void 0:N.indentPerLevel)??pt.INDENT_PER_LEVEL,$=l*_+(((B=e.style)==null?void 0:B.indent)??0)*_,v=Te(e.style,i),S=(v==null?void 0:v.fontWeight)??(((W=e.style)==null?void 0:W.bold)??!1?600:400),E=(v==null?void 0:v.fontStyle)??((O=e.style)!=null&&O.italic?"italic":"normal");let L;if((x=e.style)!=null&&x.color?L=e.style.color:v!=null&&v.fg?L=v.fg:L=A,f.push(`<text class="cell-text" dominant-baseline="central" x="${n+y+$}" y="${k}"
+`)}function Us(e,t,n,r,o,i,a,l,s,c,d,u=[],h=new Map,p=new Map,b=null,g={}){var N,B,W,O,x,H,T,D,F;const f=[],m=ie(Ve(g,"cell",Me(g)));ct(g,"cell",ae(g));const y=J(g,"--tv-spacing-cell-padding-x",10),k=r+o/2,A=ve(g,"--tv-cell-fg",Ue(g))??Ue(g),_=((N=i.rowGroup)==null?void 0:N.indentPerLevel)??pt.INDENT_PER_LEVEL,$=l*_+(((B=e.style)==null?void 0:B.indent)??0)*_,v=Te(e.style,i),S=(v==null?void 0:v.fontWeight)??(((W=e.style)==null?void 0:W.bold)??!1?600:400),E=(v==null?void 0:v.fontStyle)??((O=e.style)!=null&&O.italic?"italic":"normal");let L;if((x=e.style)!=null&&x.color?L=e.style.color:v!=null&&v.fg?L=v.fg:L=A,f.push(`<text class="cell-text" dominant-baseline="central" x="${n+y+$}" y="${k}"
     font-family="${ae(g)}"
     font-size="${m}px"
     font-weight="${S}"

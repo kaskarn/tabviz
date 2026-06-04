@@ -7,7 +7,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { WebTheme } from "../../types/index.js";
-  import { getCssVars, readVar } from "../../lib/theme/consumer-bridge";
+  import { getCssVars, readContentPrimary } from "../../lib/theme/consumer-bridge";
 
   const {
     text,
@@ -61,7 +61,7 @@
   const cx = $derived(width / 2);
   const cy = $derived(height / 2);
   const fillColor = $derived(
-    color ?? (readVar(getCssVars(theme), "--tv-text", theme.content.primary) ?? theme.content.primary)
+    color ?? readContentPrimary(getCssVars(theme))
   );
 </script>
 
