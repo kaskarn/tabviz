@@ -1,67 +1,82 @@
-// Theme authoring-input types — the rationalized theme surface.
+// Theme authoring-input types — the V4 cascade authoring surface.
 //
 // Layers (defined here):
 //   T1 — ThemeInputs    (the entire user-authoring surface)
-//   T0 — TokenRamps     (12-step ramps generated from T1 inputs)
+//   T0 — TokenRamps     (11-step ramps generated from T1 anchors)
 //   T2 — token vocabulary (addressable names; resolved from T0)
 //   T3+ — paint roles, clusters, data layer
+//
+// V4 vocabulary (vs v3): identity is four named OKLCH anchors —
+// paper, ink, brand, and optional accent — instead of a brand hex
+// plus neutral_tint knobs. Polarity reflection acts on each anchor's L.
+// Muted is a grade position on the relevant ramp, not a separate anchor.
+// See docs/dev/theme-cascade-stage-1-design.md §22.
+
+// ────────────────────────────────────────────────────────────────────
+// Primitive types
+// ────────────────────────────────────────────────────────────────────
+
+/** OKLCH triple — the wire format for every Tier 1 color anchor.
+ *  L in [0, 1] (lightness), C in [0, ~0.4] (chroma), H in [0, 360) (hue). */
+export interface OklchTriple {
+  L: number;
+  C: number;
+  H: number;
+}
+
+/** Accessibility / display mode — independent of polarity (light/dark).
+ *  Standard, high-contrast, and reduced-transparency are applied by
+ *  the resolver via per-token `modes.{hc,rt}` behavior in the manifest. */
+export type ThemeMode = "standard" | "high-contrast" | "reduced-transparency";
+
+/** Name of a registered data palette scheme (categorical/sequential/diverging). */
+export type SchemeName = string;
 
 // ────────────────────────────────────────────────────────────────────
 // T1 — Identity inputs (what the user authors)
 // ────────────────────────────────────────────────────────────────────
 
-/** Display mode (Q-P4.5 closure 2026-06-02). Contrast variants applied
- *  by the resolver via per-token `modes.{hc,rt}` behavior in the manifest.
- *  Independent of polarity, which controls light/dark anchor reflection. */
-export type ThemeMode = "standard" | "high-contrast" | "reduced-transparency";
+/** The four Tier 1 color anchors that drive the entire cascade.
+ *  - paper: the light-end neutral anchor; defines surface, paper_alt, paper_raised.
+ *  - ink:   the dark-end neutral anchor; defines text, text-muted, text-subtle.
+ *  - brand: the identity hue; powers brand_solid, brand_text, header_bg.
+ *  - accent: optional engagement hue; powers hover/selected/callouts.
+ *    Defaults to brand when unset. */
+export interface ThemeAnchors {
+  paper: OklchTriple;
+  ink: OklchTriple;
+  brand: OklchTriple;
+  accent?: OklchTriple;
+}
 
-/** Optional tint for the neutral ramp — blends a small fraction of a hue into low-chroma ends. */
-export type NeutralTint =
-  | "untinted"        // pure achromatic ramp
-  | "brand"           // tint with brand hue
-  | "accent"          // tint with accent hue
-  | "decorative"      // tint with decorative hue (if set)
-  | { hex: string };  // explicit hex tint
-
-/** Name of a registered data palette scheme. PR E adds the full registry. */
-export type SchemeName = string;
+/** Optional status anchors (positive/negative/warning/info) as OKLCH
+ *  triples so polarity reflection acts on them uniformly with the
+ *  identity anchors. Defaults are curated semantic colors. */
+export interface ThemeStatusAnchors {
+  positive?: OklchTriple;
+  negative?: OklchTriple;
+  warning?: OklchTriple;
+  info?: OklchTriple;
+}
 
 export interface ThemeInputs {
-  /** Required. Brand color seed; powers the brand ramp and identity tokens. */
-  brand: string;
+  /** The four Tier 1 anchors. Required; every preset declares them. */
+  anchors: ThemeAnchors;
 
-  /** Engagement color seed; powers hover/selected/callouts. Default: brand. */
-  accent?: string;
+  /** Light or dark. Polarity reflection inverts every anchor's L around
+   *  the midpoint. Default: "light". */
+  polarity?: "light" | "dark";
 
-  /** Optional second color for two-color editorial themes (Lancet gold, Dwarven slate).
-   *  Drives `decorative_subtle` and `decorative_chrome` (alt-row tint, divider hue,
-   *  row-group L1 band). Does NOT drive text or marks. */
-  decorative?: string | null;
-
-  /** Light vs dark. Default `"light"`. */
+  /** Accessibility mode. Polarity-orthogonal. Default: "standard". */
   mode?: ThemeMode;
 
-  /** Neutral ramp tinting. Default `"untinted"`. */
-  neutral_tint?: NeutralTint;
-
-  /** Strength of the neutral tint blend, in `[0, 1]`. Default `0.04`
-   *  (subtle clinical-journal hint). `~1.0` makes the tint hex effectively
-   *  the paper color (editorial-strong: literary cream, sepia, newsprint).
-   *  Ignored when `neutral_tint = "untinted"`. */
-  neutral_tint_strength?: number;
-
-  /** Data palette scheme references — PR E wires the registry. */
+  /** Data palette scheme references. */
   categorical?: SchemeName;
   sequential?: SchemeName;
   diverging?: SchemeName;
 
-  /** Status palette seeds. Defaults curated semantic colors. */
-  status?: {
-    positive?: string;
-    negative?: string;
-    warning?: string;
-    info?: string;
-  };
+  /** Optional status anchor overrides. */
+  status?: ThemeStatusAnchors;
 
   /** Typography. */
   fonts?: {
@@ -116,11 +131,6 @@ export interface ThemeInputs {
    *  comfortable). 1 = the profile unchanged. Clamped to [0.5, 2]. */
   densityFactor?: number;
 
-  /** Polarity — light vs dark. (V4 substrate field; per Q-P4.5 closure
-   *  polarity and `mode` will be split. During the sprint, when set,
-   *  this takes precedence over `mode`'s interpretation as light/dark.) */
-  polarity?: "light" | "dark";
-
   /** Per-ramp curve shape (linear / ease / smooth / log / exp). Reshapes
    *  the lightness progression across the 11 ramp grades. Defaults per
    *  `DEFAULT_RAMP_CURVES` in `lib/theme/curves.ts`:
@@ -142,21 +152,25 @@ export interface ThemeInputs {
 }
 
 // ────────────────────────────────────────────────────────────────────
-// T0 — Token ramps (generated from T1 inputs)
+// T0 — Token ramps (generated from T1 anchors)
 // ────────────────────────────────────────────────────────────────────
 //
 // Each ramp is a 12-element hex array. Index i = Radix step (i+1).
 // Use `rampStep(ramp, n)` (from `lib/oklch`) for 1-indexed access.
+//
+// In V4 every ramp shares the same L progression — interpolated between
+// `paper.L` (step 1) and `ink.L` (step 12) — and varies only in chroma
+// and hue. Neutral takes paper/ink hue; brand takes brand hue at brand C
+// peak; accent takes accent (or brand) hue at accent C peak. Muted is
+// grade 4 (or wherever the role binds), not a separate ramp.
 
 export interface TokenRamps {
-  /** 12-step neutral ramp; optionally tinted. */
+  /** 12-step neutral ramp interpolated between paper and ink. */
   neutral: string[];
   /** 12-step brand ramp. */
   brand: string[];
-  /** 12-step accent ramp. */
+  /** 12-step accent ramp (defaults to brand if no accent anchor). */
   accent: string[];
-  /** 12-step decorative ramp; present only when `inputs.decorative` is set. */
-  decorative: string[] | null;
   /** 5-step status palettes. */
   status: {
     positive: string[];
@@ -197,9 +211,6 @@ export type TokenName =
   | "accent_subtle"
   | "accent_ink"
   | "accent_ink_muted"
-  // Decorative (resolves to brand if `inputs.decorative` is null)
-  | "decorative_subtle"
-  | "decorative_chrome"
   // Lines
   | "rule_subtle"
   | "rule_strong"
@@ -217,8 +228,7 @@ export type TokenName =
 export type RampStepRef =
   | `neutral.${number}`
   | `brand.${number}`
-  | `accent.${number}`
-  | `decorative.${number}`;
+  | `accent.${number}`;
 
 /** Color reference. Tagged-object form is canonical; plain string accepted by resolvers. */
 export type ColorRef =
@@ -370,7 +380,7 @@ export interface ClustersInputs {
 // ────────────────────────────────────────────────────────────────────
 
 export interface ThemeStructure {
-  schemaVersion: 3;
+  schemaVersion: 4;
   name: string;
   inputs: ThemeInputs;
   /** Resolved T0 ramps. */
