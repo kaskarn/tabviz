@@ -502,7 +502,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Brand gradient stop pair (CSS linear-gradient or SVG <linearGradient>)",
   },
   {
-    cssVar: "--tv-brand-glow",
+    cssVar: "--tv-glow-brand-color",
     kind: "paint-color",
     source: { tier: "computed", note: "brand glow: accent @ alpha 0.4" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -819,7 +819,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // Card-style shadow stack independent of the existing shell elevation.
   // Layered (near + far) using the same shadow tokens as Stage 2 §6.
   {
-    cssVar: "--tv-emphasis-shadow",
+    cssVar: "--tv-shadow-emphasis",
     kind: "shadow",
     source: { tier: "computed", note: "box-shadow stack derived from inputs.effects.elevation" },
     consumedBy: ["svelte/TabvizPlot.svelte"],

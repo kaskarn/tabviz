@@ -212,7 +212,7 @@
 }
 
 .tabviz-scope .tv-glow {
-  box-shadow: 0 0 10px var(--tv-brand-glow);
+  box-shadow: 0 0 10px var(--tv-glow-brand-color);
 }
 /* sv-omit-end */
 

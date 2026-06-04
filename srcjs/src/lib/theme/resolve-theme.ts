@@ -281,7 +281,7 @@ function resolveTokenValue(
     const b = brandRamp[9] ?? brandSolid;
     return `linear-gradient(90deg, ${a} 0%, ${b} 100%)`;
   }
-  if (token.cssVar === "--tv-brand-glow") {
+  if (token.cssVar === "--tv-glow-brand-color") {
     // rgba from accent-solid at alpha 0.4.
     const brandHex = oklchToHex(resolved.inputs.anchors.brand);
     const accent = resolved.roles["accent-solid"] ?? brandHex;
@@ -581,7 +581,7 @@ function resolveEffectsComputed(
   }
 
   // ── Emphasis shadow ───────────────────────────────────────────────────
-  if (cssVar === "--tv-emphasis-shadow") {
+  if (cssVar === "--tv-shadow-emphasis") {
     const elev = fx?.elevation ?? "none";
     if (elev === "none") return "none";
     // Stack a near + far shadow per Stage 2 §6 convention. Near uses the

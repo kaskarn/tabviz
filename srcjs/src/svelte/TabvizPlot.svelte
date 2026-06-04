@@ -3071,7 +3071,7 @@
      at resolve time. */
   :global(.tabviz-container .data-cell.row-active-emphasis) {
     box-shadow:
-      var(--tv-emphasis-shadow, none),
+      var(--tv-shadow-emphasis, none),
       0 0 var(--tv-glow-blur, 0) var(--tv-glow-spread, 0) var(--tv-glow-color, transparent);
   }
 

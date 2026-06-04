@@ -35,7 +35,7 @@
     {
       key: "shadow",
       label: "Card elevation",
-      vars: ["--tv-emphasis-shadow"],
+      vars: ["--tv-shadow-emphasis"],
       hint: "near + far hue-tinted shadow",
     },
   ] as const;
@@ -53,7 +53,7 @@
           p.key === "glow"
             ? `0 0 ${v("--tv-glow-blur", "0px")} ${v("--tv-glow-spread", "0px")} ${v("--tv-glow-color", "transparent")}`
           : p.key === "shadow"
-            ? v("--tv-emphasis-shadow", "none")
+            ? v("--tv-shadow-emphasis", "none")
           : undefined
         }
       >
