@@ -105,218 +105,197 @@ export function buildWidgetCSS(
 // ─────────────────────────────────────────────────────────────────────────
 
 function _buildThemeCSSImpl(theme: WebTheme): string {
+  // ───────────────────────────────────────────────────────────────────────
+  // Single-emission rewrite (2026-06-04):
+  //
+  //   The function previously emitted TWO parallel `--tv-*` blocks: a v3
+  //   computation block (reading theme.X.Y from buildThemeStructure's
+  //   resolved output) and a v4 manifest block (from resolveTheme's
+  //   cssVars map). Same value sometimes appeared twice with subtle
+  //   resolver drift between the two paths.
+  //
+  //   Now: v4 manifest emits first (canonical source of theme values),
+  //   then a v3-alias block redirects every v3 var name to its v4
+  //   manifest equivalent via CSS `var()` lookup. The DOM still has
+  //   v3 names so existing Svelte/CSS consumers keep working — but
+  //   the VALUES come from one source, eliminating drift.
+  //
+  //   Each `[v3-name]: var([v4-name])` line is a bridge. When
+  //   the last Svelte consumer of a v3 name migrates to its v4
+  //   counterpart, the alias line dies. When every alias is gone,
+  //   this whole function can drop down to just `_emitV4CssVarsBody`.
+  //
+  //   A small tail of v3 vars STILL need computation from theme.X.Y
+  //   because they have no v4 manifest equivalent yet:
+  //     - header variants (bg/fg/rule depend on theme.variants.headerStyle)
+  //     - first-column variants (bg/fg/weight from theme.firstColumn)
+  //     - borders (theme.borders.{major,minor,table}.{color,style,...})
+  //     - per-role italic (italic was dropped from v4 typography in
+  //       Coh.22; emit hardcoded "normal" here as a kill-row)
+  //     - text-numeric-figures (tabular-num flag; not in v4 manifest)
+  //     - row-group-rule / semantic-* (depend on theme.rowGroup, theme.row.X)
+  //   These cluster at the bottom and shrink as v4 manifest extends.
+  // ───────────────────────────────────────────────────────────────────────
+
+  const v4Body = _emitV4CssVarsBody(theme);
+
   const headerVariant = activeHeaderVariant(theme);
   const firstColBold = theme.variants?.firstColumnStyle === "bold";
-  // Accept legacy `plain` key on input for one minor version (Sprint 1 PR 3).
   const fc = theme.firstColumn as (typeof theme.firstColumn & { plain?: typeof theme.firstColumn.default }) | undefined;
   const firstColDefault = fc?.default ?? fc?.plain;
   const firstColVariant = firstColBold ? fc?.bold : firstColDefault;
   const firstColBg = firstColVariant?.bg ?? "transparent";
   const firstColFg = firstColVariant?.fg ?? "inherit";
   const firstColWeight = firstColVariant?.weight ?? "inherit";
-  // Rule color when the variant actually wants its own rule, null otherwise.
-  // `null` triggers SKIPPING the CSS var emission so the primary cell's
-  // border-right falls through to `.grid-cell` (i.e., picks up the
-  // column-divider color under cols/grid layout). Emitting "transparent"
-  // would defeat var() fallbacks and make the primary cell invisible
-  // under cols/grid.
   const firstColRule: string | null = firstColVariant?.rule ?? null;
 
-  const inputs = theme.inputs as
-    | { primary?: string; primaryDeep?: string; secondary?: string; secondaryDeep?: string }
-    | undefined;
-  const primary = inputs?.primary ?? theme.accent.default;
-  const primaryDeep = inputs?.primaryDeep ?? inputs?.primary ?? theme.accent.default;
-  const secondary = inputs?.secondary ?? inputs?.primary ?? theme.accent.default;
-  const secondaryDeep = inputs?.secondaryDeep ?? inputs?.primaryDeep ?? theme.accent.default;
-
   return `
-      --tv-bg: ${theme.surface.base};
-      --tv-fg: ${theme.content.primary};
-      /* Identity tiers (2-tier mirror chain: secondary→primary). */
-      --tv-primary:        ${primary};
-      --tv-primary-deep:   ${primaryDeep};
-      --tv-secondary:      ${secondary};
-      --tv-secondary-deep: ${secondaryDeep};
-      /* Engagement (orthogonal to identity). */
-      --tv-accent: ${theme.accent.default};
-      /* Text-muted (was --tv-secondary in pre-rework code; renamed to free
-         up --tv-secondary for identity). */
-      --tv-text-muted: ${theme.content.secondary};
-      --tv-muted: ${theme.content.muted};
-      --tv-border: ${theme.divider.subtle};
-      /* Hover/popover backgrounds — contrast-safe across every theme.
-         CONVENTION: never use bare --tv-border, --tv-accent, or
-         --tv-primary-deep as a hover background (themes that pin those
-         tokens dark — JAMA's accent=#000000 and divider.subtle=#000000,
-         dark theme's primary_deep=#2E5290 — produce illegible dark-on-dark
-         hover surfaces). Always use --tv-hover-bg or an inline
-         color-mix(--tv-accent N%, --tv-bg) at 6-14% strength. */
-      --tv-hover-bg: color-mix(in srgb, var(--tv-accent) 8%, var(--tv-bg));
-      /* Strong rules — header bottom, group row bottom, axis line, tick marks,
-         summary-row top. v2 R resolver computes these but the frontend
-         previously read --tv-border (the subtle one) for everything,
-         silently flattening strong → subtle. */
-      --tv-divider-strong:    ${theme.divider.strong};
-      --tv-header-rule:       ${headerVariant.rule ?? theme.divider.strong};
-      --tv-row-group-rule:    ${theme.rowGroup?.L1?.rule ?? theme.divider.strong};
-      --tv-axis-line:         ${theme.plot?.axisLine ?? theme.divider.strong};
-      --tv-axis-tick:         ${theme.plot?.tickMark ?? theme.divider.strong};
-      /* primary_deep-derived identity colors. Title fg defaults to
-         primary_deep on the R side; the panel can override per-field.
-         Fallback chain ends at content tones so themes that bypass the
-         resolver still degrade gracefully. */
-      --tv-text-title-fg:     ${theme.text.title?.fg     ?? theme.content.primary};
-      --tv-axis-label-fg:     ${theme.plot?.axisLabel?.fg ?? theme.content.muted};
-      --tv-axis-tick-fg:      ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
-      --tv-row-bg: ${theme.row.base.bg};
-      --tv-alt-bg: ${theme.row.alt.bg};
-      --tv-header-bg: ${headerVariant.bg};
-      --tv-cell-fg: ${theme.cell.fg ?? theme.content.primary};
-      --tv-header-fg: ${headerVariant.fg};
-      --tv-interval-line: ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-summary-fill: ${theme.series?.[0]?.fill ?? theme.accent.default};
-      --tv-summary-border: ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-semantic-emphasis-fg: ${theme.row.emphasis?.fg ?? theme.content.primary};
-      --tv-semantic-muted-fg:    ${theme.row.muted?.fg    ?? theme.content.muted};
-      --tv-semantic-accent-fg:   ${theme.row.accent?.fg   ?? theme.accent.default};
-      --tv-semantic-emphasis-bg: ${theme.row.emphasis?.bg ?? "transparent"};
-      --tv-semantic-muted-bg:    ${theme.row.muted?.bg    ?? "transparent"};
-      --tv-semantic-accent-bg:   ${theme.row.accent?.bg   ?? "transparent"};
-      /* Status colors. --tv-status-* are the semantic names any column
-         type can reference (col_ring thresholds, col_pictogram fills,
-         col_badge scales). --tv-badge-* are the historical badge-variant
-         names; they alias to --tv-status-* so a single edit on the theme
-         flows through both surfaces. */
-      --tv-status-positive: ${theme.status?.positive ?? BADGE_VARIANTS.success};
-      --tv-status-warning:  ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
-      --tv-status-negative: ${theme.status?.negative ?? BADGE_VARIANTS.error};
-      --tv-status-info:     ${theme.status?.info     ?? BADGE_VARIANTS.info};
-      --tv-badge-success: var(--tv-status-positive);
-      --tv-badge-warning: var(--tv-status-warning);
-      --tv-badge-error:   var(--tv-status-negative);
-      --tv-badge-info:    var(--tv-status-info);
-      --tv-badge-muted:   ${theme.content.muted};
-      --tv-font-family: ${theme.text.body.family};
-      --tv-text-title-family: ${theme.text.title?.family ?? theme.text.body.family};
-      /* Phase 12: numeric-flavored text role. Resolver guarantees a
-         fully-defined TextRole on the wire (falls back to body when
-         the theme doesn't pin numeric). Numeric-category cells pick
-         this via .numeric-cell. */
-      --tv-text-numeric-family: ${theme.text.numeric?.family ?? theme.text.body.family};
-      --tv-text-numeric-figures: ${theme.text.numeric?.figures === "proportional" ? "normal" : "tnum"};
-      --tv-font-size-sm: ${theme.text.label.size};
-      --tv-font-size-base: ${theme.text.body.size};
-      --tv-font-size-lg: ${theme.text.subtitle.size};
-      --tv-font-weight-normal: 400;
-      --tv-font-weight-medium: 500;
-      --tv-font-weight-bold: 600;
-      --tv-line-height: 1.5;
-      --tv-header-font-scale: 1.05;
-      /* Per-text-role weight + italic + size, read by PlotHeader / PlotFooter
-         and any cell that wants role-aware typography. Editing any
-         theme.text.{role}.{weight,italic,size} from the panel propagates
-         here and re-renders. */
-      --tv-text-title-weight: ${theme.text.title.weight ?? 600};
-      --tv-text-title-italic: ${theme.text.title.italic ? "italic" : "normal"};
-      --tv-text-title-size: ${theme.text.title.size ?? "1.25rem"};
+      /* ── V4 manifest cssVars — canonical source of theme values. */
+${v4Body}
+      /* ── V3 ALIASES → V4 manifest (single emission; drift eliminated).
+            Each line: keep the v3 var name for existing Svelte/CSS
+            consumers, but the VALUE comes from a v4 manifest var.
+            Migrate Svelte consumers to v4 names; once the last
+            consumer of a v3 name migrates, delete that alias line. */
+      --tv-bg:                  var(--tv-surface-bg);
+      --tv-fg:                  var(--tv-text);
+      --tv-muted:               var(--tv-text-subtle);
+      --tv-primary:             var(--tv-accent);
+      --tv-primary-deep:        var(--tv-accent);
+      --tv-secondary:           var(--tv-accent);
+      --tv-secondary-deep:      var(--tv-accent);
+      --tv-divider-strong:      var(--tv-border);
+      --tv-hover-bg:            color-mix(in srgb, var(--tv-accent) 8%, var(--tv-surface-bg));
+      --tv-row-bg:              var(--tv-row-base-bg);
+      --tv-alt-bg:              var(--tv-row-alt-bg);
+      --tv-cell-fg:             var(--tv-text);
+      --tv-semantic-emphasis-fg: var(--tv-row-emphasis-fg);
+      --tv-semantic-emphasis-bg: var(--tv-row-emphasis-bg);
+      /* Status — anchor to v4 brand/border until status anchors get
+         dedicated manifest entries. Themes that set theme.status.* fall
+         through to BADGE_VARIANTS at v3 time; once status anchors are
+         in the manifest, replace these with var(--tv-status-*-solid). */
+      --tv-status-positive:     ${theme.status?.positive ?? BADGE_VARIANTS.success};
+      --tv-status-warning:      ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
+      --tv-status-negative:     ${theme.status?.negative ?? BADGE_VARIANTS.error};
+      --tv-status-info:         ${theme.status?.info     ?? BADGE_VARIANTS.info};
+      --tv-badge-success:       var(--tv-status-positive);
+      --tv-badge-warning:       var(--tv-status-warning);
+      --tv-badge-error:         var(--tv-status-negative);
+      --tv-badge-info:          var(--tv-status-info);
+      --tv-badge-muted:         var(--tv-text-subtle);
+      /* Typography — alias v3 generic names to v4 per-role manifest vars. */
+      --tv-font-family:         var(--tv-text-body-family);
+      --tv-font-mono:           var(--tv-text-numeric-family);
+      --tv-font-size-base:      var(--tv-text-body-size);
+      --tv-font-size-sm:        var(--tv-text-label-size);
+      --tv-font-size-lg:        var(--tv-text-title-size);
+      --tv-font-weight-normal:  400;
+      --tv-font-weight-medium:  500;
+      --tv-font-weight-bold:    600;
+      --tv-line-height:         1.5;
+      --tv-header-font-scale:   1.05;
+      /* Spacing — alias v3 short names to v4 manifest spacing vars. */
+      --tv-row-height:          var(--tv-spacing-row-height);
+      --tv-row-group-padding:   var(--tv-spacing-row-group-padding);
+      --tv-padding:             var(--tv-spacing-padding);
+      --tv-container-padding:   var(--tv-spacing-container-padding);
+      --tv-cell-padding-x:      var(--tv-spacing-cell-padding-x);
+      --tv-cell-padding-y:      0px;
+      --tv-axis-gap:            var(--tv-spacing-axis-gap);
+      --tv-group-padding:       var(--tv-spacing-column-group-padding);
+      --tv-footer-gap:          var(--tv-spacing-footer-gap);
+      --tv-bottom-margin:       var(--tv-spacing-bottom-margin);
+      --tv-title-subtitle-gap:  var(--tv-spacing-title-subtitle-gap);
+      --tv-header-gap:          var(--tv-spacing-header-gap);
+      --tv-viz-margin:          ${VIZ_MARGIN}px;
+      /* Plot dims — alias v3 short names to v4 manifest plot vars. */
+      --tv-point-size:          var(--tv-plot-point-size);
+      --tv-line-width:          var(--tv-plot-line-width);
+      --tv-axis-line:           var(--tv-plot-axis-line);
+      --tv-axis-tick:           var(--tv-plot-tick-mark);
+
+      /* ── V3-only — still computed from theme.X.Y (no v4 equivalent yet).
+            Each cluster has a follow-up task to add the manifest entry
+            and convert these to aliases. */
+      /* Header variant active row (header-light vs header-bold etc.). */
+      --tv-header-rule:         ${headerVariant.rule ?? theme.divider.strong};
+      --tv-row-group-rule:      ${theme.rowGroup?.L1?.rule ?? theme.divider.strong};
+      --tv-text-title-fg:       ${theme.text.title?.fg     ?? theme.content.primary};
+      --tv-axis-label-fg:       ${theme.plot?.axisLabel?.fg ?? theme.content.muted};
+      --tv-axis-tick-fg:        ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
+      --tv-header-bg:           ${headerVariant.bg};
+      --tv-header-fg:           ${headerVariant.fg};
+      --tv-interval-line:       ${theme.series?.[0]?.stroke ?? theme.accent.default};
+      --tv-summary-fill:        ${theme.series?.[0]?.fill ?? theme.accent.default};
+      --tv-summary-border:      ${theme.series?.[0]?.stroke ?? theme.accent.default};
+      --tv-semantic-muted-fg:   ${theme.row.muted?.fg    ?? theme.content.muted};
+      --tv-semantic-accent-fg:  ${theme.row.accent?.fg   ?? theme.accent.default};
+      --tv-semantic-muted-bg:   ${theme.row.muted?.bg    ?? "transparent"};
+      --tv-semantic-accent-bg:  ${theme.row.accent?.bg   ?? "transparent"};
+      /* Per-role italic — Coh.22 dropped italic from v4 typography;
+         emit "normal" everywhere as a kill-row. Drop these lines
+         (and the CSS that reads them) when the Svelte side is purged. */
+      --tv-text-title-italic:    normal;
+      --tv-text-subtitle-italic: normal;
+      --tv-text-caption-italic:  normal;
+      --tv-text-footnote-italic: normal;
+      --tv-text-cell-italic:     normal;
+      --tv-text-header-italic:   normal;
+      --tv-text-tick-italic:     normal;
+      --tv-text-label-italic:    normal;
+      /* Per-role weight/size/family for roles that aren't in the v4
+         9-role typography matrix (header, cell-weight, label-weight). */
+      --tv-text-title-weight:    ${theme.text.title.weight ?? 600};
+      --tv-text-title-size:      ${theme.text.title.size ?? "1.25rem"};
       --tv-text-subtitle-weight: ${theme.text.subtitle.weight ?? 400};
-      --tv-text-subtitle-italic: ${theme.text.subtitle.italic ? "italic" : "normal"};
-      --tv-text-subtitle-size: ${theme.text.subtitle.size ?? "1rem"};
-      --tv-text-caption-weight: ${theme.text.caption.weight ?? 400};
-      --tv-text-caption-italic: ${theme.text.caption.italic ? "italic" : "normal"};
-      --tv-text-caption-size: ${theme.text.caption.size ?? "0.75rem"};
+      --tv-text-subtitle-size:   ${theme.text.subtitle.size ?? "1rem"};
+      --tv-text-caption-weight:  ${theme.text.caption.weight ?? 400};
+      --tv-text-caption-size:    ${theme.text.caption.size ?? "0.75rem"};
       --tv-text-footnote-weight: ${theme.text.footnote.weight ?? 400};
-      --tv-text-footnote-italic: ${theme.text.footnote.italic ? "italic" : "normal"};
-      --tv-text-footnote-size: ${theme.text.footnote.size ?? "0.75rem"};
-      --tv-text-cell-weight: ${theme.text.cell.weight ?? 400};
-      --tv-text-cell-italic: ${theme.text.cell.italic ? "italic" : "normal"};
-      --tv-text-header-weight: ${theme.header.text.weight ?? 600};
-      --tv-text-header-italic: ${theme.header.text.italic ? "italic" : "normal"};
-      --tv-text-header-family: ${theme.header.text?.family ?? theme.text.body.family};
-      /*
-       * Header text size. theme.header.text.size composes from
-       * theme.text.body.size at resolve time, so when nothing has been
-       * pinned the two are equal — fall back to the historical
-       * body.size times the --tv-header-font-scale (1.05) so the
-       * default look (5% bigger than body) is preserved. Once a user
-       * pins a distinct size via the panel or set_theme_field, the
-       * explicit value wins.
-       */
-      --tv-text-header-size: ${
+      --tv-text-footnote-size:   ${theme.text.footnote.size ?? "0.75rem"};
+      --tv-text-cell-weight:     ${theme.text.cell.weight ?? 400};
+      --tv-text-header-weight:   ${theme.header.text.weight ?? 600};
+      --tv-text-header-family:   ${theme.header.text?.family ?? theme.text.body.family};
+      --tv-text-header-size:     ${
         theme.header.text?.size && theme.header.text.size !== theme.text.body.size
           ? theme.header.text.size
           : `calc(${theme.text.body.size} * 1.05)`
       };
       --tv-text-column-group-weight: ${theme.columnGroup?.text?.weight ?? 600};
-      --tv-text-tick-weight: ${theme.text.tick.weight ?? 400};
-      --tv-text-tick-italic: ${theme.text.tick.italic ? "italic" : "normal"};
-      --tv-text-tick-family: ${theme.text.tick?.family ?? theme.text.body.family};
-      --tv-text-label-weight: ${theme.text.label.weight ?? 400};
-      --tv-text-label-italic: ${theme.text.label.italic ? "italic" : "normal"};
-      --tv-text-label-family: ${theme.text.label?.family ?? theme.text.body.family};
+      --tv-text-tick-weight:     ${theme.text.tick.weight ?? 400};
+      --tv-text-tick-family:     ${theme.text.tick?.family ?? theme.text.body.family};
+      --tv-text-label-weight:    ${theme.text.label.weight ?? 400};
+      --tv-text-label-family:    ${theme.text.label?.family ?? theme.text.body.family};
+      --tv-text-numeric-figures: ${theme.text.numeric?.figures === "proportional" ? "normal" : "tnum"};
       /* First-column variant — applied to .primary-cell. */
-      --tv-first-col-bg: ${firstColBg};
-      --tv-first-col-fg: ${firstColFg};
-      --tv-first-col-weight: ${firstColWeight};
+      --tv-first-col-bg:         ${firstColBg};
+      --tv-first-col-fg:         ${firstColFg};
+      --tv-first-col-weight:     ${firstColWeight};
       ${firstColRule ? `--tv-first-col-rule: ${firstColRule};` : ""}
-      --tv-row-height: ${theme.spacing.rowHeight}px;
-      --tv-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
-      --tv-padding: ${theme.spacing.padding}px;
-      --tv-container-padding: ${theme.spacing.containerPadding}px;
-      --tv-cell-padding-x: ${theme.spacing.cellPaddingX}px;
-      /* --tv-cell-padding-y deprecated v0.21.x -- kept emitting at 0 so
-         any downstream consumer that still references the var doesn't
-         break, but .grid-cell no longer applies it (rows are flex-
-         centered + grid-template-rows pinned, so vertical cell padding
-         could only clip content). */
-      --tv-cell-padding-y: 0px;
-      --tv-viz-margin: ${VIZ_MARGIN}px;
-      --tv-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
-      --tv-group-padding: ${theme.spacing.columnGroupPadding ?? 8}px;
-      --tv-footer-gap: ${theme.spacing.footerGap ?? 8}px;
-      --tv-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
-      --tv-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
-      --tv-header-gap: ${theme.spacing.headerGap ?? 12}px;
-      --tv-point-size: ${theme.plot.pointSize}px;
-      --tv-line-width: ${theme.plot.lineWidth}px;
-      /* Border widths — CSS border-style: double needs total width
-         >= 3px to render two stripes visibly. When the user picks
-         "double" we scale the effective width to max(3, thickness*3);
-         single keeps the user's thickness as-is. */
-      --tv-row-border-width: ${theme.borders.minor.style === "double" ? Math.max(3, theme.borders.minor.thickness * 3) : theme.borders.minor.thickness}px;
-      --tv-header-border-width: ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : Math.max(theme.borders.major.thickness, 2)}px;
-      --tv-group-border-width: ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : theme.borders.major.thickness}px;
-      --tv-border-major-color: ${theme.borders.major.color};
-      --tv-border-minor-color: ${theme.borders.minor.color};
-      --tv-border-table-color: ${theme.borders.table.color};
-      /* Border style encodes both layout (does this axis paint?) and
-         the user's single/double choice. The spec uses "single", but
-         CSS border-style expects "solid" — translate. */
-      --tv-border-row-style: ${
+      /* Borders — theme.borders.{major,minor,table} computed widths/colors. */
+      --tv-row-border-width:     ${theme.borders.minor.style === "double" ? Math.max(3, theme.borders.minor.thickness * 3) : theme.borders.minor.thickness}px;
+      --tv-header-border-width:  ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : Math.max(theme.borders.major.thickness, 2)}px;
+      --tv-group-border-width:   ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : theme.borders.major.thickness}px;
+      --tv-border-major-color:   ${theme.borders.major.color};
+      --tv-border-minor-color:   ${theme.borders.minor.color};
+      --tv-border-table-color:   ${theme.borders.table.color};
+      --tv-border-row-style:     ${
         (theme.borders.layout === "horizontal" || theme.borders.layout === "grid")
           ? (theme.borders.minor.style === "double" ? "double" : "solid")
           : "none"
       };
-      --tv-border-col-style: ${
+      --tv-border-col-style:     ${
         (theme.borders.layout === "vertical" || theme.borders.layout === "grid")
           ? (theme.borders.minor.style === "double" ? "double" : "solid")
           : "none"
       };
-      --tv-border-major-style: ${theme.borders.major.style === "double" ? "double" : "solid"};
-      /* Table frame — paints on the .tabviz-main top/bottom (the data
-         region), not on the outer container. Container border stays
-         a separate user-opt-in via theme.layout.containerBorder. */
-      --tv-table-border-width: ${theme.borders.table.style === "double" ? Math.max(3, theme.borders.table.thickness * 3) : theme.borders.table.thickness}px;
-      --tv-table-border-style: ${theme.borders.table.thickness > 0 ? (theme.borders.table.style === "double" ? "double" : "solid") : "none"};
-      --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
+      --tv-border-major-style:   ${theme.borders.major.style === "double" ? "double" : "solid"};
+      --tv-table-border-width:   ${theme.borders.table.style === "double" ? Math.max(3, theme.borders.table.thickness * 3) : theme.borders.table.thickness}px;
+      --tv-table-border-style:   ${theme.borders.table.thickness > 0 ? (theme.borders.table.style === "double" ? "double" : "solid") : "none"};
+      --tv-container-border:     ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
       ${generateCSSVariables()}
-      /* ── v4 substrate cssVars (additive; v3 names above continue to drive the
-         DOM render path). When TabvizPlot.svelte migrates from v3 names to
-         v4 names, deletion order is: v3 names first, then this comment, then
-         the buildThemeCSS function entirely. */
-${_emitV4CssVarsBody(theme)}
     `.trim();
 }
 
