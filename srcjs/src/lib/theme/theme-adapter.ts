@@ -35,28 +35,15 @@ import type {
   ResolvedInputs, ThemeVariants,
 } from "../../types/theme-resolved";
 
-const DENSITY_SPACING: Record<"compact" | "comfortable" | "spacious", SpacingTokens> = {
-  compact: {
-    rowHeight: 20, headerHeight: 26, padding: 8, containerPadding: 0,
-    axisGap: 8, columnGroupPadding: 6, rowGroupPadding: 8,
-    cellPaddingX: 8, cellPaddingY: 0, groupPadding: 6,
-    footerGap: 6, titleSubtitleGap: 10,
-    headerGap: 8, bottomMargin: 12, indentPerLevel: 14,
-  },
-  comfortable: {
-    rowHeight: 24, headerHeight: 32, padding: 12, containerPadding: 0,
-    axisGap: 12, columnGroupPadding: 8, rowGroupPadding: 12,
-    cellPaddingX: 10, cellPaddingY: 0, groupPadding: 8,
-    footerGap: 8, titleSubtitleGap: 13,
-    headerGap: 12, bottomMargin: 16, indentPerLevel: 16,
-  },
-  spacious: {
-    rowHeight: 30, headerHeight: 40, padding: 16, containerPadding: 0,
-    axisGap: 16, columnGroupPadding: 12, rowGroupPadding: 16,
-    cellPaddingX: 14, cellPaddingY: 0, groupPadding: 12,
-    footerGap: 12, titleSubtitleGap: 18,
-    headerGap: 16, bottomMargin: 22, indentPerLevel: 20,
-  },
+// Density px scales live in density-presets.ts as a single source of
+// truth; both the v3 adapter (this file) and the v4 resolver
+// (resolve-theme.ts) project from there so they can't drift.
+import { densityPresetAsSpacingTokens, type DensityPreset } from "./density-presets";
+
+const DENSITY_SPACING: Record<DensityPreset, SpacingTokens> = {
+  compact:     densityPresetAsSpacingTokens("compact")     as unknown as SpacingTokens,
+  comfortable: densityPresetAsSpacingTokens("comfortable") as unknown as SpacingTokens,
+  spacious:    densityPresetAsSpacingTokens("spacious")    as unknown as SpacingTokens,
 };
 
 /** Scale every dimensional spacing token by the continuous density factor (a

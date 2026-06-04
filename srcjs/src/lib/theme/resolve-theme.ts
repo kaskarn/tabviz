@@ -600,57 +600,15 @@ function resolveEffectsComputed(
  *  (compact / comfortable / spacious), then multiplies by density_factor
  *  (clamped [0.5, 2]). Mirrors theme-adapter.ts's DENSITY_SPACING +
  *  scaleSpacing for parity with the v3 path. */
-type DensityPreset = "compact" | "comfortable" | "spacious";
+// Density px scales live in density-presets.ts as a single source of
+// truth; both the v3 adapter (theme-adapter.ts) and this v4 resolver
+// project from there so they can't drift.
+import { densityPresetAsCssVars, type DensityPreset } from "./density-presets";
 
 const DENSITY_PRESETS: Record<DensityPreset, Record<string, number>> = {
-  compact: {
-    "--tv-spacing-row-height": 20,
-    "--tv-spacing-header-height": 26,
-    "--tv-spacing-padding": 8,
-    "--tv-spacing-cell-padding-x": 8,
-    "--tv-spacing-cell-padding-y": 0,
-    "--tv-spacing-axis-gap": 8,
-    "--tv-spacing-column-group-padding": 6,
-    "--tv-spacing-row-group-padding": 8,
-    "--tv-spacing-header-gap": 8,
-    "--tv-spacing-footer-gap": 6,
-    "--tv-spacing-title-subtitle-gap": 10,
-    "--tv-spacing-bottom-margin": 12,
-    "--tv-spacing-indent-per-level": 14,
-    "--tv-spacing-container-padding": 0,
-  },
-  comfortable: {
-    "--tv-spacing-row-height": 24,
-    "--tv-spacing-header-height": 32,
-    "--tv-spacing-padding": 12,
-    "--tv-spacing-cell-padding-x": 10,
-    "--tv-spacing-cell-padding-y": 0,
-    "--tv-spacing-axis-gap": 12,
-    "--tv-spacing-column-group-padding": 8,
-    "--tv-spacing-row-group-padding": 12,
-    "--tv-spacing-header-gap": 12,
-    "--tv-spacing-footer-gap": 8,
-    "--tv-spacing-title-subtitle-gap": 13,
-    "--tv-spacing-bottom-margin": 16,
-    "--tv-spacing-indent-per-level": 16,
-    "--tv-spacing-container-padding": 0,
-  },
-  spacious: {
-    "--tv-spacing-row-height": 30,
-    "--tv-spacing-header-height": 40,
-    "--tv-spacing-padding": 16,
-    "--tv-spacing-cell-padding-x": 14,
-    "--tv-spacing-cell-padding-y": 0,
-    "--tv-spacing-axis-gap": 16,
-    "--tv-spacing-column-group-padding": 12,
-    "--tv-spacing-row-group-padding": 16,
-    "--tv-spacing-header-gap": 16,
-    "--tv-spacing-footer-gap": 12,
-    "--tv-spacing-title-subtitle-gap": 18,
-    "--tv-spacing-bottom-margin": 22,
-    "--tv-spacing-indent-per-level": 20,
-    "--tv-spacing-container-padding": 0,
-  },
+  compact:     densityPresetAsCssVars("compact"),
+  comfortable: densityPresetAsCssVars("comfortable"),
+  spacious:    densityPresetAsCssVars("spacious"),
 };
 
 // Plot-dim tokens don't scale with density per v3 conventions.

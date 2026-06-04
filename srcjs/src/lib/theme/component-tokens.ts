@@ -962,6 +962,10 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // Phase D bare prefixes from template literals in GeometrySamples viz.
   "--tv-radius-",
   "--tv-border-width-",
+  // Coherence pass — bare prefix from density-presets.ts's snakeToCssVar
+  // template literal. The expanded cssVars (--tv-spacing-row-height etc.)
+  // are real manifest entries; this allow-lists the literal-prefix match.
+  "--tv-spacing-",
 
   // ── Phase D — geometry + effects (declared D2; consumers wire up in D4).
   // Shrink this block as TabvizPlot.svelte + svg-generator.ts start
