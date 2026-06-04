@@ -13,7 +13,10 @@
   import ColorField from "./ColorField.svelte";
   import BandingControl from "./BandingControl.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
-  import { getCssVars, readAccentDefault, readSurfaceBg } from "$lib/theme/consumer-bridge";
+  import {
+    getCssVars, readAccentDefault, readSurfaceBg,
+    readSeriesAnchors, readSlotStyle,
+  } from "$lib/theme/consumer-bridge";
 
   interface Props {
     store: TabvizStore;
@@ -22,7 +25,6 @@
 
   const variants = $derived(store.spec?.theme?.variants);
   const layout   = $derived(store.spec?.theme?.layout);
-  const inputs   = $derived(store.spec?.theme?.inputs);
   const theme    = $derived(store.spec?.theme);
   const borders  = $derived(store.spec?.theme?.borders);
 
@@ -30,7 +32,10 @@
     store.setThemeField(["variants", field], value);
   }
   function setInput(field: string, value: unknown) {
-    store.setThemeField(["inputs", field], value);
+    // V4: slot_style lives on authoringInputs (Tier-1 input), not on the
+    // v3 ResolvedInputs compat shim. Other "inputs.X" setter paths in
+    // this file were already migrated away; this is the last one.
+    store.setThemeField(["authoringInputs", field], value);
   }
   function setLayout(field: string, value: unknown) {
     store.setThemeField(["layout", field], value);
@@ -124,13 +129,13 @@
 
   // ── slot_style cascade ────────────────────────────────────────────
   // Re-derives every series slot bundle under the new fill/stroke pairing
-  // convention. Reads the canonical anchor from inputs.seriesAnchors[i]
+  // convention. Reads the canonical anchor from readSeriesAnchors(theme)
   // (NOT from the rendered series[i].fill, which under "outlined" is
   // already the surface-mixed lightened value — using it as the anchor
   // would compound the lightening on every click).
   function changeSlotStyle(value: "fill_with_darker_stroke" | "flat_fill" | "outlined") {
-    setInput("slotStyle", value);
-    const anchors = (inputs?.seriesAnchors as string[] | undefined) ?? [];
+    setInput("slot_style", value);
+    const anchors = readSeriesAnchors(theme);
     const surface = surfaceBaseline();
     for (let i = 0; i < anchors.length; i++) {
       const anchor = anchors[i];
@@ -253,10 +258,10 @@
           <button
             type="button"
             class="layout-card"
-            class:active={(inputs?.slotStyle as string | undefined ?? "fill_with_darker_stroke") === opt.value}
+            class:active={readSlotStyle(theme) === opt.value}
             onclick={() => changeSlotStyle(opt.value as "fill_with_darker_stroke" | "flat_fill" | "outlined")}
             aria-label={`Set slot style to ${opt.label}`}
-            aria-pressed={(inputs?.slotStyle as string | undefined ?? "fill_with_darker_stroke") === opt.value}
+            aria-pressed={readSlotStyle(theme) === opt.value}
           >
             <svg viewBox="0 0 36 22" width="100%" height="22" preserveAspectRatio="xMidYMid meet">
               <line x1="6" y1="11" x2="30" y2="11" stroke={opt.stroke} stroke-width={opt.sw}/>
@@ -285,7 +290,7 @@
     <SegmentedField
       label="Slot"
       hint="Series fill/stroke pairing."
-      value={(inputs?.slotStyle as ("fill_with_darker_stroke" | "flat_fill" | "outlined" | undefined)) ?? "fill_with_darker_stroke"}
+      value={readSlotStyle(theme)}
       options={[
         { value: "fill_with_darker_stroke", label: "F+S"   },
         { value: "flat_fill",               label: "Flat"  },

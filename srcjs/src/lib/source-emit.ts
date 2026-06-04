@@ -24,6 +24,7 @@
 import type { WebSpec, ColumnDef, ColumnSpec, ColumnGroup } from "../types";
 import type { WebTheme } from "../types/theme-resolved";
 import { THEME_PRESETS, THEME_NAMES, type ThemeName } from "./theme/theme-presets";
+import { oklchToHex } from "./oklch";
 import { dispatchForColumn } from "../schema/dispatch";
 // Side-effect: register built-in `emitSource` behaviors so the
 // dispatcher above finds them. Without this import the schema
@@ -134,21 +135,27 @@ function emitTypeSpecificArgs(col: ColumnSpec): { name: string; typeArgs: Record
 // ────────────────────────────────────────────────────────────────────
 
 function emitTheme(theme: WebTheme | unknown): string {
-  // Match the resolved theme against a preset by name + brand seed.
+  // Match the resolved theme against a preset by name + brand-anchor seed.
+  // V4: identity reads come from authoringInputs.anchors (the canonical
+  // Tier-1 inputs), not the v3 ResolvedInputs shim.
   const name = (theme as { name?: string })?.name;
-  if (name && (THEME_NAMES as readonly string[]).includes(name)) {
+  const themeAuth = (theme as WebTheme).authoringInputs;
+  if (name && (THEME_NAMES as readonly string[]).includes(name) && themeAuth) {
     const preset = THEME_PRESETS[name as ThemeName] as unknown as WebTheme;
-    const inputPrim = (theme as WebTheme).inputs?.primary;
-    const presetPrim = preset.inputs?.primary;
-    if (inputPrim === presetPrim) {
+    const themeBrand = oklchToHex(themeAuth.anchors.brand);
+    const presetBrand = preset.authoringInputs ? oklchToHex(preset.authoringInputs.anchors.brand) : null;
+    if (themeBrand === presetBrand) {
       return JSON.stringify(name);
     }
   }
   // Custom theme — emit a webTheme() call (brand + accent).
-  const inputs = (theme as WebTheme).inputs;
-  if (inputs) {
-    const args: Record<string, string> = { name: name ?? "custom", brand: inputs.primary };
-    if (inputs.accent && inputs.accent !== inputs.primary) args.accent = inputs.accent;
+  if (themeAuth) {
+    const brandHex = oklchToHex(themeAuth.anchors.brand);
+    const accentHex = themeAuth.anchors.accent
+      ? oklchToHex(themeAuth.anchors.accent)
+      : null;
+    const args: Record<string, string> = { name: name ?? "custom", brand: brandHex };
+    if (accentHex && accentHex !== brandHex) args.accent = accentHex;
     return `webTheme(${jsLit(args)})`;
   }
   return "/* custom theme — see spec.theme */ undefined";

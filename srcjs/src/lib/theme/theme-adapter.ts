@@ -32,7 +32,7 @@ import type {
   SpacingTokens, AnnotationCluster, HeaderCluster, RowGroupCluster,
   RowCluster, CellCluster, FirstColumnCluster, PlotScaffold,
   MarksRecipes, AxisConfig, Layout, ThemeBorders,
-  ResolvedInputs, ThemeVariants,
+  ThemeVariants,
 } from "../../types/theme-resolved";
 
 // Density px scales live in density-presets.ts as a single source of
@@ -92,45 +92,16 @@ export function buildTheme(
 
   const fontBody = inputs.fonts?.body ?? DEFAULT_FONT_BODY;
   const fontDisplay = inputs.fonts?.display ?? fontBody;
-  const fontMono = inputs.fonts?.mono ?? "ui-monospace, monospace";
-
-  // V3 compat shim — populated for the small set of remaining consumers
-  // (LayoutControl / TokensControl / CellHeatmap / SplitTabvizPlot)
-  // that haven't yet migrated to authoringInputs.anchors / cssVars
-  // helpers. See `ResolvedInputs` docstring in theme-resolved.ts for
-  // the per-consumer migration matrix.
-  const resolvedInputs: ResolvedInputs = {
-    neutral: [
-      rampStep(ramps.neutral, 1),
-      rampStep(ramps.neutral, 2),
-      rampStep(ramps.neutral, 3),
-      rampStep(ramps.neutral, 7),
-      rampStep(ramps.neutral, 12),
-    ],
-    primary: oklchToHex(reflected.anchors.brand),
-    primaryDeep: rampStep(ramps.brand, 11),
-    // Decorative dropped in V4; secondary now mirrors brand (themes that
-    // want a distinct secondary surface bind it via role overrides).
-    secondary: oklchToHex(reflected.anchors.brand),
-    secondaryDeep: rampStep(ramps.brand, 11),
-    accent: oklchToHex(reflected.anchors.accent ?? reflected.anchors.brand),
-    accentDeep: rampStep(ramps.accent, 11),
-    statusPositive: reflected.status?.positive ? oklchToHex(reflected.status.positive) : "#3F7D3F",
-    statusNegative: reflected.status?.negative ? oklchToHex(reflected.status.negative) : "#B33A3A",
-    statusWarning:  reflected.status?.warning  ? oklchToHex(reflected.status.warning)  : "#C68A2E",
-    statusInfo:     reflected.status?.info     ? oklchToHex(reflected.status.info)     : "#1F77B4",
-    seriesAnchors: [
-      rampStep(ramps.brand, 9),
-      rampStep(ramps.accent, 9),
-      rampStep(ramps.brand, 7),
-      rampStep(ramps.accent, 7),
-      rampStep(ramps.brand, 5),
-    ],
-    fontBody,
-    fontDisplay,
-    fontMono,
-    slotStyle: "fill_with_darker_stroke",
-  };
+  // Series anchor palette — drives the 5 SlotRole bundles below. The v3
+  // ResolvedInputs.seriesAnchors field that mirrored this array was
+  // deleted (consumers now derive via `readSeriesAnchors(theme)`).
+  const seriesAnchors: string[] = [
+    rampStep(ramps.brand, 9),
+    rampStep(ramps.accent, 9),
+    rampStep(ramps.brand, 7),
+    rampStep(ramps.accent, 7),
+    rampStep(ramps.brand, 5),
+  ];
 
   const variants: ThemeVariants = {
     density: inputs.density ?? "comfortable",
@@ -187,7 +158,7 @@ export function buildTheme(
       shape: null,
     };
   }
-  const series: SlotRole[] = resolvedInputs.seriesAnchors.map(slotRole);
+  const series: SlotRole[] = seriesAnchors.map(slotRole);
 
   const text: TextRoles = {
     title:    textRoleTitle(fontDisplay, t.ink),
@@ -339,7 +310,6 @@ export function buildTheme(
     webFonts: [],
     lightDarkPair: null,
     variants: variants,
-    inputs: resolvedInputs,
     authoringInputs: inputs,
     axis,
     layout,

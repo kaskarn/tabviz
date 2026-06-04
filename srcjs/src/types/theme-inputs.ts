@@ -142,6 +142,14 @@ export interface ThemeInputs {
     accent?: "linear" | "ease" | "smooth" | "log" | "exp";
   };
 
+  /** Series viz mark style. Drives how each series slot's fill / stroke
+   *  pair derives from the slot's anchor color.
+   *    fill_with_darker_stroke — saturated fill + darker stroke (default)
+   *    flat_fill              — same color for fill and stroke
+   *    outlined               — pale fill + saturated stroke
+   *  Default: "fill_with_darker_stroke". */
+  slot_style?: "fill_with_darker_stroke" | "flat_fill" | "outlined";
+
   /** Per-row-kind theme defaults — currently only height ratio; Stage 2
    *  paint fields (bg, fg, border, weight) extend this shape per Q10
    *  closure. Layer 3 of the row-kind height cascade (Stage 1 §33). */

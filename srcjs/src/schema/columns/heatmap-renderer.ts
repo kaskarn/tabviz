@@ -15,7 +15,8 @@ import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
 import CellHeatmap from "../../components/table/CellHeatmap.svelte";
 import {
-  getCssVars, readContentPrimary, readBodyFamily, readBodySize,
+  getCssVars, readAccentDefault, readSurfaceBg,
+  readContentPrimary, readBodyFamily, readBodySize,
 } from "../../lib/theme/consumer-bridge";
 import { normalizeValue } from "../../lib/scale-utils";
 import { parseFontSize } from "../../lib/typography-layout";
@@ -38,22 +39,22 @@ function parseHex(hex: string): [number, number, number] {
   ];
 }
 
-/** Build the theme-derived default palette (light surface → primaryDeep). */
+/** Build the theme-derived default palette (light surface → accent).
+ *  V4: brand routes through accent for layered emphasis; identity-
+ *  secondary cascade dropped. */
 function defaultPalette(theme: WebTheme): string[] {
-  const themeInputs = theme.inputs as { primary?: string; primaryDeep?: string } | undefined;
-  const surfaceBase = (theme.surface as { base?: string } | undefined)?.base ?? "#ffffff";
-  const primary = themeInputs?.primary;
-  const primaryDeep = themeInputs?.primaryDeep ?? primary;
-  if (!primary || !primaryDeep) return ["#f7fbff", "#08306b"];
-  // Blend primary 92% toward surface for the light end.
-  const [ar, ag, ab] = parseHex(primary);
+  const cv = getCssVars(theme);
+  const accent = readAccentDefault(cv);
+  const surfaceBase = readSurfaceBg(cv);
+  // Blend accent 92% toward surface for the light end.
+  const [ar, ag, ab] = parseHex(accent);
   const [br, bg, bb] = parseHex(surfaceBase);
   const t = 0.92;
   const r = Math.round(ar * (1 - t) + br * t);
   const g = Math.round(ag * (1 - t) + bg * t);
   const b = Math.round(ab * (1 - t) + bb * t);
   const lightHex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-  return [lightHex, primaryDeep];
+  return [lightHex, accent];
 }
 
 /** Interpolate a value in [0,1] across the palette stops. */

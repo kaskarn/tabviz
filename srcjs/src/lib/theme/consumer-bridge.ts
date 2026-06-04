@@ -273,3 +273,36 @@ export function readLabelSize(cssVars: Record<string, string>): string {
 export function readCellSize(cssVars: Record<string, string>): string {
   return readTypeSize(cssVars, "cell", "14px");
 }
+
+// V4-substrate convenience accessors that pull from authoringInputs +
+// the v4 ramps. These give consumers a clean alternative to the v3
+// `ResolvedInputs` compat shim (theme-resolved.ts).
+
+import { applyPolarityToInputs } from "./resolve-theme";
+import { buildRamps } from "./theme-resolve";
+import { rampStep } from "../oklch";
+
+/** Series anchor palette — 5 brand/accent ramp grades that drive the
+ *  pooled-effect series-slot fills. Replaces v3 `theme.inputs.seriesAnchors`.
+ *  Returns an empty array when authoringInputs is unavailable. */
+export function readSeriesAnchors(theme: WebTheme | null | undefined): string[] {
+  if (!theme?.authoringInputs) return [];
+  const reflected = applyPolarityToInputs(theme.authoringInputs);
+  const ramps = buildRamps(reflected);
+  return [
+    rampStep(ramps.brand, 9),
+    rampStep(ramps.accent, 9),
+    rampStep(ramps.brand, 7),
+    rampStep(ramps.accent, 7),
+    rampStep(ramps.brand, 5),
+  ];
+}
+
+/** Read the series viz mark style. Replaces v3 `theme.inputs.slotStyle`.
+ *  Sourced from `authoringInputs.slot_style`; falls back to the
+ *  fill_with_darker_stroke default that matches v3 ResolvedInputs.slotStyle. */
+export function readSlotStyle(
+  theme: WebTheme | null | undefined,
+): "fill_with_darker_stroke" | "flat_fill" | "outlined" {
+  return theme?.authoringInputs?.slot_style ?? "fill_with_darker_stroke";
+}

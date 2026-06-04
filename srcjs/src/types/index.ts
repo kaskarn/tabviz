@@ -1340,7 +1340,6 @@ export interface WidgetInstance {
 // migration to `WebTheme` is tracked under Phase 0c-C5 / Phase 1.x.
 // See `./theme-resolved.ts` for the full v2 type tree.
 export type {
-  ResolvedInputs,
   ThemeVariants,
   Surfaces,
   Content,

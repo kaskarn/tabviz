@@ -125,43 +125,6 @@ export interface MarkRecipe {
 // Tier 1 — customer-facing inputs
 // ────────────────────────────────────────────────────────────────────
 
-/**
- * Compat shim — V3 ResolvedInputs (pre-V4 cascade). Populated by
- * `theme-adapter.ts::buildTheme` for components that haven't yet
- * migrated to reading from `authoringInputs.anchors` / cssVars
- * helpers. Reading from this is **deprecated**; new code should
- * use:
- *   - color/identity: `readAccentDefault(getCssVars(theme))`
- *   - status: `var(--tv-status-X)` or status anchors
- *   - typography: `readBodyFamily(cssVars)` etc.
- *   - series anchors: TODO — needs a v4 helper
- *   - slot style: TODO — currently lives only here
- *
- * Active follow-ups for the remaining consumers:
- *   - components/ui/LayoutControl.svelte: primaryDeep / seriesAnchors / slotStyle
- *   - components/ui/TokensControl.svelte: neutral
- *   - components/table/CellHeatmap.svelte: primary / primaryDeep
- *   - svelte/SplitTabvizPlot.svelte: primary fallback
- */
-export interface ResolvedInputs {
-  neutral: string[];
-  primary: string;
-  primaryDeep: string | null;
-  secondary: string | null;
-  secondaryDeep: string | null;
-  accent: string;
-  accentDeep: string | null;
-  statusPositive: string;
-  statusNegative: string;
-  statusWarning: string;
-  statusInfo: string | null;
-  seriesAnchors: string[];
-  fontBody: string;
-  fontDisplay: string | null;
-  fontMono: string | null;
-  slotStyle: "fill_with_darker_stroke" | "flat_fill" | "outlined";
-}
-
 export interface ThemeVariants {
   /** "compact" | "comfortable" | "spacious" */
   density: "compact" | "comfortable" | "spacious";
@@ -444,9 +407,6 @@ export interface WebTheme {
    */
   lightDarkPair: string | null;
   variants: ThemeVariants;
-  /** @deprecated v3 compat shim — see `ResolvedInputs` docstring for
-   *  the migration matrix per remaining consumer. */
-  inputs: ResolvedInputs;
   /**
    * The Tier-1 authoring inputs that produced this theme (anchors,
    * polarity, mode, density, fonts, type_*, curves, geometry, effects,
