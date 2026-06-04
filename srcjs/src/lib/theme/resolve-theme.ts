@@ -30,14 +30,24 @@
  * `--tv-*` namespace and validate visual fidelity end-to-end.
  */
 
-import type { ThemeInputs, TokenRamps } from "../../types/theme-inputs";
+import type { ThemeInputs, OklchTriple, TokenRamps } from "../../types/theme-inputs";
 import type { RoleName } from "../../types/theme-roles";
 import type { ThemeWire } from "./theme-wire";
 import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
-import { reflectHex } from "./polarity";
-import { pickInkOnBg } from "../oklch";
+import { reflectL } from "./polarity";
+import { pickInkOnBg, oklchToHex } from "../oklch";
+
+/** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
+function reflectAnchor(a: OklchTriple): OklchTriple {
+  return { L: reflectL(a.L), C: a.C, H: a.H };
+}
+
+/** Optional anchor — reflect if present, else pass through. */
+function reflectAnchorMaybe(a: OklchTriple | undefined): OklchTriple | undefined {
+  return a ? reflectAnchor(a) : undefined;
+}
 import {
   resolveTypographyInputs,
   resolveTypeRole,
@@ -108,24 +118,27 @@ function derivePolarity(inputs: ThemeInputs): "light" | "dark" {
   return inputs.polarity ?? "light";
 }
 
-/** Apply polarity reflection to the input anchor hexes (Stage 1 §22).
- *  Returns a new ThemeInputs with `polarity` set and anchors reflected
- *  when polarity is dark. */
+/** Apply polarity reflection to the input anchors (Stage 1 §22). Returns
+ *  a new ThemeInputs with `polarity` set and every anchor's L reflected
+ *  around the polarity pivot when polarity is dark. C and H are unchanged. */
 function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
   const polarity = derivePolarity(inputs);
   if (polarity === "light") return { ...inputs, polarity: "light" };
   return {
     ...inputs,
     polarity: "dark",
-    brand: reflectHex(inputs.brand),
-    accent: inputs.accent ? reflectHex(inputs.accent) : undefined,
-    decorative: inputs.decorative ? reflectHex(inputs.decorative) : null,
+    anchors: {
+      paper: reflectAnchor(inputs.anchors.paper),
+      ink:   reflectAnchor(inputs.anchors.ink),
+      brand: reflectAnchor(inputs.anchors.brand),
+      accent: reflectAnchorMaybe(inputs.anchors.accent),
+    },
     status: inputs.status
       ? {
-          positive: inputs.status.positive ? reflectHex(inputs.status.positive) : undefined,
-          negative: inputs.status.negative ? reflectHex(inputs.status.negative) : undefined,
-          warning: inputs.status.warning ? reflectHex(inputs.status.warning) : undefined,
-          info: inputs.status.info ? reflectHex(inputs.status.info) : undefined,
+          positive: reflectAnchorMaybe(inputs.status.positive),
+          negative: reflectAnchorMaybe(inputs.status.negative),
+          warning:  reflectAnchorMaybe(inputs.status.warning),
+          info:     reflectAnchorMaybe(inputs.status.info),
         }
       : undefined,
   };
@@ -259,7 +272,8 @@ function resolveTokenValue(
 
   // Stage 2 §7 browser-additive effects.
   if (token.cssVar === "--tv-brand-gradient") {
-    const brandSolid = resolved.roles["brand-solid"] ?? resolved.inputs.brand;
+    const brandHex = oklchToHex(resolved.inputs.anchors.brand);
+    const brandSolid = resolved.roles["brand-solid"] ?? brandHex;
     // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
     const brandRamp = resolved.ramps.brand;
     const a = brandRamp[7] ?? brandSolid;
@@ -268,7 +282,8 @@ function resolveTokenValue(
   }
   if (token.cssVar === "--tv-brand-glow") {
     // rgba from accent-solid at alpha 0.4.
-    const accent = resolved.roles["accent-solid"] ?? resolved.inputs.brand;
+    const brandHex = oklchToHex(resolved.inputs.anchors.brand);
+    const accent = resolved.roles["accent-solid"] ?? brandHex;
     if (accent.startsWith("#")) {
       const h = accent.slice(1);
       const r = parseInt(h.slice(0, 2), 16);
@@ -527,25 +542,22 @@ function tokenDensityPx(
   return `${Math.round(base * f)}px`;
 }
 
-/** Resolve an anchor name to its hex value from inputs. */
+/** Resolve an anchor name to its hex value from V4 inputs. */
 function pickAnchorHex(
   anchor: string,
   inputs: ThemeInputs,
 ): string | null {
+  const a = inputs.anchors;
   switch (anchor) {
-    case "brand": return inputs.brand;
-    case "accent": return inputs.accent ?? null;
-    case "decorative": return inputs.decorative ?? null;
-    case "accent-anchor": return inputs.accent ?? inputs.brand;
-    case "status-positive": return inputs.status?.positive ?? null;
-    case "status-negative": return inputs.status?.negative ?? null;
-    case "status-warning": return inputs.status?.warning ?? null;
-    case "status-info": return inputs.status?.info ?? null;
-    // paper / ink anchors come from the neutral ramp after polarity; not
-    // directly accessible from inputs.
-    case "paper":
-    case "ink":
-      return null;
+    case "paper":  return oklchToHex(a.paper);
+    case "ink":    return oklchToHex(a.ink);
+    case "brand":  return oklchToHex(a.brand);
+    case "accent": return a.accent ? oklchToHex(a.accent) : null;
+    case "accent-anchor": return oklchToHex(a.accent ?? a.brand);
+    case "status-positive": return inputs.status?.positive ? oklchToHex(inputs.status.positive) : null;
+    case "status-negative": return inputs.status?.negative ? oklchToHex(inputs.status.negative) : null;
+    case "status-warning":  return inputs.status?.warning  ? oklchToHex(inputs.status.warning)  : null;
+    case "status-info":     return inputs.status?.info     ? oklchToHex(inputs.status.info)     : null;
     default:
       return null;
   }
@@ -578,10 +590,12 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
 
   // Build alpha companions from each ramp's anchor (grade 9 ≈ the "solid"
   // step). The alpha builder takes a hex; we feed it the ramp's step-9 hex.
+  const brandHex = oklchToHex(reflected.anchors.brand);
+  const accentHex = oklchToHex(reflected.anchors.accent ?? reflected.anchors.brand);
   const alphaRamps = {
     neutralAlpha: buildAlphaRamp(ramps12.neutral[8] ?? "#888888"),
-    brandAlpha: buildAlphaRamp(ramps12.brand[8] ?? wire.inputs.brand),
-    accentAlpha: buildAlphaRamp(ramps12.accent[8] ?? wire.inputs.accent ?? wire.inputs.brand),
+    brandAlpha: buildAlphaRamp(ramps12.brand[8] ?? brandHex),
+    accentAlpha: buildAlphaRamp(ramps12.accent[8] ?? accentHex),
   };
 
   // Pre-compute off-ramp context:
@@ -590,7 +604,7 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
   //     "text on a colored solid" surface in widget output.
   //   - status: lifted from the existing buildRamps output (5-step per
   //     status).
-  const brandSolid = ramps12.brand[8] ?? wire.inputs.brand;
+  const brandSolid = ramps12.brand[8] ?? brandHex;
   const textOnSolidCandidates = [
     ramps12.neutral[0]!,
     ramps12.neutral[11]!,

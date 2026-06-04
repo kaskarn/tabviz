@@ -46,12 +46,9 @@ export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive, 
 
 export interface WebThemeArgs {
   name?: string;
-  /** Brand seed. Powers the brand ramp and identity tokens. */
-  brand?: string;
-  /** Engagement seed (hover/selected/callouts). Defaults to brand. */
-  accent?: string;
-  /** Optional second color for two-color editorial themes. */
-  decorative?: string;
+  /** Partial anchor overrides. Each anchor is an OKLCH triple {L, C, H};
+   *  missing anchors inherit from the base preset. */
+  anchors?: Partial<ThemeInputs["anchors"]>;
   mode?: "standard" | "high-contrast" | "reduced-transparency";
   polarity?: "light" | "dark";
   density?: "compact" | "comfortable" | "spacious";
@@ -59,13 +56,13 @@ export interface WebThemeArgs {
   sequential?: string;
   diverging?: string;
   fonts?: { body?: string; display?: string; mono?: string };
-  status?: { positive?: string; negative?: string; warning?: string; info?: string };
+  status?: ThemeInputs["status"];
   /** Base preset name; defaults to `"cochrane"`. */
   baseTheme?: PresetName;
 }
 
 const INPUT_KEYS: readonly (keyof ThemeInputs)[] = [
-  "brand", "accent", "decorative", "mode", "polarity", "neutral_tint",
+  "anchors", "mode", "polarity",
   "categorical", "sequential", "diverging", "status", "fonts", "density",
 ];
 
@@ -77,7 +74,12 @@ export function webTheme(args: WebThemeArgs = {}): WebTheme {
     const v = (args as Record<string, unknown>)[k as string];
     if (v !== undefined) (overlay as Record<string, unknown>)[k as string] = v;
   }
-  const inputs: ThemeInputs = { ...baseInputs, ...overlay };
+  // Anchors deep-merge: partial anchor overrides inherit unspecified slots
+  // from the base preset.
+  const mergedAnchors = args.anchors
+    ? { ...baseInputs.anchors, ...args.anchors }
+    : baseInputs.anchors;
+  const inputs: ThemeInputs = { ...baseInputs, ...overlay, anchors: mergedAnchors };
   return buildTheme(inputs, args.name ?? "custom");
 }
 

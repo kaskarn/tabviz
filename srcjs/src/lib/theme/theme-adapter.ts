@@ -24,7 +24,7 @@
 
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
-import { rampStep, oklchMix, oklchDarken } from "../oklch";
+import { rampStep, oklchMix, oklchDarken, oklchToHex } from "../oklch";
 import type {
   WebTheme, Surfaces, Content, Dividers, AccentRoles,
   StatusColors, Semantics, SlotRole, TextRole, TextRoles,
@@ -108,18 +108,18 @@ export function buildTheme(
       rampStep(ramps.neutral, 7),
       rampStep(ramps.neutral, 12),
     ],
-    primary: inputs.brand,
+    primary: oklchToHex(inputs.anchors.brand),
     primaryDeep: rampStep(ramps.brand, 11),
-    secondary: inputs.decorative ?? inputs.brand,
-    secondaryDeep: inputs.decorative
-      ? rampStep(ramps.decorative!, 11)
-      : rampStep(ramps.brand, 11),
-    accent: inputs.accent ?? inputs.brand,
+    // Decorative dropped in V4; secondary now mirrors brand (themes that
+    // want a distinct secondary surface bind it via role overrides).
+    secondary: oklchToHex(inputs.anchors.brand),
+    secondaryDeep: rampStep(ramps.brand, 11),
+    accent: oklchToHex(inputs.anchors.accent ?? inputs.anchors.brand),
     accentDeep: rampStep(ramps.accent, 11),
-    statusPositive: inputs.status?.positive ?? "#3F7D3F",
-    statusNegative: inputs.status?.negative ?? "#B33A3A",
-    statusWarning: inputs.status?.warning ?? "#C68A2E",
-    statusInfo: inputs.status?.info ?? "#1F77B4",
+    statusPositive: inputs.status?.positive ? oklchToHex(inputs.status.positive) : "#3F7D3F",
+    statusNegative: inputs.status?.negative ? oklchToHex(inputs.status.negative) : "#B33A3A",
+    statusWarning:  inputs.status?.warning  ? oklchToHex(inputs.status.warning)  : "#C68A2E",
+    statusInfo:     inputs.status?.info     ? oklchToHex(inputs.status.info)     : "#1F77B4",
     seriesAnchors: [
       rampStep(ramps.brand, 9),
       rampStep(ramps.accent, 9),
@@ -220,8 +220,8 @@ export function buildTheme(
 
   const columnGroup: HeaderCluster = {
     light: { bg: t.paper, fg: t.ink, rule: t.rule_strong },
-    tint:  { bg: t.decorative_subtle, fg: t.ink, rule: t.rule_strong },
-    bold:  { bg: t.decorative_chrome, fg: t.brand_ink, rule: t.rule_strong },
+    tint:  { bg: t.brand_subtle, fg: t.ink, rule: t.rule_strong },
+    bold:  { bg: t.brand, fg: t.brand_ink, rule: t.rule_strong },
     text:  { ...text.body, weight: 500 },
   };
 

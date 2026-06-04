@@ -484,3 +484,45 @@ export function rampStep(ramp: string[], step: number): string {
   }
   return ramp[step - 1]!;
 }
+
+/**
+ * V4 anchor-driven ramp builder.
+ *
+ * Generates a 12-step ramp by interpolating in OKLCH space from `start` at
+ * step 1 to `end` at step 12. All three components (L, C, H) interpolate.
+ * Hue interpolates along the shortest path around the wheel.
+ *
+ * Used for the neutral ramp (paper → ink) where every step lies on the
+ * line between paper and ink. For chromatic ramps (brand, accent) where
+ * hue is constant and chroma peaks at a specific grade, prefer `oklchRamp`
+ * with the chromatic seed's hex.
+ *
+ * Optional curve reshapes the L progression; default = linear in t∈[0,1].
+ * Chroma and hue always interpolate linearly.
+ */
+export function oklchInterpolateRamp(
+  start: OKLCH,
+  end: OKLCH,
+  options: { curve?: LRampCurve; steps?: number } = {},
+): string[] {
+  const steps = options.steps ?? 12;
+  const curve = options.curve;
+  const hueDelta = shortestHueDelta(start.H, end.H);
+  const out: string[] = [];
+  for (let i = 0; i < steps; i++) {
+    const t = steps === 1 ? 0 : i / (steps - 1);
+    const u = curve ? curve(t) : t;
+    const L = start.L + u * (end.L - start.L);
+    const C = start.C + t * (end.C - start.C);
+    const H = (start.H + t * hueDelta + 360) % 360;
+    out.push(oklchToHex({ L, C, H }));
+  }
+  return out;
+}
+
+/** Shortest-path hue delta in degrees: range (-180, 180]. */
+function shortestHueDelta(h0: number, h1: number): number {
+  let d = ((h1 - h0) % 360 + 360) % 360;
+  if (d > 180) d -= 360;
+  return d;
+}
