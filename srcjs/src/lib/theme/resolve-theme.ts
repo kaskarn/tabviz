@@ -279,6 +279,13 @@ function resolveRoleValue(
  * If a future schema gains `{value: string}` or `{add: number}`, layer
  * C + D become migratable; layer A stays as-is (it's at the wrong
  * abstraction for per-token declaration).
+ *
+ * AUDIT CLOSURE (wire-audit Pass 3a, 2026-06-05): B10's "migrate inline
+ * HC logic to declarative token.modes" was verified ALREADY DONE for
+ * Layer B — the pre-filter in resolveTokenValue has consumed token.modes
+ * since Stage 1 §23, and the Pass-0d dispatch-parity test proved it
+ * byte-identical across all presets × modes. Layers A/C/D stay inline
+ * per the rationale above; no further migration is planned.
  */
 
 // Layer-C HC fidelity values — pulled to named constants so each

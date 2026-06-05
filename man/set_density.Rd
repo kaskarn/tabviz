@@ -10,7 +10,13 @@ set_density(theme, density = NULL, factor = NULL)
 \item{theme}{A \link{WebTheme}.}
 
 \item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"} (or \code{NULL} to
-keep the current preset and adjust only \code{factor}).}
+keep the current preset and adjust only \code{factor}).
+
+Note for readers comparing against the rgc_v4 design-lab screenshots
+(D8/D13): the lab's middle setting is named \code{cozy} and its loosest is
+\code{comfortable} — tabviz \code{comfortable} = lab \code{cozy} (middle), tabviz
+\code{spacious} = lab \code{comfortable} (loosest). Same three positions,
+shifted names.}
 
 \item{factor}{Optional continuous multiplier on the preset's spacing, in
 \verb{[0.5, 2]} (1 = preset unchanged). \code{NULL} keeps the current factor.}

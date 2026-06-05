@@ -27,7 +27,11 @@
 <div class="rows">
   <div class="row">
     <span class="label">Density</span>
-    <div class="seg" role="radiogroup" aria-label="Density preset">
+    <!-- D13 translation note: tabviz "comfortable" = rgc-lab "cozy"
+         (middle); tabviz "spacious" = lab "comfortable" (loosest). The
+         title attr reaches authors cross-referencing lab screenshots. -->
+    <div class="seg" role="radiogroup" aria-label="Density preset"
+         title="comfortable = lab 'cozy' (middle) · spacious = lab 'comfortable' (loosest)">
       {#each PRESETS as p (p)}
         <button type="button" class:on={density === p} onclick={() => setDensity(p)}>{p}</button>
       {/each}

@@ -582,6 +582,12 @@ set_categorical <- function(theme, scheme) {
 #' @param theme A [WebTheme].
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"` (or `NULL` to
 #'   keep the current preset and adjust only `factor`).
+#'
+#'   Note for readers comparing against the rgc_v4 design-lab screenshots
+#'   (D8/D13): the lab's middle setting is named `cozy` and its loosest is
+#'   `comfortable` — tabviz `comfortable` = lab `cozy` (middle), tabviz
+#'   `spacious` = lab `comfortable` (loosest). Same three positions,
+#'   shifted names.
 #' @param factor Optional continuous multiplier on the preset's spacing, in
 #'   `[0.5, 2]` (1 = preset unchanged). `NULL` keeps the current factor.
 #' @return The re-resolved [WebTheme].
