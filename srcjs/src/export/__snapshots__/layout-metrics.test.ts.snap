@@ -2,7 +2,7 @@
 
 exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
 {
-  "axisHeight": 29,
+  "axisHeight": 31,
   "columns": [
     {
       "id": "label",
@@ -88,14 +88,14 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 206,
+  "totalHeight": 208,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -181,14 +181,14 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 249,
+  "totalHeight": 251,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
 {
-  "axisHeight": 37,
+  "axisHeight": 39,
   "columns": [
     {
       "id": "label",
@@ -274,14 +274,14 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     "rowGroupPadding": 16,
     "rowHeight": 30,
   },
-  "totalHeight": 311,
+  "totalHeight": 313,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = `
 {
-  "axisHeight": 29,
+  "axisHeight": 31,
   "columns": [
     {
       "id": "label",
@@ -358,14 +358,14 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 216,
+  "totalHeight": 218,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -442,14 +442,14 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 261,
+  "totalHeight": 263,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] = `
 {
-  "axisHeight": 37,
+  "axisHeight": 39,
   "columns": [
     {
       "id": "label",
@@ -526,14 +526,14 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     "rowGroupPadding": 16,
     "rowHeight": 30,
   },
-  "totalHeight": 326,
+  "totalHeight": 328,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
 {
-  "axisHeight": 29,
+  "axisHeight": 31,
   "columns": [
     {
       "id": "label",
@@ -598,14 +598,14 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 202,
+  "totalHeight": 204,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -670,14 +670,14 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 225,
+  "totalHeight": 227,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
 {
-  "axisHeight": 37,
+  "axisHeight": 39,
   "columns": [
     {
       "id": "label",
@@ -742,14 +742,14 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
     "rowGroupPadding": 16,
     "rowHeight": 30,
   },
-  "totalHeight": 257,
+  "totalHeight": 259,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -817,14 +817,14 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 201,
+  "totalHeight": 203,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -892,14 +892,14 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 189,
+  "totalHeight": 191,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
 {
-  "axisHeight": 29,
+  "axisHeight": 31,
   "columns": [
     {
       "id": "label",
@@ -985,14 +985,14 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 214,
+  "totalHeight": 216,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -1078,14 +1078,14 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 261,
+  "totalHeight": 263,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
 {
-  "axisHeight": 37,
+  "axisHeight": 39,
   "columns": [
     {
       "id": "label",
@@ -1171,14 +1171,14 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     "rowGroupPadding": 16,
     "rowHeight": 30,
   },
-  "totalHeight": 327,
+  "totalHeight": 329,
   "totalWidth": 800,
 }
 `;
 
 exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
 {
-  "axisHeight": 33,
+  "axisHeight": 35,
   "columns": [
     {
       "id": "label",
@@ -1273,7 +1273,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     "rowGroupPadding": 12,
     "rowHeight": 24,
   },
-  "totalHeight": 225,
+  "totalHeight": 227,
   "totalWidth": 800,
 }
 `;

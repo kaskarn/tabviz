@@ -401,6 +401,46 @@ bundle (1,298→3,300px in the window) and pass post-fix (rock-stable 264px,
 maxTrack exactly rowHeight+pad). `grow-merge-heights.test.ts` pins the
 commit semantics.
 
+## 6d. Surface-air ownership — the spacing rework (LANDED 2026-06-05)
+
+Three-agent review (geometry audit / rgc_v4 aesthetics / spacing
+architecture) found the wire-audit shell graft incoherent with the
+density substrate: four padding layers (two dead), a hand-tuned
+`shellExtrasPad = 30` chip-height constant, fixed-px chrome invisible to
+density, and the strip rendered as a top cap instead of the lab's
+caption↔data seam. The consolidated model:
+
+- **One rule for height accounting**: everything that contributes height
+  lives INSIDE `.tabviz-scalable` (caption block, strip, paper with its
+  padding, footer) and is covered by the ResizeObserver. The ONLY
+  out-of-band term is the shell's own padding, read from the resolved
+  `--tv-shell-padding` cssVar (never re-derived from the recipe). If you
+  add new chrome, put it inside the scalable — do not extend the height
+  formula.
+- **Air ownership**: SHELL = the figure's outer air (density-scaled,
+  mode-gated in `shell-paper.ts`: raised 14/20/26 × density_factor;
+  float pads too so the drop shadow breathes; flush/transparent 0 —
+  geometric inertness contract). PAPER = inner mat (10/14/18).
+  `containerPadding` = page-gutter escape hatch, 0 everywhere by default
+  (preset, CSS fallback, and JS formula all agree — was a 0-vs-16
+  triple-source incoherence).
+- **Why the shell/paper pad scales are NOT in DENSITY_PX**: every
+  DENSITY_PX entry emits a `--tv-spacing-*` wire token unconditionally;
+  shell/paper padding is mode-gated (flush MUST stay 0), so the scale
+  belongs to the shell recipe — "inline at the resolver" is the
+  sanctioned canonical home for a mode-dependent axis.
+- **Aspect ladder**: includes `2 × --tv-shell-padding` in its chrome
+  estimate (figure-internal air belongs in the pinned aspect);
+  `containerPadding` deliberately excluded (page gutter).
+- **Axis descent**: `computeAxisLayout` reserves `0.6 × tickFont` below
+  the last baseline (was 0.4 — under-reserved by one descender; the
+  geometry audit measured 2–3px of overshoot on every preset, masked
+  only by container padding).
+- **Gate**: `tests/browser/theme-screenshots.browser.ts` asserts the
+  wrap chain, the strip's seam position (after caption, before paper),
+  flush inertness (0/0), and density-scaled band/mat presence per
+  archetype.
+
 ## 6b. Verification harness (built — the numeric half of "debug-shapes")
 
 The regression substrate the RowKind + `computeTableMetrics` refactors are

@@ -620,33 +620,39 @@ function resolveTextureComputed(
   return resolveTextureColors(resolved.ramps.neutral)[key];
 }
 
+/** The four T2 roles every shell/paper recipe consumes, with safe
+ *  fallbacks. Extracted: this stanza was copy-pasted across the knockout /
+ *  elevation / shell-paper resolvers (spacing-rework quality pass). */
+function shellPaperRoles(
+  resolved: { roles: Record<RoleName, string> },
+): { surface: string; surfaceSubtle: string; border: string; borderSubtle: string } {
+  return {
+    surface:       resolved.roles.surface           ?? "#FFFFFF",
+    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
+    border:        resolved.roles.border            ?? "#CCCCCC",
+    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
+  };
+}
+
 /** Stage 2 §4 texture knockout resolver. Premixes the surface bg at 78%
  *  opacity against white so both CSS and SVG paths consume a literal hex
- *  (avoiding the `color-mix()` librsvg compatibility wrinkle). */
+ *  (avoiding the `color-mix()` librsvg compatibility wrinkle).
+ *  Shell-side only: the paper-side twin died with the paper-texture
+ *  fallthrough (spacing rework — caption/footer text sits on the shell). */
 function resolveKnockoutComputed(
   cssVar: string,
   resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
 ): string | null {
-  let surfaceBg: string | null = null;
-  if (cssVar === "--tv-shell-text-knockout-bg") {
-    const sp = resolveShellPaper(resolved.inputs, {
-      surface:       resolved.roles.surface       ?? "#FFFFFF",
-      surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
-      border:        resolved.roles.border        ?? "#CCCCCC",
-      borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
-    });
-    surfaceBg = sp.shellBg;
-  } else if (cssVar === "--tv-paper-text-knockout-bg") {
-    const sp = resolveShellPaper(resolved.inputs, {
-      surface:       resolved.roles.surface       ?? "#FFFFFF",
-      surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
-      border:        resolved.roles.border        ?? "#CCCCCC",
-      borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
-    });
-    surfaceBg = sp.paperBg;
-  }
-  if (surfaceBg === null) return null;
-  return resolveTextureKnockoutBg(surfaceBg);
+  if (cssVar !== "--tv-shell-text-knockout-bg") return null;
+  const sp = resolveShellPaper(resolved.inputs, shellPaperRoles(resolved));
+  // Transparent / glass shells have no hex of their own — premix against
+  // the PAPER bg instead of the white-page fallback. (The white fallback
+  // was correct when knockouts sat on opaque paper; after the spacing
+  // rework caption text sits on the shell, and a white pad behind light
+  // title text made dark/glass themes illegible — caught by the
+  // screenshot harness eyeball pass.)
+  const bg = sp.shellBg.startsWith("#") ? sp.shellBg : sp.paperBg;
+  return resolveTextureKnockoutBg(bg);
 }
 
 /** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`
@@ -658,12 +664,7 @@ function resolveElevationComputed(
 ): string | null {
   const key = elevationKeyForCssVar(cssVar);
   if (key === null) return null;
-  const sp = resolveShellPaper(resolved.inputs, {
-    surface:       resolved.roles.surface       ?? "#FFFFFF",
-    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
-    border:        resolved.roles.border        ?? "#CCCCCC",
-    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
-  });
+  const sp = resolveShellPaper(resolved.inputs, shellPaperRoles(resolved));
   const paperBg = sp.paperBg.startsWith("#") ? sp.paperBg : "#FFFFFF";
   return resolveElevationShadows(paperBg)[key];
 }
@@ -677,12 +678,7 @@ function resolveShellPaperComputed(
 ): string | null {
   const key = shellPaperKeyForCssVar(cssVar);
   if (key === null) return null;
-  const sp = resolveShellPaper(resolved.inputs, {
-    surface:       resolved.roles.surface       ?? "#FFFFFF",
-    surfaceSubtle: resolved.roles["surface-subtle"] ?? "#F0F0F0",
-    border:        resolved.roles.border        ?? "#CCCCCC",
-    borderSubtle:  resolved.roles["border-subtle"]  ?? "#E0E0E0",
-  });
+  const sp = resolveShellPaper(resolved.inputs, shellPaperRoles(resolved));
   return sp[key];
 }
 

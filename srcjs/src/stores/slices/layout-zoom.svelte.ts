@@ -311,8 +311,12 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       const effectiveRowSlots =
         displayRows.length + (hasOverallForBudget ? 1.5 : 0);
       const approxRowsHeight = effectiveRowSlots * naturalRowHeight;
+      // Shell padding is figure-internal air (spacing rework) so it
+      // belongs in the aspect the user pins; containerPadding is page
+      // gutter and deliberately stays out.
       const approxChromeHeight =
-        headerHeight + axisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2;
+        headerHeight + axisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2 +
+        readVarPx(cssVars, "--tv-shell-padding", 0) * 2;
       const approxNaturalHeight = approxRowsHeight + approxChromeHeight;
       const approxNaturalWidth = effectiveWidth;
       const naturalAspect = approxNaturalWidth > 0 && approxNaturalHeight > 0
@@ -478,9 +482,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
 
     // Stable natural aspect — pre-mutation reference for the slider.
+    // Includes shell padding for the same reason as approxChromeHeight.
     const stableNaturalRowsHeight = displayRows.length * naturalRowHeight;
     const stableNaturalChromeHeight =
-      headerHeight + axisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2;
+      headerHeight + axisHeight + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2 +
+      readVarPx(cssVars, "--tv-shell-padding", 0) * 2;
     const stableNaturalHeight = stableNaturalRowsHeight + stableNaturalChromeHeight;
     const stableNaturalAspect = stableNaturalHeight > 0
       ? effectiveWidth / stableNaturalHeight

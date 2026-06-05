@@ -113,24 +113,28 @@
     position: relative;
   }
 
+  /* 64ch measure cap (lab .sci-foot): footer prose keeps a readable
+     line length on wide widgets instead of running the full width. */
   .plot-caption {
     margin: 0;
+    max-width: 64ch;
     font-size: var(--tv-text-caption-size, var(--tv-text-label-size, 0.75rem));
     font-weight: var(--tv-text-caption-weight, var(--tv-font-weight-normal, 400));
     font-style: normal;
     color: var(--tv-text-muted, #64748b);
-    line-height: 1.4;
+    line-height: 1.5;
     white-space: normal;
     word-wrap: break-word;
   }
 
   .plot-footnote {
     margin: 4px 0 0;
+    max-width: 64ch;
     font-size: var(--tv-text-footnote-size, var(--tv-text-label-size, 0.75rem));
     font-weight: var(--tv-text-footnote-weight, var(--tv-font-weight-normal, 400));
     font-style: italic;
     color: var(--tv-text-subtle, #94a3b8);
-    line-height: 1.4;
+    line-height: 1.5;
     white-space: normal;
     word-wrap: break-word;
   }

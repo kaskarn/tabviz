@@ -89,8 +89,7 @@
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
-  import { getCssVars, readSurfaceBg, readAccentDefault } from "$lib/theme/consumer-bridge";
-  import { shellPaperPaddingPx } from "$lib/theme/shell-paper";
+  import { getCssVars, readSurfaceBg, readAccentDefault, readVarPx } from "$lib/theme/consumer-bridge";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
   import { NUMERIC_COLUMN_TYPES } from "../schema/columns";
@@ -192,12 +191,12 @@
       ?.authoringInputs,
   );
   const scopeShellMode = $derived(v4Inputs?.shell_mode ?? "flush");
+  // Texture always lives on the shell (spacing rework 2026-06-05): the
+  // shell wraps the whole figure, and under flush/float its transparent
+  // bg still paints background-image — the texture shows wherever the
+  // opaque paper doesn't cover (caption band, footer, margins). The old
+  // data-paper-texture fallthrough is gone.
   const scopeShellTexture = $derived(v4Inputs?.shell_texture ?? "none");
-  // Texture falls through to the paper when the shell has no band to
-  // carry it (flush/float/transparent); a raised shell band keeps it.
-  const scopePaperTexture = $derived(
-    scopeShellMode === "raised" ? "none" : scopeShellTexture,
-  );
   const scopeMode = $derived(v4Inputs?.mode ?? "standard");
   const scopePolarity = $derived(v4Inputs?.polarity ?? "light");
   const scopeDensity = $derived(v4Inputs?.density ?? "comfortable");
@@ -222,16 +221,15 @@
       ? (spec?.labels?.tag ?? null)
       : null,
   );
-  // C40: every padding layer between container and content must enter the
-  // auto-fit height formula or padded shell modes clip at the bottom.
-  const shellPaperPad = $derived(v4Inputs ? shellPaperPaddingPx(v4Inputs) : 0);
-  // Shell extras (chip / strip) live OUTSIDE .tabviz-scalable, so the
-  // auto-fit formula must add their height too (the chip clipped the
-  // axis off the bottom — caught by the screenshot harness). Measured
-  // values: chip ≈ 22px + 8px margin; strip = 3px.
-  const shellExtrasPad = $derived(
-    (captionChip ? 30 : 0) + (shellStrip ? 3 : 0),
-  );
+  // C40 (reworked 2026-06-05): the ONLY height layer left outside
+  // `.tabviz-scalable` is the shell's own padding — caption chip, strip,
+  // and the paper (with its padding) all moved INSIDE the measured
+  // subtree, so the ResizeObserver covers them and the old hand-tuned
+  // `shellExtrasPad` constant (a chip-height approximation that
+  // undercounted by ~3px and ignored label-size theming) is gone.
+  // Read the resolved cssVar — one source, consumed once (no recipe
+  // re-resolution that could drift from the paint).
+  const shellPad = $derived(readVarPx(getCssVars(theme), "--tv-shell-padding", 0));
 
   // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
   // and we append a <link rel=stylesheet> per URL on mount + when the
@@ -1383,20 +1381,24 @@
 <!-- WIDGET ROOT — `.tabviz-container.tabviz-scope` (D1: sibling class, same node;
      `.tabviz-scope` is the selector namespace theme-runtime.css keys on).
 
-     V4 WRAP CONTRACT (wire-audit-plan Pass 0a, executes in Pass 1a):
-     the shell/paper wrap encloses ONLY `.tabviz-scalable` —
+     V4 WRAP CONTRACT (spacing rework 2026-06-05; supersedes Pass 1a):
+     the shell wraps the scalable; the paper lives INSIDE the scalable —
        .tabviz-container.tabviz-scope        ← root: cssVars, state classes,
          ControlToolbar                        containerRef, data-* attrs
          SettingsPanel
-         .tv-shell                           ← shell chrome (texture/glow/strip)
-           .tv-paper                         ← paper surface
-             .tabviz-scalable                ← existing content, moves here
+         .tv-shell                           ← figure frame: outer air, band
+           .tabviz-scalable                  ← measured + zoom-scaled subtree
+             .tv-caption                     ← chip ⌐ title baseline row
+             .shell-strip                    ← caption↔data gradient seam
+             .tv-paper                       ← data card (table + pager)
+             PlotFooter                      ← figure annotation below card
          TabvizOverlays / RowEdgeHandles     ← stay at root level
      Toolbar/panels/overlays are positioned chrome anchored to the root; they
-     never move into the paper. Consequence (verified 2026-06-04): every
-     `:global(.tabviz-container > .control-toolbar ...)` direct-child selector
-     stays valid unchanged, and all `.tabviz-scalable` selectors are descendant
-     — ZERO selector rewrites are required for the wrap. Keep it that way:
+     never move into the shell. Every height contributor except the shell's
+     own padding is inside the measured subtree (kills the old shellExtrasPad
+     hand-count) and scales WYSIWYG with zoom. `:global(.tabviz-container >
+     .control-toolbar ...)` direct-child selectors stay valid; all
+     `.tabviz-scalable` selectors are descendant. Keep it that way:
      new selectors touching toolbar/overlay chrome anchor `> X` on the root;
      new selectors touching table content anchor under `.tv-paper`. -->
 <div
@@ -1413,13 +1415,12 @@
   data-zoom="{Math.round(actualScale * 100)}%"
   data-shell-mode={scopeShellMode}
   data-shell-texture={scopeShellTexture}
-  data-paper-texture={scopePaperTexture}
   data-mode={scopeMode}
   data-polarity={scopePolarity}
   data-density={scopeDensity}
   data-title-style={scopeTitleStyle}
   data-shell-surface={scopeGlass === "none" ? "opaque" : "glass"}
-  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + 2 * shellPaperPad + shellExtrasPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
+  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 0) + 2 * shellPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
 >
   {#if spec}
     <!-- Control toolbar (always outside scalable so it doesn't scale with zoom) -->
@@ -1429,47 +1430,74 @@
          its absolute positioning is contained by the widget root). -->
     <SettingsPanel {store} />
 
-    <!-- V4 shell + paper surfaces (wire-audit Pass 1a; wrap contract at the
-         widget root). The shell carries band chrome (texture / glow /
-         gradient strip); the paper is the content surface. Both are inert
-         under flush mode (transparent, 0 padding, outline borders). -->
+    <!-- V4 shell + paper surfaces (spacing rework 2026-06-05; supersedes
+         the Pass 1a wrap). The SHELL is the figure's frame: it owns the
+         outer air (density-scaled padding) and band chrome (texture /
+         glow). Inside it, `.tabviz-scalable` (measured + zoom-scaled)
+         carries the lab's caption→seam→data order:
+           .tv-caption    chip ⌐ title/subtitle on one baseline row
+           .shell-strip   the brand-gradient caption↔data seam
+           .tv-paper      the data card (table + pager)
+           PlotFooter     figure annotation below the card
+         Everything that contributes height is inside the measured
+         subtree — the auto-fit formula only adds the shell's padding.
+         All four are inert under flush mode (transparent, 0 padding,
+         outline borders). -->
     {#if scopeGlass === "aurora"}
       <!-- Borealis blob layer (5a) — behind the glass pane. -->
       <div class="tv-glass-backdrop" aria-hidden="true"></div>
     {/if}
-    <div class="tv-shell" class:tv-glow={shellGlow}>
-      {#if captionChip}
-        <!-- Caption chip (lab "TABLE 2" stamp). Deliberately NOT
-             .tv-shell-text: the chip is opaque (its own bg); the texture
-             knockout's higher-specificity background would override the
-             rubrication bg — caught by the screenshot harness. -->
-        <div class="tv-caption-chip">{captionChip}</div>
+    <!-- min-width under manual zoom: the scalable's LAYOUT box is its
+         unscaled natural width (CSS transforms don't affect layout), so
+         at zoom>1 the visually-scaled content is wider than the shell's
+         block width and the band/card ended mid-content when scrolled
+         (geometry audit F4). Sizing the shell to the VISUAL extent keeps
+         the frame under all scrolled content. Auto-fit never overflows. -->
+    <div
+      class="tv-shell"
+      class:tv-glow={shellGlow}
+      style:min-width={!autoFit && scaledWidth > 0 ? `${scaledWidth + 2 * shellPad}px` : undefined}
+    >
+    <div bind:this={scalableRef} class="tabviz-scalable" style:margin-left="{centeringMargin}px">
+      {#if captionChip || hasPlotHeader}
+        <!-- Caption block on the shell surface (lab .sci-cap). With a
+             chip, chip + title share one baseline row (lab grid
+             "chip title"); the chip never corner-pins. -->
+        <div class="tv-caption" class:has-chip={!!captionChip}>
+          {#if captionChip}
+            <!-- Caption chip (lab "TABLE 2" stamp). Deliberately NOT
+                 .tv-shell-text: the chip is opaque (its own bg); the texture
+                 knockout's higher-specificity background would override the
+                 rubrication bg — caught by the screenshot harness. -->
+            <div class="tv-caption-chip">{captionChip}</div>
+          {/if}
+          {#if hasPlotHeader}
+            <PlotHeader
+              title={labelTitle}
+              subtitle={labelSubtitle}
+              enableEdit={labelsEditable}
+              onedit={(field, anchor) => store.startEdit({
+                rowId: "",
+                field: "",
+                labelField: field,
+                x: anchor.getBoundingClientRect().left,
+                y: anchor.getBoundingClientRect().top,
+              })}
+              titleSubtitleGap={theme?.spacing.titleSubtitleGap ?? 13}
+              onpreviewgap={(v) => store.previewThemeField("spacing", "titleSubtitleGap", v)}
+              oncommitgap={(v) => store.setThemeField("spacing", "titleSubtitleGap", v)}
+            />
+          {/if}
+        </div>
       {/if}
       {#if shellStrip}
-        <!-- Brand-gradient seam (lab .shell-strip; consumes --tv-brand-gradient) -->
+        <!-- Brand-gradient seam BETWEEN caption and data paper (lab
+             .shell-strip — "expresses the shell↔paper split"; it is NOT
+             a top cap, the original placement all three spacing-review
+             agents flagged). -->
         <div class="shell-strip" aria-hidden="true"></div>
       {/if}
       <div class="tv-paper">
-    <!-- Scalable content wrapper (header + main + footer) -->
-    <div bind:this={scalableRef} class="tabviz-scalable" style:margin-left="{centeringMargin}px">
-      <!-- Plot header (title, subtitle) - only when there's a title/subtitle -->
-      {#if hasPlotHeader}
-        <PlotHeader
-          title={labelTitle}
-          subtitle={labelSubtitle}
-          enableEdit={labelsEditable}
-          onedit={(field, anchor) => store.startEdit({
-            rowId: "",
-            field: "",
-            labelField: field,
-            x: anchor.getBoundingClientRect().left,
-            y: anchor.getBoundingClientRect().top,
-          })}
-          titleSubtitleGap={theme?.spacing.titleSubtitleGap ?? 13}
-          onpreviewgap={(v) => store.previewThemeField("spacing", "titleSubtitleGap", v)}
-          oncommitgap={(v) => store.setThemeField("spacing", "titleSubtitleGap", v)}
-        />
-      {/if}
 
       <!-- Snippet for rendering cell content based on column type -->
       {#snippet renderCellContent(rowArg: DataRow['row'], column: ColumnSpec)}
@@ -2481,7 +2509,10 @@
         </div>
       {/if}
 
-      <!-- Plot footer (caption, footnote) -->
+      </div><!-- /.tv-paper -->
+
+      <!-- Plot footer (caption, footnote) — figure annotation BELOW the
+           data card, on the shell surface (lab .sci-foot). -->
       <PlotFooter
         caption={labelCaption}
         footnote={labelFootnote}
@@ -2497,8 +2528,7 @@
         onpreviewfootergap={(v) => store.previewThemeField("spacing", "footerGap", v)}
         oncommitfootergap={(v) => store.setThemeField("spacing", "footerGap", v)}
       />
-    </div>
-      </div><!-- /.tv-paper -->
+    </div><!-- /.tabviz-scalable -->
     </div><!-- /.tv-shell -->
 
     <!-- Tooltip + DropIndicator + EditableCell + ColumnFilterPopover +
@@ -2704,13 +2734,18 @@
 
   /* Auto-fit mode (default): scale down if content exceeds container.
      Padding split into longhand so `--tv-bottom-margin` (theme spacing)
-     can extend padding-bottom without re-declaring the whole shorthand. */
+     can extend padding-bottom without re-declaring the whole shorthand.
+     Fallbacks are 0 to AGREE with the density substrate (container_padding
+     is 0 in every preset — the SHELL owns the figure's air since the
+     spacing rework; containerPadding is a page-gutter escape hatch). The
+     old 16px fallbacks never fired with a resolved theme present and
+     contradicted the substrate — a triple-source incoherence. */
   :global(.tabviz-container.auto-fit) {
     width: 100%;
-    padding-top: var(--tv-spacing-container-padding, 16px);
-    padding-left: var(--tv-spacing-container-padding, 16px);
-    padding-right: var(--tv-spacing-container-padding, 16px);
-    padding-bottom: calc(var(--tv-spacing-container-padding, 16px) + var(--tv-spacing-bottom-margin, 0px));
+    padding-top: var(--tv-spacing-container-padding, 0px);
+    padding-left: var(--tv-spacing-container-padding, 0px);
+    padding-right: var(--tv-spacing-container-padding, 0px);
+    padding-bottom: calc(var(--tv-spacing-container-padding, 0px) + var(--tv-spacing-bottom-margin, 0px));
     /* Hide overflow - container is explicitly sized to scaled dimensions */
     overflow: hidden;
   }
@@ -2735,10 +2770,10 @@
   /* No auto-fit: render at zoom level, scrollbars if needed */
   :global(.tabviz-container:not(.auto-fit)) {
     overflow: auto;
-    padding-top: var(--tv-spacing-container-padding, 16px);
-    padding-left: var(--tv-spacing-container-padding, 16px);
-    padding-right: var(--tv-spacing-container-padding, 16px);
-    padding-bottom: calc(var(--tv-spacing-container-padding, 16px) + var(--tv-spacing-bottom-margin, 0px));
+    padding-top: var(--tv-spacing-container-padding, 0px);
+    padding-left: var(--tv-spacing-container-padding, 0px);
+    padding-right: var(--tv-spacing-container-padding, 0px);
+    padding-bottom: calc(var(--tv-spacing-container-padding, 0px) + var(--tv-spacing-bottom-margin, 0px));
   }
 
   :global(.tabviz-container:not(.auto-fit)) .tabviz-scalable {
@@ -2776,13 +2811,13 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    /* No inner padding here by design. theme.spacing.containerPadding
-       already wraps the whole widget on .tabviz-container (the outer
-       padding knob). An additional interactive gutter from theme.spacing
-       .padding would compound with containerPadding and give the user two
-       sliders that produce overlapping effects. spacing.padding remains
-       an SVG-export-only knob; the interactive widget uses
-       containerPadding as its single outer-gutter control. */
+    /* No inner padding here by design. The figure's air is owned by the
+       SHELL (density-scaled --tv-shell-padding) with an inner mat on the
+       paper (--tv-paper-padding); theme.spacing.containerPadding remains
+       a page-gutter escape hatch on .tabviz-container (0 by default).
+       An additional gutter here would compound with those and give the
+       user overlapping sliders. spacing.padding remains an
+       SVG-export-only knob. */
     min-height: 0;
   }
 

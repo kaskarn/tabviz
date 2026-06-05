@@ -1,3 +1,40 @@
+# tabviz 0.37.1 (dev) — the spacing rework
+
+A three-agent spacing/shell review (geometry audit, rgc_v4 aesthetics
+comparison, spacing-architecture critique) converged on one structural
+correction, now landed:
+
+* **Widget DOM (breaking for downstream CSS)**: `.tv-paper` moved
+  INSIDE `.tabviz-scalable`; the caption chip + title/subtitle hoisted
+  into a `.tv-caption` baseline row on the shell; the gradient strip now
+  renders BETWEEN the caption block and the paper (the rgc_v4 lab's
+  caption<->data seam — it was a top cap before); `PlotFooter` sits
+  below the paper as figure annotation. New chain:
+  `.tv-shell > .tabviz-scalable > (.tv-caption, .shell-strip, .tv-paper, footer)`.
+* **The shell owns the figure's air**: `raised` shell padding is
+  density-scaled (14/20/26 x density_factor; was a fixed 8px hairline),
+  the paper gained a real inner mat (10/14/18), and `float` mode now
+  pads the shell so the drop shadow can breathe. Flush stays
+  geometrically inert (0/0). `containerPadding` fallbacks aligned with
+  the substrate at 0 (page-gutter escape hatch only).
+* **Strip finish**: pill ends, glow halo, breathing room below
+  (`--tv-spacing-header-gap`). **Chip** baseline-aligns with the title.
+  **Glass** edge dropped to the faint frost hairline (no saturated
+  ring); caption/footer prose on glass promoted to the strong text role.
+  **Footer** prose capped at a 64ch measure.
+* **Geometry fixes**: axis descent reservation +0.2x font (descenders
+  landed 2-3px past the reserved track on every preset, masked by
+  container padding); `shellExtrasPad` (the hand-tuned chip-height
+  constant) deleted — chip/strip/paper are measured by the
+  ResizeObserver now; shell sizes to the visual extent under manual
+  zoom so the band covers scrolled content.
+* **Dead code removed**: the paper-texture fallthrough (data attr, CSS
+  rules, `--tv-paper-texture-*` + `--tv-paper-text-knockout-bg`
+  tokens), `svgTexturePattern`/`svgTextureKnockoutRect` (zero
+  consumers), `shellPaperPaddingPx` (stub re-resolution). Texture always
+  lives on the shell now; transparent shells premix knockouts against
+  the paper bg (white-pad illegibility fix for dark themes).
+
 # tabviz 0.37.0 (wire 1.3) — the wire-audit arc
 
 The rgc_v4 design-lab parity arc: the V4 substrate's dormant visual

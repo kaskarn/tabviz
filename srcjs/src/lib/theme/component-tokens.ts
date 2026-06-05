@@ -708,59 +708,41 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Stage 2 §3 — Surface texture color tokens ─────────────────────────────
   // Two color knobs drive all four textures (ruled / grid / dotted / grain).
   // The selector + recipe live in theme-runtime.css; the colors come from
-  // the resolver tied to neutral grades.
+  // the resolver tied to neutral grades. SHELL-ONLY since the spacing
+  // rework (2026-06-05): the shell wraps the whole figure, so the texture
+  // always lives on it; the paper-side texture twins and the
+  // data-paper-texture fallthrough were deleted. (Their old consumedBy
+  // also claimed svg-generator.ts — false; texture is browser-only per
+  // D11 and the SVG pattern helpers had no consumers.)
   {
     cssVar: "--tv-shell-texture-line",
     resolverGroup: "texture",
     kind: "paint-color",
     source: { tier: "computed", note: "texture: faint hairline (neutral grade ~3)" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    consumedBy: ["lib/theme/theme-runtime.css"],
     description: "Texture line color (ruled / grid). Faint hairline on the surface.",
   },
   {
     cssVar: "--tv-shell-texture-dot",
     resolverGroup: "texture",
     kind: "paint-color",
-    source: { tier: "computed", note: "texture: dot color (neutral grade ~4)" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    source: { tier: "computed", note: "texture: dot color (dotted / grain). Slightly stronger than line." },
+    consumedBy: ["lib/theme/theme-runtime.css"],
     description: "Texture dot color (dotted / grain). Slightly stronger than line.",
-  },
-  {
-    cssVar: "--tv-paper-texture-line",
-    resolverGroup: "texture",
-    kind: "paint-color",
-    source: { tier: "computed", note: "texture: paper-side hairline" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
-    description: "Texture line color when texture lives on the paper surface.",
-  },
-  {
-    cssVar: "--tv-paper-texture-dot",
-    resolverGroup: "texture",
-    kind: "paint-color",
-    source: { tier: "computed", note: "texture: paper-side dot" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
-    description: "Texture dot color when texture lives on the paper surface.",
   },
 
   // ── Stage 2 §4 — Texture knockout token ───────────────────────────────────
   // When text sits over a ruled / grid / dotted texture, the texture lines
   // pass through glyphs and hurt legibility. Knockout = a faint pad behind
   // the text that hides ~78% of the texture without erasing it entirely.
+  // Shell-side only (caption/footer text sits on the shell post-rework).
   {
     cssVar: "--tv-shell-text-knockout-bg",
     resolverGroup: "knockout",
     kind: "paint-fill",
     source: { tier: "computed", note: "knockout: shell-bg @ 78% opacity premix" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    consumedBy: ["lib/theme/theme-runtime.css"],
     description: "Premixed knockout pad behind text on textured shell surfaces",
-  },
-  {
-    cssVar: "--tv-paper-text-knockout-bg",
-    resolverGroup: "knockout",
-    kind: "paint-fill",
-    source: { tier: "computed", note: "knockout: paper-bg @ 78% opacity premix" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
-    description: "Premixed knockout pad behind text on textured paper surfaces",
   },
 
   // ── Stage 2 §6 — Elevation shadow color tokens ────────────────────────────
@@ -1409,8 +1391,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-shell-",
   "--tv-paper-",
   "--tv-shadow-",
-  "--tv-shell-texture-",
-  "--tv-paper-texture-",
   // Phase D bare prefixes from template literals in GeometrySamples viz.
   "--tv-radius-",
   "--tv-border-width-",

@@ -76,6 +76,11 @@ export function computeAxisLayout(
     ? tickLabelY + Math.round(axisLabelFontSize * 1.2)
     : 0;
   const lastBaseline = hasAxisLabel ? axisLabelY : tickLabelY;
-  const axisRegionHeight = lastBaseline + Math.round(tickFontSize * 0.4) + 2;
+  // Descent allowance below the last baseline. 0.4× under-reserved by one
+  // descender (~0.2×font): the 2026-06 geometry audit measured tick/label
+  // descenders landing 2-3px PAST the reserved track on every preset —
+  // masked only by the container's bottom padding, and a real clip at
+  // containerPadding 0. 0.6× ≈ half-leading + descent for line-height 1.5.
+  const axisRegionHeight = lastBaseline + Math.round(tickFontSize * 0.6) + 2;
   return { tickMarkLength, tickLabelY, axisLabelY, axisRegionHeight };
 }

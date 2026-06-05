@@ -109,8 +109,10 @@ interface ShellProbe {
   shellBg: string;
   shellBoxShadow: string;
   shellBgImage: string;
-  paperBgImage: string;
+  paperPadding: string;
   hasStrip: boolean;
+  stripAfterCaption: boolean;
+  stripBeforePaper: boolean;
   hasCaptionChip: boolean;
 }
 
@@ -118,16 +120,29 @@ async function probeShell(page: Page): Promise<ShellProbe> {
   return page.evaluate(() => {
     const scope = document.querySelector(".tabviz-container.tabviz-scope");
     const shell = scope?.querySelector(":scope > .tv-shell") ?? null;
-    const paper = shell?.querySelector(":scope > .tv-paper") ?? null;
-    const scalable = paper?.querySelector(":scope > .tabviz-scalable") ?? null;
+    // Spacing rework (2026-06-05): the paper lives INSIDE the measured
+    // scalable, ordered caption -> strip -> paper -> footer.
+    const scalable = shell?.querySelector(":scope > .tabviz-scalable") ?? null;
+    const paper = scalable?.querySelector(":scope > .tv-paper") ?? null;
+    const caption = scalable?.querySelector(":scope > .tv-caption") ?? null;
+    const strip = scalable?.querySelector(":scope > .shell-strip") ?? null;
     const cs = shell ? getComputedStyle(shell) : null;
     const ps = paper ? getComputedStyle(paper) : null;
+    // Strip must sit between the caption block and the paper (the lab's
+    // caption<->data seam), never above the caption.
+    let stripAfterCaption = true;
+    if (strip && caption) {
+      stripAfterCaption = !!(caption.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING);
+    }
+    let stripBeforePaper = true;
+    if (strip && paper) {
+      stripBeforePaper = !!(strip.compareDocumentPosition(paper) & Node.DOCUMENT_POSITION_FOLLOWING);
+    }
     return {
-      hasChain: !!(scope && shell && paper && scalable),
+      hasChain: !!(scope && shell && scalable && paper),
       scopeAttrs: {
         shellMode: scope?.getAttribute("data-shell-mode") ?? null,
         shellTexture: scope?.getAttribute("data-shell-texture") ?? null,
-        paperTexture: scope?.getAttribute("data-paper-texture") ?? null,
         mode: scope?.getAttribute("data-mode") ?? null,
         polarity: scope?.getAttribute("data-polarity") ?? null,
         density: scope?.getAttribute("data-density") ?? null,
@@ -136,9 +151,11 @@ async function probeShell(page: Page): Promise<ShellProbe> {
       shellBg: cs?.backgroundColor ?? "",
       shellBoxShadow: cs?.boxShadow ?? "",
       shellBgImage: cs?.backgroundImage ?? "",
-      paperBgImage: ps?.backgroundImage ?? "",
-      hasStrip: !!shell?.querySelector(":scope > .shell-strip"),
-      hasCaptionChip: !!shell?.querySelector(":scope > .tv-caption-chip"),
+      paperPadding: ps?.padding ?? "",
+      hasStrip: !!strip,
+      stripAfterCaption,
+      stripBeforePaper,
+      hasCaptionChip: !!caption?.querySelector(":scope > .tv-caption-chip"),
     };
   });
 }
@@ -147,39 +164,43 @@ function assertPreset(name: string, p: ShellProbe): string[] {
   const errs: string[] = [];
   const ok = (cond: boolean, msg: string) => { if (!cond) errs.push(`${name}: ${msg}`); };
 
-  ok(p.hasChain, "scope > tv-shell > tv-paper > tabviz-scalable chain missing");
+  ok(p.hasChain, "scope > tv-shell > tabviz-scalable > tv-paper chain missing");
   ok(p.scopeAttrs.shellMode !== null, "data-shell-mode missing");
   ok(p.scopeAttrs.mode !== null, "data-mode missing");
   ok(p.scopeAttrs.polarity !== null, "data-polarity missing");
   ok(p.scopeAttrs.density !== null, "data-density missing");
+  // Seam contract (spacing rework): when the strip renders it must sit
+  // BETWEEN the caption block and the paper, never cap the widget.
+  ok(p.stripAfterCaption, "shell-strip renders above the caption block (must be the caption<->data seam)");
+  ok(p.stripBeforePaper, "shell-strip renders below the paper (must be the caption<->data seam)");
 
   if (name === "cochrane") {
     // Flush archetype: the wrap must be geometrically inert.
     ok(p.scopeAttrs.shellMode === "flush", `expected flush, got ${p.scopeAttrs.shellMode}`);
     ok(p.shellPadding === "0px", `flush shell must have 0 padding, got "${p.shellPadding}"`);
     ok(/rgba\(0, 0, 0, 0\)|transparent/.test(p.shellBg), `flush shell bg must be transparent, got "${p.shellBg}"`);
+    ok(p.paperPadding === "0px", `flush paper must have 0 padding, got "${p.paperPadding}"`);
   }
   if (name === "nature") {
-    // Raised + ruled: 8px band; texture paints on the SHELL.
+    // Raised + ruled: density-scaled band (20px comfortable); texture on the SHELL.
     ok(p.scopeAttrs.shellMode === "raised", `expected raised, got ${p.scopeAttrs.shellMode}`);
-    ok(p.shellPadding === "8px", `raised shell must have 8px padding, got "${p.shellPadding}"`);
+    ok(parseFloat(p.shellPadding) >= 12, `raised shell band must be a real density-scaled band, got "${p.shellPadding}"`);
+    ok(parseFloat(p.paperPadding) >= 8, `raised paper must carry an inner mat, got "${p.paperPadding}"`);
     ok(p.shellBgImage !== "none", "raised+ruled: shell background-image (texture) missing");
-    ok(p.scopeAttrs.paperTexture === "none", "raised carries texture on shell, not paper");
   }
   if (name === "synthwave") {
-    // Float + grid + neon glow: texture falls to PAPER; shell glows.
+    // Float + grid + neon glow: texture on the SHELL (fallthrough deleted); shell glows.
     ok(p.scopeAttrs.shellMode === "float", `expected float, got ${p.scopeAttrs.shellMode}`);
-    ok(p.scopeAttrs.paperTexture === "grid", `float texture must fall to paper, got ${p.scopeAttrs.paperTexture}`);
-    ok(p.paperBgImage !== "none", "float+grid: paper background-image (texture) missing");
+    ok(p.shellBgImage !== "none", "float+grid: shell background-image (texture) missing");
+    ok(parseFloat(p.shellPadding) >= 12, `float shell owns the air for the paper's drop shadow, got "${p.shellPadding}"`);
     ok(p.shellBoxShadow !== "none", "glow_intensity pin: shell box-shadow missing (.tv-glow)");
     ok(p.scopeAttrs.polarity === "dark", `synthwave is dark, got ${p.scopeAttrs.polarity}`);
   }
   if (name === "brutalist") {
-    // Flush + grid: texture falls to paper.
-    ok(p.scopeAttrs.paperTexture === "grid", `flush texture must fall to paper, got ${p.scopeAttrs.paperTexture}`);
-    ok(p.paperBgImage !== "none", "flush+grid: paper background-image (texture) missing");
+    // Flush + grid: texture on the (transparent-bg) SHELL.
+    ok(p.shellBgImage !== "none", "flush+grid: shell background-image (texture) missing");
     // 1c: caption chip renders (fixture pins caption_style="chip").
-    ok(p.hasCaptionChip, "caption chip missing despite caption_style=chip + labels.caption");
+    ok(p.hasCaptionChip, "caption chip missing despite caption_style=chip + labels.tag");
   }
   return errs;
 }

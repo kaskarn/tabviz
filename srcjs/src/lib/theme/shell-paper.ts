@@ -5,8 +5,36 @@
 // resolver emits each token's value via this table.
 
 import type { ThemeInputs } from "../../types/theme-inputs";
+import type { DensityPreset } from "./density-presets";
 
 export type ShellMode = "flush" | "raised" | "float" | "transparent";
+
+// ── Density-scaled surface air (spacing rework, 2026-06-05) ────────────────
+// The SHELL owns the figure's outer air; the PAPER carries an inner mat
+// between its edge and the table. Both scale with the density axis +
+// density_factor like every other spacing token (the wire-audit graft
+// originally hardcoded 8px/0px, which read as a hairline, not a shell —
+// flagged by all three spacing-review agents). The px ranges project the
+// rgc_v4 lab's clamp(18,2.2vw,28) frame-pad / clamp(12,1.6vw,18) paper-pad
+// through the density axis instead of the viewport.
+//
+// These live here (not DENSITY_PX) deliberately: the density table emits
+// every entry as a `--tv-spacing-*` wire token, but shell/paper padding is
+// mode-gated — flush MUST stay 0 (geometric inertness contract) — so the
+// scale belongs to the shell recipe, one canonical home per axis.
+const SHELL_PAD_PX: Record<DensityPreset, number> = { compact: 14, comfortable: 20, spacious: 26 };
+const PAPER_PAD_PX: Record<DensityPreset, number> = { compact: 10, comfortable: 14, spacious: 18 };
+
+/** Density preset × density_factor (clamped [0.5, 2], matching
+ *  tokenDensityPx / the v3 scaleSpacing) projected to a px string. */
+function densityScaledPx(
+  table: Record<DensityPreset, number>,
+  inputs: ThemeInputs,
+): string {
+  const d: DensityPreset = inputs.density ?? "comfortable";
+  const f = Math.min(2, Math.max(0.5, inputs.density_factor ?? 1));
+  return `${Math.round(table[d] * f)}px`;
+}
 
 export interface ShellPaperResolved {
   shellBg: string;
@@ -68,30 +96,36 @@ export function resolveShellPaper(
         paperPadding: "0px",
       };
     case "raised":
+      // Two nested padded surfaces (lab model): a real shell band around
+      // an inner-matted paper — this is what makes a "shell" read as a
+      // shell rather than the original 8px hairline.
       return {
         shellBg: surfaceSubtle,
         shellBorder: border,
         shellShadow: RAISED_CARD,
         shellRadius: "12px",
-        shellPadding: "8px",
+        shellPadding: densityScaledPx(SHELL_PAD_PX, inputs),
         paperBg: surface,
         paperBorder: borderSubtle,
         paperShadow: PAPER_INSET,
         paperRadius: "8px",
-        paperPadding: "0px",
+        paperPadding: densityScaledPx(PAPER_PAD_PX, inputs),
       };
     case "float":
+      // Transparent shell still owns the air: the floating paper's drop
+      // shadow needs room to breathe (container padding is 0 — with a
+      // 0-pad shell the SOFT_LIFT shadow clipped at the widget edge).
       return {
         shellBg: "transparent",
         shellBorder: "transparent",
         shellShadow: "none",
         shellRadius: "0px",
-        shellPadding: "0px",
+        shellPadding: densityScaledPx(SHELL_PAD_PX, inputs),
         paperBg: surface,
         paperBorder: borderSubtle,
         paperShadow: SOFT_LIFT,
         paperRadius: "8px",
-        paperPadding: "0px",
+        paperPadding: densityScaledPx(PAPER_PAD_PX, inputs),
       };
     case "transparent":
       return {
@@ -109,17 +143,11 @@ export function resolveShellPaper(
   }
 }
 
-/** Numeric shell+paper padding (px, summed per side) for a given inputs.
- *  Used by TabvizPlot's auto-fit height formula (wire-audit C40): the
- *  outer height computation must include every padding layer between the
- *  container and the content or auto-fit clips the bottom on padded
- *  shell modes. Reads the SAME recipe table as the resolver (padding is
- *  role-independent) so the formula can't drift from the paint. */
-export function shellPaperPaddingPx(inputs: ThemeInputs): number {
-  const stub = { surface: "#fff", surfaceSubtle: "#eee", border: "#ccc", borderSubtle: "#ddd" };
-  const sp = resolveShellPaper(inputs, stub);
-  return parseFloat(sp.shellPadding) + parseFloat(sp.paperPadding);
-}
+// shellPaperPaddingPx was deleted in the spacing rework (2026-06-05): the
+// paper now lives INSIDE .tabviz-scalable so its padding is measured, and
+// the auto-fit height formula reads the shell's padding from the resolved
+// `--tv-shell-padding` cssVar (one source, consumed once) instead of
+// re-resolving this recipe against a stub.
 
 /** Map a shell/paper cssVar to the corresponding ShellPaperResolved key.
  *  Returns null when the cssVar isn't a shell/paper token. */
