@@ -125,7 +125,7 @@ export const COCHRANE: ThemeInputs = defineInputs(
   {
     categorical: "okabe_ito",
     fonts: {
-      body: "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
+      body: "'Source Sans 3', -apple-system, system-ui, sans-serif",
     },
     curves: { neutral: "ease" },
   },
@@ -140,8 +140,8 @@ export const LANCET: ThemeInputs = defineInputs(
     shell_mode: "raised",
     type_scale_ratio: 1.25,
     fonts: {
-      body: "Georgia, 'Times New Roman', serif",
-      display: "Georgia, 'Times New Roman', serif",
+      body: "'Source Serif 4', Georgia, serif",
+      display: "'Source Serif 4', Georgia, serif",
     },
     curves: { neutral: "smooth" },
   },
@@ -157,7 +157,7 @@ export const JAMA: ThemeInputs = defineInputs(
     density: "compact",
     type_base_size: 13,
     type_scale_ratio: 1.15,
-    fonts: { body: "Arial, Helvetica, sans-serif" },
+    fonts: { body: "'Spline Sans', -apple-system, system-ui, sans-serif" },
   },
 );
 
@@ -169,8 +169,8 @@ export const NEJM: ThemeInputs = defineInputs(
     categorical: "okabe_ito",
     type_scale_ratio: 1.25,
     fonts: {
-      body: "Georgia, 'Times New Roman', serif",
-      display: "Georgia, 'Times New Roman', serif",
+      body: "'Lora', Georgia, serif",
+      display: "'Lora', Georgia, serif",
     },
     curves: { neutral: "ease", brand: "smooth" },
   },
@@ -201,7 +201,10 @@ export const BMJ: ThemeInputs = defineInputs(
   { brand: "#2A6EBB", accent: "#E33B3B" },
   {
     categorical: "okabe_ito",
-    fonts: { body: "Inter, -apple-system, system-ui, sans-serif" },
+    fonts: {
+      body: "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
+      display: "'IBM Plex Serif', Georgia, serif",
+    },
     curves: { neutral: "ease" },
   },
 );
@@ -255,8 +258,8 @@ export const SWISS: ThemeInputs = defineInputs(
     type_scale_ratio: 1.2,
     type_weights: { regular: 400, medium: 500, semibold: 600, bold: 700 },
     fonts: {
-      body: "'Inter', -apple-system, system-ui, 'Helvetica Neue', sans-serif",
-      display: "'Inter', -apple-system, system-ui, 'Helvetica Neue', sans-serif",
+      body: "'Hanken Grotesk', 'Helvetica Neue', Helvetica, sans-serif",
+      display: "'Hanken Grotesk', 'Helvetica Neue', Helvetica, sans-serif",
     },
     curves: { neutral: "linear" },
   },
@@ -297,7 +300,7 @@ export const NEWSPRINT: ThemeInputs = defineInputs(
     shell_texture: "grain",
     type_scale_ratio: 1.2,
     fonts: {
-      body: "Georgia, 'Times New Roman', serif",
+      body: "'Frank Ruhl Libre', Georgia, serif",
       display: "'Crimson Pro', Georgia, 'Times New Roman', serif",
     },
     curves: { neutral: "smooth", brand: "log" },
@@ -321,8 +324,8 @@ export const SOLARIZED: ThemeInputs = defineInputs(
   {
     categorical: "tableau10",
     fonts: {
-      body: "'Inter', -apple-system, system-ui, sans-serif",
-      mono: "'JetBrains Mono', 'Fira Code', monospace",
+      body: "'Public Sans', -apple-system, system-ui, sans-serif",
+      mono: "'Spline Sans Mono', 'JetBrains Mono', monospace",
     },
     curves: { neutral: "smooth" },
   },
@@ -342,8 +345,8 @@ export const SOLARIZED_DARK: ThemeInputs = defineInputs(
   {
     categorical: "tableau10",
     fonts: {
-      body: "'Inter', -apple-system, system-ui, sans-serif",
-      mono: "'JetBrains Mono', 'Fira Code', monospace",
+      body: "'Public Sans', -apple-system, system-ui, sans-serif",
+      mono: "'Spline Sans Mono', 'JetBrains Mono', monospace",
     },
     curves: { neutral: "smooth" },
   },
@@ -522,8 +525,8 @@ export const BRUTALIST: ThemeInputs = defineInputs(
     type_scale_ratio: 1.25,
     type_weights: { regular: 500, medium: 700, semibold: 800, bold: 900 },
     fonts: {
-      body: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      display: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      body: "'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif",
+      display: "'Darker Grotesque', 'Archivo Black', sans-serif",
     },
     curves: { neutral: "linear" },
     geometry: {
@@ -585,8 +588,8 @@ export const EXECUTIVE: ThemeInputs = defineInputs(
     type_scale_ratio: 1.333,
     type_weights: { regular: 400, medium: 500, semibold: 600, bold: 700 },
     fonts: {
-      body: "'Inter', -apple-system, system-ui, sans-serif",
-      display: "'Cormorant Garamond', Georgia, serif",
+      body: "'Mulish', -apple-system, system-ui, sans-serif",
+      display: "'Fraunces', Georgia, serif",
     },
     curves: { neutral: "ease", brand: "smooth" },
     effects: {

@@ -57,5 +57,20 @@ FONT_URLS <- list(
   archivo_black  = gf("Archivo Black"),
   italianno      = gf("Italianno"),
   im_fell_english    = gf("IM Fell English",    "ital@0;1"),
-  im_fell_english_sc = gf("IM Fell English SC")
+  im_fell_english_sc = gf("IM Fell English SC"),
+  # wire-audit Pass 1d de-slop pack (C64): one intentional family per
+  # preset that previously defaulted to Inter / Arial / Georgia.
+  source_sans_3    = gf("Source Sans 3",    "wght@400;500;600;700"),
+  source_serif_4   = gf("Source Serif 4",   "opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700"),
+  spline_sans      = gf("Spline Sans",      "wght@400;500;600;700"),
+  spline_sans_mono = gf("Spline Sans Mono", "wght@400;500;600;700"),
+  lora             = gf("Lora",             "ital,wght@0,400;0,500;0,600;1,400"),
+  ibm_plex_sans    = gf("IBM Plex Sans",    "wght@400;500;600;700"),
+  ibm_plex_serif   = gf("IBM Plex Serif",   "wght@400;500;600;700"),
+  hanken_grotesk   = gf("Hanken Grotesk",   "wght@400;500;600;700"),
+  frank_ruhl_libre = gf("Frank Ruhl Libre", "wght@400;500;700"),
+  public_sans      = gf("Public Sans",      "wght@400;500;600;700"),
+  mulish           = gf("Mulish",           "wght@400;500;600;700"),
+  fraunces         = gf("Fraunces",         "opsz,wght@9..144,400;9..144,600;9..144,700"),
+  darker_grotesque = gf("Darker Grotesque", "wght@700;800;900")
 )

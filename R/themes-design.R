@@ -52,10 +52,10 @@ web_theme_swiss <- function() {
     header_style = "bold",
     type_scale_ratio = 1.2,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    fonts_body = "'Inter', -apple-system, system-ui, 'Helvetica Neue', sans-serif",
-    fonts_display = "'Inter', -apple-system, system-ui, 'Helvetica Neue', sans-serif",
+    fonts_body = "'Hanken Grotesk', 'Helvetica Neue', Helvetica, sans-serif",
+    fonts_display = "'Hanken Grotesk', 'Helvetica Neue', Helvetica, sans-serif",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter)
+      web_font("Hanken Grotesk", FONT_URLS$hanken_grotesk)
     ),
     curves = list(neutral = "linear"),
     name = "swiss"
@@ -107,9 +107,10 @@ web_theme_newsprint <- function() {
     categorical = "okabe_ito",
     shell_texture = "grain",
     type_scale_ratio = 1.2,
-    fonts_body = "Georgia, 'Times New Roman', serif",
+    fonts_body = "'Frank Ruhl Libre', Georgia, serif",
     fonts_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
     web_fonts = list(
+      web_font("Frank Ruhl Libre", FONT_URLS$frank_ruhl_libre),
       web_font("Crimson Pro", FONT_URLS$crimson_pro)
     ),
     curves = list(neutral = "smooth", brand = "log"),
@@ -129,11 +130,11 @@ web_theme_solarized <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
-    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
-    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_body = "'Public Sans', -apple-system, system-ui, sans-serif",
+    fonts_mono = "'Spline Sans Mono', 'JetBrains Mono', monospace",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter),
-      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono_thin)
+      web_font("Public Sans", FONT_URLS$public_sans),
+      web_font("Spline Sans Mono", FONT_URLS$spline_sans_mono)
     ),
     curves = list(neutral = "smooth"),
     name = "solarized"
@@ -150,11 +151,11 @@ web_theme_solarized_dark <- function() {
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     polarity = "dark",
     categorical = "tableau10",
-    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
-    fonts_mono = "'JetBrains Mono', 'Fira Code', monospace",
+    fonts_body = "'Public Sans', -apple-system, system-ui, sans-serif",
+    fonts_mono = "'Spline Sans Mono', 'JetBrains Mono', monospace",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter),
-      web_font("JetBrains Mono", FONT_URLS$jetbrains_mono_thin)
+      web_font("Public Sans", FONT_URLS$public_sans),
+      web_font("Spline Sans Mono", FONT_URLS$spline_sans_mono)
     ),
     curves = list(neutral = "smooth"),
     name = "solarized_dark"

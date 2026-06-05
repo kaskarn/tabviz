@@ -70,9 +70,9 @@ web_theme_cochrane <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    fonts_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
+    fonts_body = "'Source Sans 3', -apple-system, system-ui, sans-serif",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter)
+      web_font("Source Sans 3", FONT_URLS$source_sans_3)
     ),
     curves = list(neutral = "ease"),
     name = "cochrane"
@@ -92,8 +92,11 @@ web_theme_lancet <- function() {
     categorical = "okabe_ito",
     shell_mode = "raised",
     type_scale_ratio = 1.25,
-    fonts_body = "Georgia, 'Times New Roman', serif",
-    fonts_display = "Georgia, 'Times New Roman', serif",
+    fonts_body = "'Source Serif 4', Georgia, serif",
+    fonts_display = "'Source Serif 4', Georgia, serif",
+    web_fonts = list(
+      web_font("Source Serif 4", FONT_URLS$source_serif_4)
+    ),
     curves = list(neutral = "smooth"),
     name = "lancet"
   )
@@ -114,7 +117,10 @@ web_theme_jama <- function() {
     density = "compact",
     type_base_size = 13,
     type_scale_ratio = 1.15,
-    fonts_body = "Arial, Helvetica, sans-serif",
+    fonts_body = "'Spline Sans', -apple-system, system-ui, sans-serif",
+    web_fonts = list(
+      web_font("Spline Sans", FONT_URLS$spline_sans)
+    ),
     name = "jama"
   )
 }
@@ -128,8 +134,11 @@ web_theme_nejm <- function() {
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
     type_scale_ratio = 1.25,
-    fonts_body = "Georgia, 'Times New Roman', serif",
-    fonts_display = "Georgia, 'Times New Roman', serif",
+    fonts_body = "'Lora', Georgia, serif",
+    fonts_display = "'Lora', Georgia, serif",
+    web_fonts = list(
+      web_font("Lora", FONT_URLS$lora)
+    ),
     curves = list(brand = "smooth", neutral = "ease"),
     name = "nejm"
   )
@@ -163,9 +172,11 @@ web_theme_bmj <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    fonts_body = "Inter, -apple-system, system-ui, sans-serif",
+    fonts_body = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
+    fonts_display = "'IBM Plex Serif', Georgia, serif",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter)
+      web_font("IBM Plex Sans", FONT_URLS$ibm_plex_sans),
+      web_font("IBM Plex Serif", FONT_URLS$ibm_plex_serif)
     ),
     curves = list(neutral = "ease"),
     name = "bmj"

@@ -65,10 +65,11 @@ web_theme_brutalist <- function() {
     type_base_size = 14,
     type_scale_ratio = 1.25,
     type_weights = list(regular = 500, medium = 700, semibold = 800, bold = 900),
-    fonts_body = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-    fonts_display = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    fonts_body = "'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif",
+    fonts_display = "'Darker Grotesque', 'Archivo Black', sans-serif",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter_heavy)
+      web_font("Archivo Black", FONT_URLS$archivo_black),
+      web_font("Darker Grotesque", FONT_URLS$darker_grotesque)
     ),
     curves = list(neutral = "linear"),
     geometry = list(
@@ -140,11 +141,11 @@ web_theme_executive <- function() {
     type_base_size = 14,
     type_scale_ratio = 1.333,
     type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    fonts_body = "'Inter', -apple-system, system-ui, sans-serif",
-    fonts_display = "'Cormorant Garamond', Georgia, serif",
+    fonts_body = "'Mulish', -apple-system, system-ui, sans-serif",
+    fonts_display = "'Fraunces', Georgia, serif",
     web_fonts = list(
-      web_font("Inter", FONT_URLS$inter),
-      web_font("Cormorant Garamond", FONT_URLS$cormorant)
+      web_font("Mulish", FONT_URLS$mulish),
+      web_font("Fraunces", FONT_URLS$fraunces)
     ),
     curves = list(neutral = "ease", brand = "smooth"),
     effects = list(
