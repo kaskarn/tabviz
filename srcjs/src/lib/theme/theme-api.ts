@@ -37,6 +37,9 @@ export const themeDwarven       = (): WebTheme => buildTheme(PRESETS.dwarven,   
 export const themeElvish        = (): WebTheme => buildTheme(PRESETS.elvish,          "elvish");
 export const themeHobbit        = (): WebTheme => buildTheme(PRESETS.hobbit,          "hobbit");
 export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave,       "synthwave");
+export const themeLedger        = (): WebTheme => buildTheme(PRESETS.ledger,          "ledger");
+export const themeTerminal      = (): WebTheme => buildTheme(PRESETS.terminal,        "terminal");
+export const themeAurora        = (): WebTheme => buildTheme(PRESETS.aurora,          "aurora");
 export const themeBrutalist     = (): WebTheme => buildTheme(PRESETS.brutalist,       "brutalist");
 export const themeAtelier       = (): WebTheme => buildTheme(PRESETS.atelier,         "atelier");
 export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive,       "executive");

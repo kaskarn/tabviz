@@ -45,6 +45,9 @@ export const THEME_NAMES = [
   "brutalist",
   "atelier",
   "executive",
+  "ledger",
+  "terminal",
+  "aurora",
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -77,4 +80,7 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   brutalist:      "Brutalist",
   atelier:        "Atelier",
   executive:      "Executive",
+  ledger:         "Ledger",
+  terminal:       "Terminal",
+  aurora:         "Aurora",
 };

@@ -103,6 +103,8 @@ theme_inputs_to_json <- function(inputs) {
     caption_style            = na_to_null(inputs@effects_caption_style)
   ))
 
+  monochrome_out <- if (isTRUE(inputs@monochrome)) TRUE else NULL
+
   marks_out <- drop_null(list(
     point_shape     = na_to_null(inputs@marks_point_shape),
     interval_weight = na_to_null(inputs@marks_interval_weight)
@@ -154,6 +156,7 @@ theme_inputs_to_json <- function(inputs) {
     geometry              = if (length(geometry_out) > 0L) geometry_out else NULL,
     effects               = if (length(effects_out)  > 0L) effects_out  else NULL,
     marks                 = if (length(marks_out)    > 0L) marks_out    else NULL,
+    monochrome            = monochrome_out,
     row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL
   )
   out[!vapply(out, is.null, logical(1))]
@@ -219,6 +222,9 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   for vermilion significance stars / oxblood chips.
 #' @param polarity `"light"` or `"dark"`. Polarity reflection inverts every
 #'   anchor's L around the midpoint. Default `"light"`.
+#' @param monochrome When `TRUE` the neutral ramp rides the brand hue with
+#'   chroma shaped from brand C (B8) — phosphor / sepia / cyanotype
+#'   single-hue themes in one toggle. Default `FALSE`.
 #' @param mode Accessibility axis (orthogonal to polarity). One of
 #'   `"standard"` / `"high-contrast"` / `"reduced-transparency"`. HC bumps
 #'   border-widths +1px and drops every Phase D effect; RT keeps glow but
@@ -288,6 +294,7 @@ web_theme <- function(
     accent = NULL,
     ink2 = NULL,
     polarity = "light",
+    monochrome = FALSE,
     mode = "standard",
     categorical = "okabe_ito",
     sequential = "viridis",
@@ -316,6 +323,7 @@ web_theme <- function(
     web_fonts = NULL,
     name = "custom") {
   checkmate::assert_choice(polarity, c("light", "dark"))
+  checkmate::assert_flag(monochrome)
   checkmate::assert_choice(mode, c("standard", "high-contrast", "reduced-transparency"))
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
@@ -360,6 +368,7 @@ web_theme <- function(
     anchors_accent_L = aa$L, anchors_accent_C = aa$C, anchors_accent_H = aa$H,
     anchors_ink2_L   = a2$L, anchors_ink2_C   = a2$C, anchors_ink2_H   = a2$H,
     polarity = polarity,
+    monochrome = monochrome,
     mode = mode,
     categorical = categorical,
     sequential = sequential,
@@ -488,6 +497,24 @@ set_ink2 <- function(theme, ink2) {
 set_accent <- function(theme, accent) {
   set_anchor_and_resolve(theme, "anchors_accent", accent, "accent",
                          clearable = TRUE)
+}
+
+#' Toggle monochrome (neutral ramp rides the brand hue) and re-resolve.
+#'
+#' B8: one switch for phosphor / sepia / cyanotype single-hue themes —
+#' the neutral ramp takes the brand hue with chroma shaped from brand C.
+#' @param theme A [WebTheme].
+#' @param monochrome `TRUE` / `FALSE`.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_monochrome <- function(theme, monochrome = TRUE) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_flag(monochrome)
+  inputs <- theme@inputs
+  inputs@monochrome <- monochrome
+  resolve_from_inputs(inputs, name = theme@name)
 }
 
 #' Set the theme polarity (light/dark) and re-resolve.
@@ -712,7 +739,7 @@ set_effects <- function(theme,
   gradient_shell_intensity <- na_or_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), "gradient_shell_intensity")
   gradient_shell_angle     <- na_or_number(gradient_shell_angle, 0, 360, "gradient_shell_angle")
   elevation                <- na_or_choice(elevation, c("none", "soft", "raised", "float"), "elevation")
-  caption_style            <- na_or_choice(caption_style, c("none", "chip", "stripe"), "caption_style")
+  caption_style            <- na_or_choice(caption_style, c("none", "chip", "stripe", "both"), "caption_style")
   inputs <- theme@inputs
   if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
   if (!is.null(glow_anchor))              inputs@effects_glow_anchor              <- glow_anchor

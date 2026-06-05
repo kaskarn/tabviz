@@ -657,6 +657,95 @@ export const EXECUTIVE: ThemeInputs = defineInputs(
 // Registry
 // ────────────────────────────────────────────────────────────────────
 
+// ────────────────────────────────────────────────────────────────────
+// rgc_v4 lab ports (wire-audit 2b / C39b) — the lab's exact anchor hues,
+// spreading the brand spectrum (H200 / H150 / H305) away from the
+// blue-journal cluster.
+// ────────────────────────────────────────────────────────────────────
+
+/** Ledger — accountant's ruled book. Teal-ink brand (H200), oxblood
+ *  rubrication (H28), warm cream paper. Chip + stripe caption (the two
+ *  deliberately source different anchors). Hairline rules. */
+export const LEDGER: ThemeInputs = defineInputs(
+  {
+    brand: "#006266",
+    ink2: "#862721",
+    neutralHueFrom: "#DECBB1",
+    paperC: 0.012,
+    inkC: 0.014,
+  },
+  {
+    categorical: "dark2",
+    density_factor: 0.97,
+    shell_mode: "raised",
+    shell_texture: "ruled",
+    marks: { interval_weight: "hair" },
+    geometry: { radius: { sm: 1, md: 3, lg: 5, pill: 999 } },
+    fonts: {
+      body: "'Spectral', Georgia, serif",
+      display: "'Spectral', Georgia, serif",
+      mono: "'Spline Sans Mono', monospace",
+    },
+    curves: { neutral: "ease" },
+    effects: { caption_style: "both" },
+  },
+);
+
+/** Terminal — phosphor CRT. Single green hue carries the whole surface
+ *  via `monochrome`; amber ink2 is the rubrication channel. Ruled
+ *  texture reads as scanlines; subtle glow reads as phosphor bleed. */
+export const TERMINAL: ThemeInputs = defineInputs(
+  {
+    brand: "#20C45F",
+    ink2: "#DAA500",
+    polarity: "dark",
+  },
+  {
+    monochrome: true,
+    categorical: "greens",
+    density: "compact",
+    shell_texture: "ruled",
+    geometry: { radius: { sm: 0, md: 0, lg: 0, pill: 0 } },
+    fonts: {
+      body: "'Space Mono', 'Courier New', monospace",
+      display: "'Space Mono', 'Courier New', monospace",
+      mono: "'Space Mono', 'Courier New', monospace",
+    },
+    type_base_size: 13,
+    effects: { glow_intensity: "subtle", glow_anchor: "brand" },
+    curves: { neutral: "exp" },
+  },
+);
+
+/** Aurora — borealis glass. Magenta-violet brand (H305), cyan ink2
+ *  (H200), dark float card with glow + gradient shell. The full glass
+ *  stack (backdrop blobs, sheen, bevel) lands in Pass 5; these pins
+ *  already give it the chromatic identity. */
+export const AURORA: ThemeInputs = defineInputs(
+  {
+    brand: "#B15DFC",
+    ink2: "#17D0D8",
+    polarity: "dark",
+  },
+  {
+    categorical: "wong",
+    shell_mode: "float",
+    geometry: { radius: { sm: 4, md: 11, lg: 16, pill: 999 } },
+    fonts: {
+      body: "'Outfit', -apple-system, system-ui, sans-serif",
+      display: "'Outfit', -apple-system, system-ui, sans-serif",
+    },
+    effects: {
+      glow_intensity: "subtle",
+      glow_anchor: "accent",
+      gradient_shell_intensity: "subtle",
+      elevation: "float",
+      caption_style: "chip",
+    },
+    curves: { neutral: "smooth" },
+  },
+);
+
 export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
   cochrane:        COCHRANE,
   lancet:          LANCET,
@@ -680,6 +769,9 @@ export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
   brutalist:       BRUTALIST,
   atelier:         ATELIER,
   executive:       EXECUTIVE,
+  ledger:          LEDGER,
+  terminal:        TERMINAL,
+  aurora:          AURORA,
 };
 
 /** Get a preset by name. Unknown name → cochrane (default). */

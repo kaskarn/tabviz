@@ -181,3 +181,102 @@ web_theme_executive <- function() {
     name = "executive"
   )
 }
+
+#' Ledger theme - accountant's ruled book (rgc_v4 lab port).
+#'
+#' Teal-ink brand (H200), oxblood rubrication ink2 (H28), warm cream
+#' paper. Chip + stripe caption (the two deliberately source different
+#' anchors: oxblood chip on brand-gradient strip). Hairline interval
+#' rules; ruled shell texture.
+#' @return A [WebTheme].
+#' @export
+web_theme_ledger <- function() {
+  a <- derive_preset_anchors("#006266",
+                             neutral_hue_from = "#DECBB1",
+                             paper_C = 0.012, ink_C = 0.014)
+  web_theme(
+    paper = a$paper, ink = a$ink, brand = a$brand,
+    ink2 = "#862721",
+    categorical = "dark2",
+    density_factor = 0.97,
+    shell_mode = "raised",
+    shell_texture = "ruled",
+    marks = list(interval_weight = "hair"),
+    geometry = list(radius = list(sm = 1, md = 3, lg = 5, pill = 999)),
+    fonts_body = "'Spectral', Georgia, serif",
+    fonts_display = "'Spectral', Georgia, serif",
+    fonts_mono = "'Spline Sans Mono', monospace",
+    web_fonts = list(
+      web_font("Spectral", FONT_URLS$spectral),
+      web_font("Spline Sans Mono", FONT_URLS$spline_sans_mono)
+    ),
+    curves = list(neutral = "ease"),
+    effects = list(caption_style = "both"),
+    name = "ledger"
+  )
+}
+
+#' Terminal theme - phosphor CRT (rgc_v4 lab port).
+#'
+#' A single green hue carries the whole surface via `monochrome = TRUE`;
+#' amber ink2 is the rubrication channel. Ruled texture reads as
+#' scanlines; subtle glow reads as phosphor bleed.
+#' @return A [WebTheme].
+#' @export
+web_theme_terminal <- function() {
+  a <- derive_preset_anchors("#20C45F")
+  web_theme(
+    paper = a$paper, ink = a$ink, brand = a$brand,
+    ink2 = "#DAA500",
+    polarity = "dark",
+    monochrome = TRUE,
+    categorical = "greens",
+    density = "compact",
+    shell_texture = "ruled",
+    geometry = list(radius = list(sm = 0, md = 0, lg = 0, pill = 0)),
+    fonts_body = "'Space Mono', 'Courier New', monospace",
+    fonts_display = "'Space Mono', 'Courier New', monospace",
+    fonts_mono = "'Space Mono', 'Courier New', monospace",
+    web_fonts = list(
+      web_font("Space Mono", FONT_URLS$space_mono)
+    ),
+    type_base_size = 13,
+    effects = list(glow_intensity = "subtle", glow_anchor = "brand"),
+    curves = list(neutral = "exp"),
+    name = "terminal"
+  )
+}
+
+#' Aurora theme - borealis glass (rgc_v4 lab port).
+#'
+#' Magenta-violet brand (H305), cyan ink2 (H200), dark float card with
+#' glow + gradient shell. The full glass stack (backdrop blobs, sheen,
+#' bevel) lands with the glass substrate; these pins carry the chromatic
+#' identity.
+#' @return A [WebTheme].
+#' @export
+web_theme_aurora <- function() {
+  a <- derive_preset_anchors("#B15DFC")
+  web_theme(
+    paper = a$paper, ink = a$ink, brand = a$brand,
+    ink2 = "#17D0D8",
+    polarity = "dark",
+    categorical = "wong",
+    shell_mode = "float",
+    geometry = list(radius = list(sm = 4, md = 11, lg = 16, pill = 999)),
+    fonts_body = "'Outfit', -apple-system, system-ui, sans-serif",
+    fonts_display = "'Outfit', -apple-system, system-ui, sans-serif",
+    web_fonts = list(
+      web_font("Outfit", FONT_URLS$outfit)
+    ),
+    effects = list(
+      glow_intensity = "subtle",
+      glow_anchor = "accent",
+      gradient_shell_intensity = "subtle",
+      elevation = "float",
+      caption_style = "chip"
+    ),
+    curves = list(neutral = "smooth"),
+    name = "aurora"
+  )
+}

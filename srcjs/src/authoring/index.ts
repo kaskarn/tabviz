@@ -58,6 +58,7 @@ export {
   themeSolarized, themeSolarizedDark, themeTonal, themeTonalDark,
   themeDwarven, themeElvish, themeHobbit,
   themeSynthwave, themeBrutalist, themeAtelier, themeExecutive,
+  themeLedger, themeTerminal, themeAurora,
   webTheme, resolveThemeRef,
 } from "../lib/theme/theme-api";
 

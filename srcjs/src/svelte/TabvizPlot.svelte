@@ -204,7 +204,8 @@
   const shellGlow = $derived((v4Inputs?.effects?.glow_intensity ?? "none") !== "none");
   const shellStrip = $derived(
     (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none" ||
-    v4Inputs?.effects?.caption_style === "stripe",
+    v4Inputs?.effects?.caption_style === "stripe" ||
+    v4Inputs?.effects?.caption_style === "both",
   );
   // B17 (wire-audit 1c): caption chip — labels.tag rendered as a boxed
   // stamp on the shell when effects.caption_style === "chip". NOT
@@ -212,7 +213,8 @@
   // reusing it double-rendered the text — caught by the screenshot
   // harness on first run.
   const captionChip = $derived(
-    v4Inputs?.effects?.caption_style === "chip"
+    v4Inputs?.effects?.caption_style === "chip" ||
+    v4Inputs?.effects?.caption_style === "both"
       ? (spec?.labels?.tag ?? null)
       : null,
   );

@@ -160,7 +160,7 @@ const GLOW_INTENSITY_VALUES = ["none", "subtle", "neon"] as const;
 const GLOW_ANCHOR_VALUES = ["brand", "accent"] as const;
 const GRADIENT_INTENSITY_VALUES = ["none", "subtle", "vivid"] as const;
 const ELEVATION_VALUES = ["none", "soft", "raised", "float"] as const;
-const CAPTION_STYLE_VALUES = ["none", "chip", "stripe"] as const;
+const CAPTION_STYLE_VALUES = ["none", "chip", "stripe", "both"] as const;
 const POINT_SHAPE_VALUES = ["circle", "square", "diamond", "triangle"] as const;
 const INTERVAL_WEIGHT_VALUES = ["hair", "regular", "thick"] as const;
 

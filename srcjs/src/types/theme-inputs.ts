@@ -76,6 +76,14 @@ export interface ThemeInputs {
   /** Accessibility mode. Polarity-orthogonal. Default: "standard". */
   mode?: ThemeMode;
 
+  /** B8 (wire-audit 2b, D3): monochrome — the neutral ramp rides the
+   *  brand hue with chroma shaped from brand C (lerp 0.18x -> 0.62x
+   *  across the ramp; rgc_v4 engine.jsx:82-89). One toggle for
+   *  Terminal-phosphor / sepia / cyanotype single-hue themes that are
+   *  otherwise structurally hard to author. (rgc name:
+   *  aliasNeutralToBrand; renamed for discoverability per D3.) */
+  monochrome?: boolean;
+
   /** Data palette scheme references. */
   categorical?: SchemeName;
   sequential?: SchemeName;
@@ -218,10 +226,12 @@ export interface ThemeInputs {
     /** Card shadow elevation preset. "none" / "soft" / "raised" / "float". */
     elevation?: "none" | "soft" | "raised" | "float";
     /** Caption treatment above the paper (B17, wire-audit 1c). "chip"
-     *  renders labels.caption as a boxed TABLE-N stamp on the shell;
+     *  renders labels.tag as a boxed TABLE-N stamp on the shell;
      *  "stripe" shows the brand-gradient seam (the shell-strip element)
-     *  even without a gradient_shell pin. */
-    caption_style?: "none" | "chip" | "stripe";
+     *  even without a gradient_shell pin; "both" stacks chip over stripe
+     *  (the lab Ledger look — chip and stripe deliberately source
+     *  DIFFERENT anchors, oxblood chip on brand-gradient strip). */
+    caption_style?: "none" | "chip" | "stripe" | "both";
   };
 }
 

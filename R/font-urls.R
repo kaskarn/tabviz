@@ -72,5 +72,9 @@ FONT_URLS <- list(
   public_sans      = gf("Public Sans",      "wght@400;500;600;700"),
   mulish           = gf("Mulish",           "wght@400;500;600;700"),
   fraunces         = gf("Fraunces",         "opsz,wght@9..144,400;9..144,600;9..144,700"),
-  darker_grotesque = gf("Darker Grotesque", "wght@700;800;900")
+  darker_grotesque = gf("Darker Grotesque", "wght@700;800;900"),
+  # wire-audit 2b presets (ledger / terminal / aurora)
+  spectral         = gf("Spectral",         "ital,wght@0,400;0,500;0,600;1,400"),
+  space_mono       = gf("Space Mono",       "ital,wght@0,400;0,700;1,400"),
+  outfit           = gf("Outfit",           "wght@400;500;600;700")
 )

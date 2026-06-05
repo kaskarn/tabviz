@@ -11,6 +11,7 @@ web_theme(
   accent = NULL,
   ink2 = NULL,
   polarity = "light",
+  monochrome = FALSE,
   mode = "standard",
   categorical = "okabe_ito",
   sequential = "viridis",
@@ -32,6 +33,7 @@ web_theme(
   curves = NULL,
   geometry = NULL,
   effects = NULL,
+  marks = NULL,
   row_kinds = NULL,
   header_style = "light",
   first_column_style = "default",
@@ -56,6 +58,10 @@ for vermilion significance stars / oxblood chips.}
 
 \item{polarity}{\code{"light"} or \code{"dark"}. Polarity reflection inverts every
 anchor's L around the midpoint. Default \code{"light"}.}
+
+\item{monochrome}{When \code{TRUE} the neutral ramp rides the brand hue with
+chroma shaped from brand C (B8) — phosphor / sepia / cyanotype
+single-hue themes in one toggle. Default \code{FALSE}.}
 
 \item{mode}{Accessibility axis (orthogonal to polarity). One of
 \code{"standard"} / \code{"high-contrast"} / \code{"reduced-transparency"}. HC bumps
@@ -114,6 +120,11 @@ corner softness + line weight across the widget. NULL = TS defaults
 \code{"subtle"} / \code{"vivid"}), \code{gradient_shell_angle} (degrees 0-360),
 \code{elevation} (\code{"none"} / \code{"soft"} / \code{"raised"} / \code{"float"}). NULL =
 no effects (the safe editorial baseline). HC mode drops all effects.}
+
+\item{marks}{Viz-mark identity (D12): named list with \code{point_shape}
+(\code{"circle"}/\code{"square"}/\code{"diamond"}/\code{"triangle"}) and/or
+\code{interval_weight} (\code{"hair"}/\code{"regular"}/\code{"thick"}). Theme-level
+defaults; per-row and per-effect styling still win.}
 
 \item{row_kinds}{Per-row-kind theme-default \code{heightRatio} map. Named
 list whose keys are row-kind names (\code{data}, \code{group_header}, \code{spacer},

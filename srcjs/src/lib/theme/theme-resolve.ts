@@ -119,7 +119,18 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
 
   // Neutral ramp: OKLCH interpolation paper → ink. Every step lies on
   // the line between the two neutral anchors.
-  const neutral = oklchInterpolateRamp(paper, ink, { curve: cN });
+  //
+  // B8 (wire-audit 2b): under `monochrome`, the neutrals ride the BRAND
+  // hue with chroma shaped from brand C — paper end at 0.18x, ink end at
+  // 0.62x (the interpolation produces the lerp across grades; rgc_v4
+  // engine.jsx:82-89). One toggle for phosphor/sepia/cyanotype themes.
+  const neutralPaper = inputs.monochrome
+    ? { L: paper.L, C: brand.C * 0.18, H: brand.H }
+    : paper;
+  const neutralInk = inputs.monochrome
+    ? { L: ink.L, C: brand.C * 0.62, H: brand.H }
+    : ink;
+  const neutral = oklchInterpolateRamp(neutralPaper, neutralInk, { curve: cN });
 
   // Chromatic ramps still ride the hand-tuned chromatic L progression
   // (LIGHT_RAMP_L / DARK_RAMP_L) so the chroma peak lands at step 9.

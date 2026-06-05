@@ -120,6 +120,9 @@ ThemeInputs <- new_class(
     anchors_ink2_H   = new_property(class_numeric, default = NA_real_),
 
     polarity        = new_property(class_character, default = "light"),
+    # B8 (wire-audit 2b, D3): neutral ramp rides the brand hue (phosphor /
+    # sepia / cyanotype single-hue themes). Wire + TS field: monochrome.
+    monochrome      = new_property(class_logical, default = FALSE),
     # Accessibility axis — orthogonal to polarity. Standard (default),
     # high-contrast, reduced-transparency. The TS resolver branches on
     # this in 7+ places (HC bumps borders, drops effects, reroutes role
@@ -276,8 +279,8 @@ ThemeInputs <- new_class(
       return("effects_elevation must be 'none', 'soft', 'raised', or 'float'")
     }
     cs <- self@effects_caption_style
-    if (!is.na(cs) && !cs %in% c("none", "chip", "stripe")) {
-      return("effects_caption_style must be 'none', 'chip', or 'stripe'")
+    if (!is.na(cs) && !cs %in% c("none", "chip", "stripe", "both")) {
+      return("effects_caption_style must be 'none', 'chip', 'stripe', or 'both'")
     }
     ps <- self@marks_point_shape
     if (!is.na(ps) && !ps %in% c("circle", "square", "diamond", "triangle")) {

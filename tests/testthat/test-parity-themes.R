@@ -87,7 +87,10 @@ PRESET_PAIRS <- list(
   synthwave      = list(r = web_theme_synthwave,      ts = "themeSynthwave"),
   brutalist      = list(r = web_theme_brutalist,      ts = "themeBrutalist"),
   atelier        = list(r = web_theme_atelier,        ts = "themeAtelier"),
-  executive      = list(r = web_theme_executive,      ts = "themeExecutive")
+  executive      = list(r = web_theme_executive,      ts = "themeExecutive"),
+  ledger         = list(r = web_theme_ledger,         ts = "themeLedger"),
+  terminal       = list(r = web_theme_terminal,       ts = "themeTerminal"),
+  aurora         = list(r = web_theme_aurora,         ts = "themeAurora")
 )
 
 test_that("R and TS preset constructors emit the same top-level wire fields", {
@@ -175,7 +178,8 @@ test_that("R presets all serialize to the v4 anchors shape", {
 })
 
 test_that("Polarity round-trips through serialization for dark presets", {
-  for (name in c("dark", "solarized_dark", "tonal_dark", "dwarven", "synthwave")) {
+  for (name in c("dark", "solarized_dark", "tonal_dark", "dwarven", "synthwave",
+                 "terminal", "aurora")) {
     inputs_json <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     expect_equal(inputs_json$polarity, "dark",
                  label = paste0("polarity (preset: ", name, ")"))
@@ -186,7 +190,7 @@ test_that("Light presets DO NOT emit polarity (default omitted symmetric R↔TS)
   for (name in c("cochrane", "lancet", "jama", "nature", "bmj",
                  "bauhaus", "swiss", "tufte", "newsprint", "solarized",
                  "tonal", "elvish", "hobbit", "brutalist", "atelier",
-                 "executive")) {
+                 "executive", "ledger")) {
     inputs_json <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     expect_null(inputs_json$polarity,
                 info = paste0("light preset '", name, "' should omit polarity"))

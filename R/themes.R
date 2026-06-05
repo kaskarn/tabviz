@@ -219,7 +219,10 @@ package_themes <- function() {
       synthwave = web_theme_synthwave(),
       brutalist = web_theme_brutalist(),
       atelier   = web_theme_atelier(),
-      executive = web_theme_executive()
+      executive = web_theme_executive(),
+      ledger    = web_theme_ledger(),
+      terminal  = web_theme_terminal(),
+      aurora    = web_theme_aurora()
     )
   )
 }
