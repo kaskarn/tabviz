@@ -734,13 +734,17 @@ export const AURORA: ThemeInputs = defineInputs(
   },
   {
     categorical: "wong",
-    shell_mode: "float",
+    // raised (not float): the glass pane needs the recipe-driven band
+    // padding to be visible around the paper; the glass tint overrides
+    // the raised bg via higher selector specificity.
+    shell_mode: "raised",
     geometry: { radius: { sm: 4, md: 11, lg: 16, pill: 999 } },
     fonts: {
       body: "'Outfit', -apple-system, system-ui, sans-serif",
       display: "'Outfit', -apple-system, system-ui, sans-serif",
     },
     effects: {
+      glass: "aurora",
       glow_intensity: "subtle",
       glow_anchor: "accent",
       gradient_shell_intensity: "subtle",
@@ -748,6 +752,59 @@ export const AURORA: ThemeInputs = defineInputs(
       caption_style: "chip",
     },
     curves: { neutral: "smooth" },
+  },
+);
+
+/** Blueprint — drafting-table cyanotype. Deep cyan-navy paper (dark
+ *  polarity, brand-hued neutrals), amber rubrication for callouts, grid
+ *  texture as the drafting sheet, monospace annotations, radius 0. */
+export const BLUEPRINT: ThemeInputs = defineInputs(
+  {
+    brand: "#007D9F",
+    ink2: "#E69C3A",
+    polarity: "dark",
+    paperC: 0.045,
+    inkC: 0.02,
+  },
+  {
+    categorical: "paired",
+    density: "compact",
+    shell_texture: "grid",
+    geometry: { radius: { sm: 0, md: 0, lg: 0, pill: 0 } },
+    marks: { point_shape: "triangle" },
+    fonts: {
+      body: "'IBM Plex Mono', 'Courier New', monospace",
+      display: "'IBM Plex Mono', 'Courier New', monospace",
+      mono: "'IBM Plex Mono', 'Courier New', monospace",
+    },
+    type_base_size: 13,
+    effects: { title_style: "underline" },
+    curves: { neutral: "smooth" },
+  },
+);
+
+/** Sunprint — sun-bleached field notes. Terracotta brand (H40), olive
+ *  rubrication (H130), warm bleached paper, ruled texture, generous
+ *  reading rhythm. */
+export const SUNPRINT: ThemeInputs = defineInputs(
+  {
+    brand: "#CB6440",
+    ink2: "#5E7D3B",
+    neutralHueFrom: "brand",
+    paperC: 0.018,
+    inkC: 0.022,
+  },
+  {
+    categorical: "set2",
+    density_factor: 1.02,
+    shell_mode: "raised",
+    shell_texture: "ruled",
+    fonts: {
+      body: "'Karla', -apple-system, system-ui, sans-serif",
+      display: "'Karla', -apple-system, system-ui, sans-serif",
+    },
+    effects: { caption_style: "stripe" },
+    curves: { neutral: "ease" },
   },
 );
 
@@ -777,6 +834,8 @@ export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
   ledger:          LEDGER,
   terminal:        TERMINAL,
   aurora:          AURORA,
+  blueprint:       BLUEPRINT,
+  sunprint:        SUNPRINT,
 };
 
 /** Get a preset by name. Unknown name → cochrane (default). */

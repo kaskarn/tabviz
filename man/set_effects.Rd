@@ -12,6 +12,7 @@ set_effects(
   gradient_shell_angle = NULL,
   elevation = NULL,
   caption_style = NULL,
+  glass = NULL,
   header_style = NULL,
   title_style = NULL
 )
@@ -33,6 +34,11 @@ set_effects(
 treatment above the paper (B17). \code{"chip"} renders the spec's
 \code{caption} label as a boxed TABLE-N stamp; \code{"stripe"} shows the
 brand-gradient seam.}
+
+\item{glass}{\code{"none"} / \code{"frosted"} / \code{"aurora"} — glass material
+(B16): frosted translucent pane with bevel + sheen; aurora adds the
+borealis backdrop blobs. Browser-additive; SVG export renders the
+opaque shell.}
 
 \item{header_style}{\code{"normal"} / \code{"tint"} / \code{"fill"} — header chrome
 as a Tier-1 effect (B12). Overrides the legacy \code{web_theme(header_style=)}

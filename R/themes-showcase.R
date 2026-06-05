@@ -267,7 +267,9 @@ web_theme_aurora <- function() {
     ink2 = "#17D0D8",
     polarity = "dark",
     categorical = "wong",
-    shell_mode = "float",
+    # raised (not float): the glass pane needs the recipe-driven band
+    # padding to be visible around the paper.
+    shell_mode = "raised",
     geometry = list(radius = list(sm = 4, md = 11, lg = 16, pill = 999)),
     fonts_body = "'Outfit', -apple-system, system-ui, sans-serif",
     fonts_display = "'Outfit', -apple-system, system-ui, sans-serif",
@@ -275,6 +277,7 @@ web_theme_aurora <- function() {
       web_font("Outfit", FONT_URLS$outfit)
     ),
     effects = list(
+      glass = "aurora",
       glow_intensity = "subtle",
       glow_anchor = "accent",
       gradient_shell_intensity = "subtle",
@@ -283,5 +286,64 @@ web_theme_aurora <- function() {
     ),
     curves = list(neutral = "smooth"),
     name = "aurora"
+  )
+}
+
+#' Blueprint theme - drafting-table cyanotype (rgc_v4 lab port).
+#'
+#' Deep cyan-navy paper (dark polarity with brand-hued neutrals), amber
+#' rubrication ink2 for callouts, grid texture as the drafting sheet,
+#' monospace annotations, radius 0.
+#' @return A [WebTheme].
+#' @export
+web_theme_blueprint <- function() {
+  a <- derive_preset_anchors("#007D9F",
+                             paper_C = 0.045, ink_C = 0.02)
+  web_theme(
+    paper = a$paper, ink = a$ink, brand = a$brand,
+    ink2 = "#E69C3A",
+    polarity = "dark",
+    categorical = "paired",
+    density = "compact",
+    shell_texture = "grid",
+    geometry = list(radius = list(sm = 0, md = 0, lg = 0, pill = 0)),
+    marks = list(point_shape = "triangle"),
+    fonts_body = "'IBM Plex Mono', 'Courier New', monospace",
+    fonts_display = "'IBM Plex Mono', 'Courier New', monospace",
+    fonts_mono = "'IBM Plex Mono', 'Courier New', monospace",
+    web_fonts = list(
+      web_font("IBM Plex Mono", FONT_URLS$ibm_plex_mono)
+    ),
+    type_base_size = 13,
+    effects = list(title_style = "underline"),
+    curves = list(neutral = "smooth"),
+    name = "blueprint"
+  )
+}
+
+#' Sunprint theme - sun-bleached field notes (rgc_v4 lab port).
+#'
+#' Terracotta brand (H40), olive rubrication ink2 (H130), warm bleached
+#' paper, ruled texture, generous reading rhythm, gradient caption stripe.
+#' @return A [WebTheme].
+#' @export
+web_theme_sunprint <- function() {
+  a <- derive_preset_anchors("#CB6440",
+                             paper_C = 0.018, ink_C = 0.022)
+  web_theme(
+    paper = a$paper, ink = a$ink, brand = a$brand,
+    ink2 = "#5E7D3B",
+    categorical = "set2",
+    density_factor = 1.02,
+    shell_mode = "raised",
+    shell_texture = "ruled",
+    fonts_body = "'Karla', -apple-system, system-ui, sans-serif",
+    fonts_display = "'Karla', -apple-system, system-ui, sans-serif",
+    web_fonts = list(
+      web_font("Karla", FONT_URLS$karla)
+    ),
+    effects = list(caption_style = "stripe"),
+    curves = list(neutral = "ease"),
+    name = "sunprint"
   )
 }

@@ -4,8 +4,8 @@ import { buildThemeStructure } from "./theme-resolve";
 import { apcaLc } from "../oklch";
 
 describe("PRESETS — preset registry", () => {
-  it("registers all 25 presets", () => {
-    expect(Object.keys(PRESETS).length).toBe(25);
+  it("registers all 27 presets", () => {
+    expect(Object.keys(PRESETS).length).toBe(27);
   });
 
   it("includes all expected names", () => {
@@ -15,7 +15,7 @@ describe("PRESETS — preset registry", () => {
       "solarized", "solarized_dark", "tonal", "tonal_dark",
       "dwarven", "elvish", "hobbit",
       "synthwave", "brutalist", "atelier", "executive",
-      "ledger", "terminal", "aurora",
+      "ledger", "terminal", "aurora", "blueprint", "sunprint",
     ];
     for (const name of expected) {
       expect(PRESETS).toHaveProperty(name);

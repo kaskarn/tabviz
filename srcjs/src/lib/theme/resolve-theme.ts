@@ -430,13 +430,66 @@ function resolveBrowserFxGroup(token: ComponentToken, ctx: ResolveCtx): string {
     }
     return accent;
   }
-  if (token.cssVar === "--tv-glass-blur") {
-    // KNOWN DEBT (Pass 0d-iii): hardcoded constant defeats input-driven
-    // blur intensity; will read inputs.effects once the glass input lands.
-    return "16px";
-  }
   return tokenResolveBug(token.cssVar, token.source.tier,
     "resolverGroup=browser-fx but cssVar has no browser-fx resolver");
+}
+
+/** Glass group (wire-audit 5a + 0d-iii) — every token is polarity- and
+ *  paper-hue-aware (C59; flat constants make dark glass a grey smear).
+ *  Ports the rgc_v4 engine.jsx:185-194 value table. Emits inert values
+ *  when effects.glass is "none" so the CSS composes safely. */
+function resolveGlassGroup(token: ComponentToken, ctx: ResolveCtx): string {
+  const glass = ctx.inputs.effects?.glass ?? "none";
+  const on = glass !== "none";
+  const dark = derivePolarity(ctx.inputs) === "dark";
+  const pH = Math.round(ctx.inputs.anchors.paper.H * 10) / 10;
+  switch (token.cssVar) {
+    case "--tv-glass-blur":
+      // 0d-iii: input-driven (was a hardcoded 16px that silently defeated
+      // intensity variation). Dark panes need a deeper blur to read lit.
+      return !on ? "0px" : dark ? "30px" : "22px";
+    case "--tv-glass-tint":
+      return !on ? "transparent"
+        : dark ? `oklch(0.30 0.02 ${pH} / 0.45)` : `oklch(0.98 0.01 ${pH} / 0.55)`;
+    case "--tv-glass-faint":
+      return !on ? "transparent"
+        : dark ? "oklch(1 0 0 / 0.10)" : "oklch(1 0 0 / 0.60)";
+    case "--tv-glass-edge-hi":
+      return !on ? "transparent"
+        : dark ? `oklch(0.98 0.03 ${pH} / 0.50)` : "oklch(1 0 0 / 0.85)";
+    case "--tv-glass-edge-lo":
+      return !on ? "transparent"
+        : dark ? "oklch(0 0 0 / 0.35)" : `oklch(0.30 0.02 ${pH} / 0.18)`;
+    case "--tv-glass-sheen":
+      return !on ? "transparent"
+        : dark ? "oklch(1 0 0 / 0.12)" : "oklch(1 0 0 / 0.55)";
+    case "--tv-glass-shadow":
+      // Composable no-op when off (the 1c shadow-list lesson).
+      return !on ? "0 0 0 transparent"
+        : dark ? "0 18px 40px oklch(0 0 0 / 0.50)"
+               : `0 14px 34px oklch(0.25 0.03 ${pH} / 0.25)`;
+    case "--tv-glass-backdrop-blobs": {
+      // Borealis blob layer — aurora variant only. Brand/accent ramp
+      // peaks at low alpha, three off-center radials (lab .glass-backdrop).
+      if (glass !== "aurora") return "none";
+      const b9 = ctx.ramps.brand[8] ?? "#888888";
+      const a9 = ctx.ramps.accent[8] ?? b9;
+      const b7 = ctx.ramps.brand[6] ?? b9;
+      const blob = (hex: string, alpha: number) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      };
+      return (
+        `radial-gradient(60% 50% at 18% 20%, ${blob(b9, 0.50)}, transparent 70%), ` +
+        `radial-gradient(50% 45% at 82% 30%, ${blob(a9, 0.40)}, transparent 70%), ` +
+        `radial-gradient(70% 60% at 50% 90%, ${blob(b7, 0.35)}, transparent 72%)`
+      );
+    }
+  }
+  return tokenResolveBug(token.cssVar, token.source.tier,
+    "resolverGroup=glass but cssVar has no glass resolver");
 }
 
 /** Anchor group — direct anchor hex with status-palette fallback. */
@@ -468,6 +521,7 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
   ["v3-bridge", () => V3_BRIDGE_SENTINEL],
   ["hc-fidelity", resolveHcFidelityGroup],
   ["browser-fx", resolveBrowserFxGroup],
+  ["glass", resolveGlassGroup],
   ["geometry", (t, ctx) =>
     requireMatch(resolveGeometryComputed(t.cssVar, ctx.inputs), t, "geometry")],
   ["effects", (t, ctx) =>

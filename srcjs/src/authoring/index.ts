@@ -59,6 +59,7 @@ export {
   themeDwarven, themeElvish, themeHobbit,
   themeSynthwave, themeBrutalist, themeAtelier, themeExecutive,
   themeLedger, themeTerminal, themeAurora,
+  themeBlueprint, themeSunprint,
   webTheme, resolveThemeRef,
 } from "../lib/theme/theme-api";
 

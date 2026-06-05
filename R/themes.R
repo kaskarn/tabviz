@@ -222,7 +222,9 @@ package_themes <- function() {
       executive = web_theme_executive(),
       ledger    = web_theme_ledger(),
       terminal  = web_theme_terminal(),
-      aurora    = web_theme_aurora()
+      aurora    = web_theme_aurora(),
+      blueprint = web_theme_blueprint(),
+      sunprint  = web_theme_sunprint()
     )
   )
 }

@@ -66,7 +66,7 @@ test_that("package_themes() registry exposes all categories", {
   expect_length(reg$modes, 1L)
   expect_length(reg$design, 8L)
   expect_length(reg$lotr, 3L)
-  expect_length(reg$showcase, 7L)
+  expect_length(reg$showcase, 9L)
 })
 
 test_that("theme_registry returns flat name-to-theme map", {

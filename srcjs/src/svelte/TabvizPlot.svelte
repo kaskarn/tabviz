@@ -203,6 +203,8 @@
   const scopeDensity = $derived(v4Inputs?.density ?? "comfortable");
   // B12 (2c-i): title treatment drives the [data-title-style] CSS rules.
   const scopeTitleStyle = $derived(v4Inputs?.effects?.title_style ?? "normal");
+  // Glass material (5a): "frosted"/"aurora" turn the shell into a pane.
+  const scopeGlass = $derived(v4Inputs?.effects?.glass ?? "none");
   const shellGlow = $derived((v4Inputs?.effects?.glow_intensity ?? "none") !== "none");
   const shellStrip = $derived(
     (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none" ||
@@ -1406,6 +1408,7 @@
   data-polarity={scopePolarity}
   data-density={scopeDensity}
   data-title-style={scopeTitleStyle}
+  data-shell-surface={scopeGlass === "none" ? "opaque" : "glass"}
   style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + 2 * shellPaperPad + shellExtrasPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
 >
   {#if spec}
@@ -1420,6 +1423,10 @@
          widget root). The shell carries band chrome (texture / glow /
          gradient strip); the paper is the content surface. Both are inert
          under flush mode (transparent, 0 padding, outline borders). -->
+    {#if scopeGlass === "aurora"}
+      <!-- Borealis blob layer (5a) — behind the glass pane. -->
+      <div class="tv-glass-backdrop" aria-hidden="true"></div>
+    {/if}
     <div class="tv-shell" class:tv-glow={shellGlow}>
       {#if captionChip}
         <!-- Caption chip (lab "TABLE 2" stamp). Deliberately NOT

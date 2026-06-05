@@ -40,8 +40,28 @@ describe("brand glow", () => {
 });
 
 describe("glass blur", () => {
-  it("emits 16px", () => {
+  // 0d-iii + 5a: input-driven (was a hardcoded 16px). Off = 0px;
+  // dark panes blur deeper than light (30 vs 22, engine.jsx:185-194).
+  it("is 0px when glass is off", () => {
     const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
-    expect(r.cssVars["--tv-glass-blur"]).toBe("16px");
+    expect(r.cssVars["--tv-glass-blur"]).toBe("0px");
+  });
+
+  it("is polarity-aware when glass is on", () => {
+    const light = resolveTheme(createWire(
+      { ...inputsFromHex({ brand: "#0099CC" }), effects: { glass: "frosted" as const } }, "t"));
+    const dark = resolveTheme(createWire(
+      { ...inputsFromHex({ brand: "#0099CC", polarity: "dark" }), effects: { glass: "frosted" as const } }, "t"));
+    expect(light.cssVars["--tv-glass-blur"]).toBe("22px");
+    expect(dark.cssVars["--tv-glass-blur"]).toBe("30px");
+  });
+
+  it("aurora variant emits backdrop blobs; frosted does not", () => {
+    const frosted = resolveTheme(createWire(
+      { ...inputsFromHex({ brand: "#0099CC" }), effects: { glass: "frosted" as const } }, "t"));
+    const aurora = resolveTheme(createWire(
+      { ...inputsFromHex({ brand: "#0099CC" }), effects: { glass: "aurora" as const } }, "t"));
+    expect(frosted.cssVars["--tv-glass-backdrop-blobs"]).toBe("none");
+    expect(aurora.cssVars["--tv-glass-backdrop-blobs"]).toContain("radial-gradient");
   });
 });

@@ -85,7 +85,8 @@ export type ResolverGroup =
   | "texture"     // texture line/dot colors from neutral ramp
   | "knockout"    // premixed text-knockout backgrounds
   | "hc-fidelity" // mode-dependent VALUE substitution (caret/ring/bar)
-  | "browser-fx"  // brand-gradient / glow-brand-color / glass-blur
+  | "browser-fx"  // brand-gradient / glow-brand-color
+  | "glass"       // glass pane tokens — polarity + paper-hue aware (5a)
   | "const"       // literal constants
   | "v3-bridge";  // realized by theme-css.ts's user-config tail
 
@@ -610,11 +611,69 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-glass-blur",
-    resolverGroup: "browser-fx",
+    resolverGroup: "glass",
     kind: "spacing-px",
-    source: { tier: "const", note: "glass backdrop-filter blur radius" },
+    source: { tier: "computed", note: "glass blur radius — polarity-aware (dark 30 / light 22 / off 0)" },
     consumedBy: ["lib/theme/theme-runtime.css"],
-    description: "Glass blur radius (browser only; SVG degrades to no-blur)",
+    description: "Glass backdrop-filter blur radius (input-driven per 0d-iii)",
+  },
+  // ── Glass pane cluster (wire-audit 5a-5c; C18 enumeration) ──────────────
+  // Every value branches on polarity and threads paper.H (C59).
+  {
+    cssVar: "--tv-glass-tint",
+    resolverGroup: "glass",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "glass pane base tint" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Frosted pane background tint",
+  },
+  {
+    cssVar: "--tv-glass-faint",
+    resolverGroup: "glass",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "glass inner hairline" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Inner 1px hairline of the bevel stack",
+  },
+  {
+    cssVar: "--tv-glass-edge-hi",
+    resolverGroup: "glass",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "glass top specular edge" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Top specular highlight of the bevel stack",
+  },
+  {
+    cssVar: "--tv-glass-edge-lo",
+    resolverGroup: "glass",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "glass bottom thickness edge" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Bottom thickness shade of the bevel stack",
+  },
+  {
+    cssVar: "--tv-glass-sheen",
+    resolverGroup: "glass",
+    kind: "paint-color",
+    source: { tier: "computed", note: "148deg diagonal sheen color" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Diagonal specular sheen (::before, two gradients)",
+  },
+  {
+    cssVar: "--tv-glass-shadow",
+    resolverGroup: "glass",
+    kind: "shadow",
+    source: { tier: "computed", note: "glass float drop shadow" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Floating drop shadow of the glass pane",
+  },
+  {
+    cssVar: "--tv-glass-backdrop-blobs",
+    resolverGroup: "glass",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "aurora borealis blob layer (3 radials from brand/accent peaks)" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Backdrop blob layer behind the pane (aurora variant)",
   },
 
   // ── Stage 2 §5 — HC encoding fidelity tokens ──────────────────────────────

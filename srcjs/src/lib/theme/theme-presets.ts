@@ -48,6 +48,8 @@ export const THEME_NAMES = [
   "ledger",
   "terminal",
   "aurora",
+  "blueprint",
+  "sunprint",
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -83,4 +85,6 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   ledger:         "Ledger",
   terminal:       "Terminal",
   aurora:         "Aurora",
+  blueprint:      "Blueprint",
+  sunprint:       "Sunprint",
 };

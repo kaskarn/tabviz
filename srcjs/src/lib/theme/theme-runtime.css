@@ -221,9 +221,48 @@
  * the sv-omit markers. SVG path emits structural equivalents (gradient
  * defs, filter defs) where parity is desired. */
 
+/* Glass pane (wire-audit 5a-5c). All values polarity + paper-hue aware
+ * via the glass resolver group (C59). Filter stack on the SHELL (C60 —
+ * Round 2 had it on the paper, the wrong element): blur + saturate(1.9)
+ * + brightness(1.06) — the brightness lift is "lit pane" vs "fog" (C20).
+ * Bevel = 4 layers (C21): float drop + top specular + inner hairline +
+ * bottom thickness. */
 .tabviz-scope[data-shell-surface="glass"] .tv-shell {
-  backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(150%);
-  -webkit-backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(150%);
+  position: relative;
+  background: var(--tv-glass-tint);
+  backdrop-filter: blur(var(--tv-glass-blur, 0px)) saturate(1.9) brightness(1.06);
+  -webkit-backdrop-filter: blur(var(--tv-glass-blur, 0px)) saturate(1.9) brightness(1.06);
+  box-shadow:
+    var(--tv-glass-shadow, 0 0 0 transparent),
+    inset 0 1px 0 var(--tv-glass-edge-hi, transparent),
+    inset 0 0 0 1px var(--tv-glass-faint, transparent),
+    inset 0 -1px 0 var(--tv-glass-edge-lo, transparent);
+}
+
+/* Diagonal specular sheen (5b) — TWO gradients: the 148deg linear is the
+ * lab's "viewer above-left" specular (the angle is deliberate); the
+ * off-canvas radial gives it a focal point. opacity 0.9 per lab.css. */
+.tabviz-scope[data-shell-surface="glass"] .tv-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(148deg, var(--tv-glass-sheen) 0%, transparent 55%),
+    radial-gradient(80% 40% at 50% -10%, var(--tv-glass-sheen), transparent);
+  opacity: 0.9;
+}
+
+/* Aurora backdrop blob layer (5a) — sits BEHIND the pane inside the
+ * container. Radius overshoots the shell by 3px (C60) so no square
+ * corners peek behind the rounded pane. */
+.tabviz-scope .tv-glass-backdrop {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--tv-shell-radius, 0px) + 3px);
+  background: var(--tv-glass-backdrop-blobs, none);
+  pointer-events: none;
 }
 
 .tabviz-scope .shell-strip {

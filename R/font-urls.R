@@ -76,5 +76,7 @@ FONT_URLS <- list(
   # wire-audit 2b presets (ledger / terminal / aurora)
   spectral         = gf("Spectral",         "ital,wght@0,400;0,500;0,600;1,400"),
   space_mono       = gf("Space Mono",       "ital,wght@0,400;0,700;1,400"),
-  outfit           = gf("Outfit",           "wght@400;500;600;700")
+  outfit           = gf("Outfit",           "wght@400;500;600;700"),
+  ibm_plex_mono    = gf("IBM Plex Mono",    "wght@400;500;600;700"),
+  karla            = gf("Karla",            "wght@400;500;600;700")
 )

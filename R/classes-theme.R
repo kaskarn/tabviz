@@ -208,6 +208,7 @@ ThemeInputs <- new_class(
     effects_caption_style          = new_property(class_character, default = NA_character_),
     # B12 (wire-audit 2c-i): header/title chrome as Tier-1 inputs (lab
     # vocabulary). Overrides the v3 variants picker until the wire bump.
+    effects_glass                  = new_property(class_character, default = NA_character_),
     effects_header_style           = new_property(class_character, default = NA_character_),
     effects_title_style            = new_property(class_character, default = NA_character_),
     # D12 (wire-audit 1f): viz-mark identity — theme defaults for plot
@@ -285,6 +286,10 @@ ThemeInputs <- new_class(
     cs <- self@effects_caption_style
     if (!is.na(cs) && !cs %in% c("none", "chip", "stripe", "both")) {
       return("effects_caption_style must be 'none', 'chip', 'stripe', or 'both'")
+    }
+    gl <- self@effects_glass
+    if (!is.na(gl) && !gl %in% c("none", "frosted", "aurora")) {
+      return("effects_glass must be 'none', 'frosted', or 'aurora'")
     }
     hs <- self@effects_header_style
     if (!is.na(hs) && !hs %in% c("normal", "tint", "fill")) {

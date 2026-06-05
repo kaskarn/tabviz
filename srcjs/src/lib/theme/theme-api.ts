@@ -40,6 +40,8 @@ export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave, 
 export const themeLedger        = (): WebTheme => buildTheme(PRESETS.ledger,          "ledger");
 export const themeTerminal      = (): WebTheme => buildTheme(PRESETS.terminal,        "terminal");
 export const themeAurora        = (): WebTheme => buildTheme(PRESETS.aurora,          "aurora");
+export const themeBlueprint     = (): WebTheme => buildTheme(PRESETS.blueprint,       "blueprint");
+export const themeSunprint      = (): WebTheme => buildTheme(PRESETS.sunprint,        "sunprint");
 export const themeBrutalist     = (): WebTheme => buildTheme(PRESETS.brutalist,       "brutalist");
 export const themeAtelier       = (): WebTheme => buildTheme(PRESETS.atelier,         "atelier");
 export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive,       "executive");

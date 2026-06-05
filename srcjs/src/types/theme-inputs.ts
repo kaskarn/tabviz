@@ -225,6 +225,13 @@ export interface ThemeInputs {
     gradient_shell_angle?: number;   // degrees; default 90 (left-to-right)
     /** Card shadow elevation preset. "none" / "soft" / "raised" / "float". */
     elevation?: "none" | "soft" | "raised" | "float";
+    /** Glass material (B16, wire-audit 5a). "frosted" turns the shell
+     *  into a translucent pane (backdrop blur + saturate + brightness,
+     *  4-layer bevel, 148deg sheen); "aurora" adds the borealis backdrop
+     *  blob layer behind the pane. Browser-additive (D11); SVG export
+     *  renders the opaque shell. Every glass token is polarity- and
+     *  paper-hue-aware (C59 — flat constants read as grey smear). */
+    glass?: "none" | "frosted" | "aurora";
     /** B12 (wire-audit 2c-i): header chrome treatment as a Tier-1 input
      *  (lab vocabulary). Overrides the v3 variants.headerStyle picker
      *  (mapping: normal->light, tint->tint, fill->bold) until the v3
