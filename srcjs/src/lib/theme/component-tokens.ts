@@ -122,9 +122,10 @@ export interface ComponentToken {
   readonly cssVar: string;
   /** What this token paints/scales/sizes. */
   readonly kind: TokenKind;
-  /** Which resolver realizes the value (see ResolverGroup). Optional only
-   *  during the Pass 0d-i migration window; 0d-ii makes it required. */
-  readonly resolverGroup?: ResolverGroup;
+  /** Which resolver realizes the value (see ResolverGroup). Required:
+   *  a token whose group has no registered ResolverFn dev-throws at
+   *  resolve time (the Pass 0d guarantee — no silent mis-routing). */
+  readonly resolverGroup: ResolverGroup;
   /** Provenance — where the resolved value comes from. */
   readonly source: TokenSource;
   /** Consumer file paths (relative to srcjs/src/). The drift gate enforces

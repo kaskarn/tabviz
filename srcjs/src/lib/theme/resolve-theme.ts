@@ -508,168 +508,23 @@ function resolveTokenValue(
   }
 
   // ── Group dispatch ──────────────────────────────────────────────────────
-  const group = token.resolverGroup;
-  if (group !== undefined) {
-    const fn = RESOLVERS.get(group);
-    if (!fn) {
-      return tokenResolveBug(token.cssVar, token.source.tier,
-        `resolverGroup=${group} has no registered resolver`);
-    }
-    return fn(token, resolved);
+  // resolverGroup is required on every manifest entry (Pass 0d-ii); a
+  // group with no registered ResolverFn is a manifest bug and dev-throws.
+  const fn = RESOLVERS.get(token.resolverGroup);
+  if (!fn) {
+    return tokenResolveBug(token.cssVar, token.source.tier,
+      `resolverGroup=${token.resolverGroup} has no registered resolver`);
   }
-
-  // Pass 0d-i migration fallback: entries without a resolverGroup ride the
-  // legacy waterfall. 0d-ii makes resolverGroup required and deletes this.
-  return resolveTokenValueLegacy(token, resolved);
+  return fn(token, resolved);
 }
 
-/** LEGACY waterfall dispatch — Pass 0d-i keeps it as the fallback for
- *  entries without `resolverGroup` and as the equivalence baseline for
- *  the dispatch-parity test. Deleted in Pass 0d-ii.
- *  Exported for tests only. */
-export function resolveTokenValueLegacy(
-  token: ComponentToken,
-  resolved: ResolveCtx,
-): string {
-  // V3-bridge short-circuit.
-  if (isV3BridgeToken(token)) return V3_BRIDGE_SENTINEL;
-
-  // Layer B — declarative token.modes drop/swap.
-  const mode = resolved.inputs.mode;
-  if (mode === "high-contrast" && token.modes?.hc) {
-    const beh = token.modes.hc;
-    if (beh === "drop") return "transparent";
-    return resolved.roles[beh.swap];
-  }
-  if (mode === "reduced-transparency" && token.modes?.rt) {
-    const beh = token.modes.rt;
-    if (beh === "drop") return "transparent";
-    return resolved.roles[beh.swap];
-  }
-
-  // Layer C — HC fidelity tokens. Short-circuit before kind dispatch
-  // so density/border-width branches don't capture them.
-  if (token.cssVar === "--tv-hc-caret-char") {
-    return mode === "high-contrast" ? HC_CARET_CHAR_VALUE : "";
-  }
-  if (token.cssVar === "--tv-hc-ring-width") {
-    return HC_RING_WIDTH_VALUE;
-  }
-  if (token.cssVar === "--tv-hc-bar-width") {
-    return mode === "high-contrast" ? HC_BAR_WIDTH_HC : HC_BAR_WIDTH_STD;
-  }
-
-  // Stage 2 §7 browser-additive effects.
-  if (token.cssVar === "--tv-brand-gradient") {
-    const brandHex = oklchToHex(resolved.inputs.anchors.brand);
-    const brandSolid = resolved.roles["brand-solid"] ?? brandHex;
-    // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
-    const brandRamp = resolved.ramps.brand;
-    const a = brandRamp[7] ?? brandSolid;
-    const b = brandRamp[9] ?? brandSolid;
-    return `linear-gradient(90deg, ${a} 0%, ${b} 100%)`;
-  }
-  if (token.cssVar === "--tv-glow-brand-color") {
-    // rgba from accent-solid at alpha 0.4.
-    const brandHex = oklchToHex(resolved.inputs.anchors.brand);
-    const accent = resolved.roles["accent-solid"] ?? brandHex;
-    if (accent.startsWith("#")) {
-      const h = accent.slice(1);
-      const r = parseInt(h.slice(0, 2), 16);
-      const g = parseInt(h.slice(2, 4), 16);
-      const b = parseInt(h.slice(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, 0.4)`;
-    }
-    return accent;
-  }
-  if (token.cssVar === "--tv-glass-blur") {
-    return "16px";
-  }
-
-  // ── Phase D — GEOMETRY (radius + border-width) ─────────────────────────
-  // Direct projection from inputs.geometry with defaults baked here so
-  // every preset gets sensible values without per-preset opt-in.
-  {
-    const g = resolveGeometryComputed(token.cssVar, resolved.inputs);
-    if (g !== null) return g;
-  }
-
-  // ── Phase D — EFFECTS (glow + gradient + shadow) ───────────────────────
-  // Derived from anchor ramps. Mode-aware behaviour rides on token.modes
-  // (HC drops, RT swaps) so the dispatcher above already handled it.
-  {
-    const e = resolveEffectsComputed(token.cssVar, resolved);
-    if (e !== null) return e;
-  }
-
-  // Stage 2 typography tokens always route through the typography resolver,
-  // regardless of kind. (`lh` and `track` are tagged spacing-px / size, but
-  // their values come from the type-role table, not density.)
-  if (token.source.tier === "computed") {
-    const typography = resolveTypographyComputed(token.cssVar, resolved.inputs);
-    if (typography !== null) return typography;
-    const shellPaper = resolveShellPaperComputed(token.cssVar, resolved);
-    if (shellPaper !== null) return shellPaper;
-    const elevation = resolveElevationComputed(token.cssVar, resolved);
-    if (elevation !== null) return elevation;
-    const texture = resolveTextureComputed(token.cssVar, resolved);
-    if (texture !== null) return texture;
-    const knockout = resolveKnockoutComputed(token.cssVar, resolved);
-    if (knockout !== null) return knockout;
-  }
-
-  // Spacing-px tokens are resolved via the density table regardless of
-  // source.tier — many are tagged `computed` because they derive from a
-  // density × kind formula. The density preset comes from inputs.density;
-  // inputs.density_factor multiplies it (clamped [0.5, 2]).
-  if (token.kind === "spacing-px") {
-    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.density_factor);
-  }
-  if (token.kind === "border-width") {
-    // Density-table lookup mirrors the spacing-px branch above — PLOT_DIMS
-    // contains plot-line-width / hc-ring-width etc. Without this lookup
-    // every border-width token returned "1px" regardless of the table.
-    return tokenDensityPx(token.cssVar, resolved.inputs.density ?? "comfortable", resolved.inputs.density_factor);
-  }
-
-  const source: TokenSource = token.source;
-  switch (source.tier) {
-    case "role":
-      return resolved.roles[source.role];
-    case "input":
-      // No manifest entry currently uses `tier: "input"` — a direct read
-      // from Tier-1 inputs goes through `tier: "anchor"` (for ramps) or a
-      // computed resolver (for typography/density). If a manifest entry
-      // ever declares `tier: "input"`, add an explicit dispatch above.
-      return tokenResolveBug(token.cssVar, source.tier,
-        `input=${String(source.input)}`);
-    case "anchor": {
-      const anchorHex = pickAnchorHex(source.anchor, resolved.inputs);
-      if (anchorHex !== null) return anchorHex;
-      // Status anchors are optional inputs. When the theme doesn't set
-      // them, fall back to the BADGE_VARIANTS palette so badges/icons
-      // render correctly. The mapping mirrors theme-css.ts's v3 emission.
-      const statusFallback = STATUS_ANCHOR_FALLBACK[source.anchor];
-      if (statusFallback !== undefined) return statusFallback;
-      return tokenResolveBug(token.cssVar, source.tier,
-        `anchor=${source.anchor} not resolvable from inputs`);
-    }
-    case "computed":
-      // Typography / shellPaper / elevation / texture / knockout / Phase D
-      // geometry + effects all handled above. Falling through means a
-      // computed token has no resolver wired — add one or change tier.
-      return tokenResolveBug(token.cssVar, source.tier,
-        `note=${source.note ?? "(none)"}`);
-    case "const":
-      // HC-fidelity tokens (caret-char, ring-width, bar-width) are
-      // intercepted in the HC-fidelity short-circuit earlier in
-      // resolveTokenValue; the duplicate block that used to live here
-      // was dead code.
-      if (source.note?.includes("transparent")) return "transparent";
-      return tokenResolveBug(token.cssVar, source.tier,
-        `note=${source.note ?? "(none)"}`);
-  }
-}
+// The legacy 15-branch waterfall (by-cssVar / by-kind / by-tier
+// interception) was deleted in Pass 0d-ii after the dispatch-parity test
+// proved the Map dispatch byte-identical across every token × 22 presets
+// × 3 modes. Its tier-switch carried a false comment claiming no manifest
+// entry used `tier: "input"` (there were 24, all intercepted upstream) —
+// the structural bug that motivated this refactor: dev-throws that can
+// never fire. Post-0d-ii every group's dev-throw is reachable.
 
 /** Stage 2 typography resolver. Matches `--tv-text-{role}-{prop}` and emits
  *  the typed value via `resolveTypeRole()`. Returns null when the cssVar
@@ -934,7 +789,22 @@ function tokenDensityPx(
   const plot = PLOT_DIMS[cssVar];
   if (plot !== undefined) return `${plot}px`;
   const base = DENSITY_PRESETS[density][cssVar];
-  if (base === undefined) return "0px";
+  if (base === undefined) {
+    // A density-group token missing from the density table is a manifest/
+    // table mismatch. Pre-0d this silently emitted "0px" (collapsed
+    // spacing with no error anywhere); now it dev-throws. Prod keeps the
+    // historical "0px" so a single bad token can't take down a render.
+    if (isDev()) {
+      throw new Error(
+        `tokenDensityPx: ${cssVar} is resolverGroup="density" but has no ` +
+        `entry in density-presets.ts (density=${density}). Add the px ` +
+        `value to DENSITY_PX or move the token to the correct group.`,
+      );
+    }
+    // eslint-disable-next-line no-console
+    console.error(`tokenDensityPx: no density entry for ${cssVar}; emitting 0px`);
+    return "0px";
+  }
   if (factor == null || factor === 1) return `${base}px`;
   const f = Math.max(0.5, Math.min(2, factor));
   return `${Math.round(base * f)}px`;

@@ -129,6 +129,15 @@
         />
       </aside>
       <main class="cascade-main">
+        {#if studioStore.resolveError}
+          <!-- Resolve error boundary (Pass 0d-ii): the current inputs fail
+               to resolve; the preview below renders the last GOOD
+               resolution instead of white-screening (B3 hardening). -->
+          <div class="resolve-error-banner" role="alert">
+            Theme failed to resolve — showing the last working state.
+            <code>{studioStore.resolveError}</code>
+          </div>
+        {/if}
         <div class="live-preview">
           <StudioChart spec={initialSpec} />
         </div>
@@ -180,6 +189,23 @@
     overflow-y: auto;
     background: #ffffff;
     min-height: 0;
+  }
+  .resolve-error-banner {
+    flex: 0 0 auto;
+    margin: 8px 12px 0;
+    padding: 8px 12px;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+  }
+  .resolve-error-banner code {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #7f1d1d;
+    word-break: break-word;
   }
   .live-preview {
     flex: 0 0 auto;

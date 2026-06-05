@@ -1,22 +1,18 @@
-// Pass 0d dispatch-parity gate — proves the resolverGroup Map dispatch
-// is byte-identical to the legacy waterfall for EVERY manifest token,
-// across every preset × every mode (standard / high-contrast /
-// reduced-transparency).
+// Pass 0d resolver-dispatch gate.
 //
-// 0d-i: both paths exist; this test compares them token-by-token.
-// 0d-ii: the waterfall is deleted; the parity half of this file is then
-// replaced by a full-cssVars snapshot lock so future resolver edits diff
-// against a recorded baseline instead.
+// 0d-i proved the resolverGroup Map dispatch byte-identical to the legacy
+// waterfall (token-by-token, 22 presets × 3 modes) before the waterfall
+// was deleted in 0d-ii. This file is now the FORWARD lock: a full-cssVars
+// snapshot per preset × mode. Any resolver/manifest edit that changes an
+// emitted value diffs here first — intentional changes regenerate with
+//   bun test src/lib/theme/resolver-dispatch.test.ts --update-snapshots
+// and the diff gets reviewed in the commit.
 
 import { describe, it, expect } from "bun:test";
 import { PRESETS } from "./theme-presets-inputs";
 import { createWire } from "./theme-wire";
-import {
-  resolveTheme,
-  resolveTokenValueLegacy,
-  _buildResolveCtxForTest,
-} from "./resolve-theme";
-import { COMPONENT_TOKENS } from "./component-tokens";
+import { resolveTheme } from "./resolve-theme";
+import { COMPONENT_TOKENS, type ResolverGroup } from "./component-tokens";
 import type { ThemeInputs } from "../../types/theme-inputs";
 
 const MODES: Array<ThemeInputs["mode"]> = [
@@ -25,46 +21,13 @@ const MODES: Array<ThemeInputs["mode"]> = [
   "reduced-transparency",
 ];
 
-describe("Pass 0d dispatch parity: Map dispatch ≡ legacy waterfall", () => {
+describe("Pass 0d: full-cssVars snapshot lock (per preset × mode)", () => {
   for (const [name, inputs] of Object.entries(PRESETS)) {
     for (const mode of MODES) {
       it(`${name} / ${mode ?? "standard"}`, () => {
         const wireInputs = mode === undefined ? inputs : { ...inputs, mode };
-        const wire = createWire(wireInputs, name);
-
-        // Group path: one resolveTheme call → Map-dispatched values for
-        // every token (all entries carry resolverGroup post-0d-i).
-        const groupVars = resolveTheme(wire).cssVars;
-
-        // Legacy path: drive the preserved waterfall token-by-token over
-        // the same ResolveCtx the manifest walk used.
-        const ctx = _buildResolveCtxForTest(wire);
-        const mismatches: string[] = [];
-        for (const token of COMPONENT_TOKENS) {
-          let legacy: string;
-          try {
-            legacy = resolveTokenValueLegacy(token, ctx);
-          } catch (e) {
-            mismatches.push(
-              `${token.cssVar}: legacy waterfall threw (${(e as Error).message}) ` +
-              `but group dispatch returned "${groupVars[token.cssVar]}"`,
-            );
-            continue;
-          }
-          const group = groupVars[token.cssVar];
-          if (group !== legacy) {
-            mismatches.push(
-              `${token.cssVar}: group="${group}" legacy="${legacy}" ` +
-              `(resolverGroup=${token.resolverGroup})`,
-            );
-          }
-        }
-        if (mismatches.length > 0) {
-          throw new Error(
-            `${mismatches.length} dispatch divergence(s):\n` +
-            mismatches.join("\n"),
-          );
-        }
+        const cssVars = resolveTheme(createWire(wireInputs, name)).cssVars;
+        expect(cssVars).toMatchSnapshot();
       });
     }
   }
@@ -72,7 +35,17 @@ describe("Pass 0d dispatch parity: Map dispatch ≡ legacy waterfall", () => {
 
 describe("Pass 0d manifest invariants", () => {
   it("every manifest entry declares a resolverGroup", () => {
-    const missing = COMPONENT_TOKENS.filter((t) => t.resolverGroup === undefined);
+    const missing = COMPONENT_TOKENS.filter(
+      (t) => (t.resolverGroup as ResolverGroup | undefined) === undefined,
+    );
     expect(missing.map((t) => t.cssVar)).toEqual([]);
+  });
+
+  it("every declared resolverGroup resolves without a dispatch bug", () => {
+    // Indirect registration check: resolving every preset in every mode
+    // (the snapshot suite above) would dev-throw on a Map miss. This
+    // assertion makes the invariant explicit for one cheap resolve.
+    const first = Object.entries(PRESETS)[0]!;
+    expect(() => resolveTheme(createWire(first[1], first[0]))).not.toThrow();
   });
 });

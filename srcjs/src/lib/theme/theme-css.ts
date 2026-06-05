@@ -238,7 +238,13 @@ ${v4Body}
 
 /** Append v4 cssVars from theme.authoringInputs. Empty when authoringInputs
  *  is unavailable (legacy / programmatic themes); v3 path continues to work
- *  unchanged in that case. */
+ *  unchanged in that case.
+ *
+ *  Failure policy (unified in Pass 0d-ii): a resolver throw here used to be
+ *  swallowed silently — the ENTIRE v4 var block vanished and every theme
+ *  value fell back to the v3 tail with zero observability. Now dev
+ *  re-throws (CI/tests surface the bug at the moment of introduction) and
+ *  prod logs loudly before degrading to the v3-tail fallback. */
 function _emitV4CssVarsBody(theme: WebTheme): string {
   if (!theme.authoringInputs) return "";
   try {
@@ -251,8 +257,24 @@ function _emitV4CssVarsBody(theme: WebTheme): string {
       lines.push(`      ${name}: ${value};`);
     }
     return lines.join("\n");
-  } catch {
+  } catch (e) {
+    if (_isDevBuild()) throw e;
+    // eslint-disable-next-line no-console
+    console.error(
+      `tabviz: v4 cssVars emission failed for theme "${theme.name ?? "custom"}"; ` +
+      `rendering on v3 fallbacks only.`,
+      e,
+    );
     return "";
+  }
+}
+
+/** True under vite dev / vitest / bun:test (mirrors resolve-theme's isDev). */
+function _isDevBuild(): boolean {
+  try {
+    return (import.meta as { env?: { PROD?: boolean } }).env?.PROD !== true;
+  } catch {
+    return true;
   }
 }
 

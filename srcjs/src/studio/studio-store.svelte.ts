@@ -42,13 +42,45 @@ class StudioStore {
   /** Index of the current state in history (-1 = no history). */
   cursor = $state<number>(-1);
 
+  /** Keep-last-good cache for the resolve error boundary. Plain field
+   *  (NOT $state) so the $derived below may write it without tripping
+   *  Svelte's state_unsafe_mutation guard. */
+  private lastGoodResolved: ResolvedTheme | null = null;
+
+  /** Derived: resolve outcome with an error boundary (Pass 0d-ii /
+   *  wire-audit C51-adjacent, hardens B3). A resolver throw no longer
+   *  white-screens the studio: the last successfully resolved theme keeps
+   *  rendering and `resolveError` carries the message for inline display. */
+  private resolveOutcome = $derived.by<{
+    theme: ResolvedTheme | null;
+    error: string | null;
+  }>(() => {
+    if (!this.inputs) return { theme: null, error: null };
+    try {
+      const theme = resolveTheme({
+        ...createWire(this.inputs, this.baseName),
+        roleOverrides: this.roleOverrides,
+      });
+      this.lastGoodResolved = theme;
+      return { theme, error: null };
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("studio: theme resolve failed; keeping last good", e);
+      return {
+        theme: this.lastGoodResolved,
+        error: e instanceof Error ? e.message : String(e),
+      };
+    }
+  });
+
   /** Derived: the resolved theme cssVars + roles + ramps for chart rendering
-   *  and Inspector trace. Recomputes on every input change. */
-  resolved = $derived<ResolvedTheme | null>(
-    this.inputs
-      ? resolveTheme({ ...createWire(this.inputs, this.baseName), roleOverrides: this.roleOverrides })
-      : null,
-  );
+   *  and Inspector trace. Recomputes on every input change. Falls back to
+   *  the last good resolution when the current inputs fail to resolve. */
+  resolved = $derived<ResolvedTheme | null>(this.resolveOutcome.theme);
+
+  /** Non-null while the current inputs fail to resolve (the rendered theme
+   *  is then the last good one). StudioShell surfaces this inline. */
+  resolveError = $derived<string | null>(this.resolveOutcome.error);
 
   /** Derived: dirty iff the current state differs from the base. */
   dirty = $derived<boolean>(
