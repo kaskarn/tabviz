@@ -18,8 +18,10 @@ import { buildTheme } from "./theme-adapter";
 // Preset names, grouped by category in declaration order. Categories
 // mirror R's `package_themes()` 2-level list shape:
 //   * journals: clinical / publication identities
+//   * modes:    dark variant
 //   * design:   design-movement interpretations (light + dark pairs)
 //   * lotr:     editorial easter-egg themes
+//   * showcase: substrate-ceiling demos (synthwave / brutalist / atelier / executive)
 export const THEME_NAMES = [
   "cochrane",
   "lancet",
@@ -39,6 +41,10 @@ export const THEME_NAMES = [
   "dwarven",
   "elvish",
   "hobbit",
+  "synthwave",
+  "brutalist",
+  "atelier",
+  "executive",
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -67,4 +73,8 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   dwarven:        "Dwarven",
   elvish:         "Elvish",
   hobbit:         "Hobbit",
+  synthwave:      "Synthwave",
+  brutalist:      "Brutalist",
+  atelier:        "Atelier",
+  executive:      "Executive",
 };

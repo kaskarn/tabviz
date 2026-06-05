@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { WebTheme } from "$types";
-  import { THEME_NAMES, THEME_LABELS, type ThemeName } from "$lib/theme/theme-presets";
+  import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
@@ -96,8 +96,13 @@
   });
 
   // Locate a theme across the wire-shape (handles both flat and categorized).
+  // When `availableThemes` is undefined (host didn't pass an enable_themes
+  // payload — common in the studio's JS-authored spec), fall back to the
+  // built-in TS preset registry. Without this fallback `themeColors()` would
+  // hit its hardcoded default for every entry and render every dropdown
+  // swatch identical pale-blue (B1).
   function lookupTheme(name: string): WebTheme | undefined {
-    if (!availableThemes) return undefined;
+    if (!availableThemes) return THEME_PRESETS[name as ThemeName];
     if (categorized) {
       for (const cat of Object.values(availableThemes as CategorizedThemes)) {
         if (name in cat) return cat[name];
