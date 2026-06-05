@@ -258,6 +258,8 @@ export const SWISS: ThemeInputs = defineInputs(
   { brand: "#E30613", accent: "#000000", neutralHueFrom: null },
   {
     categorical: "tableau10",
+    // C65: International Typographic Style — sharp corners, no exceptions.
+    geometry: { radius: { sm: 0, md: 0, lg: 0, pill: 0 } },
     density: "compact",
     shell_texture: "grid",
     type_scale_ratio: 1.2,
@@ -302,6 +304,8 @@ export const NEWSPRINT: ThemeInputs = defineInputs(
   },
   {
     categorical: "okabe_ito",
+    // C65: newspaper rows are tight — column-inches discipline.
+    density_factor: 0.95,
     shell_texture: "grain",
     type_scale_ratio: 1.2,
     fonts: {
@@ -367,6 +371,8 @@ export const TONAL: ThemeInputs = defineInputs(
   { brand: "#6750A4", accent: "#7D5260" },
   {
     categorical: "tableau10",
+    // C65: Material You — generous radii.
+    geometry: { radius: { sm: 4, md: 8, lg: 16, pill: 999 } },
     shell_mode: "raised",
     type_scale_ratio: 1.25,
     fonts: {
@@ -383,6 +389,8 @@ export const TONAL_DARK: ThemeInputs = defineInputs(
   { brand: "#D0BCFF", accent: "#EFB8C8", polarity: "dark" },
   {
     categorical: "tableau10",
+    // C65: Material You — generous radii.
+    geometry: { radius: { sm: 4, md: 8, lg: 16, pill: 999 } },
     shell_mode: "raised",
     type_scale_ratio: 1.25,
     fonts: {
@@ -411,6 +419,8 @@ export const DWARVEN: ThemeInputs = defineInputs(
   },
   {
     categorical: "okabe_ito",
+    // C65: storybook breathing room.
+    density_factor: 1.05,
     shell_mode: "raised",
     shell_texture: "dotted",
     type_base_size: 14,
@@ -461,6 +471,8 @@ export const HOBBIT: ThemeInputs = defineInputs(
   },
   {
     categorical: "okabe_ito",
+    // C65: storybook breathing room.
+    density_factor: 1.05,
     shell_texture: "grain",
     type_base_size: 14,
     type_scale_ratio: 1.333,
@@ -499,6 +511,8 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
       info:     { L: 0.844, C: 0.146, H: 209.285 },  // #00E5FF
     },
     categorical: "tableau10",
+    // C65: float-card radius is part of the neon identity (lab: 9).
+    geometry: { radius: { sm: 4, md: 9, lg: 14, pill: 999 } },
     shell_mode: "float",
     shell_texture: "grid",
     type_base_size: 13,
@@ -543,6 +557,8 @@ export const BRUTALIST: ThemeInputs = defineInputs(
     },
     categorical: "greys",
     density: "compact",
+    // C65: brutalist wants DENSE — compact preset tightened further.
+    density_factor: 0.88,
     shell_texture: "grid",
     type_base_size: 14,
     type_scale_ratio: 1.25,
@@ -606,6 +622,9 @@ export const EXECUTIVE: ThemeInputs = defineInputs(
   { brand: "#1E3A5F", accent: "#C9A961" },
   {
     categorical: "wong",
+    // C65: premium card — md-leaning radius + airy density.
+    geometry: { radius: { sm: 3, md: 8, lg: 12, pill: 999 } },
+    density_factor: 1.08,
     shell_mode: "raised",
     type_base_size: 14,
     type_scale_ratio: 1.333,

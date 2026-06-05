@@ -19,6 +19,8 @@ web_theme_dwarven <- function() {
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     polarity = "dark",
     categorical = "okabe_ito",
+    # C65: storybook breathing room.
+    density_factor = 1.05,
     shell_mode = "raised",
     shell_texture = "dotted",
     type_base_size = 14,
@@ -81,6 +83,8 @@ web_theme_hobbit <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
+    # C65: storybook breathing room.
+    density_factor = 1.05,
     shell_texture = "grain",
     type_base_size = 14,
     type_scale_ratio = 1.333,

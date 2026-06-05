@@ -47,6 +47,8 @@ web_theme_swiss <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
+    # C65: International Typographic Style — sharp corners, no exceptions.
+    geometry = list(radius = list(sm = 0, md = 0, lg = 0, pill = 0)),
     density = "compact",
     shell_texture = "grid",
     header_style = "bold",
@@ -105,6 +107,8 @@ web_theme_newsprint <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
+    # C65: newspaper rows are tight — column-inches discipline.
+    density_factor = 0.95,
     shell_texture = "grain",
     type_scale_ratio = 1.2,
     fonts_body = "'Frank Ruhl Libre', Georgia, serif",
@@ -173,6 +177,8 @@ web_theme_tonal <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "tableau10",
+    # C65: Material You — generous radii.
+    geometry = list(radius = list(sm = 4, md = 8, lg = 16, pill = 999)),
     shell_mode = "raised",
     type_scale_ratio = 1.25,
     fonts_body = "'Roboto', -apple-system, system-ui, sans-serif",
@@ -195,6 +201,8 @@ web_theme_tonal_dark <- function() {
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     polarity = "dark",
     categorical = "tableau10",
+    # C65: Material You — generous radii.
+    geometry = list(radius = list(sm = 4, md = 8, lg = 16, pill = 999)),
     shell_mode = "raised",
     type_scale_ratio = 1.25,
     fonts_body = "'Roboto', -apple-system, system-ui, sans-serif",

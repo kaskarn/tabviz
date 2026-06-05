@@ -29,6 +29,8 @@ web_theme_synthwave <- function() {
     status_info     = "#00E5FF",
     polarity = "dark",
     categorical = "tableau10",
+    # C65: float-card radius is part of the neon identity (lab: 9).
+    geometry = list(radius = list(sm = 4, md = 9, lg = 14, pill = 999)),
     shell_mode = "float",
     shell_texture = "grid",
     type_base_size = 13,
@@ -74,6 +76,8 @@ web_theme_brutalist <- function() {
     status_info     = "#37474F",
     categorical = "greys",
     density = "compact",
+    # C65: brutalist wants DENSE — compact preset tightened further.
+    density_factor = 0.88,
     shell_texture = "grid",
     type_base_size = 14,
     type_scale_ratio = 1.25,
@@ -150,6 +154,9 @@ web_theme_executive <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "wong",
+    # C65: premium card — md-leaning radius + airy density.
+    geometry = list(radius = list(sm = 3, md = 8, lg = 12, pill = 999)),
+    density_factor = 1.08,
     shell_mode = "raised",
     type_base_size = 14,
     type_scale_ratio = 1.333,
