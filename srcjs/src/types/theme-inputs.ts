@@ -223,8 +223,12 @@ export interface ThemeInputs {
     glow_anchor?: "brand" | "accent";
     gradient_shell_intensity?: "none" | "subtle" | "vivid";
     gradient_shell_angle?: number;   // degrees; default 90 (left-to-right)
-    /** Card shadow elevation preset. "none" / "soft" / "raised" / "float". */
-    elevation?: "none" | "soft" | "raised" | "float";
+    /** Figure-wide depth (none / low / medium / high). Pure MAGNITUDE
+     *  vocabulary — deliberately shares no words with shell_mode's
+     *  raised/float (R2 decision: the two axes collided on those tokens
+     *  with different meanings). Lands on the shell when raised, the
+     *  paper otherwise. */
+    elevation?: "none" | "low" | "medium" | "high";
     /** Glass material (B16, wire-audit 5a). "frosted" turns the shell
      *  into a translucent pane (backdrop blur + saturate + brightness,
      *  4-layer bevel, 148deg sheen); "aurora" adds the borealis backdrop

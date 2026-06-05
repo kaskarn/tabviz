@@ -51,7 +51,7 @@ web_theme_synthwave <- function() {
       glow_anchor = "accent",
       gradient_shell_intensity = "vivid",
       gradient_shell_angle = 110,
-      elevation = "raised",
+      elevation = "medium",
       # 2c-i: neon underline beneath the title (lab synthwave).
       title_style = "underline"
     ),
@@ -144,7 +144,7 @@ web_theme_atelier <- function() {
     effects = list(
       glow_intensity = "subtle",
       glow_anchor = "accent",
-      elevation = "soft"
+      elevation = "low"
     ),
     name = "atelier"
   )
@@ -181,7 +181,7 @@ web_theme_executive <- function() {
     effects = list(
       gradient_shell_intensity = "subtle",
       gradient_shell_angle = 145,
-      elevation = "float"
+      elevation = "high"
     ),
     name = "executive"
   )
@@ -281,7 +281,7 @@ web_theme_aurora <- function() {
       glow_intensity = "subtle",
       glow_anchor = "accent",
       gradient_shell_intensity = "subtle",
-      elevation = "float",
+      elevation = "high",
       caption_style = "chip"
     ),
     curves = list(neutral = "smooth"),

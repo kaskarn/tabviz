@@ -224,7 +224,7 @@ test_that("maximal theme (every wire-1.3 input set) round-trips through V8", {
       glass = "aurora",
       glow_intensity = "subtle",
       gradient_shell_intensity = "subtle",
-      elevation = "float",
+      elevation = "high",
       caption_style = "both",
       header_style = "fill",
       title_style = "bar"

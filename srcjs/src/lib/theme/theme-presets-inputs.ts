@@ -427,7 +427,7 @@ export const DWARVEN: ThemeInputs = defineInputs(
     density_factor: 1.05,
     shell_mode: "raised",
     // C66: torchlit-hall depth — soft elevation.
-    effects: { elevation: "soft" },
+    effects: { elevation: "low" },
     shell_texture: "dotted",
     type_base_size: 14,
     type_scale_ratio: 1.25,
@@ -538,7 +538,7 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
       glow_anchor: "accent",
       gradient_shell_intensity: "vivid",
       gradient_shell_angle: 110,
-      elevation: "raised",
+      elevation: "medium",
       // 2c-i: neon underline beneath the title (lab synthwave).
       title_style: "underline",
     },
@@ -624,7 +624,7 @@ export const ATELIER: ThemeInputs = defineInputs(
     effects: {
       glow_intensity: "subtle",
       glow_anchor: "accent",
-      elevation: "soft",
+      elevation: "low",
     },
   },
 );
@@ -653,7 +653,7 @@ export const EXECUTIVE: ThemeInputs = defineInputs(
     effects: {
       gradient_shell_intensity: "subtle",
       gradient_shell_angle: 145,
-      elevation: "float",
+      elevation: "high",
     },
   },
 );
@@ -748,7 +748,7 @@ export const AURORA: ThemeInputs = defineInputs(
       glow_intensity: "subtle",
       glow_anchor: "accent",
       gradient_shell_intensity: "subtle",
-      elevation: "float",
+      elevation: "high",
       caption_style: "chip",
     },
     curves: { neutral: "smooth" },

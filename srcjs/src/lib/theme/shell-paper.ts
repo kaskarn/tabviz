@@ -9,6 +9,30 @@ import type { DensityPreset } from "./density-presets";
 
 export type ShellMode = "flush" | "raised" | "float" | "transparent";
 
+// ── effects.elevation = FIGURE-WIDE depth (decision 2026-06-05) ────────────
+// The elevation input lifts the whole figure off the page — the SHELL when
+// there's a band (raised mode), the PAPER otherwise (flush / float /
+// transparent), so "table-wide or widget-wide" follows the shell mode.
+// "none" keeps the per-mode default shadows; low/medium/high amplify.
+// Vocabulary is pure MAGNITUDE (R2 decision): it deliberately shares no
+// words with ShellMode's raised/float. Module-level + key-typed so a
+// future recipe registry can reach it (R2 extensibility A7).
+type ElevationLevel = NonNullable<NonNullable<ThemeInputs["effects"]>["elevation"]>;
+const ELEVATION_SHADOW: Record<ElevationLevel, string | null> = {
+  none:   null,
+  low:    "0 1px 3px rgba(0,0,0,0.10), 0 3px 10px rgba(0,0,0,0.06)",
+  medium: "0 2px 6px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.08)",
+  high:   "0 4px 12px rgba(0,0,0,0.15), 0 14px 36px rgba(0,0,0,0.10)",
+};
+// Air the drop shadow needs around a band-less figure. Flush/transparent
+// shells have 0 padding, and the auto-fit container is overflow:hidden
+// with container padding 0 — without this, the elevation shadow clipped
+// at the widget edges and read as a smudge (atelier; both R2 visual
+// reviewers). ~60% of the far shadow's blur radius.
+const ELEVATION_AIR_PX: Record<ElevationLevel, number> = {
+  none: 0, low: 8, medium: 14, high: 22,
+};
+
 // ── Density-scaled surface air (spacing rework, 2026-06-05) ────────────────
 // The SHELL owns the figure's outer air; the PAPER carries an inner mat
 // between its edge and the table. Both scale with the density axis +
@@ -74,22 +98,9 @@ export function resolveShellPaper(
   const RAISED_CARD = "0 1px 2px rgba(0,0,0,0.06)";
   const PAPER_INSET = "inset 0 1px 0 rgba(0,0,0,0.03)";
 
-  // ── effects.elevation = FIGURE-WIDE depth (decision 2026-06-05) ─────────
-  // The elevation input lifts the whole figure off the page — the SHELL
-  // when there's a band (raised mode), the PAPER otherwise (flush /
-  // float / transparent), so "table-wide or widget-wide" follows the
-  // shell mode. "none" keeps the per-mode default shadows (presets that
-  // never set elevation are unchanged); soft/raised/float amplify.
-  // (Before this, effects.elevation painted ONLY the painted-row
-  // emphasis shadow — invisible on a fresh table; adversarial effects
-  // review H4. The row shadow still scales with it, coherently.)
-  const ELEVATION_SHADOW: Record<string, string | null> = {
-    none: null,
-    soft:   "0 1px 3px rgba(0,0,0,0.10), 0 3px 10px rgba(0,0,0,0.06)",
-    raised: "0 2px 6px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.08)",
-    float:  "0 4px 12px rgba(0,0,0,0.15), 0 14px 36px rgba(0,0,0,0.10)",
-  };
-  const elevShadow = ELEVATION_SHADOW[inputs.effects?.elevation ?? "none"] ?? null;
+  const elevLevel: ElevationLevel = inputs.effects?.elevation ?? "none";
+  const elevShadow = ELEVATION_SHADOW[elevLevel] ?? null;
+  const elevAir = ELEVATION_AIR_PX[elevLevel] ?? 0;
   // Per-mode defaults, overridden by an explicit elevation pin.
   const shellLift = (fallback: string): string =>
     mode === "raised" && elevShadow ? elevShadow : fallback;
@@ -105,16 +116,19 @@ export function resolveShellPaper(
       // consumed it and would have put a card outline on every default
       // preset. The table's own outer border stays owned by
       // --tv-table-border-* on .tabviz-main.
+      // Geometric inertness holds ONLY while elevation is off: a pinned
+      // figure depth needs air for its shadow (a lifted sheet is no
+      // longer visually flush anyway).
       return {
         shellBg: "transparent",
         shellBorder: "transparent",
         shellShadow: "none",
         shellRadius: "0px",
-        shellPadding: "0px",
+        shellPadding: `${elevAir}px`,
         paperBg: surface,
         paperBorder: "transparent",
         paperShadow: paperLift("none"),
-        paperRadius: "0px",
+        paperRadius: elevAir > 0 ? "6px" : "0px",
         paperPadding: "0px",
       };
     case "raised":
@@ -155,11 +169,11 @@ export function resolveShellPaper(
         shellBorder: "transparent",
         shellShadow: "none",
         shellRadius: "0px",
-        shellPadding: "0px",
+        shellPadding: `${elevAir}px`,
         paperBg: surface,
         paperBorder: "transparent",
         paperShadow: paperLift("none"),
-        paperRadius: "0px",
+        paperRadius: elevAir > 0 ? "6px" : "0px",
         paperPadding: "0px",
       };
   }

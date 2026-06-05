@@ -291,7 +291,7 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `glow_intensity` (`"none"` / `"subtle"` / `"neon"`), `glow_anchor`
 #'   (`"brand"` / `"accent"`), `gradient_shell_intensity` (`"none"` /
 #'   `"subtle"` / `"vivid"`), `gradient_shell_angle` (degrees 0-360),
-#'   `elevation` (`"none"` / `"soft"` / `"raised"` / `"float"`). NULL =
+#'   `elevation` (`"none"` / `"low"` / `"medium"` / `"high"`). NULL =
 #'   no effects (the safe editorial baseline). HC mode drops all effects.
 #' @param marks Viz-mark identity (D12): named list with `point_shape`
 #'   (`"circle"`/`"square"`/`"diamond"`/`"triangle"`) and/or
@@ -774,7 +774,9 @@ set_geometry <- function(theme, radius = NULL, border_width = NULL) {
 #' @param glow_anchor `"brand"` / `"accent"`.
 #' @param gradient_shell_intensity `"none"` / `"subtle"` / `"vivid"`.
 #' @param gradient_shell_angle Numeric in `[0, 360]` (degrees).
-#' @param elevation `"none"` / `"soft"` / `"raised"` / `"float"`.
+#' @param elevation Figure-wide depth: `"none"` / `"low"` / `"medium"` /
+#'   `"high"`. Lands on the shell band under `shell_mode = "raised"`, on
+#'   the paper otherwise.
 #' @param glass `"none"` / `"frosted"` / `"aurora"` — glass material
 #'   (B16): frosted translucent pane with bevel + sheen; aurora adds the
 #'   borealis backdrop blobs. Browser-additive; SVG export renders the
@@ -820,7 +822,8 @@ set_effects <- function(theme,
   glow_anchor              <- na_or_choice(glow_anchor, c("brand", "accent"), "glow_anchor")
   gradient_shell_intensity <- na_or_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), "gradient_shell_intensity")
   gradient_shell_angle     <- na_or_number(gradient_shell_angle, 0, 360, "gradient_shell_angle")
-  elevation                <- na_or_choice(elevation, c("none", "soft", "raised", "float"), "elevation")
+  # Magnitude vocabulary (R2 decision): no words shared with shell_mode.
+  elevation                <- na_or_choice(elevation, c("none", "low", "medium", "high"), "elevation")
   caption_style            <- na_or_choice(caption_style, c("none", "chip", "stripe", "both"), "caption_style")
   glass                    <- na_or_choice(glass, c("none", "frosted", "aurora"), "glass")
   header_style             <- na_or_choice(header_style, c("normal", "tint", "fill"), "header_style")

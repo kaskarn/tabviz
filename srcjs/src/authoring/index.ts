@@ -116,7 +116,7 @@ export function inputsForPreset(name: string): _ThemeInputs {
 }
 
 // Contrast probe for the R-side `contrast_report(theme)` wrapper.
-import { apcaLc as _apcaLc } from "../lib/oklch";
+import { apcaLc as _apcaLc, oklchToHex as _oklchToHex, oklchMix as _oklchMix } from "../lib/oklch";
 export { apcaContrast, apcaLc } from "../lib/oklch";
 
 /** Build a contrast report for the foreground/background pairs that
@@ -131,21 +131,41 @@ export interface ContrastReportRow {
   readonly apcaLc: number;
 }
 
+/** Composite an `oklch(L C H / A)` alpha value over a hex backing surface,
+ *  returning a measurable hex. Plain hex passes through. Anything else
+ *  (gradients, "none") returns null — the caller skips the row rather
+ *  than measuring garbage (`hexToRgb("oklch(…)")` parseInt'd into a
+ *  fabricated contrast=1 — R2 color review F4). */
+function measurableBg(value: string | undefined, backing: string): string | null {
+  if (!value) return null;
+  if (value.startsWith("#")) return value;
+  const m = value.match(/^oklch\(([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)$/);
+  if (!m) return null;
+  const hex = _oklchToHex({ L: parseFloat(m[1]!), C: parseFloat(m[2]!), H: parseFloat(m[3]!) });
+  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+  return alpha >= 1 ? hex : _oklchMix(backing, hex, alpha);
+}
+
 export function contrastReport(resolved: _ResolvedTheme): readonly ContrastReportRow[] {
   const cv = resolved.cssVars;
   const apca = (textHex: string, bgHex: string): number => Math.abs(_apcaLc(textHex, bgHex));
-  return [
-    { label: "row text on row bg", fg: cv["--tv-row-base-fg"] ?? "#000", bg: cv["--tv-row-base-bg"] ?? "#fff",
-      apcaLc: apca(cv["--tv-row-base-fg"] ?? "#000", cv["--tv-row-base-bg"] ?? "#fff") },
-    { label: "row text on alt bg", fg: cv["--tv-row-base-fg"] ?? "#000", bg: cv["--tv-row-alt-bg"] ?? "#fff",
-      apcaLc: apca(cv["--tv-row-base-fg"] ?? "#000", cv["--tv-row-alt-bg"] ?? "#fff") },
-    { label: "emphasis fg on emphasis bg", fg: cv["--tv-row-emphasis-fg"] ?? "#000", bg: cv["--tv-row-emphasis-bg"] ?? "#fff",
-      apcaLc: apca(cv["--tv-row-emphasis-fg"] ?? "#000", cv["--tv-row-emphasis-bg"] ?? "#fff") },
-    { label: "muted text on surface", fg: cv["--tv-text-muted"] ?? "#000", bg: cv["--tv-surface-bg"] ?? "#fff",
-      apcaLc: apca(cv["--tv-text-muted"] ?? "#000", cv["--tv-surface-bg"] ?? "#fff") },
-    { label: "text-onsolid on brand-solid", fg: cv["--tv-text-onsolid"] ?? "#fff", bg: cv["--tv-brand-solid"] ?? "#000",
-      apcaLc: apca(cv["--tv-text-onsolid"] ?? "#fff", cv["--tv-brand-solid"] ?? "#000") },
-  ];
+  const surface = cv["--tv-surface-bg"] ?? "#fff";
+  const rows: ContrastReportRow[] = [];
+  const push = (label: string, fg: string | undefined, bg: string | undefined): void => {
+    const bgHex = measurableBg(bg, surface);
+    if (!fg || !bgHex) return; // skip unmeasurable rows instead of fabricating
+    rows.push({ label, fg, bg: bgHex, apcaLc: apca(fg, bgHex) });
+  };
+  push("row text on row bg",        cv["--tv-row-base-fg"], cv["--tv-row-base-bg"]);
+  push("row text on alt bg",        cv["--tv-row-base-fg"], cv["--tv-row-alt-bg"]);
+  push("emphasis fg on emphasis bg", cv["--tv-row-emphasis-fg"], cv["--tv-row-emphasis-bg"]);
+  push("muted text on surface",     cv["--tv-text-muted"], cv["--tv-surface-bg"]);
+  push("subtle text on surface",    cv["--tv-text-subtle"], cv["--tv-surface-bg"]);
+  // Real emitted tokens (the old row read --tv-text-onsolid /
+  // --tv-brand-solid, which the manifest never emits — the fallbacks
+  // fabricated a constant Lc 107.9 for every theme).
+  push("header-fill fg on header-fill bg", cv["--tv-header-fill-fg"], cv["--tv-header-fill-bg"]);
+  return rows;
 }
 
 // Shared-product computation for split_by widgets. R delegates here via

@@ -280,8 +280,8 @@ ThemeInputs <- new_class(
       return("effects_gradient_shell_angle must be in [0, 360]")
     }
     el <- self@effects_elevation
-    if (!is.na(el) && !el %in% c("none", "soft", "raised", "float")) {
-      return("effects_elevation must be 'none', 'soft', 'raised', or 'float'")
+    if (!is.na(el) && !el %in% c("none", "low", "medium", "high")) {
+      return("effects_elevation must be 'none', 'low', 'medium', or 'high'")
     }
     cs <- self@effects_caption_style
     if (!is.na(cs) && !cs %in% c("none", "chip", "stripe", "both")) {

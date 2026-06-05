@@ -34,9 +34,9 @@
     },
     {
       key: "shadow",
-      label: "Card elevation",
-      vars: ["--tv-shadow-emphasis"],
-      hint: "near + far hue-tinted shadow",
+      label: "Figure depth",
+      vars: ["--tv-paper-shadow"],
+      hint: "figure-wide lift; row-emphasis shadow scales with it",
     },
   ] as const;
 </script>

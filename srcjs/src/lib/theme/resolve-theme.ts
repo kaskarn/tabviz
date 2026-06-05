@@ -138,14 +138,12 @@ export function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
       accent: reflectAnchorMaybe(inputs.anchors.accent),
       ink2:  reflectAnchorMaybe(inputs.anchors.ink2),
     },
-    status: inputs.status
-      ? {
-          positive: reflectAnchorMaybe(inputs.status.positive),
-          negative: reflectAnchorMaybe(inputs.status.negative),
-          warning:  reflectAnchorMaybe(inputs.status.warning),
-          info:     reflectAnchorMaybe(inputs.status.info),
-        }
-      : undefined,
+    // Status anchors are NOT reflected: they're absolute semantic colors
+    // the author picked FOR their surface. Reflecting them inverted
+    // synthwave's dark-surface neons into mud — negative #FF2D55 became
+    // #A1002D at 2.49:1, positive landed at 1.20:1 (adversarial color
+    // review R2 #1).
+    status: inputs.status,
   };
 }
 
@@ -803,7 +801,14 @@ function resolveEffectsComputed(
   // ── Gradient shell ────────────────────────────────────────────────────
   if (cssVar === "--tv-shell-gradient") {
     const intensity = fx?.gradient_shell_intensity ?? "none";
-    if (intensity === "none") return "transparent";
+    // "none", NOT "transparent": this token is consumed inside
+    // background-image LISTS (the texture rules append it as their last
+    // layer), and transparent is not a valid <image> — one invalid layer
+    // voids the entire declaration, which silently killed ruled/grid/
+    // dotted textures on every non-gradient preset (both round-2 visual
+    // reviewers, independently; the screenshot harness caught it as 2
+    // structural failures).
+    if (intensity === "none") return "none";
     const angle = fx?.gradient_shell_angle ?? 90;
     // Both stops stay CHROMATIC. The old subtle recipe ended on accent
     // grade 3 — a neutralized fill step — so the "brand→accent" gradient
@@ -833,7 +838,7 @@ function resolveEffectsComputed(
     const peak = resolved.ramps.brand[9] ?? "#1c1a17";
     const near = hexToRgba(peak, 0.15);
     const far  = hexToRgba(peak, 0.08);
-    const k = elev === "float" ? 1.6 : elev === "raised" ? 1.2 : 0.8;
+    const k = elev === "high" ? 1.6 : elev === "medium" ? 1.2 : 0.8;
     return `0 ${k * 1}px ${k * 3}px ${near}, 0 ${k * 4}px ${k * 12}px ${far}`;
   }
 
@@ -1002,10 +1007,22 @@ function runCascade(wire: ThemeWire) {
   // reports separately. Pins via role-binding overrides are respected as
   // the STARTING grade, never weakened.
   const MIN_TEXT_CONTRAST = 4.5;
-  for (const role of ["text-subtle", "text-muted"] as RoleName[]) {
+  // Walk subtle FIRST, then muted with a floor one grade above subtle's
+  // landing spot: without the floor, low-chroma ramps walked subtle up
+  // onto muted's exact grade and the de-emphasis hierarchy silently
+  // flattened (elvish/terminal rendered subtle == muted byte-identical —
+  // R2 color review #3). roleSource gets the walked grade WRITTEN BACK
+  // so the Alt+click inspector's provenance matches the painted value
+  // (R2 code-quality #1).
+  const walkTextRole = (role: RoleName, minGrade: number): number => {
     const binding = roleSource[role];
-    if (!binding || binding.ramp !== "neutral") continue;
-    let grade = binding.grade;
+    if (!binding || binding.ramp !== "neutral") return 0;
+    let grade = Math.max(binding.grade, minGrade);
+    if (grade !== binding.grade) {
+      roles[role] = resolveRoleValue(
+        role, { ...binding, grade }, ramps12, alphaRamps, offRamp, wire.inputs.mode,
+      );
+    }
     while (
       grade < 11 &&
       contrastRatio(roles[role], roles.surface) < MIN_TEXT_CONTRAST
@@ -1015,7 +1032,11 @@ function runCascade(wire: ThemeWire) {
         role, { ...binding, grade }, ramps12, alphaRamps, offRamp, wire.inputs.mode,
       );
     }
-  }
+    if (grade !== binding.grade) roleSource[role] = { ...binding, grade };
+    return grade;
+  };
+  const subtleGrade = walkTextRole("text-subtle" as RoleName, 0);
+  walkTextRole("text-muted" as RoleName, subtleGrade + 1);
 
   return { polarity, reflected, ramps12, alphaRamps, roles, roleSource };
 }

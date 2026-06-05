@@ -3,7 +3,7 @@
 
   - Glow intensity (none / subtle / neon) + anchor (brand / accent)
   - Gradient shell intensity (none / subtle / vivid) + angle (deg)
-  - Card elevation (none / soft / raised / float)
+  - Figure depth (none / low / medium / high)
 
   All effects drop to "none" under HC mode at resolve time; the inputs
   here drive the standard-mode appearance.
@@ -28,7 +28,10 @@
   const TITLE_STYLE    = ["normal", "bar", "underline"] as const;
   const GLOW_ANCHOR    = ["brand", "accent"] as const;
   const GRAD_INTENSITY = ["none", "subtle", "vivid"] as const;
-  const ELEVATION      = ["none", "soft", "raised", "float"] as const;
+  // Magnitude vocabulary — deliberately no words shared with the Shell
+  // tab's shell_mode (raised/float meant different things in each; R2
+  // decision). The row label is "Depth" for the same reason.
+  const ELEVATION      = ["none", "low", "medium", "high"] as const;
 
   const glow      = $derived(inputs.effects?.glow_intensity ?? "none");
   const glowAnch  = $derived(inputs.effects?.glow_anchor ?? "brand");
@@ -114,8 +117,8 @@
   {/if}
 
   <div class="row">
-    <span class="label">Elevation</span>
-    <div class="seg" role="radiogroup" aria-label="Card elevation">
+    <span class="label">Depth</span>
+    <div class="seg" role="radiogroup" aria-label="Figure depth">
       {#each ELEVATION as e (e)}
         <button type="button" class:on={elev === e} onclick={() => set("elevation", e)}>{e}</button>
       {/each}
