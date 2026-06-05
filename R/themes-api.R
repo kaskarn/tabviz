@@ -217,6 +217,25 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #' anchor's L. `accent` defaults to `brand` when unset. Status anchors
 #' (`status_*`) take the same hex-or-[oklch()] form.
 #'
+#' @examples
+#' # The usual on-ramp: start from a preset, swap the brand (C56).
+#' th <- set_brand(web_theme_cochrane(), "#006266")
+#'
+#' # Rubrication (B7): ink2 seeds the accent ramp — significance stars,
+#' # caption chips, and accent roles pick up the editorial ink without
+#' # tinting hover/selected states' identity.
+#' th <- web_theme(
+#'   brand = "#1A1A1A",
+#'   ink2 = "#D42320",          # vermilion rubrication
+#'   density = "compact",
+#'   effects = list(title_style = "bar")
+#' )
+#'
+#' # Monochrome (B8): one toggle for phosphor/sepia/cyanotype themes.
+#' th <- web_theme(brand = "#20C45F", polarity = "dark", monochrome = TRUE)
+#'
+#' # Atomic status palette (D4):
+#' th <- set_status_palette(th, list(negative = "#D42320"))
 #' @param paper Light-end neutral anchor (hex or [oklch()] triple). Defines
 #'   surface, paper_alt, paper_raised. Default: near-white at brand hue.
 #' @param ink Dark-end neutral anchor. Defines text, text-muted, text-subtle.
@@ -819,7 +838,40 @@ set_effects <- function(theme,
   resolve_from_inputs(inputs, name = theme@name)
 }
 
+#' Set the full status palette atomically and re-resolve.
+#'
+#' D4 (wire-audit): the convenience verb for clobbering all four status
+#' anchors in one call — unset slots CLEAR back to the curated default
+#' (unlike [set_status()], which leaves unnamed slots untouched for
+#' partial updates).
+#'
+#' @param theme A [WebTheme].
+#' @param palette Named list with any of `positive` / `negative` /
+#'   `warning` / `info` as hex strings or [oklch()] triples. Slots absent
+#'   from the list are cleared to the TS resolver's curated defaults.
+#' @return The re-resolved [WebTheme].
+#' @seealso [set_status()] for partial per-slot updates.
+#' @export
+set_status_palette <- function(theme, palette = list()) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_list(palette)
+  unknown <- setdiff(names(palette), c("positive", "negative", "warning", "info"))
+  if (length(unknown) > 0) {
+    cli::cli_abort("Unknown status slot{?s} in {.arg palette}: {.val {unknown}}")
+  }
+  args <- list(theme = theme)
+  for (slot in c("positive", "negative", "warning", "info")) {
+    # Named slot -> set; absent -> NA clears to the curated default.
+    args[[slot]] <- if (!is.null(palette[[slot]])) palette[[slot]] else NA
+  }
+  do.call(set_status, args)
+}
+
 #' Set status anchor overrides (positive / negative / warning / info) and re-resolve.
+#'
+#' @seealso [set_status_palette()] for an atomic whole-palette clobber.
 #'
 #' Each arg accepts a hex string, an [oklch()] triple, `NA` (clear the
 #' override; TS resolver falls back to its curated default), or `NULL`
@@ -957,7 +1009,21 @@ set_inputs <- function(theme, ...) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  inputs <- apply_named_props(theme@inputs, list(...))
+  args <- list(...)
+  inputs <- theme@inputs
+  # Anchor sugar (wire-audit 6c): accept the web_theme() anchor names
+  # (paper / ink / brand / accent / ink2) as hex or oklch() and expand to
+  # the flat L/C/H slots — set_inputs("brand" = "#X") previously errored
+  # with "Can't find property @brand" (caught by the docs render).
+  for (anchor in c("paper", "ink", "brand", "accent", "ink2")) {
+    if (!is.null(args[[anchor]])) {
+      slots <- anchor_slots(coerce_anchor(args[[anchor]], anchor))
+      prefix <- paste0("anchors_", anchor)
+      inputs <- set_anchor_on_inputs(inputs, prefix, slots)
+      args[[anchor]] <- NULL
+    }
+  }
+  if (length(args) > 0) inputs <- apply_named_props(inputs, args)
   resolve_from_inputs(inputs, name = theme@name)
 }
 

@@ -1,3 +1,76 @@
+# tabviz 0.37.0 (wire 1.3) — the wire-audit arc
+
+The rgc_v4 design-lab parity arc: the V4 substrate's dormant visual
+ceiling is now LIVE, the preset roster grew 22 -> 27 with enforced
+distinctness, and the resolver dispatch is a declarative table.
+
+## Breaking / downstream notices
+
+* **Wire format 1.2 -> 1.3** (additive field set; no shape breaks).
+* **Widget DOM**: the root (`.tabviz-container`, now also
+  `.tabviz-scope`) wraps the table content in `.tv-shell > .tv-paper`
+  and carries `data-shell-mode/-texture/-paper-texture/-mode/-polarity/
+  -density/-title-style/-shell-surface` attributes. Downstream CSS
+  targeting widget internals may need review; direct children
+  (toolbar/panels/overlays) are unchanged.
+* `variants.headerStyle` / `variants.firstColumnStyle` remain on the
+  wire but are SUPERSEDED by the Tier-1 `effects.header_style` (which
+  takes precedence) — retirement planned for the next wire cleanup.
+
+## New theme inputs (R `web_theme()` + TS)
+
+* `ink2` anchor — secondary/rubrication ink; seeds the accent ramp with
+  precedence ink2 > accent > brand (`set_ink2()`).
+* `monochrome` — the neutral ramp rides the brand hue (one toggle for
+  phosphor/sepia/cyanotype themes; `set_monochrome()`).
+* `marks` — viz-mark identity: `point_shape`, `interval_weight`.
+* `effects.glass` — frosted/aurora glass material (browser-additive).
+* `effects.caption_style` — chip / stripe / both (+ new `tag` label on
+  the spec for the chip text, R `tabviz(tag=)`).
+* `effects.header_style`, `effects.title_style` — header chrome + title
+  bar/underline as Tier-1 inputs.
+* `col_pvalue(stars_color=)` — significance-star color channel
+  (accent / ink2 / negative / none).
+* `set_status_palette()` — atomic status-palette clobber (D4);
+  `tint_from_brand()` — one-move hue alignment toward brand.
+
+## Visual substrate now live
+
+* `theme-runtime.css` is imported for real (was dead code): shell/paper
+  surfaces, textures (with paper fall-through on flush shells), frame
+  glow, brand-gradient strip (135deg lab-fidelity sweep), caption chip,
+  hero-row inset bar, HC encoding fidelity, glass pane (4-layer bevel +
+  148deg sheen + aurora backdrop blobs), motion transitions.
+* Fixed: multi-shadow lists silently dropped when any component
+  resolved to "none" — row glow never fired on non-elevation themes.
+* High-contrast mode now reverts theme status palettes to the curated
+  HC-safe fallback.
+
+## Presets
+
+* New: ledger, terminal, aurora, blueprint, sunprint (rgc_v4 lab hues).
+* De-slopped typography across 10 presets (Inter/Arial/Georgia ->
+  intentional pairs); chromatic identity fixes (jama/tufte/atelier);
+  per-preset radius/density pins; neon + ink_vermilion data palettes;
+  preset status palettes (synthwave, brutalist).
+* NEW CI gates: preset distinctness (anchor tuples, row-height/radius
+  spread, brand-hue crowding ratchet) + full-cssVars snapshot lock +
+  browser screenshot harness (tests/browser/theme-screenshots.browser.ts).
+
+## Studio + widget UX
+
+* Studio rail: five-tab IA (Color/Type/Size/Shell/Effects) with ARIA
+  tablist; LCH-native anchor sliders (+ ink2 row); polarity lifted flat;
+  drag-preview without history spam or per-tick re-measure; Alt+click
+  any preview element to trace its theme token; "Match brand" button;
+  resolve-error boundary (keeps last good theme instead of
+  white-screening).
+* Widget: keyboard paint parity (Enter/Space on the row's primary cell);
+  cog drawer reduced to the everyday surface (polarity + density);
+  native confirm() removed from the studio header (silently broken in
+  RStudio viewer); studio forge now registers cell renderers (interval
+  column was blank).
+
 # tabviz (development)
 
 ## Theme rationalization arc — V3 system (PRs A-I)

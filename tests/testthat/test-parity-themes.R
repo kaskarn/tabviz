@@ -198,3 +198,52 @@ test_that("Light presets DO NOT emit polarity (default omitted symmetric R↔TS)
                 info = paste0("light preset '", name, "' should omit polarity"))
   }
 })
+
+test_that("maximal theme (every wire-1.3 input set) round-trips through V8", {
+  # 6b (wire-audit): one theme exercising EVERY field added in the 1.3
+  # arc — ink2, monochrome, status palette, marks, glass, caption/header/
+  # title styles, geometry, density_factor — must serialize, resolve via
+  # the TS engine, and re-serialize identically.
+  maximal <- web_theme(
+    brand = "#006266",
+    accent = "#C8553D",
+    ink2 = "#862721",
+    polarity = "dark",
+    monochrome = TRUE,
+    status_positive = "#2E7D32",
+    status_negative = "#D42320",
+    status_warning  = "#C77700",
+    status_info     = "#37474F",
+    density = "compact",
+    density_factor = 0.9,
+    shell_mode = "raised",
+    shell_texture = "grid",
+    marks = list(point_shape = "square", interval_weight = "thick"),
+    geometry = list(radius = list(sm = 1, md = 3, lg = 5, pill = 999)),
+    effects = list(
+      glass = "aurora",
+      glow_intensity = "subtle",
+      gradient_shell_intensity = "subtle",
+      elevation = "float",
+      caption_style = "both",
+      header_style = "fill",
+      title_style = "bar"
+    ),
+    name = "maximal-1-3"
+  )
+  j1 <- theme_inputs_to_json(maximal@inputs)
+  # Every 1.3-arc field present on the wire:
+  expect_false(is.null(j1$anchors$ink2))
+  expect_true(isTRUE(j1$monochrome))
+  expect_equal(j1$marks$point_shape, "square")
+  expect_equal(j1$marks$interval_weight, "thick")
+  expect_equal(j1$effects$glass, "aurora")
+  expect_equal(j1$effects$caption_style, "both")
+  expect_equal(j1$effects$header_style, "fill")
+  expect_equal(j1$effects$title_style, "bar")
+  # Round-trip: re-resolve from the same inputs (R -> V8 -> R) and
+  # compare wire emissions byte-for-byte.
+  rt <- tabviz:::resolve_from_inputs(maximal@inputs, name = "maximal-1-3")
+  j2 <- theme_inputs_to_json(rt@inputs)
+  expect_identical(j1, j2)
+})

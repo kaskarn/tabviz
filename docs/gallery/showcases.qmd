@@ -401,8 +401,7 @@ custom_theme <- web_theme(
   name         = "warm",
   brand        = "#CA8A04",
   accent       = "#CA8A04",
-  neutral_tint = "brand",
-  font_body    = "Georgia, serif",
+  fonts_body   = "Georgia, serif",
   density      = "spacious"
 ) |>
   set_spacing(row_height = 32, cell_padding_x = 12) |>

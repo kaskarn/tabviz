@@ -232,7 +232,7 @@ The identity chain is a single rule:
 A few things to know about how this behaves:
 
 **Mirroring happens at resolve time, not at construction.**
-`ThemeInputs(primary = "#0891b2")` stores `secondary = NA` literally; the
+`ThemeInputs(brand = "#0891b2")` stores `secondary = NA` literally; the
 NA only resolves to `"#0891b2"` after `resolve_theme()` has run. This
 means re-resolving an already-resolved theme is idempotent: the resolver
 only writes into NA-valued fields, so a previously-mirrored secondary
@@ -393,10 +393,9 @@ The recipe is short. Most themes need only Tier 1 inputs.
 my_theme <- web_theme(
   name = "my_journal",
   inputs = list(
-    primary = "#0F4C81",     # identity hero
+    brand = "#0F4C81",     # identity hero
     accent  = "#C8553D",     # warm engagement counterpoint
-    series_anchors = c("#0F4C81", "#C8553D", "#5C8A3F", "#7E5A99", "#D49A3A"),
-    font_body = "Georgia, 'Times New Roman', serif"
+    fonts_body = "Georgia, 'Times New Roman', serif"
   )
 )
 ```
@@ -412,12 +411,11 @@ accent. The contract gives you a coherent table with two pinned values.
 my_editorial <- web_theme(
   name = "my_editorial",
   inputs = list(
-    primary   = "#7A4E22",   # bronze
+    brand   = "#7A4E22",   # bronze
     secondary = "#D4A955",   # gold — drives col-group bands, row-group bars,
                              #        glyph defaults, AND chrome texture
     accent    = "#E0673A",   # ember — hover, selected, status.info
-    series_anchors = c("#D4A955", "#A8A8A0", "#B86C42", "#7A4E22", "#5C7AA0"),
-    font_body = "'EB Garamond', Georgia, serif"
+    fonts_body = "'EB Garamond', Georgia, serif"
   ),
   variants = list(header_style = "bold")
 )

@@ -159,10 +159,9 @@ Four journal presets and three illustrative LOTR presets. `set_theme(spec, "<nam
 tabviz(...,
   theme = web_theme_cochrane() |>
     set_inputs(
-      primary          = "#2563EB",
+      brand          = "#2563EB",
       accent         = "#1E40AF",
-      series_anchors = c("#2563EB", "#16A34A", "#DC2626"),
-      font_body      = "Georgia, serif"
+      fonts_body      = "Georgia, serif"
     ) |>
     set_density("comfortable") |>
     set_header_style("bold") |>
@@ -188,10 +187,9 @@ web_theme(
   name = "my-brand",
   inputs = list(
     neutral        = c("#FFF","#FAFAFA","#EEE","#888","#222"),
-    primary          = "#1F3A5F",
+    brand          = "#1F3A5F",
     accent         = "#B08938",
-    series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
-    font_body      = "Charter, Georgia, serif"
+    fonts_body      = "Charter, Georgia, serif"
   ),
   variants = list(density = "comfortable", header_style = "bold")
 )

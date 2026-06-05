@@ -28,4 +28,4 @@
 # (radius + border-width scales) and `effects` (glow + gradient-shell +
 # elevation) optional input blocks. Mode-aware (HC drops effects; RT
 # flattens gradient). Additive at the inputs layer; presets opt in.
-WIRE_FORMAT_VERSION <- "1.2"
+WIRE_FORMAT_VERSION <- "1.3"

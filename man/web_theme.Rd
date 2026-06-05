@@ -154,3 +154,23 @@ hex string OR an \code{\link[=oklch]{oklch()}} triple. Polarity reflection acts 
 anchor's L. \code{accent} defaults to \code{brand} when unset. Status anchors
 (\verb{status_*}) take the same hex-or-\code{\link[=oklch]{oklch()}} form.
 }
+\examples{
+# The usual on-ramp: start from a preset, swap the brand (C56).
+th <- set_brand(web_theme_cochrane(), "#006266")
+
+# Rubrication (B7): ink2 seeds the accent ramp — significance stars,
+# caption chips, and accent roles pick up the editorial ink without
+# tinting hover/selected states' identity.
+th <- web_theme(
+  brand = "#1A1A1A",
+  ink2 = "#D42320",          # vermilion rubrication
+  density = "compact",
+  effects = list(title_style = "bar")
+)
+
+# Monochrome (B8): one toggle for phosphor/sepia/cyanotype themes.
+th <- web_theme(brand = "#20C45F", polarity = "dark", monochrome = TRUE)
+
+# Atomic status palette (D4):
+th <- set_status_palette(th, list(negative = "#D42320"))
+}

@@ -162,7 +162,7 @@ OKLCH is the underlying color algebra. All blends, lightenings, and darkenings h
 ```r
 # Hypothetical broken theme: pale primary auto-darkens to a primary_deep
 # that doesn't carry enough contrast against the default inverse text.
-resolve_theme(WebTheme(inputs = ThemeInputs(primary = "#C8D4E8")))
+resolve_theme(WebTheme(inputs = ThemeInputs(brand = "#C8D4E8")))
 #> Error in `validate_resolved_theme(theme)`:
 #> Theme failed 1 contrast invariant.
 #> i Each violation lists the cascade path you can override to fix it.
@@ -232,8 +232,7 @@ Modify any of them with the v2 modifiers:
 #| eval: false
 web_theme_jama() |>
   set_inputs(
-    primary          = "#2563EB",
-    series_anchors = c("#2563EB", "#16A34A", "#DC2626")
+    brand          = "#2563EB",
   ) |>
   set_density("comfortable") |>
   set_spacing(row_height = 28)

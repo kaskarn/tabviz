@@ -31,7 +31,7 @@ export type SupportedMajor = (typeof SUPPORTED_MAJORS)[number];
  * when shipping additive minor changes; bump major + add migration when
  * shipping breaking changes.
  */
-export const CURRENT_VERSION = "1.2" as const;
+export const CURRENT_VERSION = "1.3" as const;
 export type SpecVersion = typeof CURRENT_VERSION;
 
 /**

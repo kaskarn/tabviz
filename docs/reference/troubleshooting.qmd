@@ -377,7 +377,7 @@ data <- data |>
 #| eval: false
 # Use web-safe fallback fonts
 web_theme_cochrane() |>
-  set_inputs(font_body = "Georgia, 'Times New Roman', serif")
+  set_inputs(fonts_body = "Georgia, 'Times New Roman', serif")
 
 # For exports, fonts must be installed on the rendering system
 ```

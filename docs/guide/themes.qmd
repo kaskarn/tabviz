@@ -112,9 +112,9 @@ Every theme — including every preset — is determined by **a small set of cus
 |  | `status_positive` / `status_negative` / `status_warning` / `status_info` | Semantic status colors. |
 | Data | `series_anchors` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
 |  | `slot_style` | How each `SlotBundle`'s fill / stroke pair relate. One of `"fill_with_darker_stroke"` (default), `"flat_fill"`, `"outlined"`. |
-| Type | `font_body` | Primary face for cells, headers, labels. |
-|  | `font_display` | Optional title face. Mirrors `font_body` when `NA`. |
-|  | `font_mono` | Optional monospace face (e.g. for IDs). |
+| Type | `fonts_body` | Primary face for cells, headers, labels. |
+|  | `fonts_display` | Optional title face. Mirrors `fonts_body` when `NA`. |
+|  | `fonts_mono` | Optional monospace face (e.g. for IDs). |
 
 Build a custom theme by overriding any of these:
 
@@ -123,10 +123,9 @@ Build a custom theme by overriding any of these:
 my_theme <- web_theme(
   name = "my-brand",
   inputs = list(
-    primary          = "#1F3A5F",   # navy
+    brand          = "#1F3A5F",   # navy
     accent         = "#B08938",   # warm gold
-    series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
-    font_body      = "Charter, Georgia, serif"
+    fonts_body      = "Charter, Georgia, serif"
   )
 )
 ```
@@ -138,7 +137,7 @@ The deep companions and secondary tier follow predictable defaults:
 * `primary_deep` auto-derives by darkening `primary` when left `NA` (override when you want a richer bold-mode header band or a journal-specific stroke).
 * `secondary` mirrors `primary` when `NA`; `secondary_deep` mirrors `secondary`'s deep companion.
 * `accent_deep` mirrors `accent`.
-* `font_display` mirrors `font_body`.
+* `fonts_display` mirrors `fonts_body`.
 
 The pooled-effect diamond reads from the first series slot bundle (`theme@series[[1]]`). Override `series_anchors[1]` to recolor it; reach into `theme@series[[1]]@stroke` directly for a journal-specific outline.
 
@@ -245,7 +244,7 @@ Variants are per-table choices that don't change the theme's identity. They're o
 ```{r}
 #| eval: false
 web_theme(
-  inputs = list(primary = "#1F3A5F"),
+  inputs = list(brand = "#1F3A5F"),
   variants = list(
     density            = "comfortable",   # compact | comfortable | spacious
     header_style       = "bold",          # light  | bold
@@ -322,7 +321,7 @@ Three pipe-friendly modifiers cover the common edits:
 ```{r}
 #| eval: false
 custom <- web_theme_jama() |>
-  set_inputs(primary = "#1F3A5F", accent = "#B08938") |>
+  set_inputs(brand = "#1F3A5F", accent = "#B08938") |>
   set_density("comfortable") |>
   set_header_style("bold") |>
   set_spacing(row_height = 28, axis_gap = 14)
@@ -360,7 +359,7 @@ web_theme_cochrane() |>
   set_theme_field(c("series", 2L, "stroke"), "#444444")
 ```
 
-Re-resolution preserves explicit overrides on subsequent edits — `set_inputs(primary = "...")` after the override above will refresh series colors but leave `surface.base` pinned to your cream.
+Re-resolution preserves explicit overrides on subsequent edits — `set_inputs(brand = "...")` after the override above will refresh series colors but leave `surface.base` pinned to your cream.
 
 ## Going deeper: spacing and typography
 
@@ -485,12 +484,11 @@ web_theme_acme <- function() {
     name = "acme",
     inputs = list(
       neutral        = c("#FFFFFF", "#FAFAFA", "#EEEEEE", "#888888", "#222222"),
-      primary          = "#FF5500",
+      brand          = "#FF5500",
       primary_deep     = "#CC3300",
       accent         = "#0066CC",
-      series_anchors = c("#FF5500", "#0066CC", "#00AA66", "#993399", "#666666"),
-      font_body      = "Inter, system-ui, sans-serif",
-      font_display   = "'Inter Display', Inter, system-ui, sans-serif"
+      fonts_body      = "Inter, system-ui, sans-serif",
+      fonts_display   = "'Inter Display', Inter, system-ui, sans-serif"
     ),
     variants = list(density = "comfortable", header_style = "bold")
   )

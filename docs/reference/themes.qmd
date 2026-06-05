@@ -87,16 +87,15 @@ else derives. Resolves the theme before returning.
 web_theme(
   brand = "#0099CC",          # required: identity seed
   accent = NULL,              # engagement (hover/selected/callouts); mirrors brand
-  decorative = NULL,          # optional second color (editorial two-color themes)
-  mode = "light",             # "light" | "dark"
-  neutral_tint = "untinted",  # "untinted" | "brand" | "accent" | "decorative" | hex
-  neutral_tint_strength = 0.04,
+  ink2 = NULL,                # rubrication ink; seeds the accent ramp (B7)
+  polarity = "light",         # "light" | "dark" (L-reflection)
+  monochrome = FALSE,         # neutral ramp rides the brand hue (B8)
   categorical = "okabe_ito",  # data palette scheme
   sequential = "viridis",
   diverging = "rdbu",
   status_positive = NULL, status_negative = NULL,
   status_warning = NULL,  status_info = NULL,
-  font_body = NULL, font_display = NULL, font_mono = NULL,
+  fonts_body = NULL, fonts_display = NULL, fonts_mono = NULL,
   density = "comfortable",    # "compact" | "comfortable" | "spacious"
   header_style = "light",     # "light" | "tint" | "bold"
   first_column_style = "default",  # "default" | "tint" | "bold"
@@ -111,10 +110,11 @@ web_theme(
 | `accent` | hex | `NULL` | Engagement layer (hover, selected, callouts). Mirrors `brand` when unset. |
 | `decorative` | hex | `NULL` | Optional second color for editorial two-color themes (alt-row tint, divider hue, row-group L1 band). |
 | `mode` | string | `"light"` | `"light"` or `"dark"`. |
-| `neutral_tint` / `neutral_tint_strength` | string / num | `"untinted"` / `0.04` | Neutral-ramp tint source and blend strength (push toward `~1.0` for editorial paper colors). |
+| `ink2` | hex / oklch | `NULL` | Rubrication ink — seeds the accent ramp with precedence over `accent`. |
+| `polarity` / `monochrome` | string / flag | `"light"` / `FALSE` | L-reflection axis; brand-hued neutral ramp. Use [tint_from_brand()] to nudge hues instead. |
 | `categorical` / `sequential` / `diverging` | string | scheme names | Data-palette scheme references. |
 | `status_*` | hex | `NULL` | Optional status color overrides (`positive`/`negative`/`warning`/`info`). |
-| `font_body` / `font_display` / `font_mono` | string | `NULL` | Font stacks; `font_display` mirrors `font_body` when unset. |
+| `fonts_body` / `fonts_display` / `fonts_mono` | string | `NULL` | Font stacks; `fonts_display` mirrors `fonts_body` when unset. |
 | `density` | string | `"comfortable"` | `"compact"` / `"comfortable"` / `"spacious"`. |
 | `header_style` | string | `"light"` | Header chrome variant: `"light"` / `"tint"` / `"bold"`. |
 | `first_column_style` | string | `"default"` | Label-column variant: `"default"` / `"tint"` / `"bold"`. |
@@ -131,7 +131,7 @@ custom <- web_theme(
   name = "navy-bold",
   brand        = "#1F3A5F",
   accent       = "#B08938",
-  font_body    = "Charter, Georgia, serif",
+  fonts_body    = "Charter, Georgia, serif",
   density      = "comfortable",
   header_style = "bold"
 )
@@ -154,11 +154,10 @@ single input prefer the focused setter (`set_brand()`, `set_accent()`,
 ```r
 set_inputs(
   theme,
-  brand, accent, decorative, mode,
-  neutral_tint, neutral_tint_strength,
+  brand, accent, ink2, polarity, monochrome, mode,
   categorical, sequential, diverging,
   status_positive, status_negative, status_warning, status_info,
-  font_body, font_display, font_mono,
+  fonts_body, fonts_display, fonts_mono,
   density
 )
 ```
@@ -170,12 +169,12 @@ set_inputs(
 | `accent` | hex | Engagement layer — hover, selected, semantic callouts, selection edge. Mirrors `brand` when unset |
 | `decorative` | hex | Optional second color (alt-row tint, divider hue, row-group L1 band) |
 | `mode` | `"light"` / `"dark"` | Light or dark canvas |
-| `neutral_tint` / `neutral_tint_strength` | string / num | Neutral-ramp tint source + blend strength |
+| `ink2` / `monochrome` | hex / flag | Rubrication anchor; brand-hued neutrals |
 | `categorical` / `sequential` / `diverging` | string | Data-palette scheme names |
 | `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
-| `font_body` | string | Primary CSS font-family |
-| `font_display` | string | Optional title face; mirrors `font_body` when unset |
-| `font_mono` | string | Optional monospace face |
+| `fonts_body` | string | Primary CSS font-family |
+| `fonts_display` | string | Optional title face; mirrors `fonts_body` when unset |
+| `fonts_mono` | string | Optional monospace face |
 | `density` | string | `"compact"` / `"comfortable"` / `"spacious"` |
 
 > Identity vocabulary: `brand` is the **input** name; `primary` / `primary_deep`
@@ -293,8 +292,8 @@ my_lancet <- web_theme(
   name = "my-lancet",
   brand        = "#0066CC",
   accent       = "#CC9900",
-  font_body    = "Helvetica, Arial, sans-serif",
-  font_display = "Helvetica, Arial, sans-serif",
+  fonts_body    = "Helvetica, Arial, sans-serif",
+  fonts_display = "Helvetica, Arial, sans-serif",
   density      = "comfortable"
 )
 
@@ -312,8 +311,8 @@ print_theme <- web_theme(
   name = "print",
   brand        = "#000000",
   accent       = "#000000",
-  font_body    = "'Times New Roman', serif",
-  font_display = "'Times New Roman', serif",
+  fonts_body    = "'Times New Roman', serif",
+  fonts_display = "'Times New Roman', serif",
   density      = "compact"
 ) |>
   set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>

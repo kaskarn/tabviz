@@ -1,131 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="339.243"
-  viewBox="0 0 423 287">
+  width="500" height="342.79"
+  viewBox="0 0 423 290">
 <style>
   text {
     font-variant-numeric: tabular-nums;
   }
 </style>
-<rect width="100%" height="100%" fill="#16181A"/>
-<text x="12" y="29"
+<rect width="100%" height="100%" fill="#040506" data-tv-token="surface-bg"/>
+<text x="12" y="34"
       font-family="system-ui, -apple-system, sans-serif"
-      font-size="14px"
+      font-size="20.53px"
       font-weight="600"
-      fill="#F6F8FB">Dark Theme Export</text>
+      fill="#F1F7FF">Dark Theme Export</text>
 <line x1="12" x2="411"
-      y1="57" y2="57"
-      stroke="#BFBFBF" stroke-width="2"/>
-<text class="cell-text" dominant-baseline="central" x="22" y="73"
+      y1="63" y2="63"
+      stroke="#8B8E93" stroke-width="2"/>
+<text class="cell-text" dominant-baseline="central" x="22" y="79"
         font-family="system-ui, -apple-system, sans-serif"
-        font-size="14.7px"
+        font-size="14px"
         font-weight="400"
-        fill="#F6F8FB">Study</text>
-<text class="cell-text" dominant-baseline="central" x="282" y="73"
+        fill="#E1E5EB">Study</text>
+<text class="cell-text" dominant-baseline="central" x="282" y="79"
           font-family="system-ui, -apple-system, sans-serif"
-          font-size="14.7px"
+          font-size="14px"
           font-weight="400"
           text-anchor="start"
-          fill="#F6F8FB">HR (95% CI)</text>
+          fill="#E1E5EB">HR (95% CI)</text>
 <line x1="12" x2="411"
-        y1="89" y2="89"
-        stroke="#BFBFBF" stroke-width="2"/>
-<rect x="12" y="89"
+        y1="95" y2="95"
+        stroke="#8B8E93" stroke-width="2"/>
+<rect x="12" y="95"
             width="399" height="24"
-            fill="#333435"/>
-<rect x="12" y="137"
+            fill="#1B1D20" data-tv-token="row-alt-bg"/>
+<rect x="12" y="143"
             width="399" height="24"
-            fill="#333435"/>
-<line x1="230.0006922796589" x2="230.0006922796589" y1="89" y2="185"
-    stroke="#F1F2F4" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
+            fill="#1B1D20" data-tv-token="row-alt-bg"/>
+<line x1="230.0006922796589" x2="230.0006922796589" y1="95" y2="191"
+    stroke="#777A7E" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="148.95538520317044" x2="222.36920080645828" y1="101" y2="101"
-            stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="148.95538520317044" x2="148.95538520317044" y1="98" y2="104" stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="222.36920080645828" x2="222.36920080645828" y1="98" y2="104" stroke="#B5C4DE" stroke-width="1.5"/>
-          <circle cx="185.20183551768244" cy="101" r="6" fill="#D5E5FF"/>
+          <line x1="148.95538520317044" x2="222.36920080645828" y1="107" y2="107"
+            stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="148.95538520317044" x2="148.95538520317044" y1="104" y2="110" stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="222.36920080645828" x2="222.36920080645828" y1="104" y2="110" stroke="#9BB5DE" stroke-width="1.5"/>
+          <circle cx="185.20183551768244" cy="107" r="6" fill="#BAD5FF"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="146.36781624714052" x2="245.52752822574973" y1="125" y2="125"
-            stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="146.36781624714052" x2="146.36781624714052" y1="122" y2="128" stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="245.52752822574973" x2="245.52752822574973" y1="122" y2="128" stroke="#B5C4DE" stroke-width="1.5"/>
-          <circle cx="194.92957821322443" cy="125" r="6" fill="#D5E5FF"/>
+          <line x1="146.36781624714052" x2="245.52752822574973" y1="131" y2="131"
+            stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="146.36781624714052" x2="146.36781624714052" y1="128" y2="134" stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="245.52752822574973" x2="245.52752822574973" y1="128" y2="134" stroke="#9BB5DE" stroke-width="1.5"/>
+          <circle cx="194.92957821322443" cy="131" r="6" fill="#BAD5FF"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="193.03424729798235" x2="225.46892677355368" y1="149" y2="149"
-            stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="193.03424729798235" x2="193.03424729798235" y1="146" y2="152" stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="225.46892677355368" x2="225.46892677355368" y1="146" y2="152" stroke="#B5C4DE" stroke-width="1.5"/>
-          <circle cx="209.28107791123773" cy="149" r="6" fill="#D5E5FF"/>
+          <line x1="193.03424729798235" x2="225.46892677355368" y1="155" y2="155"
+            stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="193.03424729798235" x2="193.03424729798235" y1="152" y2="158" stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="225.46892677355368" x2="225.46892677355368" y1="152" y2="158" stroke="#9BB5DE" stroke-width="1.5"/>
+          <circle cx="209.28107791123773" cy="155" r="6" fill="#BAD5FF"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="194.92957821322443" x2="228.50538858968153" y1="173" y2="173"
-            stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="194.92957821322443" x2="194.92957821322443" y1="170" y2="176" stroke="#B5C4DE" stroke-width="1.5"/>
-          <line x1="228.50538858968153" x2="228.50538858968153" y1="170" y2="176" stroke="#B5C4DE" stroke-width="1.5"/>
-          <circle cx="210.9814560165861" cy="173" r="6" fill="#D5E5FF"/>
+          <line x1="194.92957821322443" x2="228.50538858968153" y1="179" y2="179"
+            stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="194.92957821322443" x2="194.92957821322443" y1="176" y2="182" stroke="#9BB5DE" stroke-width="1.5"/>
+          <line x1="228.50538858968153" x2="228.50538858968153" y1="176" y2="182" stroke="#9BB5DE" stroke-width="1.5"/>
+          <circle cx="210.9814560165861" cy="179" r="6" fill="#BAD5FF"/>
         </g>
-<g transform="translate(0, 197)"><line x1="112" x2="272"
-    y1="0" y2="0" stroke="#BFBFBF" stroke-width="1"/>
+<g transform="translate(0, 203)"><line x1="112" x2="272"
+    y1="0" y2="0" stroke="#9EA1A6" stroke-width="1"/>
 <line x1="153.9993077203411" x2="153.9993077203411" y1="0" y2="4"
-      stroke="#BFBFBF" stroke-width="1"/>
-<text x="153.9993077203411" y="17" text-anchor="middle"
+      stroke="#9EA1A6" stroke-width="1"/>
+<text x="153.9993077203411" y="16" text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
-      font-size="13px"
+      font-size="11.25px"
       font-weight="400"
       font-style="normal"
-      fill="#ECEDEE">0.60</text>
+      fill="#9EA1A6">0.60</text>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="0" y2="4"
-      stroke="#BFBFBF" stroke-width="1"/>
-<text x="230.0006922796589" y="17" text-anchor="middle"
+      stroke="#9EA1A6" stroke-width="1"/>
+<text x="230.0006922796589" y="16" text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
-      font-size="13px"
+      font-size="11.25px"
       font-weight="400"
       font-style="normal"
-      fill="#ECEDEE">1.00</text>
-<text x="192" y="31"
+      fill="#9EA1A6">1.00</text>
+<text x="192" y="28"
       text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
-      font-size="13px"
+      font-size="11.25px"
       font-weight="400"
       font-style="normal"
-      fill="#F1F2F4">Effect</text></g>
-<text class="cell-text" dominant-baseline="central" x="22" y="101"
+      fill="#9EA1A6">Effect</text></g>
+<text class="cell-text" dominant-baseline="central" x="22" y="107"
     font-family="system-ui, -apple-system, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#F6F8FB">SUSTAIN-6</text>
-<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#F6F8FB" transform="translate(282 92.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.58</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.95</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="411" y1="113" y2="113" stroke="#A7A7A7" stroke-width="1"/>
-<text class="cell-text" dominant-baseline="central" x="22" y="125"
+    fill="#D1D5DB">SUSTAIN-6</text>
+<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#D1D5DB" transform="translate(282 98.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.58</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.95</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="411" y1="119" y2="119" stroke="#777A7E" stroke-width="1"/>
+<text class="cell-text" dominant-baseline="central" x="22" y="131"
     font-family="system-ui, -apple-system, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#F6F8FB">PIONEER 6</text>
-<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#F6F8FB" transform="translate(282 116.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.57</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">1.11</text></g><g transform="translate(64.39999999999999 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="411" y1="137" y2="137" stroke="#A7A7A7" stroke-width="1"/>
-<text class="cell-text" dominant-baseline="central" x="22" y="149"
+    fill="#D1D5DB">PIONEER 6</text>
+<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#D1D5DB" transform="translate(282 122.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.57</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">1.11</text></g><g transform="translate(64.39999999999999 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="411" y1="143" y2="143" stroke="#777A7E" stroke-width="1"/>
+<text class="cell-text" dominant-baseline="central" x="22" y="155"
     font-family="system-ui, -apple-system, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#F6F8FB">LEADER</text>
-<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#F6F8FB" transform="translate(282 140.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.78</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.97</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="411" y1="161" y2="161" stroke="#A7A7A7" stroke-width="1"/>
-<text class="cell-text" dominant-baseline="central" x="22" y="173"
+    fill="#D1D5DB">LEADER</text>
+<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#D1D5DB" transform="translate(282 146.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.78</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.97</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="411" y1="167" y2="167" stroke="#777A7E" stroke-width="1"/>
+<text class="cell-text" dominant-baseline="central" x="22" y="179"
     font-family="system-ui, -apple-system, sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#F6F8FB">REWIND</text>
-<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#F6F8FB" transform="translate(282 164.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="411" y1="185" y2="185" stroke="#A7A7A7" stroke-width="1"/>
+    fill="#D1D5DB">REWIND</text>
+<g font-family="system-ui, -apple-system, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#D1D5DB" transform="translate(282 170.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="411" y1="191" y2="191" stroke="#777A7E" stroke-width="1"/>
 
 </svg>

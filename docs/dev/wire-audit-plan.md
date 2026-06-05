@@ -1,5 +1,17 @@
 # Wire-audit remediation plan
 
+> **STATUS: EXECUTED 2026-06-05.** All passes shipped across 16 commits
+> (`3672ecc`..HEAD) on wire 1.3 / v0.37.0. Deviations from this plan are
+> documented in the commit messages, principally: Pass 0a shrank to a
+> wrap-contract doc (the scalable-only wrap invalidated the selector-
+> rewrite premise); Pass 6a dissolved into atomic R+TS commits (C33);
+> 2c-ii/iii (variants.headerStyle retirement) deferred to the next wire
+> cleanup — the Tier-1 override supersedes it functionally; Pass 5 ran
+> before Pass 4. Remaining open: the B2 padding-runaway diagnostic
+> (pre-existing; visible as trailing whitespace under the docs hero) and
+> the post-V4 backlog at the bottom of this file.
+
+
 Draft 2026-06-04 after the rgc_v4 audit landed (`wire-audit.md`). Tracks the
 end-to-end fix sequence for B1-B18. Sized by coupling, ordered by leverage.
 

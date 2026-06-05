@@ -16,7 +16,7 @@ describe("tabviz top-level constructor", () => {
       label: "study",
       columns: [colNumeric({ field: "hr" })],
     });
-    expect(spec.version).toBe("1.2");
+    expect(spec.version).toBe("1.3");
     expect(spec.theme.name).toBe("bmj");
     expect(spec.data.rows.length).toBe(3);
     expect(spec.data.rows[0].label).toBe("A");

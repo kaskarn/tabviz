@@ -22,6 +22,11 @@ set_status(
 The re-resolved \link{WebTheme}.
 }
 \description{
+Set status anchor overrides (positive / negative / warning / info) and re-resolve.
+}
+\seealso{
+\code{\link[=set_status_palette]{set_status_palette()}} for an atomic whole-palette clobber.
+
 Each arg accepts a hex string, an \code{\link[=oklch]{oklch()}} triple, \code{NA} (clear the
 override; TS resolver falls back to its curated default), or \code{NULL}
 (leave the slot unchanged — the default — so partial updates touch
