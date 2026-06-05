@@ -7,9 +7,10 @@
 > rewrite premise); Pass 6a dissolved into atomic R+TS commits (C33);
 > 2c-ii/iii (variants.headerStyle retirement) deferred to the next wire
 > cleanup — the Tier-1 override supersedes it functionally; Pass 5 ran
-> before Pass 4. Remaining open: the B2 padding-runaway diagnostic
-> (pre-existing; visible as trailing whitespace under the docs hero) and
-> the post-V4 backlog at the bottom of this file.
+> before Pass 4. B2 (padding runaway) was diagnosed and
+> CLOSED post-arc (commit 4d4c281: measure-loop scrollHeight ratchet —
+> overflow-only commits + grow-merge). Remaining open: the post-V4
+> backlog at the bottom of this file.
 
 
 Draft 2026-06-04 after the rgc_v4 audit landed (`wire-audit.md`). Tracks the
