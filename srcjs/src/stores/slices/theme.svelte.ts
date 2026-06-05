@@ -98,6 +98,7 @@ export interface ThemeSlice {
    *  theme's authoringInputs, rebuild the resolved theme via the adapter,
    *  and write back. Used by the V3 Theme settings panel. */
   setAuthoringInputs: (partial: Partial<ThemeInputs>) => void;
+  previewAuthoringInputs: (partial: Partial<ThemeInputs>) => void;
   previewThemeField: (section: string, field: string, value: unknown) => void;
   setThemeField: (...args: unknown[]) => void;
   setThemeFieldDerived: (path: (string | number)[], value: unknown) => void;
@@ -249,6 +250,22 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     // stay frozen.
     deps.clearAutoWidthsKeepingUserResizes();
     deps.measureAutoColumns();
+  }
+
+  // C53 (wire-audit Pass 4a): drag-time preview path. Identical cascade
+  // re-resolve to setAuthoringInputs but SKIPS the column re-measure —
+  // anchor-color edits don't change text metrics, and re-measuring every
+  // column per slider tick was the fps trap the Round-3 architecture
+  // review flagged. Callers commit via setAuthoringInputs on pointer-up.
+  function previewAuthoringInputs(partial: Partial<ThemeInputs>): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return;
+    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
+    if (!current) return;
+    const merged: ThemeInputs = { ...current, ...partial };
+    const name = spec.theme.name ?? "custom";
+    const rebuilt = reapplyEdits(buildTheme(merged, name) as WebSpec["theme"]);
+    deps.setSpec({ ...spec, theme: rebuilt });
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -439,7 +456,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     },
 
     captureInitial, clearInitial,
-    cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewThemeField,
+    cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewAuthoringInputs, previewThemeField,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
     resetThemeEdits, captureThemeSnapshot, applyThemeSnapshot,
     reset,

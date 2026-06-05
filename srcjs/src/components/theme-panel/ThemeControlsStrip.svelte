@@ -24,9 +24,24 @@
   const {
     inputs,
     onchange,
+    onpreview,
+    only,
+    layout = "flat",
   }: {
     inputs: ThemeInputs;
     onchange: (next: ThemeInputs) => void;
+    /** C53: drag-time preview channel (no history / no re-measure).
+     *  Slider-bearing controls use it; falls back to onchange. */
+    onpreview?: (next: ThemeInputs) => void;
+    /** D14 (wire-audit Pass 4): optional category filter. The widget cog
+     *  drawer mounts the curated everyday subset (presets + polarity +
+     *  density); the studio mounts the full strip. */
+    only?: readonly string[];
+    /** D5/C14 (wire-audit 4c): "tabs" renders the five-tab rail
+     *  (Color / Type / Size / Shell / Effects) with the ARIA tablist
+     *  pattern; "flat" (default) stacks categories — the widget drawer
+     *  and `only`-filtered hosts use flat. */
+    layout?: "flat" | "tabs";
   } = $props();
 
   // The order is canonical: identity → polarity → shell → texture →
@@ -42,18 +57,145 @@
     { key: "geometry",  label: "Geometry",   Comp: GeometryControls },
     { key: "effects",   label: "Effects",    Comp: EffectsControls },
   ] as const;
+
+  const visible = $derived(
+    only ? CATEGORIES.filter((c) => only.includes(c.key)) : CATEGORIES,
+  );
+
+  // D5 LOCKED tab IA (C14). Geometry rides inside Size behind a native
+  // <details> disclosure (C50 — power knobs tucked, common knobs flat).
+  // Polarity is NOT a tab: it's a constant-use mode flip, surfaced flat
+  // at the top of the rail (C50's "lift out of the Color tab").
+  const TABS = [
+    { key: "color",   label: "Color",   cats: ["anchors"] },
+    { key: "type",    label: "Type",    cats: ["type"] },
+    { key: "size",    label: "Size",    cats: ["density", "geometry"] },
+    { key: "shell",   label: "Shell",   cats: ["shell", "texture"] },
+    { key: "effects", label: "Effects", cats: ["effects"] },
+  ] as const;
+  /** Categories that render inside a collapsed <details> disclosure. */
+  const ADVANCED = new Set(["geometry"]);
+
+  let activeTab = $state<(typeof TABS)[number]["key"]>("color");
+
+  function catComp(key: string) {
+    return CATEGORIES.find((c) => c.key === key);
+  }
+
+  // ARIA tablist arrow-key nav (C16).
+  function onTabKeydown(e: KeyboardEvent, idx: number): void {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    e.preventDefault();
+    const delta = e.key === "ArrowRight" ? 1 : -1;
+    const next = TABS[(idx + delta + TABS.length) % TABS.length]!;
+    activeTab = next.key;
+    const el = document.getElementById(`tv-theme-tab-${next.key}`);
+    el?.focus();
+  }
 </script>
 
 <div class="theme-controls-strip" aria-label="Theme inputs">
-  {#each CATEGORIES as cat (cat.key)}
-    <section class="category" data-category={cat.key}>
-      <header>{cat.label}</header>
-      <cat.Comp {inputs} {onchange} />
+  {#if layout === "tabs"}
+    <!-- Polarity flat above the tabs — a mode flip, not a color edit. -->
+    <section class="category polarity-flat" data-category="polarity">
+      <PolarityModeControls {inputs} {onchange} />
     </section>
-  {/each}
+    <div class="tabs" role="tablist" aria-label="Theme input groups">
+      {#each TABS as tab, i (tab.key)}
+        <button
+          type="button"
+          role="tab"
+          id="tv-theme-tab-{tab.key}"
+          aria-selected={activeTab === tab.key}
+          aria-controls="tv-theme-panel-{tab.key}"
+          tabindex={activeTab === tab.key ? 0 : -1}
+          class:on={activeTab === tab.key}
+          onclick={() => (activeTab = tab.key)}
+          onkeydown={(e) => onTabKeydown(e, i)}
+        >{tab.label}</button>
+      {/each}
+    </div>
+    {#each TABS as tab (tab.key)}
+      <div
+        role="tabpanel"
+        id="tv-theme-panel-{tab.key}"
+        aria-labelledby="tv-theme-tab-{tab.key}"
+        hidden={activeTab !== tab.key}
+      >
+        {#each tab.cats as key (key)}
+          {@const cat = catComp(key)}
+          {#if cat}
+            {#if ADVANCED.has(key)}
+              <details class="advanced">
+                <summary>{cat.label}</summary>
+                <cat.Comp {inputs} {onchange} {onpreview} />
+              </details>
+            {:else}
+              <section class="category" data-category={cat.key}>
+                <header>{cat.label}</header>
+                <cat.Comp {inputs} {onchange} {onpreview} />
+              </section>
+            {/if}
+          {/if}
+        {/each}
+      </div>
+    {/each}
+  {:else}
+    {#each visible as cat (cat.key)}
+      <section class="category" data-category={cat.key}>
+        <header>{cat.label}</header>
+        <cat.Comp {inputs} {onchange} {onpreview} />
+      </section>
+    {/each}
+  {/if}
 </div>
 
 <style>
+  .tabs {
+    display: flex;
+    gap: 2px;
+    padding: 6px 12px 0;
+    border-bottom: 1px solid var(--tp-rule, #e8e6e1);
+    position: sticky;
+    top: 0;
+    background: var(--tp-bg, #ffffff);
+    z-index: 1;
+  }
+  .tabs button {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--tp-muted, #6b6760);
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+  }
+  .tabs button.on {
+    color: var(--tp-fg, #1c1a17);
+    border-bottom-color: var(--tp-fg, #1c1a17);
+  }
+  .tabs button:focus-visible { outline: 2px solid #4a90e2; outline-offset: -2px; }
+  .polarity-flat { border-bottom: 1px solid var(--tp-rule, #e8e6e1); }
+  details.advanced {
+    margin: 4px 12px 10px;
+    border: 1px dashed var(--tp-rule, #e8e6e1);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  details.advanced summary {
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tp-muted, #6b6760);
+    padding: 5px 6px;
+  }
+
   .theme-controls-strip {
     display: flex;
     flex-direction: column;

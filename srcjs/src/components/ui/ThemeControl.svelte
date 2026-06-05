@@ -20,15 +20,32 @@
 </script>
 
 {#if inputs}
+  <!-- D14: the cog drawer is the EVERYDAY surface — polarity + density
+       only (preset switching lives in the toolbar ThemeSwitcher).
+       Identity anchors / curves / geometry / effects are deliberate
+       theme-editing work and live in the studio. -->
   <ThemeControlsStrip
     {inputs}
+    only={["polarity", "density"]}
     onchange={(next) => store.setAuthoringInputs(next)}
+    onpreview={(next) => store.previewAuthoringInputs(next)}
   />
+  <p class="studio-hint">
+    Full theme editing — identity, type, geometry, effects — lives in the
+    <strong>studio</strong>.
+  </p>
 {:else}
   <p class="empty">No authoring inputs on the active theme.</p>
 {/if}
 
 <style>
+  .studio-hint {
+    padding: 10px 16px 14px;
+    margin: 0;
+    color: #6b6760;
+    font-size: 11px;
+    border-top: 1px solid #eee8e0;
+  }
   .empty {
     padding: 16px;
     color: #6b6760;

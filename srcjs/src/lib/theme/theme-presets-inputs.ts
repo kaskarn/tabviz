@@ -838,6 +838,36 @@ export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
   sunprint:        SUNPRINT,
 };
 
+/** C17/C56 (wire-audit Pass 4d): nudge the supporting anchors' HUES
+ *  toward brand H without touching L — "everything tinted from one brand
+ *  color" in one move. A REFINEMENT tool, not the on-ramp (the on-ramp
+ *  is preset + set_brand). Strength = fraction of the angular distance
+ *  each anchor travels: subtle 0.3, medium 0.6, vivid 1.0. Mirrored by
+ *  R's tint_from_brand(). */
+export function tintFromBrand(
+  inputs: ThemeInputs,
+  strength: "subtle" | "medium" | "vivid" = "medium",
+): ThemeInputs {
+  const t = strength === "subtle" ? 0.3 : strength === "medium" ? 0.6 : 1.0;
+  const brandH = inputs.anchors.brand.H;
+  const toward = (h: number): number => {
+    const d = ((brandH - h + 540) % 360) - 180; // shortest arc
+    return ((h + d * t) % 360 + 360) % 360;
+  };
+  const nudge = (a: OklchTriple | undefined): OklchTriple | undefined =>
+    a ? { ...a, H: toward(a.H) } : undefined;
+  return {
+    ...inputs,
+    anchors: {
+      ...inputs.anchors,
+      paper: nudge(inputs.anchors.paper)!,
+      ink: nudge(inputs.anchors.ink)!,
+      ...(inputs.anchors.accent ? { accent: nudge(inputs.anchors.accent) } : {}),
+      ...(inputs.anchors.ink2 ? { ink2: nudge(inputs.anchors.ink2) } : {}),
+    },
+  };
+}
+
 /** Get a preset by name. Unknown name → cochrane (default). */
 export function preset(name: string): ThemeInputs {
   return PRESETS[name] ?? COCHRANE;

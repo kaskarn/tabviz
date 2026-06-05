@@ -8,6 +8,7 @@
     Download .json acting against the live snippet).
 -->
 <script lang="ts">
+  import ConfirmDialog from "$components/ui/ConfirmDialog.svelte";
   import { studioStore } from "./studio-store.svelte";
 
   const {
@@ -39,9 +40,15 @@
     toastTimer = setTimeout(() => (toastMsg = null), 2000);
   }
 
+  // C38 (wire-audit Pass 4): native confirm() is silently blocked in the
+  // RStudio viewer / sandboxed iframes (locked rule: feedback_native_dialogs)
+  // — the revert confirmation never fired there. In-widget dialog instead.
+  let revertDialogOpen = $state(false);
+
   function confirmRevert(): void {
     if (dirty) {
-      if (!confirm(`Discard edits and restore ${baseName}?`)) return;
+      revertDialogOpen = true;
+      return;
     }
     onRevert();
   }
@@ -153,6 +160,16 @@
     <div class="toast" role="status">{toastMsg}</div>
   {/if}
 </header>
+
+<ConfirmDialog
+  open={revertDialogOpen}
+  title="Revert theme?"
+  message={`Discard edits and restore ${baseName}?`}
+  confirmLabel="Revert"
+  variant="danger"
+  onconfirm={() => { revertDialogOpen = false; onRevert(); }}
+  oncancel={() => (revertDialogOpen = false)}
+/>
 
 <style>
   .preset-header {

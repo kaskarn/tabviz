@@ -508,6 +508,41 @@ set_accent <- function(theme, accent) {
                          clearable = TRUE)
 }
 
+#' Tint supporting anchors toward the brand hue and re-resolve.
+#'
+#' C17 (wire-audit 4d): nudges the HUE of paper / ink / accent / ink2
+#' toward `brand`'s hue without touching lightness — "everything tinted
+#' from one brand color" in one move. A refinement tool: the usual
+#' on-ramp is still picking a preset and calling [set_brand()].
+#'
+#' @param theme A [WebTheme].
+#' @param strength `"subtle"` (30% of the angular distance), `"medium"`
+#'   (60%, default), or `"vivid"` (100% — full hue alignment).
+#' @return The re-resolved [WebTheme].
+#' @export
+tint_from_brand <- function(theme, strength = c("medium", "subtle", "vivid")) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  strength <- match.arg(strength)
+  t <- switch(strength, subtle = 0.3, medium = 0.6, vivid = 1.0)
+  inputs <- theme@inputs
+  brand_h <- inputs@anchors_brand_H
+  toward <- function(h) {
+    d <- ((brand_h - h + 540) %% 360) - 180
+    ((h + d * t) %% 360 + 360) %% 360
+  }
+  inputs@anchors_paper_H <- toward(inputs@anchors_paper_H)
+  inputs@anchors_ink_H   <- toward(inputs@anchors_ink_H)
+  if (!is.na(inputs@anchors_accent_H)) {
+    inputs@anchors_accent_H <- toward(inputs@anchors_accent_H)
+  }
+  if (!is.na(inputs@anchors_ink2_H)) {
+    inputs@anchors_ink2_H <- toward(inputs@anchors_ink2_H)
+  }
+  resolve_from_inputs(inputs, name = theme@name)
+}
+
 #' Toggle monochrome (neutral ramp rides the brand hue) and re-resolve.
 #'
 #' B8: one switch for phosphor / sepia / cyanotype single-hue themes —

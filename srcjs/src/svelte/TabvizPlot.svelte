@@ -1783,15 +1783,35 @@
                   return lvl ? `${lvl * indentPx}px` : undefined;
                 })()}
                 style={cellSemCss || undefined}
-                role={isGroupHeader ? "button" : undefined}
-                tabindex={isGroupHeader ? 0 : undefined}
+                role={isGroupHeader || (row && store.paintTool) ? "button" : undefined}
+                tabindex={isGroupHeader || (row && store.paintTool) ? 0 : undefined}
+                aria-pressed={!isGroupHeader && row && store.paintTool
+                  ? !!cellActiveTok || rowClasses.includes("row-active-")
+                  : undefined}
+                aria-label={!isGroupHeader && row && store.paintTool
+                  ? `Paint row ${row.label ?? row.id} with ${store.paintTool.token}`
+                  : undefined}
                 onpointerdown={spec?.interaction.enableReorderRows ? (e) => {
                   if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
                   else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
                 } : undefined}
                 onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => handleCellClick(row, column.field) : undefined}
                 ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
-                onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
+                onkeydown={isGroupHeader
+                  ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id)
+                  : row
+                    ? (e) => {
+                        // C54 (wire-audit Pass 4): keyboard paint parity.
+                        // The primary cell is the row's single tab stop;
+                        // Enter/Space applies the active paint token (same
+                        // toggle semantics as click).
+                        if (!store.paintTool) return;
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleCellClick(row, column.field);
+                        }
+                      }
+                    : undefined}
                 onmouseenter={row ? (e) => handleCellEnter(row.id, column.field, e) : undefined}
                 onmouseleave={row ? () => handleCellLeave() : undefined}
               >

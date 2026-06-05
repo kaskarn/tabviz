@@ -104,6 +104,14 @@ class StudioStore {
     this.pushHistory(next, this.roleOverrides, label);
   }
 
+  /** C53 (wire-audit Pass 4a): drag-time preview — updates the working
+   *  copy (cascade re-resolves via the `resolved` derived) WITHOUT
+   *  pushing history. Callers commit via apply() on pointer-up so a
+   *  slider drag is one undo step, not a hundred. */
+  preview(next: ThemeInputs): void {
+    this.inputs = next;
+  }
+
   /** Rebind a role to a (ramp, grade) pair. Used by Spine drag-to-rebind. */
   setRoleBinding(role: RoleName, ramp: RampName, grade: number): void {
     if (!this.inputs) return;

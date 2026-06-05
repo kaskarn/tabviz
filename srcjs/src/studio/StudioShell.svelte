@@ -125,7 +125,9 @@
       <aside class="controls-rail">
         <ThemeControlsStrip
           inputs={studioStore.inputs}
+          layout="tabs"
           onchange={(next) => studioStore.apply(next, "Edit")}
+          onpreview={(next) => studioStore.preview(next)}
         />
       </aside>
       <main class="cascade-main">
