@@ -41,6 +41,7 @@ export type TokenKind =
   | "paint-color"    // color (text foreground)
   | "spacing-px"     // numeric px value (padding, gap, height)
   | "border-width"   // numeric px for border widths
+  | "border-style"   // CSS line-style enum ("solid" | "double" | "none")
   | "font-family"    // CSS font-family stack
   | "font-size"      // CSS font-size (px or rem)
   | "font-weight"    // CSS font-weight (numeric)
@@ -856,6 +857,170 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     modes: { hc: "drop" },
     description: "Optional emphasis-row box-shadow. 'none' when elevation = 'none'.",
   },
+
+  // ── Header — active variant (#72) ─────────────────────────────────────────
+  // Resolved per-theme via `activeHeaderVariant(theme)` (light/tint/fill).
+  // The variant-specific header tokens above (--tv-header-light-bg etc.)
+  // expose all three flavors; these "active" tokens are the chosen one
+  // applied to the rendered header. Values are user-config-bridged through
+  // theme-css.ts (no anchor-substrate equivalent — they pick from theme.header).
+  {
+    cssVar: "--tv-header-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).bg — picks light/tint/fill by variants.headerStyle" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Active header background — resolved by variants.headerStyle.",
+  },
+  {
+    cssVar: "--tv-header-fg",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).fg" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Active header foreground — resolved by variants.headerStyle.",
+  },
+  {
+    cssVar: "--tv-header-rule",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).rule, falls back to role:border" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Active header bottom-rule color.",
+  },
+  {
+    cssVar: "--tv-row-group-rule",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] theme.rowGroup.L1.rule, falls back to role:border" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Row-group separator rule color.",
+  },
+
+  // ── First-column variant + container (#74) ────────────────────────────────
+  // Driven by variants.firstColumnStyle (default/bold) selecting from
+  // theme.firstColumn.{default,bold}. Container border + radius come from
+  // theme.layout.{containerBorder,containerBorderRadius}.
+  {
+    cssVar: "--tv-first-col-bg",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].bg" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "First-column background under the active variant.",
+  },
+  {
+    cssVar: "--tv-first-col-fg",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].fg" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "First-column foreground under the active variant.",
+  },
+  {
+    cssVar: "--tv-first-col-weight",
+    kind: "font-weight",
+    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].weight" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "First-column font weight under the active variant.",
+  },
+  {
+    cssVar: "--tv-first-col-rule",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].rule (optional)" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "First-column right-edge rule (when defined by the variant).",
+  },
+  {
+    cssVar: "--tv-container-border",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "[v3-bridge] theme.layout.containerBorder → `1px solid var(--tv-border)` or `none`" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Outer-frame border shorthand around the chart container.",
+  },
+  {
+    cssVar: "--tv-container-border-radius",
+    kind: "spacing-px",
+    source: { tier: "computed", note: "[v3-bridge] theme.layout.containerBorderRadius" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Outer-frame border radius around the chart container.",
+  },
+
+  // ── Borders (#73) ─────────────────────────────────────────────────────────
+  // Driven by theme.borders.{major,minor,table}.{color,style,thickness}
+  // + theme.borders.layout. Each color/width/style is user-pinnable; the
+  // emitter resolves style="double" into widened pixel thickness.
+  {
+    cssVar: "--tv-border-major-color",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.color" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Major (header/group) border color.",
+  },
+  {
+    cssVar: "--tv-border-minor-color",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.minor.color" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Minor (row) border color.",
+  },
+  {
+    cssVar: "--tv-border-table-color",
+    kind: "paint-color",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.table.color" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Outer table-frame border color.",
+  },
+  {
+    cssVar: "--tv-row-border-width",
+    kind: "border-width",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.minor.thickness (×3 floor 3 if style='double')" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Row divider width (px).",
+  },
+  {
+    cssVar: "--tv-header-border-width",
+    kind: "border-width",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.thickness (floor 2; ×3 floor 3 if style='double')" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Header bottom-rule width (px).",
+  },
+  {
+    cssVar: "--tv-group-border-width",
+    kind: "border-width",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.thickness (×3 floor 3 if style='double')" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Group separator width (px).",
+  },
+  {
+    cssVar: "--tv-table-border-width",
+    kind: "border-width",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.table.thickness (×3 floor 3 if style='double')" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Outer table-frame width (px).",
+  },
+  {
+    cssVar: "--tv-border-row-style",
+    kind: "border-style",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.{layout,minor.style} — 'solid'/'double'/'none'" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Row divider line-style.",
+  },
+  {
+    cssVar: "--tv-border-col-style",
+    kind: "border-style",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.{layout,minor.style} — 'solid'/'double'/'none'" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Column divider line-style.",
+  },
+  {
+    cssVar: "--tv-border-major-style",
+    kind: "border-style",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.style — 'solid' or 'double'" },
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    description: "Major rule line-style.",
+  },
+  {
+    cssVar: "--tv-table-border-style",
+    kind: "border-style",
+    source: { tier: "computed", note: "[v3-bridge] theme.borders.table.{thickness,style} — 'solid'/'double'/'none'" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Outer table-frame line-style.",
+  },
 ];
 
 // ============================================================================
@@ -998,6 +1163,11 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // Phase D bare prefixes from template literals in GeometrySamples viz.
   "--tv-radius-",
   "--tv-border-width-",
+  // Bare prefixes appearing inside manifest comments / drift-gate
+  // burn-down notes (not actual CSS references).
+  "--tv-first-col-",
+  "--tv-header-",
+  "--tv-table-border-",
   // Coherence pass — bare prefix from density-presets.ts's snakeToCssVar
   // template literal. The expanded cssVars (--tv-spacing-row-height etc.)
   // are real manifest entries; this allow-lists the literal-prefix match.
@@ -1065,48 +1235,35 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // --tv-border is now a real manifest entry (see line ~695); removed
   // from the v3-legacy KNOWN_UNCONSUMED list per coherence audit §7.6.
   "--tv-border-",
-  "--tv-border-col-style",
-  "--tv-border-major-color",
-  "--tv-border-major-style",
-  "--tv-border-minor-color",
-  "--tv-border-row-style",
-  "--tv-border-table-color",
+  // --tv-border-{major,minor,table}-color, --tv-border-{row,col,major,table}-style,
+  // --tv-{row,header,group,table}-border-width are real manifest entries (#73).
   "--tv-bottom-margin",
   "--tv-focus",
-  "--tv-container-border",
-  "--tv-container-border-radius",
+  // --tv-container-border + --tv-container-border-radius are manifest entries (#74).
   "--tv-content-primary",
   "--tv-editor-max-h",
   "--tv-fg",
-  "--tv-first-col-bg",
-  "--tv-first-col-fg",
-  "--tv-first-col-rule",
-  "--tv-first-col-weight",
+  // --tv-first-col-{bg,fg,weight,rule} are manifest entries (#74).
   "--tv-font-size-",
   "--tv-font-size-sm",
   "--tv-font-weight-bold",
   "--tv-font-weight-normal",
-  "--tv-group-border-width",
   "--tv-group-header-opacity",
   "--tv-group-padding",
-  "--tv-header-bg",
-  "--tv-header-border-width",
-  "--tv-header-fg",
+  // --tv-header-{bg,fg,rule} are manifest entries (#72).
   "--tv-header-font-scale",
   "--tv-header-gap",
   "--tv-header-height",
   "--tv-header-row-height",
   "--tv-header-depth",
   "--tv-plot-width",
-  "--tv-header-rule",
   "--tv-hover",
   "--tv-hover-bg",
   "--tv-max-height",
   "--tv-max-width",
   "--tv-primary",
   "--tv-row-bg",
-  "--tv-row-border-width",
-  "--tv-row-group-rule",
+  // --tv-row-group-rule is a manifest entry (#72).
   "--tv-row-hover-opacity",
   "--tv-semantic-",
   "--tv-semantic-accent-bg",
@@ -1126,8 +1283,7 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-summary-fill",
   "--tv-surface-alt",
   "--tv-surface-muted",
-  "--tv-table-border-style",
-  "--tv-table-border-width",
+  // --tv-table-border-{style,width} are manifest entries (#73).
   "--tv-text",
   "--tv-text-caption-size",
   "--tv-text-caption-weight",

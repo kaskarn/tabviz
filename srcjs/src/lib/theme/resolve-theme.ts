@@ -301,6 +301,18 @@ const STATUS_ANCHOR_FALLBACK: Record<string, string> = {
  *  beats leaking the literal text `<computed>` into the cascade. */
 const TOKEN_RESOLVE_BUG_SENTINEL = "";
 
+/** Placeholder for manifest entries that are *declared* for drift-gate
+ *  ownership + Inspector visibility, but whose values come from
+ *  theme-css.ts's user-config-bridge tail (theme.borders / theme.firstColumn /
+ *  theme.layout / theme.variants — user-pinnable config with no anchor-
+ *  substrate equivalent). The token's source.note must begin with
+ *  `[v3-bridge]` to opt into this skip.
+ *
+ *  `_emitV4CssVarsBody` skips any value starting with `<`, so these entries
+ *  never end up in the v4 manifest emission — theme-css.ts's tail keeps
+ *  emitting them from theme.X.Y until the v4 substrate grows native support. */
+const V3_BRIDGE_SENTINEL = "<v3-bridge>";
+
 /** True under `vite dev`, vitest, bun:test, and any other non-PROD bundle.
  *  Vite inlines `import.meta.env.PROD` to a literal at build time; under
  *  bun/V8 / other runtimes that don't define `import.meta.env`, the
@@ -342,6 +354,18 @@ function resolveTokenValue(
     inputs: ThemeInputs;
   },
 ): string {
+  // V3-bridge short-circuit. Manifest entries that opt into theme-css.ts's
+  // user-config-bridge tail (note prefix `[v3-bridge]`) skip resolution
+  // here and yield the sentinel; `_emitV4CssVarsBody` drops it so the
+  // tail's own emission wins.
+  if (
+    token.source.tier === "computed" &&
+    typeof token.source.note === "string" &&
+    token.source.note.startsWith("[v3-bridge]")
+  ) {
+    return V3_BRIDGE_SENTINEL;
+  }
+
   // Layer B — declarative token.modes drop/swap.
   const mode = resolved.inputs.mode;
   if (mode === "high-contrast" && token.modes?.hc) {

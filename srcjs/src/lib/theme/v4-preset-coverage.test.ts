@@ -30,9 +30,20 @@ describe("v4 cssVars: per-preset coverage", () => {
     it(`${name}: no placeholder leakage`, () => {
       const theme = buildTheme(inputs, name);
       const cssVars = getCssVars(theme);
+      // V3-bridge tokens (theme.borders / firstColumn / variants / layout)
+      // emit `<v3-bridge>` from the v4 resolver — they're realized in
+      // theme-css.ts's user-config-bridge tail, not by the manifest pass.
+      const v3BridgeVars = new Set(
+        COMPONENT_TOKENS
+          .filter(t => t.source.tier === "computed" &&
+                       typeof t.source.note === "string" &&
+                       t.source.note.startsWith("[v3-bridge]"))
+          .map(t => t.cssVar)
+      );
       const leaked: Array<{ cssVar: string; value: string }> = [];
       for (const [cssVar, value] of Object.entries(cssVars)) {
         if (PLACEHOLDER_EXEMPT.has(cssVar)) continue;
+        if (v3BridgeVars.has(cssVar)) continue;
         if (typeof value !== "string") continue;
         if (value.startsWith("<")) {
           leaked.push({ cssVar, value });
