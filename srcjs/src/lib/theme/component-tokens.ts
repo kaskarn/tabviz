@@ -64,6 +64,31 @@ export type TokenSource =
   | { tier: "computed"; note: string }
   | { tier: "const"; note: string };
 
+/** Which resolver realizes this token's value (wire-audit Pass 0d).
+ *
+ *  `resolveTokenValue` dispatches via `RESOLVERS.get(token.resolverGroup)`
+ *  after a short cross-cutting pre-filter (v3-bridge skip + `token.modes`
+ *  HC/RT drop/swap). One group = one ResolverFn; a token whose group has
+ *  no registered resolver is a manifest bug and dev-throws at resolve
+ *  time. This replaced a 15-branch waterfall that dispatched by cssVar
+ *  string / kind / tier interception, where a mis-tagged token silently
+ *  fell through to the wrong branch. */
+export type ResolverGroup =
+  | "role"        // read resolved.roles[source.role]
+  | "anchor"      // pickAnchorHex + status fallback
+  | "density"     // density-table px lookup (spacing-px / border-width)
+  | "geometry"    // inputs.geometry radius/border-width projection
+  | "effects"     // glow / shell-gradient / emphasis-shadow from ramps
+  | "typography"  // --tv-text-{role}-{prop} via type-role table
+  | "shell-paper" // resolveShellPaper projection
+  | "elevation"   // hue-aware shadow stacks
+  | "texture"     // texture line/dot colors from neutral ramp
+  | "knockout"    // premixed text-knockout backgrounds
+  | "hc-fidelity" // mode-dependent VALUE substitution (caret/ring/bar)
+  | "browser-fx"  // brand-gradient / glow-brand-color / glass-blur
+  | "const"       // literal constants
+  | "v3-bridge";  // realized by theme-css.ts's user-config tail
+
 /** Per-mode behavior applied at resolve time. The resolver consults this
  *  field when computing each token's value under HC or RT modes. */
 export type ModeBehavior = {
@@ -97,6 +122,9 @@ export interface ComponentToken {
   readonly cssVar: string;
   /** What this token paints/scales/sizes. */
   readonly kind: TokenKind;
+  /** Which resolver realizes the value (see ResolverGroup). Optional only
+   *  during the Pass 0d-i migration window; 0d-ii makes it required. */
+  readonly resolverGroup?: ResolverGroup;
   /** Provenance — where the resolved value comes from. */
   readonly source: TokenSource;
   /** Consumer file paths (relative to srcjs/src/). The drift gate enforces
@@ -117,6 +145,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Row state ──────────────────────────────────────────────────────────────
   {
     cssVar: "--tv-row-base-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "surface" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte", "lib/swatches.ts"],
@@ -124,6 +153,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-base-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -131,6 +161,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-alt-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "surface-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -139,6 +170,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-hover-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "fill-hover" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -146,6 +178,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-selected-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "fill-active" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -153,6 +186,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-emphasis-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "highlight-bg" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte", "lib/semantic-styling.ts"],
@@ -161,6 +195,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-emphasis-bar",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "highlight-bar" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -168,6 +203,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-emphasis-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -177,6 +213,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Cell ───────────────────────────────────────────────────────────────────
   {
     cssVar: "--tv-cell-bg",
+    resolverGroup: "const",
     kind: "paint-fill",
     source: { tier: "const", note: "transparent — cell inherits row" },
     consumedBy: ["export/svg-generator.ts"],
@@ -184,6 +221,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-cell-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -191,6 +229,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-cell-border",
+    resolverGroup: "role",
     kind: "paint-stroke",
     source: { tier: "role", role: "border-subtle" },
     consumedBy: ["export/svg-generator.ts"],
@@ -200,6 +239,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Header ─────────────────────────────────────────────────────────────────
   {
     cssVar: "--tv-header-light-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "surface" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -207,6 +247,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-light-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -214,6 +255,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-light-rule",
+    resolverGroup: "role",
     kind: "paint-stroke",
     source: { tier: "role", role: "border-strong" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -221,6 +263,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-tint-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "fill" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -228,6 +271,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-tint-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -235,6 +279,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-fill-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "brand-solid" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -242,6 +287,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-fill-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text-onsolid" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -251,6 +297,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Plot scaffold ──────────────────────────────────────────────────────────
   {
     cssVar: "--tv-plot-axis-line",
+    resolverGroup: "role",
     kind: "paint-stroke",
     source: { tier: "role", role: "border-strong" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte", "stores/slices/axis.svelte.ts"],
@@ -258,6 +305,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-plot-tick-mark",
+    resolverGroup: "role",
     kind: "paint-stroke",
     source: { tier: "role", role: "border-strong" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte"],
@@ -265,6 +313,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-plot-tick-mark-length",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "computed", note: "density-driven" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte", "stores/slices/axis.svelte.ts"],
@@ -272,6 +321,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-plot-line-width",
+    resolverGroup: "density",
     kind: "border-width",
     source: { tier: "computed", note: "density-driven; default 1.5px" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte"],
@@ -279,6 +329,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-plot-point-size",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "computed", note: "density-driven; default 6px" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte"],
@@ -288,6 +339,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Spacing ────────────────────────────────────────────────────────────────
   {
     cssVar: "--tv-spacing-row-height",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: [
@@ -300,6 +352,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-header-height",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: [
@@ -311,6 +364,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-padding",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: [
@@ -322,6 +376,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-cell-padding-x",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: [
@@ -334,6 +389,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-cell-padding-y",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "const", note: "0 in v3; reserved for future density extensions" },
     consumedBy: ["export/svg-generator.ts"],
@@ -341,6 +397,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-axis-gap",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: [
@@ -352,6 +409,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-column-group-padding",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -359,6 +417,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-row-group-padding",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: [
@@ -370,6 +429,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-header-gap",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -377,6 +437,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-footer-gap",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -384,6 +445,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-title-subtitle-gap",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -391,6 +453,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-bottom-margin",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -398,6 +461,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-indent-per-level",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -405,6 +469,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-spacing-container-padding",
+    resolverGroup: "density",
     kind: "spacing-px",
     source: { tier: "input", input: "density" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -416,6 +481,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // lh/track tokens follow per Stage 2 §1e.
   {
     cssVar: "--tv-text-title-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "brand-text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
@@ -423,6 +489,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-text-body-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -430,6 +497,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-text-footnote-fg",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -441,6 +509,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // Five per surface: bg, border, shadow, radius, padding.
   {
     cssVar: "--tv-shell-bg",
+    resolverGroup: "shell-paper",
     kind: "paint-fill",
     source: { tier: "computed", note: "shell/paper: shell.bg per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -448,6 +517,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shell-border",
+    resolverGroup: "shell-paper",
     kind: "paint-color",
     source: { tier: "computed", note: "shell/paper: shell.border per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -455,6 +525,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shell-shadow",
+    resolverGroup: "shell-paper",
     kind: "paint-color",
     source: { tier: "computed", note: "shell/paper: shell.shadow per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -462,6 +533,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shell-radius",
+    resolverGroup: "shell-paper",
     kind: "spacing-px",
     source: { tier: "computed", note: "shell/paper: shell radius per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -469,6 +541,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shell-padding",
+    resolverGroup: "shell-paper",
     kind: "spacing-px",
     source: { tier: "computed", note: "shell/paper: shell padding per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -476,6 +549,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-bg",
+    resolverGroup: "shell-paper",
     kind: "paint-fill",
     source: { tier: "computed", note: "shell/paper: paper.bg per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -483,6 +557,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-border",
+    resolverGroup: "shell-paper",
     kind: "paint-color",
     source: { tier: "computed", note: "shell/paper: paper.border per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -490,6 +565,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-shadow",
+    resolverGroup: "shell-paper",
     kind: "paint-color",
     source: { tier: "computed", note: "shell/paper: paper.shadow per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -497,6 +573,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-radius",
+    resolverGroup: "shell-paper",
     kind: "spacing-px",
     source: { tier: "computed", note: "shell/paper: paper radius per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -504,6 +581,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-padding",
+    resolverGroup: "shell-paper",
     kind: "spacing-px",
     source: { tier: "computed", note: "shell/paper: paper padding per shell_mode" },
     consumedBy: ["svelte/TabvizPlot.svelte", "lib/theme/theme-runtime.css"],
@@ -515,6 +593,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // lives in the same scope; SVG export degrades to a flat/solid equivalent.
   {
     cssVar: "--tv-brand-gradient",
+    resolverGroup: "browser-fx",
     kind: "paint-fill",
     source: { tier: "computed", note: "brand gradient: brand → brand-deep" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -522,6 +601,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-glow-brand-color",
+    resolverGroup: "browser-fx",
     kind: "paint-color",
     source: { tier: "computed", note: "brand glow: accent @ alpha 0.4" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -529,6 +609,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-glass-blur",
+    resolverGroup: "browser-fx",
     kind: "spacing-px",
     source: { tier: "const", note: "glass backdrop-filter blur radius" },
     consumedBy: ["lib/theme/theme-runtime.css"],
@@ -541,6 +622,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // thickness). The resolver emits standard vs HC values per token.modes.
   {
     cssVar: "--tv-hc-caret-char",
+    resolverGroup: "hc-fidelity",
     kind: "paint-color",  // emitted as a character literal string
     source: { tier: "const", note: "HC caret glyph (▸ / blank)" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -548,6 +630,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-hc-ring-width",
+    resolverGroup: "hc-fidelity",
     kind: "border-width",
     source: { tier: "const", note: "HC chip ring stroke width" },
     consumedBy: ["lib/theme/theme-runtime.css"],
@@ -555,6 +638,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-hc-bar-width",
+    resolverGroup: "hc-fidelity",
     kind: "spacing-px",
     source: { tier: "const", note: "HC emphasis-row bar thickness" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -567,6 +651,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // the resolver tied to neutral grades.
   {
     cssVar: "--tv-shell-texture-line",
+    resolverGroup: "texture",
     kind: "paint-color",
     source: { tier: "computed", note: "texture: faint hairline (neutral grade ~3)" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -574,6 +659,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shell-texture-dot",
+    resolverGroup: "texture",
     kind: "paint-color",
     source: { tier: "computed", note: "texture: dot color (neutral grade ~4)" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -581,6 +667,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-texture-line",
+    resolverGroup: "texture",
     kind: "paint-color",
     source: { tier: "computed", note: "texture: paper-side hairline" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -588,6 +675,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-texture-dot",
+    resolverGroup: "texture",
     kind: "paint-color",
     source: { tier: "computed", note: "texture: paper-side dot" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -600,6 +688,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // the text that hides ~78% of the texture without erasing it entirely.
   {
     cssVar: "--tv-shell-text-knockout-bg",
+    resolverGroup: "knockout",
     kind: "paint-fill",
     source: { tier: "computed", note: "knockout: shell-bg @ 78% opacity premix" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -607,6 +696,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-paper-text-knockout-bg",
+    resolverGroup: "knockout",
     kind: "paint-fill",
     source: { tier: "computed", note: "knockout: paper-bg @ 78% opacity premix" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -620,6 +710,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // surfaces — the parity guarantee.
   {
     cssVar: "--tv-shadow-raised-near",
+    resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 12% black, alpha 0.12" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -627,6 +718,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shadow-raised-far",
+    resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.08" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -634,6 +726,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shadow-overlay-near",
+    resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.18" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -641,6 +734,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-shadow-overlay-far",
+    resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 32% black, alpha 0.12" },
     consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
@@ -659,6 +753,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // ── Accent (engagement layer) ─────────────────────────────────────────────
   {
     cssVar: "--tv-accent",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "accent-solid" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -666,6 +761,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-accent-fill",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "accent-fill" },
     consumedBy: ["export/svg-generator.ts"],
@@ -677,6 +773,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // a STATUS_ANCHOR_FALLBACK palette when the input is unset.
   {
     cssVar: "--tv-status-positive",
+    resolverGroup: "anchor",
     kind: "paint-color",
     source: { tier: "anchor", anchor: "status-positive" },
     consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
@@ -684,6 +781,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-status-negative",
+    resolverGroup: "anchor",
     kind: "paint-color",
     source: { tier: "anchor", anchor: "status-negative" },
     consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
@@ -691,6 +789,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-status-warning",
+    resolverGroup: "anchor",
     kind: "paint-color",
     source: { tier: "anchor", anchor: "status-warning" },
     consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
@@ -698,6 +797,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-status-info",
+    resolverGroup: "anchor",
     kind: "paint-color",
     source: { tier: "anchor", anchor: "status-info" },
     consumedBy: ["svelte/TabvizPlot.svelte", "components/table/CellBadge.svelte"],
@@ -710,6 +810,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // migrate to these tokens during Phase 6.
   {
     cssVar: "--tv-surface-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "surface" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -717,6 +818,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-surface-subtle-bg",
+    resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "surface-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -725,6 +827,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-text",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -732,6 +835,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-text-muted",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text-muted" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -739,6 +843,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-text-subtle",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "text-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -746,6 +851,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "border" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -753,6 +859,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-subtle",
+    resolverGroup: "role",
     kind: "paint-color",
     source: { tier: "role", role: "border-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -764,6 +871,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // and accessibility-mode agnostic; HC keeps radii unchanged.
   {
     cssVar: "--tv-radius-sm",
+    resolverGroup: "geometry",
     kind: "spacing-px",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -771,6 +879,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-radius-md",
+    resolverGroup: "geometry",
     kind: "spacing-px",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -778,6 +887,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-radius-lg",
+    resolverGroup: "geometry",
     kind: "spacing-px",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -785,6 +895,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-radius-pill",
+    resolverGroup: "geometry",
     kind: "spacing-px",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -795,6 +906,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // HC mode bumps each value by +1px to compensate for the reduced colour cue.
   {
     cssVar: "--tv-border-width-hair",
+    resolverGroup: "geometry",
     kind: "border-width",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -803,6 +915,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-width-thin",
+    resolverGroup: "geometry",
     kind: "border-width",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -810,6 +923,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-width-regular",
+    resolverGroup: "geometry",
     kind: "border-width",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -817,6 +931,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-width-thick",
+    resolverGroup: "geometry",
     kind: "border-width",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
@@ -828,6 +943,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // (peak chroma) with mode-aware blur/spread. HC drops to transparent.
   {
     cssVar: "--tv-glow-color",
+    resolverGroup: "effects",
     kind: "paint-color",
     source: { tier: "computed", note: "anchor ramp grade 9 (brand or accent per inputs.effects.glow_anchor)" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -836,6 +952,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-glow-blur",
+    resolverGroup: "effects",
     kind: "spacing-px",
     source: { tier: "input", input: "effects" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -844,6 +961,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-glow-spread",
+    resolverGroup: "effects",
     kind: "spacing-px",
     source: { tier: "input", input: "effects" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -857,6 +975,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // mid-stop solid for a usable but flat surface.
   {
     cssVar: "--tv-shell-gradient",
+    resolverGroup: "effects",
     kind: "paint-fill",
     source: { tier: "computed", note: "linear-gradient from brand ramp + accent ramp per inputs.effects.gradient_shell_intensity" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -869,6 +988,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // Layered (near + far) using the same shadow tokens as Stage 2 §6.
   {
     cssVar: "--tv-shadow-emphasis",
+    resolverGroup: "effects",
     kind: "shadow",
     source: { tier: "computed", note: "box-shadow stack derived from inputs.effects.elevation" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -884,6 +1004,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // theme-css.ts (no anchor-substrate equivalent — they pick from theme.header).
   {
     cssVar: "--tv-header-bg",
+    resolverGroup: "v3-bridge",
     kind: "paint-fill",
     source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).bg — picks light/tint/fill by variants.headerStyle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -891,6 +1012,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-fg",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).fg" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -898,6 +1020,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-rule",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).rule, falls back to role:border" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -905,6 +1028,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-group-rule",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] theme.rowGroup.L1.rule, falls back to role:border" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -917,6 +1041,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // theme.layout.{containerBorder,containerBorderRadius}.
   {
     cssVar: "--tv-first-col-bg",
+    resolverGroup: "v3-bridge",
     kind: "paint-fill",
     source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].bg" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -924,6 +1049,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-first-col-fg",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].fg" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -931,6 +1057,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-first-col-weight",
+    resolverGroup: "v3-bridge",
     kind: "font-weight",
     source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].weight" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -938,6 +1065,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-first-col-rule",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].rule (optional)" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -945,6 +1073,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-container-border",
+    resolverGroup: "v3-bridge",
     kind: "paint-stroke",
     source: { tier: "computed", note: "[v3-bridge] theme.layout.containerBorder → `1px solid var(--tv-border)` or `none`" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -952,6 +1081,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-container-border-radius",
+    resolverGroup: "v3-bridge",
     kind: "spacing-px",
     source: { tier: "computed", note: "[v3-bridge] theme.layout.containerBorderRadius" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -964,6 +1094,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // emitter resolves style="double" into widened pixel thickness.
   {
     cssVar: "--tv-border-major-color",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.major.color" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -971,6 +1102,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-minor-color",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.minor.color" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -978,6 +1110,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-table-color",
+    resolverGroup: "v3-bridge",
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.table.color" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -985,6 +1118,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-row-border-width",
+    resolverGroup: "v3-bridge",
     kind: "border-width",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.minor.thickness (×3 floor 3 if style='double')" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -992,6 +1126,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-header-border-width",
+    resolverGroup: "v3-bridge",
     kind: "border-width",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.major.thickness (floor 2; ×3 floor 3 if style='double')" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -999,6 +1134,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-group-border-width",
+    resolverGroup: "v3-bridge",
     kind: "border-width",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.major.thickness (×3 floor 3 if style='double')" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -1006,6 +1142,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-table-border-width",
+    resolverGroup: "v3-bridge",
     kind: "border-width",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.table.thickness (×3 floor 3 if style='double')" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -1013,6 +1150,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-row-style",
+    resolverGroup: "v3-bridge",
     kind: "border-style",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.{layout,minor.style} — 'solid'/'double'/'none'" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -1020,6 +1158,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-col-style",
+    resolverGroup: "v3-bridge",
     kind: "border-style",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.{layout,minor.style} — 'solid'/'double'/'none'" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -1027,6 +1166,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-border-major-style",
+    resolverGroup: "v3-bridge",
     kind: "border-style",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.major.style — 'solid' or 'double'" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
@@ -1034,6 +1174,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-table-border-style",
+    resolverGroup: "v3-bridge",
     kind: "border-style",
     source: { tier: "computed", note: "[v3-bridge] theme.borders.table.{thickness,style} — 'solid'/'double'/'none'" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
@@ -1074,6 +1215,7 @@ function buildTypographyManifestEntries(): ComponentToken[] {
     entries.push({
       cssVar: `${base}-family`,
       kind: "font-family",
+      resolverGroup: "typography",
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
       description: `${role} font family stack`,
@@ -1081,6 +1223,7 @@ function buildTypographyManifestEntries(): ComponentToken[] {
     entries.push({
       cssVar: `${base}-size`,
       kind: "font-size",
+      resolverGroup: "typography",
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
       description: `${role} font size (px)`,
@@ -1088,6 +1231,7 @@ function buildTypographyManifestEntries(): ComponentToken[] {
     entries.push({
       cssVar: `${base}-weight`,
       kind: "font-weight",
+      resolverGroup: "typography",
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
       description: `${role} font weight`,

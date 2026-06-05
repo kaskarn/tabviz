@@ -61,6 +61,7 @@ import {
   COMPONENT_TOKENS,
   isV3BridgeToken,
   type ComponentToken,
+  type ResolverGroup,
   type TokenSource,
 } from "./component-tokens";
 import {
@@ -347,17 +348,190 @@ function tokenResolveBug(
   return TOKEN_RESOLVE_BUG_SENTINEL;
 }
 
+/** The resolve context handed to every resolver. Built once per
+ *  resolveTheme call (roles + ramps + reflected inputs). */
+export interface ResolveCtx {
+  roles: Record<RoleName, string>;
+  ramps: TokenRamps;
+  inputs: ThemeInputs;
+}
+
+type ResolverFn = (token: ComponentToken, ctx: ResolveCtx) => string;
+
+/** Wrap a `string | null` matcher-style resolver: a null return for a
+ *  token explicitly tagged with that resolver's group is a manifest/
+ *  resolver mismatch — dev-throw via tokenResolveBug. */
+function requireMatch(
+  value: string | null,
+  token: ComponentToken,
+  group: ResolverGroup,
+): string {
+  if (value !== null) return value;
+  return tokenResolveBug(token.cssVar, token.source.tier,
+    `resolverGroup=${group} resolver did not match this cssVar`);
+}
+
+/** HC-fidelity group — mode-dependent VALUE substitution (Layer C of the
+ *  HC inventory). These can't ride token.modes (drop/swap only). */
+function resolveHcFidelityGroup(token: ComponentToken, ctx: ResolveCtx): string {
+  const mode = ctx.inputs.mode;
+  if (token.cssVar === "--tv-hc-caret-char") {
+    return mode === "high-contrast" ? HC_CARET_CHAR_VALUE : "";
+  }
+  if (token.cssVar === "--tv-hc-ring-width") {
+    return HC_RING_WIDTH_VALUE;
+  }
+  if (token.cssVar === "--tv-hc-bar-width") {
+    return mode === "high-contrast" ? HC_BAR_WIDTH_HC : HC_BAR_WIDTH_STD;
+  }
+  return tokenResolveBug(token.cssVar, token.source.tier,
+    "resolverGroup=hc-fidelity but cssVar is not an HC fidelity token");
+}
+
+/** Browser-additive effects group (Stage 2 §7). */
+function resolveBrowserFxGroup(token: ComponentToken, ctx: ResolveCtx): string {
+  if (token.cssVar === "--tv-brand-gradient") {
+    const brandHex = oklchToHex(ctx.inputs.anchors.brand);
+    const brandSolid = ctx.roles["brand-solid"] ?? brandHex;
+    // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
+    const brandRamp = ctx.ramps.brand;
+    const a = brandRamp[7] ?? brandSolid;
+    const b = brandRamp[9] ?? brandSolid;
+    return `linear-gradient(90deg, ${a} 0%, ${b} 100%)`;
+  }
+  if (token.cssVar === "--tv-glow-brand-color") {
+    // rgba from accent-solid at alpha 0.4.
+    const brandHex = oklchToHex(ctx.inputs.anchors.brand);
+    const accent = ctx.roles["accent-solid"] ?? brandHex;
+    if (accent.startsWith("#")) {
+      const h = accent.slice(1);
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, 0.4)`;
+    }
+    return accent;
+  }
+  if (token.cssVar === "--tv-glass-blur") {
+    // KNOWN DEBT (Pass 0d-iii): hardcoded constant defeats input-driven
+    // blur intensity; will read inputs.effects once the glass input lands.
+    return "16px";
+  }
+  return tokenResolveBug(token.cssVar, token.source.tier,
+    "resolverGroup=browser-fx but cssVar has no browser-fx resolver");
+}
+
+/** Anchor group — direct anchor hex with status-palette fallback. */
+function resolveAnchorGroup(token: ComponentToken, ctx: ResolveCtx): string {
+  if (token.source.tier !== "anchor") {
+    return tokenResolveBug(token.cssVar, token.source.tier,
+      "resolverGroup=anchor but source.tier is not anchor");
+  }
+  const anchorHex = pickAnchorHex(token.source.anchor, ctx.inputs);
+  if (anchorHex !== null) return anchorHex;
+  // Status anchors are optional inputs. When the theme doesn't set
+  // them, fall back to the BADGE_VARIANTS palette so badges/icons
+  // render correctly. The mapping mirrors theme-css.ts's v3 emission.
+  const statusFallback = STATUS_ANCHOR_FALLBACK[token.source.anchor];
+  if (statusFallback !== undefined) return statusFallback;
+  return tokenResolveBug(token.cssVar, token.source.tier,
+    `anchor=${token.source.anchor} not resolvable from inputs`);
+}
+
+/**
+ * The resolver table (wire-audit Pass 0d). One ResolverGroup = one
+ * ResolverFn; `resolveTokenValue` dispatches with a single Map lookup
+ * after the cross-cutting pre-filter (v3-bridge skip + token.modes
+ * HC/RT drop/swap). Replaces the former 15-branch waterfall whose
+ * by-cssVar / by-kind / by-tier interception order made the tier-switch
+ * dev-throws unreachable and silently mis-routed mis-tagged tokens.
+ */
+const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup, ResolverFn>([
+  ["v3-bridge", () => V3_BRIDGE_SENTINEL],
+  ["hc-fidelity", resolveHcFidelityGroup],
+  ["browser-fx", resolveBrowserFxGroup],
+  ["geometry", (t, ctx) =>
+    requireMatch(resolveGeometryComputed(t.cssVar, ctx.inputs), t, "geometry")],
+  ["effects", (t, ctx) =>
+    requireMatch(resolveEffectsComputed(t.cssVar, ctx), t, "effects")],
+  ["typography", (t, ctx) =>
+    requireMatch(resolveTypographyComputed(t.cssVar, ctx.inputs), t, "typography")],
+  ["shell-paper", (t, ctx) =>
+    requireMatch(resolveShellPaperComputed(t.cssVar, ctx), t, "shell-paper")],
+  ["elevation", (t, ctx) =>
+    requireMatch(resolveElevationComputed(t.cssVar, ctx), t, "elevation")],
+  ["texture", (t, ctx) =>
+    requireMatch(resolveTextureComputed(t.cssVar, ctx), t, "texture")],
+  ["knockout", (t, ctx) =>
+    requireMatch(resolveKnockoutComputed(t.cssVar, ctx), t, "knockout")],
+  ["density", (t, ctx) =>
+    tokenDensityPx(t.cssVar, ctx.inputs.density ?? "comfortable", ctx.inputs.density_factor)],
+  ["role", (t, ctx) => {
+    if (t.source.tier !== "role") {
+      return tokenResolveBug(t.cssVar, t.source.tier,
+        "resolverGroup=role but source.tier is not role");
+    }
+    return ctx.roles[t.source.role];
+  }],
+  ["anchor", resolveAnchorGroup],
+  ["const", (t) => {
+    if (t.source.tier === "const" && t.source.note?.includes("transparent")) {
+      return "transparent";
+    }
+    return tokenResolveBug(t.cssVar, t.source.tier,
+      `resolverGroup=const but note=${t.source.tier === "const" ? t.source.note : "(wrong tier)"}`);
+  }],
+]);
+
 function resolveTokenValue(
   token: ComponentToken,
-  resolved: {
-    roles: Record<RoleName, string>;
-    ramps: TokenRamps;
-    inputs: ThemeInputs;
-  },
+  resolved: ResolveCtx,
 ): string {
+  // ── Cross-cutting pre-filter (order preserved from the waterfall) ──────
   // V3-bridge short-circuit. Manifest entries that opt into theme-css.ts's
   // user-config-bridge tail skip resolution here and yield the sentinel;
   // `_emitV4CssVarsBody` drops it so the tail's own emission wins.
+  if (isV3BridgeToken(token)) return V3_BRIDGE_SENTINEL;
+
+  // Layer B — declarative token.modes drop/swap. Runs BEFORE the group
+  // dispatch for every token; a `drop`/`swap` replaces the base value.
+  const mode = resolved.inputs.mode;
+  if (mode === "high-contrast" && token.modes?.hc) {
+    const beh = token.modes.hc;
+    if (beh === "drop") return "transparent";
+    return resolved.roles[beh.swap];
+  }
+  if (mode === "reduced-transparency" && token.modes?.rt) {
+    const beh = token.modes.rt;
+    if (beh === "drop") return "transparent";
+    return resolved.roles[beh.swap];
+  }
+
+  // ── Group dispatch ──────────────────────────────────────────────────────
+  const group = token.resolverGroup;
+  if (group !== undefined) {
+    const fn = RESOLVERS.get(group);
+    if (!fn) {
+      return tokenResolveBug(token.cssVar, token.source.tier,
+        `resolverGroup=${group} has no registered resolver`);
+    }
+    return fn(token, resolved);
+  }
+
+  // Pass 0d-i migration fallback: entries without a resolverGroup ride the
+  // legacy waterfall. 0d-ii makes resolverGroup required and deletes this.
+  return resolveTokenValueLegacy(token, resolved);
+}
+
+/** LEGACY waterfall dispatch — Pass 0d-i keeps it as the fallback for
+ *  entries without `resolverGroup` and as the equivalence baseline for
+ *  the dispatch-parity test. Deleted in Pass 0d-ii.
+ *  Exported for tests only. */
+export function resolveTokenValueLegacy(
+  token: ComponentToken,
+  resolved: ResolveCtx,
+): string {
+  // V3-bridge short-circuit.
   if (isV3BridgeToken(token)) return V3_BRIDGE_SENTINEL;
 
   // Layer B — declarative token.modes drop/swap.
@@ -805,7 +979,9 @@ function pickAnchorHex(
  * facing fields (ramps, roles, roleSource) are exposed for the Cascade
  * Inspector + Spine UI.
  */
-export function resolveTheme(wire: ThemeWire): ResolvedTheme {
+/** Steps 1-4 of the cascade (validate → polarity → ramps → alphas →
+ *  roles). Shared by resolveTheme and the dispatch-parity test. */
+function runCascade(wire: ThemeWire) {
   // Inputs validation runs first so authoring mistakes (out-of-range
   // anchor triples, typo'd enum values, unknown effects intensity, ...)
   // surface as a structured error before the resolver wastes work or
@@ -851,6 +1027,21 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
     roleSource[role] = binding;
     roles[role] = resolveRoleValue(role, binding, ramps12, alphaRamps, offRamp, wire.inputs.mode);
   }
+
+  return { polarity, reflected, ramps12, alphaRamps, roles, roleSource };
+}
+
+/** Test-only: build the ResolveCtx the token resolvers receive for a
+ *  given wire. Used by the Pass 0d dispatch-parity test to compare the
+ *  group dispatch against the legacy waterfall token-by-token. */
+export function _buildResolveCtxForTest(wire: ThemeWire): ResolveCtx {
+  const { reflected, ramps12, roles } = runCascade(wire);
+  return { roles, ramps: ramps12, inputs: reflected };
+}
+
+export function resolveTheme(wire: ThemeWire): ResolvedTheme {
+  const { polarity, reflected, ramps12, alphaRamps, roles, roleSource } =
+    runCascade(wire);
 
   // Emit the CSS-var map by walking the manifest.
   const cssVars = {} as Record<string, string>;
