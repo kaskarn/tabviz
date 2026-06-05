@@ -32,6 +32,8 @@ website:
           - text: "Gallery Overview"
             href: gallery/index.qmd
           - text: "---"
+          - text: "The Preset Gallery"
+            href: gallery/presets.qmd
           - text: "Long Meta-Analysis"
             href: gallery/meta-analysis.qmd
           - text: "Domain Dashboards"

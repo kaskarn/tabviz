@@ -108,7 +108,9 @@ web_theme(
 |---|---|---|---|
 | `brand` | hex | `"#0099CC"` | Required identity seed. Powers the brand ramp and identity tokens. |
 | `accent` | hex | `NULL` | Engagement layer (hover, selected, callouts). Mirrors `brand` when unset. |
-| `decorative` | hex | `NULL` | Optional second color for editorial two-color themes (alt-row tint, divider hue, row-group L1 band). |
+| `ink2` | hex / oklch | `NULL` | Rubrication ink (editorial second color) — seeds the accent ramp with precedence over `accent`; drives significance stars and caption chips. |
+| `marks` | list | `NULL` | Viz-mark identity: `point_shape`, `interval_weight`. |
+| `effects` | list | `NULL` | Glow / gradient shell / elevation / glass / caption, header, title styles. |
 | `mode` | string | `"light"` | `"light"` or `"dark"`. |
 | `ink2` | hex / oklch | `NULL` | Rubrication ink — seeds the accent ramp with precedence over `accent`. |
 | `polarity` / `monochrome` | string / flag | `"light"` / `FALSE` | L-reflection axis; brand-hued neutral ramp. Use [tint_from_brand()] to nudge hues instead. |
@@ -167,7 +169,7 @@ set_inputs(
 | `theme` | `WebTheme` | Theme to modify |
 | `brand` | hex | Identity seed (markers, identity tokens). Derives the brand ramp |
 | `accent` | hex | Engagement layer — hover, selected, semantic callouts, selection edge. Mirrors `brand` when unset |
-| `decorative` | hex | Optional second color (alt-row tint, divider hue, row-group L1 band) |
+| `ink2` | hex / oklch | Rubrication ink — seeds the accent ramp (stars, chips) |
 | `mode` | `"light"` / `"dark"` | Light or dark canvas |
 | `ink2` / `monochrome` | hex / flag | Rubrication anchor; brand-hued neutrals |
 | `categorical` / `sequential` / `diverging` | string | Data-palette scheme names |

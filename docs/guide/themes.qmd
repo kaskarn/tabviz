@@ -101,62 +101,66 @@ category, a `Current` tab is prepended.
 
 ## Step 2: Tweak inputs
 
-Every theme — including every preset — is determined by **a small set of customer-facing inputs** on `ThemeInputs`. They split into three logical groups:
+Every theme — including every preset — is determined by the **V4 Tier-1
+inputs**: a handful of OKLCH color anchors plus orthogonal axes for
+polarity, accessibility, typography, density, geometry, marks, and effects.
 
 | Group | Input | What it controls |
 |-------|-------|------------------|
-| Chrome | `neutral` | 5-step ramp, lightest → darkest. Drives surfaces, dividers, content. |
-|  | `primary` + `primary_deep` | Primary identity (markers, accents) and its dark companion (text, strokes, bold-mode header band). `primary_deep` auto-derives by darkening `primary` when left `NA`. |
-|  | `secondary` + `secondary_deep` | Secondary identity. Owns chrome texture (`surface.muted`, dividers, banding, gridlines) and structural defaults (column-group bold band, L1/L2/L3 row-group bg, glyph-column defaults). Mirrors `primary` when left `NA`. |
-|  | `accent` + `accent_deep` | Engagement layer — orthogonal to identity. Drives hover, selected, semantic row callouts, selection edge. |
-|  | `status_positive` / `status_negative` / `status_warning` / `status_info` | Semantic status colors. |
-| Data | `series_anchors` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
-|  | `slot_style` | How each `SlotBundle`'s fill / stroke pair relate. One of `"fill_with_darker_stroke"` (default), `"flat_fill"`, `"outlined"`. |
-| Type | `fonts_body` | Primary face for cells, headers, labels. |
-|  | `fonts_display` | Optional title face. Mirrors `fonts_body` when `NA`. |
-|  | `fonts_mono` | Optional monospace face (e.g. for IDs). |
+| Anchors | `paper` | Light-end neutral anchor. The neutral ramp interpolates paper → ink; surfaces, dividers, and body text all derive from it. |
+|  | `ink` | Dark-end neutral anchor (text, strong rules). |
+|  | `brand` | The identity hue. Seeds the brand ramp: headers, gradients, series slot 1, title color. |
+|  | `accent` | Optional engagement hue — hover, selected, callouts, highlight bar. Mirrors brand when unset. |
+|  | `ink2` | Optional **rubrication ink**. When set it seeds the accent ramp with precedence over `accent` — the editorial channel for significance stars and caption chips, without tinting interaction states by accident. |
+| Axes | `polarity` | `"light"` / `"dark"` — reflects every anchor's lightness around the midpoint. |
+|  | `monochrome` | The neutral ramp rides the brand hue (phosphor / sepia / cyanotype themes in one toggle). |
+|  | `mode` | Accessibility: `"standard"` / `"high-contrast"` / `"reduced-transparency"`. Orthogonal to polarity. |
+| Status | `status_positive` … `status_info` | Semantic palette. Theme-scoped identity (synthwave's neon vs a journal's clinical green); reverts to a curated HC-safe palette under high-contrast mode. |
+| Type | `fonts_body` / `fonts_display` / `fonts_mono` | Font stacks; `fonts_display` mirrors body when unset. `type_base_size`, `type_scale_ratio`, and `type_weights` shape the 9-role size/weight matrix. |
+| Size | `density` (+ `density_factor`) | Spacing preset plus a continuous multiplier — identity-bearing for some presets (brutalist runs 0.88). |
+|  | `geometry` | Radius scale (`sm/md/lg/pill`) and border-width scale (`hair/thin/regular/thick`). |
+| Shell | `shell_mode` / `shell_texture` | The two-surface model: a shell band around the paper (flush / raised / float / transparent) and its texture (ruled / grid / dotted / grain). Textures fall through to the paper when the shell has no band. |
+| Marks | `marks` | Viz-mark identity: `point_shape` (circle / square / diamond / triangle) and `interval_weight` (hair / regular / thick). |
+| Effects | `effects` | Glow, gradient shell, elevation, glass (frosted / aurora), caption style (chip / stripe / both), header and title styles. |
+| Data | `categorical` / `sequential` / `diverging` | Data palette schemes for multi-effect series. |
 
-Build a custom theme by overriding any of these:
+Build a custom theme by passing any of these to `web_theme()` — anchors
+accept hex strings or `oklch()` triples:
 
 ```{r}
 #| eval: false
 my_theme <- web_theme(
-  name = "my-brand",
-  inputs = list(
-    brand          = "#1F3A5F",   # navy
-    accent         = "#B08938",   # warm gold
-    fonts_body      = "Charter, Georgia, serif"
-  )
+  name   = "my-brand",
+  brand  = "#1F3A5F",                       # navy identity
+  accent = "#B08938",                       # warm gold engagement
+  ink2   = "#862721",                       # oxblood rubrication
+  fonts_body = "Charter, Georgia, serif",
+  density = "comfortable",
+  effects = list(title_style = "bar")
 )
 ```
 
-`web_theme()` starts from `web_theme_cochrane()` unless you pass a different `base_theme`. Anything you *don't* set inherits from the base.
+Defaults are predictable: `accent` mirrors `brand`; `ink2` falls back to
+`accent`; `fonts_display` mirrors `fonts_body`; paper/ink default to a
+clinical near-white / near-black pair carrying the brand hue at low chroma.
 
-The deep companions and secondary tier follow predictable defaults:
+### What each anchor actually drives
 
-* `primary_deep` auto-derives by darkening `primary` when left `NA` (override when you want a richer bold-mode header band or a journal-specific stroke).
-* `secondary` mirrors `primary` when `NA`; `secondary_deep` mirrors `secondary`'s deep companion.
-* `accent_deep` mirrors `accent`.
-* `fonts_display` mirrors `fonts_body`.
+* **`paper` → `ink`** define the neutral ramp — eleven OKLCH steps that
+  every surface tone, divider, and text color binds to. Tint them
+  (`paperC` / `inkC` in `derive_preset_anchors()`, or [tint_from_brand()])
+  for warm-paper editorial looks.
+* **`brand`** seeds the brand ramp: header bands, the brand gradient
+  (caption stripe, title underline), series slot 1, and the pooled-effect
+  diamond.
+* **`accent`** owns the *engagement layer* — hover, selected, semantic
+  callouts, the highlight bar. Keep it visually distinct from brand.
+* **`ink2`** seeds the accent ramp with precedence when set — so
+  significance stars (`col_pvalue(stars = TRUE)`) and caption chips pick
+  up the rubrication ink while the rest of the theme stays disciplined.
 
-The pooled-effect diamond reads from the first series slot bundle (`theme@series[[1]]`). Override `series_anchors[1]` to recolor it; reach into `theme@series[[1]]@stroke` directly for a journal-specific outline.
-
-### What `primary_deep` actually drives
-
-`primary_deep` is the dark identity tone — meant to land on text and rules
-where you want the primary to read as serious, not decorative. The resolver
-threads it into:
-
-* Plot title color (`text@title@fg`)
-* Forest-axis label and tick-label colors (`plot@axis_label@fg`, `plot@tick_label@fg`)
-* Cell-hairline tint — `divider@subtle` is `neutral[3]` mixed with 8% `primary_deep`, so cell borders pick up a faint identity color without muddying out
-* Bold-mode header band (`header@bold@bg`) and column-group bold band
-* Bold-mode header rule (`header@bold@rule`) via the new `divider@strong_on_dark` helper — a 40%-deep / 60%-inverse mix that contrasts against the band instead of disappearing into it
-* L1 group bar — but **only** when the active variant is `header_style = "bold"`. Under light-mode the L1 bar stays on `accent.tint_subtle` (chrome/data wall: primary only "leaks" into chrome when you've chosen brand-forward chrome).
-
-To pin any of these, set the field directly via `set_theme_field()` and
-your value survives re-resolution. The interactive panel surfaces the same
-override semantics as a per-field reset icon.
+To pin any *derived* field directly, use `set_theme_field()` — explicit
+pins survive re-resolution.
 
 ### L1 group header and banding
 
@@ -244,17 +248,16 @@ Variants are per-table choices that don't change the theme's identity. They're o
 ```{r}
 #| eval: false
 web_theme(
-  inputs = list(brand = "#1F3A5F"),
-  variants = list(
-    density            = "comfortable",   # compact | comfortable | spacious
-    header_style       = "bold",          # light  | bold
-    first_column_style = "bold"           # default | bold (Excel-style)
-  )
+  brand              = "#1F3A5F",
+  density            = "comfortable",   # compact | comfortable | spacious
+  header_style       = "tint",          # light | tint | bold (legacy variant)
+  first_column_style = "bold",          # default | tint | bold (Excel-style)
+  effects = list(header_style = "fill") # Tier-1 form — supersedes the variant
 )
 ```
 
 * **`density`** drives every spacing token (row height, padding, gaps). The three presets cover almost every screen and print scenario.
-* **`header_style`** picks between a light header on the muted surface and a bold header on `primary_deep` with inverse text. Both options are *always available* on every theme — you flip the variant per table.
+* **`header_style`** picks between a light header, a brand-tinted band, and a solid-ink fill band with inverse text. Prefer the Tier-1 input (`effects = list(header_style = "fill")`), which supersedes the legacy variant; both are always available on every theme.
 * **`first_column_style`** gives the row-label column an Excel-style emphasized treatment (background tint + heavier weight). Useful when your first column is genuinely a label, not data.
 
 You can also set variants directly on the `tabviz()` call as overrides (see [tabviz reference](../reference/tabviz.qmd)).
@@ -266,36 +269,35 @@ A theme has three tiers. You only ever interact with Tier 1; the other tiers are
 ```{mermaid}
 flowchart TB
     subgraph T1["Tier 1 — Inputs (you edit these)"]
-      neutral & primary & accent & series & fonts & density
+      anchors["anchors: paper · ink · brand · accent · ink2"] & axes["polarity · monochrome · mode"] & rest["fonts · density · geometry · marks · effects"]
     end
 
-    subgraph T2C["Tier 2 — Chrome roles (derived)"]
-      surface[surface.base / muted / raised]
-      content[content.primary / secondary / muted / inverse]
-      divider[divider.subtle / strong]
-      tints[accent.default / muted / tint.subtle / tint.medium]
+    subgraph T0["Ramps (generated)"]
+      ramps["neutral / brand / accent — 11 OKLCH steps each + alpha companions"]
     end
 
-    subgraph T2D["Tier 2 — Data roles (derived)"]
-      slots[per-series SlotBundle: fill, stroke, fill.muted, ...]
+    subgraph T2["Tier 2 — Roles (derived)"]
+      roles["surface · text · border · accent-solid · highlight · status · series slots"]
     end
 
-    subgraph T3["Tier 3 — Component bindings"]
-      header & row & cell & rowGroup & plot & marks
+    subgraph T3["Tier 3 — Component tokens (the wire)"]
+      tokens["~150 --tv-* CSS variables: row, header, cell, plot, shell, glass, caption …"]
     end
 
-    T1 --> T2C
-    T1 --> T2D
-    T2C --> T3
-    T2D --> T3
+    T1 --> T0 --> T2 --> T3
 
     style T1 fill:#dbeafe
-    style T2C fill:#dcfce7
-    style T2D fill:#fef3c7
+    style T0 fill:#fef3c7
+    style T2 fill:#dcfce7
     style T3 fill:#f3e8ff
 ```
 
-**Two cascades, sharing only Tier 1.** Chrome derivation reads only chrome inputs (neutrals + primary + accent). Data derivation reads only data inputs (series anchors + status). Series anchors never affect surface tones; primary colors never bleed into row-group divider tints. This isolation makes themes predictable: changing `series_anchors` cannot accidentally shift the column-header background.
+**One declarative pipeline.** Anchors expand into ramps; roles bind to
+ramp grades; every component token declares which resolver realizes it.
+Polarity reflection happens at the anchor level (one place); high-contrast
+mode remaps roles and drops effects at resolve time. Changing `brand`
+re-derives everything brand-touched and nothing else — explicit pins
+survive re-resolution.
 
 **OKLCH derivation.** All blends, lightenings, and darkenings happen in OKLCH (perceptually uniform). The result: tints stay readable across the brightness range, and high-chroma brands don't mud out when blended with surfaces.
 
@@ -321,13 +323,22 @@ Three pipe-friendly modifiers cover the common edits:
 ```{r}
 #| eval: false
 custom <- web_theme_jama() |>
-  set_inputs(brand = "#1F3A5F", accent = "#B08938") |>
+  set_brand("#1F3A5F") |>
+  set_accent("#B08938") |>
   set_density("comfortable") |>
-  set_header_style("bold") |>
+  set_effects(header_style = "fill", title_style = "bar") |>
   set_spacing(row_height = 28, axis_gap = 14)
 ```
 
-* **`set_inputs(theme, ...)`** — update Tier 1 inputs. Cascade-aware: changing `primary` clears `primary_deep` so it re-derives; changing `series_anchors` rebuilds the slot bundles.
+* **Focused setters** — one verb per axis: `set_brand()`, `set_accent()`,
+  `set_ink2()`, `set_paper()`, `set_ink()`, `set_polarity()`,
+  `set_monochrome()`, `set_mode()`, `set_density()`, `set_geometry()`,
+  `set_curves()`, `set_effects()`, `set_status()` /
+  `set_status_palette()`, and `tint_from_brand()` (nudges paper / ink /
+  accent / ink2 hues toward brand in one move).
+* **`set_inputs(theme, ...)`** — multi-input escape hatch; accepts anchor
+  names as hex/oklch plus any flat `ThemeInputs` slot. Cascade-aware:
+  every change re-resolves with pins preserved.
 * **`set_density(theme, x)`**, **`set_header_style(theme, x)`**, **`set_first_column_style(theme, x)`**  per-table variant setters. `set_density` re-resolves (drives spacing tokens); the style setters flip a post-resolution variant.
 * **`set_spacing(theme, ...)`** — per-token spacing override on top of the density preset. Set what you care about; the rest follow density.
 
@@ -391,15 +402,18 @@ Other spacing tokens (`header_height`, `axis_gap`, `header_gap`, `footer_gap`, e
 
 ### Typography roles
 
-A theme exposes eight named text roles:
+A theme exposes nine named text roles, each emitting
+`--tv-text-<role>-{family,size,weight}` tokens from the modular scale
+(`type_base_size` × `type_scale_ratio`^n):
 
 | Role | Used for |
 |------|----------|
 | `title` | Plot title (display family, large, semibold) |
 | `subtitle` | Subtitle (body family, medium) |
-| `caption` | Italic caption above the plot |
+| `caption` | Caption above the plot |
 | `footnote` | Footnote below the plot |
 | `body` | Default body text (cells, headers when not bold) |
+| `numeric` | Numeric cells (tabular figures) |
 | `cell` | Data cell text (defaults to body) |
 | `label` | Axis labels |
 | `tick` | Axis tick labels (smaller) |
@@ -413,65 +427,44 @@ web_theme_cochrane() |>
   set_theme_field(c("text", "title", "italic"), TRUE)
 ```
 
-## The seven presets — when to use which
+## The twenty-seven presets — when to use which
 
-The four journal presets are the workhorses; the three LOTR presets exercise the full surface (display fonts, secondary tier, distinctive accents) and are great for talks, blog posts, or themed reports where you want personality without hand-rolling a brand theme.
+The roster spans five categories — **journals** (Cochrane, Lancet, JAMA,
+NEJM, Nature, BMJ), **modes** (dark), **design traditions** (Bauhaus,
+Swiss, Tufte, Newsprint, Solarized ×2, Tonal ×2), **Middle-earth**
+(Dwarven, Elvish, Hobbit), and the **showcase** set that exercises the
+full effects surface (Synthwave, Brutalist, Atelier, Executive, Ledger,
+Terminal, Aurora, Blueprint, Sunprint).
+
+Every preset is rendered side-by-side on one fixture in
+[**the Preset Gallery**](../gallery/presets.qmd) — start there. Identity
+is enforced: a CI distinctness gate guarantees no two presets share an
+anchor tuple, and the roster spreads typography, density, radius, mark
+shapes, and effects rather than just hue.
+
+The everyday recipe is *preset + one brand swap*:
 
 ```{r}
 #| eval: false
-forest_args <- list(
-  label = "study",
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1)
-  )
-)
-
-# --- Journal presets --------------------------------------------------------
-
-# Cochrane — package default; teal + warm coral, comfortable density
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_cochrane())))
-
-# Lancet — navy + old-gold + warm cream, Georgia serif
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_lancet())))
-
-# JAMA — black-and-white, ultra-compact, strong dividers, Arial
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_jama())))
-
-# Dark mode — Catppuccin Mocha-inspired
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_dark())))
-
-# Slide deck variant — any preset can flip to spacious density
-do.call(tabviz, c(list(meta_data), forest_args,
-                  list(theme = web_theme_cochrane() |> set_density("spacious"))))
-
-# --- LOTR illustrative presets ---------------------------------------------
-
-# Dwarven — stone neutrals, forge-glow accent, broad serif display
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_dwarven())))
-
-# Elvish — twilight surface, mithril silvers, calligraphic serif
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_elvish())))
-
-# Hobbit — parchment + green, hand-set body face, hearth accent
-do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_hobbit())))
+theme = set_brand(web_theme_ledger(), "#1F3A5F")
 ```
 
 See the [Gallery → LOTR Easter Egg](../gallery/lotr.qmd) page for a worked LOTR example.
 
 ## Editing themes interactively
 
-Every rendered table carries a settings gear. The in-widget panel exposes the v2 theme model under five tabs:
+Two surfaces, deliberately split:
 
-| Tab | Edits |
-|-----|-------|
-| **Theme** | Tier 1 inputs — primary, secondary, accent, status, series anchors, fonts |
-| **Layout** | Variants (density / header style / first column style), banding, container border |
-| **Spacing** | Per-token overrides on top of the density preset (collapsed Advanced section) |
-| **Marks** | Series slot bundles (anchor + expandable 7-field editor), summary slot, plot mark sizes |
-| **Text** | Eight text-role bundles + L1/L2/L3 row-group accordions |
-
-The "View source" button exports your edits as v2 R code (`web_theme(inputs = list(...))` or a chain of `set_*()` calls), so panel exploration translates back into reproducible theme construction.
+* **The widget cog** is the *everyday* surface: theme switcher in the
+  toolbar plus a curated drawer (polarity + density). Quick flips, not
+  theme design.
+* **The Studio** ([open it here](../studio.qmd)) is the *forge*:
+  LCH-native anchor sliders (paper / ink / brand / accent / ink2), a
+  five-tab rail (Color / Type / Size / Shell / Effects), a "Match brand"
+  one-click hue alignment, 50-step undo, and a live cascade
+  visualization. **Alt+click any element in the preview** to trace which
+  theme token paints it. "Copy R code" exports your edits as a
+  reproducible `web_theme()` / `set_*()` chain.
 
 ## Saving a custom theme as a function
 
@@ -481,17 +474,16 @@ For team-wide use, wrap your custom theme in a named function:
 #| eval: false
 web_theme_acme <- function() {
   web_theme(
-    name = "acme",
-    inputs = list(
-      neutral        = c("#FFFFFF", "#FAFAFA", "#EEEEEE", "#888888", "#222222"),
-      brand          = "#FF5500",
-      primary_deep     = "#CC3300",
-      accent         = "#0066CC",
-      fonts_body      = "Inter, system-ui, sans-serif",
-      fonts_display   = "'Inter Display', Inter, system-ui, sans-serif"
-    ),
-    variants = list(density = "comfortable", header_style = "bold")
-  )
+    name   = "acme",
+    brand  = "#FF5500",
+    accent = "#0066CC",
+    ink2   = "#CC3300",
+    fonts_body    = "'Source Sans 3', system-ui, sans-serif",
+    fonts_display = "'Fraunces', Georgia, serif",
+    density = "comfortable",
+    effects = list(header_style = "tint")
+  ) |>
+    tint_from_brand("subtle")
 }
 
 # Now share it across the team
@@ -507,14 +499,23 @@ my_table |> set_theme(web_theme_acme())
 
 ## Reference summary
 
-* `web_theme()` — custom-theme constructor (inputs + variants + base).
-* `web_theme_*()` — 7 preset constructors (`cochrane`, `lancet`, `jama`, `dark`, `dwarven`, `elvish`, `hobbit`).
-* `package_themes()` — 2-level named list (`journals` / `lotr`) of all preset constructors.
-* `set_theme(spec, theme)` — switch a `WebSpec` to a different theme.
-* `set_inputs(theme, ...)` — update Tier 1 inputs.
-* `set_density()` / `set_header_style()` / `set_first_column_style()`  per-table variant setters.
+* `web_theme()` — custom-theme constructor: anchors (hex or `oklch()`)
+  + polarity / monochrome / mode + fonts + density + geometry + marks +
+  effects + status.
+* `web_theme_*()` — 27 preset constructors across journals / modes /
+  design / lotr / showcase ([Preset Gallery](../gallery/presets.qmd)).
+* `package_themes()` — categorized named list of every preset.
+* `set_theme(spec, theme)` — switch a `WebSpec` (or a live proxy) to a
+  different theme.
+* Focused setters — `set_brand()` `set_accent()` `set_ink2()`
+  `set_paper()` `set_ink()` `set_polarity()` `set_monochrome()`
+  `set_mode()` `set_density()` `set_geometry()` `set_curves()`
+  `set_effects()` `set_status()` `set_status_palette()`
+  `tint_from_brand()`.
+* `set_inputs(theme, ...)` — multi-input escape hatch.
 * `set_spacing(theme, ...)` — per-token spacing overrides.
-* `set_theme_field(theme, path, value)` — generic deep setter.
+* `set_theme_field(theme, path, value)` — generic deep setter; pins
+  survive re-resolution.
 * `selectable_themes(spec, themes)` — curate the in-widget theme switcher.
 
 For complete argument lists and class definitions see the [Themes reference](../reference/themes.qmd).
