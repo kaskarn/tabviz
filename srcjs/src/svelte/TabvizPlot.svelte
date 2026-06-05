@@ -274,7 +274,20 @@
   // Create reactive dependency on columnWidths to trigger re-render when widths change
   const columnWidthsSnapshot = $derived({ ...store.columnWidths });
 
-  // Container refs for dimension tracking
+  // Container refs for dimension tracking.
+  //
+  // containerRef — CANONICALLY THE OUTER ROOT (`.tabviz-container.tabviz-scope`),
+  // locked per wire-audit-plan D2 (Round 2 C3 flip). It is simultaneously:
+  //   - the click/keyboard target for paint mode
+  //   - the dnd hit-test root (ColumnDragHandle `root={containerRef}` × 3)
+  //   - the overlay coordinate origin (TabvizOverlays)
+  //   - the ResizeObserver / IntersectionObserver target
+  //   - the widget.root for dispatchLifecycle + reportLayoutMeasurements
+  //   - the DOM-id source for store.setContainerElementId
+  // All of these want the event/measurement anchor, NOT the content rect.
+  // When the V4 shell/paper wrap lands (wire-audit-plan Pass 1a), containerRef
+  // STAYS here; add a separate `paperRef` bound to `.tv-paper` if a consumer
+  // needs the clean content rect. Do not repoint containerRef.
   let containerRef: HTMLDivElement | undefined = $state();
   let scalableRef: HTMLDivElement | undefined = $state();
 
@@ -1305,9 +1318,28 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+<!-- WIDGET ROOT — `.tabviz-container.tabviz-scope` (D1: sibling class, same node;
+     `.tabviz-scope` is the selector namespace theme-runtime.css keys on).
+
+     V4 WRAP CONTRACT (wire-audit-plan Pass 0a, executes in Pass 1a):
+     the shell/paper wrap encloses ONLY `.tabviz-scalable` —
+       .tabviz-container.tabviz-scope        ← root: cssVars, state classes,
+         ControlToolbar                        containerRef, data-* attrs
+         SettingsPanel
+         .tv-shell                           ← shell chrome (texture/glow/strip)
+           .tv-paper                         ← paper surface
+             .tabviz-scalable                ← existing content, moves here
+         TabvizOverlays / RowEdgeHandles     ← stay at root level
+     Toolbar/panels/overlays are positioned chrome anchored to the root; they
+     never move into the paper. Consequence (verified 2026-06-04): every
+     `:global(.tabviz-container > .control-toolbar ...)` direct-child selector
+     stays valid unchanged, and all `.tabviz-scalable` selectors are descendant
+     — ZERO selector rewrites are required for the wrap. Keep it that way:
+     new selectors touching toolbar/overlay chrome anchor `> X` on the root;
+     new selectors touching table content anchor under `.tv-paper`. -->
 <div
   bind:this={containerRef}
-  class="tabviz-container"
+  class="tabviz-container tabviz-scope"
   class:auto-fit={autoFit}
   class:has-aspect-pin={store.targetAspect != null}
   class:has-max-width={maxWidth !== null}
