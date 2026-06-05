@@ -27,7 +27,7 @@ import { buildThemeStructure } from "./theme-resolve";
 import { applyPolarityToInputs } from "./resolve-theme";
 import { rampStep, oklchMix, oklchDarken, oklchToHex } from "../oklch";
 import type {
-  WebTheme, Surfaces, Content, Dividers, AccentRoles,
+  WebTheme, AccentRoles,
   StatusColors, Semantics, SlotRole, TextRole, TextRoles,
   SpacingTokens, AnnotationCluster, HeaderCluster, RowGroupCluster,
   RowCluster, CellCluster, FirstColumnCluster, PlotScaffold,
@@ -107,24 +107,6 @@ export function buildTheme(
     density: inputs.density ?? "comfortable",
     headerStyle: "light",
     firstColumnStyle: "default",
-  };
-
-  const surface: Surfaces = {
-    base: t.paper,
-    muted: t.paper_sunken,
-    raised: t.paper_raised,
-  };
-
-  const content: Content = {
-    primary: t.ink,
-    secondary: t.ink_subtle,
-    muted: t.ink_muted,
-    inverse: t.brand_ink,
-  };
-
-  const divider: Dividers = {
-    subtle: t.rule_subtle,
-    strong: t.rule_strong,
   };
 
   const accentRoles: AccentRoles = {
@@ -314,9 +296,6 @@ export function buildTheme(
     axis,
     layout,
     borders,
-    surface,
-    content,
-    divider,
     accent: accentRoles,
     status,
     semantic,

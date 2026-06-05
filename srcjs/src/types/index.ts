@@ -1341,9 +1341,6 @@ export interface WidgetInstance {
 // See `./theme-resolved.ts` for the full v2 type tree.
 export type {
   ThemeVariants,
-  Surfaces,
-  Content,
-  Dividers,
   AccentRoles,
   StatusColors,
   SlotRole,

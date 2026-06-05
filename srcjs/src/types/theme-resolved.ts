@@ -138,24 +138,6 @@ export interface ThemeVariants {
 // Tier 2 — chrome roles
 // ────────────────────────────────────────────────────────────────────
 
-export interface Surfaces {
-  base: string;
-  muted: string;
-  raised: string;
-}
-
-export interface Content {
-  primary: string;
-  secondary: string;
-  muted: string;
-  inverse: string;
-}
-
-export interface Dividers {
-  subtle: string;
-  strong: string;
-}
-
 export interface AccentRoles {
   default: string;
   muted: string;
@@ -418,17 +400,9 @@ export interface WebTheme {
   axis: AxisConfig;
   layout: Layout;
   borders: ThemeBorders;
-  // Tier 2 — chrome. Populated by buildTheme; values match the v4
-  // manifest's resolved colors (small precision drift from the v3
-  // resolver pre-cutover is documented but invisible to consumers
-  // since no Svelte/CSS path reads these anymore). They remain on
-  // WebTheme because R-side S7 `tabviz::WebTheme` mirrors this shape
-  // for slot @surface/@content/@divider reads in R consumers
-  // (inspect-resolved.R, tests). Future cleanup: drop the R slots,
-  // then drop these.
-  surface: Surfaces;
-  content: Content;
-  divider: Dividers;
+  // V4: surface/content/divider chrome fields dropped — consumers read
+  // them via the v4 cssVar manifest (`--tv-surface-bg`, `--tv-text`,
+  // `--tv-border`, `--tv-cell-border`, …). R-side S7 WebTheme mirrors.
   accent: AccentRoles;
   status: StatusColors;
   semantic: Semantics;

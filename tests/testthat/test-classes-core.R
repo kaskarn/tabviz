@@ -171,7 +171,7 @@ test_that("web_theme_jama creates valid theme", {
   theme <- web_theme_jama()
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "jama")
-  expect_match(theme@content@primary, "^#[0-9A-Fa-f]{6}$")
+  expect_match(unname(theme_css_vars(theme)["--tv-text"]), "^#[0-9A-Fa-f]{6}$")
   # V4: jama brand is black (L = 0, C = 0). Anchor presence sufficient.
   expect_equal(theme@inputs@anchors_brand_L, 0)
 })

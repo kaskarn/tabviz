@@ -9,9 +9,10 @@ test_that("borders default to horizontal layout with minor=subtle divider", {
   expect_equal(th@borders@layout, "horizontal")
   expect_equal(th@borders@minor@thickness, 1)
   expect_equal(th@borders@minor@style, "single")
-  expect_equal(th@borders@minor@color, th@divider@subtle)
-  expect_equal(th@borders@major@color, th@divider@strong)
-  expect_equal(th@borders@table@color, th@divider@strong)
+  cv <- theme_css_vars(th)
+  expect_equal(th@borders@minor@color, unname(cv["--tv-cell-border"]))
+  expect_equal(th@borders@major@color, unname(cv["--tv-border"]))
+  expect_equal(th@borders@table@color, unname(cv["--tv-border"]))
 })
 
 test_that("serialize_theme emits the borders wire block", {

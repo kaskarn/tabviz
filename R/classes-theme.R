@@ -278,53 +278,6 @@ ThemeInputs <- new_class(
 
 # -- Tier 2: chrome semantic roles ---------------------------------------
 
-#' Surfaces (Tier 2): table surface tones.
-#' @usage NULL
-#' @export
-Surfaces <- new_class(
-  "Surfaces",
-  properties = list(
-    base   = new_property(class_character, default = NA_character_),
-    muted  = new_property(class_character, default = NA_character_),
-    raised = new_property(class_character, default = NA_character_)
-  ),
-  validator = make_color_validator(c("base", "muted", "raised"))
-)
-
-#' Content (Tier 2): text/foreground role tokens.
-#' @usage NULL
-#' @export
-Content <- new_class(
-  "Content",
-  properties = list(
-    primary   = new_property(class_character, default = NA_character_),
-    secondary = new_property(class_character, default = NA_character_),
-    muted     = new_property(class_character, default = NA_character_),
-    inverse   = new_property(class_character, default = NA_character_)
-  ),
-  validator = make_color_validator(c("primary", "secondary", "muted", "inverse"))
-)
-
-#' Dividers (Tier 2): rule and gridline tones.
-#'
-#' `subtle` powers cell hairlines and gridlines. `strong` powers header
-#' rules, group rules, and the forest-plot axis line / tick / reference
-#' lines on light surfaces. Rules sitting on dark bold-mode bands
-#' (`header.bold`, `column_group.bold`) are derived per-cluster at resolve
-#' time as `mix(content.inverse, <cluster-bg>, 0.4)` so each contrasts
-#' against its own band -- there is no global "strong-on-dark" token.
-#'
-#' @usage NULL
-#' @export
-Dividers <- new_class(
-  "Dividers",
-  properties = list(
-    subtle = new_property(class_character, default = NA_character_),
-    strong = new_property(class_character, default = NA_character_)
-  ),
-  validator = make_color_validator(c("subtle", "strong"))
-)
-
 #' AccentRoles (Tier 2): chrome accent + tint ramp.
 #' @usage NULL
 #' @export
@@ -962,9 +915,9 @@ WebTheme <- new_class(
     inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
 
     # Tier 2 (derived; NA until the TS cascade runs)
-    surface = new_property(Surfaces,      default = Surfaces()),
-    content = new_property(Content,       default = Content()),
-    divider = new_property(Dividers,      default = Dividers()),
+    # Note: surface/content/divider chrome slots were dropped in the
+    # V3→V4 cutover. Callers read those values via `theme_css_vars(theme)`
+    # — `--tv-surface-bg`, `--tv-text`, `--tv-border`, `--tv-cell-border`, etc.
     accent  = new_property(AccentRoles,   default = AccentRoles()),
     status   = new_property(StatusColors, default = StatusColors()),
     semantic = new_property(Semantics,    default = Semantics()),

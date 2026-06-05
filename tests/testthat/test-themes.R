@@ -20,8 +20,9 @@ test_that("every preset constructs a valid WebTheme", {
     expect_true(is.finite(t@inputs@anchors_brand_L))
     expect_true(is.finite(t@inputs@anchors_brand_C))
     expect_true(is.finite(t@inputs@anchors_brand_H))
-    expect_match(t@surface@base, "^#[0-9A-Fa-f]{6}$")
-    expect_match(t@content@primary, "^#[0-9A-Fa-f]{6}$")
+    cv <- theme_css_vars(t)
+    expect_match(unname(cv["--tv-surface-bg"]), "^#[0-9A-Fa-f]{6}$")
+    expect_match(unname(cv["--tv-text"]), "^#[0-9A-Fa-f]{6}$")
   }
 })
 

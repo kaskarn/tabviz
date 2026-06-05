@@ -3482,9 +3482,6 @@ function validateSpec(spec: unknown): asserts spec is WebSpec {
   }
 
   const theme = s.theme as Record<string, unknown>;
-  if (!theme.surface || typeof theme.surface !== "object") {
-    throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.surface'");
-  }
   if (!theme.text || typeof theme.text !== "object") {
     throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.text'");
   }

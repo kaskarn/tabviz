@@ -161,19 +161,8 @@ deserialize_resolved_theme <- function(x) {
   inputs <- ThemeInputs()
 
   # ---- Tier 2: chrome roles ----
-  s <- x$surface %||% list()
-  surface <- Surfaces(
-    base = .coerce_chr(s$base), muted = .coerce_chr(s$muted), raised = .coerce_chr(s$raised)
-  )
-  c <- x$content %||% list()
-  content <- Content(
-    primary   = .coerce_chr(c$primary),
-    secondary = .coerce_chr(c$secondary),
-    muted     = .coerce_chr(c$muted),
-    inverse   = .coerce_chr(c$inverse)
-  )
-  d <- x$divider %||% list()
-  divider <- Dividers(subtle = .coerce_chr(d$subtle), strong = .coerce_chr(d$strong))
+  # V4: surface/content/divider chrome dropped from the R S7 class.
+  # Callers read those values via `theme_css_vars(theme)`.
   a <- x$accent %||% list()
   accent <- AccentRoles(
     default     = .coerce_chr(a$default),
@@ -358,9 +347,6 @@ deserialize_resolved_theme <- function(x) {
     web_fonts       = web_fonts,
     light_dark_pair = .coerce_chr(x$lightDarkPair),
     inputs          = inputs,
-    surface         = surface,
-    content         = content,
-    divider         = divider,
     accent          = accent,
     status          = status,
     semantic        = semantic,

@@ -97,28 +97,28 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@row_group@L1@bg
   ),
 
-  # -- Surface (chrome) ---------------------------------------------
+  # -- Surface (chrome) — read via v4 cssVars (canonical values) ----
   "surface.base" = list(
-    cascade    = c("inputs$neutral[2]"),
-    derivation = "neutral[2] (lightest end of neutral ramp)",
-    value_getter = function(t) t@surface@base
+    cascade    = c("anchors$paper", "--tv-surface-bg"),
+    derivation = "Tier-1 paper anchor at the lightest ramp grade",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-surface-bg"])
   ),
   "surface.muted" = list(
-    cascade    = c("inputs$neutral[3]", "inputs$secondary_deep"),
-    derivation = "4% oklch_mix(neutral[3], secondary_deep) -- chrome texture",
-    value_getter = function(t) t@surface@muted
+    cascade    = c("anchors$paper", "--tv-surface-subtle-bg"),
+    derivation = "Tier-1 paper anchor with a subtle inset",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-surface-subtle-bg"])
   ),
 
-  # -- Dividers -----------------------------------------------------
+  # -- Dividers — read via v4 cssVars -------------------------------
   "divider.subtle" = list(
-    cascade    = c("inputs$neutral[3]", "inputs$neutral[4]", "inputs$secondary_deep"),
-    derivation = "10% oklch_mix(divider_neutral, secondary_deep)",
-    value_getter = function(t) t@divider@subtle
+    cascade    = c("anchors$paper", "anchors$ink", "--tv-cell-border"),
+    derivation = "neutral ramp mid grade (cell-divider role)",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-cell-border"])
   ),
   "divider.strong" = list(
-    cascade    = c("inputs$neutral[4]", "inputs$secondary_deep"),
-    derivation = "5% oklch_mix(neutral[4], secondary_deep)",
-    value_getter = function(t) t@divider@strong
+    cascade    = c("anchors$paper", "anchors$ink", "--tv-border"),
+    derivation = "neutral ramp deeper grade (strong-border role)",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-border"])
   ),
 
   # -- Accent -------------------------------------------------------
@@ -148,16 +148,16 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@semantic@fill
   ),
 
-  # -- Content ------------------------------------------------------
+  # -- Content — read via v4 cssVars --------------------------------
   "content.primary" = list(
-    cascade    = c("inputs$neutral[5]"),
-    derivation = "neutral[5] (darkest end of neutral ramp)",
-    value_getter = function(t) t@content@primary
+    cascade    = c("anchors$ink", "--tv-text"),
+    derivation = "Tier-1 ink anchor (deepest neutral grade)",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-text"])
   ),
   "content.inverse" = list(
-    cascade    = c("inputs$neutral[1]"),
-    derivation = "neutral[1] (lightest end of neutral ramp)",
-    value_getter = function(t) t@content@inverse
+    cascade    = c("anchors$paper", "--tv-surface-bg"),
+    derivation = "Tier-1 paper anchor (lightest neutral grade)",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-surface-bg"])
   ),
 
   # -- Text roles ---------------------------------------------------

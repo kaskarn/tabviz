@@ -76,13 +76,9 @@ test_that("TextRole validates figures and fg", {
   expect_silent(TextRole(fg = "#000000"))
 })
 
-test_that("Surfaces / Content / Dividers / AccentRoles defaults are NA", {
-  s <- Surfaces()
-  for (p in S7::prop_names(s)) expect_true(is.na(S7::prop(s, p)))
-  c <- Content()
-  for (p in S7::prop_names(c)) expect_true(is.na(S7::prop(c, p)))
-  d <- Dividers()
-  for (p in S7::prop_names(d)) expect_true(is.na(S7::prop(d, p)))
+test_that("AccentRoles defaults are NA", {
+  a <- AccentRoles()
+  for (p in S7::prop_names(a)) expect_true(is.na(S7::prop(a, p)))
 })
 
 test_that("FirstColumnCluster has default and bold variants", {
