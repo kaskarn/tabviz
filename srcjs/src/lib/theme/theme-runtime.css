@@ -299,6 +299,16 @@
     0 0 10px var(--tv-glow-color, transparent);
 }
 
+/* header-gap exactly ONCE: without this, a strip-bearing preset pays the
+ * caption block's bottom padding (header-gap) AND the strip's bottom
+ * margin (header-gap again) — presence of a decorative strip silently
+ * doubled the title→data rhythm vs an identical no-strip preset
+ * (measured 27px vs 12px by the adversarial spacing review). The strip's
+ * own margin becomes the single seam gap. */
+.tabviz-scope .tv-caption:has(+ .shell-strip) .header-area {
+  padding-bottom: 0;
+}
+
 /* Caption block — chip + title/subtitle on the shell surface (lab
  * .sci-cap). With a chip, chip and title share one BASELINE row (lab
  * grid "chip title"); the chip never corner-pins. Without a chip the

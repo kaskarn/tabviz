@@ -376,7 +376,9 @@
   // INSIDE the padding box, so high padding doesn't shift the math.
   const centeringMargin = $derived.by(() => {
     if (containerContentWidth <= 0 || scaledWidth <= 0) return 0;
-    const margin = (containerContentWidth - scaledWidth) / 2;
+    // Center within the SHELL's content box (the scalable's containing
+    // block) — the shell's own padding is not available room.
+    const margin = (containerContentWidth - 2 * shellPad - scaledWidth) / 2;
     return Math.max(0, margin);
   });
 

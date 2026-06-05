@@ -9,17 +9,20 @@
  * of the shell/paper wrap, and writes a PNG per preset for eyeballing
  * with the Read tool.
  *
- * Assertions (exit non-zero on failure):
- *   - every preset: `.tabviz-scope .tv-shell > .tv-paper > .tabviz-scalable`
- *     DOM chain exists; scope carries the full data-attribute set.
- *   - flush presets (cochrane): shell is geometrically INERT — zero
- *     padding, transparent background (the Pass-1a visual no-op gate).
- *   - raised presets (nature): shell has the 8px band + visible bg, and
- *     a pinned texture paints on the SHELL (background-image set).
- *   - float+texture presets (synthwave): texture falls through to the
- *     PAPER; glow_intensity pins put `.tv-glow` on the shell with a
- *     non-none box-shadow.
- *   - flush+texture presets (brutalist): grid texture on the paper.
+ * Assertions (exit non-zero on failure) — spacing-rework contract
+ * (2026-06-05):
+ *   - every preset: `.tv-shell > .tabviz-scalable > .tv-paper` chain
+ *     exists (paper INSIDE the measured scalable); scope carries the
+ *     full data-attribute set; when the strip renders it sits BETWEEN
+ *     the caption block and the paper (the caption<->data seam).
+ *   - flush presets (cochrane): shell AND paper geometrically INERT —
+ *     zero padding, transparent shell bg.
+ *   - raised presets (nature): density-scaled band (>=12px) + paper
+ *     inner mat (>=8px); a pinned texture paints on the SHELL.
+ *   - float presets (synthwave): texture on the SHELL (the paper
+ *     fallthrough is deleted); shell owns air for the drop shadow;
+ *     glow pins put `.tv-glow` + non-none box-shadow on the shell.
+ *   - flush+texture presets (brutalist): grid texture on the SHELL.
  *
  * Run:
  *   cd srcjs && bun run tests/browser/theme-screenshots.browser.ts

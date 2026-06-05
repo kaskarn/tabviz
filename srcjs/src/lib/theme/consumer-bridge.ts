@@ -35,18 +35,33 @@ import { resolveTheme } from "./resolve-theme";
  *  After resolving from authoringInputs, applies theme.spacing.* as
  *  override pins. This honors callers that mutate `spec.theme.spacing.X`
  *  after construction (a v3-era pattern that bypasses the v4 wire). */
+// Memoized per theme identity (same pattern as theme-css.ts's
+// buildThemeCSS cache). Without this, every call re-ran the FULL cascade
+// (wire → ramps → roles → ~140-token manifest walk) — and there are 50+
+// call sites, several per-cell in column renderers (adversarial
+// code-quality review, 2026-06-05). Theme objects are replaced wholesale
+// on edit (the $state.raw contract), so identity keying is safe;
+// spacing pins are applied from the same theme object, so they're part
+// of the cached result.
+const cssVarsCache = new WeakMap<object, Record<string, string>>();
+
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
   if (!theme?.authoringInputs) return {};
+  const hit = cssVarsCache.get(theme);
+  if (hit) return hit;
+  let out: Record<string, string>;
   try {
     const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
     const resolved = resolveTheme(wire);
-    return applySpacingPins({ ...resolved.cssVars }, theme);
+    out = applySpacingPins({ ...resolved.cssVars }, theme);
   } catch {
     // Resolver errors during the sprint are tolerated; consumers fall
     // back to v3 reads. Drift gates + visual regression catch silent
     // mismatches.
-    return {};
+    out = {};
   }
+  cssVarsCache.set(theme, out);
+  return out;
 }
 
 /** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override

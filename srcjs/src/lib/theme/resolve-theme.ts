@@ -645,14 +645,15 @@ function resolveKnockoutComputed(
 ): string | null {
   if (cssVar !== "--tv-shell-text-knockout-bg") return null;
   const sp = resolveShellPaper(resolved.inputs, shellPaperRoles(resolved));
-  // Transparent / glass shells have no hex of their own — premix against
-  // the PAPER bg instead of the white-page fallback. (The white fallback
-  // was correct when knockouts sat on opaque paper; after the spacing
-  // rework caption text sits on the shell, and a white pad behind light
-  // title text made dark/glass themes illegible — caught by the
-  // screenshot harness eyeball pass.)
+  // The pad IS the surface color, full strength: it hides texture lines
+  // behind the glyphs while staying tonally invisible itself. The old
+  // 78%-premix-on-white produced visible gray boxes behind titles on
+  // near-white raised shells AND gray smears on dark themes (both
+  // adversarial reviewers, independently). Transparent / glass shells
+  // have no hex of their own — use the paper bg (≈ the page surface
+  // showing through).
   const bg = sp.shellBg.startsWith("#") ? sp.shellBg : sp.paperBg;
-  return resolveTextureKnockoutBg(bg);
+  return bg.startsWith("#") ? bg : resolveTextureKnockoutBg(bg);
 }
 
 /** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`

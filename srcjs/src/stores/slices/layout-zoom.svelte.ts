@@ -221,6 +221,15 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
   // ── Effective canvas dims (prefer ResizeObserver over initial) ─────────
 
+  // NOTE (spacing rework, 2026-06-05): the shell band + paper mat consume
+  // horizontal room the flex budget does NOT subtract — deliberately.
+  // Subtracting it here was tried and REGRESSED comfortable-width renders:
+  // when budget < naturals the flex distribution squeezes TEXT columns
+  // (ellipsis-clipping CI parens) instead of the forest column. Columns
+  // keep sizing to the container; fitScale (below) accounts for the shell
+  // band and scales the whole figure down, which clips nothing. The
+  // proper narrow-container fix is squeeze-the-viz-column-first in
+  // resolveFlexWidths — on the post-review board.
   const effectiveWidth = $derived(containerWidth > 0 ? containerWidth : initialWidth);
   const effectiveHeight = $derived(containerHeight > 0 ? containerHeight : initialHeight);
 
@@ -549,9 +558,14 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   const fitScale = $derived.by((): number => {
     if (containerWidth <= 0 || scalableNaturalWidth <= 0) return 1;
     const contentWidth = scalableNaturalWidth * zoom;
-    return contentWidth > containerWidth
-      ? containerWidth / contentWidth
-      : 1;
+    // The scalable must fit INSIDE the shell band (paper pad is already
+    // part of the measured scalable width; shell pad is not).
+    const spec = deps.getSpec();
+    const shellPadW = spec
+      ? 2 * readVarPx(getCssVars(spec.theme), "--tv-shell-padding", 0)
+      : 0;
+    const avail = Math.max(100, containerWidth - shellPadW);
+    return contentWidth > avail ? avail / contentWidth : 1;
   });
 
   const minZoomFloor = $derived(
