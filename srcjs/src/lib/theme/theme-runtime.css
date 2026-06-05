@@ -84,10 +84,30 @@
   /* solid brand header */
 }
 
-/* data-title-style: normal / bar / underline (Phase 3) */
-.tabviz-scope[data-title-style="normal"] { }
-.tabviz-scope[data-title-style="bar"] { }
-.tabviz-scope[data-title-style="underline"] { }
+/* data-title-style: normal / bar / underline (B12, wire-audit 2c-i).
+ * "bar" paints a rubrication stripe ahead of the title (lab.css:278);
+ * "underline" rules beneath the title block with the brand gradient. */
+.tabviz-scope[data-title-style="bar"] .plot-title {
+  position: relative;
+  padding-left: 14px;
+}
+.tabviz-scope[data-title-style="bar"] .plot-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  bottom: 0.12em;
+  width: 5px;
+  background: var(--tv-ink2, var(--tv-accent));
+  border-radius: calc(var(--tv-radius-sm, 2px) * 0.5);
+}
+.tabviz-scope[data-title-style="underline"] .plot-title {
+  padding-bottom: 6px;
+  border-bottom: 3px solid transparent;
+  border-image: var(--tv-brand-gradient) 1;
+  border-image-slice: 0 0 1 0;
+  width: fit-content;
+}
 
 /* data-rules: horizontal / vertical / grid / none */
 .tabviz-scope[data-rules="horizontal"] { }

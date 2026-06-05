@@ -11,7 +11,9 @@ set_effects(
   gradient_shell_intensity = NULL,
   gradient_shell_angle = NULL,
   elevation = NULL,
-  caption_style = NULL
+  caption_style = NULL,
+  header_style = NULL,
+  title_style = NULL
 )
 }
 \arguments{
@@ -31,6 +33,14 @@ set_effects(
 treatment above the paper (B17). \code{"chip"} renders the spec's
 \code{caption} label as a boxed TABLE-N stamp; \code{"stripe"} shows the
 brand-gradient seam.}
+
+\item{header_style}{\code{"normal"} / \code{"tint"} / \code{"fill"} — header chrome
+as a Tier-1 effect (B12). Overrides the legacy \code{web_theme(header_style=)}
+variant picker when set.}
+
+\item{title_style}{\code{"normal"} / \code{"bar"} / \code{"underline"} — title
+treatment: rubrication bar ahead of the title, or brand-gradient
+underline beneath it.}
 }
 \value{
 The re-resolved \link{WebTheme}.

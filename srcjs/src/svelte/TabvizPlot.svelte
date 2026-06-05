@@ -201,6 +201,8 @@
   const scopeMode = $derived(v4Inputs?.mode ?? "standard");
   const scopePolarity = $derived(v4Inputs?.polarity ?? "light");
   const scopeDensity = $derived(v4Inputs?.density ?? "comfortable");
+  // B12 (2c-i): title treatment drives the [data-title-style] CSS rules.
+  const scopeTitleStyle = $derived(v4Inputs?.effects?.title_style ?? "normal");
   const shellGlow = $derived((v4Inputs?.effects?.glow_intensity ?? "none") !== "none");
   const shellStrip = $derived(
     (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none" ||
@@ -1403,6 +1405,7 @@
   data-mode={scopeMode}
   data-polarity={scopePolarity}
   data-density={scopeDensity}
+  data-title-style={scopeTitleStyle}
   style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + 2 * shellPaperPad + shellExtrasPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
 >
   {#if spec}

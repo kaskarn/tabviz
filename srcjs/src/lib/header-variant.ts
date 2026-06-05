@@ -27,8 +27,19 @@ interface VariantsShape {
   headerStyle?: string;
 }
 
-/** Resolve the active header style, falling back to "light" on unknown. */
+/** Resolve the active header style, falling back to "light" on unknown.
+ *
+ *  B12 (wire-audit 2c-i): the Tier-1 input `effects.header_style`
+ *  (normal/tint/fill — lab vocabulary) takes precedence over the v3
+ *  `variants.headerStyle` picker. The v3 field stays on the wire until
+ *  the Pass-6 wire bump retires it. */
 export function activeHeaderStyle(theme: WebTheme): HeaderStyle {
+  const t1 = (theme as {
+    authoringInputs?: { effects?: { header_style?: string } };
+  }).authoringInputs?.effects?.header_style;
+  if (t1 === "fill") return "bold";
+  if (t1 === "tint") return "tint";
+  if (t1 === "normal") return "light";
   const v = (theme as { variants?: VariantsShape }).variants?.headerStyle;
   if (v === "bold" || v === "tint") return v;
   return "light";

@@ -20,6 +20,8 @@
   } = $props();
 
   const GLOW_INTENSITY = ["none", "subtle", "neon"] as const;
+  const HEADER_STYLE   = ["normal", "tint", "fill"] as const;
+  const TITLE_STYLE    = ["normal", "bar", "underline"] as const;
   const GLOW_ANCHOR    = ["brand", "accent"] as const;
   const GRAD_INTENSITY = ["none", "subtle", "vivid"] as const;
   const ELEVATION      = ["none", "soft", "raised", "float"] as const;
@@ -29,6 +31,8 @@
   const gradInt   = $derived(inputs.effects?.gradient_shell_intensity ?? "none");
   const gradAngle = $derived(inputs.effects?.gradient_shell_angle ?? 90);
   const elev      = $derived(inputs.effects?.elevation ?? "none");
+  const headerSty = $derived(inputs.effects?.header_style ?? "normal");
+  const titleSty  = $derived(inputs.effects?.title_style ?? "normal");
 
   function set<K extends keyof NonNullable<ThemeInputs["effects"]>>(
     key: K,
@@ -42,6 +46,24 @@
 </script>
 
 <div class="rows">
+  <div class="row">
+    <span class="label">Header</span>
+    <div class="seg" role="radiogroup" aria-label="Header style">
+      {#each HEADER_STYLE as h (h)}
+        <button type="button" class:on={headerSty === h} onclick={() => set("header_style", h)}>{h}</button>
+      {/each}
+    </div>
+  </div>
+
+  <div class="row">
+    <span class="label">Title</span>
+    <div class="seg" role="radiogroup" aria-label="Title style">
+      {#each TITLE_STYLE as t (t)}
+        <button type="button" class:on={titleSty === t} onclick={() => set("title_style", t)}>{t}</button>
+      {/each}
+    </div>
+  </div>
+
   <div class="row">
     <span class="label">Glow</span>
     <div class="seg" role="radiogroup" aria-label="Glow intensity">

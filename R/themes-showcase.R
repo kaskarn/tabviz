@@ -51,7 +51,9 @@ web_theme_synthwave <- function() {
       glow_anchor = "accent",
       gradient_shell_intensity = "vivid",
       gradient_shell_angle = 110,
-      elevation = "raised"
+      elevation = "raised",
+      # 2c-i: neon underline beneath the title (lab synthwave).
+      title_style = "underline"
     ),
     name = "synthwave"
   )
@@ -101,7 +103,10 @@ web_theme_brutalist <- function() {
     effects = list(
       glow_intensity = "none",
       gradient_shell_intensity = "none",
-      elevation = "none"
+      elevation = "none",
+      # 2c-i: solid-ink header band + rubrication title bar (lab brutalist).
+      header_style = "fill",
+      title_style = "bar"
     ),
     name = "brutalist"
   )

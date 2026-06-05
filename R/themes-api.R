@@ -100,7 +100,9 @@ theme_inputs_to_json <- function(inputs) {
     gradient_shell_intensity = na_to_null(inputs@effects_gradient_shell_intensity),
     gradient_shell_angle     = na_to_null(inputs@effects_gradient_shell_angle),
     elevation                = na_to_null(inputs@effects_elevation),
-    caption_style            = na_to_null(inputs@effects_caption_style)
+    caption_style            = na_to_null(inputs@effects_caption_style),
+    header_style             = na_to_null(inputs@effects_header_style),
+    title_style              = na_to_null(inputs@effects_title_style)
   ))
 
   monochrome_out <- if (isTRUE(inputs@monochrome)) TRUE else NULL
@@ -408,6 +410,8 @@ web_theme <- function(
     effects_gradient_shell_angle   = effects$gradient_shell_angle   %||% NA_real_,
     effects_elevation              = effects$elevation              %||% NA_character_,
     effects_caption_style          = effects$caption_style          %||% NA_character_,
+    effects_header_style           = effects$header_style           %||% NA_character_,
+    effects_title_style            = effects$title_style            %||% NA_character_,
     marks_point_shape              = marks$point_shape              %||% NA_character_,
     marks_interval_weight          = marks$interval_weight          %||% NA_character_,
     # row_kinds — extract heightRatio per kind from the nested named list.
@@ -706,6 +710,12 @@ set_geometry <- function(theme, radius = NULL, border_width = NULL) {
 #' @param gradient_shell_intensity `"none"` / `"subtle"` / `"vivid"`.
 #' @param gradient_shell_angle Numeric in `[0, 360]` (degrees).
 #' @param elevation `"none"` / `"soft"` / `"raised"` / `"float"`.
+#' @param header_style `"normal"` / `"tint"` / `"fill"` — header chrome
+#'   as a Tier-1 effect (B12). Overrides the legacy `web_theme(header_style=)`
+#'   variant picker when set.
+#' @param title_style `"normal"` / `"bar"` / `"underline"` — title
+#'   treatment: rubrication bar ahead of the title, or brand-gradient
+#'   underline beneath it.
 #' @param caption_style `"none"` / `"chip"` / `"stripe"` — caption
 #'   treatment above the paper (B17). `"chip"` renders the spec's
 #'   `caption` label as a boxed TABLE-N stamp; `"stripe"` shows the
@@ -718,7 +728,9 @@ set_effects <- function(theme,
                         gradient_shell_intensity = NULL,
                         gradient_shell_angle = NULL,
                         elevation = NULL,
-                        caption_style = NULL) {
+                        caption_style = NULL,
+                        header_style = NULL,
+                        title_style = NULL) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
@@ -740,6 +752,8 @@ set_effects <- function(theme,
   gradient_shell_angle     <- na_or_number(gradient_shell_angle, 0, 360, "gradient_shell_angle")
   elevation                <- na_or_choice(elevation, c("none", "soft", "raised", "float"), "elevation")
   caption_style            <- na_or_choice(caption_style, c("none", "chip", "stripe", "both"), "caption_style")
+  header_style             <- na_or_choice(header_style, c("normal", "tint", "fill"), "header_style")
+  title_style              <- na_or_choice(title_style, c("normal", "bar", "underline"), "title_style")
   inputs <- theme@inputs
   if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
   if (!is.null(glow_anchor))              inputs@effects_glow_anchor              <- glow_anchor
@@ -747,6 +761,8 @@ set_effects <- function(theme,
   if (!is.null(gradient_shell_angle))     inputs@effects_gradient_shell_angle     <- gradient_shell_angle
   if (!is.null(elevation))                inputs@effects_elevation                <- elevation
   if (!is.null(caption_style))            inputs@effects_caption_style            <- caption_style
+  if (!is.null(header_style))             inputs@effects_header_style             <- header_style
+  if (!is.null(title_style))              inputs@effects_title_style              <- title_style
   resolve_from_inputs(inputs, name = theme@name)
 }
 

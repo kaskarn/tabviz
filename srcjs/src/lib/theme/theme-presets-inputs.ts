@@ -539,6 +539,8 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
       gradient_shell_intensity: "vivid",
       gradient_shell_angle: 110,
       elevation: "raised",
+      // 2c-i: neon underline beneath the title (lab synthwave).
+      title_style: "underline",
     },
   },
 );
@@ -587,6 +589,9 @@ export const BRUTALIST: ThemeInputs = defineInputs(
       glow_intensity: "none",
       gradient_shell_intensity: "none",
       elevation: "none",
+      // 2c-i: solid-ink header band + rubrication title bar (lab brutalist).
+      header_style: "fill",
+      title_style: "bar",
     },
   },
 );

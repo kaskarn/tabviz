@@ -225,6 +225,15 @@ export interface ThemeInputs {
     gradient_shell_angle?: number;   // degrees; default 90 (left-to-right)
     /** Card shadow elevation preset. "none" / "soft" / "raised" / "float". */
     elevation?: "none" | "soft" | "raised" | "float";
+    /** B12 (wire-audit 2c-i): header chrome treatment as a Tier-1 input
+     *  (lab vocabulary). Overrides the v3 variants.headerStyle picker
+     *  (mapping: normal->light, tint->tint, fill->bold) until the v3
+     *  field retires with the Pass-6 wire bump. */
+    header_style?: "normal" | "tint" | "fill";
+    /** B12 (wire-audit 2c-i): title treatment. "bar" paints a ::before
+     *  accent stripe ahead of the title (lab.css:278); "underline" rules
+     *  beneath it. */
+    title_style?: "normal" | "bar" | "underline";
     /** Caption treatment above the paper (B17, wire-audit 1c). "chip"
      *  renders labels.tag as a boxed TABLE-N stamp on the shell;
      *  "stripe" shows the brand-gradient seam (the shell-strip element)

@@ -206,6 +206,10 @@ ThemeInputs <- new_class(
     # "chip" renders labels.caption as a boxed stamp; "stripe" shows
     # the brand-gradient seam.
     effects_caption_style          = new_property(class_character, default = NA_character_),
+    # B12 (wire-audit 2c-i): header/title chrome as Tier-1 inputs (lab
+    # vocabulary). Overrides the v3 variants picker until the wire bump.
+    effects_header_style           = new_property(class_character, default = NA_character_),
+    effects_title_style            = new_property(class_character, default = NA_character_),
     # D12 (wire-audit 1f): viz-mark identity — theme defaults for plot
     # marks (cascade: row markerStyle > effect shape > these > rotation).
     marks_point_shape              = new_property(class_character, default = NA_character_),
@@ -281,6 +285,14 @@ ThemeInputs <- new_class(
     cs <- self@effects_caption_style
     if (!is.na(cs) && !cs %in% c("none", "chip", "stripe", "both")) {
       return("effects_caption_style must be 'none', 'chip', 'stripe', or 'both'")
+    }
+    hs <- self@effects_header_style
+    if (!is.na(hs) && !hs %in% c("normal", "tint", "fill")) {
+      return("effects_header_style must be 'normal', 'tint', or 'fill'")
+    }
+    ts2 <- self@effects_title_style
+    if (!is.na(ts2) && !ts2 %in% c("normal", "bar", "underline")) {
+      return("effects_title_style must be 'normal', 'bar', or 'underline'")
     }
     ps <- self@marks_point_shape
     if (!is.na(ps) && !ps %in% c("circle", "square", "diamond", "triangle")) {
