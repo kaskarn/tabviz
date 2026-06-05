@@ -12,7 +12,7 @@
       font-family="system-ui, -apple-system, sans-serif"
       font-size="20.53px"
       font-weight="600"
-      fill="#F1F7FF">Dark Theme Export</text>
+      fill="#BDD7FF">Dark Theme Export</text>
 <line x1="12" x2="411"
       y1="63" y2="63"
       stroke="#8B8E93" stroke-width="2"/>
@@ -37,7 +37,7 @@
             width="399" height="24"
             fill="#1B1D20" data-tv-token="row-alt-bg"/>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="95" y2="191"
-    stroke="#777A7E" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
+    stroke="#8B8E93" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
           <line x1="148.95538520317044" x2="222.36920080645828" y1="107" y2="107"

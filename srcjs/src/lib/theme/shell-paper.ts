@@ -74,6 +74,28 @@ export function resolveShellPaper(
   const RAISED_CARD = "0 1px 2px rgba(0,0,0,0.06)";
   const PAPER_INSET = "inset 0 1px 0 rgba(0,0,0,0.03)";
 
+  // ── effects.elevation = FIGURE-WIDE depth (decision 2026-06-05) ─────────
+  // The elevation input lifts the whole figure off the page — the SHELL
+  // when there's a band (raised mode), the PAPER otherwise (flush /
+  // float / transparent), so "table-wide or widget-wide" follows the
+  // shell mode. "none" keeps the per-mode default shadows (presets that
+  // never set elevation are unchanged); soft/raised/float amplify.
+  // (Before this, effects.elevation painted ONLY the painted-row
+  // emphasis shadow — invisible on a fresh table; adversarial effects
+  // review H4. The row shadow still scales with it, coherently.)
+  const ELEVATION_SHADOW: Record<string, string | null> = {
+    none: null,
+    soft:   "0 1px 3px rgba(0,0,0,0.10), 0 3px 10px rgba(0,0,0,0.06)",
+    raised: "0 2px 6px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.08)",
+    float:  "0 4px 12px rgba(0,0,0,0.15), 0 14px 36px rgba(0,0,0,0.10)",
+  };
+  const elevShadow = ELEVATION_SHADOW[inputs.effects?.elevation ?? "none"] ?? null;
+  // Per-mode defaults, overridden by an explicit elevation pin.
+  const shellLift = (fallback: string): string =>
+    mode === "raised" && elevShadow ? elevShadow : fallback;
+  const paperLift = (fallback: string): string =>
+    mode !== "raised" && elevShadow ? elevShadow : fallback;
+
   switch (mode) {
     case "flush":
       // TRULY flush (re-tuned in wire-audit Pass 1a, first time these
@@ -91,7 +113,7 @@ export function resolveShellPaper(
         shellPadding: "0px",
         paperBg: surface,
         paperBorder: "transparent",
-        paperShadow: "none",
+        paperShadow: paperLift("none"),
         paperRadius: "0px",
         paperPadding: "0px",
       };
@@ -102,7 +124,7 @@ export function resolveShellPaper(
       return {
         shellBg: surfaceSubtle,
         shellBorder: border,
-        shellShadow: RAISED_CARD,
+        shellShadow: shellLift(RAISED_CARD),
         shellRadius: "12px",
         shellPadding: densityScaledPx(SHELL_PAD_PX, inputs),
         paperBg: surface,
@@ -123,7 +145,7 @@ export function resolveShellPaper(
         shellPadding: densityScaledPx(SHELL_PAD_PX, inputs),
         paperBg: surface,
         paperBorder: borderSubtle,
-        paperShadow: SOFT_LIFT,
+        paperShadow: paperLift(SOFT_LIFT),
         paperRadius: "8px",
         paperPadding: densityScaledPx(PAPER_PAD_PX, inputs),
       };
@@ -136,7 +158,7 @@ export function resolveShellPaper(
         shellPadding: "0px",
         paperBg: surface,
         paperBorder: "transparent",
-        paperShadow: "none",
+        paperShadow: paperLift("none"),
         paperRadius: "0px",
         paperPadding: "0px",
       };
