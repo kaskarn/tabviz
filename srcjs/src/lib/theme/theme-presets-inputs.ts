@@ -35,6 +35,9 @@ interface PresetIdentitySeeds {
   brand: string;
   /** Optional accent hex. Defaults to brand. */
   accent?: string;
+  /** Optional secondary/rubrication ink hex (B7). Seeds the accent ramp
+   *  with precedence over `accent`. */
+  ink2?: string;
   /** Polarity. Default light. */
   polarity?: "light" | "dark";
   /** Hue source for the paper/ink anchors. Either "brand" (default),
@@ -62,6 +65,7 @@ const DEFAULT_INK_L = 0.180;
 function deriveAnchors(seeds: PresetIdentitySeeds): ThemeInputs["anchors"] {
   const brandLch = hexToOklch(seeds.brand);
   const accentLch = seeds.accent ? hexToOklch(seeds.accent) : undefined;
+  const ink2Lch = seeds.ink2 ? hexToOklch(seeds.ink2) : undefined;
 
   // Pick the hue for the neutral anchors (paper + ink).
   let neutralH: number;
@@ -86,6 +90,7 @@ function deriveAnchors(seeds: PresetIdentitySeeds): ThemeInputs["anchors"] {
     ink,
     brand: brandLch,
     ...(accentLch ? { accent: accentLch } : {}),
+    ...(ink2Lch ? { ink2: ink2Lch } : {}),
   };
 }
 
@@ -151,7 +156,7 @@ export const LANCET: ThemeInputs = defineInputs(
  *  density, very tight type scale. The "footnote density" of dense
  *  scientific tables. */
 export const JAMA: ThemeInputs = defineInputs(
-  { brand: "#000000", accent: "#000000", neutralHueFrom: null },
+  { brand: "#0F171F", accent: "#0F171F", neutralHueFrom: null },
   {
     categorical: "brand_mono",
     density: "compact",
@@ -269,7 +274,7 @@ export const SWISS: ThemeInputs = defineInputs(
  *  compact density × 0.9 factor. Log curve deepens neutrals so chart
  *  marks read as ink-on-paper. */
 export const TUFTE: ThemeInputs = defineInputs(
-  { brand: "#222222", accent: "#888888", neutralHueFrom: null },
+  { brand: "#222222", accent: "#B54A46", neutralHueFrom: null },
   {
     categorical: "greys",
     density: "compact",
@@ -515,6 +520,9 @@ export const BRUTALIST: ThemeInputs = defineInputs(
   {
     brand: "#000000",
     accent: "#000000",
+    // C39a: vermilion rubrication ink — the lab brutalist's chromatic
+    // identity signal over achromatic neutrals. Seeds the accent ramp.
+    ink2: "#D42320",
     neutralHueFrom: null,
   },
   {
@@ -548,7 +556,7 @@ export const BRUTALIST: ThemeInputs = defineInputs(
  *  feel without breaking the editorial restraint. */
 export const ATELIER: ThemeInputs = defineInputs(
   {
-    brand: "#2D2A26",
+    brand: "#392A1E",
     accent: "#8B3A3A",
     neutralHueFrom: "#A88B5C",
     paperC: 0.024,

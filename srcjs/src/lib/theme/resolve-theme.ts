@@ -135,6 +135,7 @@ export function applyPolarityToInputs(inputs: ThemeInputs): ThemeInputs {
       ink:   reflectAnchor(inputs.anchors.ink),
       brand: reflectAnchor(inputs.anchors.brand),
       accent: reflectAnchorMaybe(inputs.anchors.accent),
+      ink2:  reflectAnchorMaybe(inputs.anchors.ink2),
     },
     status: inputs.status
       ? {
@@ -821,7 +822,10 @@ function pickAnchorHex(
     case "ink":    return oklchToHex(a.ink);
     case "brand":  return oklchToHex(a.brand);
     case "accent": return a.accent ? oklchToHex(a.accent) : null;
-    case "accent-anchor": return oklchToHex(a.accent ?? a.brand);
+    case "ink2":   return a.ink2 ? oklchToHex(a.ink2) : null;
+    // accent-anchor mirrors the accent-RAMP seed precedence (ink2 first)
+    // so anchor-sourced tokens agree with ramp-sourced ones.
+    case "accent-anchor": return oklchToHex(a.ink2 ?? a.accent ?? a.brand);
     case "status-positive": return inputs.status?.positive ? oklchToHex(inputs.status.positive) : null;
     case "status-negative": return inputs.status?.negative ? oklchToHex(inputs.status.negative) : null;
     case "status-warning":  return inputs.status?.warning  ? oklchToHex(inputs.status.warning)  : null;

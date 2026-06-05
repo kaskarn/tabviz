@@ -28,6 +28,10 @@ Defines text, text-muted, text-subtle.}
 \item{\code{anchors_brand_L,anchors_brand_C,anchors_brand_H}}{Identity hue.
 Drives brand_solid, brand_text, header_bg.}
 
+\item{\code{anchors_ink2_L,anchors_ink2_C,anchors_ink2_H}}{Optional
+secondary/rubrication ink anchor (B7); seeds the accent ramp with
+precedence over accent when set.}
+
 \item{\code{anchors_accent_L,anchors_accent_C,anchors_accent_H}}{Optional
 engagement hue (hover/selected/callouts). All-NA = defaults to brand.}
 

@@ -209,6 +209,7 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
   checkTriple(inputs.anchors?.ink,   "anchors.ink",   p, true);
   checkTriple(inputs.anchors?.brand, "anchors.brand", p, true);
   checkTriple(inputs.anchors?.accent, "anchors.accent", p, false);
+  checkTriple(inputs.anchors?.ink2, "anchors.ink2", p, false);
 
   // Status — all optional.
   checkTriple(inputs.status?.positive, "status.positive", p, false);

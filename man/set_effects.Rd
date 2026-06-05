@@ -30,5 +30,7 @@ set_effects(
 The re-resolved \link{WebTheme}.
 }
 \description{
-All args are optional; NULL leaves the slot unchanged.
+Each arg accepts an enum string / numeric value, \code{NA} to clear back
+to the TS resolver's default (typically \code{"none"} / \code{0}), or \code{NULL}
+to leave the slot unchanged.
 }

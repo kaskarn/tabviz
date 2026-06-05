@@ -41,12 +41,18 @@ export type SchemeName = string;
  *  - ink:   the dark-end neutral anchor; defines text, text-muted, text-subtle.
  *  - brand: the identity hue; powers brand_solid, brand_text, header_bg.
  *  - accent: optional engagement hue; powers hover/selected/callouts.
- *    Defaults to brand when unset. */
+ *    Defaults to brand when unset.
+ *  - ink2: optional secondary / rubrication ink (B7, wire-audit Pass 2a).
+ *    When set it SEEDS THE ACCENT RAMP (precedence: ink2 ?? accent ??
+ *    brand — mirrors rgc_v4 engine.jsx:322-326), giving editorial themes
+ *    a rubrication channel (vermilion stars, oxblood chips) without the
+ *    author having to overload `accent`. */
 export interface ThemeAnchors {
   paper: OklchTriple;
   ink: OklchTriple;
   brand: OklchTriple;
   accent?: OklchTriple;
+  ink2?: OklchTriple;
 }
 
 /** Optional status anchors (positive/negative/warning/info) as OKLCH

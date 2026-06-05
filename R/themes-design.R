@@ -70,7 +70,7 @@ web_theme_swiss <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_tufte <- function() {
-  a <- derive_preset_anchors("#222222", "#888888",
+  a <- derive_preset_anchors("#222222", "#B54A46",
                              neutral_hue_from = NA_character_)
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,

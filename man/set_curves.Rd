@@ -10,12 +10,13 @@ set_curves(theme, neutral = NULL, brand = NULL, accent = NULL)
 \item{theme}{A \link{WebTheme}.}
 
 \item{neutral, brand, accent}{One of \code{"linear"} / \code{"ease"} / \code{"smooth"}
-/ \code{"log"} / \code{"exp"}, or \code{NULL} to leave unchanged.}
+/ \code{"log"} / \code{"exp"}, \code{NA} to clear (TS resolver falls back to its
+default: neutral=ease, brand=linear, accent=linear), or \code{NULL} to
+leave unchanged.}
 }
 \value{
 The re-resolved \link{WebTheme}.
 }
 \description{
 Per Stage 1 §25. Reshapes the L progression across the 11 ramp grades.
-NULL leaves a slot unchanged.
 }

@@ -109,7 +109,7 @@ web_theme_lancet <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_jama <- function() {
-  a <- derive_preset_anchors("#000000", "#000000",
+  a <- derive_preset_anchors("#0F171F", "#0F171F",
                              neutral_hue_from = NA_character_)
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,

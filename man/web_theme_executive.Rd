@@ -12,5 +12,7 @@ A \link{WebTheme}.
 \description{
 Material card meets boardroom: Inter body, Cormorant Garamond
 display (the "executive summary" serif-title-on-sans-body feel).
-Type scale 1.333 + smooth brand curve for the crisp rhythm.
+Type scale 1.333 + smooth brand curve for the crisp rhythm. Float
+elevation lifts the card off the page; subtle gradient on the shell
+gives the premium material-card sheen without becoming decorative.
 }

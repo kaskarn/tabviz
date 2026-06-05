@@ -59,6 +59,9 @@ web_theme_brutalist <- function() {
                              neutral_hue_from = NA_character_)
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    # C39a: vermilion rubrication ink — chromatic identity over the
+    # achromatic neutrals (lab parity). Seeds the accent ramp.
+    ink2 = "#D42320",
     categorical = "greys",
     density = "compact",
     shell_texture = "grid",
@@ -96,7 +99,7 @@ web_theme_brutalist <- function() {
 #' @return A [WebTheme].
 #' @export
 web_theme_atelier <- function() {
-  a <- derive_preset_anchors("#2D2A26", "#8B3A3A",
+  a <- derive_preset_anchors("#392A1E", "#8B3A3A",
                              neutral_hue_from = "#A88B5C",
                              paper_C = 0.024, ink_C = 0.024)
   web_theme(

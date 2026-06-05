@@ -30,7 +30,8 @@ theme_inputs_to_json <- function(inputs) {
     paper = triple_to_json(inputs, "anchors_paper", required = TRUE),
     ink   = triple_to_json(inputs, "anchors_ink",   required = TRUE),
     brand = triple_to_json(inputs, "anchors_brand", required = TRUE),
-    accent = triple_to_json(inputs, "anchors_accent")
+    accent = triple_to_json(inputs, "anchors_accent"),
+    ink2   = triple_to_json(inputs, "anchors_ink2")
   )
   anchors <- anchors[!vapply(anchors, is.null, logical(1))]
 
@@ -206,6 +207,9 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #' @param brand Identity hue. Drives brand_solid, brand_text, header_bg.
 #' @param accent Optional engagement hue (hover/selected/callouts). NULL
 #'   mirrors brand at resolution.
+#' @param ink2 Optional secondary/rubrication ink (B7). When set it seeds
+#'   the accent ramp with precedence over `accent` — the editorial channel
+#'   for vermilion significance stars / oxblood chips.
 #' @param polarity `"light"` or `"dark"`. Polarity reflection inverts every
 #'   anchor's L around the midpoint. Default `"light"`.
 #' @param mode Accessibility axis (orthogonal to polarity). One of
@@ -271,6 +275,7 @@ web_theme <- function(
     ink = NULL,
     brand = DEFAULT_BRAND_HEX,
     accent = NULL,
+    ink2 = NULL,
     polarity = "light",
     mode = "standard",
     categorical = "okabe_ito",
@@ -323,6 +328,7 @@ web_theme <- function(
     cli::cli_abort("{.arg brand} is required.")
   }
   accent_t <- coerce_anchor(accent, "accent")
+  ink2_t   <- coerce_anchor(ink2,   "ink2")
   status_p <- coerce_anchor(status_positive, "status_positive")
   status_n <- coerce_anchor(status_negative, "status_negative")
   status_w <- coerce_anchor(status_warning,  "status_warning")
@@ -330,6 +336,7 @@ web_theme <- function(
 
   ap <- anchor_slots(paper_t);  ai <- anchor_slots(ink_t)
   ab <- anchor_slots(brand_t);  aa <- anchor_slots(accent_t)
+  a2 <- anchor_slots(ink2_t)
   sp <- anchor_slots(status_p); sn <- anchor_slots(status_n)
   sw <- anchor_slots(status_w); si <- anchor_slots(status_i)
 
@@ -338,6 +345,7 @@ web_theme <- function(
     anchors_ink_L   = ai$L, anchors_ink_C   = ai$C, anchors_ink_H   = ai$H,
     anchors_brand_L = ab$L, anchors_brand_C = ab$C, anchors_brand_H = ab$H,
     anchors_accent_L = aa$L, anchors_accent_C = aa$C, anchors_accent_H = aa$H,
+    anchors_ink2_L   = a2$L, anchors_ink2_C   = a2$C, anchors_ink2_H   = a2$H,
     polarity = polarity,
     mode = mode,
     categorical = categorical,
@@ -439,6 +447,20 @@ set_ink <- function(theme, ink) {
 #' @export
 set_brand <- function(theme, brand) {
   set_anchor_and_resolve(theme, "anchors_brand", brand, "brand")
+}
+
+#' Set the secondary/rubrication ink anchor (ink2) and re-resolve.
+#'
+#' ink2 (B7) seeds the accent ramp with precedence over `accent`,
+#' giving editorial themes a rubrication channel (vermilion significance
+#' stars, oxblood caption chips) without tinting interaction states.
+#' @param theme A [WebTheme].
+#' @param ink2 Hex string, [oklch()] triple, or `NULL` to clear.
+#' @return The re-resolved [WebTheme].
+#' @export
+set_ink2 <- function(theme, ink2) {
+  set_anchor_and_resolve(theme, "anchors_ink2", ink2, "ink2",
+                         clearable = TRUE)
 }
 
 #' Set the accent anchor on a theme and re-resolve.

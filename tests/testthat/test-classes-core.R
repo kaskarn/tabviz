@@ -172,8 +172,11 @@ test_that("web_theme_jama creates valid theme", {
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "jama")
   expect_match(unname(theme_css_vars(theme)["--tv-text"]), "^#[0-9A-Fa-f]{6}$")
-  # V4: jama brand is black (L = 0, C = 0). Anchor presence sufficient.
-  expect_equal(theme@inputs@anchors_brand_L, 0)
+  # V4 (wire-audit C39a): jama brand is ink-blue-black — near-black but
+  # NOT pure #000, so it no longer byte-collides with brutalist's anchors.
+  expect_lt(theme@inputs@anchors_brand_L, 0.25)
+  expect_gt(theme@inputs@anchors_brand_L, 0.10)
+  expect_gt(theme@inputs@anchors_brand_C, 0.005)
 })
 
 test_that("web_theme_lancet creates valid theme", {

@@ -13,5 +13,7 @@ A \link{WebTheme}.
 Compact density x 0.92 + decorative hue (#A88B5C) routed through the
 neutrals at high paperC/inkC give the warm parchment paper feel.
 Italianno display for the calligraphic flourish; EB Garamond body
-for the inked text.
+for the inked text. Subtle warm glow on the rust accent + soft
+paper-shadow elevation give the page-on-desk feel without breaking
+the editorial restraint.
 }

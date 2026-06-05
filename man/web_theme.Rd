@@ -9,6 +9,7 @@ web_theme(
   ink = NULL,
   brand = DEFAULT_BRAND_HEX,
   accent = NULL,
+  ink2 = NULL,
   polarity = "light",
   mode = "standard",
   categorical = "okabe_ito",
@@ -48,6 +49,10 @@ surface, paper_alt, paper_raised. Default: near-white at brand hue.}
 
 \item{accent}{Optional engagement hue (hover/selected/callouts). NULL
 mirrors brand at resolution.}
+
+\item{ink2}{Optional secondary/rubrication ink (B7). When set it seeds
+the accent ramp with precedence over \code{accent} — the editorial channel
+for vermilion significance stars / oxblood chips.}
 
 \item{polarity}{\code{"light"} or \code{"dark"}. Polarity reflection inverts every
 anchor's L around the midpoint. Default \code{"light"}.}
