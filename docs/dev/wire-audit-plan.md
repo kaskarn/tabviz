@@ -3,19 +3,161 @@
 Draft 2026-06-04 after the rgc_v4 audit landed (`wire-audit.md`). Tracks the
 end-to-end fix sequence for B1-B18. Sized by coupling, ordered by leverage.
 
-**REVISION 2026-06-04 after three-agent adversarial review** (API / Aesthetic / UX).
-The reviewers caught load-bearing errors in the original draft — the most
-serious is that the Pass 1a DOM-class names didn't match the actual CSS
-selectors in `theme-runtime.css`, which would have shipped Pass 1a as a no-op.
-This revision integrates all three reviews, promotes B17 to Pass 1, adds a
-Pass 0 (DOM-prework) and a Pass 6 (wire-version bump), splits Pass 2c, and
-documents the IA/discoverability constraint that every substrate PR must
-ship its surface in the same commit.
+**REVISION 1 — 2026-06-04** after three-agent surface review.
+
+**REVISION 2 — 2026-06-04** after three-agent DEEP code-investigation review. Each agent empowered to grep + read multi-file + check selectors against actual DOM. Plus the `frontend-design` skill loaded into context (catches Space Grotesk convergence + AI-aesthetic-slop patterns). The Round 2 reviewers landed 15+ load-bearing corrections to Round 1 — including that Round 1's "corrected" Pass 1a CSS structure was STILL wrong (same-node compound where descendant is needed). All Round 2 corrections integrated below in section "Round 2 review integration."
 
 **Pre-plan landed already (this session):**
 - ✓ B1: studio swatches identical — `ThemeSwitcher.lookupTheme()` now falls back to `THEME_PRESETS[name]` when `availableThemes` is undefined
 - ✓ Theme registry: synthwave/brutalist/atelier/executive added to `THEME_NAMES`/`THEME_LABELS` (were defined in `PRESETS` but not exposed; user couldn't pick them interactively)
 - ✓ Wire-audit doc + memory `project_rgc_design_lab` corrected to point at `dev/rgc_v4.zip`
+
+---
+
+---
+
+## Round 2 review integration (all corrections)
+
+The deep-investigation review surfaced findings serious enough that some Round 1 decisions need to flip. This section catalogs every correction. Each cross-references the relevant pass section.
+
+### Critical structural corrections (block execution)
+
+**C1 — Pass 0 selector inventory was 3x undersized.** Round 1 said "10 selectors." Actual: **39 `:global(.tabviz-container)` matches across 6 files**:
+- `ControlToolbar.svelte`: 18 selectors (not 9)
+- `TabvizPlot.svelte`: **17 selectors NEVER MENTIONED in Round 1** — including `.paint-active`, `.auto-fit`, `.has-max-width`, `.has-max-height`, `.tabviz-fullscreen`, `.row-has-semantic`, `.cell-active-*`
+- `AspectLockPill.svelte`: 1
+- `FullscreenButton.svelte`: 2 + JS `closest(".tabviz-container")` at line 56
+- `ColumnFilterButton.svelte`: 1 (descendant, safe)
+- `ColumnDragHandle.svelte`: 2 (descendant, safe)
+- `EditableCell.svelte` + `ColumnTypeMenu.svelte`: `.closest(".tabviz-container")` JS callers
+- Pass 0 rewrite scope is 3× the original. Section 0a updated.
+
+**C2 — `containerRef` consumers: 17, not 6.** Round 1 named `reportLayoutMeasurements`, `paintLayoutOverlay`, `dispatchLifecycle`, ResizeObserver, IntersectionObserver, dnd hit-test. Missed:
+- `store.setContainerElementId(containerRef.id)` line 326 (propagates DOM id into store → downstream querySelectors at 401, 438, 449)
+- Three `<ColumnDragHandle root={containerRef}>` passes (DRAG BOUNDING RECT — moving ref to `.tv-paper` SHRINKS the drop zone)
+- `<TabvizOverlays containerRef={containerRef}>` line 2362 (overlay coordinate origin)
+- Section 0c updated.
+
+**C3 — D2 LOCKED was WRONG. Flip to OUTER.** Round 1 chose `containerRef = inner (.tv-paper)`. Code agent's evidence: `containerEl` is also the click/keyboard target for paint mode AND dnd hit-test root. Inner shrinks the drop zone silently. Locked decisions table updated. **D2 → outer.**
+
+**C4 — Pass 1a CSS structure STILL ships as no-op.** Round 1's corrected snippet had `<div class="tabviz-scope tv-shell">` — both classes on SAME node. But `theme-runtime.css` selectors `.tabviz-scope .tv-shell` (descendant) won't match same-node compound. Same problem for `data-shell-texture` on a node that's both scope AND shell. **Fix: either separate `.tv-shell` child div, OR rewrite CSS to compound `.tabviz-scope.tv-shell`.** Pass 1a section corrected with the explicit pick.
+
+**C5 — Pass 6 needs INVERSION + 3-way split.** Round 1 said Pass 6 last. Actually: Pass 6a (R S7 slots + defaults + serializer + KNOWN_DIVERGENCES allowlist) must land FIRST or parity test stays red through Passes 2-3. Split:
+- **6a — Schema slots first (BEFORE Pass 2).** Add R S7 slots for `ink2`, `monochrome`, `effects.header_style`, `effects.title_style`. Default them. Extend KNOWN_DIVERGENCES allowlist for the transitional period.
+- **6b — Wire-version bump + parity-test sync** (after Pass 2/3 substantive work).
+- **6c — Downstream notice** (NEWS.md, roxygen `@seealso` cross-refs, CHANGELOG).
+
+### Pass-1 internal reorder (per aesthetic agent)
+
+**C6 — Reorder Pass 1 to `1a → 1d → 1b → 1c → 1e`.** Current `1a → 1b → 1c → 1d → 1e` front-loads heavy substrate. Reordered:
+- **1a + 1d + 1b** = brutalist runnable in 3 commits (texture wrap + font swap + vermilion). **This is the "first runnable demo" milestone** that proves Pass 1 is alive.
+- **1c (caption chip)** after (net-new substrate; visible across brutalist + aurora)
+- **1e (density pins)** last
+
+**C7 — Split Pass 1a CSS injection into 2 commits.** First commit: non-backdrop-filter rules (texture + glow + shell-strip). Second commit: backdrop-filter rules (Safari/iOS compositing layer concerns warrant isolation).
+
+### Pass-1 detail corrections
+
+**C8 — Pass 1b (significance markers) framing was wrong.** Plan said "match `**` / `***` cell value." Reality: `CellPvalue.svelte:23-37` already computes stars from `value < threshold`; renders to `<span class="pvalue-stars">` at line 78 painting `color: var(--tv-accent)` at line 96. **Fix is a one-line CSS swap** at line 96, gated on `isSignificant`, plus a new `options.significanceColor` (default `"accent"`, with `"negative"` to opt into vermilion). Pass 1b updated.
+
+**C9 — Pass 1b needs OS-HC override branch.** D6 made status theme-scoped. But brutalist vermilion under OS-forced HC won't auto-revert to HC fallback (no `@media (prefers-contrast)` in `srcjs/src/lib/theme/`). Add: when `mode = "high-contrast"`, status palette overrides revert to curated HC fallback regardless of preset pin.
+
+**C10 — Pass 1a glow path collision.** `TabvizPlot.svelte:3077` already has `box-shadow: var(--tv-glow-blur)` on `.row-active-emphasis`. Pass 1a adds `.tv-glow` class. **Two glow paths will fire simultaneously** post-1a unless reconciled. Audit, decide which owns glow, delete the other.
+
+### Pass-1c (B17) corrections
+
+**C11 — `--tv-brand-gradient` resolver path MISSING.** `theme-runtime.css:211` reads `var(--tv-brand-gradient)`; manifest declares it; **resolver doesn't emit a multi-stop gradient value.** Without it the shell-strip is invisible. Add resolver path emitting `linear-gradient(135deg, brand@(L-2,C,H-24) → brand@(L,C,H+30))` per `engine.jsx:215`.
+
+**C12 — Chip needs `box-shadow: var(--glow)`.** Without it the chip is flat rather than "lit." Add to B17 spec.
+
+### Pass-2c (B12) corrections
+
+**C13 — Pass 2c is 3-4 days work, not a sub-pass.** 7 distinct steps including 22 R preset constructor updates, S7 slot deletions, manifest entry switching, Svelte 5 binding slice migration. Split into **2c-i (add + DUAL-emit both old + new), 2c-ii (migrate consumers), 2c-iii (delete `variants.headerStyle` from wire)**. Dual-emit is what keeps parity test green between commits.
+
+### Pass-4 corrections + new sub-passes
+
+**C14 — D5 tab layout was unspecified. LOCKED: 5 tabs.**
+- **Color** — Anchors (5 rows post-B7) + Polarity + Mode + status palette chooser + `monochrome` (D3) toggle above anchors
+- **Type** — Typography
+- **Size** — Density + Geometry (rgc "Size" mental model)
+- **Shell** — Shell mode + Texture
+- **Effects** — Glow / Gradient / Elevation + `header_style` / `title_style` (consider splitting into "Surface Effects" and "Chrome" sub-sections — Effects gets 8+ control clusters and the lab's FX-ADV screenshot is already cluttered)
+
+**C15 — NEW Pass 4b: bi-directional cascade trace.** `inspectorStore.trace` exists but **no `Cell*.svelte` ever calls it**. The lab's signature hover-cell-to-trace-token pedagogy is structurally absent. Concrete: every `Cell*.svelte` (14 files) adds `data-trace-tokens` attribute carrying consumed cssVars. Click handler on `.tabviz-paper` walks `event.target.closest('[data-trace-tokens]')` → calls `inspectorStore.trace(firstVar, resolved)`. **This is what justifies "studio" as a teaching tool.**
+
+**C16 — NEW Pass 4c: onboarding chrome.** Each Tier-1 category gets `<button class="hint">?</button>` opening one-sentence tooltip. Reuse roxygen texts. ARIA tablist pattern (role="tablist" / aria-controls / aria-selected) for the new tabbed rail.
+
+**C17 — NEW Pass 4d: `tint_from_brand()` macro.** R modifier: `tint_from_brand(theme, strength = c("subtle", "medium", "vivid"))` nudges paper/ink/accent/ink2 H toward brand H without changing L. Studio mirror: "Match brand" button at top of Color tab. Closes the 25-knob fan-out UX trap.
+
+### Pass-5 enumeration corrections (per aesthetic + frontend-design skill)
+
+**C18 — Pass 5 missing 8 manifest tokens.** Plan referenced "tokens" abstractly. Enumerate:
+- `--tv-glass-tint`, `--tv-glass-faint`, `--tv-glass-edge-hi`, `--tv-glass-edge-lo` (color quartet for bevel)
+- `--tv-glass-sheen` (for `::before`)
+- `--tv-glass-shadow` (for floating drop-shadow)
+- `--tv-glow` (general glow token, distinct from `--tv-glow-brand-color`)
+- `--tv-brand-gradient` (resolver path; see C11)
+
+Each needs a manifest entry + resolver path.
+
+**C19 — Pass 5a (glass-backdrop) needs 4-stop spec.** Lab `.glass-backdrop` is a 4-stop radial gradient using brand ramp `_9/_7` stops, with `inset: -2px` overshoot, `pointer-events: none`. Plan said "blobs." Section 5a updated with the full spec.
+
+**C20 — Frosted pane brightness delta.** Lab: `saturate(1.9) brightness(1.06)`. Tabviz `theme-runtime.css:205`: only `blur saturate(1.5)`. The brightness lift is the difference between "fog" and "lit pane." Add to Pass 5a.
+
+**C21 — Pass 5c bevel stack: 4 layers, not 1.** Lab paints `var(--glass-shadow)` (float drop) + `inset 0 1px 0 var(--glass-edge-hi)` (top specular) + `inset 0 0 0 1px var(--glass-faint)` (inner hairline) + `inset 0 -1px 0 var(--glass-edge-lo)` (bottom thickness). All 4 needed.
+
+**C22 — Pass 5b sheen: 2 gradients.** Lab `::before` has `linear-gradient(148deg, ...)` PLUS `radial-gradient(80% 40% at 50% -10%, ...)`. Both needed; 148° angle is specific; opacity 0.9.
+
+**C23 — Pass 5d collides with Pass 1c B17.** Both deliver caption-chip primitives. Declare 5d as ONLY the variant catalog extension to 1c's primitive; don't ship two Svelte components.
+
+### Preset additions
+
+**C24 — Add Ledger + Terminal + Aurora presets explicitly.** Pass 2a/2b name them as "consider adding"; bump to MUST-add with explicit slot enumeration.
+
+**C25 — Add Blueprint + Sunprint presets.** Lab ships them (per `01-AB1-ledgerpad.png` screenshot's preset rail). Plan misses entirely. Either add or explicitly defer.
+
+### Visual moves still impossible after full plan (catalogued)
+
+10 lab moves don't paint even after Passes 0-6 execute. Most cost-effective to defer rather than expand scope further:
+
+1. `.sci-paper { backdrop-filter: none }` — paper-inside-glass double-blur defense
+2. Subtitle (`sci-cap-sub`) type role — v4 9-role matrix has no subtitle
+3. Continuous band reaching into `thead .gutter-cell` — structural concept absent
+4. Caption chip `box-shadow: var(--glow)` halo — addressed by C12
+5. Brutalist `outline-offset` hover affordance
+6. `is-highlight` row + 3px inset bar
+7. Dose-response footer band (full-width tinted footer with monospace label)
+8. "Highlight" pill toggle (in-widget toolbar primitive)
+9. Caption strip `box-shadow: var(--glow)` lift
+10. Dose-response footer + selection-row treatments
+
+Document as "post-V4 backlog" — close substrate gaps in a future plan.
+
+### Diagnostic track corrections
+
+**C26 — D1 (padding runaway) is caused by Pass 1a wrap.** Adding `--tv-shell-padding` AND `--tv-paper-padding` to existing `.tabviz-container` chain compounds padding multiplicatively. **Gate D1 on Pass 1a landing** with hard stop if any preset's padding grows >20%. NOT parallel.
+
+### Decision flips from Round 2
+
+**D2 FLIP: containerRef → OUTER scope (not inner).** Per C2 evidence: drag bounding rect, paint mode hit-test, overlay coordinate origin all need outer. Lock D2 = OUTER. Inner-scope `.tv-paper` is the painting target but not the event/measurement anchor.
+
+### Resolver-as-manifest-table refactor
+
+**C27 — CLAUDE.md flags this as "urgent" — schedule as Pass 0d or accept the gap.** `effects.title_style="bar"` and similar `tier: "input"` tokens will silently bypass the dev-throw safety net until the refactor lands. Either schedule before substrate growth or document the silent-bypass surface.
+
+### Discoverability + R API surface
+
+**C28 — `?web_theme` man page will have ~25 args post-Pass-2.** Pass 2a step 5 says "Document in CLAUDE.md" — for agents, not R users. Amend: require worked `@examples` block in `web_theme()` roxygen showing brutalist-style rubrication (B7 ink2), monochrome (B8), `set_status_palette()` (D4).
+
+**C29 — roxygen `@seealso` cross-refs.** `?set_status` doesn't mention `set_status_palette`. Add bidirectional cross-refs in Pass 6c.
+
+**C30 — Save/share/diff gaps** — defer to post-V4 backlog OR add as Pass 6 step 7 (localStorage persistence of last-N studio inputs keyed by base preset). Recommend defer; not blocking.
+
+### Frontend-design skill convergence guard
+
+**C31 — Brutalist font: NOT Space Grotesk.** Skill warns: "NEVER converge on common choices (Space Grotesk, for example) across generations." Use Archivo Black (body) + Bowlby One (display), or another distinctive pair. Section 1c updated.
+
+**C32 — Audit every preset's typography for AI-slop convergence.** Today's distinctness probe shows 4 presets use Inter, 2 use system-ui — these are exactly the fonts the skill flags as "AI-aesthetic slop." Each preset must commit to an intentional pair.
 
 ---
 
@@ -75,30 +217,53 @@ Risk: medium. Pure surface refactor; no semantic change. If visual regression ca
 
 Goal: every effects/shell/texture pin in the substrate becomes observable. Synthwave actually glows, Brutalist actually shows its grid texture, the elevation series produces a real raised-paper card.
 
+**REORDER 2026-06-04 per C6 (aesthetic agent):** within Pass 1 the execution order is `1a → 1d → 1b → 1c → 1e`, NOT the section order below. Rationale: `1a + 1d + 1b` = **brutalist runnable in 3 commits** (texture wrap + Archivo Black/Bowlby One fonts + vermilion stars). This is the "first runnable demo" milestone proving Pass 1 is alive. The heavier 1c (caption chip + brand-gradient resolver per C11/C12) lands after the demo holds. 1e (density_factor pins per D7) lands last. Subsection numbering kept as-is for reference; agents executing should respect the reorder.
+
+**Per C7:** within 1a itself, split CSS injection into 2 commits — first non-backdrop-filter rules (texture + glow + shell-strip), second backdrop-filter (Safari/iOS compositing layer isolation).
+
+**Per C10:** before 1a lands, reconcile the two glow paths. `TabvizPlot.svelte:3077` already has `box-shadow: var(--tv-glow-blur)` on `.row-active-emphasis`. Pass 1a adds `.tv-glow` class. Audit + decide which owns glow; delete the other or scope under a different selector. Otherwise synthwave glows twice.
+
 ### 1a. **B14** — shell+paper DOM wrapper + real `theme-runtime.css` import
 
 **The single most important change in the plan.** Per the aesthetic agent: the substrate ships shell/paper/texture/glass tokens, the resolver fills them, but the canonical paint surface is dead-imported. One DOM wrap + one CSS import wires all of it.
 
-**⚠ CORRECTED 2026-06-04 after aesthetic-agent review.** The initial wrap shape used `.tabviz-shell` / `.tabviz-paper`. The actual `theme-runtime.css` selectors gate on `.tabviz-scope` (parent) + `.tv-shell` / `.tv-paper` (children) + `data-*` on the scope. The plan would have shipped zero observable change. Corrected shape below.
+**⚠ CORRECTED TWICE — 2026-06-04.** Round 1 used `.tabviz-shell` / `.tabviz-paper` (wrong). Round 2 used `.tabviz-scope tv-shell` on same node (STILL wrong — CSS selectors are descendant `.tabviz-scope .tv-shell`). Round 3 corrected shape below uses 3 nested elements.
+
+Per C4: `theme-runtime.css` uses descendant selectors, not same-node compound. `.tabviz-scope .tv-shell` requires `.tv-shell` to be a child of `.tabviz-scope`. Three-node nesting is required.
 
 Steps:
-1. `srcjs/src/svelte/TabvizPlot.svelte` — wrap the existing widget DOM as:
+1. `srcjs/src/svelte/TabvizPlot.svelte` — wrap the existing widget DOM as 3 NESTED elements:
    ```svelte
-   <div class="tabviz-scope tv-shell"
+   <div class="tabviz-container tabviz-scope"
         data-shell-mode={inputs?.shell_mode ?? "flush"}
         data-shell-texture={inputs?.shell_texture ?? "none"}
         data-shell-surface={inputs?.shell_surface ?? "opaque"}>
-     <!-- shell-strip element for brand-gradient seam (lab `.shell-strip`) -->
-     {#if inputs?.effects?.gradient_shell_intensity !== "none"}
-       <div class="shell-strip"></div>
+     <!-- Pass 5a: glass-backdrop blob layer (sibling, behind everything) -->
+     {#if inputs?.shell_surface === "glass"}
+       <div class="tv-glass-backdrop" aria-hidden="true"></div>
      {/if}
-     <!-- glow-bearing class for chrome-wide glow (lab `.tv-glow`) -->
-     <div class="tv-paper {inputs?.effects?.glow_intensity !== 'none' ? 'tv-glow' : ''}"
-          data-paper-texture={inputs?.paper_texture ?? inputs?.shell_texture ?? "none"}>
-       <!-- existing widget DOM -->
+     <div class="tv-shell"
+          data-shell-mode={inputs?.shell_mode ?? "flush"}>
+       <!-- shell-strip element for brand-gradient seam (lab .shell-strip) -->
+       {#if inputs?.effects?.gradient_shell_intensity !== "none"}
+         <div class="shell-strip"></div>
+       {/if}
+       <!-- glow-bearing class for chrome-wide glow (lab .tv-glow) -->
+       <div class="tv-paper {inputs?.effects?.glow_intensity !== 'none' ? 'tv-glow' : ''}"
+            data-paper-texture={inputs?.paper_texture ?? inputs?.shell_texture ?? "none"}>
+         <!-- existing widget DOM (containerRef points HERE for content metrics,
+              OR at .tabviz-container for event/measurement anchor — see D2 FLIP -->
+       </div>
      </div>
    </div>
    ```
+   **D2 LOCKED → OUTER** (per C3): `containerRef` stays at `.tabviz-container` (event/measurement anchor). Add `paperRef = .tv-paper` for content-bounded reads if any new consumer needs the clean rect. **Most existing 17 containerRef consumers stay correct without changes** because they want the event/drag/overlay coordinate origin.
+
+   Why 3 nested elements (not 2):
+   - `.tabviz-container`/`.tabviz-scope` carries `data-shell-*` attrs (CSS selector gate)
+   - `.tv-shell` is a descendant child so `.tabviz-scope .tv-shell` matches
+   - `.tv-paper` is a descendant of `.tv-shell` so paper-only CSS rules don't cascade to shell chrome
+   - `.tv-glass-backdrop` is a sibling-before of `.tv-shell` so it sits BEHIND the frosted pane (z-index discipline)
 2. Inject `theme-runtime.css` via `<svelte:head>` (`import runtimeCss from "$lib/theme/theme-runtime.css?raw"`).
 3. **Verify selector match before declaring victory.** Concretely:
    - `theme-runtime.css:128-141` (texture rules) — selector is `.tabviz-scope[data-shell-texture="grid"] .tv-shell`; **the wrap above satisfies this when `.tabviz-scope` is the parent and `.tv-shell` shares the same node OR is a child.** Audit the rule's structure before committing.
@@ -120,21 +285,26 @@ Risk: medium-high. Widget root DOM is the hottest seam in the codebase. Touches 
 
 Per the cross-preset probe, all 22 presets share identical `STATUS_ANCHOR_FALLBACK` semantics. Brutalist should have its vermilion `*` markers; clinical themes should keep clean semantic palettes; LOTR themes get period-appropriate semantics.
 
-**⚠ CORRECTED 2026-06-04.** Aesthetic agent flagged: pinning status anchors **does not** automatically paint vermilion `**` significance markers in `colPvalue` cells. Today's consumer paths:
-- `CellBadge.svelte:62-64` — explicit badge cells with explicit severity
-- `CellRing.svelte:65-67` — ring threshold encoding
+**⚠ CORRECTED TWICE — 2026-06-04.** Round 1 said "match `**` / `***` cell value." Round 2 (UX agent) corrected via C8: significance markers aren't cell values — they live in `<span class="pvalue-stars">` rendered by `CellPvalue.svelte:78` and painted `color: var(--tv-accent)` at line 96. The real fix is a **one-line color swap** on the existing span, gated on `isSignificant` (already computed at `CellPvalue.svelte:23-37`).
 
-`**` markers in p-value columns are rendered as plain text by `colText` / `colPvalue` and don't consult the status palette. **B5 alone doesn't close the brutalist screenshot's vermilion.** Need EITHER:
-- (a) New `colPvalue` significance-marker convention: when a cell value matches `**` / `***`, paint in `var(--tv-status-negative)`. Add to Pass 1b as a separate sub-task.
-- (b) Author-time application: instructions for the user to apply the paint tool with the `negative` token to significant cells.
-
-Recommend (a) — automatic on `colPvalue` rendering. (b) only as a documented workaround.
+Plus per C9: D6 (status theme-scoped) breaks OS-forced HC. Need OS-HC override branch.
 
 Steps:
 1. In `srcjs/src/lib/theme/theme-presets-inputs.ts`: add `status: { positive, negative, warning, info }` triples to each preset that wants a distinctive semantic palette. Showcase + LOTR first (highest visual differentiation), journals second.
 2. R-side: mirror in `R/themes-*.R` so the wire stays parity-equal.
-3. **NEW:** Wire `colPvalue` cells to paint significance markers in `var(--tv-status-negative)` when value matches `**` / `***`. Touches `srcjs/src/components/table/CellPvalue.svelte` (or wherever pvalue rendering lives).
-4. Re-run `tests/testthat/test-parity-themes.R` (KNOWN_DIVERGENCES = empty must hold).
+3. **REVISED:** Add a `significanceColor` option to `col_pvalue` (default `"accent"`, with `"negative"` and `"none"` choices). `CellPvalue.svelte:96` reads it and swaps the `.pvalue-stars` color:
+   ```svelte
+   <span class="pvalue-stars" style:color={
+     isSignificant && options.significanceColor === "negative"
+       ? "var(--tv-status-negative)"
+       : "var(--tv-accent)"
+   }>{stars}</span>
+   ```
+   Brutalist (and any preset wanting vermilion significance) pins `col_pvalue(..., significance_color = "negative")` in its example fixtures. Substrate default stays `"accent"`.
+4. R API mirror: `col_pvalue()` constructor accepts `significance_color` arg. Roxygen updated.
+5. **NEW per C9:** Add OS-forced HC override branch. When `inputs.mode === "high-contrast"`, status palette overrides revert to `STATUS_ANCHOR_FALLBACK` (curated HC-safe). One branch in `resolveStatusComputed`.
+6. New visual fixture: `tests/visual/pvalue-significance.R` running brutalist + cochrane through a 3-threshold pvalue table.
+7. Re-run `tests/testthat/test-parity-themes.R` (KNOWN_DIVERGENCES = empty must hold).
 
 Validation:
 - Visual regression: badges in brutalist render vermilion. **AND p-value `**` markers in brutalist render vermilion.**
@@ -144,11 +314,24 @@ Risk: low (data change) + low (one renderer wiring). Parity test catches drift.
 
 ### 1c. **B15** — brutalist body font
 
-Two-line change. `R/themes-showcase.R`'s `web_theme_brutalist()` pins `fonts.body = "'Inter', ..."`. Lab uses Space Grotesk. Change to Space Grotesk + add to `web_fonts`.
+Two-line change. `R/themes-showcase.R`'s `web_theme_brutalist()` pins `fonts.body = "'Inter', ..."`. Lab uses Space Grotesk.
 
-Validation: brutalist preset renders with display-sans body. Parity test must still pass.
+**⚠ CORRECTED 2026-06-04 after frontend-design skill load.** The skill explicitly warns: *"NEVER converge on common choices (Space Grotesk, for example) across generations."* Both prior agent reviews recommended Space Grotesk. Doing what the lab does there is itself a generic-AI-aesthetic anti-pattern.
 
-Risk: trivial.
+**Pick something more intentional.** Brutalist candidates that match the aesthetic without converging:
+- **Archivo Black** (heavy industrial display)
+- **Antonio** (condensed brutalist, very narrow)
+- **Public Sans Display** (US-gov inspired, more political)
+- **Plus Jakarta Sans** with heavy weight
+- A stencil face like **Stencil Std**
+
+Recommend Archivo Black for body + an even heavier display face (e.g. **Bowlby One**) for title/headers. Adds `web_fonts` Google Fonts URLs.
+
+Validation: brutalist preset renders with chunky, geometric body — distinctively NOT Inter. Parity test must still pass.
+
+**Cross-cutting (added per skill):** Apply the same lens to every preset's typography. Today's preset distinctness probe shows lancet/nejm/newsprint all share Georgia (defensible — editorial serif), but tonal/tonal_dark/solarized/solarized_dark/executive all share Inter — generic AI default. Each preset must commit to a font pair that is intentional for its aesthetic.
+
+Risk: trivial code change. Higher discipline cost: requires curating 22 distinctive font pairs.
 
 ### 1d. **B17 (PROMOTED from Pass 5)** — caption chip + brand-gradient strip primitives
 
@@ -309,32 +492,125 @@ Risk: low-medium. Self-contained studio component.
 
 ---
 
-## Pass 5 — Net-new substrate (revised after agent review)
+### 4b. **(NEW per C15)** Bi-directional cascade trace — hover/click widget cell → light up tokens
 
-**Aesthetic agent identified 4 lab visual moves the plan misses entirely.** Adding them here as candidates; B17 was promoted to Pass 1c.
-
-### 5a. **Glass-backdrop blob layer**
-
-`lab.css:151-160` paints a 4-stop radial-gradient blob layer BEHIND the frosted pane that gives glass refraction real structure. Tabviz has no DOM for it, no CSS, no token. **Without it, Aurora and Glass-Light themes render as flat milky rectangles, not aurora.**
+Goal: realize the lab's signature pedagogy (`01-Y1-states.png`). `inspectorStore.trace` already exists; today only CascadeView pedagogical widgets call it. The widget cells never do.
 
 Steps:
-- Add `<div class="tv-glass-backdrop">` sibling to `.tv-shell` (positioned absolutely behind, blur target)
-- Add `--tv-glass-backdrop-blobs` manifest token + resolver path
-- Add `effects.glass_backdrop ∈ {"none","aurora","subtle"}` input
+1. Each `srcjs/src/components/table/Cell*.svelte` (14 files) adds `data-trace-tokens` attribute on its root element carrying the cssVars it consumes (e.g. `data-trace-tokens="--tv-cell-fg,--tv-cell-border"`).
+2. Click handler on `.tv-paper`: walks `event.target.closest('[data-trace-tokens]')`, splits the attribute, calls `inspectorStore.trace(firstVar, resolvedTheme)`.
+3. CascadeView's panel highlights the matching token + traces its provenance per existing one-way trace.
+4. Visual fixture: studio with a `data-trace-tokens` overlay enabled in dev mode.
 
-Risk: medium. Net-new DOM + CSS + manifest entry.
+Validation:
+- Click any cell in the studio → CascadeView highlights its tokens.
+- No regression to existing studio-only click-to-trace.
 
-### 5b. **Diagonal specular sheen on glass**
+Risk: medium. Touches 14 Cell components but each change is mechanical.
 
-`lab.css:188-194` paints a `::before` diagonal-sheen on `.glass`. Pure-CSS one-line addition to `theme-runtime.css`. Cheap.
+### 4c. **(NEW per C16)** Onboarding chrome + ARIA
 
-### 5c. **Inset bevel shadow stack on glass**
+Steps:
+1. Every Tier-1 category in `ThemeControlsStrip.svelte` gets a `<button class="hint">?</button>` next to the header. Click/hover → one-sentence tooltip reusing roxygen `@param` text from `R/themes-api.R`.
+2. New tabbed rail (D5) implements ARIA Authoring Practices tablist pattern: `role="tablist"`, `role="tab"`, `aria-controls`, `aria-selected`, arrow-key nav.
+3. Tooltip texts curated for: Color / Type / Size / Shell / Effects + sub-controls.
 
-`lab.css:180-184` paints a 4-layer inset-bevel `box-shadow` on `.glass`. Currently `theme-runtime.css:204` only sets `backdrop-filter`. Without the bevel, glass reads as "blurry rectangle" not "glass pane." CSS-only.
+Validation:
+- Studio screen-reader navigation works (axe-core or manual NVDA/VoiceOver pass).
+- Tooltip click → tooltip visible.
 
-### 5d. **Caption-chip cluster expansion**
+Risk: low. Pure UX chrome.
 
-B17 promoted to Pass 1c covers the chip + strip primitives. Pass 5d extends them with the variants (lab uses both compact chips and full strips, with optional accent rules between them).
+### 4d. **(NEW per C17)** `tint_from_brand()` macro
+
+Closes the 25-knob fan-out trap when an author wants "everything tinted from one brand color."
+
+Steps:
+1. R modifier `tint_from_brand(theme, strength = c("subtle", "medium", "vivid"))` nudges paper/ink/accent/ink2 H toward brand H without changing L. Uses OKLCH math.
+2. Studio: "Match brand" button at top of Color tab; clicking it applies the modifier visibly (with undo).
+3. Example block in `?web_theme` showing the workflow.
+
+Validation:
+- After clicking "Match brand," all anchor swatches shift H toward brand; L unchanged.
+
+Risk: low.
+
+---
+
+## Pass 5 — Net-new substrate (revised after Round 2 review)
+
+Aesthetic agent identified 4 lab visual moves the plan misses entirely. Adding them here; B17 was promoted to Pass 1c.
+
+**8 net-new manifest tokens (per C18) enumerated explicitly:**
+- `--tv-glass-tint` (color base for the frosted pane background)
+- `--tv-glass-faint` (color for inner hairline + 1px border)
+- `--tv-glass-edge-hi` (color for top specular bevel)
+- `--tv-glass-edge-lo` (color for bottom thickness bevel)
+- `--tv-glass-sheen` (color for `::before` diagonal sheen overlay)
+- `--tv-glass-shadow` (CSS shadow stack for floating drop shadow)
+- `--tv-glow` (general chrome-wide glow token, distinct from `--tv-glow-brand-color`)
+- `--tv-brand-gradient` (NEW resolver path emitting multi-stop gradient string per C11)
+
+Each token needs a manifest entry + resolver path. All keyed off existing anchors (brand for gradient/glow; paper-derived for glass-tint/faint/edge variants).
+
+### 5a. **Glass-backdrop blob layer** (per C19)
+
+Lab `.glass-backdrop` (`lab.css:151-160`) is a **4-stop radial gradient** layered on `--surface-base` using brand ramp `_9/_7` stops, with `inset: -2px` overshoot for edge bleed and `pointer-events: none` discipline. Without it, Aurora and Glass-Light themes render as flat milky rectangles.
+
+Plus per C20: lab's frosted pane has `backdrop-filter: blur(N) saturate(1.9) brightness(1.06)`. Tabviz `theme-runtime.css:205` only has `blur saturate(1.5)`. **The brightness lift is the difference between "fog" and "lit pane."** Both deltas land in 5a.
+
+Steps:
+1. Add `<div class="tv-glass-backdrop" aria-hidden="true">` as sibling-before of `.tv-shell` in Pass 1a's wrap (already shown in the corrected 3-nested-element snippet above). Z-index: behind everything.
+2. CSS: `.tv-glass-backdrop` paints when `data-shell-surface="glass"` on `.tabviz-scope` ancestor. Background: `radial-gradient` 4-stop using `var(--tv-glass-backdrop-blobs)` token.
+3. Resolver path: `--tv-glass-backdrop-blobs` emits a 4-stop gradient string using brand ramp grades 7 and 9, accent grade 9 if accent is set, plus brand grade 7.
+4. Manifest entry: `--tv-glass-backdrop-blobs` (`tier: "computed"`).
+5. Add `effects.glass_backdrop ∈ {"none","aurora","subtle"}` input — when "none" the backdrop element doesn't render; when "subtle" the gradient stops are at lower chroma; "aurora" is the lab's default.
+6. R API mirror.
+7. Update `.tv-paper` rule: `backdrop-filter: blur(var(--tv-glass-blur, 16px)) saturate(1.9) brightness(1.06)` — three filters, not one.
+8. Add `.sci-paper { backdrop-filter: none }` (the paper-inside-glass double-blur defense per #1 in the "10 visual moves still impossible" list).
+
+Risk: medium-high. Net-new DOM + CSS + manifest + input enum + R API.
+
+### 5b. **Diagonal specular sheen on glass** (per C22)
+
+Lab `.widget-frame.glass::before` (`lab.css:188-194`) paints **two gradients**:
+- `linear-gradient(148deg, ...)` (the specific 148° angle is non-negotiable; it matches the lab's preferred "viewer above-left" specular)
+- `radial-gradient(80% 40% at 50% -10%, ...)` (the off-canvas radial gives the sheen a focal point)
+- Combined with `opacity: 0.9` and `z-index: -1`.
+
+Pure-CSS addition to `theme-runtime.css`. Both gradients use the new `--tv-glass-sheen` token (1 token, but the rule uses it twice).
+
+Risk: low.
+
+### 5c. **Inset bevel shadow stack on glass** (per C21)
+
+Lab paints **4 layered shadows** on `.glass` (`lab.css:180-184`):
+1. `var(--glass-shadow)` — the floating drop shadow (uses `--tv-glass-shadow`)
+2. `inset 0 1px 0 var(--glass-edge-hi)` — top specular highlight (uses `--tv-glass-edge-hi`)
+3. `inset 0 0 0 1px var(--glass-faint)` — inner hairline (uses `--tv-glass-faint`)
+4. `inset 0 -1px 0 var(--glass-edge-lo)` — bottom thickness (uses `--tv-glass-edge-lo`)
+
+Without all 4, the pane reads as a blurry rectangle. CSS-only emit; uses the 4 tokens defined in the enumeration above.
+
+Risk: low.
+
+### 5d. **Caption-chip cluster expansion** (per C23, scope-limited)
+
+B17 promoted to Pass 1c already delivers the caption-chip primitive Svelte component + its base manifest cluster. **Pass 5d is ONLY the variant catalog extension** (compact chip / full strip / accent-rule between them). Does NOT ship a separate Svelte component — extends 1c's component with variant props.
+
+Plus per C12: caption chip needs `box-shadow: var(--glow)` halo. Without it the chip is flat. Add to 1c's manifest cluster:
+- `--tv-caption-chip-shadow` token (default `var(--tv-glow)`)
+- Chip rule: `box-shadow: var(--tv-caption-chip-shadow)`
+
+Risk: low — extends existing 1c primitive.
+
+### 5e. **Add Blueprint + Sunprint presets (per C25)**
+
+Lab ships 7 named presets in screenshots: Ledger, Brutalist, Aurora, Terminal, Blueprint, Sunprint, Synthwave. Tabviz has Brutalist + Synthwave already. Pass 2a/2b add Ledger + Terminal + Aurora. **Pass 5e adds Blueprint + Sunprint** — both editorial print-inspired themes that lean on `--tv-shell-texture-ruled` (Blueprint = navy paper + grid texture + monospace; Sunprint = cyanotype blue paper + Helvetica + dramatic accents).
+
+Each preset goes in `srcjs/src/lib/theme/theme-presets-inputs.ts` + `R/themes-showcase.R` + `package_themes()` showcase category + the studio's switcher (which already auto-picks them up from `THEME_NAMES`).
+
+Risk: low (data-only).
 
 ---
 
@@ -342,28 +618,56 @@ B17 promoted to Pass 1c covers the chip + strip primitives. Pass 5d extends them
 
 ---
 
-## Pass 6 — Wire version lock + parity-set bump (NEW, added after API agent review)
+## Pass 6 — Wire version lock + parity-set bump (SPLIT after Round 2 review)
 
-Goal: every additive change in Passes 2-3 is reflected in `CURRENT_VERSION` and the parity test field set. Prevents the "supported in practice, undocumented in version contract" anti-pattern.
+**REORDER per C5**: 6a moves BEFORE Pass 2 substantive work; only 6b/6c run at the end. Otherwise parity test stays red through Passes 2-3.
+
+### 6a. Schema slots first (runs BEFORE Pass 2)
+
+Goal: open R-side S7 slots with defaults so Pass 2's TS field additions don't break parity instantly.
 
 Steps:
-1. **Bump `CURRENT_VERSION`** in `srcjs/src/spec/index.ts` from `"1.2"` to `"1.3"` once Pass 2 lands. Single bump (not per-sub-pass).
-2. **Extend parity test field set** in `tests/testthat/test-parity-themes.R` to expect `ink2`, `alias_neutral_to_brand` (or `monochrome`), `effects.header_style`, `effects.title_style`. Tolerance unchanged.
-3. **Update `R/wire-version.R`** with the new version + a one-line changelog entry noting the field additions.
-4. **Round-trip test**: write a regression test that constructs a theme with all new inputs set, serializes through R → V8 → R, asserts every input round-trips.
-5. **Update NEWS.md** (R-side changelog) — per UX agent: downstream Shiny app developers need notice. One paragraph covering: new anchor `ink2`, new boolean (B8), new effects (header/title styles), DOM wrapping change from Pass 0/1a.
-6. **Update `srcjs/src/spec/v1.0.json`** if the wire schema doc lives there (verify location).
+1. Add R S7 slots for the new fields on the `ThemeInputs` / `ThemeAnchors` / `ThemeEffects` classes:
+   - `anchors@ink2_L`, `anchors@ink2_C`, `anchors@ink2_H` (NA defaults)
+   - `monochrome` boolean (default FALSE)
+   - `effects@header_style`, `effects@title_style` (default "normal")
+2. Set defaults so existing presets construct unchanged.
+3. Extend `R/utils-serialize.R::theme_inputs_to_json()` to emit the new fields when set (omit when default).
+4. Extend `KNOWN_DIVERGENCES` allowlist in `tests/testthat/test-parity-themes.R` for the **transitional period only** — entries like `c("effects.header_style", "effects.title_style")` get removed in 6b once both sides emit.
+5. Run R suite — must stay green at this commit.
 
-Validation:
-- Parity test passes with new field set.
-- Round-trip test passes.
-- `R CMD check --as-cran` clean (NEWS.md formatting matters for CRAN).
+Risk: low. Pure schema addition with defaults.
 
-Risk: low; pure bookkeeping. But high-value — prevents post-merge ambiguity about what V1.3 means.
+### 6b. Wire bump + parity sync (runs AFTER Pass 2/3 substantive work)
+
+Steps:
+1. **Bump `CURRENT_VERSION`** in `srcjs/src/spec/index.ts` from `"1.2"` to `"1.3"`. Single bump.
+2. **Update `R/wire-version.R::WIRE_FORMAT_VERSION`** to match.
+3. Confirm `srcjs/src/spec/v1.0.json` doesn't need a rename (per CLAUDE.md `additionalProperties: true` policy, minor bumps reuse the same file).
+4. **Drain `KNOWN_DIVERGENCES`** from 6a's transitional allowlist. Parity test must pass with the full field set including `ink2`, `monochrome`, `effects.header_style`, `effects.title_style`.
+5. **Round-trip test**: construct a theme with every new input set, serialize R → V8 → R, assert preservation.
+6. Re-run `test-wire-version.R` (enforces R↔TS constant match).
+
+Risk: medium. Parity-allowlist drain is the load-bearing step.
+
+### 6c. Downstream notice + discoverability
+
+Steps:
+1. **Update NEWS.md** — covering DOM change from Pass 0/1a (downstream Shiny CSS may need updates), new anchor `ink2`, new `monochrome` boolean, `effects.header_style`/`effects.title_style`, `set_status_palette()`, `significance_color` arg on `col_pvalue`.
+2. **Roxygen `@seealso` cross-refs** (per C29):
+   - `?set_status` → `@seealso set_status_palette`
+   - `?set_status_palette` → `@seealso set_status`
+   - `?web_theme` `@examples` block per C28 with worked rubrication example (B7 ink2)
+3. **Optional Pass 6d (deferred)**: localStorage persistence of last-N studio-store inputs keyed by base preset. Per C30 — defer to post-V4 backlog OR include if time permits.
+4. `R CMD check --as-cran` clean.
+
+Risk: low (docs only).
 
 ---
 
-## Diagnostic track (parallel)
+## Diagnostic track (NOT parallel per C26)
+
+**REVISED 2026-06-04 per C26:** D1 is gated on Pass 1a landing, not parallel. The DOM wrap adds `--tv-shell-padding` and `--tv-paper-padding` between `.tabviz-container` and existing chrome consumers — padding compounds multiplicatively. Run D1 probe **after** 1a + before 1b, with a hard stop if any preset's padding grows >20%.
 
 ### D1. **B2** — group-padding runaway
 
@@ -389,7 +693,7 @@ All 9 decisions answered by user. Locked here for executor reference.
 | # | Decision | Locked answer |
 |---|---|---|
 | **D1** | `.tabviz-container` ↔ `.tabviz-scope` | **Sibling class on same node.** `class="tabviz-container tabviz-scope"` on existing root. Zero new DOM, zero consumer breakage. |
-| **D2** | `containerRef` outer or inner | **Inner (`.tv-paper`).** Clean content rect; layout math stays sane. |
+| **D2** | `containerRef` outer or inner | **OUTER (`.tabviz-container`/`.tabviz-scope`).** ~~Inner (.tv-paper)~~ FLIPPED 2026-06-04 per Round 2 review (C3): containerEl is also click/keyboard target for paint mode AND dnd hit-test root + overlay coordinate origin; inner shrinks drop zone silently. Add `paperRef = .tv-paper` if any consumer needs the clean content rect. |
 | **D3** | Monochrome boolean name | **`monochrome`** (drops rgc parity on the name for discoverability). |
 | **D4** | `set_status` override semantics | **Per-slot override (existing) + new `set_status_palette(theme, palette = list(...))` convenience** for atomic clobber. Both verbs available. |
 | **D5** | Studio rail | **Move Color to its own tab.** Right rail becomes tabbed (Color / Effects / Typography / ...). More IA work; each tab gets full real estate. |
