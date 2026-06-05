@@ -35,33 +35,36 @@ import { resolveTheme } from "./resolve-theme";
  *  After resolving from authoringInputs, applies theme.spacing.* as
  *  override pins. This honors callers that mutate `spec.theme.spacing.X`
  *  after construction (a v3-era pattern that bypasses the v4 wire). */
-// Memoized per theme identity (same pattern as theme-css.ts's
-// buildThemeCSS cache). Without this, every call re-ran the FULL cascade
-// (wire → ramps → roles → ~140-token manifest walk) — and there are 50+
-// call sites, several per-cell in column renderers (adversarial
-// code-quality review, 2026-06-05). Theme objects are replaced wholesale
-// on edit (the $state.raw contract), so identity keying is safe;
-// spacing pins are applied from the same theme object, so they're part
-// of the cached result.
-const cssVarsCache = new WeakMap<object, Record<string, string>>();
+// The expensive cascade (wire → ramps → roles → ~140-token manifest
+// walk) is memoized per authoringInputs identity (same pattern as
+// theme-css.ts's buildThemeCSS cache). Without this, every call re-ran
+// the FULL cascade — and there are 50+ call sites, several per-cell in
+// column renderers (adversarial code-quality review, 2026-06-05).
+//
+// Spacing pins are deliberately NOT part of the cached value: the
+// v3-era `spec.theme.spacing.X = value` pattern mutates the theme
+// IN PLACE (same identity), and caching the pinned result returned
+// stale pins — caught immediately by svg-centering.test.ts's
+// rowGroupPadding gate. The pin application is ~17 assignments on a
+// spread; the cascade is the expensive part.
+const cascadeCache = new WeakMap<object, Record<string, string>>();
 
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
   if (!theme?.authoringInputs) return {};
-  const hit = cssVarsCache.get(theme);
-  if (hit) return hit;
-  let out: Record<string, string>;
-  try {
-    const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
-    const resolved = resolveTheme(wire);
-    out = applySpacingPins({ ...resolved.cssVars }, theme);
-  } catch {
-    // Resolver errors during the sprint are tolerated; consumers fall
-    // back to v3 reads. Drift gates + visual regression catch silent
-    // mismatches.
-    out = {};
+  let base = cascadeCache.get(theme.authoringInputs);
+  if (!base) {
+    try {
+      const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
+      base = resolveTheme(wire).cssVars as Record<string, string>;
+    } catch {
+      // Resolver errors during the sprint are tolerated; consumers fall
+      // back to v3 reads. Drift gates + visual regression catch silent
+      // mismatches.
+      base = {};
+    }
+    cascadeCache.set(theme.authoringInputs, base);
   }
-  cssVarsCache.set(theme, out);
-  return out;
+  return applySpacingPins({ ...base }, theme);
 }
 
 /** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override

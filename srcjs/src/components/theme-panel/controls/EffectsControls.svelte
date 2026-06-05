@@ -14,9 +14,13 @@
   const {
     inputs,
     onchange,
+    onpreview,
   }: {
     inputs: ThemeInputs;
     onchange: (next: ThemeInputs) => void;
+    /** C53 preview channel — angle-slider drag ticks (see
+     *  DensityControls; adversarial UX review H1). */
+    onpreview?: (next: ThemeInputs) => void;
   } = $props();
 
   const GLOW_INTENSITY = ["none", "subtle", "neon"] as const;
@@ -37,11 +41,14 @@
   function set<K extends keyof NonNullable<ThemeInputs["effects"]>>(
     key: K,
     value: NonNullable<ThemeInputs["effects"]>[K],
+    commit = true,
   ): void {
-    onchange({
+    const next = {
       ...inputs,
       effects: { ...inputs.effects, [key]: value },
-    });
+    };
+    if (commit || !onpreview) onchange(next);
+    else onpreview(next);
   }
 </script>
 
@@ -98,7 +105,8 @@
       <span class="label">Angle</span>
       <div class="angle">
         <input type="range" min="0" max="360" step="5" value={gradAngle}
-               oninput={(e) => set("gradient_shell_angle", parseFloat((e.currentTarget as HTMLInputElement).value))}
+               oninput={(e) => set("gradient_shell_angle", parseFloat((e.currentTarget as HTMLInputElement).value), false)}
+               onchange={(e) => set("gradient_shell_angle", parseFloat((e.currentTarget as HTMLInputElement).value), true)}
                aria-label="Gradient angle" />
         <code>{Math.round(gradAngle)}°</code>
       </div>

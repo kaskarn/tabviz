@@ -37,6 +37,7 @@
   }
 
   function setRadius(k: RadiusKey, v: number): void {
+    if (!Number.isFinite(v)) return; // typing-intermediate NaN guard (UX review H3)
     onchange({
       ...inputs,
       geometry: {
@@ -46,6 +47,7 @@
     });
   }
   function setBorder(k: BorderKey, v: number): void {
+    if (!Number.isFinite(v)) return;
     onchange({
       ...inputs,
       geometry: {
@@ -65,7 +67,7 @@
           <span class="cell-label">{k}</span>
           <input type="number" min="0" max="999" step="1"
                  value={radius(k)}
-                 oninput={(e) => setRadius(k, parseFloat((e.currentTarget as HTMLInputElement).value))} />
+                 onchange={(e) => setRadius(k, parseFloat((e.currentTarget as HTMLInputElement).value))} />
           <span class="suffix">px</span>
         </label>
       {/each}
@@ -79,7 +81,7 @@
           <span class="cell-label">{k}</span>
           <input type="number" min="0" max="8" step="0.25"
                  value={border(k)}
-                 oninput={(e) => setBorder(k, parseFloat((e.currentTarget as HTMLInputElement).value))} />
+                 onchange={(e) => setBorder(k, parseFloat((e.currentTarget as HTMLInputElement).value))} />
           <span class="suffix">px</span>
         </label>
       {/each}

@@ -3101,7 +3101,16 @@ function renderUnifiedTableRow(
     // inline branches below because they're not text composition;
     // they don't register an svg renderer so the dispatch returns
     // null and we fall through.
-    {
+    //
+    // WRAP-ENABLED columns bypass the schema dispatch: the tree path
+    // renders text single-line, so prose cells overflowed their pinned
+    // width and collided with neighbors (adversarial versatility review
+    // #2 — the legacy branch below has the only wrapping emitter, and
+    // it was unreachable for schema-handled types). The wrap line-count
+    // pre-pass already grew the row tracks; this makes the paint match.
+    const cellWrapVal = (col as { wrap?: boolean | number }).wrap;
+    const cellWrapEnabled = typeof cellWrapVal === "number" ? cellWrapVal > 0 : !!cellWrapVal;
+    if (!cellWrapEnabled) {
       const cellSch = row.cellStyles?.[col.field];
       const rowSch  = row.style;
       const rowIndex = rowIdToIndex.get(row.id);

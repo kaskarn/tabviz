@@ -7,9 +7,16 @@
   const {
     inputs,
     onchange,
+    onpreview,
   }: {
     inputs: ThemeInputs;
     onchange: (next: ThemeInputs) => void;
+    /** C53 preview channel — drag ticks go here (no measure / no history
+     *  step); the pointerup commit goes through onchange. Without it,
+     *  every factor-slider tick was a full commit: per-tick re-measure
+     *  in the widget, ~30 history steps per drag in the studio
+     *  (adversarial UX review H1). */
+    onpreview?: (next: ThemeInputs) => void;
   } = $props();
 
   const PRESETS = ["compact", "comfortable", "spacious"] as const;
@@ -19,8 +26,10 @@
   function setDensity(v: (typeof PRESETS)[number]): void {
     onchange({ ...inputs, density: v });
   }
-  function setFactor(v: number): void {
-    onchange({ ...inputs, density_factor: v });
+  function setFactor(v: number, commit: boolean): void {
+    const next = { ...inputs, density_factor: v };
+    if (commit || !onpreview) onchange(next);
+    else onpreview(next);
   }
 </script>
 
@@ -41,7 +50,8 @@
     <span class="label">Factor</span>
     <div class="factor">
       <input type="range" min="0.5" max="2" step="0.05" value={factor}
-             oninput={(e) => setFactor(parseFloat((e.currentTarget as HTMLInputElement).value))}
+             oninput={(e) => setFactor(parseFloat((e.currentTarget as HTMLInputElement).value), false)}
+             onchange={(e) => setFactor(parseFloat((e.currentTarget as HTMLInputElement).value), true)}
              aria-label="Density factor" />
       <code>×{factor.toFixed(2)}</code>
     </div>

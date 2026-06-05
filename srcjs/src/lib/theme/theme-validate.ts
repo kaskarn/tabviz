@@ -114,6 +114,25 @@ export function validateResolvedTheme(theme: WebTheme): void {
       path: ["--tv-text", "--tv-surface-bg"],
       minRatio: WCAG_AA_NORMAL,
     },
+    // Subtle/muted text (footnotes, captions, axis-tick labels — SMALL
+    // text, so the 4.5 normal-text bar applies). Unchecked until the
+    // adversarial color review (H3) found grade-6 subtle failing AA in
+    // every preset; the binding moved to grade 7 and this invariant
+    // keeps it honest.
+    {
+      name: "subtle text (footnotes/ticks): --tv-text-subtle must read on --tv-surface-bg",
+      fg: readVar(cv, "--tv-text-subtle", text) ?? text,
+      bg: surfaceBg,
+      path: ["--tv-text-subtle", "--tv-surface-bg"],
+      minRatio: WCAG_AA_NORMAL,
+    },
+    {
+      name: "muted text: --tv-text-muted must read on --tv-surface-bg",
+      fg: readVar(cv, "--tv-text-muted", text) ?? text,
+      bg: surfaceBg,
+      path: ["--tv-text-muted", "--tv-surface-bg"],
+      minRatio: WCAG_AA_NORMAL,
+    },
   ];
 
   const failures: ContrastFailure[] = [];

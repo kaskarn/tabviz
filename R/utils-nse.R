@@ -526,6 +526,14 @@ resolve_column_style <- function(col, data, env = parent.frame()) {
   result_data <- res$data
   col@style_accent <- res$col_name
 
+  # style_tooltip — was MISSING from this chain (adversarial API review
+  # F15): tooltip was the one style arg whose column-name typos shipped
+  # to the wire unvalidated and whose `~formula` was serialized as a raw
+  # deparsed string instead of being resolved against the data.
+  res <- resolve_one(col@style_tooltip, "tooltip")
+  result_data <- res$data
+  col@style_tooltip <- res$col_name
+
   list(col = col, data = result_data)
 }
 

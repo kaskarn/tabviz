@@ -13,12 +13,18 @@ import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
+// Option keys MUST match the schema's declared keys (pictogram parent:
+// maxGlyphs / halfGlyphs / domain / color / emptyColor). This renderer
+// originally read `maxStars`/`halfStars` — names the wire never emits —
+// so the count cap and half-star config were silently dropped to
+// defaults (adversarial extensibility review 1b; the drift gate only
+// checks consumedBy labels, not that a renderer reads the key by name).
 interface StarsOptions {
-  maxStars?: number;
+  maxGlyphs?: number;
   color?: string;
   emptyColor?: string;
   domain?: [number, number];
-  halfStars?: boolean;
+  halfGlyphs?: boolean;
 }
 
 const STAR_SIZE = CELL_GEOMETRY.stars.glyphPx;
@@ -57,12 +63,12 @@ const starsSvgRenderer: CellFormatter = (value, options, _ctx): RenderSvg => {
     return { kind: "svg", markup: "", width: 0, height: 0 };
   }
   const opts = (options as ColumnOptions | undefined)?.stars as StarsOptions | undefined;
-  const maxStars = Math.max(1, Math.min(20, opts?.maxStars ?? 5));
+  const maxStars = Math.max(1, Math.min(20, opts?.maxGlyphs ?? 5));
   const fillColor = opts?.color ?? DEFAULT_FILL;
   const emptyColor = opts?.emptyColor ?? DEFAULT_EMPTY;
   const rating = ratingFor(value, opts, maxStars);
   const filled = Math.floor(rating);
-  const hasHalf = (opts?.halfStars ?? false) && (rating - filled) >= 0.5;
+  const hasHalf = (opts?.halfGlyphs ?? false) && (rating - filled) >= 0.5;
 
   const totalWidth = maxStars * STAR_SIZE + (maxStars - 1) * STAR_GAP;
   const pieces: string[] = [];

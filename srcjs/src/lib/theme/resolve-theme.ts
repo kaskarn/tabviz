@@ -37,7 +37,7 @@ import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectL } from "./polarity";
-import { pickInkOnBg, oklchToHex } from "../oklch";
+import { pickInkOnBg, oklchToHex, contrastRatio } from "../oklch";
 import { BADGE_VARIANTS } from "../rendering-constants";
 
 /** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
@@ -982,6 +982,31 @@ function runCascade(wire: ThemeWire) {
     const binding = getRoleBinding(wire, role);
     roleSource[role] = binding;
     roles[role] = resolveRoleValue(role, binding, ramps12, alphaRamps, offRamp, wire.inputs.mode);
+  }
+
+  // Minimum-contrast guarantee for the secondary text roles. A fixed
+  // grade binding cannot guarantee legibility across arbitrary neutral
+  // ramps (elvish's pale low-chroma neutrals, terminal's monochrome
+  // phosphor ramp both failed AA at the bound grade — adversarial color
+  // review H3). Walk the role toward the ink end until it clears WCAG AA
+  // normal-text on the surface; `text` itself (grade 11, the ink end) is
+  // the ceiling — if THAT fails it's an anchor problem the validator
+  // reports separately. Pins via role-binding overrides are respected as
+  // the STARTING grade, never weakened.
+  const MIN_TEXT_CONTRAST = 4.5;
+  for (const role of ["text-subtle", "text-muted"] as RoleName[]) {
+    const binding = roleSource[role];
+    if (!binding || binding.ramp !== "neutral") continue;
+    let grade = binding.grade;
+    while (
+      grade < 11 &&
+      contrastRatio(roles[role], roles.surface) < MIN_TEXT_CONTRAST
+    ) {
+      grade += 1;
+      roles[role] = resolveRoleValue(
+        role, { ...binding, grade }, ramps12, alphaRamps, offRamp, wire.inputs.mode,
+      );
+    }
   }
 
   return { polarity, reflected, ramps12, alphaRamps, roles, roleSource };

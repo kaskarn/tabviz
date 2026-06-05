@@ -25,6 +25,7 @@
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
 import { applyPolarityToInputs } from "./resolve-theme";
+import { validateResolvedTheme } from "./theme-validate";
 import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import type {
   WebTheme, AccentRoles,
@@ -294,7 +295,7 @@ export function buildTheme(
     table: { thickness: 0, style: "single", color: t.rule_strong },
   };
 
-  return {
+  const built: WebTheme = {
     schemaVersion: 4,
     name,
     webFonts: [],
@@ -320,4 +321,19 @@ export function buildTheme(
     plot,
     marks,
   };
+
+  // Contrast guardrail — warn-only here (user themes with bad anchors
+  // still build; they just complain), throw-mode in the CI preset gate
+  // (theme-validate.test.ts). The validator was dead code until the
+  // adversarial color review (H4) noticed nothing ever called it.
+  if (typeof process === "undefined" || process.env?.NODE_ENV !== "production") {
+    try {
+      validateResolvedTheme(built);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(`[tabviz] theme "${name}" contrast check: ${(e as Error).message}`);
+    }
+  }
+
+  return built;
 }

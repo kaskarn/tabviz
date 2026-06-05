@@ -444,8 +444,11 @@ col_label <- function(field, header = NULL, width = NULL, max_chars = NULL,
 col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
                         digits = NULL, thousands_sep = FALSE, abbreviate = FALSE,
                         na_text = NULL, ...) {
-  # Validate mutual exclusivity of decimals and digits
-  if (!is.null(digits) && decimals != 2) {
+  # Validate mutual exclusivity of decimals and digits. Keyed on
+  # missing(), NOT on equality with the default: `decimals = 2, digits = 3`
+  # used to pass both silently because 2 was the default (adversarial API
+  # review F1).
+  if (!is.null(digits) && !missing(decimals)) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
   ts_args <- list(field = field, decimals = decimals,
@@ -494,8 +497,9 @@ col_n <- function(field, header = "N", width = NULL, decimals = 0,
     )
     field <- "n"
   }
-  # Validate mutual exclusivity of decimals and digits
-  if (!is.null(digits) && decimals != 0) {
+  # Validate mutual exclusivity of decimals and digits (missing()-keyed;
+  # see col_numeric / API review F1).
+  if (!is.null(digits) && !missing(decimals)) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
   ts_args <- list(field = field, header = header, decimals = decimals,
@@ -566,6 +570,11 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
   if (lifecycle::is_present(sep)) {
     lifecycle::deprecate_warn("0.9.0", "col_interval(sep)", "col_interval(separator)")
     separator <- sep
+  }
+  # Validate mutual exclusivity of decimals and digits (missing()-keyed;
+  # col_interval had NO guard at all -- API review F1).
+  if (!is.null(digits) && !missing(decimals)) {
+    cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
   if (is.null(point) || is.null(lower) || is.null(upper)) {
     lifecycle::deprecate_warn(
@@ -804,8 +813,9 @@ col_percent <- function(
     symbol = TRUE,
     na_text = NULL,
     ...) {
-  # Validate mutual exclusivity of decimals and digits
-  if (!is.null(digits) && decimals != 1) {
+  # Validate mutual exclusivity of decimals and digits (missing()-keyed;
+  # see col_numeric / API review F1).
+  if (!is.null(digits) && !missing(decimals)) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
 

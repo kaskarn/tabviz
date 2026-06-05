@@ -27,6 +27,7 @@ import { registerTextCompositionRenderers } from "./columns/text-composition-ren
 import { registerBadgeRenderer }      from "./columns/badge-renderer";
 import { registerIconRenderer }       from "./columns/icon-renderer";
 import { registerStarsRenderer }      from "./columns/stars-renderer";
+import { registerPictogramSvgRenderer } from "./columns/pictogram-svg-renderer";
 import { registerRingRenderer }       from "./columns/ring-renderer";
 import { registerProgressRenderer }   from "./columns/progress-renderer";
 import { registerSparklineRenderer }  from "./columns/sparkline-renderer";
@@ -56,6 +57,7 @@ export function bootBuiltinBehaviors(): void {
   registerBadgeRenderer();
   registerIconRenderer();
   registerStarsRenderer();
+  registerPictogramSvgRenderer();
   registerRingRenderer();
   registerProgressRenderer();
   registerSparklineRenderer();

@@ -24,10 +24,15 @@
     label: p.hint ? `${p.name} — ${p.hint}` : p.name,
   }));
 
+  // Number.isFinite guards: parseFloat("") during typing is NaN, which
+  // used to flow straight into the resolver; oninput->onchange means
+  // typing "14" no longer commits at "1" (adversarial UX review H3).
   function setBaseSize(v: number): void {
+    if (!Number.isFinite(v)) return;
     onchange({ ...inputs, type_base_size: v });
   }
   function setRatio(v: number): void {
+    if (!Number.isFinite(v)) return;
     onchange({ ...inputs, type_scale_ratio: v });
   }
   function setFont(slot: "body" | "display", v: string): void {
@@ -43,13 +48,13 @@
     <label class="field">
       <span class="label">Base</span>
       <input type="number" min="10" max="24" step="0.5" value={baseSize}
-             oninput={(e) => setBaseSize(parseFloat((e.currentTarget as HTMLInputElement).value))} />
+             onchange={(e) => setBaseSize(parseFloat((e.currentTarget as HTMLInputElement).value))} />
       <span class="suffix">px</span>
     </label>
     <label class="field">
       <span class="label">Ratio</span>
       <input type="number" min="1.05" max="1.6" step="0.025" value={ratio}
-             oninput={(e) => setRatio(parseFloat((e.currentTarget as HTMLInputElement).value))} />
+             onchange={(e) => setRatio(parseFloat((e.currentTarget as HTMLInputElement).value))} />
     </label>
   </div>
   <div class="row">

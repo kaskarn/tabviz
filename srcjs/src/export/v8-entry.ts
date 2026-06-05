@@ -12,9 +12,16 @@ import { generateSVG, computeNaturalDimensions } from "./svg-generator";
 import { renderDebugShapes } from "./debug-shapes";
 import type { WebSpec } from "$types";
 import * as authoring from "../authoring";
-// Side-effect: register built-in schema behaviors before SVG export
-// queries dispatchers (sortKey, etc.).
-import "../schema/init";
+// Register built-in schema behaviors + renderers before SVG export
+// queries dispatchers. EXPLICIT CALL, not a bare side-effect import:
+// the minified V8 build tree-shook the `*-renderer.ts` module-scope
+// registrations (behaviors survived, renderers didn't), so every schema
+// `svg` renderer was silently dead in R exports — stars cells rendered
+// as bare integers (adversarial versatility review #4). A live call
+// retains and runs all registrations regardless of side-effect
+// annotations.
+import { bootBuiltinBehaviors } from "../schema/init";
+bootBuiltinBehaviors();
 
 // Parse JSON string to WebSpec and generate SVG
 function generateSVGFromJSON(specJson: string, options?: { width?: number; height?: number }): string {

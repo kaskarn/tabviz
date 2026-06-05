@@ -49,7 +49,12 @@ export const DEFAULT_ROLE_BINDINGS: Record<RoleName, RoleBinding> = {
   // Text
   text:              { ramp: "neutral", grade: 11 },
   "text-muted":      { ramp: "neutral", grade: 8 },
-  "text-subtle":     { ramp: "neutral", grade: 6 },
+  // Grade 7, NOT 6: at grade 6 footnotes / captions / axis-tick labels
+  // (small text) failed WCAG AA on the surface in every preset — 3.07:1
+  // on cochrane, down to 2.13:1 on terminal (adversarial color review
+  // H3). Grade 7 keeps the subtle<muted<text hierarchy while clearing
+  // the readable floor.
+  "text-subtle":     { ramp: "neutral", grade: 7 },
   "text-onsolid":    { ramp: "neutral", grade: 1 },  // computed at resolve; placeholder
   // Focus + highlight
   "focus-ring":      { ramp: "brand", grade: 8 },

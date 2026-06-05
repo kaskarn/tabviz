@@ -8,7 +8,7 @@ import { describe, test, expect, beforeEach } from "bun:test";
 import { dispatchRenderer } from "../dispatch";
 import { bootBuiltinBehaviors } from "../init";
 import { THEME_PRESETS } from "../../lib/theme/theme-presets";
-import { __testing } from "./pictogram-renderer";
+import { __testing } from "./pictogram-svg-renderer";
 import type { RenderSvg, RenderContext } from "../render-types";
 import "../init";
 

@@ -981,7 +981,11 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "border-width",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
-    modes: { hc: { swap: "border-strong" } },
+    // NO modes.hc here: a `swap` resolves to a ROLE (a color hex) — on a
+    // width token that emitted "#1A1F21" as a border-width under HC and
+    // the consuming rule was silently dropped (adversarial color review
+    // H1). The geometry resolver's hcBump already thickens hairlines
+    // under HC, which is the correct behavior.
     description: "Hairline width — gridlines, alt-row dividers. Default 0.5px.",
   },
   {

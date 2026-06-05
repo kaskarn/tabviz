@@ -203,7 +203,15 @@
   // B12 (2c-i): title treatment drives the [data-title-style] CSS rules.
   const scopeTitleStyle = $derived(v4Inputs?.effects?.title_style ?? "normal");
   // Glass material (5a): "frosted"/"aurora" turn the shell into a pane.
-  const scopeGlass = $derived(v4Inputs?.effects?.glass ?? "none");
+  // GATED on standard mode (adversarial effects review H2): glass kept
+  // its backdrop-blur + translucent tint under reduced-transparency —
+  // the exact thing RT exists to remove — and under high-contrast. Both
+  // accessibility modes get the opaque shell.
+  const scopeGlass = $derived(
+    (v4Inputs?.mode ?? "standard") === "standard"
+      ? (v4Inputs?.effects?.glass ?? "none")
+      : "none",
+  );
   const shellGlow = $derived((v4Inputs?.effects?.glow_intensity ?? "none") !== "none");
   const shellStrip = $derived(
     (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none" ||
