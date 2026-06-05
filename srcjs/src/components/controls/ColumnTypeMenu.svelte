@@ -329,6 +329,10 @@
     if (focusIndex >= len) focusIndex = len - 1;
   }
 
+  // onkeydownCAPTURE on the portaled menu (not onkeydown): Svelte 5
+  // delegates bubble-phase keydown to the app root, which portaled
+  // subtrees never bubble through — the handler silently never fires
+  // (same bug class as EditableCell; Arc A QA, 2026-06-05).
   async function handleKeydown(e: KeyboardEvent) {
     if (!target) return;
 
@@ -430,7 +434,7 @@
     style:top="{resolvedTop}px"
     role="menu"
     aria-label="Insert column type"
-    onkeydown={handleKeydown}
+    onkeydowncapture={handleKeydown}
     use:portal
     tabindex="-1"
   >

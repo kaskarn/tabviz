@@ -145,8 +145,16 @@
     if (v === null || v === undefined) return "";
     return String(v);
   }
-  function parseNumberOrNull(s: string): number | null {
-    const t = s.trim();
+  function parseNumberOrNull(s: unknown): number | null {
+    // Svelte 5 `bind:value` on <input type="number"> yields a NUMBER, not
+    // a string — the old `s.trim()` threw TypeError on every numeric
+    // commit (any path: Enter or click-outside), so numeric inline edits
+    // NEVER committed. (Arc A QA find, 2026-06-05 — stacked beneath the
+    // portal x delegation bug that hid it.)
+    if (typeof s === "number") {
+      return Number.isFinite(s) ? s : (NaN as unknown as number);
+    }
+    const t = String(s ?? "").trim();
     if (t === "") return null;
     const n = Number(t);
     return Number.isFinite(n) ? n : NaN as unknown as number;
@@ -191,6 +199,15 @@
 
   function cancel() { store.endEdit(); }
 
+  // PORTAL × SVELTE 5 DELEGATION (Arc A QA find, 2026-06-05): these
+  // inputs are portaled to <body> (use:portal escapes the container's
+  // `contain: layout`), but Svelte 5 DELEGATES bubble-phase handlers
+  // (onkeydown/onclick) to the app root — events from portaled nodes
+  // never pass through it, so the handlers silently never fire. Enter/
+  // Escape were dead in the inline editor (commit only worked via
+  // click-outside). Capture-phase attributes (`onkeydowncapture`) are
+  // attached DIRECTLY to the element — portal-safe. Keep any handler on
+  // a portaled subtree non-delegated.
   function onKeyInline(e: KeyboardEvent) {
     if (e.key === "Enter") { e.preventDefault(); commitInline(); }
     else if (e.key === "Escape") { e.preventDefault(); cancel(); }
@@ -236,7 +253,7 @@
         step="any"
         bind:value={draftEst}
         class:invalid
-        onkeydown={onKeyForest}
+        onkeydowncapture={onKeyForest}
       />
     </label>
     <label>
@@ -247,7 +264,7 @@
         step="any"
         bind:value={draftLo}
         class:invalid
-        onkeydown={onKeyForest}
+        onkeydowncapture={onKeyForest}
       />
     </label>
     <label>
@@ -258,7 +275,7 @@
         step="any"
         bind:value={draftHi}
         class:invalid
-        onkeydown={onKeyForest}
+        onkeydowncapture={onKeyForest}
       />
     </label>
     <div class="edit-popover-footer">
@@ -279,7 +296,7 @@
     style:width="{rect.width}px"
     style:height="{rect.height}px"
     bind:value={draft}
-    onkeydown={onKeyInline}
+    onkeydowncapture={onKeyInline}
     use:portal
     autofocus
   />
