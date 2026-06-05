@@ -69,4 +69,4 @@ dev
 forclaude.md
 
 # stray empty file occasionally created by redirect typos (e.g. `2 >&1`)
-/0
+/0docs/reference/*.rmarkdown
