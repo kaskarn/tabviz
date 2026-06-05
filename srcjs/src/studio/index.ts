@@ -9,6 +9,12 @@
 // sample spec + the cochrane preset so the studio runs as a forge.
 
 import { mount } from "svelte";
+// Side-effect: register schema behaviors + DOM cell renderers BEFORE the
+// studio preview mounts. Without this the interval/viz columns render
+// BLANK in the forge — the renderer registry is empty (caught by the
+// 2026-06-05 docs screenshot pass; the per-bundle side-effect-import trap
+// from feedback_vite_side_effects, in unimported form).
+import "../schema/init-dom";
 // V4 canonical paint surface (wire-audit Pass 1a / B13): the studio's
 // embedded TabvizPlot preview needs the same shell/paper/texture rules
 // the widget bundle ships. Bundles into studio.css.
