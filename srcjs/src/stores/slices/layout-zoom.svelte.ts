@@ -79,6 +79,34 @@ function mergeMeasuredHeights(
   return out;
 }
 
+/**
+ * Grow-merge a measurement report into the committed heights map (B2 fix,
+ * 2026-06-05). PURE + exported for the bun unit test.
+ *
+ * THE INVARIANT (sizing-model §6c): committed heights are CONTENT heights.
+ * The measure loop reports only rows whose content truly overflows its
+ * pinned grid track, so settled rows are absent from each report —
+ * replacing the map would drop their committed heights and oscillate.
+ * Per-key Math.max keeps the "rows only grow" design. Returns `prev`
+ * unchanged (same reference) when nothing grew, so the caller's
+ * reassignment guard settles the commit loop.
+ */
+export function growMergeHeights(
+  prev: Record<string, number> | null,
+  report: Record<string, number>,
+): Record<string, number> | null {
+  const base = prev ?? {};
+  let changed = false;
+  const merged: Record<string, number> = { ...base };
+  for (const [k, v] of Object.entries(report)) {
+    if ((merged[k] ?? 0) < v) {
+      merged[k] = v;
+      changed = true;
+    }
+  }
+  return changed ? merged : prev;
+}
+
 /** Shallow value-equality for measured-height maps (within 0.5px), so the
  *  ResizeObserver→commit loop doesn't churn on sub-pixel jitter. */
 function sameHeightMap(
@@ -575,16 +603,8 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       if (measuredRowHeights !== null) measuredRowHeights = null;
       return;
     }
-    const base = measuredRowHeights ?? {};
-    let changed = false;
-    const merged: Record<string, number> = { ...base };
-    for (const [k, v] of Object.entries(heights)) {
-      if ((merged[k] ?? 0) < v) {
-        merged[k] = v;
-        changed = true;
-      }
-    }
-    if (!changed) return;
+    const merged = growMergeHeights(measuredRowHeights, heights);
+    if (merged === measuredRowHeights) return;
     measuredRowHeights = merged;
   }
 

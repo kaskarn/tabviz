@@ -12,6 +12,13 @@
  *   1. Rows with long (wrapping) text render TALLER than rows with short text.
  *   2. The measure→commit→re-measure loop SETTLES — a second read after a
  *      settle delay yields the same heights (no oscillation / runaway ratchet).
+ *   3. B2 REGRESSION GATE (grouped fixture): rows at GROUP BOUNDARIES carry
+ *      a grid track of rowHeight + trailing rowGroupPadding. Pre-fix, the
+ *      loop committed those cells' scrollHeight (which echoes the pinned
+ *      track, pad included) and the track re-added the pad every frame —
+ *      an unbounded ~12px/frame ratchet (the homepage-hero whitespace).
+ *      The gate mounts groups, then asserts the container height is STABLE
+ *      across a 1.5s window and no track exceeds a sane bound.
  *
  * This is a correctness harness (assert + exit code), distinct from the timing
  * bench in run-bench.ts. Run:
@@ -113,6 +120,59 @@ function fail(msg: string): never {
   process.exit(1);
 }
 
+/** B2 topology: three groups so two rows are `row-padded-after` (their grid
+ *  track = rowHeight + trailing rowGroupPadding — the exact track shape
+ *  whose scrollHeight echo caused the ratchet). No wrap columns: every
+ *  cell's content FITS, so pre-fix every measurement was a track echo. */
+function buildGroupedSpec(): unknown {
+  const THEME = buildTheme(COCHRANE, "cochrane");
+  const mk = (id: string, label: string, groupId: string) =>
+    ({ id, label, groupId, metadata: { notes: "ok" }, style: {} });
+  return {
+    version: "1.0",
+    data: {
+      rows: [
+        mk("a1", "Alpha 1", "ga"), mk("a2", "Alpha 2", "ga"),
+        mk("b1", "Beta 1", "gb"), mk("b2", "Beta 2", "gb"),
+        mk("c1", "Gamma 1", "gc"),
+      ],
+      groups: [
+        { id: "ga", label: "Group A", collapsed: false, depth: 0 },
+        { id: "gb", label: "Group B", collapsed: false, depth: 0 },
+        { id: "gc", label: "Group C", collapsed: false, depth: 0 },
+      ],
+      summaries: [],
+    },
+    columns: [
+      { id: "label", type: "text", field: "label", header: "Study", options: {} },
+      { id: "notes", type: "text", field: "notes", header: "Notes", options: {} },
+    ],
+    theme: THEME,
+    interaction: { enableExport: false, enableThemes: null, showGroupCounts: false },
+    layout: { containerBorder: false },
+  };
+}
+
+/** Sample container height + max grid track over time. */
+async function sampleGeometry(page: Page, samples: number, gapMs: number) {
+  const read = () =>
+    page.evaluate(() => {
+      const c = document.querySelector(".tabviz-container")!;
+      const main = c.querySelector(".tabviz-main")!;
+      const tracks = getComputedStyle(main).gridTemplateRows.split(" ").map(parseFloat);
+      return {
+        containerH: Math.round(c.getBoundingClientRect().height),
+        maxTrack: Math.round(Math.max(...tracks)),
+      };
+    });
+  const out: Array<{ containerH: number; maxTrack: number }> = [];
+  for (let i = 0; i < samples; i++) {
+    await new Promise((r) => setTimeout(r, gapMs));
+    out.push(await read());
+  }
+  return out;
+}
+
 async function main() {
   const opts = parseArgs();
   const browser = await puppeteer.launch({
@@ -147,6 +207,24 @@ async function main() {
     }
 
     console.log("✓ measure-then-commit: wrapped rows grow and the loop settles");
+
+    // ── B2 regression gate (grouped fixture; see header docstring) ────────
+    await mountAndSample(page, buildGroupedSpec(), 1, 250); // mount + settle
+    const geo = await sampleGeometry(page, 4, 500); // 2s observation window
+    const first = geo[0]!;
+    const final = geo[geo.length - 1]!;
+    console.log("grouped geometry over 2s:", JSON.stringify(geo));
+    // (a) no ratchet: container height stable across the window (±2px).
+    if (Math.abs(final.containerH - first.containerH) > 2) {
+      fail(`B2 ratchet: container grew ${first.containerH} → ${final.containerH} over 2s`);
+    }
+    // (b) sanity bound: no grid track may exceed a plausible row height.
+    //     rowHeight(24) + rowGroupPadding(12) + generous slack — pre-fix
+    //     tracks reached 1800-2500px here.
+    if (final.maxTrack > 120) {
+      fail(`B2 ratchet: max grid track ${final.maxTrack}px (expected ≲ 36px + slack)`);
+    }
+    console.log("✓ B2 gate: padded group tracks stable, no measure ratchet");
   } finally {
     await browser.close();
   }

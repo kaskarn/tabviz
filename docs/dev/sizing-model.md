@@ -358,6 +358,49 @@ Direction (confirmed with author):
 
 ---
 
+## 6c. Measured-height commit invariant — B2 postmortem (CLOSED 2026-06-05)
+
+**The invariant: `measuredRowHeights` holds CONTENT heights, never grid-track
+echoes.** The full chain is
+`estimator → mergeMeasuredHeights(max) → computeRowLayout(+pads) → grid tracks`,
+and `computeRowLayout` ADDS trailing `rowGroupPadding` to the last row of each
+group. Any committed measurement that already contains that pad gets the pad
+re-added on the next render — a positive feedback loop.
+
+**The B2 bug** (open since the rgc_v4 audit; root-caused via the live docs
+hero): the DOM measure loop committed `cell.scrollHeight` for every cell,
+assuming scrollHeight reports content extent independent of the pinned track.
+For a NON-overflowing cell it just echoes the track back — so every
+`row-padded-after` cell fed `height + pad` into the map, the track re-added
+the pad, and the loop ratcheted ~12px/frame unbounded (homepage hero: 6,284px
+container for 11 rows; grid tracks of 2,500px; growth proportional to page
+lifetime, re-armed by any widget change).
+
+**The two-part enforcement** (commit `4d4c281`, both halves required):
+
+1. *Overflow-only commits* (`TabvizPlot` measure loop): report a row only when
+   `scrollHeight > clientHeight + 1` — i.e. content genuinely exceeds the
+   pinned track, which is the only case where scrollHeight measures content.
+   (+1 absorbs integer rounding between the two metrics.)
+2. *Grow-merge commits* (`layout-zoom.svelte.ts::growMergeHeights`, pure +
+   exported): because settled rows are now ABSENT from each report, replacing
+   the map would drop their committed heights → shrink → overflow → re-grow
+   oscillation. Per-key `Math.max` keeps the "rows only grow" design; a
+   no-growth report returns the same reference so the commit loop settles.
+
+**Deliberate non-fix:** the pad stays folded into the row's grid track.
+Splitting it into its own track would renumber every `grid-row` index and
+fork DOM vs SVG-export geometry (`computeRowLayout` is the shared source);
+the row-resize drag handles also deliberately anchor the height + pad
+handles on the same row.
+
+**Gates:** `tests/browser/measure-rows.browser.ts` carries the B2 regression
+gate — a grouped fixture asserting container-height stability over a 2s
+window and a sane max-track bound. Verified to FAIL against the pre-fix
+bundle (1,298→3,300px in the window) and pass post-fix (rock-stable 264px,
+maxTrack exactly rowHeight+pad). `grow-merge-heights.test.ts` pins the
+commit semantics.
+
 ## 6b. Verification harness (built — the numeric half of "debug-shapes")
 
 The regression substrate the RowKind + `computeTableMetrics` refactors are
