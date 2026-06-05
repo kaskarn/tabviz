@@ -77,6 +77,8 @@ web_theme_tufte <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "greys",
+    # 1f: data-ink discipline — hairline intervals.
+    marks = list(interval_weight = "hair"),
     density = "compact",
     density_factor = 0.9,
     shell_texture = "ruled",

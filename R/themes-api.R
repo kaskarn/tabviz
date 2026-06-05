@@ -103,6 +103,11 @@ theme_inputs_to_json <- function(inputs) {
     caption_style            = na_to_null(inputs@effects_caption_style)
   ))
 
+  marks_out <- drop_null(list(
+    point_shape     = na_to_null(inputs@marks_point_shape),
+    interval_weight = na_to_null(inputs@marks_interval_weight)
+  ))
+
   # Phase 5 / Stage 1 §33 — row_kinds. Re-nest flat slots into
   # row_kinds: { data: { heightRatio }, group_header: ..., ... } on the
   # wire. Omit kinds whose heightRatio is NA so the TS layout falls back
@@ -148,6 +153,7 @@ theme_inputs_to_json <- function(inputs) {
     curves                = if (length(curves) > 0L) curves else NULL,
     geometry              = if (length(geometry_out) > 0L) geometry_out else NULL,
     effects               = if (length(effects_out)  > 0L) effects_out  else NULL,
+    marks                 = if (length(marks_out)    > 0L) marks_out    else NULL,
     row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL
   )
   out[!vapply(out, is.null, logical(1))]
@@ -256,6 +262,10 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `"subtle"` / `"vivid"`), `gradient_shell_angle` (degrees 0-360),
 #'   `elevation` (`"none"` / `"soft"` / `"raised"` / `"float"`). NULL =
 #'   no effects (the safe editorial baseline). HC mode drops all effects.
+#' @param marks Viz-mark identity (D12): named list with `point_shape`
+#'   (`"circle"`/`"square"`/`"diamond"`/`"triangle"`) and/or
+#'   `interval_weight` (`"hair"`/`"regular"`/`"thick"`). Theme-level
+#'   defaults; per-row and per-effect styling still win.
 #' @param row_kinds Per-row-kind theme-default `heightRatio` map. Named
 #'   list whose keys are row-kind names (`data`, `group_header`, `spacer`,
 #'   `summary`, `header`, `panel`) and whose values are themselves
@@ -299,6 +309,7 @@ web_theme <- function(
     curves = NULL,
     geometry = NULL,
     effects = NULL,
+    marks = NULL,
     row_kinds = NULL,
     header_style = "light",
     first_column_style = "default",
@@ -320,6 +331,7 @@ web_theme <- function(
   checkmate::assert_list(curves, null.ok = TRUE)
   checkmate::assert_list(geometry, null.ok = TRUE)
   checkmate::assert_list(effects, null.ok = TRUE)
+  checkmate::assert_list(marks, null.ok = TRUE)
   checkmate::assert_list(row_kinds, null.ok = TRUE)
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
@@ -387,6 +399,8 @@ web_theme <- function(
     effects_gradient_shell_angle   = effects$gradient_shell_angle   %||% NA_real_,
     effects_elevation              = effects$elevation              %||% NA_character_,
     effects_caption_style          = effects$caption_style          %||% NA_character_,
+    marks_point_shape              = marks$point_shape              %||% NA_character_,
+    marks_interval_weight          = marks$interval_weight          %||% NA_character_,
     # row_kinds — extract heightRatio per kind from the nested named list.
     row_kinds_data_height_ratio         = row_kinds$data$heightRatio         %||% NA_real_,
     row_kinds_group_header_height_ratio = row_kinds$group_header$heightRatio %||% NA_real_,

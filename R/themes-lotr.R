@@ -23,6 +23,8 @@ web_theme_dwarven <- function() {
     density_factor = 1.05,
     shell_mode = "raised",
     shell_texture = "dotted",
+    # C66: torchlit-hall depth — soft elevation.
+    effects = list(elevation = "soft"),
     type_base_size = 14,
     type_scale_ratio = 1.25,
     type_weights = list(regular = 400, medium = 500, semibold = 700, bold = 800),

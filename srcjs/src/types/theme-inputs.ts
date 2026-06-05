@@ -148,6 +148,18 @@ export interface ThemeInputs {
     accent?: "linear" | "ease" | "smooth" | "log" | "exp";
   };
 
+  /** Viz-mark identity (D12, wire-audit 1f) — per-theme defaults for
+   *  plot marks. The cascade stays author-first: row markerStyle >
+   *  effect.shape > THESE > renderer rotation.
+   *    point_shape     — default marker glyph for every series slot.
+   *    interval_weight — CI line weight: hair 1px / regular 1.5px /
+   *                      thick 2.5px (theme.plot.lineWidth; read by both
+   *                      the DOM renderer and SVG export). */
+  marks?: {
+    point_shape?: "circle" | "square" | "diamond" | "triangle";
+    interval_weight?: "hair" | "regular" | "thick";
+  };
+
   /** Series viz mark style. Drives how each series slot's fill / stroke
    *  pair derives from the slot's anchor color.
    *    fill_with_darker_stroke — saturated fill + darker stroke (default)

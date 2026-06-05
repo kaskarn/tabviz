@@ -161,6 +161,8 @@ const GLOW_ANCHOR_VALUES = ["brand", "accent"] as const;
 const GRADIENT_INTENSITY_VALUES = ["none", "subtle", "vivid"] as const;
 const ELEVATION_VALUES = ["none", "soft", "raised", "float"] as const;
 const CAPTION_STYLE_VALUES = ["none", "chip", "stripe"] as const;
+const POINT_SHAPE_VALUES = ["circle", "square", "diamond", "triangle"] as const;
+const INTERVAL_WEIGHT_VALUES = ["hair", "regular", "thick"] as const;
 
 function checkTriple(triple: OklchTriple | undefined, name: string, problems: string[], required: boolean): void {
   if (triple === undefined) {
@@ -232,6 +234,8 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
   checkEnum(inputs.effects?.gradient_shell_intensity, GRADIENT_INTENSITY_VALUES, "effects.gradient_shell_intensity", p);
   checkEnum(inputs.effects?.elevation, ELEVATION_VALUES, "effects.elevation", p);
   checkEnum(inputs.effects?.caption_style, CAPTION_STYLE_VALUES, "effects.caption_style", p);
+  checkEnum(inputs.marks?.point_shape, POINT_SHAPE_VALUES, "marks.point_shape", p);
+  checkEnum(inputs.marks?.interval_weight, INTERVAL_WEIGHT_VALUES, "marks.interval_weight", p);
 
   // Numeric ranges
   checkRange(inputs.density_factor, 0.5, 2, "density_factor", p);

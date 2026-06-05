@@ -225,6 +225,8 @@ export const DARK: ThemeInputs = defineInputs(
   {
     categorical: "okabe_ito",
     shell_mode: "float",
+    // C66: dark surfaces are where effects read best — subtle brand glow.
+    effects: { glow_intensity: "subtle" },
     curves: { neutral: "log", brand: "ease", accent: "ease" },
   },
 );
@@ -279,6 +281,8 @@ export const TUFTE: ThemeInputs = defineInputs(
   { brand: "#222222", accent: "#B54A46", neutralHueFrom: null },
   {
     categorical: "greys",
+    // 1f: data-ink discipline — hairline intervals.
+    marks: { interval_weight: "hair" },
     density: "compact",
     density_factor: 0.9,
     shell_texture: "ruled",
@@ -422,6 +426,8 @@ export const DWARVEN: ThemeInputs = defineInputs(
     // C65: storybook breathing room.
     density_factor: 1.05,
     shell_mode: "raised",
+    // C66: torchlit-hall depth — soft elevation.
+    effects: { elevation: "soft" },
     shell_texture: "dotted",
     type_base_size: 14,
     type_scale_ratio: 1.25,
@@ -510,7 +516,10 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
       warning:  { L: 0.885, C: 0.181, H: 94.784 },   // #FFD60A
       info:     { L: 0.844, C: 0.146, H: 209.285 },  // #00E5FF
     },
-    categorical: "tableau10",
+    // 1f/C66: neon series — tableau-corporate colors inside a neon frame
+    // were the palette-level identity collapse.
+    categorical: "neon",
+    marks: { point_shape: "diamond" },
     // C65: float-card radius is part of the neon identity (lab: 9).
     geometry: { radius: { sm: 4, md: 9, lg: 14, pill: 999 } },
     shell_mode: "float",
@@ -555,7 +564,9 @@ export const BRUTALIST: ThemeInputs = defineInputs(
       warning:  { L: 0.642, C: 0.144, H: 65.037 },   // #C77700
       info:     { L: 0.387, C: 0.025, H: 229.789 },  // #37474F
     },
-    categorical: "greys",
+    categorical: "ink_vermilion",
+    // 1f: hard-edged marks — square points, thick CI caps.
+    marks: { point_shape: "square", interval_weight: "thick" },
     density: "compact",
     // C65: brutalist wants DENSE — compact preset tightened further.
     density_factor: 0.88,

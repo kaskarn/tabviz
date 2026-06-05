@@ -19,6 +19,8 @@ web_theme_dark <- function() {
     polarity = "dark",
     categorical = "okabe_ito",
     shell_mode = "float",
+    # C66: dark surfaces are where effects read best — subtle brand glow.
+    effects = list(glow_intensity = "subtle"),
     curves = list(neutral = "log", brand = "ease", accent = "ease"),
     name = "dark"
   )

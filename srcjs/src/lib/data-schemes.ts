@@ -67,8 +67,22 @@ export const WONG: readonly string[] = [
 ];
 
 /** Registry. Names match the strings accepted in `ThemeInputs.categorical`. */
+/** Synthwave neon set (wire-audit 1f / C66): series colors that match
+ *  the chrome instead of tableau-corporate inside a neon frame. */
+export const NEON: readonly string[] = [
+  "#FF00C8", "#00E5FF", "#FAFF00", "#00FF9C", "#FF2D55", "#B388FF",
+];
+
+/** Brutalist mono + vermilion (wire-audit 1f / C66): achromatic ink
+ *  series with the rubrication channel as the second voice. */
+export const INK_VERMILION: readonly string[] = [
+  "#1A1A1A", "#D42320", "#707070", "#8D1B18", "#3D3D3D", "#B9544E",
+];
+
 export const CATEGORICAL_SCHEMES: Readonly<Record<string, readonly string[]>> = {
   okabe_ito: OKABE_ITO,
+  neon: NEON,
+  ink_vermilion: INK_VERMILION,
   tableau10: TABLEAU_10,
   set1: SET1,
   set2: SET2,

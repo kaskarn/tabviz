@@ -203,6 +203,10 @@ ThemeInputs <- new_class(
     # "chip" renders labels.caption as a boxed stamp; "stripe" shows
     # the brand-gradient seam.
     effects_caption_style          = new_property(class_character, default = NA_character_),
+    # D12 (wire-audit 1f): viz-mark identity — theme defaults for plot
+    # marks (cascade: row markerStyle > effect shape > these > rotation).
+    marks_point_shape              = new_property(class_character, default = NA_character_),
+    marks_interval_weight          = new_property(class_character, default = NA_character_),
 
     # Phase 5 / Stage 1 §33 — per-row-kind theme-default heightRatios. Layer
     # 3 of the row-kind height cascade (see srcjs/src/lib/layout/
@@ -274,6 +278,14 @@ ThemeInputs <- new_class(
     cs <- self@effects_caption_style
     if (!is.na(cs) && !cs %in% c("none", "chip", "stripe")) {
       return("effects_caption_style must be 'none', 'chip', or 'stripe'")
+    }
+    ps <- self@marks_point_shape
+    if (!is.na(ps) && !ps %in% c("circle", "square", "diamond", "triangle")) {
+      return("marks_point_shape must be 'circle', 'square', 'diamond', or 'triangle'")
+    }
+    iw <- self@marks_interval_weight
+    if (!is.na(iw) && !iw %in% c("hair", "regular", "thick")) {
+      return("marks_interval_weight must be 'hair', 'regular', or 'thick'")
     }
     # row_kinds — each heightRatio must be a positive finite number when set.
     for (slot in c("row_kinds_data_height_ratio",

@@ -128,6 +128,10 @@ export function buildTheme(
   };
 
   // Series slot bundles — derive 5 from brand + accent ramps
+  // D12 (wire-audit 1f): theme-level mark identity. point_shape fills
+  // every slot's shape (cascade: row markerStyle > effect.shape > slot
+  // shape > renderer rotation); null keeps the rotation default.
+  const themePointShape = inputs.marks?.point_shape ?? null;
   function slotRole(anchor: string): SlotRole {
     return {
       fill: anchor,
@@ -137,7 +141,7 @@ export function buildTheme(
       fillHot: oklchDarken(anchor, 0.05),
       strokeHot: oklchDarken(anchor, 0.20),
       textFg: t.ink,
-      shape: null,
+      shape: themePointShape,
     };
   }
   const series: SlotRole[] = seriesAnchors.map(slotRole);
@@ -252,7 +256,11 @@ export function buildTheme(
     axisLabel: { ...text.label },
     tickLabel: { ...text.tick },
     tickMarkLength: 4,
-    lineWidth: 1.5,
+    // D12: interval_weight maps to the CI line weight (both DOM renderer
+    // and SVG export read theme.plot.lineWidth).
+    lineWidth: inputs.marks?.interval_weight === "hair" ? 1
+             : inputs.marks?.interval_weight === "thick" ? 2.5
+             : 1.5,
     pointSize: 6,
   };
 

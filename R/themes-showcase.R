@@ -28,7 +28,10 @@ web_theme_synthwave <- function() {
     status_warning  = "#FFD60A",
     status_info     = "#00E5FF",
     polarity = "dark",
-    categorical = "tableau10",
+    # 1f/C66: neon series — tableau-corporate colors inside a neon frame
+    # were the palette-level identity collapse.
+    categorical = "neon",
+    marks = list(point_shape = "diamond"),
     # C65: float-card radius is part of the neon identity (lab: 9).
     geometry = list(radius = list(sm = 4, md = 9, lg = 14, pill = 999)),
     shell_mode = "float",
@@ -74,7 +77,9 @@ web_theme_brutalist <- function() {
     status_negative = "#D42320",
     status_warning  = "#C77700",
     status_info     = "#37474F",
-    categorical = "greys",
+    categorical = "ink_vermilion",
+    # 1f: hard-edged marks — square points, thick CI caps.
+    marks = list(point_shape = "square", interval_weight = "thick"),
     density = "compact",
     # C65: brutalist wants DENSE — compact preset tightened further.
     density_factor = 0.88,
