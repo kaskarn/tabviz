@@ -138,6 +138,7 @@ schema_defaults <- list(
     width = "auto",
     sortable = TRUE,
     stars = FALSE,
+    stars_color = "accent",
     format = "auto",
     digits = 2,
     exp_threshold = 0.001,

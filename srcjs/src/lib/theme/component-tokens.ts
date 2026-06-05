@@ -773,6 +773,17 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // Sourced from inputs.status.X anchors via pickAnchorHex; fall back to
   // a STATUS_ANCHOR_FALLBACK palette when the input is unset.
   {
+    cssVar: "--tv-ink2",
+    kind: "paint-color",
+    resolverGroup: "anchor",
+    source: { tier: "anchor", anchor: "accent-anchor" },
+    consumedBy: ["components/table/CellPvalue.svelte"],
+    description:
+      "Rubrication ink — resolves ink2 ?? accent ?? brand (the same " +
+      "precedence as the accent-ramp seed). The editorial emphasis " +
+      "channel: significance stars, caption chips.",
+  },
+  {
     cssVar: "--tv-status-positive",
     resolverGroup: "anchor",
     kind: "paint-color",

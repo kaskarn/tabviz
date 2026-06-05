@@ -38,6 +38,7 @@ import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectL } from "./polarity";
 import { pickInkOnBg, oklchToHex } from "../oklch";
+import { BADGE_VARIANTS } from "../rendering-constants";
 
 /** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
 function reflectAnchor(a: OklchTriple): OklchTriple {
@@ -288,13 +289,15 @@ const HC_BAR_WIDTH_HC     = "4px";
 const HC_BAR_WIDTH_STD    = "3px";
 const HC_RING_WIDTH_VALUE = "1.5px";
 
-/** Fallback hex when an optional status anchor isn't set on inputs.
- *  Mirrors theme-css.ts's `BADGE_VARIANTS` fallback for the v3 emission. */
-const STATUS_ANCHOR_FALLBACK: Record<string, string> = {
-  "status-positive": "#16A34A",
-  "status-negative": "#DC2626",
-  "status-warning":  "#D97706",
-  "status-info":     "#2563EB",
+/** Fallback palette when an optional status anchor isn't set on inputs.
+ *  SINGLE SOURCE (wire-audit C48): derives from rendering-constants'
+ *  BADGE_VARIANTS so the badge fallback, the --tv-status-* fallback, and
+ *  the C9 high-contrast override can never drift apart. */
+export const STATUS_ANCHOR_FALLBACK: Record<string, string> = {
+  "status-positive": BADGE_VARIANTS.success,
+  "status-negative": BADGE_VARIANTS.error,
+  "status-warning":  BADGE_VARIANTS.warning,
+  "status-info":     BADGE_VARIANTS.info,
 };
 
 /** Sentinel value emitted when a placeholder branch is hit in production.
@@ -862,7 +865,17 @@ function runCascade(wire: ThemeWire) {
   // silently produces a broken cssVars map. Mirrors R's S7 validator.
   validateThemeInputs(wire.inputs);
   const polarity = derivePolarity(wire.inputs);
-  const reflected = applyPolarityToInputs(wire.inputs);
+  let reflected = applyPolarityToInputs(wire.inputs);
+
+  // C9 (wire-audit 1b): under OS/user-forced high-contrast, theme-scoped
+  // status palettes (D6) revert to the curated HC-safe fallback —
+  // a preset's vermilion/neon semantics must not undermine contrast
+  // guarantees. Stripping inputs.status here covers BOTH consumers in
+  // one place: the status ramps (buildRamps) and the --tv-status-*
+  // anchor tokens (pickAnchorHex falls through to the fallback).
+  if (wire.inputs.mode === "high-contrast" && reflected.status) {
+    reflected = { ...reflected, status: undefined };
+  }
 
   // Build Tier-0 ramps via the existing resolver.
   const ramps12 = buildRamps(reflected);

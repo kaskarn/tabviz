@@ -9,6 +9,7 @@ col_pvalue(
   header = "P-value",
   width = NULL,
   stars = FALSE,
+  stars_color = c("accent", "ink2", "negative", "none"),
   thresholds = c(0.05, 0.01, 0.001),
   format = c("auto", "scientific", "decimal"),
   digits = 2,
@@ -26,6 +27,13 @@ col_pvalue(
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{stars}{Show significance stars (default FALSE)}
+
+\item{stars_color}{Color channel for the stars — only applies when
+\code{stars = TRUE}. One of \code{"accent"} (default; rides the theme's
+accent/rubrication ramp, so an \code{\link[=set_ink2]{set_ink2()}} pin colors the stars),
+\code{"ink2"} (the raw rubrication anchor chain), \code{"negative"} (explicit
+bad-news semantics via the status palette — note significance is not
+inherently bad, so this is opt-in), or \code{"none"} (inherit cell color).}
 
 \item{thresholds}{Numeric vector of 3 significance thresholds (default c(0.05, 0.01, 0.001))}
 

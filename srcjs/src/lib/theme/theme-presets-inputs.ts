@@ -491,6 +491,13 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
     inkC: 0.020,
   },
   {
+    // B5/D6: neon semantic palette — status is identity for synthwave.
+    status: {
+      positive: { L: 0.88, C: 0.211, H: 156.631 },   // #00FF9C
+      negative: { L: 0.65, C: 0.238, H: 17.898 },    // #FF2D55
+      warning:  { L: 0.885, C: 0.181, H: 94.784 },   // #FFD60A
+      info:     { L: 0.844, C: 0.146, H: 209.285 },  // #00E5FF
+    },
     categorical: "tableau10",
     shell_mode: "float",
     shell_texture: "grid",
@@ -526,6 +533,14 @@ export const BRUTALIST: ThemeInputs = defineInputs(
     neutralHueFrom: null,
   },
   {
+    // B5/D6: ink-discipline semantic palette — vermilion negative matches
+    // the rubrication ink; the rest stay muted so red owns the alarm.
+    status: {
+      positive: { L: 0.523, C: 0.135, H: 144.167 },  // #2E7D32
+      negative: { L: 0.56, C: 0.21, H: 28.014 },     // #D42320
+      warning:  { L: 0.642, C: 0.144, H: 65.037 },   // #C77700
+      info:     { L: 0.387, C: 0.025, H: 229.789 },  // #37474F
+    },
     categorical: "greys",
     density: "compact",
     shell_texture: "grid",

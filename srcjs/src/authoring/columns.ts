@@ -308,6 +308,8 @@ export function colInterval({
 export interface ColPvalueArgs extends CommonColumnArgs {
   field: string;
   stars?: boolean;
+  /** Stars color channel (only applies when stars=true). Default "accent". */
+  starsColor?: "accent" | "ink2" | "negative" | "none";
   thresholds?: [number, number, number];
   format?: "scientific" | "decimal" | "auto";
   digits?: number;
@@ -317,12 +319,13 @@ export interface ColPvalueArgs extends CommonColumnArgs {
 }
 
 export function colPvalue({
-  field, stars = false, thresholds = [0.05, 0.01, 0.001],
+  field, stars = false, starsColor = "accent",
+  thresholds = [0.05, 0.01, 0.001],
   format = "auto", digits = 2, expThreshold = 0.001, abbrevThreshold = null,
   naText, ...common
 }: ColPvalueArgs): ColumnSpec {
   const pvalue: PvalueColumnOptions = {
-    stars, thresholds, format, digits, expThreshold, abbrevThreshold,
+    stars, starsColor, thresholds, format, digits, expThreshold, abbrevThreshold,
   };
   const options = { pvalue, ...(naText != null ? { naText } : {}) };
   return baseColumn(field, "pvalue", options, {

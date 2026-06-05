@@ -610,6 +610,12 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
 #' @param header Column header (default "P-value")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param stars Show significance stars (default FALSE)
+#' @param stars_color Color channel for the stars — only applies when
+#'   `stars = TRUE`. One of `"accent"` (default; rides the theme's
+#'   accent/rubrication ramp, so an [set_ink2()] pin colors the stars),
+#'   `"ink2"` (the raw rubrication anchor chain), `"negative"` (explicit
+#'   bad-news semantics via the status palette — note significance is not
+#'   inherently bad, so this is opt-in), or `"none"` (inherit cell color).
 #' @param thresholds Numeric vector of 3 significance thresholds (default c(0.05, 0.01, 0.001))
 #' @param format P-value format: "auto", "scientific", or "decimal"
 #' @param digits Number of significant figures to display (default 2)
@@ -643,6 +649,7 @@ col_pvalue <- function(
     header = "P-value",
     width = NULL,
     stars = FALSE,
+    stars_color = c("accent", "ink2", "negative", "none"),
     thresholds = c(0.05, 0.01, 0.001),
     format = c("auto", "scientific", "decimal"),
     digits = 2,
@@ -659,10 +666,12 @@ col_pvalue <- function(
     field <- "pvalue"
   }
   format <- match.arg(format)
+  stars_color <- match.arg(stars_color)
   ts_args <- list(
     field = field, stars = stars, thresholds = thresholds,
     format = format, digits = digits, expThreshold = exp_threshold
   )
+  if (!identical(stars_color, "accent")) ts_args$starsColor <- stars_color
   if (!identical(header, "P-value")) ts_args$header          <- header
   if (!is.null(width))               ts_args$width           <- width
   if (!is.null(abbrev_threshold))    ts_args$abbrevThreshold <- abbrev_threshold

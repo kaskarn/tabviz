@@ -60,6 +60,17 @@
   });
 
   const isSignificant = $derived(stars.length > 0);
+
+  // wire-audit 1b (C37): stars color channel. Rubrication, not status —
+  // "accent" rides the (possibly ink2-seeded) accent ramp by default.
+  const starsColor = $derived.by(() => {
+    switch (options?.starsColor ?? "accent") {
+      case "ink2":     return "var(--tv-ink2, var(--tv-accent))";
+      case "negative": return "var(--tv-status-negative)";
+      case "none":     return "inherit";
+      default:         return "var(--tv-accent, #2563eb)";
+    }
+  });
 </script>
 
 <span
@@ -75,7 +86,7 @@
 >
   <span class="pvalue-number">{formattedValue}</span>
   {#if stars}
-    <span class="pvalue-stars">{stars}</span>
+    <span class="pvalue-stars" style:color={starsColor}>{stars}</span>
   {/if}
 </span>
 
@@ -93,7 +104,7 @@
 
   .pvalue-stars {
     font-size: 0.9em;
-    color: var(--tv-accent, var(--tv-accent, #2563eb));
+    /* color set inline via starsColor (wire-audit 1b) */
     font-weight: 600;
   }
   /* Significant p-values used to auto-bold the number — removed: rely on

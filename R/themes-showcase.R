@@ -22,6 +22,11 @@ web_theme_synthwave <- function() {
                              paper_C = 0.016, ink_C = 0.020)
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
+    # B5/D6: neon semantic palette — status is identity for synthwave.
+    status_positive = "#00FF9C",
+    status_negative = "#FF2D55",
+    status_warning  = "#FFD60A",
+    status_info     = "#00E5FF",
     polarity = "dark",
     categorical = "tableau10",
     shell_mode = "float",
@@ -62,6 +67,11 @@ web_theme_brutalist <- function() {
     # C39a: vermilion rubrication ink — chromatic identity over the
     # achromatic neutrals (lab parity). Seeds the accent ramp.
     ink2 = "#D42320",
+    # B5/D6: ink-discipline semantics; vermilion owns the alarm channel.
+    status_positive = "#2E7D32",
+    status_negative = "#D42320",
+    status_warning  = "#C77700",
+    status_info     = "#37474F",
     categorical = "greys",
     density = "compact",
     shell_texture = "grid",

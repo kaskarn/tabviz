@@ -299,6 +299,8 @@ export interface PvalueBucketOptions {
   paddingClass?: undefined;
   /** Stars — Show significance stars */
   stars?: boolean;
+  /** Stars color — Color channel for significance stars */
+  starsColor?: "accent" | "ink2" | "negative" | "none" | null;
   /** Star thresholds */
   thresholds?: unknown;
   /** Token — Semantic role — theme decides colors/weights */

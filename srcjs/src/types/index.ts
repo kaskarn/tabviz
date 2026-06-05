@@ -234,6 +234,13 @@ export interface BarColumnOptions {
 
 export interface PvalueColumnOptions {
   stars?: boolean;
+  /** Color channel for significance stars (only applies when stars=true).
+   *  "accent" (default) follows the theme's accent/rubrication ramp;
+   *  "ink2" reads the raw rubrication anchor chain (--tv-ink2);
+   *  "negative" routes through status-negative (explicit bad-news
+   *  semantics — NOT the default; significance is not inherently bad);
+   *  "none" inherits the cell text color. */
+  starsColor?: "accent" | "ink2" | "negative" | "none";
   thresholds?: [number, number, number]; // e.g., [0.05, 0.01, 0.001]
   format?: "scientific" | "decimal" | "auto";
   digits?: number; // Number of significant figures (default: 2)

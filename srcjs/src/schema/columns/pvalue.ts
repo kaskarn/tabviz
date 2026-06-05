@@ -37,6 +37,22 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
+      key: "starsColor",
+      label: "Stars color",
+      control: "segmented",
+      default: "accent",
+      segments: [
+        { value: "accent",   label: "Accent" },
+        { value: "ink2",     label: "Rubrication" },
+        { value: "negative", label: "Negative" },
+        { value: "none",     label: "Plain" },
+      ],
+      hint: "Color channel for significance stars",
+      kind: "core",
+      visibleWhen: (s) => s.stars === true,
+      consumedBy: ["renderCell", "emitSource", "editor"],
+    },
+    {
       key: "format",
       label: "Format",
       control: "segmented",

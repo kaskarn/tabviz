@@ -110,13 +110,31 @@ test_that("R and TS preset anchors match within OKLCH tolerance", {
   }
 })
 
+test_that("R and TS preset status anchors match within OKLCH tolerance", {
+  for (name in names(PRESET_PAIRS)) {
+    r  <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
+    ts <- ts_call("inputsForPreset", name)
+    has_r  <- !is.null(r$status);  has_ts <- !is.null(ts$status)
+    expect_equal(has_r, has_ts,
+                 info = sprintf("status presence diverges (preset: %s)", name))
+    if (has_r && has_ts) {
+      expect_true(
+        .anchors_close(r$status, ts$status),
+        info = sprintf("status anchors diverge beyond tolerance (preset: %s)", name)
+      )
+    }
+  }
+})
+
 test_that("R and TS preset non-anchor fields match (or are known-divergent)", {
   for (name in names(PRESET_PAIRS)) {
     r  <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     ts <- ts_call("inputsForPreset", name)
     known <- if (is.null(.KNOWN_DIVERGENCES[[name]])) character(0) else .KNOWN_DIVERGENCES[[name]]
     shared <- intersect(names(r), names(ts))
-    shared <- setdiff(shared, "anchors")  # anchors checked separately
+    # anchors AND status are OKLCH-triple objects from independent hex
+    # converters — both checked separately with per-axis tolerance.
+    shared <- setdiff(shared, c("anchors", "status"))
     unexpected_diffs <- character(0)
     surprising_matches <- character(0)
     for (k in shared) {

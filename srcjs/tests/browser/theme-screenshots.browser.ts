@@ -34,7 +34,7 @@ import { fileURLToPath } from "url";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
 import { PRESETS } from "../../src/lib/theme/theme-presets-inputs";
 import { tabviz } from "../../src/authoring/tabviz";
-import { colText, colN, colInterval } from "../../src/authoring/columns";
+import { colText, colN, colInterval, colPvalue } from "../../src/authoring/columns";
 import { vizForest } from "../../src/authoring/viz";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,14 +69,14 @@ function parseArgs() {
  *  forge, so the fixture exercises the real wire format. */
 function buildSpec(presetName: string): unknown {
   const rows = [
-    { study: "Alpha 2024",   region: "Americas", n: 245, hr: 0.72, lo: 0.58, hi: 0.89 },
-    { study: "Beta 2023",    region: "Americas", n: 189, hr: 0.81, lo: 0.65, hi: 1.01 },
-    { study: "Gamma 2022",   region: "Europe",   n: 312, hr: 0.66, lo: 0.50, hi: 0.86 },
-    { study: "Delta 2021",   region: "Europe",   n: 278, hr: 0.74, lo: 0.59, hi: 0.93 },
-    { study: "Epsilon 2024", region: "Asia",     n: 478, hr: 0.91, lo: 0.78, hi: 1.06 },
-    { study: "Zeta 2023",    region: "Asia",     n: 156, hr: 0.65, lo: 0.49, hi: 0.85 },
-    { study: "Eta 2022",     region: "Africa",   n: 134, hr: 0.79, lo: 0.62, hi: 1.01 },
-    { study: "Theta 2025",   region: "Oceania",  n: 412, hr: 0.83, lo: 0.69, hi: 0.99 },
+    { study: "Alpha 2024",   region: "Americas", n: 245, hr: 0.72, lo: 0.58, hi: 0.89, p: 0.004 },
+    { study: "Beta 2023",    region: "Americas", n: 189, hr: 0.81, lo: 0.65, hi: 1.01, p: 0.062 },
+    { study: "Gamma 2022",   region: "Europe",   n: 312, hr: 0.66, lo: 0.50, hi: 0.86, p: 0.0008 },
+    { study: "Delta 2021",   region: "Europe",   n: 278, hr: 0.74, lo: 0.59, hi: 0.93, p: 0.011 },
+    { study: "Epsilon 2024", region: "Asia",     n: 478, hr: 0.91, lo: 0.78, hi: 1.06, p: 0.23 },
+    { study: "Zeta 2023",    region: "Asia",     n: 156, hr: 0.65, lo: 0.49, hi: 0.85, p: 0.002 },
+    { study: "Eta 2022",     region: "Africa",   n: 134, hr: 0.79, lo: 0.62, hi: 1.01, p: 0.071 },
+    { study: "Theta 2025",   region: "Oceania",  n: 412, hr: 0.83, lo: 0.69, hi: 0.99, p: 0.038 },
   ];
   const inputs = PRESETS[presetName];
   if (!inputs) throw new Error(`unknown preset: ${presetName}`);
@@ -87,6 +87,7 @@ function buildSpec(presetName: string): unknown {
       colText({ field: "region", header: "Region" }),
       colN({ field: "n", header: "N" }),
       colInterval({ point: "hr", lower: "lo", upper: "hi", header: "HR (95% CI)" }),
+      colPvalue({ field: "p", stars: true, header: "P" }),
       vizForest({ point: "hr", lower: "lo", upper: "hi", axisLabel: "Hazard ratio" }),
     ],
     theme: buildTheme(inputs, presetName),
