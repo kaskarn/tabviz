@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test, it, describe } from "bun:test";
 import { formatNumber } from "./formatters";
 
 describe("formatNumber — prefix/suffix + abbreviate (regression for col_currency)", () => {
@@ -40,5 +40,26 @@ describe("formatNumber — prefix/suffix + abbreviate (regression for col_curren
     // toPrecision(3) of 75500 = "7.55e+4"; with no thousandsSep that's
     // what we'd get. Prefix still applies.
     expect(out.startsWith("$")).toBe(true);
+  });
+});
+
+describe("formatNumber — R2 review fixes", () => {
+  it("hoists the sign outside a currency prefix (-$ not $-)", () => {
+    const out = formatNumber(-45000.5, {
+      numeric: { prefix: "$", decimals: 2, thousandsSep: "," },
+    } as never);
+    expect(out).toBe("-$45,000.50");
+  });
+
+  it("never renders negative zero", () => {
+    const out = formatNumber(-0.001, { numeric: { decimals: 2 } } as never);
+    expect(out).toBe("0.00");
+  });
+
+  it("thousandsSep: true coerces to comma", () => {
+    const out = formatNumber(1234567, {
+      numeric: { decimals: 0, thousandsSep: true },
+    } as never);
+    expect(out).toBe("1,234,567");
   });
 });

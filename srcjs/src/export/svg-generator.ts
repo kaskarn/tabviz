@@ -115,6 +115,12 @@ import {
  * overflows). Caps at `maxLines` — extra content beyond the cap is
  * dropped (live widget shows clipped overflow at the row edge).
  */
+/** Single wrap-on predicate (was triplicated — R2 code-quality #4). */
+function isWrapEnabled(col: { wrap?: boolean | number }): boolean {
+  const w = col.wrap;
+  return typeof w === "number" ? w > 0 : !!w;
+}
+
 function wrapTextIntoLines(
   text: string,
   contentWidth: number,
@@ -762,10 +768,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // columns. Mirrors tabvizStore's measurement so SVG export grows the
   // same row tracks the live widget grows. Uses estimateTextWidth (the
   // same heuristic auto-width uses) so widths are self-consistent here.
-  const wrapEnabledCols = allColumns.filter(c => {
-    const w = (c as { wrap?: boolean | number }).wrap;
-    return typeof w === "number" ? w > 0 : !!w;
-  });
+  const wrapEnabledCols = allColumns.filter(c => isWrapEnabled(c as { wrap?: boolean | number }));
   const wrapLineCounts: Record<string, number> = {};
   if (wrapEnabledCols.length > 0) {
     const dataFontSize = parseFontSize(readBodySize(cssVars));
@@ -3108,8 +3111,7 @@ function renderUnifiedTableRow(
     // #2 — the legacy branch below has the only wrapping emitter, and
     // it was unreachable for schema-handled types). The wrap line-count
     // pre-pass already grew the row tracks; this makes the paint match.
-    const cellWrapVal = (col as { wrap?: boolean | number }).wrap;
-    const cellWrapEnabled = typeof cellWrapVal === "number" ? cellWrapVal > 0 : !!cellWrapVal;
+    const cellWrapEnabled = isWrapEnabled(col as { wrap?: boolean | number });
     if (!cellWrapEnabled) {
       const cellSch = row.cellStyles?.[col.field];
       const rowSch  = row.style;
@@ -3161,7 +3163,23 @@ function renderUnifiedTableRow(
         if (cellStyle?.color)         cellColor = cellStyle.color;
         else if (cellSemBundle?.fg)   cellColor = cellSemBundle.fg;
 
-        const out = renderNodeToSvg(tree, resolver);
+        // Single-text trees ellipsize at the column width before
+        // serializing: the tree path emitted raw markup with no
+        // truncation, so pinned narrow text columns bled into their
+        // neighbors in export while the DOM clipped with CSS
+        // text-overflow (R2 versatility H1). Falling through to the
+        // legacy emitter instead was tried and REVERTED — it skips the
+        // schema formatters (currency cells regressed to raw numbers).
+        // Tolerance: truncate against width minus ONE pad, not two.
+        // Auto widths can be pinned by R's systemfonts (pixel-exact,
+        // typically narrower than the estimator), so a zero-slack
+        // threshold false-fired on perfectly-fitting cells — the goal
+        // is catching drastic overflow, not 2px disagreements.
+        const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
+        const fittedTree = tree.kind === "text"
+          ? { ...tree, value: truncateText(tree.value, Math.max(1, width - cellPadX), fontSize, 0, cellFontWeight) }
+          : tree;
+        const out = renderNodeToSvg(fittedTree, resolver);
         const originX = anchor === "end" ? textX - out.width
                       : anchor === "middle" ? textX - out.width / 2
                       : textX;
@@ -3217,7 +3235,7 @@ function renderUnifiedTableRow(
     }
 
     const wrapVal = (col as { wrap?: boolean | number }).wrap;
-    const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
+    const wrapEnabled = isWrapEnabled(col as { wrap?: boolean | number });
     if (wrapEnabled) {
       const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
       const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
@@ -3238,13 +3256,19 @@ function renderUnifiedTableRow(
           fill="${cellColor}">${escapeXml(wrappedLines[li])}</text>`);
       }
     } else {
+      // Ellipsize at the column width — the DOM clips no-wrap overflow
+      // with text-overflow:ellipsis, but the export emitted the raw
+      // full string and it bled into neighboring columns (R2 versatility
+      // H1: truncateText was wired to headers only). Mirrors the DOM.
+      const cellPad = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
+      const fitted = truncateText(value, Math.max(1, width - cellPad), fontSize, 0, cellFontWeight);
       lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${textY}"
         font-family="${readBodyFamily(cssVars)}"
         font-size="${fontSize}px"
         font-weight="${cellFontWeight}"
         font-style="${cellFontStyle}"
         text-anchor="${anchor}"
-        fill="${cellColor}">${escapeXml(value)}</text>`);
+        fill="${cellColor}">${escapeXml(fitted)}</text>`);
     }
   }
 

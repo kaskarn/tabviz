@@ -226,9 +226,13 @@
   const captionChip = $derived(
     v4Inputs?.effects?.caption_style === "chip" ||
     v4Inputs?.effects?.caption_style === "both"
-      ? (spec?.labels?.tag ?? null)
+      ? (spec?.labels?.tag ?? "TABLE")
       : null,
   );
+  // Fallback "TABLE": a theme that opts into the chip renders the lab's
+  // default stamp when the spec carries no `tag` — previously the chip
+  // silently vanished, which read as a broken setting in the studio
+  // (R2 effects F5). Authors override via tabviz(tag=).
   // C40 (reworked 2026-06-05): the ONLY height layer left outside
   // `.tabviz-scalable` is the shell's own padding — caption chip, strip,
   // and the paper (with its padding) all moved INSIDE the measured
@@ -237,7 +241,12 @@
   // undercounted by ~3px and ignored label-size theming) is gone.
   // Read the resolved cssVar — one source, consumed once (no recipe
   // re-resolution that could drift from the paint).
-  const shellPad = $derived(readVarPx(getCssVars(theme), "--tv-shell-padding", 0));
+  // One hoisted record per theme — getCssVars' cascade is memoized but
+  // the per-call clone is not, and the annotation template was calling
+  // it 4x per annotation per render (R2 spacing #7).
+  const themeCssVars = $derived(theme ? getCssVars(theme) : {});
+  const annStroke = $derived(theme ? readSurfaceBg(themeCssVars) : "white");
+  const shellPad = $derived(readVarPx(themeCssVars, "--tv-shell-padding", 0));
 
   // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
   // and we append a <link rel=stylesheet> per URL on mount + when the
@@ -676,7 +685,7 @@
   // Uses solid colors (pre-blended with background) to avoid transparency artifacts
   function getGroupBackground(level: number, theme: WebTheme | undefined): string {
     const rg = theme?.rowGroup;
-    const cv = theme ? getCssVars(theme) : {};
+    const cv = themeCssVars;
     const primary = readAccentDefault(cv);
     const bg = readSurfaceBg(cv);
 
@@ -1500,11 +1509,13 @@
           {/if}
         </div>
       {/if}
-      {#if shellStrip}
+      {#if shellStrip && (captionChip || hasPlotHeader)}
         <!-- Brand-gradient seam BETWEEN caption and data paper (lab
              .shell-strip — "expresses the shell↔paper split"; it is NOT
              a top cap, the original placement all three spacing-review
-             agents flagged). -->
+             agents flagged). Guarded on a caption EXISTING: with no
+             title/chip the strip became a first-child top cap again —
+             the exact defect, through a corner case (R2 spacing #4). -->
         <div class="shell-strip" aria-hidden="true"></div>
       {/if}
       <div class="tv-paper">
@@ -2058,13 +2069,13 @@
                       {@const annX = markerX + offset}
                       {@const sz = 5 * (customAnn.size ?? 1)}
                       {#if customAnn.shape === "circle"}
-                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
+                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {:else if customAnn.shape === "square"}
-                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
+                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {:else if customAnn.shape === "triangle"}
-                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
+                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {:else if customAnn.shape === "star"}
-                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={theme ? readSurfaceBg(getCssVars(theme)) : "white"} stroke-width="0.5" />
+                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {/if}
                     {/if}
                   {/if}

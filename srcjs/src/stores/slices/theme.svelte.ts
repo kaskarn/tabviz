@@ -122,6 +122,11 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   let baseThemeName = $state<string>("default");
   let themeOverrides = $state.raw<Set<string>>(new Set());
   let initialTheme = $state.raw<WebSpec["theme"] | null>(null);
+  // Authoring-input edits (polarity/density via the cog drawer) bypass
+  // the themeEdits map entirely, so the Reset gate never saw them and
+  // the button stayed disabled for the everyday drawer's own edits (R2
+  // UX review #1). A plain dirty flag is exact for the gate's purpose.
+  let authoringEdited = $state(false);
   let initialWatermark = $state<string | undefined>(undefined);
 
   function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
@@ -157,6 +162,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   }
 
   function captureInitial(spec: WebSpec): void {
+    authoringEdited = false;
     initialTheme = cloneTheme(spec.theme);
     initialWatermark = spec.watermark ?? "";
     baseThemeName = spec.theme?.name ?? "default";
@@ -237,6 +243,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   // the source emitter still matches presets when the inputs happen to
   // round-trip to a known one.
   function setAuthoringInputs(partial: Partial<ThemeInputs>): void {
+    authoringEdited = true;
     const spec = deps.getSpec();
     if (!spec || !spec.theme) return;
     const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
@@ -385,6 +392,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   }
 
   function resetThemeEdits(): void {
+    authoringEdited = false;
     const spec = deps.getSpec();
     if (!spec) return;
     let nextSpec = spec;
@@ -445,6 +453,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     get initialTheme() { return initialTheme; },
     get initialWatermark() { return initialWatermark; },
     get hasThemeEdits() {
+      if (authoringEdited) return true;
       for (const key of Object.keys(themeEdits)) {
         if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
       }

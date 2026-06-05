@@ -165,7 +165,13 @@ function _formatNumberImpl(value: number | undefined | null, options?: ColumnOpt
   const abbreviate = options?.numeric?.abbreviate;
   const digits = options?.numeric?.digits;
   const decimals = options?.numeric?.decimals;
-  const thousandsSep = options?.numeric?.thousandsSep;
+  // `true` coerces to the conventional comma: the guard below requires a
+  // string, so a boolean silently no-op'd (R2 versatility L8 — a natural
+  // user guess that did nothing).
+  // The declared wire type is string|false, but R serializes TRUE as a
+  // boolean true — widen for the runtime reality.
+  const rawSep = options?.numeric?.thousandsSep as string | boolean | undefined;
+  const thousandsSep = rawSep === true ? "," : rawSep;
   let formatted: string;
 
   if (abbreviate && Math.abs(value) >= 1000) {
@@ -189,10 +195,22 @@ function _formatNumberImpl(value: number | undefined | null, options?: ColumnOpt
     }
   }
 
-  // Apply prefix/suffix (e.g., for currency: "$100" or "100EUR")
+  // Normalize negative zero AFTER formatting: (-0.001).toFixed(2)
+  // preserves the sign and rendered "-0.00" (R2 versatility M6).
+  // Post-format is exact at any decimals/digits setting.
+  if (/^-0(?:\.0+)?$/.test(formatted)) formatted = formatted.slice(1);
+
+  // Apply prefix/suffix (e.g., for currency: "$100" or "100EUR").
+  // The sign hoists OUTSIDE the prefix: "$-45,000.50" violated the
+  // universal accounting convention; "-$45,000.50" is correct (R2
+  // versatility M5).
   const prefix = options?.numeric?.prefix;
   const suffix = options?.numeric?.suffix;
-  if (prefix) formatted = prefix + formatted;
+  if (prefix) {
+    formatted = formatted.startsWith("-")
+      ? "-" + prefix + formatted.slice(1)
+      : prefix + formatted;
+  }
   if (suffix) formatted = formatted + suffix;
 
   return formatted;

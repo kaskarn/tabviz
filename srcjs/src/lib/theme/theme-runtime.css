@@ -314,7 +314,10 @@
   /* Horizontal inset = the paper mat, so the strip's edges align with
    * the DATA block it introduces (spacing review #1: it spanned the
    * full paper width, overhanging the columns by the mat on each side). */
-  margin: 0 var(--tv-paper-padding, 0px) var(--tv-spacing-header-gap, 12px);
+  /* Bottom gap = header-gap MINUS the strip's own 3px height so a
+   * strip-bearing preset has the same title->data rhythm as a strip-less
+   * one (R2 spacing #2 measured the residual 3px difference). */
+  margin: 0 var(--tv-paper-padding, 0px) calc(var(--tv-spacing-header-gap, 12px) - 3px);
   border-radius: 999px;
   background: var(--tv-brand-gradient);
   box-shadow:
