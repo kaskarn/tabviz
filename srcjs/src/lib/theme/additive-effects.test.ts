@@ -6,12 +6,22 @@ import { createWire } from "./theme-wire";
 import { inputsFromHex } from "./theme-presets-inputs";
 
 describe("brand gradient", () => {
-  it("emits a two-stop linear-gradient", () => {
+  // C36 (wire-audit 1c): lab-fidelity sweep — 135deg, H-24 -> H+30,
+  // polarity branch on the first stop's L (dark lifts LIGHTER).
+  it("emits the 135deg hue-shifted two-stop sweep", () => {
     const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
     const g = r.cssVars["--tv-brand-gradient"];
     expect(g).toContain("linear-gradient");
-    expect(g).toContain("90deg");
+    expect(g).toContain("135deg");
     expect(g).toMatch(/#[0-9A-Fa-f]{6}.*#[0-9A-Fa-f]{6}/);
+  });
+
+  it("dark polarity lifts the first stop lighter (not darker)", () => {
+    const light = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }), "t"));
+    const dark = resolveTheme(createWire(
+      inputsFromHex({ brand: "#0099CC", polarity: "dark" }), "t"));
+    expect(light.cssVars["--tv-brand-gradient"])
+      .not.toBe(dark.cssVars["--tv-brand-gradient"]);
   });
 });
 

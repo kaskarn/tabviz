@@ -32,6 +32,8 @@
 #' @param title Main title (displayed above the plot)
 #' @param subtitle Subtitle (displayed below the title)
 #' @param caption Caption (displayed below the plot)
+#' @param tag Short stamp label (e.g. "TABLE 2") rendered as the caption
+#'   chip on the shell when the theme pins effects.caption_style = 'chip'.
 #' @param footnote Footnote (displayed below caption, italicized)
 #' @param watermark Optional watermark text (e.g. `"DRAFT"`, `"CONFIDENTIAL"`)
 #' @param watermark_color Optional CSS color for the watermark; inherits
@@ -197,6 +199,7 @@ tabviz <- function(
     title = NULL,
     subtitle = NULL,
     caption = NULL,
+    tag = NULL,
     footnote = NULL,
     watermark = NULL,
     watermark_color = NULL,
@@ -552,12 +555,14 @@ tabviz <- function(
 
   # Build labels if any are provided
   labels <- NULL
-  if (!is.null(title) || !is.null(subtitle) || !is.null(caption) || !is.null(footnote)) {
+  if (!is.null(title) || !is.null(subtitle) || !is.null(caption) ||
+      !is.null(footnote) || !is.null(tag)) {
     labels <- PlotLabels(
       title = title %||% NA_character_,
       subtitle = subtitle %||% NA_character_,
       caption = caption %||% NA_character_,
-      footnote = footnote %||% NA_character_
+      footnote = footnote %||% NA_character_,
+      tag = tag %||% NA_character_
     )
   }
 

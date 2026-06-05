@@ -64,6 +64,9 @@ export interface TabvizArgs {
   title?: string;
   subtitle?: string;
   caption?: string;
+  /** Short stamp label for the caption chip ("TABLE 2"). Renders only
+   *  when the theme pins effects.caption_style = "chip". */
+  tag?: string;
   footnote?: string;
   watermark?: string;
   watermarkColor?: string;
@@ -189,6 +192,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
     title: args.title ?? null,
     subtitle: args.subtitle ?? null,
     caption: args.caption ?? null,
+    tag: args.tag ?? null,
     footnote: args.footnote ?? null,
   };
 

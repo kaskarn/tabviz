@@ -808,6 +808,10 @@ export interface PlotLabels {
   subtitle?: string | null;
   caption?: string | null;
   footnote?: string | null;
+  /** Short stamp label (e.g. "TABLE 2") rendered as the caption CHIP on
+   *  the shell when effects.caption_style === "chip" (B17, wire-audit
+   *  1c). Distinct from `caption`, which is prose below the plot. */
+  tag?: string | null;
 }
 
 // ============================================================================

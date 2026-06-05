@@ -773,6 +773,24 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // Sourced from inputs.status.X anchors via pickAnchorHex; fall back to
   // a STATUS_ANCHOR_FALLBACK palette when the input is unset.
   {
+    cssVar: "--tv-caption-chip-bg",
+    kind: "paint-fill",
+    resolverGroup: "role",
+    source: { tier: "role", role: "accent-solid" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description:
+      "Caption chip (TABLE-N stamp) background — rubrication channel " +
+      "(accent-solid; ink2-seeded when the theme pins ink2). B17/C62.",
+  },
+  {
+    cssVar: "--tv-caption-chip-fg",
+    kind: "paint-color",
+    resolverGroup: "role",
+    source: { tier: "role", role: "text-onsolid" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Caption chip label color (APCA-picked against the chip bg).",
+  },
+  {
     cssVar: "--tv-ink2",
     kind: "paint-color",
     resolverGroup: "anchor",

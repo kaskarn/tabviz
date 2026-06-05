@@ -211,6 +211,29 @@
   background: var(--tv-brand-gradient);
 }
 
+/* Caption chip — the lab's "TABLE 2" boxed stamp (B17/C62, wire-audit
+ * 1c). Register: label-role mono/bold/uppercase with 0.06em tracking;
+ * radius deliberately TIGHTER than the table (x0.7 sub-proportion);
+ * bg = rubrication channel (accent-solid; ink2-seeded when pinned);
+ * glow halo rides the live glow tokens (C12) — flat when glow is off.
+ * Carries .tv-shell-text in the DOM so texture knockout applies. */
+.tabviz-scope .tv-caption-chip {
+  display: inline-block;
+  align-self: flex-start;
+  margin: 2px 0 8px 0;
+  padding: 3px 10px;
+  background: var(--tv-caption-chip-bg);
+  color: var(--tv-caption-chip-fg);
+  font-family: var(--tv-text-label-family, var(--tv-text-body-family));
+  font-size: var(--tv-text-label-size, 11px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: calc(var(--tv-radius-md, 6px) * 0.7);
+  box-shadow: 0 0 var(--tv-glow-blur, 0) var(--tv-glow-spread, 0)
+    var(--tv-glow-color, transparent);
+}
+
 /* sv-omit-end */
 
 /* Shell + paper surfaces — LIVE as of wire-audit Pass 1a (TabvizPlot

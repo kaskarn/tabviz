@@ -616,7 +616,8 @@ serialize_labels <- function(labels) {
     title = if (is.na(labels@title)) NULL else labels@title,
     subtitle = if (is.na(labels@subtitle)) NULL else labels@subtitle,
     caption = if (is.na(labels@caption)) NULL else labels@caption,
-    footnote = if (is.na(labels@footnote)) NULL else labels@footnote
+    footnote = if (is.na(labels@footnote)) NULL else labels@footnote,
+    tag = if (is.na(labels@tag)) NULL else labels@tag
   )
 }
 

@@ -8,7 +8,8 @@ PlotLabels(
   title = NA_character_,
   subtitle = NA_character_,
   caption = NA_character_,
-  footnote = NA_character_
+  footnote = NA_character_,
+  tag = NA_character_
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ PlotLabels(
 \item{caption}{Caption (below plot)}
 
 \item{footnote}{Footnote (below caption, typically italicized)}
+
+\item{tag}{Short stamp label (e.g. "TABLE 2") rendered as the caption
+chip on the shell when the theme pins \code{effects.caption_style = "chip"}.}
 }
 \description{
 PlotLabels: Title, subtitle, caption, and footnote for a plot

@@ -203,11 +203,29 @@
   const scopeDensity = $derived(v4Inputs?.density ?? "comfortable");
   const shellGlow = $derived((v4Inputs?.effects?.glow_intensity ?? "none") !== "none");
   const shellStrip = $derived(
-    (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none",
+    (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none" ||
+    v4Inputs?.effects?.caption_style === "stripe",
+  );
+  // B17 (wire-audit 1c): caption chip — labels.tag rendered as a boxed
+  // stamp on the shell when effects.caption_style === "chip". NOT
+  // labels.caption: that is footer prose (PlotFooter renders it) and
+  // reusing it double-rendered the text — caught by the screenshot
+  // harness on first run.
+  const captionChip = $derived(
+    v4Inputs?.effects?.caption_style === "chip"
+      ? (spec?.labels?.tag ?? null)
+      : null,
   );
   // C40: every padding layer between container and content must enter the
   // auto-fit height formula or padded shell modes clip at the bottom.
   const shellPaperPad = $derived(v4Inputs ? shellPaperPaddingPx(v4Inputs) : 0);
+  // Shell extras (chip / strip) live OUTSIDE .tabviz-scalable, so the
+  // auto-fit formula must add their height too (the chip clipped the
+  // axis off the bottom — caught by the screenshot harness). Measured
+  // values: chip ≈ 22px + 8px margin; strip = 3px.
+  const shellExtrasPad = $derived(
+    (captionChip ? 30 : 0) + (shellStrip ? 3 : 0),
+  );
 
   // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
   // and we append a <link rel=stylesheet> per URL on mount + when the
@@ -1383,7 +1401,7 @@
   data-mode={scopeMode}
   data-polarity={scopePolarity}
   data-density={scopeDensity}
-  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + 2 * shellPaperPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
+  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + 2 * shellPaperPad + shellExtrasPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
 >
   {#if spec}
     <!-- Control toolbar (always outside scalable so it doesn't scale with zoom) -->
@@ -1398,6 +1416,13 @@
          gradient strip); the paper is the content surface. Both are inert
          under flush mode (transparent, 0 padding, outline borders). -->
     <div class="tv-shell" class:tv-glow={shellGlow}>
+      {#if captionChip}
+        <!-- Caption chip (lab "TABLE 2" stamp). Deliberately NOT
+             .tv-shell-text: the chip is opaque (its own bg); the texture
+             knockout's higher-specificity background would override the
+             rubrication bg — caught by the screenshot harness. -->
+        <div class="tv-caption-chip">{captionChip}</div>
+      {/if}
       {#if shellStrip}
         <!-- Brand-gradient seam (lab .shell-strip; consumes --tv-brand-gradient) -->
         <div class="shell-strip" aria-hidden="true"></div>
@@ -3151,7 +3176,20 @@
      at resolve time. */
   :global(.tabviz-container .data-cell.row-active-emphasis) {
     box-shadow:
-      var(--tv-shadow-emphasis, none),
+      var(--tv-shadow-emphasis, 0 0 0 transparent),
+      0 0 var(--tv-glow-blur, 0) var(--tv-glow-spread, 0) var(--tv-glow-color, transparent);
+  }
+
+  /* Hero-row inset bar (wire-audit 1c, lab .is-highlight): the first
+     cell of an emphasis-painted row carries a 3px accent bar. Composed
+     with the emphasis/glow stack — every component is a composable
+     no-op when its tokens are unset ("none" in a multi-shadow list is
+     invalid CSS and silently drops the whole declaration; the resolver
+     emits "0 0 0 transparent" for the same reason). */
+  :global(.tabviz-container .data-cell.row-active-emphasis:first-child) {
+    box-shadow:
+      inset 3px 0 0 var(--tv-row-emphasis-bar, transparent),
+      var(--tv-shadow-emphasis, 0 0 0 transparent),
       0 0 var(--tv-glow-blur, 0) var(--tv-glow-spread, 0) var(--tv-glow-color, transparent);
   }
 

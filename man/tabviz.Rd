@@ -16,6 +16,7 @@ tabviz(
   title = NULL,
   subtitle = NULL,
   caption = NULL,
+  tag = NULL,
   footnote = NULL,
   watermark = NULL,
   watermark_color = NULL,
@@ -99,6 +100,9 @@ column picker (for sensitive or internal-only fields).}
 \item{subtitle}{Subtitle (displayed below the title)}
 
 \item{caption}{Caption (displayed below the plot)}
+
+\item{tag}{Short stamp label (e.g. "TABLE 2") rendered as the caption
+chip on the shell when the theme pins effects.caption_style = 'chip'.}
 
 \item{footnote}{Footnote (displayed below caption, italicized)}
 

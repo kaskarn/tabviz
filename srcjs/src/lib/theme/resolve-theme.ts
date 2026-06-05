@@ -395,13 +395,20 @@ function resolveHcFidelityGroup(token: ComponentToken, ctx: ResolveCtx): string 
 /** Browser-additive effects group (Stage 2 §7). */
 function resolveBrowserFxGroup(token: ComponentToken, ctx: ResolveCtx): string {
   if (token.cssVar === "--tv-brand-gradient") {
-    const brandHex = oklchToHex(ctx.inputs.anchors.brand);
-    const brandSolid = ctx.roles["brand-solid"] ?? brandHex;
-    // Use ramp grade 8 (mid) and grade 10 (deep) for a subtle two-stop sweep.
-    const brandRamp = ctx.ramps.brand;
-    const a = brandRamp[7] ?? brandSolid;
-    const b = brandRamp[9] ?? brandSolid;
-    return `linear-gradient(90deg, ${a} 0%, ${b} 100%)`;
+    // C36 (wire-audit 1c): lab-fidelity hue-shifted sweep — 135deg,
+    // H-24 -> H+30, with the polarity branch on the first stop's L
+    // (dark themes lift LIGHTER; rgc_v4 engine.jsx:215). The previous
+    // 90deg two-ramp-stop emission lacked the hue sweep entirely.
+    const brand = ctx.inputs.anchors.brand;
+    const dark = derivePolarity(ctx.inputs) === "dark";
+    const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
+    const stopA = oklchToHex({
+      L: clamp01(brand.L + (dark ? 0.06 : -0.02)),
+      C: brand.C,
+      H: (brand.H - 24 + 360) % 360,
+    });
+    const stopB = oklchToHex({ L: brand.L, C: brand.C, H: (brand.H + 30) % 360 });
+    return `linear-gradient(135deg, ${stopA} 0%, ${stopB} 100%)`;
   }
   if (token.cssVar === "--tv-glow-brand-color") {
     // rgba from accent-solid at alpha 0.4.
@@ -750,7 +757,11 @@ function resolveEffectsComputed(
   // ── Emphasis shadow ───────────────────────────────────────────────────
   if (cssVar === "--tv-shadow-emphasis") {
     const elev = fx?.elevation ?? "none";
-    if (elev === "none") return "none";
+    // Composable no-op, NOT "none": this token participates in
+    // multi-shadow lists ("none, 0 0 ..." is invalid CSS and silently
+    // drops the whole declaration — the latent bug that kept row-glow
+    // dead on non-elevation themes; wire-audit 1c).
+    if (elev === "none") return "0 0 0 transparent";
     // Stack a near + far shadow per Stage 2 §6 convention. Near uses the
     // brand-peak hue at low alpha to keep colour identity in the elevation.
     const peak = resolved.ramps.brand[9] ?? "#1c1a17";

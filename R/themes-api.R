@@ -99,7 +99,8 @@ theme_inputs_to_json <- function(inputs) {
     glow_anchor              = na_to_null(inputs@effects_glow_anchor),
     gradient_shell_intensity = na_to_null(inputs@effects_gradient_shell_intensity),
     gradient_shell_angle     = na_to_null(inputs@effects_gradient_shell_angle),
-    elevation                = na_to_null(inputs@effects_elevation)
+    elevation                = na_to_null(inputs@effects_elevation),
+    caption_style            = na_to_null(inputs@effects_caption_style)
   ))
 
   # Phase 5 / Stage 1 §33 — row_kinds. Re-nest flat slots into
@@ -385,6 +386,7 @@ web_theme <- function(
     effects_gradient_shell_intensity = effects$gradient_shell_intensity %||% NA_character_,
     effects_gradient_shell_angle   = effects$gradient_shell_angle   %||% NA_real_,
     effects_elevation              = effects$elevation              %||% NA_character_,
+    effects_caption_style          = effects$caption_style          %||% NA_character_,
     # row_kinds — extract heightRatio per kind from the nested named list.
     row_kinds_data_height_ratio         = row_kinds$data$heightRatio         %||% NA_real_,
     row_kinds_group_header_height_ratio = row_kinds$group_header$heightRatio %||% NA_real_,
@@ -663,6 +665,10 @@ set_geometry <- function(theme, radius = NULL, border_width = NULL) {
 #' @param gradient_shell_intensity `"none"` / `"subtle"` / `"vivid"`.
 #' @param gradient_shell_angle Numeric in `[0, 360]` (degrees).
 #' @param elevation `"none"` / `"soft"` / `"raised"` / `"float"`.
+#' @param caption_style `"none"` / `"chip"` / `"stripe"` — caption
+#'   treatment above the paper (B17). `"chip"` renders the spec's
+#'   `caption` label as a boxed TABLE-N stamp; `"stripe"` shows the
+#'   brand-gradient seam.
 #' @return The re-resolved [WebTheme].
 #' @export
 set_effects <- function(theme,
@@ -670,7 +676,8 @@ set_effects <- function(theme,
                         glow_anchor = NULL,
                         gradient_shell_intensity = NULL,
                         gradient_shell_angle = NULL,
-                        elevation = NULL) {
+                        elevation = NULL,
+                        caption_style = NULL) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
@@ -691,12 +698,14 @@ set_effects <- function(theme,
   gradient_shell_intensity <- na_or_choice(gradient_shell_intensity, c("none", "subtle", "vivid"), "gradient_shell_intensity")
   gradient_shell_angle     <- na_or_number(gradient_shell_angle, 0, 360, "gradient_shell_angle")
   elevation                <- na_or_choice(elevation, c("none", "soft", "raised", "float"), "elevation")
+  caption_style            <- na_or_choice(caption_style, c("none", "chip", "stripe"), "caption_style")
   inputs <- theme@inputs
   if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
   if (!is.null(glow_anchor))              inputs@effects_glow_anchor              <- glow_anchor
   if (!is.null(gradient_shell_intensity)) inputs@effects_gradient_shell_intensity <- gradient_shell_intensity
   if (!is.null(gradient_shell_angle))     inputs@effects_gradient_shell_angle     <- gradient_shell_angle
   if (!is.null(elevation))                inputs@effects_elevation                <- elevation
+  if (!is.null(caption_style))            inputs@effects_caption_style            <- caption_style
   resolve_from_inputs(inputs, name = theme@name)
 }
 

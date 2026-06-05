@@ -154,6 +154,8 @@ GroupSummary <- new_class(
 #' @param subtitle Subtitle (below title)
 #' @param caption Caption (below plot)
 #' @param footnote Footnote (below caption, typically italicized)
+#' @param tag Short stamp label (e.g. "TABLE 2") rendered as the caption
+#'   chip on the shell when the theme pins `effects.caption_style = "chip"`.
 #'
 #' @export
 PlotLabels <- new_class(
@@ -162,7 +164,8 @@ PlotLabels <- new_class(
     title = new_property(class_character, default = NA_character_),
     subtitle = new_property(class_character, default = NA_character_),
     caption = new_property(class_character, default = NA_character_),
-    footnote = new_property(class_character, default = NA_character_)
+    footnote = new_property(class_character, default = NA_character_),
+    tag = new_property(class_character, default = NA_character_)
   )
 )
 

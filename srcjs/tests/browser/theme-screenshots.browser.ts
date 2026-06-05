@@ -78,8 +78,13 @@ function buildSpec(presetName: string): unknown {
     { study: "Eta 2022",     region: "Africa",   n: 134, hr: 0.79, lo: 0.62, hi: 1.01, p: 0.071 },
     { study: "Theta 2025",   region: "Oceania",  n: 412, hr: 0.83, lo: 0.69, hi: 0.99, p: 0.038 },
   ];
-  const inputs = PRESETS[presetName];
+  let inputs = PRESETS[presetName];
   if (!inputs) throw new Error(`unknown preset: ${presetName}`);
+  // 1c validation rig: exercise the caption chip on brutalist (rubrication
+  // chip over grid texture — the lab's signature stamp).
+  if (presetName === "brutalist") {
+    inputs = { ...inputs, effects: { ...inputs.effects, caption_style: "chip" as const } };
+  }
   return tabviz({
     data: rows,
     label: "study",
@@ -93,6 +98,7 @@ function buildSpec(presetName: string): unknown {
     theme: buildTheme(inputs, presetName),
     title: `${presetName} — wire-audit Pass 1a fixture`,
     subtitle: "shell / paper / texture / glow",
+    tag: "Table 1",
   });
 }
 
@@ -105,6 +111,7 @@ interface ShellProbe {
   shellBgImage: string;
   paperBgImage: string;
   hasStrip: boolean;
+  hasCaptionChip: boolean;
 }
 
 async function probeShell(page: Page): Promise<ShellProbe> {
@@ -131,6 +138,7 @@ async function probeShell(page: Page): Promise<ShellProbe> {
       shellBgImage: cs?.backgroundImage ?? "",
       paperBgImage: ps?.backgroundImage ?? "",
       hasStrip: !!shell?.querySelector(":scope > .shell-strip"),
+      hasCaptionChip: !!shell?.querySelector(":scope > .tv-caption-chip"),
     };
   });
 }
@@ -170,6 +178,8 @@ function assertPreset(name: string, p: ShellProbe): string[] {
     // Flush + grid: texture falls to paper.
     ok(p.scopeAttrs.paperTexture === "grid", `flush texture must fall to paper, got ${p.scopeAttrs.paperTexture}`);
     ok(p.paperBgImage !== "none", "flush+grid: paper background-image (texture) missing");
+    // 1c: caption chip renders (fixture pins caption_style="chip").
+    ok(p.hasCaptionChip, "caption chip missing despite caption_style=chip + labels.caption");
   }
   return errs;
 }

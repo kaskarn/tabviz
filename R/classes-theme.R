@@ -199,6 +199,10 @@ ThemeInputs <- new_class(
     effects_gradient_shell_intensity = new_property(class_character, default = NA_character_),
     effects_gradient_shell_angle   = new_property(class_numeric,   default = NA_real_),
     effects_elevation              = new_property(class_character, default = NA_character_),
+    # B17 (wire-audit 1c): caption treatment above the paper —
+    # "chip" renders labels.caption as a boxed stamp; "stripe" shows
+    # the brand-gradient seam.
+    effects_caption_style          = new_property(class_character, default = NA_character_),
 
     # Phase 5 / Stage 1 §33 — per-row-kind theme-default heightRatios. Layer
     # 3 of the row-kind height cascade (see srcjs/src/lib/layout/
@@ -266,6 +270,10 @@ ThemeInputs <- new_class(
     el <- self@effects_elevation
     if (!is.na(el) && !el %in% c("none", "soft", "raised", "float")) {
       return("effects_elevation must be 'none', 'soft', 'raised', or 'float'")
+    }
+    cs <- self@effects_caption_style
+    if (!is.na(cs) && !cs %in% c("none", "chip", "stripe")) {
+      return("effects_caption_style must be 'none', 'chip', or 'stripe'")
     }
     # row_kinds — each heightRatio must be a positive finite number when set.
     for (slot in c("row_kinds_data_height_ratio",

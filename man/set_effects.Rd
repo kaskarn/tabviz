@@ -10,7 +10,8 @@ set_effects(
   glow_anchor = NULL,
   gradient_shell_intensity = NULL,
   gradient_shell_angle = NULL,
-  elevation = NULL
+  elevation = NULL,
+  caption_style = NULL
 )
 }
 \arguments{
@@ -25,6 +26,11 @@ set_effects(
 \item{gradient_shell_angle}{Numeric in \verb{[0, 360]} (degrees).}
 
 \item{elevation}{\code{"none"} / \code{"soft"} / \code{"raised"} / \code{"float"}.}
+
+\item{caption_style}{\code{"none"} / \code{"chip"} / \code{"stripe"} — caption
+treatment above the paper (B17). \code{"chip"} renders the spec's
+\code{caption} label as a boxed TABLE-N stamp; \code{"stripe"} shows the
+brand-gradient seam.}
 }
 \value{
 The re-resolved \link{WebTheme}.

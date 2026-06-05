@@ -205,6 +205,11 @@ export interface ThemeInputs {
     gradient_shell_angle?: number;   // degrees; default 90 (left-to-right)
     /** Card shadow elevation preset. "none" / "soft" / "raised" / "float". */
     elevation?: "none" | "soft" | "raised" | "float";
+    /** Caption treatment above the paper (B17, wire-audit 1c). "chip"
+     *  renders labels.caption as a boxed TABLE-N stamp on the shell;
+     *  "stripe" shows the brand-gradient seam (the shell-strip element)
+     *  even without a gradient_shell pin. */
+    caption_style?: "none" | "chip" | "stripe";
   };
 }
 
