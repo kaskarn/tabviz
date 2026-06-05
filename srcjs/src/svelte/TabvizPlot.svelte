@@ -505,9 +505,18 @@
       for (const cell of cells) {
         const id = cell.dataset.rowId;
         if (!id) continue;
-        // scrollHeight = content height ignoring the pinned grid track.
+        // B2 FIX (wire-audit, 2026-06-05): commit ONLY when content truly
+        // OVERFLOWS the pinned track (scrollHeight > clientHeight). For a
+        // non-overflowing cell, scrollHeight just reports the track back —
+        // and for `row-padded-after` rows the track includes the trailing
+        // rowGroupPadding, so committing it re-added the pad every cycle:
+        // a ~12px/frame unbounded ratchet (the homepage hero grew ~2000px
+        // of inter-group whitespace in 2s of page lifetime). The +1 absorbs
+        // integer rounding between the two metrics.
         const h = cell.scrollHeight;
-        if (h > 0) measured[id] = Math.max(measured[id] ?? 0, h);
+        if (h > cell.clientHeight + 1 && h > 0) {
+          measured[id] = Math.max(measured[id] ?? 0, h);
+        }
       }
       // Details panels measure under a distinct key (panelContentKey) so their
       // content-driven height doesn't collide with the owner row's.
@@ -515,8 +524,9 @@
       for (const p of panels) {
         const rid = p.dataset.panelRowId;
         if (!rid) continue;
+        // Same overflow-only rule as cells (B2 fix).
         const h = p.scrollHeight;
-        if (h > 0) {
+        if (h > p.clientHeight + 1 && h > 0) {
           const key = panelContentKey(rid);
           measured[key] = Math.max(measured[key] ?? 0, h);
         }

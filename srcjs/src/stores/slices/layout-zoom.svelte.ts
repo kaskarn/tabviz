@@ -561,12 +561,31 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     return plotWidthOverride;
   }
 
-  // Commit measured row heights from the DOM ResizeObserver. Shallow-equal
-  // guard: skip the reassignment (and the layout re-derive it would trigger)
-  // when nothing changed, so the measure→commit→re-measure loop settles.
+  // Commit measured row heights from the DOM measure loop.
+  //
+  // GROW-MERGE, not replace (B2 fix, 2026-06-05): the measure side now
+  // reports only rows whose content truly overflows its pinned track, so
+  // a settled (grown-to-fit) row is ABSENT from each new report. Replacing
+  // the map would drop its committed height → shrink → overflow → re-grow
+  // oscillation. Merging with per-key Math.max keeps the documented
+  // "rows only grow" invariant and settles in one pass. `null` still
+  // clears everything (resetState path).
   function setMeasuredRowHeights(heights: Record<string, number> | null): void {
-    if (sameHeightMap(measuredRowHeights, heights)) return;
-    measuredRowHeights = heights;
+    if (heights === null) {
+      if (measuredRowHeights !== null) measuredRowHeights = null;
+      return;
+    }
+    const base = measuredRowHeights ?? {};
+    let changed = false;
+    const merged: Record<string, number> = { ...base };
+    for (const [k, v] of Object.entries(heights)) {
+      if ((merged[k] ?? 0) < v) {
+        merged[k] = v;
+        changed = true;
+      }
+    }
+    if (!changed) return;
+    measuredRowHeights = merged;
   }
 
   function setRowKindHeight(kind: RowKind, height: number | null): void {
