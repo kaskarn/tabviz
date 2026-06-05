@@ -37,7 +37,7 @@ import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectL } from "./polarity";
-import { pickInkOnBg, oklchToHex, contrastRatio } from "../oklch";
+import { pickInkOnBg, oklchToHex, contrastRatio, oklchMix } from "../oklch";
 import { BADGE_VARIANTS } from "../rendering-constants";
 
 /** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
@@ -805,10 +805,18 @@ function resolveEffectsComputed(
     const intensity = fx?.gradient_shell_intensity ?? "none";
     if (intensity === "none") return "transparent";
     const angle = fx?.gradient_shell_angle ?? 90;
-    const fromIdx = intensity === "vivid" ? 8 : 5;   // brand chroma peak / mid
-    const toIdx   = intensity === "vivid" ? 8 : 3;   // accent chroma peak / soft
-    const from = resolved.ramps.brand[fromIdx]  ?? resolved.ramps.brand[8]  ?? "#000000";
-    const to   = resolved.ramps.accent[toIdx]   ?? resolved.ramps.accent[8] ?? "#FFFFFF";
+    // Both stops stay CHROMATIC. The old subtle recipe ended on accent
+    // grade 3 — a neutralized fill step — so the "brand→accent" gradient
+    // visibly died into gray (adversarial effects review M5). Subtle is
+    // now the solid hues whispered toward the surface (a tint, never a
+    // desaturation); vivid is the solids themselves.
+    // Surface stand-in: neutral grade 1 (the paper end) — this resolver
+    // group receives ramps+inputs, not roles.
+    const surface = resolved.ramps.neutral[0] ?? "#FFFFFF";
+    const brandSolid  = resolved.ramps.brand[8]  ?? "#000000";
+    const accentSolid = resolved.ramps.accent[8] ?? "#FFFFFF";
+    const from = intensity === "vivid" ? brandSolid  : oklchMix(surface, brandSolid, 0.30);
+    const to   = intensity === "vivid" ? accentSolid : oklchMix(surface, accentSolid, 0.30);
     return `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`;
   }
 

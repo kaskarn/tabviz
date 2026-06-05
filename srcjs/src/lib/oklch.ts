@@ -303,18 +303,30 @@ export function pickInkOnBg(
   if (candidates.length === 0) {
     throw new Error("pickInkOnBg: candidates must be non-empty");
   }
+  // Three qualification tiers. APCA and WCAG diverge on saturated
+  // chromatic bgs: on synthwave's hot-pink header fill the light ink
+  // scored Lc≥60 but only 2.59:1 WCAG while the dark ink passed WCAG
+  // comfortably and missed the APCA target — the validator (and
+  // readers) want the WCAG-passing pick.
+  //   tier 2: WCAG ≥ 3 AND Lc ≥ target → least visual force wins
+  //   tier 1: WCAG ≥ 3 only            → highest |Lc| wins
+  //   tier 0: neither                  → highest |Lc| wins
+  const WCAG_LARGE_FLOOR = 3.0;
+  const tierOf = (c: string, lc: number): number => {
+    const wcag = contrastRatio(c, bgHex) >= WCAG_LARGE_FLOOR;
+    if (!wcag) return 0;
+    return lc >= targetLc ? 2 : 1;
+  };
   let best = candidates[0]!;
   let bestLc = apcaLc(best, bgHex);
+  let bestTier = tierOf(best, bestLc);
   for (const c of candidates.slice(1)) {
     const lc = apcaLc(c, bgHex);
-    // Prefer candidates that meet the target; among those, prefer the
-    // one with the LOWEST Lc above target (least visual force). If none
-    // meet, fall back to highest |Lc| overall.
-    if (bestLc < targetLc) {
-      if (lc > bestLc) { best = c; bestLc = lc; }
-    } else {
-      if (lc >= targetLc && lc < bestLc) { best = c; bestLc = lc; }
-    }
+    const tier = tierOf(c, lc);
+    const better =
+      tier > bestTier ||
+      (tier === bestTier && (tier === 2 ? lc < bestLc : lc > bestLc));
+    if (better) { best = c; bestLc = lc; bestTier = tier; }
   }
   return best;
 }
@@ -407,6 +419,65 @@ function chromaAt(stepIndex: number, peakChroma: number): number {
   return peakChroma * falloff;
 }
 
+/** Max sRGB-achievable chroma at a given L/H (bisection, mirrors
+ *  oklchToHex's clip). */
+function maxChromaAt(L: number, H: number, upTo: number): number {
+  if (inGamut(oklabToRgb(oklchToOklab({ L, C: upTo, H })))) return upTo;
+  let lo = 0, hi = upTo;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (inGamut(oklabToRgb(oklchToOklab({ L, C: mid, H })))) lo = mid; else hi = mid;
+  }
+  return lo;
+}
+
+/** L of the sRGB chroma cusp for a hue: where the gamut admits the most
+ *  chroma. Yellow cusps near L≈0.97, cyan ≈0.90, blue ≈0.46 — coarse
+ *  9-sample scan + one refinement pass is plenty (the consumer only
+ *  needs the neighborhood, not the exact cusp). */
+function chromaCuspL(H: number): number {
+  let bestL = 0.6, bestC = -1;
+  for (let L = 0.25; L <= 0.96; L += 0.085) {
+    const c = maxChromaAt(L, H, 0.4);
+    if (c > bestC) { bestC = c; bestL = L; }
+  }
+  for (let L = Math.max(0.2, bestL - 0.08); L <= Math.min(0.97, bestL + 0.08); L += 0.02) {
+    const c = maxChromaAt(L, H, 0.4);
+    if (c > bestC) { bestC = c; bestL = L; }
+  }
+  return bestL;
+}
+
+/** Hue-aware L adjustment for chroma-critical ramp steps (adversarial
+ *  color review H2). The fixed per-step L arrays assume hues that hold
+ *  chroma near L≈0.54–0.68 (blues, reds). High-cusp hues (yellow
+ *  ~L0.97, cyan ~L0.9) CANNOT exist saturated there — sRGB bisection
+ *  collapsed them to mud: synthwave's neon-yellow glow resolved to
+ *  #9A9B86, and every dark theme's accent-fill was near-identical gray.
+ *  When the prescribed L loses >45% of the desired chroma, nudge that
+ *  step's L toward the hue's CHROMA CUSP until the chroma survives
+ *  (capped blend so the ramp's tonal order is preserved). Neutral ramps
+ *  (peak≈0) and well-behaved hues are untouched — the guard never
+ *  fires for them. */
+function chromaPreservingL(
+  prescribedL: number,
+  cuspL: number,
+  desiredC: number,
+  H: number,
+): number {
+  if (desiredC < 0.05) return prescribedL; // neutrals / near-neutrals: keep tonal L
+  const achievable = maxChromaAt(prescribedL, H, desiredC);
+  if (achievable >= desiredC * 0.55) return prescribedL;
+  // Walk toward the cusp in small blends; stop as soon as the desired
+  // chroma survives (or accept the best at the cap).
+  const maxBlend = 0.65;
+  for (let blend = 0.15; blend <= maxBlend + 1e-9; blend += 0.1) {
+    const L = prescribedL + (cuspL - prescribedL) * blend;
+    if (maxChromaAt(L, H, desiredC) >= desiredC * 0.55) return L;
+  }
+  return prescribedL + (cuspL - prescribedL) * maxBlend;
+}
+
 /** Curve function for L-progression shaping. Maps `t ∈ [0, 1]` to
  *  remapped value `∈ [0, 1]`. See `theme/curves.ts` for the named set. */
 export type LRampCurve = (t: number) => number;
@@ -452,13 +523,23 @@ export function oklchRamp(seed: string, options: RampOptions = {}): string[] {
     ? buildLProgressionFromCurve(options.curve, mode)
     : (mode === "light" ? LIGHT_RAMP_L : DARK_RAMP_L);
 
+  // Computed once per ramp (H is constant); ~0 cost for neutrals since
+  // chromaPreservingL early-returns below the chroma floor.
+  const cuspL = chromaPeak >= 0.05 ? chromaCuspL(seedLch.H) : 0.6;
+
   const ramp: string[] = [];
   for (let i = 0; i < 12; i++) {
-    let hex = oklchToHex({
-      L: Ls[i]!,
-      C: chromaAt(i, chromaPeak),
-      H: seedLch.H,
-    });
+    const desiredC = chromaAt(i, chromaPeak);
+    // Chroma preservation applies only in the SOLID NEIGHBORHOOD
+    // (indices 6..10: solid, hover, the glow/accent seeds) — that's
+    // where hue identity lives. The surface ends stay strictly tonal so
+    // the light/dark polarity L-inversion contract holds (the walk on a
+    // dark ramp's paper end broke `light[0].L ≈ dark[11].L`).
+    const inSolidBand = Math.abs(i - 8) <= 2;
+    const L = inSolidBand
+      ? chromaPreservingL(Ls[i]!, cuspL, desiredC, seedLch.H)
+      : Ls[i]!;
+    let hex = oklchToHex({ L, C: desiredC, H: seedLch.H });
     if (options.tintHex !== undefined && options.tintAmount && options.tintAmount > 0) {
       // Tint blends into low-chroma steps at BOTH ends symmetrically.
       // Previously distance was measured from the chroma peak (index 8),

@@ -135,8 +135,15 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
   // Chromatic ramps still ride the hand-tuned chromatic L progression
   // (LIGHT_RAMP_L / DARK_RAMP_L) so the chroma peak lands at step 9.
   // A future revision (Phase D) can rebase these on paper.L → ink.L too.
-  const brandRamp = oklchRamp(brandHex, { mode: polarity, curve: cB });
-  const accentRamp = oklchRamp(accentHex, { mode: polarity, curve: cA });
+  //
+  // chromaPeak comes from the ANCHOR TRIPLE, not the hex projection:
+  // polarity reflection moves high-cusp hues (yellow, cyan) to an L
+  // where the hex projection gamut-crushes their chroma BEFORE the ramp
+  // ever builds — synthwave's #FAFF00 accent reached oklchRamp as C≈0.07
+  // and the whole dark ramp collapsed to gray (adversarial color review
+  // H2; pairs with oklchRamp's chroma-preserving L walk).
+  const brandRamp = oklchRamp(brandHex, { mode: polarity, curve: cB, chromaPeak: brand.C });
+  const accentRamp = oklchRamp(accentHex, { mode: polarity, curve: cA, chromaPeak: accent.C });
 
   return {
     neutral,

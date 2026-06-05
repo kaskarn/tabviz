@@ -108,7 +108,8 @@
     /* Top padding is themable via `spacing.footer_gap` (R) /
        `spacing.footerGap` (JS) so authors can tighten or loosen the gap
        between the plot / axis region and the caption band. */
-    padding: var(--tv-spacing-footer-gap, 8px) 12px 12px 2px;
+    /* Left edge 0 — aligns with title/strip/paper (spacing review #4). */
+    padding: var(--tv-spacing-footer-gap, 8px) 12px 12px 0;
     border-top: 1px solid var(--tv-border, #e2e8f0);
     position: relative;
   }

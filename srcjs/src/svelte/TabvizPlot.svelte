@@ -2707,10 +2707,9 @@
     background: var(--tv-surface-bg, var(--tv-surface-bg));
     border: var(--tv-container-border, none);
     border-radius: var(--tv-container-border-radius, var(--tv-radius-lg, 8px));
-    /* Phase D — optional gradient surface paints over the solid background
-       when effects.gradient_shell_intensity != "none". HC drops, RT swaps
-       to a flat surface fill. */
-    background-image: var(--tv-shell-gradient, none);
+    /* Phase D gradient surface moved to .tv-shell (theme-runtime.css):
+       on the container it was fully occluded by opaque raised bands
+       (effects review M5). */
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
     display: flex;
     flex-direction: column;

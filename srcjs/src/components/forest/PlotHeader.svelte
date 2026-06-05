@@ -127,7 +127,9 @@
        theme.spacing.headerGap via the --tv-header-gap CSS var so the
        Spacing tab + R API can tune it. Falls back to the historical 4px
        when the var is not set. */
-    padding: 12px 8px var(--tv-spacing-header-gap, 4px) 2px;
+    /* Left edge 0: title aligns with the strip + paper edge (the stray
+       2px was one of three uncoordinated left edges — spacing review #4). */
+    padding: 12px 8px var(--tv-spacing-header-gap, 4px) 0;
   }
 
 

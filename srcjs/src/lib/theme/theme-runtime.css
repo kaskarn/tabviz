@@ -148,16 +148,19 @@
 .tabviz-scope[data-shell-texture="ruled"] .tv-shell {
   background-image: repeating-linear-gradient(180deg,
     transparent 0 28px,
-    var(--tv-shell-texture-line) 28px 29px);
+    var(--tv-shell-texture-line) 28px 29px),
+    var(--tv-shell-gradient, linear-gradient(transparent, transparent));
 }
 .tabviz-scope[data-shell-texture="grid"] .tv-shell {
   background-image:
     repeating-linear-gradient(180deg, transparent 0 23px, var(--tv-shell-texture-line) 23px 24px),
-    repeating-linear-gradient(90deg,  transparent 0 23px, var(--tv-shell-texture-line) 23px 24px);
+    repeating-linear-gradient(90deg,  transparent 0 23px, var(--tv-shell-texture-line) 23px 24px),
+    var(--tv-shell-gradient, linear-gradient(transparent, transparent));
 }
 .tabviz-scope[data-shell-texture="dotted"] .tv-shell {
-  background-image: radial-gradient(var(--tv-shell-texture-dot) 1px, transparent 1.6px);
-  background-size: 15px 15px;
+  background-image: radial-gradient(var(--tv-shell-texture-dot) 1px, transparent 1.6px),
+    var(--tv-shell-gradient, linear-gradient(transparent, transparent));
+  background-size: 15px 15px, auto;
 }
 /* `grain` — inline SVG fractalNoise data-URI (same recipe as the
  * settings drawer's paper grain). This was a documented-but-UNBUILT
@@ -301,7 +304,10 @@
  * glow tokens are flat when glow is off. */
 .tabviz-scope .shell-strip {
   height: 3px;
-  margin: 0 0 var(--tv-spacing-header-gap, 12px);
+  /* Horizontal inset = the paper mat, so the strip's edges align with
+   * the DATA block it introduces (spacing review #1: it spanned the
+   * full paper width, overhanging the columns by the mat on each side). */
+  margin: 0 var(--tv-paper-padding, 0px) var(--tv-spacing-header-gap, 12px);
   border-radius: 999px;
   background: var(--tv-brand-gradient);
   box-shadow:
@@ -371,6 +377,12 @@
 
 .tabviz-scope .tv-shell {
   background: var(--tv-shell-bg);
+  /* Gradient paints ON the shell (effects review M5: it used to live on
+   * the container, fully occluded by an opaque raised band — executive's
+   * gradient_shell pin was invisible). Must come after the `background`
+   * shorthand, which resets background-image. Texture rules below append
+   * it as their last layer so texture + gradient compose. */
+  background-image: var(--tv-shell-gradient, none);
   outline: 1px solid var(--tv-shell-border);
   outline-offset: -1px;
   border-radius: var(--tv-shell-radius);
@@ -398,6 +410,20 @@
 .tabviz-scope .tv-shell.tv-glow {
   box-shadow: 0 0 var(--tv-glow-blur, 10px) var(--tv-glow-spread, 0)
     var(--tv-glow-color, var(--tv-glow-brand-color));
+}
+
+/* Glow + glass COMPOSE. Equal specificity + later source order meant
+ * this glow rule REPLACED the glass pane's whole 4-layer bevel stack
+ * (drop + top specular + inner hairline + bottom thickness) — aurora,
+ * the one preset built around the bevel, was the one preset that lost
+ * it (adversarial effects review H3). The halo joins the stack instead. */
+.tabviz-scope[data-shell-surface="glass"] .tv-shell.tv-glow {
+  box-shadow:
+    0 0 var(--tv-glow-blur, 10px) var(--tv-glow-spread, 0) var(--tv-glow-color, var(--tv-glow-brand-color)),
+    var(--tv-glass-shadow, 0 0 0 transparent),
+    inset 0 1px 0 var(--tv-glass-edge-hi, transparent),
+    inset 0 0 0 1px var(--tv-glass-faint, transparent),
+    inset 0 -1px 0 var(--tv-glass-edge-lo, transparent);
 }
 
 /* (The paper-texture fallthrough that lived here was deleted in the
