@@ -7,6 +7,8 @@ end-to-end fix sequence for B1-B18. Sized by coupling, ordered by leverage.
 
 **REVISION 2 — 2026-06-04** after three-agent DEEP code-investigation review. Each agent empowered to grep + read multi-file + check selectors against actual DOM. Plus the `frontend-design` skill loaded into context (catches Space Grotesk convergence + AI-aesthetic-slop patterns). The Round 2 reviewers landed 15+ load-bearing corrections to Round 1 — including that Round 1's "corrected" Pass 1a CSS structure was STILL wrong (same-node compound where descendant is needed). All Round 2 corrections integrated below in section "Round 2 review integration."
 
+**REVISION 3 — 2026-06-04 (late)** after a fresh three-critic round (UX / architecture / design-with-frontend-design-skill) PLUS an independent main-agent code exploration, each cross-verified against actual code before integration. Round 3 found two execution blockers in Round 2's own machinery (the Pass 6a allowlist strategy is structurally impossible; every "visual regression confirms glow" gate runs through a V8/SVG path that is blind to all Pass 1/5 effects), several stale claims (C11's "missing resolver" exists; Pass 3a is likely already done), and three substantive design gaps (achromatic preset collapse, rubrication-via-status category error, zero plot-mark aesthetics). Five new locked decisions D10–D14. All corrections in section "Round 3 review integration" (C33+). **Pass 0d (resolver-as-manifest-table) is now LOCKED and prioritized per user.**
+
 **Pre-plan landed already (this session):**
 - ✓ B1: studio swatches identical — `ThemeSwitcher.lookupTheme()` now falls back to `THEME_PRESETS[name]` when `availableThemes` is undefined
 - ✓ Theme registry: synthwave/brutalist/atelier/executive added to `THEME_NAMES`/`THEME_LABELS` (were defined in `PRESETS` but not exposed; user couldn't pick them interactively)
@@ -161,6 +163,162 @@ Document as "post-V4 backlog" — close substrate gaps in a future plan.
 
 ---
 
+## Round 3 review integration (all corrections)
+
+Three fresh critics (UX, architecture, design+frontend-design-skill) plus an independent main-agent exploration. Every load-bearing claim below was **verified against code** before integration (Round 2 claims were spot-checked too; several were stale). Corrections numbered C33+ continuing the Round 2 catalog.
+
+### Execution blockers
+
+**C33 — Pass 6a's transitional-allowlist strategy is structurally impossible. 6a DISSOLVES.**
+`tests/testthat/test-parity-themes.R` verified: `KNOWN_DIVERGENCES` is consulted ONLY for *value* diffs among `intersect(names(r), names(ts))` shared top-level keys (granularity = whole key like `"effects"`, NOT dotted paths like `"effects.header_style"` — the entries 6a step 4 proposed could never match anything). The field-set test (`expect_setequal`, line 97) and the anchor name-set check (`.anchors_close` line 43 — `identical(sort(names(a)), sort(names(b)))`) have **no allowlist hook at all**. Adding `ink2` to TS anchors without R (or vice versa) fails test #2 immediately and unsuppressibly.
+**Replacement strategy:** the R serializer is omit-when-default throughout (`na_to_null` + `drop_null` in `theme_inputs_to_json`), and the polarity tests prove omit-symmetry is the established convention. So: every new field lands as **one atomic R+TS commit** (discipline rule 7, now load-bearing), NA/absent defaults on both sides, preset pins added to both sides in the same commit. KNOWN_DIVERGENCES is never extended. Pass 6a's schema-slot work folds into each Pass-2 commit; only 6b (wire bump) and 6c (docs) survive as a distinct pass. Also pin the omit-vs-emit-undefined contract: R omits NA; TS preset literals must *omit* unset optional fields, never emit `undefined`.
+
+**C34 — The V8/SVG visual-regression harness is blind to ALL Pass 1/5 effects. Validation gates rewritten. (→ D11 LOCKED: browser-only + screenshot harness.)**
+Verified: `svg-generator.ts` emits a flat `<rect>` + a 4-line `<style>` block (font-variant-numeric only); it has zero shell/paper/texture/glow/glass concept. `extractSvgCss` (the sv-omit stripper) is imported by **nothing** — its docstring's claim that svg-generator consumes it is false. Several manifest `consumedBy` entries falsely list `"export/svg-generator.ts"` for texture/shell tokens (the drift gate doesn't validate that direction). Consequence: every plan line of the form "visual regression: synthwave's frame glows" is **unsatisfiable** — `render_visual_tests()` runs V8+rsvg and will show a flat rect regardless of correctness.
+**Locked (D11):** shell/paper/texture/glow/glass are browser-additive (per CLAUDE.md's additive-only runtime rule). Pass 1a stands up a **puppeteer screenshot fixture harness** (extend `srcjs/scripts/screenshot.js` + `srcjs/tests/browser/`) as the Pass 1/5 validation vehicle: named fixtures (synthwave / brutalist / aurora / ledger), screenshots eyeballed with the Read tool, checked-in baselines for diffing. Clean up the false `consumedBy` entries and the `extractSvgCss` docstring in the same commit. Structural SVG export parity (shell rects + texture pattern defs) goes to the post-V4 backlog.
+
+**C35 — Pass 1a's locked snippet references PHANTOM inputs; the wrap must carry the FULL scope-attribute set.**
+Verified: `shell_surface` and `paper_texture` exist **nowhere** in the codebase — the snippet's `inputs?.shell_surface` / `inputs?.paper_texture` reads are fiction, and no pass adds them, yet the glass CSS keys on `data-shell-surface="glass"`. Also verified: **nothing in production emits `data-mode`, `data-polarity`, `data-shell-mode`, or `data-shell-texture`** (only CascadeView pedagogy components reference them) — so theme-runtime.css's HC-fidelity rules (caret / ring chips / bar width, lines 162-180) are dead today and would stay dead after 1a as drafted.
+**Fixes:** (a) 1a's wrap emits the full attribute set the CSS keys on: `data-shell-mode`, `data-shell-texture`, `data-mode` (from `inputs.mode`), `data-polarity` (from resolved polarity), `data-density`. (b) Strip `shell_surface`/`paper_texture`/glass-backdrop conditional from the 1a snippet entirely — the glass branch lands in Pass 5a **together with** a new `effects.glass ∈ {"none","frosted","aurora"}` Tier-1 input (R+TS atomic per C33) that drives `data-shell-surface`. (c) `data-shell-mode` appears ONLY on the scope node (drop the duplicate on `.tv-shell` — no rule needs it there).
+
+**C36 — C11 was STALE: the `--tv-brand-gradient` resolver EXISTS. Real work is fidelity, not existence.**
+Verified: manifest entry at `component-tokens.ts:517` + resolver at `resolve-theme.ts:389-397` emitting `linear-gradient(90deg, brand[7], brand[9])`. The actual gap vs the lab (`engine.jsx:215`): angle `135deg`, hue sweep `H-24 → H+30`, and the **polarity branch `dark ? L+0.06 : L-0.02`** on the first stop (on dark themes the strip must lift lighter, not darker). Pass 1c re-scoped: port those three deltas; do not "add a missing resolver path."
+
+**C37 — C8 REVISED AGAIN: significance markers are RUBRICATION, not negative status. Pass 1b resequenced after ink2.**
+Design agent verified the lab paints `.sig` via `--tbl-accent` = the **ink2-seeded accent ramp** (`engine.jsx:325`: `accentAnchor = inkSecondary || brand`) — rubrication ink, not a status signal. Routing brutalist's stars through `status-negative` (Round 2's C8) is a category error: they'd flip hue under any theme whose negative isn't red, and conflate "statistically significant" with "bad news" (in clinical tables significant efficacy is *good*). Also (UX agent): `col_pvalue()` already has `stars = FALSE` default — the Round-2 fixture `col_pvalue(..., significance_color="negative")` paints **nothing** without `stars = TRUE`.
+**Fixes:** (a) arg renamed `stars_color`, enum `{"accent","ink2","negative","none"}`, default `"accent"`, documented as a sub-knob of `stars` (only applies when `stars=TRUE`). (b) Brutalist/ledger pin `"ink2"`. (c) Because `"ink2"` needs B7, **Pass 2a (ink2) moves ahead of Pass 1b** in the execution order (see resequencing below). (d) Fixtures pass `stars = TRUE, stars_color = "ink2"`. C9's OS-HC override branch stands unchanged.
+
+**C38 — C30 was factually wrong: undo/save/share already SHIP. Replace with a real bug fix.**
+UX agent verified: `studio-store.svelte.ts` has 50-step undo/redo + Cmd-Z/Shift-Z; `PresetHeader.svelte` has Revert / Save-as / Export (R code, JSON, .json download) + toasts; `SnippetStrip.svelte` generates live R snippets. C30's "defer localStorage persistence" deferred a feature that wasn't the gap. The REAL bug in the same file: `PresetHeader.svelte:44` calls native `confirm()` — a direct violation of the locked `feedback_native_dialogs` rule (silently broken in RStudio viewer / sandboxed iframes), and `<ConfirmDialog>` already exists. **C30 struck; new task: migrate that `confirm()` to `<ConfirmDialog>` (Pass 4, one commit).**
+
+**C39 — The COLOR SUBSTRATE itself collapses: 6 achromatic-identical presets + a 7-preset blue cluster. (Design agent's #1 finding, verified byte-identical.)**
+Verified in `theme-presets-inputs.ts`: jama brand=`#000000` accent=`#000000`; brutalist brand=`#000000` accent=`#000000` — **byte-identical anchor pairs**; swiss accent also `#000000`; tufte `#222222` ≈ newsprint `#2C2C2C` (both achromatic dark-grey); atelier brand C≈0.008. Separately, seven presets' brand hues sit in a 30° blue arc (cochrane H231 … dark H260). No amount of shell wiring fixes converged color identity.
+**Fixes:** (a) per-preset chromatic identity once ink2 lands: brutalist ink2 = vermilion `oklch(0.56 0.21 28)` (lab parity); jama brand → ink-blue-black `oklch(0.20 0.02 250)` (stays austere, stops being byte-equal to brutalist); swiss accent gets a real value; tufte accent → brick `oklch(0.55 0.14 25)`; atelier brand → warm sepia `oklch(0.30 0.03 60)`. (b) The 5 new presets port the **lab's exact anchor hues** (`engine.jsx:636-749`): ledger H200 + oxblood ink2 H28; terminal phosphor H150 + amber ink2 H85; aurora magenta H305 + cyan ink2 H200; blueprint cyan H225 + amber H70; sunprint terracotta H40 + olive H130 — these alone fix the hue-distribution gap. (c) **NEW HARNESS: distinctness CI gate** — promote `probe-preset-distinctness.mjs` to a test asserting (i) no two presets share a (brand, accent, ink2) tuple within ΔE threshold, (ii) brand-hue histogram has no >3 presets within 20°, (iii) ≥6 distinct row heights post-1e. This is the gate that would have caught jama≡brutalist.
+
+### Pass 1a corrections (beyond C35)
+
+**C40 — Auto-fit height formula desyncs under nested padding.** `TabvizPlot.svelte:1320` computes auto-fit height as content + `2 × containerPadding` + bottomMargin at the OUTER node. Inserting `.tv-shell`/`.tv-paper` with their own CSS padding under-computes total height → bottom clipping. This is a *different* failure than C26's >20% padding-growth gate. 1a must either zero shell/paper CSS padding (drive insets through the existing containerPadding) or extend the formula to sum all three layers. Named eyeball check: auto-fit synthwave fixture, confirm no bottom clip.
+
+**C41 — Snapshot regen needs a diff-guard or it masks real bugs.** 1a step 6's `--update-snapshots` blindly blesses whatever the wrap produces. Required sub-step: capture pre-wrap snapshot, regen, **diff** — assert deltas are exactly a uniform shell+paper inset (same delta on every row `top`, ZERO delta on row heights, columns shifted by left-inset only). Non-uniform tops or height changes = real bug, stop.
+
+**C42 — Bundle budgets bump in the 1a commit.** `theme-runtime.css` is ~11.6KB; `?raw` inlines it into both `tabviz.js` (775000 cap) and `tabviz_split.js` (783000 cap). Bump both budgets in the same commit; verify the string does NOT leak into the svg/V8 bundle (192000 cap); verify `sideEffects` allow-listing doesn't tree-shake the `<svelte:head>` injection in prod (per `feedback_vite_side_effects`).
+
+**C43 — C10 DOWNGRADED: the two glow paths don't collide — scope and keep BOTH.** Verified: `TabvizPlot.svelte:3077` is row-glow on `.row-active-emphasis` (B18 explicitly wants it); 1a's `.tv-glow` is frame-glow on the shell. Different elements, both legitimate; an emphasis row inside a glowing shell glowing twice is *correct*. Round 2's "delete one" would break emphasis rendering.
+
+**C44 — 0a selector-rewrite default FLIPPED to anchored direct-child.** Relaxing `:global(.tabviz-container > X)` to descendant permanently loosens exclusion semantics (a future nested `.toolbar` would match). Default to re-anchoring `.tabviz-paper > X` / keeping `>` against the new parent; use descendant only where exclusion provably doesn't matter.
+
+**C45 — `.tv-shell-text` knockout wiring is part of 1a/1c, not implied.** theme-runtime.css's texture knockout (lines 148-156) only fires on elements carrying `.tv-shell-text` — no pass adds the class to anything. Without it, brutalist's grid texture strikes through title/caption glyphs. 1c's caption/title elements must carry it. Also port the lab's polarity-dependent texture alpha (`engine.jsx:518`: `dark ? 0.50 : 0.42`) — Round 2's "non-transparent" check is insufficient.
+
+### Pass 0d — LOCKED design (resolver-as-manifest-table; prioritized per user)
+
+C27's premise was misdescribed: there are **24** `tier:"input"` manifest entries (not zero as `resolve-theme.ts:466`'s comment claims) — they never reach the dead `case "input"` dev-throw because earlier branches intercept by cssVar string or `kind`. The dispatch is a 15-branch waterfall ordered by authorship accident; a new token whose cssVar doesn't match a resolver's internal if-chain silently falls to a dead branch.
+
+**Shape:** add `resolverGroup: ResolverGroup` to `ComponentToken` (`"role" | "anchor" | "density" | "geometry" | "effects" | "typography" | "shell-paper" | "elevation" | "texture" | "knockout" | "hc-fidelity" | "browser-fx" | "const" | "v3-bridge"`) + frozen `Map<ResolverGroup, ResolverFn>`. Dispatch = short pre-filter chain → one Map lookup: `[v3-bridge skip] → [token.modes hc/rt drop/swap] → [hc-fidelity value-substitution] → RESOLVERS.get(token.resolverGroup)`. HC Layers A (role-grade push) and D (geometry hcBump) stay where they are — they are cross-cutting modifiers, NOT groups; do not fold them into the table.
+
+**Migration (3 commits):**
+- **0d-i** — `resolverGroup` optional; populate all ~150 entries; Map dispatch with waterfall fallback when absent. Zero behavior change, proven by a **byte-identical cssVars snapshot across all 22 presets** (new cheap harness, reuse `probe-manifest-coverage.mjs`).
+- **0d-ii** — field required; waterfall deleted; dev-throw lives at Map-miss (now reachable for every token). Drift gate gains: every entry's `resolverGroup` exists in the Map. Same byte-identical check.
+- **0d-iii** — fix `--tv-glass-blur` (currently hardcoded `return "16px"` at `resolve-theme.ts:411`, which would silently defeat Pass 5a's intensity variation — make it read the effects input); correct the false `case "input"` comment.
+
+**Scope additions (main-agent findings):** unify failure semantics in the same arc — today `_emitV4CssVarsBody` has `catch { return "" }` (one resolver throw silently drops the ENTIRE v4 var block in the widget) while the studio's bare `$derived` white-screens (B3), and `tokenDensityPx` returns `"0px"` silently for unknown spacing tokens. One policy everywhere: keep-last-good + surfaced console.error in prod, throw in dev. The studio side gets a keep-last-good error boundary in `studio-store.resolved` (degrades B3-class bugs from crash to inline error).
+
+**Sequencing:** 0d-i/ii land after Pass 0a-0c, before Pass 2 (substrate growth). 0d does NOT block 1a (1a adds DOM/CSS, no new tokens). 0d-iii can fold into Pass 5a prep.
+
+**C46 — Pass 3a is likely ALREADY DONE.** Verified: Layer B (token.modes hc/rt drop/swap) is already declarative dispatch at `resolve-theme.ts:365-374`, and the Layer A/C/D justification comments already exist (lines 248-279). Re-scope 3a after 0d to a verification + comment-polish commit; expect near-no-op.
+
+### Pass 2 corrections
+
+**C47 — 2c-ii consumer audit missed three TS-side readers.** Verified: `lib/header-variant.ts:32` (the actual headerStyle resolution fn), `theme-adapter.ts:108-109` (defaults), `theme-css.ts:156` (`firstColumnStyle === "bold"`). The drift gate can't see these (they read `theme.variants.X`, not `var(--tv-*)`). Add all three to the 2c-ii migration list; dropping the wire field without migrating header-variant.ts silently falls back to "light".
+
+**C48 — STATUS_ANCHOR_FALLBACK single-source before C9's HC branch.** It exists in `resolve-theme.ts:291` claiming to mirror theme-css.ts's `BADGE_VARIANTS`. Export one, import the other, then build the C9 override on it.
+
+**C49 — Curves order-sensitivity trap.** `all.equal` on unnamed lists is order-sensitive; the NEJM curves divergence was closed by ordering. Any Pass-2 touch of curves/effects emission re-runs the full parity suite, not just the field-set test.
+
+### Pass 4 corrections
+
+**C50 — D5 tabs need PROGRESSIVE DISCLOSURE or they reproduce the firehose.** The lab's actual learnability mechanism is the `<Advanced>` collapsible in every tab (`playground.jsx:54-66`) — common knobs visible, power knobs tucked. C14's 5 tabs must each declare primary vs advanced controls. Also: **polarity lifts OUT of the Color tab** into the always-visible header strip (it's a constant-use mode flip, not an anchor edit; the lab keeps it global).
+
+**C51 — Cog drawer scope (→ D14 LOCKED).** The widget cog currently mounts the identical full ThemeControlsStrip. Locked separation of concerns: **cog = preset switcher + simple/widely-used settings (polarity, density); studio = genuine theme editing (identity anchors, curves, geometry, effects)**. The cog gets a "Open in studio…" affordance instead of the full surface. C14's tab work is studio-only.
+
+**C52 — Cascade trace must END at an edit affordance.** As specced, click-cell → highlight-token is a museum exhibit. The trace's terminal node deep-links to the controlling anchor/control in the rail ("this cell ← --tv-cell-fg ← content role ← ink anchor → [edit Ink]"). AND: `data-trace-tokens` must be **derived from `TOKENS_BY_CONSUMER`** (already built in component-tokens.ts), never hand-listed per Cell component — a hand-maintained copy of the consumer mapping is exactly what the manifest exists to prevent.
+
+**C53 — B9/4d need a `previewAuthoringInputs` fast path.** Verified: `setAuthoringInputs` (theme.svelte.ts:238-252) runs full cascade re-resolve AND `clearAutoWidthsKeepingUserResizes()` + `measureAutoColumns()` per call; the existing `previewThemeField` fast path doesn't touch authoringInputs. L/C/H sliders would re-measure every column every frame. Add `previewAuthoringInputs`: re-resolve, skip width measurement during drag (anchor colors don't change text metrics), commit measure on pointer-up.
+
+**C54 — Widget paint mode is mouse-only; this outranks the studio tablist.** Cells get keyboard affordances only when `enableEdit`; `paintRowWithActiveToken` is onclick-only; painted tokens are color-only signified. Pass 4 a11y adds: paint targets focusable + Enter/Space applies the active token when `paintTool` is set, `aria-pressed`/`aria-label` reflect applied tokens.
+
+**C55 — D6 amendment: preset-switch must not silently clobber user-pinned status anchors.** When the studio detects user-set status pins and the user switches base preset, prompt via the existing `<ConfirmDialog>`: keep custom status colors or adopt the preset's. A marker convention can't teach silent override.
+
+**C56 — tint_from_brand() reframed; preset gallery question.** It nudges 4 anchor hues — a refinement tool, not the on-ramp. The real "I have a brand color" journey is `web_theme_<preset>() |> set_brand("#hex")`; document that recipe in `?web_theme` `@examples` (C28). With 27+ presets post-plan, the flat name dropdown is the discoverability bottleneck — add a thumbnail/preview affordance to the switcher (small: render each preset's swatch row, which `themeColors()` already computes) or explicitly defer with rationale.
+
+**C57 — Monochrome toggle label shows both names.** Studio label "Monochrome" + subtext "(neutral ramp rides brand hue)" so authors connect the toggle to the `alias_neutral_to_brand` wire field when debugging JSON.
+
+**C58 — Pass 4a path correction.** `AnchorControls.svelte` lives at `srcjs/src/components/theme-panel/controls/AnchorControls.svelte`, not `srcjs/src/studio/`. (`srcjs/src/studio/` DOES exist — StudioShell/PresetHeader/studio-store — but not that file. Verify every Pass-4 file:line before execution.)
+
+### Pass 5 corrections (glass fidelity)
+
+**C59 — Glass tokens must be polarity- and hue-aware, not constants.** The lab computes EVERY glass token as a function of `dark` and `paper.H` (`engine.jsx:185-194`): blur 30 dark / 22 light; sheen `oklch(1 0 0 / 0.12)` dark vs `/0.55` light; edgeHi `oklch(0.98 0.03 ${paper.H} / 0.5)` dark vs `oklch(1 0 0 / 0.85)` light; edgeLo/shadow likewise. Flat constants = "grey smear" dark glass. Each `--tv-glass-*` resolver branches on polarity and threads `paper.H`.
+
+**C60 — Backdrop-filter targets `.tv-shell`, NOT `.tv-paper`.** theme-runtime.css:204 already targets `.tv-shell`; Round 2's 5a step 7 said `.tv-paper` — wrong element, would double-blur or no-op. The 3-filter stack (`blur saturate(1.9) brightness(1.06)`) lands on the existing `.tv-shell` rule. Also: the glass-backdrop element needs `border-radius: calc(var(--tv-shell-radius) + 3px)` overshoot or square corners peek behind the rounded pane.
+
+**C61 — Motion craft ships with 1a (free).** Lab: `.widget-frame { transition: border-radius .35s }`, `.sci-paper { transition: border-radius .35s, padding .35s }`. Add to `.tv-shell`/`.tv-paper` inside sv-omit. The studio's live-edit loop is exactly where radius/padding changes show; snapping reads cheap.
+
+**C62 — Caption chip ≠ strip: different anchors by design.** Lab chip bg = accent-solid (rubrication/ink2), strip = brand gradient — oxblood chip on blue→teal strip in Ledger. One "caption primitive" sourcing both from brand flattens the look. Chip: `--tv-caption-chip-bg ← accent-solid`, label typography mono-bold-uppercase `letter-spacing: 0.06em`, `border-radius: calc(var(--tv-radius-md) * 0.7)`. Strip: `--tv-brand-gradient`. C12's glow shadow stands.
+
+**C63 — Two deferrals reversed (cheap, high identity).** From the "10 impossible moves" list: (#2) **subtitle type role** — one `TYPE_ROLES` entry + `--tv-text-subtitle-*` cluster, appears in nearly every lab screenshot, ships with 1c; (#6) **`is-highlight` hero-row + 3px inset bar** — the lab's most-repeated move, ~6 lines mapping to the existing `emphasis` token + `box-shadow: inset 3px 0 0`. Both promoted to Pass 1. The rest of the deferred list stands.
+
+### Identity corrections (presets)
+
+**C64 — Brutalist display face: Bowlby One REJECTED (circus-poster register).** Round 2's C31 pick fails the same intentionality test it was meant to pass. Locked: body **Archivo Black**, display **Darker Grotesque 900**. Full de-slop pack for the Inter/system/Georgia presets (design agent, concrete): cochrane → Source Sans 3 + Newsreader; bmj → IBM Plex Sans + IBM Plex Serif; swiss → Archivo (regular weights; real grotesque lineage, NOT Inter); jama → Spline Sans; executive → Mulish + Fraunces; solarized → Public Sans + Spline Sans Mono; lancet → Source Serif 4; nejm → Lora; newsprint body → Newsreader (Georgia is system-default slop in the same class as Inter); tonal keeps Roboto Flex (intentional Material You).
+
+**C65 — Geometry radius is a bigger identity dial than density_factor; 1e extends.** Verified gap: synthwave/executive/tonal pin no radius (default corners on "float card" themes). 1e pins per-preset: synthwave/aurora `lg`, executive/tonal `md`, ledger `sm`, brutalist/swiss/blueprint/terminal `0`. density_factor: brutalist 0.88, atelier keep 0.92, executive 1.08, hobbit/dwarven 1.05. Probe target: ≥6 distinct row heights AND ≥3 distinct radii.
+
+**C66 — Dark presets must carry effects; categorical palettes join identity.** solarized_dark is a pure L-flip of solarized's anchors (zero hand-tuning; tonal_dark proves the right pattern with hand-picked lavender). Dark surfaces are where effects read best, yet dark/solarized_dark/tonal_dark/dwarven have NO effects block. Give each dark preset hand-tuned anchors + at least one effect (subtle glow or gradient shell). Also: 12 of 20 presets share `okabe_ito` categorical — every forest plot's series colors identical regardless of theme. Identity-bearing presets pin distinct categoricals (synthwave → neon set, not tableau10; brutalist → mono+vermilion).
+
+### NEW Pass 1f — viz-mark identity (→ D12 LOCKED)
+
+The lab is tables-only; the forest plot (and viz columns generally) is where tabviz can EXCEED the ceiling rather than chase it — yet Rounds 1-2 touched zero mark aesthetics. Two themes will render identical plots inside different frames.
+
+Locked scope: **forest-first for exploration/simplicity, but mark identity is a general concern — sparkline/bar/pictogram/heatmap/ring columns must not be wholesale ignored** (enumerate their theme touchpoints in this pass; style at least forest fully, file the rest with concrete follow-ups).
+
+Steps: per-preset mark identity via the existing `SlotRole` bundles — brutalist: square markers, `border_width.thick` interval caps, achromatic + vermilion summary; synthwave: glow on point marks (reuse `--tv-glow-*`), neon interval treatment; tufte/ledger: hairline intervals, ink diamonds. Categorical palette pins per C66. R+TS atomic; parity + screenshot fixtures.
+
+### Decision flips/additions from Round 3
+
+| # | Decision | Locked answer |
+|---|---|---|
+| **D10** | C27 resolver refactor | **Prioritized as Pass 0d** (user-locked at session start). Design above. |
+| **D11** | SVG export parity for Pass 1/5 effects | **Browser-only + puppeteer screenshot harness** as the validation vehicle. Structural SVG parity → post-V4 backlog. |
+| **D12** | Viz-mark identity | **Lands as new Pass 1f.** Forest-first, other viz columns enumerated not ignored. |
+| **D13** | D8 amendment (density naming) | **Still doc-only, but user-facing:** translation table goes in the studio density tooltip + `?set_density` roxygen, not just CLAUDE.md. |
+| **D14** | Cog-drawer surface | **Curated subset:** cog = presets + simple settings (polarity, density) + "Open in studio…"; identity/theme editing is studio-only. |
+
+### Execution order (Round 3 final)
+
+```
+Pass 0a (selector rewrite, anchored-direct-child default per C44)
+Pass 0b/0c (naming D1 + containerRef D2 — unchanged)
+Pass 0d-i/ii (resolver Map + failure-semantics unification + studio error boundary)
+Pass 1a (DOM wrap per C35/C40/C41/C42/C43/C45/C61 + screenshot harness per C34)
+  → D1 padding probe gate (C26 + C40 height check)
+Pass 1d (fonts per C64)
+Pass 2a (ink2 — moved ahead per C37; atomic R+TS per C33)
+Pass 1b (stars_color per C37 + C9 HC override + C48)
+Pass 1c (caption chip/strip per C62 + subtitle role + is-highlight bar per C63 + gradient fidelity per C36)
+Pass 1e (density_factor + radius pins per C65)
+Pass 1f (viz-mark identity per D12)
+Pass 2b (monochrome per C57), 2c-i/ii/iii (per C47; atomic commits)
+Pass 0d-iii (glass-blur input-drive — prep for Pass 5)
+Pass 3a (verify-likely-no-op per C46), 3b (per D13)
+Pass 4a (LCH sliders + C53 preview path; path per C58), 4b (trace per C52),
+  4c (disclosure + ARIA per C50), 4d (tint_from_brand reframed per C56),
+  cog scope (D14/C51), paint a11y (C54), confirm() fix (C38), D6 prompt (C55)
+Pass 5a-5e (glass per C59/C60, presets per C39(b))
+Pass 6b (wire bump 1.2→1.3 + parity), 6c (docs/NEWS)
+Throughout: distinctness gate (C39c) lands with Pass 1e; diagnostics D1/D2 as gated.
+```
+
+---
+
 ## Sequencing principles
 
 1. **Highest-leverage first.** B14 (shell+paper DOM) closes 4 bugs simultaneously and unblocks ~80% of the visual ceiling per the aesthetic agent. Goes first.
@@ -217,7 +375,7 @@ Risk: medium. Pure surface refactor; no semantic change. If visual regression ca
 
 Goal: every effects/shell/texture pin in the substrate becomes observable. Synthwave actually glows, Brutalist actually shows its grid texture, the elevation series produces a real raised-paper card.
 
-**REORDER 2026-06-04 per C6 (aesthetic agent):** within Pass 1 the execution order is `1a → 1d → 1b → 1c → 1e`, NOT the section order below. Rationale: `1a + 1d + 1b` = **brutalist runnable in 3 commits** (texture wrap + Archivo Black/Bowlby One fonts + vermilion stars). This is the "first runnable demo" milestone proving Pass 1 is alive. The heavier 1c (caption chip + brand-gradient resolver per C11/C12) lands after the demo holds. 1e (density_factor pins per D7) lands last. Subsection numbering kept as-is for reference; agents executing should respect the reorder.
+**REORDER 2026-06-04 per C6 (aesthetic agent), AMENDED Round 3 per C37:** within Pass 1 the execution order is `1a → 1d → [Pass 2a ink2 interleaves here] → 1b → 1c → 1e → 1f`, NOT the section order below. See "Execution order (Round 3 final)" for the authoritative sequence. Rationale: `1a + 1d + 1b` = **brutalist runnable in 3 commits** (texture wrap + Archivo Black/Bowlby One fonts + vermilion stars). This is the "first runnable demo" milestone proving Pass 1 is alive. The heavier 1c (caption chip + brand-gradient resolver per C11/C12) lands after the demo holds. 1e (density_factor pins per D7) lands last. Subsection numbering kept as-is for reference; agents executing should respect the reorder.
 
 **Per C7:** within 1a itself, split CSS injection into 2 commits — first non-backdrop-filter rules (texture + glow + shell-strip), second backdrop-filter (Safari/iOS compositing layer isolation).
 
@@ -622,7 +780,9 @@ Risk: low (data-only).
 
 **REORDER per C5**: 6a moves BEFORE Pass 2 substantive work; only 6b/6c run at the end. Otherwise parity test stays red through Passes 2-3.
 
-### 6a. Schema slots first (runs BEFORE Pass 2)
+### 6a. Schema slots first — **DISSOLVED Round 3 per C33**
+
+**⚠ This sub-pass no longer runs as a phase.** The transitional-allowlist mechanism it relied on does not exist in `test-parity-themes.R` (field-set and anchor name-set checks have no allowlist; KNOWN_DIVERGENCES is value-only at whole-key granularity). Each new field instead lands as one atomic R+TS commit inside its owning pass, omit-when-default on both sides. The original text is kept below for the slot inventory only.
 
 Goal: open R-side S7 slots with defaults so Pass 2's TS field additions don't break parity instantly.
 
@@ -688,7 +848,7 @@ Both diagnostic items can run in parallel with the architectural passes.
 
 ## Locked decisions (2026-06-04)
 
-All 9 decisions answered by user. Locked here for executor reference.
+All 9 decisions answered by user, plus D10–D14 locked in Round 3 (see "Decision flips/additions from Round 3" above). Locked here for executor reference.
 
 | # | Decision | Locked answer |
 |---|---|---|
@@ -730,6 +890,9 @@ Risk: low (additive). Visual regression catches anything off.
 1. `cd srcjs && npm run check` — 0 errors / 0 warnings
 2. `cd srcjs && bun test` — 1231+ pass / 0 fail
 3. `Rscript -e 'devtools::test()'` — all green
-4. `Rscript -e 'devtools::load_all(); render_visual_tests()` — 60+ visual fixtures green (or intentional diffs reviewed)
-5. `cd docs && quarto render index.qmd && quarto render studio.qmd` — both render without errors
-6. Eyeball: the specific phase-named manual check (e.g. "open studio, switch to Synthwave, confirm glow")
+4. `Rscript -e 'devtools::load_all(); render_visual_tests()` — 60+ visual fixtures green (or intentional diffs reviewed). **NOTE (C34/D11): this gate runs through V8/SVG and CANNOT see shell/texture/glow/glass — it validates table content + layout only.**
+5. **Browser screenshot harness (NEW per C34/D11)** — puppeteer fixtures (synthwave / brutalist / aurora / ledger at minimum) screenshotted and eyeballed with the Read tool; this is the ONLY gate that validates Pass 1/5 effects.
+6. `cd srcjs && npm run check:size` — bundle budgets (bumped per C42 in Pass 1a, never silently)
+7. Distinctness gate (per C39c, once landed) — preset anchor/hue/row-height/radius distinctness
+8. `cd docs && quarto render index.qmd && quarto render studio.qmd` — both render without errors
+9. Eyeball: the specific phase-named manual check (e.g. "open studio, switch to Synthwave, confirm frame glow + gradient strip in the BROWSER, not the SVG output")
