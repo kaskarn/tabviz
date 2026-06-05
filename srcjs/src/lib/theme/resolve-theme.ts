@@ -59,6 +59,7 @@ import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } f
 import { validateThemeInputs } from "./theme-validate";
 import {
   COMPONENT_TOKENS,
+  isV3BridgeToken,
   type ComponentToken,
   type TokenSource,
 } from "./component-tokens";
@@ -355,16 +356,9 @@ function resolveTokenValue(
   },
 ): string {
   // V3-bridge short-circuit. Manifest entries that opt into theme-css.ts's
-  // user-config-bridge tail (note prefix `[v3-bridge]`) skip resolution
-  // here and yield the sentinel; `_emitV4CssVarsBody` drops it so the
-  // tail's own emission wins.
-  if (
-    token.source.tier === "computed" &&
-    typeof token.source.note === "string" &&
-    token.source.note.startsWith("[v3-bridge]")
-  ) {
-    return V3_BRIDGE_SENTINEL;
-  }
+  // user-config-bridge tail skip resolution here and yield the sentinel;
+  // `_emitV4CssVarsBody` drops it so the tail's own emission wins.
+  if (isV3BridgeToken(token)) return V3_BRIDGE_SENTINEL;
 
   // Layer B — declarative token.modes drop/swap.
   const mode = resolved.inputs.mode;

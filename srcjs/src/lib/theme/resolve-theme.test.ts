@@ -3,7 +3,7 @@
 import { describe, it, expect } from "bun:test";
 import { resolveTheme } from "./resolve-theme";
 import { createWire, setRoleBinding } from "./theme-wire";
-import { COMPONENT_TOKENS } from "./component-tokens";
+import { COMPONENT_TOKENS, isV3BridgeToken } from "./component-tokens";
 import { inputsFromHex } from "./theme-presets-inputs";
 import { hexToOklch } from "../oklch";
 import type { ThemeInputs } from "../../types/theme-inputs";
@@ -276,13 +276,8 @@ describe("resolveTheme — cssVars has no TBD placeholders", () => {
       // Typography lh/track tokens are kind=spacing-px but legitimately
       // emit unitless or em values; skip them here.
       if (token.source.tier === "computed" && token.cssVar.startsWith("--tv-text-")) continue;
-      // V3-bridge tokens emit a sentinel and are realized by theme-css.ts's
-      // user-config-bridge tail rather than the v4 resolver.
-      if (
-        token.source.tier === "computed" &&
-        typeof token.source.note === "string" &&
-        token.source.note.startsWith("[v3-bridge]")
-      ) continue;
+      // V3-bridge tokens emit a sentinel; realized by theme-css.ts's tail.
+      if (isV3BridgeToken(token)) continue;
       if (token.kind === "spacing-px") {
         expect(r.cssVars[token.cssVar]).toMatch(/px$/);
       }

@@ -25,7 +25,7 @@
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
 import { applyPolarityToInputs } from "./resolve-theme";
-import { rampStep, oklchMix, oklchDarken, oklchToHex } from "../oklch";
+import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import type {
   WebTheme, AccentRoles,
   StatusColors, Semantics, SlotRole, TextRole, TextRoles,

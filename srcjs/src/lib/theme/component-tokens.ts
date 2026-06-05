@@ -73,6 +73,24 @@ export type ModeBehavior = {
   rt?: "drop" | { swap: RoleName };
 };
 
+/** Prefix marking a manifest entry as a v3-bridge token — declared for
+ *  drift-gate ownership + Inspector visibility, but realized by
+ *  theme-css.ts's user-config-bridge tail rather than the v4 resolver.
+ *  Used by `isV3BridgeToken()` and the `_emitV4CssVarsBody` skip path. */
+export const V3_BRIDGE_NOTE_PREFIX = "[v3-bridge]";
+
+/** True for manifest entries that opt into theme-css.ts's user-config-
+ *  bridge tail. The v4 resolver short-circuits them to a sentinel; the
+ *  tail emits the real value from theme.borders / theme.firstColumn /
+ *  theme.layout / theme.variants. */
+export function isV3BridgeToken(token: ComponentToken): boolean {
+  return (
+    token.source.tier === "computed" &&
+    typeof token.source.note === "string" &&
+    token.source.note.startsWith(V3_BRIDGE_NOTE_PREFIX)
+  );
+}
+
 /** One entry in the manifest. */
 export interface ComponentToken {
   /** CSS variable name emitted into the scope's inline style. */
