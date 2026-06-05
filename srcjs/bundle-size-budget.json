@@ -1,7 +1,8 @@
 {
   "_note": "Set 2026-05-23 after Step 8 cutover deleted legacy ColumnEditorPopover + per-type OptionsEditor files. Budget reflects the v2-only world: schema-driven editor (Pill/Knob/Field/Section/Accordion/Picker/Mode/Swatch/VariantPicker/ColumnPreview + ColumnEditorV2). Net +18 KB vs pre-Phase-7 because v2 is a richer surface than the editor it replaced.",
   "_note_svg_generator": "Bumped 2026-06-04 (wire-audit Pass 0d-ii). The committed bundle had been ~240-245 KB since the v3-to-v4 cutover sessions migrated svg-generator onto the v4 resolver (resolve-theme + component-tokens manifest now inline into the V8 bundle) — the 192000 budget predates that and was never reconciled because check:size is not yet a CI gate. Re-baselined at observed 249 KB (+0d-ii resolver-table refactor, +4 KB) with ~3% headroom. Prior note (multi-flex/aspect-ladder, ~+14 KB) retained for history.",
-  "inst/htmlwidgets/tabviz.js": 775000,
-  "inst/htmlwidgets/tabviz_split.js": 783000,
+  "_note_widget_1a": "Bumped 2026-06-05 (wire-audit Pass 1a, per C42): shell/paper wrap template + scope-attribute deriveds (+~1.5 KB JS each; theme-runtime.css ships in tabviz.css, NOT JS). Both bundles were at 99.9% — re-baselined with ~2% headroom.",
+  "inst/htmlwidgets/tabviz.js": 790000,
+  "inst/htmlwidgets/tabviz_split.js": 798000,
   "inst/js/svg-generator.js": 256000
 }

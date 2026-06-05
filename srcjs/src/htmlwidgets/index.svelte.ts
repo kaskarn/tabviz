@@ -13,6 +13,10 @@ import {
   setShinyInput,
 } from "./glue";
 import "../styles.css";
+// V4 canonical paint surface (wire-audit Pass 1a / B13): shell+paper,
+// textures, HC fidelity, glow/strip. Bundles into tabviz.css alongside
+// the structural reset — no JS payload.
+import "../lib/theme/theme-runtime.css";
 // Side-effect: register built-in schema behaviors + DOM cell
 // renderers before any widget mounts. `init-dom` includes the
 // Svelte-importing renderers; `init` (which it loads first) covers

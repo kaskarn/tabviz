@@ -48,6 +48,13 @@ export function resolveShellPaper(
 
   switch (mode) {
     case "flush":
+      // TRULY flush (re-tuned in wire-audit Pass 1a, first time these
+      // values ever painted): no border, no radius — the table sits on
+      // the page exactly as the pre-wrap widget did. The earlier
+      // borderSubtle + 8px radius recipe was authored before any DOM
+      // consumed it and would have put a card outline on every default
+      // preset. The table's own outer border stays owned by
+      // --tv-table-border-* on .tabviz-main.
       return {
         shellBg: "transparent",
         shellBorder: "transparent",
@@ -55,9 +62,9 @@ export function resolveShellPaper(
         shellRadius: "0px",
         shellPadding: "0px",
         paperBg: surface,
-        paperBorder: borderSubtle,
+        paperBorder: "transparent",
         paperShadow: "none",
-        paperRadius: "8px",
+        paperRadius: "0px",
         paperPadding: "0px",
       };
     case "raised":
@@ -100,6 +107,18 @@ export function resolveShellPaper(
         paperPadding: "0px",
       };
   }
+}
+
+/** Numeric shell+paper padding (px, summed per side) for a given inputs.
+ *  Used by TabvizPlot's auto-fit height formula (wire-audit C40): the
+ *  outer height computation must include every padding layer between the
+ *  container and the content or auto-fit clips the bottom on padded
+ *  shell modes. Reads the SAME recipe table as the resolver (padding is
+ *  role-independent) so the formula can't drift from the paint. */
+export function shellPaperPaddingPx(inputs: ThemeInputs): number {
+  const stub = { surface: "#fff", surfaceSubtle: "#eee", border: "#ccc", borderSubtle: "#ddd" };
+  const sp = resolveShellPaper(inputs, stub);
+  return parseFloat(sp.shellPadding) + parseFloat(sp.paperPadding);
 }
 
 /** Map a shell/paper cssVar to the corresponding ShellPaperResolved key.

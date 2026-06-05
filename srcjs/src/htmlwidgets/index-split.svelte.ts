@@ -10,6 +10,8 @@ import {
   setShinyInput,
 } from "./glue";
 import "../styles.css";
+// V4 canonical paint surface (wire-audit Pass 1a / B13) — see index.svelte.ts.
+import "../lib/theme/theme-runtime.css";
 // Side-effect: register built-in schema behaviors + DOM cell renderers.
 import "../schema/init-dom";
 

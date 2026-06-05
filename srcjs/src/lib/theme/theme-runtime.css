@@ -211,19 +211,23 @@
   background: var(--tv-brand-gradient);
 }
 
-.tabviz-scope .tv-glow {
-  box-shadow: 0 0 10px var(--tv-glow-brand-color);
-}
 /* sv-omit-end */
 
-/* When the DOM/SVG output isn't yet wrapped in `.tv-shell` + `.tv-paper`,
- * the rules below are inert. As Stage 2 §2 consumer migration plumbs the
- * wrapping elements into TabvizPlot.svelte + svg-generator.ts, these
- * selectors take effect automatically. */
+/* Shell + paper surfaces — LIVE as of wire-audit Pass 1a (TabvizPlot
+ * wraps `.tabviz-scalable` in `.tv-shell > .tv-paper`; see the wrap
+ * contract at the widget root).
+ *
+ * Borders paint via `outline` with -1px offset instead of `border` so a
+ * transparent edge costs ZERO layout — flush mode is geometrically
+ * identical to the pre-wrap widget, and switching shell_mode never
+ * shifts content by border-width. Outline follows border-radius in all
+ * supported browsers; these are sv-omit-exempt structural rules (SVG
+ * export is browser-only territory per D11 anyway). */
 
 .tabviz-scope .tv-shell {
   background: var(--tv-shell-bg);
-  border: 1px solid var(--tv-shell-border);
+  outline: 1px solid var(--tv-shell-border);
+  outline-offset: -1px;
   border-radius: var(--tv-shell-radius);
   padding: var(--tv-shell-padding);
   box-shadow: var(--tv-shell-shadow);
@@ -231,11 +235,58 @@
 
 .tabviz-scope .tv-paper {
   background: var(--tv-paper-bg);
-  border: 1px solid var(--tv-paper-border);
+  outline: 1px solid var(--tv-paper-border);
+  outline-offset: -1px;
   border-radius: var(--tv-paper-radius);
   padding: var(--tv-paper-padding);
   box-shadow: var(--tv-paper-shadow);
 }
+
+/* Frame glow (lab .tv-glow; wire-audit C43 — frame-glow scoped to the
+ * shell, row-glow stays on .row-active-emphasis; both legitimate).
+ * MUST come after the .tv-shell rule: equal-specificity box-shadow there
+ * (shell-shadow, "none" under float) would override the glow — the exact
+ * cascade bug the theme-screenshots harness caught on first run. Uses
+ * the Phase-D effects tokens (intensity + polarity aware), not the
+ * legacy fixed-alpha --tv-glow-brand-color. Glow replaces the shell's
+ * own card shadow when on; glow dominates visually anyway. */
+.tabviz-scope .tv-shell.tv-glow {
+  box-shadow: 0 0 var(--tv-glow-blur, 10px) var(--tv-glow-spread, 0)
+    var(--tv-glow-color, var(--tv-glow-brand-color));
+}
+
+/* Paper texture — when the shell has no band to carry a pinned texture
+ * (flush / float / transparent shell modes), the texture falls through
+ * to the paper. TabvizPlot emits data-paper-texture = shell_texture in
+ * those modes, "none" when a raised shell band carries it instead.
+ * Visible through the paper's transparent zones (title/subtitle band,
+ * footer, inter-region gaps); table rows keep their opaque row
+ * backgrounds. (Pass 1a; `grain` still needs the JS data-URI path.) */
+.tabviz-scope[data-paper-texture="ruled"] .tv-paper {
+  background-image: repeating-linear-gradient(180deg,
+    transparent 0 28px,
+    var(--tv-paper-texture-line) 28px 29px);
+}
+.tabviz-scope[data-paper-texture="grid"] .tv-paper {
+  background-image:
+    repeating-linear-gradient(180deg, transparent 0 23px, var(--tv-paper-texture-line) 23px 24px),
+    repeating-linear-gradient(90deg,  transparent 0 23px, var(--tv-paper-texture-line) 23px 24px);
+}
+.tabviz-scope[data-paper-texture="dotted"] .tv-paper {
+  background-image: radial-gradient(var(--tv-paper-texture-dot) 1px, transparent 1.6px);
+  background-size: 15px 15px;
+}
+
+/* sv-omit-begin */
+/* Motion craft (wire-audit C61, ported from the lab): geometry edits in
+ * the studio animate instead of snapping. Browser-only. */
+.tabviz-scope .tv-shell {
+  transition: border-radius 0.35s ease, padding 0.35s ease;
+}
+.tabviz-scope .tv-paper {
+  transition: border-radius 0.35s ease, padding 0.35s ease;
+}
+/* sv-omit-end */
 
 /* ============================================================================
  * ROW STATE

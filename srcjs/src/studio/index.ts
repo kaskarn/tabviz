@@ -9,6 +9,10 @@
 // sample spec + the cochrane preset so the studio runs as a forge.
 
 import { mount } from "svelte";
+// V4 canonical paint surface (wire-audit Pass 1a / B13): the studio's
+// embedded TabvizPlot preview needs the same shell/paper/texture rules
+// the widget bundle ships. Bundles into studio.css.
+import "../lib/theme/theme-runtime.css";
 import StudioShell from "./StudioShell.svelte";
 import { tabviz } from "../authoring/tabviz";
 import { colText, colN, colInterval } from "../authoring/columns";

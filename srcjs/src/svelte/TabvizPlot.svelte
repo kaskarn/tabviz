@@ -90,6 +90,7 @@
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
   import { getCssVars, readSurfaceBg, readAccentDefault } from "$lib/theme/consumer-bridge";
+  import { shellPaperPaddingPx } from "$lib/theme/shell-paper";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
   import { NUMERIC_COLUMN_TYPES } from "../schema/columns";
@@ -180,6 +181,33 @@
   const forestAxes = $derived(store.forestAxes);
   const primaryForestAxis = $derived(store.primaryForestAxis);
   const theme = $derived(spec?.theme);
+
+  // ── V4 shell/paper scope attributes (wire-audit Pass 1a, C35) ──────────
+  // The scope root carries the FULL data-attribute set theme-runtime.css
+  // keys on — not just the shell pair. data-mode / data-polarity drive the
+  // HC-fidelity rules (caret, ring chips, bar width) that were dead until
+  // these attrs were emitted.
+  const v4Inputs = $derived(
+    (theme as { authoringInputs?: import("../types/theme-inputs").ThemeInputs } | undefined)
+      ?.authoringInputs,
+  );
+  const scopeShellMode = $derived(v4Inputs?.shell_mode ?? "flush");
+  const scopeShellTexture = $derived(v4Inputs?.shell_texture ?? "none");
+  // Texture falls through to the paper when the shell has no band to
+  // carry it (flush/float/transparent); a raised shell band keeps it.
+  const scopePaperTexture = $derived(
+    scopeShellMode === "raised" ? "none" : scopeShellTexture,
+  );
+  const scopeMode = $derived(v4Inputs?.mode ?? "standard");
+  const scopePolarity = $derived(v4Inputs?.polarity ?? "light");
+  const scopeDensity = $derived(v4Inputs?.density ?? "comfortable");
+  const shellGlow = $derived((v4Inputs?.effects?.glow_intensity ?? "none") !== "none");
+  const shellStrip = $derived(
+    (v4Inputs?.effects?.gradient_shell_intensity ?? "none") !== "none",
+  );
+  // C40: every padding layer between container and content must enter the
+  // auto-fit height formula or padded shell modes clip at the bottom.
+  const shellPaperPad = $derived(v4Inputs ? shellPaperPaddingPx(v4Inputs) : 0);
 
   // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
   // and we append a <link rel=stylesheet> per URL on mount + when the
@@ -1349,7 +1377,13 @@
   data-paint-scope={store.paintTool?.scope ?? undefined}
   data-paint-token={store.paintTool?.token ?? undefined}
   data-zoom="{Math.round(actualScale * 100)}%"
-  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
+  data-shell-mode={scopeShellMode}
+  data-shell-texture={scopeShellTexture}
+  data-paper-texture={scopePaperTexture}
+  data-mode={scopeMode}
+  data-polarity={scopePolarity}
+  data-density={scopeDensity}
+  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + 2 * shellPaperPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
 >
   {#if spec}
     <!-- Control toolbar (always outside scalable so it doesn't scale with zoom) -->
@@ -1359,6 +1393,16 @@
          its absolute positioning is contained by the widget root). -->
     <SettingsPanel {store} />
 
+    <!-- V4 shell + paper surfaces (wire-audit Pass 1a; wrap contract at the
+         widget root). The shell carries band chrome (texture / glow /
+         gradient strip); the paper is the content surface. Both are inert
+         under flush mode (transparent, 0 padding, outline borders). -->
+    <div class="tv-shell" class:tv-glow={shellGlow}>
+      {#if shellStrip}
+        <!-- Brand-gradient seam (lab .shell-strip; consumes --tv-brand-gradient) -->
+        <div class="shell-strip" aria-hidden="true"></div>
+      {/if}
+      <div class="tv-paper">
     <!-- Scalable content wrapper (header + main + footer) -->
     <div bind:this={scalableRef} class="tabviz-scalable" style:margin-left="{centeringMargin}px">
       <!-- Plot header (title, subtitle) - only when there's a title/subtitle -->
@@ -2387,6 +2431,8 @@
         oncommitfootergap={(v) => store.setThemeField("spacing", "footerGap", v)}
       />
     </div>
+      </div><!-- /.tv-paper -->
+    </div><!-- /.tv-shell -->
 
     <!-- Tooltip + DropIndicator + EditableCell + ColumnFilterPopover +
          HeaderContextMenu + ColumnTypeMenu + ColumnEditorPopover. All
