@@ -47,11 +47,25 @@ jobs:
           time Rscript -e 'knitr::knit("repro.qmd", output="knitr-out.md", quiet=TRUE)'
           grep PROBE knitr-out.md || true
 
-      # Round 3: standalone-quarto was FAST (7s). The stall only shows in
-      # the full-site render. Bisect: (a) single page in PROJECT context,
-      # (b) memory accounting to test cumulative-pressure theory.
-      - name: Render export.qmd in site-project context (timed + RSS)
+      # Round 3 result: single page in project context = 19s on the runner,
+      # zero swap. The stall ONLY exists in the full-site sequence. Round 4:
+      # reproduce the full render with a process sampler so the slow window
+      # is attributable (R spinning? deno? disk? idle-blocked?).
+      - name: Full site render with process sampler
         run: |
-          free -m
-          /usr/bin/time -v quarto render docs/guide/export.qmd 2>&1 | grep -E "Output created|Maximum resident|Elapsed|Swaps|processing file|unnamed-chunk" || true
-          free -m
+          (while true; do
+             echo "SAMPLE $(date -u +%H:%M:%S) load=$(cut -d' ' -f1 /proc/loadavg)"
+             ps aux --sort=-%cpu | head -6 | tail -5 | awk '{printf "SAMPLE   %s %s%% %sMB %s\n", $1, $3, int($6/1024), $11}'
+             sleep 15
+           done) > /tmp/sampler.log 2>&1 &
+          SAMPLER=$!
+          rm -rf docs/_freeze docs/_site docs/.quarto
+          # --line-buffered is load-bearing: block-buffered grep collapses
+          # many lines into one Actions timestamp (saw this in round 3),
+          # destroying the per-chunk attribution this probe exists for.
+          time quarto render docs --cache-refresh 2>&1 | grep --line-buffered -E "qmd|processing|chunk" | head -400
+          kill $SAMPLER || true
+
+      - name: Dump sampler log
+        if: always()
+        run: cat /tmp/sampler.log | tail -400
