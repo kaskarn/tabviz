@@ -33,12 +33,20 @@ jobs:
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
+      # NO --cache-refresh: that flag does not merely bust caches — it
+      # forces the knitr cache engine ON (overriding `cache: false` in
+      # _quarto.yml) in write mode, so every chunk's objects are
+      # serialized to knitr's lazy-load DB. tabviz chunks hold
+      # htmlwidgets + S7 specs whose environments/bytecode serialize
+      # pathologically: guide/export.qmd alone went 14s → 8-17 MINUTES
+      # (R pinned at 100% CPU inside WriteItem/WriteBC1, ~3GB heap).
+      # The rm -rf below is the real "fresh render" guarantee.
       - name: Render site
         env:
           QUARTO_CACHE: "false"
         run: |
           rm -rf docs/_freeze docs/_site docs/.quarto
-          quarto render docs --cache-refresh
+          quarto render docs
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
