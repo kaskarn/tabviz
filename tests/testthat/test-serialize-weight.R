@@ -21,10 +21,12 @@ test_that("a default spec R-serializes under the weight budget", {
 
   raw <- serialize(spec, NULL)
   mb <- length(raw) / 1e6
-  # 60 MB leaves headroom over the current ~21 MB (one resolved WebTheme's
-  # S7 class graph) while catching any return of the per-preset embedding
-  # (which lands at 500+ MB immediately).
-  expect_lt(mb, 60)
+  # Budget ratcheted after the lazy-defaults fix (S7 property defaults are
+  # now quote()d calls, not evaluated instances embedded in every class
+  # object): current weight ~3.2 MB. 10 MB headroom catches both
+  # regressions — eager defaults land at ~21 MB, the per-preset roster
+  # embedding at 500+ MB.
+  expect_lt(mb, 10)
 
   # The raw enable_themes value must survive construction unfinalized —
   # a resolved list of WebThemes here is the regression signature.

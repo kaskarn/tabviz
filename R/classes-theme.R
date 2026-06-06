@@ -486,20 +486,20 @@ TextRole <- new_class(
 TextRoles <- new_class(
   "TextRoles",
   properties = list(
-    title    = new_property(TextRole, default = TextRole()),
-    subtitle = new_property(TextRole, default = TextRole()),
-    body     = new_property(TextRole, default = TextRole()),
-    cell     = new_property(TextRole, default = TextRole()),
-    label    = new_property(TextRole, default = TextRole()),
-    tick     = new_property(TextRole, default = TextRole()),
-    footnote = new_property(TextRole, default = TextRole()),
-    caption  = new_property(TextRole, default = TextRole()),
+    title    = new_property(TextRole, default = quote(TextRole())),
+    subtitle = new_property(TextRole, default = quote(TextRole())),
+    body     = new_property(TextRole, default = quote(TextRole())),
+    cell     = new_property(TextRole, default = quote(TextRole())),
+    label    = new_property(TextRole, default = quote(TextRole())),
+    tick     = new_property(TextRole, default = quote(TextRole())),
+    footnote = new_property(TextRole, default = quote(TextRole())),
+    caption  = new_property(TextRole, default = quote(TextRole())),
     # Phase 12: optional numeric-flavored role. NA-default; resolver
     # fills it from `body` so the wire always carries a complete TextRole.
     # Renderers consult it via `pickTextRole(col, theme)` for
     # numeric-category columns (numeric / percent / currency / pvalue /
     # interval / events / badge).
-    numeric  = new_property(TextRole, default = TextRole())
+    numeric  = new_property(TextRole, default = quote(TextRole()))
   )
 )
 
@@ -544,10 +544,10 @@ SpacingTokens <- new_class(
 AnnotationCluster <- new_class(
   "AnnotationCluster",
   properties = list(
-    title    = new_property(TextRole, default = TextRole()),
-    subtitle = new_property(TextRole, default = TextRole()),
-    caption  = new_property(TextRole, default = TextRole()),
-    footnote = new_property(TextRole, default = TextRole())
+    title    = new_property(TextRole, default = quote(TextRole())),
+    subtitle = new_property(TextRole, default = quote(TextRole())),
+    caption  = new_property(TextRole, default = quote(TextRole())),
+    footnote = new_property(TextRole, default = quote(TextRole()))
   )
 )
 
@@ -576,10 +576,10 @@ HeaderVariant <- new_class(
 HeaderCluster <- new_class(
   "HeaderCluster",
   properties = list(
-    light = new_property(HeaderVariant, default = HeaderVariant()),
-    tint  = new_property(HeaderVariant, default = HeaderVariant()),
-    bold  = new_property(HeaderVariant, default = HeaderVariant()),
-    text  = new_property(TextRole,      default = TextRole())
+    light = new_property(HeaderVariant, default = quote(HeaderVariant())),
+    tint  = new_property(HeaderVariant, default = quote(HeaderVariant())),
+    bold  = new_property(HeaderVariant, default = quote(HeaderVariant())),
+    text  = new_property(TextRole,      default = quote(TextRole()))
   )
 )
 
@@ -592,10 +592,10 @@ HeaderCluster <- new_class(
 ColumnGroupCluster <- new_class(
   "ColumnGroupCluster",
   properties = list(
-    light = new_property(HeaderVariant, default = HeaderVariant()),
-    tint  = new_property(HeaderVariant, default = HeaderVariant()),
-    bold  = new_property(HeaderVariant, default = HeaderVariant()),
-    text  = new_property(TextRole,      default = TextRole())
+    light = new_property(HeaderVariant, default = quote(HeaderVariant())),
+    tint  = new_property(HeaderVariant, default = quote(HeaderVariant())),
+    bold  = new_property(HeaderVariant, default = quote(HeaderVariant())),
+    text  = new_property(TextRole,      default = quote(TextRole()))
   )
 )
 
@@ -611,7 +611,7 @@ RowGroupTier <- new_class(
     bg            = new_property(class_character, default = NA_character_),
     fg            = new_property(class_character, default = NA_character_),
     rule          = new_property(class_character, default = NA_character_),
-    text          = new_property(TextRole,        default = TextRole()),
+    text          = new_property(TextRole,        default = quote(TextRole())),
     border_bottom = new_property(class_logical,   default = FALSE)
   ),
   validator = make_color_validator(c("bg", "fg", "rule"))
@@ -623,9 +623,9 @@ RowGroupTier <- new_class(
 RowGroupCluster <- new_class(
   "RowGroupCluster",
   properties = list(
-    L1 = new_property(RowGroupTier, default = RowGroupTier()),
-    L2 = new_property(RowGroupTier, default = RowGroupTier()),
-    L3 = new_property(RowGroupTier, default = RowGroupTier()),
+    L1 = new_property(RowGroupTier, default = quote(RowGroupTier())),
+    L2 = new_property(RowGroupTier, default = quote(RowGroupTier())),
+    L3 = new_property(RowGroupTier, default = quote(RowGroupTier())),
     indent_per_level = new_property(class_numeric, default = NA_real_)
   )
 )
@@ -704,17 +704,17 @@ RowSemantic <- new_class(
 RowCluster <- new_class(
   "RowCluster",
   properties = list(
-    base      = new_property(RowState,    default = RowState()),
-    alt       = new_property(RowState,    default = RowState()),
-    hover     = new_property(RowState,    default = RowState()),
-    selected  = new_property(RowState,    default = RowState()),
+    base      = new_property(RowState,    default = quote(RowState())),
+    alt       = new_property(RowState,    default = quote(RowState())),
+    hover     = new_property(RowState,    default = quote(RowState())),
+    selected  = new_property(RowState,    default = quote(RowState())),
     # Semantic visual presets (RowSemantic bundles). The painter and any
     # data-column flags pick whichever bundle is active per row or cell.
-    emphasis  = new_property(RowSemantic, default = RowSemantic()),
-    muted     = new_property(RowSemantic, default = RowSemantic()),
-    accent    = new_property(RowSemantic, default = RowSemantic()),
-    bold      = new_property(RowSemantic, default = RowSemantic()),
-    fill      = new_property(RowSemantic, default = RowSemantic()),
+    emphasis  = new_property(RowSemantic, default = quote(RowSemantic())),
+    muted     = new_property(RowSemantic, default = quote(RowSemantic())),
+    accent    = new_property(RowSemantic, default = quote(RowSemantic())),
+    bold      = new_property(RowSemantic, default = quote(RowSemantic())),
+    fill      = new_property(RowSemantic, default = quote(RowSemantic())),
     banding             = new_property(class_character, default = "group"),
     selected_edge_width = new_property(class_numeric,   default = 2),
     border_width        = new_property(class_numeric,   default = 1)
@@ -738,7 +738,7 @@ CellCluster <- new_class(
     bg     = new_property(class_character, default = NA_character_),
     fg     = new_property(class_character, default = NA_character_),
     border = new_property(class_character, default = NA_character_),
-    text   = new_property(TextRole,        default = TextRole())
+    text   = new_property(TextRole,        default = quote(TextRole()))
   ),
   validator = make_color_validator(c("bg", "fg", "border"))
 )
@@ -773,8 +773,8 @@ FirstColumnVariant <- new_class(
 FirstColumnCluster <- new_class(
   "FirstColumnCluster",
   properties = list(
-    default = new_property(FirstColumnVariant, default = FirstColumnVariant()),
-    bold    = new_property(FirstColumnVariant, default = FirstColumnVariant())
+    default = new_property(FirstColumnVariant, default = quote(FirstColumnVariant())),
+    bold    = new_property(FirstColumnVariant, default = quote(FirstColumnVariant()))
   )
 )
 
@@ -795,8 +795,8 @@ PlotScaffold <- new_class(
     tick_mark        = new_property(class_character, default = NA_character_),
     gridline         = new_property(class_character, default = NA_character_),
     reference        = new_property(class_character, default = NA_character_),
-    axis_label       = new_property(TextRole,         default = TextRole()),
-    tick_label       = new_property(TextRole,         default = TextRole()),
+    axis_label       = new_property(TextRole,         default = quote(TextRole())),
+    tick_label       = new_property(TextRole,         default = quote(TextRole())),
     tick_mark_length = new_property(class_numeric,    default = 4),
     line_width       = new_property(class_numeric,    default = 1.5),
     point_size       = new_property(class_numeric,    default = 6)
@@ -832,12 +832,12 @@ MarkRecipe <- new_class(
 MarksRecipes <- new_class(
   "MarksRecipes",
   properties = list(
-    forest   = new_property(MarkRecipe, default = MarkRecipe()),
-    summary  = new_property(MarkRecipe, default = MarkRecipe()),
-    bar      = new_property(MarkRecipe, default = MarkRecipe()),
-    box      = new_property(MarkRecipe, default = MarkRecipe()),
-    violin   = new_property(MarkRecipe, default = MarkRecipe()),
-    lollipop = new_property(MarkRecipe, default = MarkRecipe())
+    forest   = new_property(MarkRecipe, default = quote(MarkRecipe())),
+    summary  = new_property(MarkRecipe, default = quote(MarkRecipe())),
+    bar      = new_property(MarkRecipe, default = quote(MarkRecipe())),
+    box      = new_property(MarkRecipe, default = quote(MarkRecipe())),
+    violin   = new_property(MarkRecipe, default = quote(MarkRecipe())),
+    lollipop = new_property(MarkRecipe, default = quote(MarkRecipe()))
   )
 )
 
@@ -919,12 +919,12 @@ ThemeBorders <- new_class(
   "ThemeBorders",
   properties = list(
     layout = new_property(class_character, default = "horizontal"),
-    major  = new_property(BorderSpec, default = BorderSpec()),
-    minor  = new_property(BorderSpec, default = BorderSpec()),
+    major  = new_property(BorderSpec, default = quote(BorderSpec())),
+    minor  = new_property(BorderSpec, default = quote(BorderSpec())),
     # Table edge defaults OFF (thickness = 0) — users typically don't
     # want a frame around the chart container; the inner borders carry
     # structure. Theme authors opt in by pinning a positive thickness.
-    table  = new_property(BorderSpec, default = BorderSpec(thickness = 0))
+    table  = new_property(BorderSpec, default = quote(BorderSpec(thickness = 0)))
   ),
   validator = function(self) {
     if (!self@layout %in% c("horizontal", "vertical", "grid", "none")) {
@@ -970,32 +970,32 @@ WebTheme <- new_class(
     # so theme identity can ride on more than just colors.
     header_style       = new_property(class_character, default = "light"),
     first_column_style = new_property(class_character, default = "default"),
-    inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
+    inputs   = new_property(ThemeInputs,    default = quote(ThemeInputs())),
 
     # Tier 2 (derived; NA until the TS cascade runs)
     # Note: surface/content/divider chrome slots were dropped in the
     # V3→V4 cutover. Callers read those values via `theme_css_vars(theme)`
     # — `--tv-surface-bg`, `--tv-text`, `--tv-border`, `--tv-cell-border`, etc.
-    accent  = new_property(AccentRoles,   default = AccentRoles()),
-    status   = new_property(StatusColors, default = StatusColors()),
-    semantic = new_property(Semantics,    default = Semantics()),
+    accent  = new_property(AccentRoles,   default = quote(AccentRoles())),
+    status   = new_property(StatusColors, default = quote(StatusColors())),
+    semantic = new_property(Semantics,    default = quote(Semantics())),
     series  = new_property(class_list,    default = list()),
-    text    = new_property(TextRoles,     default = TextRoles()),
-    spacing = new_property(SpacingTokens, default = SpacingTokens()),
+    text    = new_property(TextRoles,     default = quote(TextRoles())),
+    spacing = new_property(SpacingTokens, default = quote(SpacingTokens())),
 
     # Tier 3 (component bindings)
-    annotation   = new_property(AnnotationCluster, default = AnnotationCluster()),
-    header       = new_property(HeaderCluster,     default = HeaderCluster()),
-    column_group = new_property(ColumnGroupCluster, default = ColumnGroupCluster()),
-    row_group    = new_property(RowGroupCluster,   default = RowGroupCluster()),
-    row          = new_property(RowCluster,        default = RowCluster()),
-    cell         = new_property(CellCluster,       default = CellCluster()),
-    first_column = new_property(FirstColumnCluster, default = FirstColumnCluster()),
-    plot         = new_property(PlotScaffold,      default = PlotScaffold()),
-    marks        = new_property(MarksRecipes,      default = MarksRecipes()),
-    axis         = new_property(AxisConfig,        default = AxisConfig()),
-    layout       = new_property(Layout,            default = Layout()),
-    borders      = new_property(ThemeBorders,      default = ThemeBorders())
+    annotation   = new_property(AnnotationCluster, default = quote(AnnotationCluster())),
+    header       = new_property(HeaderCluster,     default = quote(HeaderCluster())),
+    column_group = new_property(ColumnGroupCluster, default = quote(ColumnGroupCluster())),
+    row_group    = new_property(RowGroupCluster,   default = quote(RowGroupCluster())),
+    row          = new_property(RowCluster,        default = quote(RowCluster())),
+    cell         = new_property(CellCluster,       default = quote(CellCluster())),
+    first_column = new_property(FirstColumnCluster, default = quote(FirstColumnCluster())),
+    plot         = new_property(PlotScaffold,      default = quote(PlotScaffold())),
+    marks        = new_property(MarksRecipes,      default = quote(MarksRecipes())),
+    axis         = new_property(AxisConfig,        default = quote(AxisConfig())),
+    layout       = new_property(Layout,            default = quote(Layout())),
+    borders      = new_property(ThemeBorders,      default = quote(ThemeBorders()))
   ),
   validator = function(self) {
     if (length(self@series) > 0L) {
