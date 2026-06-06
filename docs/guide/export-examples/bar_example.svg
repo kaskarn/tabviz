@@ -41,7 +41,7 @@
       font-family="'Source Sans 3', -apple-system, system-ui, sans-serif"
       font-size="20.53px"
       font-weight="600"
-      fill="#00354A">Trial Enrollment by Department</text>
+      fill="#0D1215">Trial Enrollment by Department</text>
 <line x1="12" x2="358"
       y1="63" y2="63"
       stroke="#63686B" stroke-width="2"/>
@@ -151,5 +151,6 @@
     fill="#101518">Pediatrics</text>
 <g font-family="'Source Sans 3', -apple-system, system-ui, sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#101518" transform="translate(310 170.6)"><text y="8.40" dominant-baseline="central">156.00</text></g>
 <line x1="12" x2="358" y1="191" y2="191" stroke="#8C9194" stroke-width="1"/>
+
 
 </svg>

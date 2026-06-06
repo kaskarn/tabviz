@@ -21,7 +21,7 @@
       font-family="'Spline Sans', -apple-system, system-ui, sans-serif"
       font-size="17.43px"
       font-weight="600"
-      fill="#2A3139">GLP-1 Agonist Cardiovascular Outcomes</text>
+      fill="#151011">GLP-1 Agonist Cardiovascular Outcomes</text>
 <line x1="8" x2="571"
       y1="48" y2="48"
       stroke="#756F70" stroke-width="2"/>
@@ -166,5 +166,6 @@
 <g font-family="'Spline Sans', -apple-system, system-ui, sans-serif" font-size="13px" font-weight="400" font-style="normal" fill="#272122" transform="translate(106 157.2)"><text y="7.80" dominant-baseline="central">Exenatide QW</text></g>
 <g font-family="'Spline Sans', -apple-system, system-ui, sans-serif" font-size="13px" font-weight="400" font-style="normal" fill="#272122" transform="translate(452 157.2)"><g><g transform="translate(0 0)"><text y="7.80" dominant-baseline="central">0.91</text></g><g transform="translate(24.7 0)"><text y="7.80" dominant-baseline="central"> </text></g><g transform="translate(29.25 0)"><g><g transform="translate(0 0)"><text y="7.80" dominant-baseline="central">(</text></g><g transform="translate(4.55 0)"><text y="7.80" dominant-baseline="central">0.83</text></g><g transform="translate(32.5 0)"><text y="7.80" dominant-baseline="central">, </text></g><g transform="translate(41.6 0)"><text y="7.80" dominant-baseline="central">1.00</text></g><g transform="translate(66.3 0)"><text y="7.80" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="8" x2="571" y1="175" y2="175" stroke="#8A8486" stroke-width="1"/>
+
 
 </svg>

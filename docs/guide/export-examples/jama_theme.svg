@@ -21,7 +21,7 @@
       font-family="'Spline Sans', -apple-system, system-ui, sans-serif"
       font-size="17.43px"
       font-weight="600"
-      fill="#2A3139">Figure 1. Primary Endpoint</text>
+      fill="#151011">Figure 1. Primary Endpoint</text>
 <line x1="8" x2="385"
       y1="48" y2="48"
       stroke="#756F70" stroke-width="2"/>
@@ -136,5 +136,6 @@
     fill="#272122">REWIND</text>
 <g font-family="'Spline Sans', -apple-system, system-ui, sans-serif" font-size="13px" font-weight="400" font-style="normal" fill="#272122" transform="translate(266 137.2)"><g><g transform="translate(0 0)"><text y="7.80" dominant-baseline="central">0.88</text></g><g transform="translate(27.95 0)"><text y="7.80" dominant-baseline="central"> </text></g><g transform="translate(32.5 0)"><g><g transform="translate(0 0)"><text y="7.80" dominant-baseline="central">(</text></g><g transform="translate(4.55 0)"><text y="7.80" dominant-baseline="central">0.79</text></g><g transform="translate(32.5 0)"><text y="7.80" dominant-baseline="central">, </text></g><g transform="translate(41.6 0)"><text y="7.80" dominant-baseline="central">0.99</text></g><g transform="translate(69.55 0)"><text y="7.80" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="8" x2="385" y1="155" y2="155" stroke="#8A8486" stroke-width="1"/>
+
 
 </svg>
