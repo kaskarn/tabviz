@@ -31,14 +31,14 @@
 ## Phases
 
 ### Phase 0 — truth at the boundaries (bet-agnostic, do first)
-- **Font embedding fix** (publication R3 #3 — THE bug): route the
+- ✅ DONE (4d1b8c7) — **Font embedding fix** (publication R3 #3 — THE bug): route the
   `embed_web_fonts()` woff2 cache into a session fontconfig dir before the
   rsvg call so NEJM PDFs embed Lora, not Georgia. Interim: warn when a
   declared web font is absent at PDF/PNG export. [M]
-- **Export effects warning** + gradient/grain SVG parity (decision 2). [M]
-- **Legend** (viz R3 B1): multi-effect key rendering `effect.label` ×
+- ✅ warning DONE (c01380e); gradient/grain SVG parity still open. [M]
+- ✅ DONE (2434322) — **Legend** (viz R3 B1): multi-effect key rendering `effect.label` ×
   shape/color; DOM + SVG. The flagship's missing piece. [M]
-- **EPS + TIFF + real DPI contract**: `rsvg_eps` branch; TIFF via magick with
+- ✅ DONE (c01380e) — **EPS + TIFF + real DPI contract**: `rsvg_eps` branch; TIFF via magick with
   DPI tag; `save_plot(width_mm=, dpi=)` physical sizing. [S]
 - **Neutral paint mode** (interaction R3 #1): `paintTool` nullable, neutral
   default, painter explicitly armed from the toolbar. [S–M]
