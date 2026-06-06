@@ -47,7 +47,7 @@
     <span class="label">Shell</span>
     <div class="seg" role="radiogroup" aria-label="Shell mode">
       {#each SHELL_MODES as m (m)}
-        <button type="button" class:on={shellMode === m} onclick={() => setShellMode(m)}>{m}</button>
+        <button type="button" role="radio" aria-checked={shellMode === m} class:on={shellMode === m} onclick={() => setShellMode(m)}>{m}</button>
       {/each}
     </div>
   </div>
@@ -55,7 +55,7 @@
     <span class="label">Header</span>
     <div class="seg" role="radiogroup" aria-label="Header style">
       {#each HEADER_STYLES as h (h)}
-        <button type="button" class:on={headerStyle === h} onclick={() => setHeaderStyle(h)}>{h}</button>
+        <button type="button" role="radio" aria-checked={headerStyle === h} class:on={headerStyle === h} onclick={() => setHeaderStyle(h)}>{h}</button>
       {/each}
     </div>
   </div>
@@ -63,7 +63,7 @@
     <span class="label">Series</span>
     <div class="seg" role="radiogroup" aria-label="Series style">
       {#each SLOT_STYLES as s (s.value)}
-        <button type="button" class:on={slotStyle === s.value} onclick={() => setSlotStyle(s.value)}>{s.label}</button>
+        <button type="button" role="radio" aria-checked={slotStyle === s.value} class:on={slotStyle === s.value} onclick={() => setSlotStyle(s.value)}>{s.label}</button>
       {/each}
     </div>
   </div>

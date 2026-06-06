@@ -61,7 +61,7 @@
     <span class="label">Title</span>
     <div class="seg" role="radiogroup" aria-label="Title style">
       {#each TITLE_STYLE as t (t)}
-        <button type="button" class:on={titleSty === t} onclick={() => set("title_style", t)}>{t}</button>
+        <button type="button" role="radio" aria-checked={titleSty === t} class:on={titleSty === t} onclick={() => set("title_style", t)}>{t}</button>
       {/each}
     </div>
   </div>
@@ -70,7 +70,7 @@
     <span class="label">Glow</span>
     <div class="seg" role="radiogroup" aria-label="Glow intensity">
       {#each GLOW_INTENSITY as g (g)}
-        <button type="button" class:on={glow === g} onclick={() => set("glow_intensity", g)}>{g}</button>
+        <button type="button" role="radio" aria-checked={glow === g} class:on={glow === g} onclick={() => set("glow_intensity", g)}>{g}</button>
       {/each}
     </div>
   </div>
@@ -80,7 +80,7 @@
       <span class="label">Anchor</span>
       <div class="seg" role="radiogroup" aria-label="Glow anchor">
         {#each GLOW_ANCHOR as a (a)}
-          <button type="button" class:on={glowAnch === a} onclick={() => set("glow_anchor", a)}>{a}</button>
+          <button type="button" role="radio" aria-checked={glowAnch === a} class:on={glowAnch === a} onclick={() => set("glow_anchor", a)}>{a}</button>
         {/each}
       </div>
     </div>
@@ -90,7 +90,7 @@
     <span class="label">Gradient</span>
     <div class="seg" role="radiogroup" aria-label="Gradient shell intensity">
       {#each GRAD_INTENSITY as g (g)}
-        <button type="button" class:on={gradInt === g} onclick={() => set("gradient_shell_intensity", g)}>{g}</button>
+        <button type="button" role="radio" aria-checked={gradInt === g} class:on={gradInt === g} onclick={() => set("gradient_shell_intensity", g)}>{g}</button>
       {/each}
     </div>
   </div>
@@ -102,7 +102,8 @@
         <input type="range" min="0" max="360" step="5" value={gradAngle}
                oninput={(e) => set("gradient_shell_angle", parseFloat((e.currentTarget as HTMLInputElement).value), false)}
                onchange={(e) => set("gradient_shell_angle", parseFloat((e.currentTarget as HTMLInputElement).value), true)}
-               aria-label="Gradient angle" />
+               aria-label="Gradient angle"
+               aria-valuetext={`${Math.round(gradAngle)}°`} />
         <code>{Math.round(gradAngle)}°</code>
       </div>
     </div>
@@ -112,7 +113,7 @@
     <span class="label">Figure shadow</span>
     <div class="seg" role="radiogroup" aria-label="Figure shadow">
       {#each ELEVATION as e (e)}
-        <button type="button" class:on={elev === e} onclick={() => set("elevation", e)}>{e}</button>
+        <button type="button" role="radio" aria-checked={elev === e} class:on={elev === e} onclick={() => set("elevation", e)}>{e}</button>
       {/each}
     </div>
   </div>

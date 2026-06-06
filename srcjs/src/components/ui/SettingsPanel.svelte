@@ -308,6 +308,13 @@
     to   { transform: translateX(0);    opacity: 1; }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .settings-backdrop,
+    .settings-panel { animation: none; }
+    .bar-icon-btn,
+    .scroll-fade { transition: none; }
+  }
+
   /* ---------------------------------------------------------------------
      Single-line bar: [Settings] [⎘][↻] | [ tab tab tab … ]
      --------------------------------------------------------------------- */

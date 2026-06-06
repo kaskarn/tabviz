@@ -203,19 +203,25 @@
     color: var(--tp-fg, #1c1a17);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 13px;
-    --tp-bg: #ffffff;
-    --tp-fg: #1c1a17;
-    --tp-fg-muted: #4d4a45;
-    --tp-muted: #6b6760;
-    --tp-rule: #e8e6e1;
-    --tp-rule-faint: #f1efea;
-    --tp-input-bg: #faf9f6;
-    --tp-row-active: #f6f3ed;
-    --tp-chip-bg: #faf9f6;
-    --tp-chip-rule: #d8d4cc;
-    --tp-chip-fg: #66635c;
+    /* Panel-local tokens derive from the host's --tv-* theme vars so the
+       widget cog drawer follows the table's theme (a dark theme used to
+       get a hardcoded-light panel — studio chrome review D). The hex
+       fallbacks keep the studio rail (mounted outside any widget DOM,
+       where --tv-* is undefined) on its neutral light chrome. */
+    --tp-bg: var(--tv-surface-bg, #ffffff);
+    --tp-fg: var(--tv-text, #1c1a17);
+    --tp-fg-muted: var(--tv-text-muted, #4d4a45);
+    --tp-muted: var(--tv-text-muted, #6b6760);
+    --tp-rule: var(--tv-border, #e8e6e1);
+    --tp-rule-faint: color-mix(in srgb, var(--tv-border, #e8e6e1) 45%, var(--tv-surface-bg, #ffffff));
+    --tp-input-bg: color-mix(in srgb, var(--tv-text, #1c1a17) 3%, var(--tv-surface-bg, #ffffff));
+    --tp-row-active: color-mix(in srgb, var(--tv-text, #1c1a17) 5%, var(--tv-surface-bg, #ffffff));
+    --tp-chip-bg: color-mix(in srgb, var(--tv-text, #1c1a17) 3%, var(--tv-surface-bg, #ffffff));
+    --tp-chip-rule: color-mix(in srgb, var(--tv-text, #1c1a17) 18%, var(--tv-surface-bg, #ffffff));
+    --tp-chip-fg: var(--tv-text-muted, #66635c);
+    /* Provenance + trace accents are panel-own chrome, not theme paint. */
     --tp-rhs: #5e51a3;
-    --tp-swatch-rule: #c8c4bd;
+    --tp-swatch-rule: color-mix(in srgb, var(--tv-text, #1c1a17) 25%, var(--tv-surface-bg, #ffffff));
     --tp-trace-rule: #4a90e2;
     --tp-trace-bg: #eef4fb;
   }

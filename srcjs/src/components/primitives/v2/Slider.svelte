@@ -62,6 +62,7 @@
     {value}
     {disabled}
     aria-label={ariaLabel}
+    aria-valuetext={suffix ? `${value}${suffix}` : undefined}
     oninput={handleInput}
   />
   <span class="val" style:width="{valueWidth + 1}ch">
@@ -84,22 +85,32 @@
     min-width: 0;
     appearance: none;
     -webkit-appearance: none;
-    height: 2px;
-    background: var(--v2-paper-2, #f3efe5);
-    border-radius: 2px;
+    /* 24px hit area (WCAG 2.5.8, chrome D); the painted track stays the
+       2px hairline via the explicit track pseudo-elements below. */
+    height: 24px;
+    background: transparent;
     cursor: pointer;
     padding: 0;
     margin: 0;
-    /* Add vertical padding via the surrounding flex so the thumb has
-       click breathing room without changing the visual track height. */
   }
-  /* Thumb: 12px ink dot, no border. Webkit + Firefox each need their
-     own rule — the parent ::-webkit-* + ::-moz-* selectors don't merge. */
+  /* Track + thumb: 2px hairline + 12px ink dot. Webkit + Firefox each
+     need their own rule — the pseudo-element selectors don't merge. */
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--v2-paper-2, #f3efe5);
+    border-radius: 2px;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 2px;
+    background: var(--v2-paper-2, #f3efe5);
+    border-radius: 2px;
+  }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 12px;
     height: 12px;
+    margin-top: -5px; /* center the 12px dot on the 2px track */
     border-radius: 50%;
     background: var(--v2-ink, #15140e);
     cursor: pointer;
@@ -117,6 +128,9 @@
   input[type="range"]:hover::-webkit-slider-thumb,
   input[type="range"]:focus::-webkit-slider-thumb { transform: scale(1.15); }
   input[type="range"]:focus-visible { outline: 1px solid var(--v2-focus-ring, #15140e); outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    input[type="range"]::-webkit-slider-thumb { transition: none; }
+  }
 
   .val {
     font-family: var(--v2-font-mono, ui-monospace, monospace);

@@ -24,20 +24,24 @@
   }
 </script>
 
+<!-- role="radio" + aria-checked on the options: a radiogroup whose
+     children are plain buttons reads as an empty group to AT; the
+     selected state was visual-only (chrome review D). HC/RT get title
+     expansions — the abbreviations are opaque on first contact. -->
 <div class="rows">
   <div class="row">
     <span class="label">Polarity</span>
     <div class="seg" role="radiogroup" aria-label="Polarity">
-      <button type="button" class:on={polarity === "light"} onclick={() => setPolarity("light")}>☀ Light</button>
-      <button type="button" class:on={polarity === "dark"}  onclick={() => setPolarity("dark")}>🌙 Dark</button>
+      <button type="button" role="radio" aria-checked={polarity === "light"} class:on={polarity === "light"} onclick={() => setPolarity("light")}>☀ Light</button>
+      <button type="button" role="radio" aria-checked={polarity === "dark"}  class:on={polarity === "dark"}  onclick={() => setPolarity("dark")}>🌙 Dark</button>
     </div>
   </div>
   <div class="row">
     <span class="label">Mode</span>
     <div class="seg" role="radiogroup" aria-label="Accessibility mode">
-      <button type="button" class:on={mode === "standard"}             onclick={() => setMode("standard")}>Standard</button>
-      <button type="button" class:on={mode === "high-contrast"}        onclick={() => setMode("high-contrast")}>HC</button>
-      <button type="button" class:on={mode === "reduced-transparency"} onclick={() => setMode("reduced-transparency")}>RT</button>
+      <button type="button" role="radio" aria-checked={mode === "standard"}             class:on={mode === "standard"}             onclick={() => setMode("standard")}>Standard</button>
+      <button type="button" role="radio" aria-checked={mode === "high-contrast"}        class:on={mode === "high-contrast"}        onclick={() => setMode("high-contrast")} title="High contrast">HC</button>
+      <button type="button" role="radio" aria-checked={mode === "reduced-transparency"} class:on={mode === "reduced-transparency"} onclick={() => setMode("reduced-transparency")} title="Reduced transparency">RT</button>
     </div>
   </div>
 </div>

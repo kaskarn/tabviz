@@ -162,7 +162,10 @@
     color: var(--tv-text, #1a1a1a);
   }
   .trigger:focus-visible {
-    outline: none;
+    /* Match .scope-switch's visible ring — outline:none here left the
+       paint trigger with NO keyboard focus indicator (chrome review D). */
+    outline: 2px solid color-mix(in srgb, var(--tv-accent, #2563eb) 40%, transparent);
+    outline-offset: 2px;
   }
   .trigger svg {
     flex-shrink: 0;

@@ -33,6 +33,7 @@
     {step}
     {disabled}
     {id}
+    aria-valuetext={suffix ? `${value}${suffix}` : undefined}
   />
   <span class="value">
     {value}{#if suffix}<span class="suffix">{suffix}</span>{/if}

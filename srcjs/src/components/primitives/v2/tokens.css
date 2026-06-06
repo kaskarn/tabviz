@@ -16,31 +16,36 @@
 */
 
 [data-tv-v2] {
+  /* Surfaces + inks derive from the host widget's --tv-* theme tokens
+     (chrome review D: a dark theme used to get a hardcoded cream panel —
+     unreadable pills, inverted hover tints). The warm-cream literals stay
+     as fallbacks so any v2 surface mounted OUTSIDE a themed widget DOM
+     keeps the original brutalist-editorial skin. */
   /* ── Surface paper ────────────────────────────────────────────── */
-  --v2-paper:        #faf7f0;   /* cream — popover background */
-  --v2-paper-2:      #f3efe5;   /* recessed surface — input wells */
-  --v2-paper-sunk:   #eae5d7;   /* lowest panel — active segment bg-inverse-context */
-  --v2-paper-edge:   #ffffff;   /* highest paper — chip surfaces */
+  --v2-paper:        var(--tv-surface-bg, #faf7f0);   /* popover background */
+  --v2-paper-2:      color-mix(in srgb, var(--tv-text, #15140e) 6%, var(--tv-surface-bg, #faf7f0));   /* recessed surface — input wells */
+  --v2-paper-sunk:   color-mix(in srgb, var(--tv-text, #15140e) 10%, var(--tv-surface-bg, #faf7f0));  /* lowest panel */
+  --v2-paper-edge:   color-mix(in srgb, #ffffff 30%, var(--tv-surface-bg, #ffffff));                  /* highest paper — chip surfaces */
 
   /* ── Ink (text) ──────────────────────────────────────────────── */
-  --v2-ink:          #15140e;   /* primary — labels, values */
-  --v2-ink-2:        #4a463c;   /* secondary — hints, secondary labels */
-  --v2-ink-3:        #8a8478;   /* muted — placeholder, disabled */
-  --v2-ink-cream:    #faf7f0;   /* inverse — ink-on-active surface */
+  --v2-ink:          var(--tv-text, #15140e);         /* primary — labels, values */
+  --v2-ink-2:        var(--tv-text-muted, #4a463c);   /* secondary — hints, secondary labels */
+  --v2-ink-3:        var(--tv-text-subtle, #8a8478);  /* muted — placeholder, disabled */
+  --v2-ink-cream:    var(--tv-surface-bg, #faf7f0);   /* inverse — ink-on-active surface */
 
   /* ── Rule (lines) ────────────────────────────────────────────── */
-  --v2-rule:         #d6d0c1;   /* primary divider — between fields */
-  --v2-rule-soft:    #e6e0d1;   /* sub-divider — within a group */
-  --v2-rule-strong:  #15140e;   /* hairline ink — focus state */
+  --v2-rule:         var(--tv-border, #d6d0c1);       /* primary divider — between fields */
+  --v2-rule-soft:    color-mix(in srgb, var(--tv-border, #e6e0d1) 60%, var(--tv-surface-bg, #faf7f0)); /* sub-divider */
+  --v2-rule-strong:  var(--tv-text, #15140e);         /* hairline ink — focus state */
 
   /* ── Accent (hot) ────────────────────────────────────────────── */
   --v2-hot:          #b53a1f;   /* override, active dot */
   --v2-hot-soft:     #d8a89a;   /* override soft glow */
 
   /* ── State (interactive) ─────────────────────────────────────── */
-  --v2-hover-tint:   rgba(21, 20, 14, 0.05);
-  --v2-focus-ring:   #15140e;
-  --v2-active-bg:    #15140e;
+  --v2-hover-tint:   color-mix(in srgb, var(--tv-text, #15140e) 5%, transparent);
+  --v2-focus-ring:   var(--tv-text, #15140e);
+  --v2-active-bg:    var(--tv-text, #15140e);
   --v2-active-fg:    var(--v2-paper);
 
   /* ── Type ──────────────────────────────────────────────────── */

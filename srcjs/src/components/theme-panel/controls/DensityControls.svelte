@@ -42,7 +42,7 @@
     <div class="seg" role="radiogroup" aria-label="Density preset"
          title="comfortable = lab 'cozy' (middle) · spacious = lab 'comfortable' (loosest)">
       {#each PRESETS as p (p)}
-        <button type="button" class:on={density === p} onclick={() => setDensity(p)}>{p}</button>
+        <button type="button" role="radio" aria-checked={density === p} class:on={density === p} onclick={() => setDensity(p)}>{p}</button>
       {/each}
     </div>
   </div>
@@ -52,7 +52,8 @@
       <input type="range" min="0.5" max="2" step="0.05" value={factor}
              oninput={(e) => setFactor(parseFloat((e.currentTarget as HTMLInputElement).value), false)}
              onchange={(e) => setFactor(parseFloat((e.currentTarget as HTMLInputElement).value), true)}
-             aria-label="Density factor" />
+             aria-label="Density factor"
+             aria-valuetext={`×${factor.toFixed(2)}`} />
       <code>×{factor.toFixed(2)}</code>
     </div>
   </div>

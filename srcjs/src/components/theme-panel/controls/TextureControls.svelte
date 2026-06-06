@@ -26,7 +26,7 @@
     <span class="label">Texture</span>
     <div class="seg" role="radiogroup" aria-label="Surface texture">
       {#each TEXTURES as t (t)}
-        <button type="button" class:on={shellTexture === t} onclick={() => setShellTexture(t)}>{t}</button>
+        <button type="button" role="radio" aria-checked={shellTexture === t} class:on={shellTexture === t} onclick={() => setShellTexture(t)}>{t}</button>
       {/each}
     </div>
   </div>

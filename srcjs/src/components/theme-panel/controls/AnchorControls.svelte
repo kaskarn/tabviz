@@ -88,6 +88,18 @@
   function fmtAxis(axis: "L" | "C" | "H", v: number): string {
     return axis === "H" ? `${Math.round(v)}°` : axis === "L" ? v.toFixed(2) : v.toFixed(3);
   }
+
+  /** Hue-wheel gradient at the row's current L/C so the H track shows
+   *  what each position means (chrome review D — a bare gray track gave
+   *  no preview of the destination hue). C floors at 0.08 so near-
+   *  achromatic anchors still show hue direction. */
+  function hueGradient(t: OklchTriple): string {
+    const stops: string[] = [];
+    for (let h = 0; h <= 360; h += 30) {
+      stops.push(oklchToHex({ L: t.L, C: Math.max(t.C, 0.08), H: h }));
+    }
+    return `linear-gradient(to right, ${stops.join(", ")})`;
+  }
 </script>
 
 <div class="anchor-controls">
@@ -132,13 +144,18 @@
           <span class="axis-name">{ax.axis}</span>
           <input
             type="range"
+            class:hue={ax.axis === "H"}
             min={ax.min}
             max={ax.max}
             step={ax.step}
             value={triple[ax.axis]}
+            style:--track-gradient={ax.axis === "H" ? hueGradient(triple) : undefined}
+            style:--thumb-color={oklchToHex(triple)}
+            style:accent-color={oklchToHex(triple)}
             oninput={(e) => setAxis(row.key, ax.axis, parseFloat((e.currentTarget as HTMLInputElement).value), false)}
             onchange={(e) => setAxis(row.key, ax.axis, parseFloat((e.currentTarget as HTMLInputElement).value), true)}
             aria-label="{row.label} {ax.axis === 'L' ? 'lightness' : ax.axis === 'C' ? 'chroma' : 'hue'}"
+            aria-valuetext={fmtAxis(ax.axis, triple[ax.axis])}
           />
           <span class="axis-val">{fmtAxis(ax.axis, triple[ax.axis])}</span>
         </label>
@@ -173,8 +190,9 @@
   }
   .row.active { background: var(--tp-row-active, #f6f3ed); }
   .swatch {
-    width: 24px;
-    height: 24px;
+    /* 28px — large enough to read the color and to hit (chrome D). */
+    width: 28px;
+    height: 28px;
     border-radius: 4px;
     border: 1px solid var(--tp-swatch-rule, #c8c4bd);
     cursor: pointer;
@@ -218,9 +236,44 @@
   }
   .axis input[type="range"] {
     width: 100%;
-    height: 18px;
+    /* 24px min hit area (WCAG 2.5.8 / chrome D — 18px missed on touch). */
+    height: 24px;
     margin: 0;
     accent-color: var(--tp-fg, #1c1a17);
+  }
+  /* H sliders draw the hue wheel at the row's current L/C as the track,
+     with the anchor color on the thumb. padding + content-box clip keeps
+     the visible track slim while the input stays a 24px hit target. */
+  .axis input[type="range"].hue {
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--track-gradient);
+    background-clip: content-box;
+    padding: 7px 0;
+    border-radius: 999px;
+  }
+  .axis input[type="range"].hue::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--thumb-color, #ffffff);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+  }
+  .axis input[type="range"].hue::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--thumb-color, #ffffff);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+  }
+  .axis input[type="range"].hue::-moz-range-track {
+    background: transparent;
   }
   .axis-val {
     font-family: ui-monospace, "SF Mono", monospace;
