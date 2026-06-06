@@ -303,7 +303,10 @@ tabviz <- function(
   if (is.null(interaction)) {
     interaction <- default_interaction_for_theme(theme)
   }
-  interaction@enable_themes <- finalize_enable_themes(interaction@enable_themes, theme)
+  # enable_themes stays in its RAW form ("default" sentinel / user list) on
+  # the spec; finalize_enable_themes() runs at wire time inside
+  # serialize_interaction(). Eager finalization embedded every package
+  # preset as a resolved S7 WebTheme in the spec (~560 MB per serialize()).
 
   # Validate + normalize initial-state args. These ride on the widget payload
   # so the first paint reflects the requested sort / filters / hidden columns;
@@ -324,11 +327,6 @@ tabviz <- function(
     spec <- data
     if (!is.null(banding)) {
       spec@theme@row@banding <- banding
-    }
-    if (!is.null(spec@interaction)) {
-      spec@interaction@enable_themes <- finalize_enable_themes(
-        spec@interaction@enable_themes, spec@theme
-      )
     }
     # Serialize the spec and create widget directly
     payload <- serialize_spec(spec)

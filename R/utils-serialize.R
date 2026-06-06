@@ -28,7 +28,7 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     extraColumns = lapply(spec@extra_columns, serialize_column),
     availableFields = serialize_available_fields(spec),
     theme = serialize_theme(theme),
-    interaction = serialize_interaction(spec@interaction),
+    interaction = serialize_interaction(spec@interaction, theme),
     initialState = serialize_initial_state(spec@initial_state),
     labels = serialize_labels(spec@labels),
     notes = serialize_notes(spec@notes),
@@ -554,7 +554,7 @@ serialize_initial_state <- function(initial_state) {
 }
 
 #' @keywords internal
-serialize_interaction <- function(interaction) {
+serialize_interaction <- function(interaction, active_theme = NULL) {
   if (is.null(interaction)) {
     interaction <- web_interaction()
   }
@@ -565,7 +565,19 @@ serialize_interaction <- function(interaction) {
   # * "default"                             → flat list of all package presets
   # * named list of WebTheme (1-level)      → flat list (no tabs)
   # * named list of named lists of WebTheme → categorized (tabs)
+  #
+  # Finalization (resolve "default" → package_themes(), apply named-list
+  # display-name overrides, prepend the active theme as "Current") happens
+  # HERE, at wire time — never in the stored spec. Eagerly finalizing into
+  # `interaction@enable_themes` embedded ~27 resolved WebTheme S7 objects in
+  # every WebSpec, which made `serialize(spec)` weigh ~560 MB (S7 instances
+  # drag their full class-closure graph into R serialization) — knitr cache,
+  # saveRDS, targets, and parallel workers all paid it. The wire output is
+  # byte-identical either way.
   enable_themes <- interaction@enable_themes
+  if (!is.null(active_theme) && !is.null(enable_themes)) {
+    enable_themes <- finalize_enable_themes(enable_themes, active_theme)
+  }
   serialize_themes_arg <- function(x) {
     # Accept either a flat named list of WebTheme OR a 2-level
     # categorized list. Detect at runtime so package_themes() (now
@@ -1004,7 +1016,7 @@ serialize_split_table <- function(split_table, include_forest = TRUE) {
     extraColumns    = lapply(base_spec@extra_columns, serialize_column),
     availableFields = serialize_available_fields(base_spec),
     theme           = serialize_theme(theme),
-    interaction     = serialize_interaction(base_spec@interaction),
+    interaction     = serialize_interaction(base_spec@interaction, theme),
     initialState    = serialize_initial_state(base_spec@initial_state),
     watermark        = if (is.na(base_spec@watermark)) NULL else base_spec@watermark,
     watermarkColor   = if (is.na(base_spec@watermark_color)) NULL else base_spec@watermark_color,

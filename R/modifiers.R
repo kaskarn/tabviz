@@ -408,7 +408,9 @@ selectable_themes <- function(x, themes) {
   if (is.null(spec@interaction)) {
     spec@interaction <- web_interaction()
   }
-  spec@interaction@enable_themes <- finalize_enable_themes(themes, spec@theme)
+  # Stored raw; finalized at wire time by serialize_interaction(). The
+  # InteractionSpec validator still checks the shape on assignment.
+  spec@interaction@enable_themes <- themes
   repack(x, spec)
 }
 
