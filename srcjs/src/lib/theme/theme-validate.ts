@@ -68,7 +68,20 @@ export function validateResolvedTheme(theme: WebTheme): void {
   // bridge populated by buildThemeStructure; using v4 cssVars here
   // avoids the hidden drift between the two resolvers and means the
   // contrast check operates on what the renderer actually paints.
-  const cv = getCssVars(theme);
+  const failures = collectContrastFailures(getCssVars(theme));
+  if (failures.length > 0) {
+    throw new ThemeValidationError(failures);
+  }
+}
+
+/** Non-throwing variant over a raw cssVars map — the studio consumes
+ *  this for its live contrast banner (R3 studio UX F1: dragging Paper L
+ *  to 0 rendered an unreadable chart with zero feedback because the
+ *  validator only ran in buildTheme, which the studio's resolve path
+ *  bypasses). */
+export function collectContrastFailures(
+  cv: Record<string, string>,
+): ContrastFailure[] {
   const surfaceBg = readSurfaceBg(cv);
   const text      = readContentPrimary(cv);
   const headerLightBg = readVar(cv, "--tv-header-light-bg", surfaceBg) ?? surfaceBg;
@@ -151,9 +164,7 @@ export function validateResolvedTheme(theme: WebTheme): void {
     }
   }
 
-  if (failures.length > 0) {
-    throw new ThemeValidationError(failures);
-  }
+  return failures;
 }
 
 // ────────────────────────────────────────────────────────────────────────────

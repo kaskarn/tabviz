@@ -24,6 +24,7 @@
 
 import type { WebTheme } from "../../types/theme-resolved";
 import { createWire } from "./theme-wire";
+import { computeV3BridgeVars } from "./v3-bridge-vars";
 import { resolveTheme } from "./resolve-theme";
 
 /** Build the v4 cssVars map for a given v3 WebTheme.
@@ -64,7 +65,14 @@ export function getCssVars(theme: WebTheme | undefined | null): Record<string, s
     }
     cascadeCache.set(theme.authoringInputs, base);
   }
-  return applySpacingPins({ ...base }, theme);
+  // Overlay the v3 user-config bridge values over their "<v3-bridge>"
+  // sentinels so every consumer of getCssVars (TS readers, R's
+  // theme_css_vars/diff_themes/inspect_token via V8, the studio) sees
+  // the SAME values the painted CSS uses. Before this, 16 tokens
+  // round-tripped as the literal sentinel and --tv-text-title-fg
+  // diverged between studio preview and R render (R3 studio F3/F4).
+  const withBridge = Object.assign({ ...base }, computeV3BridgeVars(theme, base));
+  return applySpacingPins(withBridge, theme);
 }
 
 /** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override

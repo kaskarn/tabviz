@@ -19,7 +19,7 @@
  */
 
 import type { WebTheme } from "../../types/theme-resolved";
-import { activeHeaderVariant } from "../header-variant";
+import { computeV3BridgeVars } from "./v3-bridge-vars";
 import { VIZ_MARGIN } from "../axis-utils";
 import { createWire } from "./theme-wire";
 import { resolveTheme } from "./resolve-theme";
@@ -147,20 +147,15 @@ function _buildThemeCSSImpl(theme: WebTheme): string {
   // different from --tv-text in the v4 manifest because the two resolvers
   // diverged at the 4th decimal of OKLCH).
   const cv = getCssVars(theme);
-  const v4Text         = readContentPrimary(cv);
-  const v4TextSubtle   = readContentMuted(cv);
-  const v4Border       = readDividerStrong(cv);
-  const v4Accent       = readAccentDefault(cv);
 
-  const headerVariant = activeHeaderVariant(theme);
-  const firstColBold = theme.variants?.firstColumnStyle === "bold";
-  const fc = theme.firstColumn as (typeof theme.firstColumn & { plain?: typeof theme.firstColumn.default }) | undefined;
-  const firstColDefault = fc?.default ?? fc?.plain;
-  const firstColVariant = firstColBold ? fc?.bold : firstColDefault;
-  const firstColBg = firstColVariant?.bg ?? "transparent";
-  const firstColFg = firstColVariant?.fg ?? "inherit";
-  const firstColWeight = firstColVariant?.weight ?? "inherit";
-  const firstColRule: string | null = firstColVariant?.rule ?? null;
+  // V3 user-config bridge values — single-sourced from
+  // computeV3BridgeVars (v3-bridge-vars.ts) so this emission and
+  // getCssVars' overlay agree by construction (R3 studio F3/F4: the
+  // inline duplicates here diverged from what consumers read).
+  const bridgeVars = computeV3BridgeVars(theme, cv);
+  const bridgeBody = Object.entries(bridgeVars)
+    .map(([k, v]) => `      ${k}: ${v};`)
+    .join("\n");
 
   return `
       /* ── V4 manifest cssVars — canonical source of theme values. */
@@ -171,67 +166,10 @@ ${v4Body}
       --tv-header-font-scale:   1.05;
       --tv-viz-margin:          ${VIZ_MARGIN}px;
 
-      /* ── V3-only — still computed from theme.X.Y (no v4 equivalent yet).
-            Each cluster has a follow-up task to add the manifest entry
-            and convert these to aliases. */
-      /* Header variant active row (header-light vs header-bold etc.). */
-      --tv-header-rule:         ${headerVariant.rule ?? v4Border};
-      --tv-row-group-rule:      ${theme.rowGroup?.L1?.rule ?? v4Border};
-      --tv-text-title-fg:       ${theme.text.title?.fg     ?? v4Text};
-      --tv-axis-label-fg:       ${theme.plot?.axisLabel?.fg ?? v4TextSubtle};
-      --tv-axis-tick-fg:        ${theme.plot?.tickLabel?.fg ?? v4TextSubtle};
-      --tv-header-bg:           ${headerVariant.bg};
-      --tv-header-fg:           ${headerVariant.fg};
-      --tv-summary-fill:        ${theme.series?.[0]?.fill ?? v4Accent};
-      --tv-summary-border:      ${theme.series?.[0]?.stroke ?? v4Accent};
-      --tv-semantic-muted-fg:   ${theme.row.muted?.fg    ?? v4TextSubtle};
-      --tv-semantic-accent-fg:  ${theme.row.accent?.fg   ?? v4Accent};
-      --tv-semantic-muted-bg:   ${theme.row.muted?.bg    ?? "transparent"};
-      --tv-semantic-accent-bg:  ${theme.row.accent?.bg   ?? "transparent"};
-      /* Per-role italic — Coh.22 dropped italic from v4 typography.
-         CSS consumers read italic with an inline "normal" fallback,
-         so no emission needed. Drop the consumer CSS reads once
-         italic is intentionally re-added (or never). */
-      /* Per-role size/weight/family for the 9 v4 typography roles
-         (title/subtitle/body/numeric/label/caption/footnote/cell/tick)
-         are emitted by the v4 manifest above — no v3 emission needed. */
-      /* Header role: not in the v4 9-role matrix. */
-      --tv-text-header-weight:   ${theme.header.text.weight ?? 600};
-      --tv-text-header-family:   ${theme.header.text?.family ?? theme.text.body.family};
-      --tv-text-header-size:     ${
-        theme.header.text?.size && theme.header.text.size !== theme.text.body.size
-          ? theme.header.text.size
-          : `calc(${theme.text.body.size} * 1.05)`
-      };
-      --tv-text-column-group-weight: ${theme.columnGroup?.text?.weight ?? 600};
-      --tv-text-numeric-figures: ${theme.text.numeric?.figures === "proportional" ? "normal" : "tnum"};
-      /* First-column variant — applied to .primary-cell. */
-      --tv-first-col-bg:         ${firstColBg};
-      --tv-first-col-fg:         ${firstColFg};
-      --tv-first-col-weight:     ${firstColWeight};
-      ${firstColRule ? `--tv-first-col-rule: ${firstColRule};` : ""}
-      /* Borders — theme.borders.{major,minor,table} computed widths/colors. */
-      --tv-row-border-width:     ${theme.borders.minor.style === "double" ? Math.max(3, theme.borders.minor.thickness * 3) : theme.borders.minor.thickness}px;
-      --tv-header-border-width:  ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : Math.max(theme.borders.major.thickness, 2)}px;
-      --tv-group-border-width:   ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : theme.borders.major.thickness}px;
-      --tv-border-major-color:   ${theme.borders.major.color};
-      --tv-border-minor-color:   ${theme.borders.minor.color};
-      --tv-border-table-color:   ${theme.borders.table.color};
-      --tv-border-row-style:     ${
-        (theme.borders.layout === "horizontal" || theme.borders.layout === "grid")
-          ? (theme.borders.minor.style === "double" ? "double" : "solid")
-          : "none"
-      };
-      --tv-border-col-style:     ${
-        (theme.borders.layout === "vertical" || theme.borders.layout === "grid")
-          ? (theme.borders.minor.style === "double" ? "double" : "solid")
-          : "none"
-      };
-      --tv-border-major-style:   ${theme.borders.major.style === "double" ? "double" : "solid"};
-      --tv-table-border-width:   ${theme.borders.table.style === "double" ? Math.max(3, theme.borders.table.thickness * 3) : theme.borders.table.thickness}px;
-      --tv-table-border-style:   ${theme.borders.table.thickness > 0 ? (theme.borders.table.style === "double" ? "double" : "solid") : "none"};
-      --tv-container-border:     ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
-      --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
+      /* ── V3 user-config bridges (single source: v3-bridge-vars.ts).
+            Each cluster has a follow-up task (#72-#74) to become a
+            manifest entry. */
+${bridgeBody}
       ${generateCSSVariables()}
     `.trim();
 }

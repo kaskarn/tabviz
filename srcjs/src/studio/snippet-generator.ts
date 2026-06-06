@@ -8,7 +8,17 @@
 // Used by the live snippet strip + the on-close console echo.
 
 import type { ThemeInputs, OklchTriple } from "../types/theme-inputs";
-import { oklchToHex } from "../lib/oklch";
+import { PRESETS } from "../lib/theme/theme-presets-inputs";
+
+/** Emit an anchor as an R `oklch()` call — the studio is LCH-native and
+ *  R's anchor coercion accepts oklch() triples, so the author's actual
+ *  L/C/H intent round-trips instead of being quantized through hex
+ *  (R3 studio review: `set_brand("#321161")` discarded the dialed
+ *  L=0.18/C=0.13/H=231 semantics). */
+function rOklch(t: OklchTriple): string {
+  const r = (v: number, d: number): number => Math.round(v * 10 ** d) / 10 ** d;
+  return `oklch(${r(t.L, 4)}, ${r(t.C, 4)}, ${r(t.H, 1)})`;
+}
 
 /** Compare two OKLCH triples for value equality. */
 function triplesEqual(a: OklchTriple | undefined, b: OklchTriple | undefined): boolean {
@@ -38,17 +48,17 @@ export function buildSnippetSteps(
   // V4 anchors — emit set_paper/set_ink/set_brand/set_accent when the
   // corresponding anchor's OKLCH triple has changed.
   if (!triplesEqual(edits.anchors.paper, base.anchors.paper)) {
-    steps.push({ setter: "set_paper", args: rString(oklchToHex(edits.anchors.paper)) });
+    steps.push({ setter: "set_paper", args: rOklch(edits.anchors.paper) });
   }
   if (!triplesEqual(edits.anchors.ink, base.anchors.ink)) {
-    steps.push({ setter: "set_ink", args: rString(oklchToHex(edits.anchors.ink)) });
+    steps.push({ setter: "set_ink", args: rOklch(edits.anchors.ink) });
   }
   if (!triplesEqual(edits.anchors.brand, base.anchors.brand)) {
-    steps.push({ setter: "set_brand", args: rString(oklchToHex(edits.anchors.brand)) });
+    steps.push({ setter: "set_brand", args: rOklch(edits.anchors.brand) });
   }
   if (!triplesEqual(edits.anchors.accent, base.anchors.accent)) {
     if (edits.anchors.accent) {
-      steps.push({ setter: "set_accent", args: rString(oklchToHex(edits.anchors.accent)) });
+      steps.push({ setter: "set_accent", args: rOklch(edits.anchors.accent) });
     }
   }
   // Polarity: R-side input @mode mirrors polarity per Stage 1's mode/polarity split.
@@ -89,11 +99,81 @@ export function buildSnippetSteps(
     }
   }
 
-  // V4 dropped neutral_tint*; the tint surface area now lives on the
-  // paper/ink anchors directly (their C component). Set via set_paper /
-  // set_ink — handled above.
+  // ink2 (rubrication) — clearable anchor.
+  if (!triplesEqual(edits.anchors.ink2, base.anchors.ink2)) {
+    if (edits.anchors.ink2) {
+      steps.push({ setter: "set_ink2", args: rOklch(edits.anchors.ink2) });
+    }
+  }
+
+  // header_style — top-level structural variant input.
+  if (edits.header_style !== base.header_style && edits.header_style !== undefined) {
+    steps.push({ setter: "set_header_style", args: rString(edits.header_style) });
+  }
+
+  // slot_style — Tier-1 series styling.
+  if (edits.slot_style !== base.slot_style && edits.slot_style !== undefined) {
+    steps.push({ setter: "set_inputs", args: `slot_style = ${rString(edits.slot_style)}` });
+  }
+
+  // Geometry — radius / border_width scales. set_geometry(radius = list(...),
+  // border_width = list(...)) takes named numeric lists.
+  const geomArgs: string[] = [];
+  const radiusDiff = diffNumericRecord(edits.geometry?.radius, base.geometry?.radius);
+  if (radiusDiff) geomArgs.push(`radius = ${rList(radiusDiff)}`);
+  const borderDiff = diffNumericRecord(edits.geometry?.border_width, base.geometry?.border_width);
+  if (borderDiff) geomArgs.push(`border_width = ${rList(borderDiff)}`);
+  if (geomArgs.length > 0) {
+    steps.push({ setter: "set_geometry", args: geomArgs.join(", ") });
+  }
+
+  // Effects — every key set_effects() accepts.
+  const fxKeys = [
+    "glow_intensity", "glow_anchor", "gradient_shell_intensity",
+    "gradient_shell_angle", "elevation", "caption_style", "glass",
+    "title_style",
+  ] as const;
+  const fxArgs: string[] = [];
+  for (const k of fxKeys) {
+    const ev = edits.effects?.[k];
+    const bv = base.effects?.[k];
+    if (ev !== bv && ev !== undefined) {
+      fxArgs.push(`${k} = ${typeof ev === "number" ? ev : rString(String(ev))}`);
+    }
+  }
+  if (fxArgs.length > 0) {
+    steps.push({ setter: "set_effects", args: fxArgs.join(", ") });
+  }
 
   return steps;
+}
+
+/** Diff two flat numeric records; returns the changed keys or null. */
+function diffNumericRecord(
+  a: Record<string, number | undefined> | undefined,
+  b: Record<string, number | undefined> | undefined,
+): Record<string, number> | null {
+  if (!a) return null;
+  const out: Record<string, number> = {};
+  for (const k of Object.keys(a)) {
+    const av = a[k];
+    if (av !== undefined && av !== b?.[k]) out[k] = av;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
+/** Format a flat numeric record as an R list(...) literal. */
+function rList(rec: Record<string, number>): string {
+  return `list(${Object.entries(rec).map(([k, v]) => `${k} = ${v}`).join(", ")})`;
+}
+
+/** R base expression for a preset name. Every shipped preset follows the
+ *  `web_theme_<name>()` pattern, so the expression derives from the
+ *  PRESETS registry — the old hand-maintained map in StudioShell went
+ *  stale at 18/27 and the 9 newest presets emitted the literal
+ *  `your_theme`, which errors in R (three review agents, independently). */
+export function buildBaseExpression(name: string): string {
+  return name in PRESETS ? `web_theme_${name}()` : "your_theme";
 }
 
 /** Format the snippet as a pipe chain, given the base call expression. */

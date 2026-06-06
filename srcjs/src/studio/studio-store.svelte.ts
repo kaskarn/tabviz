@@ -9,6 +9,7 @@ import type { ThemeInputs } from "../types/theme-inputs";
 import type { RoleName, RampName } from "../types/theme-roles";
 import type { ResolvedTheme } from "../lib/theme/resolve-theme";
 import { resolveTheme } from "../lib/theme/resolve-theme";
+import { collectContrastFailures } from "../lib/theme/theme-validate";
 import { createWire, setRoleBinding as wireSetRoleBinding, type RoleOverrides } from "../lib/theme/theme-wire";
 
 /** Per-edit history step. `inputs` + `roleOverrides` are complete snapshots
@@ -81,6 +82,18 @@ class StudioStore {
   /** Non-null while the current inputs fail to resolve (the rendered theme
    *  is then the last good one). StudioShell surfaces this inline. */
   resolveError = $derived<string | null>(this.resolveOutcome.error);
+
+  /** Live contrast failures on the CURRENT resolution (R3 studio UX F1:
+   *  paper L=0 rendered black-on-black with zero feedback — the contrast
+   *  validator only ran in buildTheme, which this resolve path bypasses).
+   *  Non-blocking: the chart still renders; StudioShell shows a banner. */
+  contrastWarnings = $derived<string[]>(
+    this.resolveOutcome.theme
+      ? collectContrastFailures(
+          this.resolveOutcome.theme.cssVars as Record<string, string>,
+        ).map((f) => `${f.name} (${f.ratio.toFixed(2)}:1, needs ${f.minRatio}:1)`)
+      : [],
+  );
 
   /** Derived: dirty iff the current state differs from the base. */
   dirty = $derived<boolean>(

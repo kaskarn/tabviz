@@ -15,7 +15,7 @@
   import SnippetStrip from "./SnippetStrip.svelte";
   import ThemeControlsStrip from "../components/theme-panel/ThemeControlsStrip.svelte";
   import CascadeView from "../components/theme-panel/CascadeView.svelte";
-  import { buildSnippetSteps, formatSnippet } from "./snippet-generator";
+  import { buildBaseExpression, buildSnippetSteps, formatSnippet } from "./snippet-generator";
 
   // Initial spec + theme come from data-* attributes on the mount element.
   const {
@@ -53,30 +53,6 @@
   // a fallback for user-input themes.
   const baseExpression = $derived(buildBaseExpression(studioStore.baseName));
 
-  function buildBaseExpression(name: string): string {
-    // Match R-side preset constructors.
-    const KNOWN: Record<string, string> = {
-      cochrane: "web_theme_cochrane()",
-      lancet: "web_theme_lancet()",
-      jama: "web_theme_jama()",
-      nejm: "web_theme_nejm()",
-      nature: "web_theme_nature()",
-      bmj: "web_theme_bmj()",
-      dark: "web_theme_dark()",
-      bauhaus: "web_theme_bauhaus()",
-      swiss: "web_theme_swiss()",
-      tufte: "web_theme_tufte()",
-      newsprint: "web_theme_newsprint()",
-      solarized: "web_theme_solarized()",
-      solarized_dark: "web_theme_solarized_dark()",
-      tonal: "web_theme_tonal()",
-      tonal_dark: "web_theme_tonal_dark()",
-      dwarven: "web_theme_dwarven()",
-      elvish: "web_theme_elvish()",
-      hobbit: "web_theme_hobbit()",
-    };
-    return KNOWN[name] ?? "your_theme";
-  }
 
   const snippetText = $derived.by(() => {
     if (!studioStore.base || !studioStore.inputs) return baseExpression;
@@ -140,6 +116,15 @@
             <code>{studioStore.resolveError}</code>
           </div>
         {/if}
+        {#if studioStore.contrastWarnings.length > 0}
+          <!-- Non-blocking contrast banner: the chart renders the failing
+               theme (the author needs to SEE the problem) but the failure
+               is named instead of silent (R3 studio UX F1 — paper L=0
+               produced an unreadable chart with zero feedback). -->
+          <div class="contrast-warn-banner" role="status">
+            ⚠ Contrast check: {studioStore.contrastWarnings[0]}{studioStore.contrastWarnings.length > 1 ? ` (+${studioStore.contrastWarnings.length - 1} more)` : ""}
+          </div>
+        {/if}
         <div class="live-preview">
           <StudioChart spec={initialSpec} />
         </div>
@@ -192,6 +177,16 @@
     background: #ffffff;
     min-height: 0;
   }
+  .contrast-warn-banner {
+    margin: 0 0 10px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    background: color-mix(in srgb, #d97706 12%, var(--tp-bg, #fff));
+    border: 1px solid color-mix(in srgb, #d97706 35%, transparent);
+    color: var(--tp-fg, #1c1a17);
+  }
+
   .resolve-error-banner {
     flex: 0 0 auto;
     margin: 8px 12px 0;
