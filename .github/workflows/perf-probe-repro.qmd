@@ -1,0 +1,36 @@
+---
+title: probe
+format: html
+---
+
+Minimal reproduction of docs/guide/export.qmd chunk-2 with inline timing,
+for the perf-probe workflow. Delete with perf-probe.yaml once diagnosed.
+
+```{r}
+t0 <- Sys.time()
+library(tabviz); library(dplyr)
+cat("PROBE chunk libs:", round(as.numeric(Sys.time()-t0, units="secs"), 2), "s\n")
+```
+
+```{r}
+t0 <- Sys.time()
+data(glp1_trials)
+p <- glp1_trials |>
+  filter(row_type == "data", group == "Main Trials") |>
+  head(5) |>
+  tabviz(
+    label = "study",
+    columns = list(
+      col_text("drug", "Drug"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, width = 180),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
+    ),
+    theme = web_theme_jama(),
+    title = "GLP-1 Agonist Cardiovascular Outcomes"
+  )
+cat("PROBE chunk tabviz():", round(as.numeric(Sys.time()-t0, units="secs"), 2), "s\n")
+t0 <- Sys.time()
+save_plot(p, "forest_example.svg", width = 700)
+cat("PROBE chunk save_plot:", round(as.numeric(Sys.time()-t0, units="secs"), 2), "s\n")
+```

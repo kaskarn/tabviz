@@ -26,3 +26,23 @@ jobs:
 
       - name: Profile save_plot components
         run: Rscript .github/workflows/perf-probe.R
+
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Build minimal repro qmd
+        run: |
+          mkdir -p /tmp/probe-qmd
+          cp .github/workflows/perf-probe-repro.qmd /tmp/probe-qmd/repro.qmd
+
+      - name: Render repro via quarto (timed)
+        run: |
+          cd /tmp/probe-qmd
+          time quarto render repro.qmd
+          grep -h PROBE repro.html || true
+
+      - name: Render repro via bare knitr (timed)
+        run: |
+          cd /tmp/probe-qmd
+          time Rscript -e 'knitr::knit("repro.qmd", output="knitr-out.md", quiet=TRUE)'
+          grep PROBE knitr-out.md || true
