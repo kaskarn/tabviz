@@ -121,6 +121,12 @@ export interface ThemeInputs {
    *
    *  Drives the `[data-shell-mode]` selectors in theme-runtime.css and the
    *  10 shell/paper Tier-3 tokens. Default: "flush". */
+  /** Header chrome treatment — a STRUCTURAL VARIANT, not an effect
+   *  (relocated out of effects.* per the R2 decision: it picks which
+   *  header cluster paints, like shell_mode picks surfaces). One
+   *  vocabulary everywhere: light / tint / bold. */
+  header_style?: "light" | "tint" | "bold";
+
   shell_mode?: "flush" | "raised" | "float" | "transparent";
 
   /** Stage 2 typography Tier 1 — anchor of the modular size scale (px).
@@ -236,11 +242,6 @@ export interface ThemeInputs {
      *  renders the opaque shell. Every glass token is polarity- and
      *  paper-hue-aware (C59 — flat constants read as grey smear). */
     glass?: "none" | "frosted" | "aurora";
-    /** B12 (wire-audit 2c-i): header chrome treatment as a Tier-1 input
-     *  (lab vocabulary). Overrides the v3 variants.headerStyle picker
-     *  (mapping: normal->light, tint->tint, fill->bold) until the v3
-     *  field retires with the Pass-6 wire bump. */
-    header_style?: "normal" | "tint" | "fill";
     /** B12 (wire-audit 2c-i): title treatment. "bar" paints a ::before
      *  accent stripe ahead of the title (lab.css:278); "underline" rules
      *  beneath it. */

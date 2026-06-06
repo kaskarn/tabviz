@@ -35,6 +35,36 @@ correction, now landed:
   lives on the shell now; transparent shells premix knockouts against
   the paper bg (white-pad illegibility fix for dark themes).
 
+## Round-2 adversarial review (8 agents re-verified every round-1 closure)
+
+* **`header_style` is a structural variant input** (decision): the
+  top-level `web_theme(header_style=)` / `set_header_style()` surface
+  (`"light"` / `"tint"` / `"bold"`) is the ONE surface;
+  `set_effects(header_style=)` and the colliding `{normal,tint,fill}`
+  enum are gone. `set_header_style()` now re-resolves like every input
+  setter. The relocation exposed and closed a hidden R/TS divergence:
+  bauhaus + swiss declared bold headers R-side that the TS presets never
+  rendered.
+* **`effects.elevation` vocabulary** (decision): `"none"` / `"low"` /
+  `"medium"` / `"high"` — pure magnitude words; no more collision with
+  `shell_mode`'s raised/float. Band-less shells gain shadow air when
+  elevation is pinned (the lift used to clip at the widget edge).
+* **Categorical schemes are finally wired**: `categorical` /
+  `set_categorical()` had ZERO engine consumers — 27 presets declared
+  schemes nothing read. A pinned scheme now supplies series slots 1+
+  (slot 0 keeps the theme identity color); the three scheme setters
+  validate against the registry roster instead of accepting any string.
+* **`col_custom()`**: R can now author/consume JS-registered plugin
+  column types (`registerColumnType`); type + options ship to the wire
+  untouched. Built-in construction stays strict.
+* Status anchors are no longer polarity-reflected (absolute semantics —
+  dark-theme neons survived); texture layering regression fixed
+  (ruled/grid/dotted were dead on every non-gradient preset); grain is
+  perceptible and paints the paper; export ellipsizes no-wrap overflow;
+  `-$45,000.50` sign order; negative zero; `thousands_sep = TRUE`;
+  cog-drawer Reset works for polarity/density edits; caption chip falls
+  back to "TABLE".
+
 # tabviz 0.37.0 (wire 1.3) — the wire-audit arc
 
 The rgc_v4 design-lab parity arc: the V4 substrate's dormant visual

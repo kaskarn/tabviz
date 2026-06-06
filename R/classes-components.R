@@ -92,8 +92,14 @@ ColumnSpec <- new_class(
                      "img", "reference", "range", "forest",
                      "heatmap", "progress",
                      "viz_bar", "viz_boxplot", "viz_violin", "custom")
-    if (!self@type %in% valid_types) {
-      return(paste("type must be one of:", paste(valid_types, collapse = ", ")))
+    # Unknown types are allowed when explicitly opted in via col_custom()
+    # (attr set there): R can then author/consume JS-registered plugin
+    # column types (registerColumnType — R2 extensibility A1: R used to
+    # hard-reject them at two layers with no escape hatch). Built-in
+    # construction stays strict via web_col()'s match.arg.
+    if (!self@type %in% valid_types && !isTRUE(attr(self@type, "tabviz_custom"))) {
+      return(paste("type must be one of:", paste(valid_types, collapse = ", "),
+                   "(or use col_custom() for a JS-registered plugin type)"))
     }
 
     # Validate width: must be NA, numeric, or "auto"
@@ -3044,4 +3050,53 @@ viz_ts_args <- function(scale, axis_range, axis_ticks, axis_gridlines,
   if (!identical(header_align, "center")) args$headerAlign <- header_align
   if (!is.null(width))          args$width         <- as.numeric(width)
   args
+}
+
+#' Author a column of a JS-registered plugin type
+#'
+#' The TS engine's `registerColumnType()` (`@tabviz/core/extend`) lets
+#' JavaScript authors add new column types at runtime. `col_custom()` is
+#' the R escape hatch for those types: it deliberately bypasses the
+#' built-in type roster and ships `type` + `options` to the wire
+#' untouched, where the JS-side registered schema and renderers pick
+#' them up by type match. R cannot validate a plugin's options — that is
+#' the plugin's contract.
+#'
+#' For the built-in types, use the dedicated `col_*()` helpers, which
+#' validate their arguments.
+#'
+#' @param field Data column name.
+#' @param type The registered plugin type string (must match the JS
+#'   `registerColumnType()` key).
+#' @param header Column header. Defaults to the field name.
+#' @param width Column width in pixels, or `"auto"`.
+#' @param options A named list shipped verbatim as the column's
+#'   `options` payload. Namespace it the way the plugin's schema
+#'   expects (typically `list(<type> = list(...))`).
+#' @param ... Standard style-mapping arguments (`bold`, `color`,
+#'   `tooltip`, ...), same as every `col_*()` helper.
+#'
+#' @return A `ColumnSpec`.
+#' @export
+#' @examples
+#' # Consuming a JS plugin registered as "fancy_ring":
+#' col_custom("score", type = "fancy_ring", header = "Score",
+#'            options = list(fancy_ring = list(max = 10)))
+col_custom <- function(field, type, header = NULL, width = NULL,
+                       options = list(), ...) {
+  checkmate::assert_string(field, min.chars = 1)
+  checkmate::assert_string(type, min.chars = 1)
+  checkmate::assert_string(header, null.ok = TRUE)
+  checkmate::assert_list(options, names = "named")
+  # The opt-in marker the ColumnSpec validator honors for non-roster types.
+  attr(type, "tabviz_custom") <- TRUE
+  ColumnSpec(
+    id      = paste0(type, "_", field),
+    field   = field,
+    type    = type,
+    header  = header %||% field,
+    width   = width %||% NA,
+    options = options,
+    ...
+  )
 }

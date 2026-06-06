@@ -209,7 +209,9 @@ ThemeInputs <- new_class(
     # B12 (wire-audit 2c-i): header/title chrome as Tier-1 inputs (lab
     # vocabulary). Overrides the v3 variants picker until the wire bump.
     effects_glass                  = new_property(class_character, default = NA_character_),
-    effects_header_style           = new_property(class_character, default = NA_character_),
+    # header_style is a TOP-LEVEL structural variant input (relocated out
+    # of effects per the R2 decision); slot follows the wire key 1:1.
+    header_style                   = new_property(class_character, default = NA_character_),
     effects_title_style            = new_property(class_character, default = NA_character_),
     # D12 (wire-audit 1f): viz-mark identity — theme defaults for plot
     # marks (cascade: row markerStyle > effect shape > these > rotation).
@@ -291,9 +293,9 @@ ThemeInputs <- new_class(
     if (!is.na(gl) && !gl %in% c("none", "frosted", "aurora")) {
       return("effects_glass must be 'none', 'frosted', or 'aurora'")
     }
-    hs <- self@effects_header_style
-    if (!is.na(hs) && !hs %in% c("normal", "tint", "fill")) {
-      return("effects_header_style must be 'normal', 'tint', or 'fill'")
+    hs <- self@header_style
+    if (!is.na(hs) && !hs %in% c("light", "tint", "bold")) {
+      return("header_style must be 'light', 'tint', or 'bold'")
     }
     ts2 <- self@effects_title_style
     if (!is.na(ts2) && !ts2 %in% c("normal", "bar", "underline")) {

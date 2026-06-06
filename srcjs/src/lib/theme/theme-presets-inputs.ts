@@ -243,6 +243,7 @@ export const BAUHAUS: ThemeInputs = defineInputs(
     categorical: "tableau10",
     shell_mode: "raised",
     shell_texture: "grid",
+    header_style: "bold",
     type_base_size: 15,
     type_scale_ratio: 1.333,
     type_weights: { regular: 400, medium: 500, semibold: 700, bold: 800 },
@@ -264,6 +265,7 @@ export const SWISS: ThemeInputs = defineInputs(
     geometry: { radius: { sm: 0, md: 0, lg: 0, pill: 0 } },
     density: "compact",
     shell_texture: "grid",
+    header_style: "bold",
     type_scale_ratio: 1.2,
     type_weights: { regular: 400, medium: 500, semibold: 600, bold: 700 },
     fonts: {
@@ -585,12 +587,13 @@ export const BRUTALIST: ThemeInputs = defineInputs(
       radius:       { sm: 0, md: 0, lg: 0, pill: 0 },
       border_width: { hair: 1, thin: 1.5, regular: 2, thick: 3 },
     },
+    // 2c-i: solid-ink header band (structural variant) + rubrication
+    // title bar (lab brutalist).
+    header_style: "bold",
     effects: {
       glow_intensity: "none",
       gradient_shell_intensity: "none",
       elevation: "none",
-      // 2c-i: solid-ink header band + rubrication title bar (lab brutalist).
-      header_style: "fill",
       title_style: "bar",
     },
   },

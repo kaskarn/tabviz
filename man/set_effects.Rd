@@ -13,7 +13,6 @@ set_effects(
   elevation = NULL,
   caption_style = NULL,
   glass = NULL,
-  header_style = NULL,
   title_style = NULL
 )
 }
@@ -28,7 +27,9 @@ set_effects(
 
 \item{gradient_shell_angle}{Numeric in \verb{[0, 360]} (degrees).}
 
-\item{elevation}{\code{"none"} / \code{"soft"} / \code{"raised"} / \code{"float"}.}
+\item{elevation}{Figure-wide depth: \code{"none"} / \code{"low"} / \code{"medium"} /
+\code{"high"}. Lands on the shell band under \code{shell_mode = "raised"}, on
+the paper otherwise.}
 
 \item{caption_style}{\code{"none"} / \code{"chip"} / \code{"stripe"} — caption
 treatment above the paper (B17). \code{"chip"} renders the spec's
@@ -38,10 +39,7 @@ brand-gradient seam.}
 \item{glass}{\code{"none"} / \code{"frosted"} / \code{"aurora"} — glass material
 (B16): frosted translucent pane with bevel + sheen; aurora adds the
 borealis backdrop blobs. Browser-additive; SVG export renders the
-opaque shell.}
-
-\item{header_style}{\code{"normal"} / \code{"tint"} / \code{"fill"} — header chrome
-as a Tier-1 effect (B12). Overrides the legacy \code{web_theme(header_style=)}
+opaque shell.
 variant picker when set.}
 
 \item{title_style}{\code{"normal"} / \code{"bar"} / \code{"underline"} — title

@@ -29,17 +29,16 @@ interface VariantsShape {
 
 /** Resolve the active header style, falling back to "light" on unknown.
  *
- *  B12 (wire-audit 2c-i): the Tier-1 input `effects.header_style`
- *  (normal/tint/fill — lab vocabulary) takes precedence over the v3
- *  `variants.headerStyle` picker. The v3 field stays on the wire until
- *  the Pass-6 wire bump retires it. */
+ *  ONE vocabulary (R2 decision: header_style is a structural VARIANT,
+ *  not an effect): the top-level input `header_style` (light/tint/bold)
+ *  is authoritative; `variants.headerStyle` mirrors it for the v3
+ *  bridge and remains the fallback for inputs-less themes. The old
+ *  effects.header_style {normal,tint,fill} enum is gone. */
 export function activeHeaderStyle(theme: WebTheme): HeaderStyle {
   const t1 = (theme as {
-    authoringInputs?: { effects?: { header_style?: string } };
-  }).authoringInputs?.effects?.header_style;
-  if (t1 === "fill") return "bold";
-  if (t1 === "tint") return "tint";
-  if (t1 === "normal") return "light";
+    authoringInputs?: { header_style?: string };
+  }).authoringInputs?.header_style;
+  if (t1 === "bold" || t1 === "tint" || t1 === "light") return t1;
   const v = (theme as { variants?: VariantsShape }).variants?.headerStyle;
   if (v === "bold" || v === "tint") return v;
   return "light";

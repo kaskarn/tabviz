@@ -27,6 +27,7 @@ import { buildThemeStructure } from "./theme-resolve";
 import { applyPolarityToInputs } from "./resolve-theme";
 import { validateResolvedTheme } from "./theme-validate";
 import { rampStep, oklchMix, oklchDarken } from "../oklch";
+import { resolveCategorical } from "../data-schemes";
 import type {
   WebTheme, AccentRoles,
   StatusColors, Semantics, SlotRole, TextRole, TextRoles,
@@ -96,17 +97,32 @@ export function buildTheme(
   // Series anchor palette — drives the 5 SlotRole bundles below. The v3
   // ResolvedInputs.seriesAnchors field that mirrored this array was
   // deleted (consumers now derive via `readSeriesAnchors(theme)`).
-  const seriesAnchors: string[] = [
-    rampStep(ramps.brand, 9),
-    rampStep(ramps.accent, 9),
-    rampStep(ramps.brand, 7),
-    rampStep(ramps.accent, 7),
-    rampStep(ramps.brand, 5),
-  ];
+  //
+  // A pinned `categorical` scheme supplies the ADDITIONAL series (slots
+  // 1+); slot 0 always keeps the theme's identity color (brand solid) so
+  // single-effect forests stay branded — a full takeover turned
+  // cochrane's blue markers okabe-black, killing the journal identity.
+  // The scheme registry (data-schemes.ts) had ZERO consumers until the
+  // R2 API review noticed set_categorical("viridis") and a typo produce
+  // byte-identical output: 27 presets declared schemes nothing read.
+  // Unset keeps the identity-derived brand/accent interleave.
+  const schemeName = inputs.categorical;
+  const scheme = schemeName ? resolveCategorical(schemeName, ramps) : null;
+  const seriesAnchors: string[] = scheme && scheme.length >= 4
+    ? [rampStep(ramps.brand, 9), ...(scheme.slice(0, 4) as string[])]
+    : [
+        rampStep(ramps.brand, 9),
+        rampStep(ramps.accent, 9),
+        rampStep(ramps.brand, 7),
+        rampStep(ramps.accent, 7),
+        rampStep(ramps.brand, 5),
+      ];
 
   const variants: ThemeVariants = {
     density: inputs.density ?? "comfortable",
-    headerStyle: "light",
+    // Mirrors the top-level header_style input (one vocabulary; the
+    // variant slot stays on the wire as the v3 bridge's pick).
+    headerStyle: inputs.header_style ?? "light",
     firstColumnStyle: "default",
   };
 

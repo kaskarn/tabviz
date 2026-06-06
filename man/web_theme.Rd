@@ -35,7 +35,7 @@ web_theme(
   effects = NULL,
   marks = NULL,
   row_kinds = NULL,
-  header_style = "light",
+  header_style = NULL,
   first_column_style = "default",
   web_fonts = NULL,
   name = "custom"
@@ -118,7 +118,7 @@ corner softness + line weight across the widget. NULL = TS defaults
 \code{glow_intensity} (\code{"none"} / \code{"subtle"} / \code{"neon"}), \code{glow_anchor}
 (\code{"brand"} / \code{"accent"}), \code{gradient_shell_intensity} (\code{"none"} /
 \code{"subtle"} / \code{"vivid"}), \code{gradient_shell_angle} (degrees 0-360),
-\code{elevation} (\code{"none"} / \code{"soft"} / \code{"raised"} / \code{"float"}). NULL =
+\code{elevation} (\code{"none"} / \code{"low"} / \code{"medium"} / \code{"high"}). NULL =
 no effects (the safe editorial baseline). HC mode drops all effects.}
 
 \item{marks}{Viz-mark identity (D12): named list with \code{point_shape}
@@ -134,7 +134,8 @@ height). Layer 3 of the row-kind height cascade (Stage 1 §33);
 constructor \verb{row_heights=} and user pins layer above this. NULL =
 row-kind intrinsics apply.}
 
-\item{header_style}{Header chrome treatment: \code{"light"}, \code{"tint"}, or
+\item{header_style}{Header chrome treatment (a structural variant
+input): \code{"light"}, \code{"tint"}, or
 \code{"bold"}. Default \code{"light"}.}
 
 \item{first_column_style}{First (label) column treatment: \code{"default"},

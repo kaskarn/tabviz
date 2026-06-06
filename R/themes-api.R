@@ -105,7 +105,6 @@ theme_inputs_to_json <- function(inputs) {
     gradient_shell_angle     = na_to_null(inputs@effects_gradient_shell_angle),
     elevation                = na_to_null(inputs@effects_elevation),
     caption_style            = na_to_null(inputs@effects_caption_style),
-    header_style             = na_to_null(inputs@effects_header_style),
     title_style              = na_to_null(inputs@effects_title_style)
   ))
 
@@ -155,6 +154,7 @@ theme_inputs_to_json <- function(inputs) {
     density_factor        = if (inputs@density_factor != 1) inputs@density_factor else NULL,
     shell_mode            = na_to_null(inputs@shell_mode),
     shell_texture         = na_to_null(inputs@shell_texture),
+    header_style          = na_to_null(inputs@header_style),
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
@@ -304,7 +304,8 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   height). Layer 3 of the row-kind height cascade (Stage 1 §33);
 #'   constructor `row_heights=` and user pins layer above this. NULL =
 #'   row-kind intrinsics apply.
-#' @param header_style Header chrome treatment: `"light"`, `"tint"`, or
+#' @param header_style Header chrome treatment (a structural variant
+#'   input): `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
 #' @param first_column_style First (label) column treatment: `"default"`,
 #'   `"tint"`, or `"bold"`. Default `"default"`.
@@ -343,7 +344,7 @@ web_theme <- function(
     effects = NULL,
     marks = NULL,
     row_kinds = NULL,
-    header_style = "light",
+    header_style = NULL,
     first_column_style = "default",
     web_fonts = NULL,
     name = "custom") {
@@ -353,7 +354,7 @@ web_theme <- function(
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
-  checkmate::assert_choice(header_style, c("light", "tint", "bold"))
+  checkmate::assert_choice(header_style, c("light", "tint", "bold"), null.ok = TRUE)
   checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
   checkmate::assert_string(name)
   checkmate::assert_choice(shell_mode, c("flush", "raised", "float", "transparent"), null.ok = TRUE)
@@ -408,6 +409,7 @@ web_theme <- function(
     density = density,
     density_factor = density_factor,
     shell_mode    = shell_mode    %||% NA_character_,
+    header_style       = header_style %||% NA_character_,
     shell_texture = shell_texture %||% NA_character_,
     type_base_size   = type_base_size   %||% NA_real_,
     type_scale_ratio = type_scale_ratio %||% NA_real_,
@@ -434,7 +436,7 @@ web_theme <- function(
     effects_elevation              = effects$elevation              %||% NA_character_,
     effects_caption_style          = effects$caption_style          %||% NA_character_,
     effects_glass                  = effects$glass                  %||% NA_character_,
-    effects_header_style           = effects$header_style           %||% NA_character_,
+
     effects_title_style            = effects$title_style            %||% NA_character_,
     marks_point_shape              = marks$point_shape              %||% NA_character_,
     marks_interval_weight          = marks$interval_weight          %||% NA_character_,
@@ -447,7 +449,7 @@ web_theme <- function(
     row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_
   )
   theme <- resolve_from_inputs(inputs, name = name)
-  theme@header_style <- header_style
+  theme@header_style <- header_style %||% "light"
   theme@first_column_style <- first_column_style
   if (!is.null(web_fonts)) theme@web_fonts <- web_fonts
   theme
@@ -631,7 +633,11 @@ set_categorical <- function(theme, scheme) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_string(scheme)
+  # Roster mirrors srcjs/src/lib/data-schemes.ts::CATEGORICAL_SCHEMES
+  # (+ brand_mono special). assert_choice, not assert_string: typos used
+  # to sail through silently — and until R2 the scheme was dead wire
+  # anyway, so neither the typo NOR the valid name did anything.
+  checkmate::assert_choice(scheme, c("okabe_ito", "neon", "ink_vermilion", "tableau10", "set1", "set2", "dark2", "paired", "wong", "brand_mono"))
   inputs <- theme@inputs
   inputs@categorical <- scheme
   resolve_from_inputs(inputs, name = theme@name)
@@ -676,7 +682,8 @@ set_sequential <- function(theme, scheme) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_string(scheme)
+  # Roster mirrors srcjs/src/lib/data-schemes.ts::SEQUENTIAL_SCHEMES.
+  checkmate::assert_choice(scheme, c("viridis", "magma", "plasma", "blues", "greens", "greys", "oranges", "reds"))
   inputs <- theme@inputs
   inputs@sequential <- scheme
   resolve_from_inputs(inputs, name = theme@name)
@@ -691,7 +698,8 @@ set_diverging <- function(theme, scheme) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_string(scheme)
+  # Roster mirrors srcjs/src/lib/data-schemes.ts::DIVERGING_SCHEMES.
+  checkmate::assert_choice(scheme, c("rdbu", "piyg", "spectral", "brbg"))
   inputs <- theme@inputs
   inputs@diverging <- scheme
   resolve_from_inputs(inputs, name = theme@name)
@@ -781,8 +789,6 @@ set_geometry <- function(theme, radius = NULL, border_width = NULL) {
 #'   (B16): frosted translucent pane with bevel + sheen; aurora adds the
 #'   borealis backdrop blobs. Browser-additive; SVG export renders the
 #'   opaque shell.
-#' @param header_style `"normal"` / `"tint"` / `"fill"` — header chrome
-#'   as a Tier-1 effect (B12). Overrides the legacy `web_theme(header_style=)`
 #'   variant picker when set.
 #' @param title_style `"normal"` / `"bar"` / `"underline"` — title
 #'   treatment: rubrication bar ahead of the title, or brand-gradient
@@ -801,7 +807,6 @@ set_effects <- function(theme,
                         elevation = NULL,
                         caption_style = NULL,
                         glass = NULL,
-                        header_style = NULL,
                         title_style = NULL) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
@@ -826,7 +831,6 @@ set_effects <- function(theme,
   elevation                <- na_or_choice(elevation, c("none", "low", "medium", "high"), "elevation")
   caption_style            <- na_or_choice(caption_style, c("none", "chip", "stripe", "both"), "caption_style")
   glass                    <- na_or_choice(glass, c("none", "frosted", "aurora"), "glass")
-  header_style             <- na_or_choice(header_style, c("normal", "tint", "fill"), "header_style")
   title_style              <- na_or_choice(title_style, c("normal", "bar", "underline"), "title_style")
   inputs <- theme@inputs
   if (!is.null(glow_intensity))           inputs@effects_glow_intensity           <- glow_intensity
@@ -836,7 +840,6 @@ set_effects <- function(theme,
   if (!is.null(elevation))                inputs@effects_elevation                <- elevation
   if (!is.null(caption_style))            inputs@effects_caption_style            <- caption_style
   if (!is.null(glass))                    inputs@effects_glass                    <- glass
-  if (!is.null(header_style))             inputs@effects_header_style             <- header_style
   if (!is.null(title_style))              inputs@effects_title_style              <- title_style
   resolve_from_inputs(inputs, name = theme@name)
 }
@@ -960,7 +963,13 @@ set_header_style <- function(theme, header_style) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
+  # ONE vocabulary, ONE surface (R2 decision): header_style is a
+  # structural variant INPUT — this re-resolves like every input setter.
+  # The old effects.header_style {normal,tint,fill} twin is gone.
   checkmate::assert_choice(header_style, c("light", "tint", "bold"))
+  inputs <- theme@inputs
+  inputs@header_style <- header_style
+  theme <- resolve_from_inputs(inputs, name = theme@name)
   theme@header_style <- header_style
   theme
 }

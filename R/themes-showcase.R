@@ -100,12 +100,13 @@ web_theme_brutalist <- function() {
       radius       = list(sm = 0, md = 0, lg = 0, pill = 0),
       border_width = list(hair = 1, thin = 1.5, regular = 2, thick = 3)
     ),
+    # 2c-i: solid-ink header band (structural variant) + rubrication
+    # title bar (lab brutalist).
+    header_style = "bold",
     effects = list(
       glow_intensity = "none",
       gradient_shell_intensity = "none",
       elevation = "none",
-      # 2c-i: solid-ink header band + rubrication title bar (lab brutalist).
-      header_style = "fill",
       title_style = "bar"
     ),
     name = "brutalist"

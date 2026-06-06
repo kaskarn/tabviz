@@ -220,13 +220,13 @@ test_that("maximal theme (every wire-1.3 input set) round-trips through V8", {
     shell_texture = "grid",
     marks = list(point_shape = "square", interval_weight = "thick"),
     geometry = list(radius = list(sm = 1, md = 3, lg = 5, pill = 999)),
+    header_style = "bold",
     effects = list(
       glass = "aurora",
       glow_intensity = "subtle",
       gradient_shell_intensity = "subtle",
       elevation = "high",
       caption_style = "both",
-      header_style = "fill",
       title_style = "bar"
     ),
     name = "maximal-1-3"
@@ -239,7 +239,7 @@ test_that("maximal theme (every wire-1.3 input set) round-trips through V8", {
   expect_equal(j1$marks$interval_weight, "thick")
   expect_equal(j1$effects$glass, "aurora")
   expect_equal(j1$effects$caption_style, "both")
-  expect_equal(j1$effects$header_style, "fill")
+  expect_equal(j1$header_style, "bold")
   expect_equal(j1$effects$title_style, "bar")
   # Round-trip: re-resolve from the same inputs (R -> V8 -> R) and
   # compare wire emissions byte-for-byte.
