@@ -176,3 +176,118 @@ splice_font_face_into_svg <- function(svg, font_face_rules) {
 }
 
 `%||%` <- function(a, b) if (is.null(a) || (is.character(a) && !nzchar(a))) b else a
+
+# ── rsvg-side font registration (Phase 0, spec-first plan) ──────────────────
+#
+# The base64 @font-face splice above only helps an SVG opened in a BROWSER.
+# librsvg (the PDF/PNG path) ignores data-URL fonts and resolves families
+# through fontconfig — so journal presets silently exported in their
+# fallback faces (verified: NEJM's PDF embedded Georgia, not Lora — the
+# R3 publication review's headline bug). This half closes the gap for the
+# static path: fetch the TTF variants (Google Fonts serves truetype URLs
+# when no browser user-agent is sent), drop them in a session font dir,
+# and point fontconfig at it via a generated fonts.conf that INCLUDES the
+# system config. PANGOCAIRO_BACKEND=fontconfig is required on macOS where
+# pango otherwise uses CoreText and never consults fontconfig.
+#
+# The env vars are set for the remainder of the session (not restored):
+# librsvg initializes fontconfig once per process, so flapping the config
+# between calls would be order-dependent. Graceful degradation throughout —
+# any failure warns once and proceeds with today's fallback behavior.
+
+.rsvg_font_state <- new.env(parent = emptyenv())
+
+#' Register a theme's web fonts with fontconfig for rsvg rendering
+#'
+#' @param web_fonts List of `list(family = ..., url = ...)` entries.
+#' @return Invisibly, TRUE if registration is active, FALSE otherwise.
+#' @noRd
+register_web_fonts_for_rsvg <- function(web_fonts) {
+  if (length(web_fonts) == 0L) return(invisible(FALSE))
+  if (!requireNamespace("curl", quietly = TRUE)) return(invisible(FALSE))
+
+  ok <- tryCatch({
+    font_dir <- .rsvg_font_dir()
+    fetched_any <- FALSE
+    for (wf in web_fonts) {
+      family <- wf[["family"]]
+      url <- wf[["url"]]
+      if (!is.character(family) || !nzchar(family)) next
+      if (!is.character(url) || !nzchar(url)) next
+      fetched_any <- .fetch_ttf_variants(family, url, font_dir) || fetched_any
+    }
+    if (fetched_any || length(list.files(font_dir, pattern = "[.]ttf$")) > 0L) {
+      .activate_rsvg_fontconfig(font_dir)
+      TRUE
+    } else {
+      FALSE
+    }
+  }, error = function(e) {
+    if (!isTRUE(.rsvg_font_state$warned)) {
+      .rsvg_font_state$warned <- TRUE
+      cli::cli_warn(c(
+        "Could not register web fonts for PDF/PNG rendering; output will use system fallback faces.",
+        "i" = conditionMessage(e)
+      ))
+    }
+    FALSE
+  })
+  invisible(ok)
+}
+
+.rsvg_font_dir <- function() {
+  dir <- .rsvg_font_state$dir
+  if (is.null(dir)) {
+    dir <- file.path(tempdir(), "tabviz-fonts")
+    dir.create(dir, showWarnings = FALSE, recursive = TRUE)
+    .rsvg_font_state$dir <- dir
+  }
+  dir
+}
+
+# Fetch every TTF variant a Google Fonts CSS2 URL declares. Sending NO
+# user agent makes the API return truetype URLs (the same trick the woff2
+# fetcher uses in reverse). Cached per css url per session.
+.fetch_ttf_variants <- function(family, css_url, font_dir) {
+  key <- paste0("ttf::", css_url)
+  if (isTRUE(.rsvg_font_state[[key]])) return(TRUE)
+  h <- curl::new_handle(useragent = "")
+  css <- rawToChar(curl::curl_fetch_memory(css_url, handle = h)$content)
+  urls <- unique(regmatches(css, gregexpr("https://[^)]+[.]ttf", css))[[1]])
+  if (length(urls) == 0L) return(FALSE)
+  slug <- gsub("[^A-Za-z0-9]", "_", family)
+  for (i in seq_along(urls)) {
+    dest <- file.path(font_dir, sprintf("%s_%02d.ttf", slug, i))
+    if (!file.exists(dest)) curl::curl_download(urls[[i]], dest, quiet = TRUE)
+  }
+  .rsvg_font_state[[key]] <- TRUE
+  TRUE
+}
+
+# Generate the session fonts.conf (system include + our dir + cache dir)
+# and point fontconfig + pango at it. Idempotent.
+.activate_rsvg_fontconfig <- function(font_dir) {
+  if (isTRUE(.rsvg_font_state$active)) return(invisible(TRUE))
+  sysconf <- c(
+    Sys.getenv("TABVIZ_SYSTEM_FONTCONFIG", ""),
+    "/opt/homebrew/etc/fonts/fonts.conf",
+    "/usr/local/etc/fonts/fonts.conf",
+    "/etc/fonts/fonts.conf"
+  )
+  sysconf <- sysconf[nzchar(sysconf) & file.exists(sysconf)]
+  include <- if (length(sysconf) > 0L) {
+    sprintf('<include ignore_missing="yes">%s</include>', sysconf[[1]])
+  } else {
+    ""
+  }
+  cache_dir <- file.path(tempdir(), "tabviz-fc-cache")
+  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+  conf <- file.path(tempdir(), "tabviz-fonts.conf")
+  writeLines(sprintf(
+    '<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig>%s<dir>%s</dir><cachedir>%s</cachedir></fontconfig>',
+    include, font_dir, cache_dir
+  ), conf)
+  Sys.setenv(FONTCONFIG_FILE = conf, PANGOCAIRO_BACKEND = "fontconfig")
+  .rsvg_font_state$active <- TRUE
+  invisible(TRUE)
+}

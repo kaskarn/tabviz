@@ -304,7 +304,12 @@ save_plot <- function(x, file,
   }
 
   # Embed web fonts (Google Fonts URLs from theme@web_fonts) so the export
-  # carries its own glyphs.
+  # carries its own glyphs. Two halves, two renderers:
+  #   - base64 @font-face spliced into the SVG -> browsers honor it;
+  #   - TTFs registered with fontconfig -> librsvg (PDF/PNG) honors it.
+  # The second half is the R3 publication-review fix: librsvg ignores
+  # data-URL fonts, so journal presets silently exported in fallback
+  # faces (NEJM's PDF embedded Georgia, not Lora) with no warning.
   web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
   if (length(web_fonts) > 0L) {
     svg_string <- tryCatch(
@@ -317,6 +322,15 @@ save_plot <- function(x, file,
         svg_string
       }
     )
+    if (ext %in% c("pdf", "png")) {
+      registered <- register_web_fonts_for_rsvg(web_fonts)
+      if (!isTRUE(registered)) {
+        cli::cli_warn(c(
+          "Web fonts could not be registered for {.file .{ext}} rendering.",
+          "i" = "The output will use system fallback faces, not the theme's declared fonts."
+        ))
+      }
+    }
   }
 
   output_dir <- dirname(file)

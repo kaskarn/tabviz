@@ -68,3 +68,28 @@ test_that("embed_web_fonts is a no-op when web_fonts is empty", {
 test_that("embed_web_fonts returns SVG unchanged on entry malformed", {
   expect_identical(tabviz:::embed_web_fonts("", list(list(family = "X", url = "u"))), "")
 })
+
+# ── rsvg fontconfig registration (R3 publication fix) ───────────────────────
+
+test_that("PDF export embeds the theme's declared web font, not the fallback", {
+  skip_on_cran()
+  skip_if_offline()
+  skip_if_not_installed("rsvg")
+  skip_if_not_installed("curl")
+
+  df <- data.frame(study = c("Alpha", "Beta"),
+                   hr = c(0.72, 0.85), lo = c(0.6, 0.7), hi = c(0.9, 1.02))
+  w <- tabviz(df, label = "study",
+              columns = list(col_interval("hr", "lo", "hi")),
+              theme = web_theme_nejm())
+  f <- tempfile(fileext = ".pdf")
+  suppressWarnings(save_plot(w, f))
+
+  txt <- suppressWarnings(readLines(f, warn = FALSE))
+  base_fonts <- grep("BaseFont", txt, value = TRUE)
+  # NEJM declares Lora. Before the fix, librsvg ignored the base64
+  # @font-face splice and the PDF silently embedded Georgia (the CSS
+  # fallback) — the R3 publication review's headline bug.
+  expect_true(any(grepl("Lora", base_fonts)),
+              info = paste("BaseFont lines:", paste(base_fonts, collapse = " | ")))
+})
