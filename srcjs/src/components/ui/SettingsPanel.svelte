@@ -32,24 +32,22 @@
   const hasEdits = $derived(store.hasThemeEdits);
 
   /**
-   * Tab registry. Each entry lists the id, user-facing label, and (for stubs)
-   * a short teaser of what's coming. Keep the order mirroring the R theme
-   * object structure (banding → colors → typography → spacing → shapes →
-   * axis → layout) so the panel reads like the package's mental model.
+   * Tab registry. Each entry lists the id, user-facing label, and a short
+   * description used as the tab tooltip.
    */
-  // Tab order: Layout (now includes Labels + Watermark — content used
-  // to live in its own tab but those concerns belong together for the
-  // viewer composing the plot), then Theme, then a divider for the
-  // detail surfaces.
+  // Tab order: Theme first — identity (anchors, fonts, cascade) is the
+  // highest-leverage edit and the one users open the panel for (studio
+  // IA review C); Layout (labels, density, banding, watermark) second;
+  // then the advanced detail surfaces.
   const tabs: TabOption[] = [
-    { id: "layout",   label: "Layout",  glyph: "section.layout",       description: "Labels, density, banding, watermark" },
     { id: "theme",    label: "Theme",   glyph: "section.style",        description: "Identity colors, fonts, cascade" },
+    { id: "layout",   label: "Layout",  glyph: "section.layout",       description: "Labels, density, banding, watermark" },
     { id: "spacing",  label: "Spacing", glyph: "density.comfortable",  description: "Row heights, gaps, padding",       kind: "advanced" },
     { id: "viz",      label: "Viz",     glyph: "type.viz",             description: "Series shapes, mark sizes",        kind: "advanced" },
     { id: "text",     label: "Text",    glyph: "type.text",            description: "Per-role typography",              kind: "advanced" },
     { id: "tokens",   label: "Tokens",  glyph: "section.options",      description: "Semantic row/cell tokens",         kind: "advanced" },
   ];
-  let activeTabId = $state<string>("layout");
+  let activeTabId = $state<string>("theme");
 
   let panelRef = $state<HTMLElement | null>(null);
   let lastFocused: Element | null = null;

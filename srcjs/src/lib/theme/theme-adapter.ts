@@ -148,17 +148,47 @@ export function buildTheme(
   // D12 (wire-audit 1f): theme-level mark identity. point_shape fills
   // every slot's shape (cascade: row markerStyle > effect.shape > slot
   // shape > renderer rotation); null keeps the rotation default.
+  //
+  // `slot_style` picks the fill/stroke pairing convention per slot
+  // (studio C: the derivation lives HERE, in the canonical resolver —
+  // it used to be reimplemented inside LayoutControl.svelte, which made
+  // the settings panel the only place the input did anything).
   const themePointShape = inputs.marks?.point_shape ?? null;
+  const slotStyle = inputs.slot_style ?? "fill_with_darker_stroke";
   function slotRole(anchor: string): SlotRole {
+    const common = { textFg: t.ink, shape: themePointShape };
+    const fillDim = oklchMix(anchor, t.paper, 0.65);
+    if (slotStyle === "flat_fill") {
+      // Monochrome marks: stroke ≡ fill, one shared "hot" emphasis.
+      const hot = oklchDarken(anchor, 0.05);
+      return {
+        fill: anchor, stroke: anchor,
+        fillDim, strokeDim: fillDim,
+        fillHot: hot, strokeHot: hot,
+        ...common,
+      };
+    }
+    if (slotStyle === "outlined") {
+      // Hollow marks: pale paper-mixed body, anchor-colored outline.
+      return {
+        fill: oklchMix(anchor, t.paper, 0.15),
+        stroke: anchor,
+        fillDim: oklchMix(anchor, t.paper, 0.08),
+        strokeDim: oklchDarken(fillDim, 0.10),
+        fillHot: oklchMix(anchor, t.paper, 0.30),
+        strokeHot: oklchDarken(anchor, 0.20),
+        ...common,
+      };
+    }
+    // Default "fill_with_darker_stroke": solid body + deepened ring.
     return {
       fill: anchor,
       stroke: oklchDarken(anchor, 0.10),
-      fillDim: oklchMix(anchor, t.paper, 0.65),
-      strokeDim: oklchDarken(oklchMix(anchor, t.paper, 0.65), 0.10),
+      fillDim,
+      strokeDim: oklchDarken(fillDim, 0.10),
       fillHot: oklchDarken(anchor, 0.05),
       strokeHot: oklchDarken(anchor, 0.20),
-      textFg: t.ink,
-      shape: themePointShape,
+      ...common,
     };
   }
   const series: SlotRole[] = seriesAnchors.map(slotRole);

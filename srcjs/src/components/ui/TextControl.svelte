@@ -11,6 +11,7 @@
   import Accordion from "$components/primitives/v2/Accordion.svelte";
   import FontFamily from "$components/primitives/v2/FontFamily.svelte";
   import { INK_SWATCHES, PAPER_SWATCHES, NEUTRAL_SWATCHES, colors } from "./swatch-palettes";
+  import { WEIGHT_OPTIONS } from "./weight-ladder";
 
   // Font size on the wire is a CSS length string ("0.875rem"); the
   // slider works in px. Convert between forms with a generous default
@@ -28,20 +29,6 @@
   function pxToSize(px: number): string {
     return `${px}px`;
   }
-
-  // 5-step weight ladder. Numerical labels (3-7 = hundreds of the
-  // CSS weight) instead of "Light Reg Med Semi Bold" — compactness
-  // matters because the pill sits next to a label column; verbose
-  // names crammed five into a row read as a wall of letters.
-  // The numerals also typeset like specimen weights in a journal's
-  // typography table, which fits the editorial voice.
-  const WEIGHT_OPTIONS = [
-    { value: 300, label: "3" },
-    { value: 400, label: "4" },
-    { value: 500, label: "5" },
-    { value: 600, label: "6" },
-    { value: 700, label: "7" },
-  ];
 
   interface Props {
     store: TabvizStore;

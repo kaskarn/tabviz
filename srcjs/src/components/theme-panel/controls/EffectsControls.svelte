@@ -27,9 +27,11 @@
   const TITLE_STYLE    = ["normal", "bar", "underline"] as const;
   const GLOW_ANCHOR    = ["brand", "accent"] as const;
   const GRAD_INTENSITY = ["none", "subtle", "vivid"] as const;
-  // Magnitude vocabulary — deliberately no words shared with the Shell
+  // Magnitude vocabulary — deliberately no words shared with the Surface
   // tab's shell_mode (raised/float meant different things in each; R2
-  // decision). The row label is "Depth" for the same reason.
+  // decision). The row label is "Figure shadow" for the same reason — it
+  // names what the effect paints, where "Depth" read as a duplicate of
+  // the shell-mode picker (studio C).
   const ELEVATION      = ["none", "low", "medium", "high"] as const;
 
   const glow      = $derived(inputs.effects?.glow_intensity ?? "none");
@@ -107,8 +109,8 @@
   {/if}
 
   <div class="row">
-    <span class="label">Depth</span>
-    <div class="seg" role="radiogroup" aria-label="Figure depth">
+    <span class="label">Figure shadow</span>
+    <div class="seg" role="radiogroup" aria-label="Figure shadow">
       {#each ELEVATION as e (e)}
         <button type="button" class:on={elev === e} onclick={() => set("elevation", e)}>{e}</button>
       {/each}

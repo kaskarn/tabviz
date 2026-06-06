@@ -18,18 +18,7 @@
   import Accordion from "$components/primitives/v2/Accordion.svelte";
   import { oklchMix } from "$lib/oklch";
   import { PAPER_SWATCHES, INK_SWATCHES, NEUTRAL_SWATCHES, ACCENT_SWATCHES, colors } from "./swatch-palettes";
-
-  // 5-step weight ladder covering the visually distinct range. We
-  // skip 100/200/800/900 — they look identical to 300/700 in most
-  // body fonts, so they'd just clutter the picker. Authors who need
-  // an extreme can still set the wire via R / theme code.
-  const WEIGHT_OPTIONS = [
-    { value: 300, label: "Light" },
-    { value: 400, label: "Reg" },
-    { value: 500, label: "Med" },
-    { value: 600, label: "Semi" },
-    { value: 700, label: "Bold" },
-  ];
+  import { WEIGHT_OPTIONS } from "./weight-ladder";
 
   interface Props {
     store: TabvizStore;

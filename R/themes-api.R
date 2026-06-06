@@ -154,6 +154,7 @@ theme_inputs_to_json <- function(inputs) {
     density_factor        = if (inputs@density_factor != 1) inputs@density_factor else NULL,
     shell_mode            = na_to_null(inputs@shell_mode),
     shell_texture         = na_to_null(inputs@shell_texture),
+    slot_style            = na_to_null(inputs@slot_style),
     header_style          = na_to_null(inputs@header_style),
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),

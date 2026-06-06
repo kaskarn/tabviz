@@ -163,6 +163,10 @@ ThemeInputs <- new_class(
     # Stage 2 §3 surface texture. One of "none" / "ruled" / "grid" / "dotted" /
     # "grain". NA defaults to "none".
     shell_texture   = new_property(class_character, default = NA_character_),
+    # Series mark fill/stroke pairing convention (studio C wiring). One of
+    # "fill_with_darker_stroke" / "flat_fill" / "outlined". NA defaults to
+    # "fill_with_darker_stroke" at resolution.
+    slot_style      = new_property(class_character, default = NA_character_),
 
     # Stage 1 §25 / Q-P4.3 — per-ramp curve shape. Each of "linear" / "ease" /
     # "smooth" / "log" / "exp". NA defaults: neutral=ease, brand=linear,
@@ -296,6 +300,10 @@ ThemeInputs <- new_class(
     hs <- self@header_style
     if (!is.na(hs) && !hs %in% c("light", "tint", "bold")) {
       return("header_style must be 'light', 'tint', or 'bold'")
+    }
+    ss <- self@slot_style
+    if (!is.na(ss) && !ss %in% c("fill_with_darker_stroke", "flat_fill", "outlined")) {
+      return("slot_style must be 'fill_with_darker_stroke', 'flat_fill', or 'outlined'")
     }
     ts2 <- self@effects_title_style
     if (!is.na(ts2) && !ts2 %in% c("normal", "bar", "underline")) {

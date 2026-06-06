@@ -18,14 +18,27 @@
   // other surface pickers — it moved out of the Effects tab when
   // effects.header_style was retired (R2 decision).
   const HEADER_STYLES = ["light", "tint", "bold"] as const;
+  // Series mark pairing is the third structural pick (studio C): it was
+  // only reachable from the widget settings panel before, so the studio
+  // couldn't author it at all. Wire values keep their ThemeInputs names;
+  // the buttons show friendly words.
+  const SLOT_STYLES = [
+    { value: "fill_with_darker_stroke", label: "ring" },
+    { value: "flat_fill",               label: "flat" },
+    { value: "outlined",                label: "outline" },
+  ] as const;
   const shellMode = $derived(inputs.shell_mode ?? "flush");
   const headerStyle = $derived(inputs.header_style ?? "light");
+  const slotStyle = $derived(inputs.slot_style ?? "fill_with_darker_stroke");
 
   function setShellMode(v: (typeof SHELL_MODES)[number]): void {
     onchange({ ...inputs, shell_mode: v });
   }
   function setHeaderStyle(v: (typeof HEADER_STYLES)[number]): void {
     onchange({ ...inputs, header_style: v });
+  }
+  function setSlotStyle(v: (typeof SLOT_STYLES)[number]["value"]): void {
+    onchange({ ...inputs, slot_style: v });
   }
 </script>
 
@@ -43,6 +56,14 @@
     <div class="seg" role="radiogroup" aria-label="Header style">
       {#each HEADER_STYLES as h (h)}
         <button type="button" class:on={headerStyle === h} onclick={() => setHeaderStyle(h)}>{h}</button>
+      {/each}
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">Series</span>
+    <div class="seg" role="radiogroup" aria-label="Series style">
+      {#each SLOT_STYLES as s (s.value)}
+        <button type="button" class:on={slotStyle === s.value} onclick={() => setSlotStyle(s.value)}>{s.label}</button>
       {/each}
     </div>
   </div>

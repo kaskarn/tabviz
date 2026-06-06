@@ -1,22 +1,25 @@
 <script lang="ts">
-  // v2 Layout tab: per-table variants + container border + banding.
+  // v2 Layout tab: structural Tier-1 picks + banding + borders.
   // Banding moved here from the Labels tab in C2 — it's a structural
   // choice (alternates rows by group / by index), not an annotation.
-  // Density is variant-dispatched in R but the resolved spacing tokens
-  // are what the renderer actually reads, so the density picker writes
-  // the full SpacingTokens preset client-side too.
+  //
+  // Density / header style / series style delegate to
+  // `store.setAuthoringInputs()` — the canonical cascade re-resolves and
+  // every derived token (spacing scale, header variant, series slot
+  // bundles) tracks the pick. This file used to carry a private ~90-line
+  // reimplementation of those derivations (a DENSITY_PRESETS mirror +
+  // hand-rolled oklch slot math) that drifted from the resolver; studio
+  // review C killed it.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
+  import type { ThemeInputs } from "$types/theme-inputs";
   import Section from "$components/primitives/v2/Section.svelte";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import ColorField from "./ColorField.svelte";
   import BandingControl from "./BandingControl.svelte";
-  import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
-  import {
-    getCssVars, readAccentDefault, readSurfaceBg,
-    readSeriesAnchors, readSlotStyle,
-  } from "$lib/theme/consumer-bridge";
+  import { oklchDarken } from "$lib/oklch";
+  import { getCssVars, readAccentDefault, readSlotStyle } from "$lib/theme/consumer-bridge";
 
   interface Props {
     store: TabvizStore;
@@ -24,22 +27,9 @@
   const { store }: Props = $props();
 
   const variants = $derived(store.spec?.theme?.variants);
-  const layout   = $derived(store.spec?.theme?.layout);
   const theme    = $derived(store.spec?.theme);
   const borders  = $derived(store.spec?.theme?.borders);
 
-  function setVariant(field: string, value: string) {
-    store.setThemeField(["variants", field], value);
-  }
-  function setInput(field: string, value: unknown) {
-    // V4: slot_style lives on authoringInputs (Tier-1 input), not on the
-    // v3 ResolvedInputs compat shim. Other "inputs.X" setter paths in
-    // this file were already migrated away; this is the last one.
-    store.setThemeField(["authoringInputs", field], value);
-  }
-  function setLayout(field: string, value: unknown) {
-    store.setThemeField(["layout", field], value);
-  }
   function setBordersField(path: (string | number)[], value: unknown) {
     store.setThemeField(["borders", ...path], value);
   }
@@ -63,108 +53,19 @@
   function cycleThickness(cur: number, max: number): number {
     return cur >= max ? 1 : (cur < 1 ? 1 : cur + 1);
   }
-  function setSpacing(field: string, value: number) {
-    store.setThemeField(["spacing", field], value);
-  }
-  function setDerived(path: (string | number)[], value: unknown) {
-    store.setThemeFieldDerived(path, value);
-  }
 
-  // Mirror of R's DENSITY_PRESETS so density-picker edits the same tokens
-  // that the renderer reads via theme.spacing.*. Without this, picking a
-  // density would only write variants.density (which the renderer ignores
-  // — it reads the resolved spacing values directly).
-  const DENSITY_PRESETS: Record<string, Record<string, number>> = {
-    compact: {
-      rowHeight: 20, headerHeight: 26, padding: 8, containerPadding: 0,
-      axisGap: 8, columnGroupPadding: 6, rowGroupPadding: 0,
-      cellPaddingX: 8, footerGap: 6, titleSubtitleGap: 10, headerGap: 8,
-      bottomMargin: 12, indentPerLevel: 14,
-    },
-    comfortable: {
-      rowHeight: 24, headerHeight: 32, padding: 12, containerPadding: 0,
-      axisGap: 12, columnGroupPadding: 8, rowGroupPadding: 0,
-      cellPaddingX: 10, footerGap: 8, titleSubtitleGap: 13, headerGap: 12,
-      bottomMargin: 16, indentPerLevel: 16,
-    },
-    spacious: {
-      rowHeight: 30, headerHeight: 40, padding: 16, containerPadding: 0,
-      axisGap: 16, columnGroupPadding: 12, rowGroupPadding: 0,
-      cellPaddingX: 14, footerGap: 12, titleSubtitleGap: 18, headerGap: 16,
-      bottomMargin: 22, indentPerLevel: 20,
-    },
-  };
-
+  // Tier-1 delegation — one cascade, no panel-side mirrors. The rebuilt
+  // theme carries the derived spacing scale / header variant / series
+  // slot bundles, and `variants.*` mirrors the inputs for the active
+  // states below.
   function changeDensity(value: string) {
-    setVariant("density", value);
-    const preset = DENSITY_PRESETS[value];
-    if (preset) {
-      for (const [field, val] of Object.entries(preset)) setSpacing(field, val);
-    }
-  }
-
-  // ── header_style cascade ──────────────────────────────────────────
-  // Mirrors R-side resolve_components: header_style gates the row-group
-  // L1 bg strength (16% under "light", 24% under "tint"/"bold"). Re-derive
-  // the cached L1/L2/L3 bg so the visible band tracks the new variant.
-  function surfaceBaseline(): string {
-    return theme ? readSurfaceBg(getCssVars(theme)) : "#ffffff";
-  }
-  function currentSecondaryDeep(): string {
-    // V4: brand routes through accent for layered emphasis; identity-
-    // secondary cascade dropped. Darken the accent to recover the
-    // "deeper than identity" feel the v3 cascade used to pick.
-    if (!theme) return "#475569";
-    const accent = readAccentDefault(getCssVars(theme));
-    return oklchDarken(accent, 0.15);
+    store.setAuthoringInputs({ density: value as ThemeInputs["density"] });
   }
   function changeHeaderStyle(value: string) {
-    setVariant("headerStyle", value);
-    const strength = value === "light" ? 0.16 : 0.24;
-    const l1Bg = oklchMix(surfaceBaseline(), currentSecondaryDeep(), strength);
-    setDerived(["rowGroup", "L1", "bg"], l1Bg);
-    setDerived(["rowGroup", "L2", "bg"], l1Bg);
-    setDerived(["rowGroup", "L3", "bg"], l1Bg);
+    store.setAuthoringInputs({ header_style: value as ThemeInputs["header_style"] });
   }
-
-  // ── slot_style cascade ────────────────────────────────────────────
-  // Re-derives every series slot bundle under the new fill/stroke pairing
-  // convention. Reads the canonical anchor from readSeriesAnchors(theme)
-  // (NOT from the rendered series[i].fill, which under "outlined" is
-  // already the surface-mixed lightened value — using it as the anchor
-  // would compound the lightening on every click).
   function changeSlotStyle(value: "fill_with_darker_stroke" | "flat_fill" | "outlined") {
-    setInput("slot_style", value);
-    const anchors = readSeriesAnchors(theme);
-    const surface = surfaceBaseline();
-    for (let i = 0; i < anchors.length; i++) {
-      const anchor = anchors[i];
-      if (!anchor) continue;
-      const fillDim = oklchMix(anchor, surface, 0.65);
-      if (value === "flat_fill") {
-        const hot = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
-        setDerived(["series", i, "fill"],       anchor);
-        setDerived(["series", i, "stroke"],     anchor);
-        setDerived(["series", i, "fillDim"],    fillDim);
-        setDerived(["series", i, "strokeDim"],  fillDim);
-        setDerived(["series", i, "fillHot"],    hot);
-        setDerived(["series", i, "strokeHot"],  hot);
-      } else if (value === "outlined") {
-        setDerived(["series", i, "fill"],       oklchMix(anchor, surface, 0.15));
-        setDerived(["series", i, "stroke"],     anchor);
-        setDerived(["series", i, "fillDim"],    oklchMix(anchor, surface, 0.08));
-        setDerived(["series", i, "strokeDim"],  oklchDarken(fillDim, 0.10));
-        setDerived(["series", i, "fillHot"],    oklchMix(anchor, surface, 0.30));
-        setDerived(["series", i, "strokeHot"],  oklchDarken(anchor, 0.20));
-      } else {
-        setDerived(["series", i, "fill"],       anchor);
-        setDerived(["series", i, "stroke"],     oklchDarken(anchor, 0.10));
-        setDerived(["series", i, "fillDim"],    fillDim);
-        setDerived(["series", i, "strokeDim"],  oklchDarken(fillDim, 0.10));
-        setDerived(["series", i, "fillHot"],    oklchChroma(oklchDarken(anchor, 0.05), 0.04));
-        setDerived(["series", i, "strokeHot"],  oklchDarken(anchor, 0.20));
-      }
-    }
+    store.setAuthoringInputs({ slot_style: value });
   }
 </script>
 
@@ -195,10 +96,13 @@
 
     <Field label="Density">
       <div class="layout-pickers" role="radiogroup" aria-label="Density">
+        <!-- Labels match the wire vocabulary (compact / comfortable /
+             spacious) — the studio rail and R docs use the same words;
+             "Comfy"/"Roomy" was a third dialect (studio C unification). -->
         {#each [
-          { value: "compact",     label: "Compact", h: 4 },
-          { value: "comfortable", label: "Comfy",   h: 5 },
-          { value: "spacious",    label: "Roomy",   h: 7 },
+          { value: "compact",     label: "Compact",     h: 4 },
+          { value: "comfortable", label: "Comfortable", h: 5 },
+          { value: "spacious",    label: "Spacious",    h: 7 },
         ] as opt}
           <button
             type="button"
@@ -248,8 +152,8 @@
     </Field>
 
     {@const slotStroke = primaryDeep}
-    <Field label="Marks">
-      <div class="layout-pickers" role="radiogroup" aria-label="Slot style">
+    <Field label="Series style">
+      <div class="layout-pickers" role="radiogroup" aria-label="Series style">
         {#each [
           { value: "fill_with_darker_stroke", label: "F+Ring", fill: primary, stroke: slotStroke, sw: 1.5 },
           { value: "flat_fill",               label: "Flat",   fill: primary, stroke: primary, sw: 0.5 },
@@ -288,7 +192,7 @@
       onchange={changeHeaderStyle}
     />
     <SegmentedField
-      label="Slot"
+      label="Series style"
       hint="Series fill/stroke pairing."
       value={readSlotStyle(theme)}
       options={[

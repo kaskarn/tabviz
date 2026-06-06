@@ -6,6 +6,8 @@
   resolution flow:
 
     TIER 1 · COLOR         RampPlateGrid
+    TIER 1 · GEOMETRY      GeometrySamples
+    TIER 1 · EFFECTS       EffectsPreview
     TIER 2 · BINDING       SpineDiagram + OffTheScales
     TIER 2 · COLOR         AliasTable mode="role"
     TIER 3 · COLOR         AliasTable mode="token"

@@ -38,7 +38,7 @@
      *  density); the studio mounts the full strip. */
     only?: readonly string[];
     /** D5/C14 (wire-audit 4c): "tabs" renders the five-tab rail
-     *  (Color / Type / Size / Shell / Effects) with the ARIA tablist
+     *  (Color / Type / Size / Surface / Effects) with the ARIA tablist
      *  pattern; "flat" (default) stacks categories — the widget drawer
      *  and `only`-filtered hosts use flat. */
     layout?: "flat" | "tabs";
@@ -50,7 +50,7 @@
   const CATEGORIES = [
     { key: "anchors",   label: "Identity",   Comp: AnchorControls },
     { key: "polarity",  label: "Polarity",   Comp: PolarityModeControls },
-    { key: "shell",     label: "Shell",      Comp: ShellControls },
+    { key: "shell",     label: "Surface",    Comp: ShellControls },
     { key: "texture",   label: "Texture",    Comp: TextureControls },
     { key: "type",      label: "Typography", Comp: TypeControls },
     { key: "density",   label: "Density",    Comp: DensityControls },
@@ -70,7 +70,7 @@
     { key: "color",   label: "Color",   cats: ["anchors"] },
     { key: "type",    label: "Type",    cats: ["type"] },
     { key: "size",    label: "Size",    cats: ["density", "geometry"] },
-    { key: "shell",   label: "Shell",   cats: ["shell", "texture"] },
+    { key: "shell",   label: "Surface", cats: ["shell", "texture"] },
     { key: "effects", label: "Effects", cats: ["effects"] },
   ] as const;
   /** Categories that render inside a collapsed <details> disclosure. */
