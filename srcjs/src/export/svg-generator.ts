@@ -67,6 +67,7 @@ import {
 } from "$lib/theme/consumer-bridge";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
+import { resolveForestLegend, legendGlyphSvg } from "../lib/legend";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
 import { compileVariants } from "../schema/variant-compile";
 import { computeEffectiveBanks } from "../schema/banks";
@@ -1486,6 +1487,39 @@ function renderHeader(
   }
 
   return lines.join("\n");
+}
+
+/** Series legend for multi-effect forests (R3 viz B1). Shares the
+ *  resolver with the DOM path (lib/legend.ts) so key == marks. Rendered
+ *  in the axis band's left whitespace — the area left of the forest
+ *  column's axis is empty in every layout. */
+function renderLegend(
+  spec: WebSpec,
+  layout: InternalLayout,
+  theme: WebTheme,
+  cssVars: Record<string, string> = {},
+): string {
+  const entries = resolveForestLegend(spec, theme);
+  if (entries.length === 0) return "";
+  const fontSize = parseFontSize(readLabelSize(cssVars));
+  const fg = readContentMuted(cssVars);
+  const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
+  const footerGap = readVarPx(cssVars, "--tv-spacing-footer-gap", 8);
+  // Vertical middle of the axis band.
+  const bandBottom = layout.footerY - footerGap
+    - Math.round(parseFontSize(readLabelSize(cssVars)) * 0.85);
+  const y = bandBottom - layout.axisHeight / 2 + fontSize * 0.35;
+  const glyph = 9;
+  const parts: string[] = [];
+  let x = padding + 4;
+  for (const e of entries) {
+    parts.push(legendGlyphSvg(e.shape, x + glyph / 2, y - fontSize * 0.3, glyph, e.color));
+    x += glyph + 5;
+    parts.push(`<text x="${x}" y="${y}" font-family="${readBodyFamily(cssVars)}"
+      font-size="${fontSize}px" fill="${fg}">${escapeXml(e.label)}</text>`);
+    x += estimateTextWidth(e.label, fontSize) + 16;
+  }
+  return parts.join("\n");
 }
 
 function renderFooter(
@@ -4851,6 +4885,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Footer (caption, footnote)
   parts.push(renderFooter(spec, layout, theme, cssVars));
+  parts.push(renderLegend(spec, layout, theme, cssVars));
 
   // Close SVG
   parts.push("</svg>");

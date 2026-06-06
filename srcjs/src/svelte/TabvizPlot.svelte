@@ -90,6 +90,7 @@
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
   import { getCssVars, readSurfaceBg, readAccentDefault, readVarPx } from "$lib/theme/consumer-bridge";
+  import { resolveForestLegend, legendGlyphSvg } from "$lib/legend";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
   import { NUMERIC_COLUMN_TYPES } from "../schema/columns";
@@ -246,6 +247,9 @@
   // it 4x per annotation per render (R2 spacing #7).
   const themeCssVars = $derived(theme ? getCssVars(theme) : {});
   const annStroke = $derived(theme ? readSurfaceBg(themeCssVars) : "white");
+  // Series key for multi-effect forests (R3 viz B1: effect labels were
+  // captured and never rendered — the flagship plot had no legend).
+  const legendEntries = $derived(resolveForestLegend(spec, theme ?? null));
   const shellPad = $derived(readVarPx(themeCssVars, "--tv-shell-padding", 0));
 
   // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
@@ -2530,6 +2534,22 @@
         </div>
       {/if}
 
+      {#if legendEntries.length > 0}
+        <!-- Series legend — inside the paper, under the table, so the
+             key travels with the data card. Shared resolver with the
+             SVG export (lib/legend.ts) keeps key == marks. -->
+        <div class="tv-legend" role="list" aria-label="Series legend">
+          {#each legendEntries as entry (entry.label)}
+            <span class="tv-legend-entry" role="listitem">
+              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -- shape glyph from our own literal generator -->
+                {@html legendGlyphSvg(entry.shape, 6, 6, 9, entry.color)}
+              </svg>
+              <span class="tv-legend-label">{entry.label}</span>
+            </span>
+          {/each}
+        </div>
+      {/if}
       </div><!-- /.tv-paper -->
 
       <!-- Plot footer (caption, footnote) — figure annotation BELOW the
@@ -2826,6 +2846,23 @@
     overflow: visible;
     width: max-content; /* Allow grid to expand to natural width */
   }
+
+  .tv-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 6px var(--tv-spacing-cell-padding-x, 10px) 2px;
+    font-size: var(--tv-text-label-size, 11px);
+    color: var(--tv-text-muted, #64748b);
+  }
+  .tv-legend-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tv-legend svg { flex: none; }
 
   .tabviz-scalable {
     display: flex;
