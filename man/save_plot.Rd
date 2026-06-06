@@ -14,6 +14,7 @@ save_plot(
   auto_wrap = FALSE,
   flex = TRUE,
   scale = 2,
+  dpi = NULL,
   which = NULL,
   paginate = NULL,
   ...
@@ -23,7 +24,9 @@ save_plot(
 \item{x}{A WebSpec object, forest_plot() htmlwidget output, or SplitForest}
 
 \item{file}{Output file path (or directory for SplitForest). Extension
-determines format: \code{.svg}, \code{.pdf}, or \code{.png}.}
+determines format: \code{.svg}, \code{.pdf}, \code{.png}, \code{.eps} (vector, for
+Elsevier/Lancet line-art requirements), or \code{.tiff} (DPI-tagged
+raster; pair with \code{dpi = 300}).}
 
 \item{width}{Display width in pixels. \code{NULL} (default) preserves natural.
 With \code{height} or \code{ratio}, triggers relayout (Mode 3).}
@@ -64,8 +67,13 @@ numeric \code{N >= 1} sets a custom cap (\code{flex = 1.5} is conservative;
 \code{flex = Inf} removes the cap entirely).}
 
 \item{scale}{Raster fidelity multiplier for PNG output (default 2 for
-retina). Ignored -- and warned about -- for vector outputs (SVG, PDF),
-which are resolution-independent.}
+retina). Ignored -- and warned about -- for vector outputs (SVG, PDF,
+EPS), which are resolution-independent.}
+
+\item{dpi}{Explicit physical resolution for raster output (PNG/TIFF).
+Sets the pixel count (\code{scale = dpi / 96}) AND tags the file with the
+density so journal submission validators ("300 DPI minimum at print
+size") can verify it. Overrides \code{scale}. Vector formats ignore it.}
 
 \item{which}{For SplitForest only. \code{NULL} (default) dumps every subview
 to the directory derived from \code{file}. A string picks one subview by

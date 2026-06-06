@@ -46,7 +46,9 @@
 #'
 #' @param x A WebSpec object, forest_plot() htmlwidget output, or SplitForest
 #' @param file Output file path (or directory for SplitForest). Extension
-#'   determines format: `.svg`, `.pdf`, or `.png`.
+#'   determines format: `.svg`, `.pdf`, `.png`, `.eps` (vector, for
+#'   Elsevier/Lancet line-art requirements), or `.tiff` (DPI-tagged
+#'   raster; pair with `dpi = 300`).
 #' @param width Display width in pixels. `NULL` (default) preserves natural.
 #'   With `height` or `ratio`, triggers relayout (Mode 3).
 #' @param height Display height in pixels. `NULL` (default) preserves
@@ -80,8 +82,12 @@
 #'   numeric `N >= 1` sets a custom cap (`flex = 1.5` is conservative;
 #'   `flex = Inf` removes the cap entirely).
 #' @param scale Raster fidelity multiplier for PNG output (default 2 for
-#'   retina). Ignored -- and warned about -- for vector outputs (SVG, PDF),
-#'   which are resolution-independent.
+#'   retina). Ignored -- and warned about -- for vector outputs (SVG, PDF,
+#'   EPS), which are resolution-independent.
+#' @param dpi Explicit physical resolution for raster output (PNG/TIFF).
+#'   Sets the pixel count (`scale = dpi / 96`) AND tags the file with the
+#'   density so journal submission validators ("300 DPI minimum at print
+#'   size") can verify it. Overrides `scale`. Vector formats ignore it.
 #' @param which For SplitForest only. `NULL` (default) dumps every subview
 #'   to the directory derived from `file`. A string picks one subview by
 #'   key (e.g. `"Male__Young"`); an integer picks the i-th subview by the
@@ -117,7 +123,7 @@
 save_plot <- function(x, file,
                       width = NULL, height = NULL, ratio = NULL,
                       anchor = NULL, auto_wrap = FALSE,
-                      flex = TRUE, scale = 2,
+                      flex = TRUE, scale = 2, dpi = NULL,
                       which = NULL, paginate = NULL, ...) {
   if (missing(file) || is.null(file)) {
     cli_abort("{.arg file} is required")
@@ -158,7 +164,7 @@ save_plot <- function(x, file,
     }
 
     ext <- tolower(tools::file_ext(file))
-    if (ext %in% c("svg", "pdf", "png")) {
+    if (ext %in% c("svg", "pdf", "png", "eps", "tiff", "tif")) {
       path <- dirname(file)
       format <- ext
     } else {
@@ -188,7 +194,7 @@ save_plot <- function(x, file,
   }
 
   ext <- tolower(tools::file_ext(file))
-  if (!ext %in% c("svg", "pdf", "png")) {
+  if (!ext %in% c("svg", "pdf", "png", "eps", "tiff", "tif")) {
     cli_abort(c(
       "Unsupported file format: {.file .{ext}}",
       "i" = "Supported formats: .svg, .pdf, .png"
@@ -197,6 +203,21 @@ save_plot <- function(x, file,
 
   # `scale` is a raster-fidelity multiplier (PNG-only). PDF / SVG are
   # vector formats -- flag the misuse rather than silently dropping it.
+  # DPI contract (R3 publication review #3): `scale` is a pixel
+  # multiplier off the 96px CSS baseline and carries NO physical-size
+  # metadata — journals check "300 DPI at print size" and found nothing
+  # to read. `dpi` is the explicit contract: raster pixel count is
+  # derived from it (scale = dpi / 96) and the file is tagged with the
+  # density so validators can verify it.
+  if (!is.null(dpi)) {
+    checkmate::assert_number(dpi, lower = 72, upper = 1200)
+    if (ext %in% c("png", "tiff", "tif")) {
+      scale <- dpi / 96
+    } else {
+      cli::cli_inform("{.arg dpi} applies to raster output (png/tiff); {.file .{ext}} is vector and ignores it.")
+    }
+  }
+
   if (ext %in% c("svg", "pdf") && !missing(scale) && !identical(scale, 2)) {
     cli::cli_warn(c(
       "{.arg scale} is ignored for vector output ({.file .{ext}}).",
@@ -310,6 +331,11 @@ save_plot <- function(x, file,
   # The second half is the R3 publication-review fix: librsvg ignores
   # data-URL fonts, so journal presets silently exported in fallback
   # faces (NEJM's PDF embedded Georgia, not Lora) with no warning.
+  # Decision 2 (spec-first plan): the preview must not lie about the
+  # deliverable. Browser-additive effects don't render in the V8/rsvg
+  # static path — say so at export time instead of silently flattening.
+  .warn_dropped_effects(spec, ext)
+
   web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
   if (length(web_fonts) > 0L) {
     svg_string <- tryCatch(
@@ -322,7 +348,7 @@ save_plot <- function(x, file,
         svg_string
       }
     )
-    if (ext %in% c("pdf", "png")) {
+    if (ext %in% c("pdf", "png", "eps", "tiff", "tif")) {
       registered <- register_web_fonts_for_rsvg(web_fonts)
       if (!isTRUE(registered)) {
         cli::cli_warn(c(
@@ -340,7 +366,7 @@ save_plot <- function(x, file,
 
   if (ext == "svg") {
     writeLines(svg_string, file)
-  } else if (ext %in% c("pdf", "png")) {
+  } else if (ext %in% c("pdf", "png", "eps", "tiff", "tif")) {
     if (!requireNamespace("rsvg", quietly = TRUE)) {
       cli_abort(c(
         "Package {.pkg rsvg} is required for {.file .{ext}} output",
@@ -354,6 +380,28 @@ save_plot <- function(x, file,
 
     if (ext == "pdf") {
       rsvg::rsvg_pdf(temp_svg, file)
+    } else if (ext == "eps") {
+      # EPS: the vector line-art format journals still demand
+      # (Elsevier/Lancet). No transparency support — effects-forward
+      # themes degrade hardest here; the dropped-effects notice above
+      # covers the messaging.
+      rsvg::rsvg_eps(temp_svg, file)
+    } else if (ext %in% c("tiff", "tif")) {
+      # TIFF: render PNG at the requested density, then convert with the
+      # density TAGGED in the file — journal validators read it.
+      if (!requireNamespace("magick", quietly = TRUE)) {
+        cli_abort(c(
+          "Package {.pkg magick} is required for {.file .tiff} output",
+          "i" = "Install it with: {.code install.packages(\"magick\")}"
+        ))
+      }
+      svg_dims <- parse_svg_root_dims(svg_string)
+      tmp_png <- tempfile(fileext = ".png")
+      on.exit(unlink(tmp_png), add = TRUE)
+      rsvg::rsvg_png(temp_svg, tmp_png, width = round(svg_dims$width * scale))
+      img <- magick::image_read(tmp_png, density = paste0(round(96 * scale)))
+      magick::image_write(img, file, format = "tiff",
+                          density = paste0(round(96 * scale)), compression = "LZW")
     } else {
       # PNG: rsvg honours the SVG root's intrinsic width/height (which we
       # set in display_scaled mode) and aspect via viewBox. `scale`
@@ -1058,4 +1106,28 @@ sanitize_filename <- function(x) {
     x <- "unnamed"
   }
   x
+}
+
+
+# Inform (once per call) which active browser-only effects are absent from
+# a static export. Glass / glow / texture / gradient never reach the
+# V8+rsvg path (D11); gradient + grain are slated for structural SVG
+# parity (spec-first plan, decision 2) and will leave this list when that
+# lands.
+.warn_dropped_effects <- function(spec, ext) {
+  if (!ext %in% c("svg", "pdf", "png")) return(invisible(NULL))
+  inputs <- tryCatch(spec@theme@inputs, error = function(e) NULL)
+  if (is.null(inputs)) return(invisible(NULL))
+  dropped <- character(0)
+  gx <- function(x) !is.na(x) && !identical(x, "none")
+  if (gx(inputs@effects_glass))                    dropped <- c(dropped, "glass")
+  if (gx(inputs@effects_glow_intensity))           dropped <- c(dropped, "glow")
+  if (gx(inputs@effects_gradient_shell_intensity)) dropped <- c(dropped, "shell gradient")
+  if (gx(inputs@shell_texture))                    dropped <- c(dropped, paste0("shell texture (", inputs@shell_texture, ")"))
+  if (length(dropped) == 0L) return(invisible(NULL))
+  cli::cli_inform(c(
+    "i" = "Browser-only theme effects not represented in this static export: {.val {dropped}}.",
+    " " = "The interactive widget shows them; the {.file .{ext}} renders the flat-surface equivalent."
+  ))
+  invisible(NULL)
 }
