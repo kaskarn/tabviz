@@ -46,3 +46,12 @@ jobs:
           cd /tmp/probe-qmd
           time Rscript -e 'knitr::knit("repro.qmd", output="knitr-out.md", quiet=TRUE)'
           grep PROBE knitr-out.md || true
+
+      # Round 3: standalone-quarto was FAST (7s). The stall only shows in
+      # the full-site render. Bisect: (a) single page in PROJECT context,
+      # (b) memory accounting to test cumulative-pressure theory.
+      - name: Render export.qmd in site-project context (timed + RSS)
+        run: |
+          free -m
+          /usr/bin/time -v quarto render docs/guide/export.qmd 2>&1 | grep -E "Output created|Maximum resident|Elapsed|Swaps|processing file|unnamed-chunk" || true
+          free -m
