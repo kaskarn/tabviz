@@ -10,6 +10,7 @@
 <script lang="ts">
   import ConfirmDialog from "$components/ui/ConfirmDialog.svelte";
   import { studioStore } from "./studio-store.svelte";
+  import { PRESETS } from "$lib/theme/theme-presets-inputs";
 
   const {
     baseName,
@@ -44,6 +45,27 @@
   // RStudio viewer / sandboxed iframes (locked rule: feedback_native_dialogs)
   // — the revert confirmation never fired there. In-widget dialog instead.
   let revertDialogOpen = $state(false);
+
+  // ── In-studio preset switcher (studio E) ────────────────────────────
+  // "based on X" was inert text; switching bases meant closing the studio
+  // and relaunching from R. The select loads any shipped preset as the
+  // new base (with a dirty-confirm so edits aren't silently dropped).
+  const presetNames = Object.keys(PRESETS);
+  let pendingPreset = $state<string | null>(null);
+
+  function requestPreset(name: string): void {
+    if (!name || name === baseName) return;
+    if (dirty) {
+      pendingPreset = name;
+    } else {
+      loadPreset(name);
+    }
+  }
+  function loadPreset(name: string): void {
+    const inputs = PRESETS[name];
+    if (inputs) studioStore.init(inputs, name);
+    pendingPreset = null;
+  }
 
   function confirmRevert(): void {
     if (dirty) {
@@ -106,7 +128,21 @@
   <div class="title">
     <strong>tabviz studio</strong>
     <span class="separator">·</span>
-    <span class="base">based on {baseName}</span>
+    <label class="base">
+      based on
+      <select
+        value={presetNames.includes(baseName) ? baseName : ""}
+        onchange={(e) => requestPreset((e.currentTarget as HTMLSelectElement).value)}
+        aria-label="Switch base preset"
+      >
+        {#if !presetNames.includes(baseName)}
+          <option value="">{baseName}</option>
+        {/if}
+        {#each presetNames as name (name)}
+          <option value={name}>{name}</option>
+        {/each}
+      </select>
+    </label>
     {#if dirty}
       <span class="dirty" title="Unsaved changes since {baseName} was loaded">●</span>
     {/if}
@@ -171,6 +207,16 @@
   oncancel={() => (revertDialogOpen = false)}
 />
 
+<ConfirmDialog
+  open={pendingPreset !== null}
+  title="Switch base preset?"
+  message={`Discard edits and load ${pendingPreset ?? ""} as the new base?`}
+  confirmLabel="Switch"
+  variant="danger"
+  onconfirm={() => pendingPreset && loadPreset(pendingPreset)}
+  oncancel={() => (pendingPreset = null)}
+/>
+
 <style>
   .preset-header {
     display: flex;
@@ -189,7 +235,21 @@
     font-size: 13px;
   }
   .separator { color: #94a3b8; }
-  .base { color: #475569; }
+  .base {
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .base select {
+    font-size: 12px;
+    padding: 2px 4px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #fff;
+    color: #1e293b;
+    cursor: pointer;
+  }
   .dirty {
     color: #f59e0b;
     font-size: 16px;

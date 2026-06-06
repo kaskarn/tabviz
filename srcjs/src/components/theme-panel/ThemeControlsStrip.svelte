@@ -29,7 +29,10 @@
     layout = "flat",
   }: {
     inputs: ThemeInputs;
-    onchange: (next: ThemeInputs) => void;
+    /** `label` (optional) names the edit for history/toast purposes —
+     *  controls that perform compound moves (e.g. Match brand) pass it;
+     *  hosts that don't care ignore the second arg. */
+    onchange: (next: ThemeInputs, label?: string) => void;
     /** C53: drag-time preview channel (no history / no re-measure).
      *  Slider-bearing controls use it; falls back to onchange. */
     onpreview?: (next: ThemeInputs) => void;

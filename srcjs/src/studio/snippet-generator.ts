@@ -35,6 +35,23 @@ export interface SnippetStep {
   readonly args: string;
 }
 
+/** Human label for an edit, derived by diffing prev → next with the same
+ *  machinery as the snippet chain (studio E: every history entry read
+ *  "Edit", so the undo button couldn't say what it would undo).
+ *
+ *  "set_brand" → "Brand", "set_shell_mode" → "Shell mode"; multi-setter
+ *  edits report the first + a count. */
+export function describeInputsEdit(prev: ThemeInputs, next: ThemeInputs): string {
+  const pretty = (setter: string): string => {
+    const words = setter.replace(/^set_/, "").replace(/_/g, " ");
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  };
+  const steps = buildSnippetSteps(prev, next);
+  if (steps.length === 0) return "Edit";
+  const first = pretty(steps[0]!.setter);
+  return steps.length === 1 ? first : `${first} (+${steps.length - 1} more)`;
+}
+
 /** Build the snippet chain by diffing edits against base.
  *
  *  Returns an empty array when no changes (snippet strip shows just the

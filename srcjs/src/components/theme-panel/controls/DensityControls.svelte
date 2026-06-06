@@ -3,6 +3,7 @@
 -->
 <script lang="ts">
   import type { ThemeInputs } from "$types/theme-inputs";
+  import { DENSITY_PX } from "$lib/theme/density-presets";
 
   const {
     inputs,
@@ -22,6 +23,12 @@
   const PRESETS = ["compact", "comfortable", "spacious"] as const;
   const density = $derived(inputs.density ?? "comfortable");
   const factor  = $derived(inputs.density_factor ?? 1);
+  // Effective readout (studio E): preset × factor is abstract — show the
+  // concrete row height the combination produces, from the same
+  // DENSITY_PX table the resolver projects.
+  const effectiveRowPx = $derived(
+    Math.round((DENSITY_PX[density]?.rowHeight ?? 24) * factor),
+  );
 
   function setDensity(v: (typeof PRESETS)[number]): void {
     onchange({ ...inputs, density: v });
@@ -57,6 +64,10 @@
       <code>×{factor.toFixed(2)}</code>
     </div>
   </div>
+  <div class="row">
+    <span class="label"></span>
+    <span class="effective">= {effectiveRowPx}px rows</span>
+  </div>
 </div>
 
 <style>
@@ -88,6 +99,11 @@
   }
   .seg button:last-child { border-right: 0; }
   .seg button.on { background: var(--tp-fg, #1c1a17); color: var(--tp-input-bg, #ffffff); }
+  .effective {
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+    font-size: 10.5px;
+    color: var(--tp-muted, #6b6760);
+  }
   .factor { display: flex; align-items: center; gap: 8px; }
   .factor input { flex: 1; }
   .factor code {

@@ -8,12 +8,18 @@
     snippet,
     canUndo,
     canRedo,
+    undoLabel,
+    redoLabel,
     onUndo,
     onRedo,
   }: {
     snippet: string;
     canUndo: boolean;
     canRedo: boolean;
+    /** History-step labels so the buttons say WHAT they would undo/redo
+     *  ("Undo Brand", not just "Undo") — studio E. */
+    undoLabel?: string;
+    redoLabel?: string;
     onUndo: () => void;
     onRedo: () => void;
   } = $props();
@@ -46,9 +52,15 @@
   </button>
 
   <div class="controls">
-    <button type="button" onclick={onUndo} disabled={!canUndo} title="Undo (⌘Z)">↶</button>
-    <button type="button" onclick={onRedo} disabled={!canRedo} title="Redo (⇧⌘Z)">↷</button>
-    <button type="button" onclick={() => (expanded = !expanded)} title={expanded ? "Collapse" : "Expand"}>
+    <button type="button" onclick={onUndo} disabled={!canUndo}
+            title={undoLabel ? `Undo ${undoLabel} (⌘Z)` : "Undo (⌘Z)"}
+            aria-label={undoLabel ? `Undo ${undoLabel}` : "Undo"}>↶</button>
+    <button type="button" onclick={onRedo} disabled={!canRedo}
+            title={redoLabel ? `Redo ${redoLabel} (⇧⌘Z)` : "Redo (⇧⌘Z)"}
+            aria-label={redoLabel ? `Redo ${redoLabel}` : "Redo"}>↷</button>
+    <button type="button" onclick={() => (expanded = !expanded)}
+            title={expanded ? "Collapse snippet" : "Expand snippet to full multi-line view"}
+            aria-expanded={expanded}>
       {expanded ? "⌃" : "⌄"}
     </button>
     <button type="button" onclick={copyAll} title="Copy snippet">

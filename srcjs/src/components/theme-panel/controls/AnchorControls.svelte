@@ -24,7 +24,7 @@
     onpreview,
   }: {
     inputs: ThemeInputs;
-    onchange: (next: ThemeInputs) => void;
+    onchange: (next: ThemeInputs, label?: string) => void;
     /** Drag-time preview (C53). Falls back to onchange when absent. */
     onpreview?: (next: ThemeInputs) => void;
   } = $props();
@@ -106,7 +106,7 @@
   <!-- C56 (4d): one-move hue alignment toward brand. Undoable — commits
        through the normal onchange/history path. -->
   <div class="match-brand">
-    <button type="button" onclick={() => onchange(tintFromBrand(inputs, "medium"))}
+    <button type="button" onclick={() => onchange(tintFromBrand(inputs, "medium"), "Match brand")}
             title="Nudge paper / ink / accent / ink2 hues toward brand (L unchanged)">
       Match brand
     </button>

@@ -30,9 +30,11 @@
     onchange={(next) => store.setAuthoringInputs(next)}
     onpreview={(next) => store.previewAuthoringInputs(next)}
   />
+  <!-- Actionable hint (studio E): "lives in the studio" was a dead end —
+       name the command that opens it. -->
   <p class="studio-hint">
     Full theme editing — identity, type, geometry, effects — lives in the
-    <strong>studio</strong>.
+    studio: <code>tabviz_studio(plot)</code> in R.
   </p>
 {:else}
   <p class="empty">No authoring inputs on the active theme.</p>
@@ -42,9 +44,16 @@
   .studio-hint {
     padding: 10px 16px 14px;
     margin: 0;
-    color: #6b6760;
+    color: var(--tp-muted, #6b6760);
     font-size: 11px;
-    border-top: 1px solid #eee8e0;
+    border-top: 1px solid var(--tp-rule, #eee8e0);
+  }
+  .studio-hint code {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 10.5px;
+    background: var(--tp-input-bg, #f6f3ed);
+    padding: 1px 4px;
+    border-radius: 3px;
   }
   .empty {
     padding: 16px;

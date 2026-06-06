@@ -9,7 +9,7 @@
 // battery over every editable input family.
 
 import { describe, it, expect } from "bun:test";
-import { buildSnippetSteps, buildBaseExpression, formatSnippet } from "./snippet-generator";
+import { buildSnippetSteps, buildBaseExpression, describeInputsEdit, formatSnippet } from "./snippet-generator";
 import { PRESETS } from "../lib/theme/theme-presets-inputs";
 import type { ThemeInputs } from "../types/theme-inputs";
 
@@ -61,5 +61,28 @@ describe("buildSnippetSteps — no silent drops", () => {
     const steps = buildSnippetSteps(base, { ...base, header_style: "bold" });
     const out = formatSnippet(buildBaseExpression("cochrane"), steps);
     expect(out).toBe('web_theme_cochrane() |> set_header_style("bold")');
+  });
+});
+
+describe("describeInputsEdit — history labels", () => {
+  it("names a single-setter edit by its setter", () => {
+    expect(describeInputsEdit(base, { ...base, header_style: "bold" })).toBe("Header style");
+    expect(describeInputsEdit(base, {
+      ...base,
+      anchors: { ...base.anchors, brand: { L: 0.4, C: 0.12, H: 300 } },
+    })).toBe("Brand");
+  });
+
+  it("multi-setter edits report the first + a count", () => {
+    const label = describeInputsEdit(base, {
+      ...base,
+      header_style: "bold",
+      density: "spacious",
+    });
+    expect(label).toMatch(/\(\+\d+ more\)$/);
+  });
+
+  it("no-op edit falls back to the generic label", () => {
+    expect(describeInputsEdit(base, { ...base })).toBe("Edit");
   });
 });

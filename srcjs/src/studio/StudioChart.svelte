@@ -13,7 +13,16 @@
   import { inspectorStore } from "../stores/inspector-store.svelte";
   import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
 
-  const { spec }: { spec: unknown } = $props();
+  const {
+    spec,
+    overrides,
+  }: {
+    spec: unknown;
+    /** Optional ThemeInputs overlay merged over studioStore.inputs before
+     *  the rebuild — the Validate matrix renders the SAME edits under
+     *  forced polarity/mode combinations (studio E). */
+    overrides?: Partial<import("../types/theme-inputs").ThemeInputs>;
+  } = $props();
 
   // The widget store fed to TabvizPlot. Initialized on mount with the
   // initial spec; spec.theme is replaced on every studioStore.inputs change.
@@ -35,7 +44,9 @@
   $effect(() => {
     if (!initialized) return;
     if (!studioStore.inputs) return;
-    const inputs = studioStore.inputs;
+    const inputs = overrides
+      ? { ...studioStore.inputs, ...overrides }
+      : studioStore.inputs;
     const baseName = studioStore.baseName;
     untrack(() => {
       const currentSpec = store.spec;
