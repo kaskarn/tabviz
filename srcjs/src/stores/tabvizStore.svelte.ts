@@ -115,6 +115,13 @@ export function createTabvizStore() {
     clearAutoWidthsKeepingUserResizes: columns.clearAutoWidthsKeepingUserResizes,
     measureAutoColumns: columns.measureAutoColumns,
     appendOp,
+    // Dirty-gate probes (forward closures — `layoutZoom` / `data` are
+    // declared below; resolved at call time). These fold the cross-slice
+    // edits that the settings panel's Reset button clears into
+    // `hasThemeEdits`, so the gate matches the action.
+    hasRowKindHeightPins: () => Object.keys(layoutZoom.rowKindHeights).length > 0,
+    hasBandingOverride: () =>
+      data.bandingOverride != null || data.bandingStartsWithBandOverride != null,
   });
 
   // ── Axis (cross-slice $derived) ──────────────────────────────────────────

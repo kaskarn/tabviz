@@ -70,6 +70,14 @@ export interface ThemeSliceDeps {
   clearAutoWidthsKeepingUserResizes: () => void;
   measureAutoColumns: () => void;
   appendOp: (record: OpRecord) => void;
+  /** Dirty-gate probes for edits owned by OTHER slices that the settings
+   *  panel's Reset button also clears (row-height pins live on the
+   *  layout-zoom slice; banding overrides on the data slice). Without
+   *  them `hasThemeEdits` under-reported: the Reset button stayed
+   *  disabled while those edits were active, yet confirmReset clears
+   *  them (R3 studio wiring — Reset gate/action asymmetry). */
+  hasRowKindHeightPins: () => boolean;
+  hasBandingOverride: () => boolean;
 }
 
 export interface ThemeSlice {
@@ -78,8 +86,11 @@ export interface ThemeSlice {
   readonly baseThemeName: string;
   readonly initialTheme: WebSpec["theme"] | null;
   readonly initialWatermark: string | undefined;
-  /** True iff at least one section in themeEdits has a non-empty edit
-   *  OR the watermark differs from its captured initial value. */
+  /** True iff at least one section in themeEdits has a non-empty edit,
+   *  OR the watermark (text / color / opacity) differs from its captured
+   *  initial value, OR a cross-slice edit the Reset button clears is
+   *  active (row-height pins, banding override). The gate must match
+   *  exactly what `confirmReset` undoes. */
   readonly hasThemeEdits: boolean;
 
   /** Capture the "clean" theme + watermark at setSpec / setThemeObject /
@@ -128,6 +139,8 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   // UX review #1). A plain dirty flag is exact for the gate's purpose.
   let authoringEdited = $state(false);
   let initialWatermark = $state<string | undefined>(undefined);
+  let initialWatermarkColor = $state<string | undefined>(undefined);
+  let initialWatermarkOpacity = $state<number | undefined>(undefined);
 
   function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
     return JSON.parse(JSON.stringify(t));
@@ -165,6 +178,8 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     authoringEdited = false;
     initialTheme = cloneTheme(spec.theme);
     initialWatermark = spec.watermark ?? "";
+    initialWatermarkColor = spec.watermarkColor;
+    initialWatermarkOpacity = spec.watermarkOpacity;
     baseThemeName = spec.theme?.name ?? "default";
     themeEdits = {};
     themeOverrides = new Set();
@@ -173,6 +188,8 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   function clearInitial(): void {
     initialTheme = null;
     initialWatermark = undefined;
+    initialWatermarkColor = undefined;
+    initialWatermarkOpacity = undefined;
   }
 
   function setTheme(themeName: ThemeName): void {
@@ -400,10 +417,22 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
       nextSpec = { ...nextSpec, theme: cloneTheme(initialTheme) };
     }
     if (initialWatermark !== undefined) {
-      nextSpec = { ...nextSpec, watermark: initialWatermark };
+      // Watermark color/opacity restore alongside the text — they were
+      // captured at the same moment and the Reset dialog promises a full
+      // revert (undefined restores the unset state).
+      nextSpec = {
+        ...nextSpec,
+        watermark: initialWatermark,
+        watermarkColor: initialWatermarkColor,
+        watermarkOpacity: initialWatermarkOpacity,
+      };
     }
     deps.setSpec(nextSpec);
     themeEdits = {};
+    // Override tracking must reset with the values it tracks — a stale
+    // themeOverrides set made post-reset cascade edits skip fields that
+    // looked "user-pinned" but had just been reverted.
+    themeOverrides = new Set();
   }
 
   function captureThemeSnapshot(): ThemeSnapshot | null {
@@ -461,6 +490,15 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
       if (initialWatermark !== undefined && (spec?.watermark ?? "") !== initialWatermark) {
         return true;
       }
+      if (initialWatermark !== undefined && (
+        (spec?.watermarkColor ?? null) !== (initialWatermarkColor ?? null) ||
+        (spec?.watermarkOpacity ?? null) !== (initialWatermarkOpacity ?? null)
+      )) {
+        return true;
+      }
+      // Cross-slice edits the Reset button clears (see ThemeSliceDeps).
+      if (deps.hasRowKindHeightPins()) return true;
+      if (deps.hasBandingOverride()) return true;
       return false;
     },
 

@@ -117,10 +117,12 @@
     // derived recomputes, leaving stale controls on screen even though
     // spec.theme had already reverted.
     store.resetThemeEdits();
-    // Banding overrides live outside of themeEdits but feel like "edits" to
-    // the user; reset them too so the button means "start fresh".
+    // Banding overrides + row-height pins live outside of themeEdits but
+    // feel like "edits" to the user; reset them too so the button means
+    // "start fresh". `hasThemeEdits` folds the same set (gate ≡ action).
     store.setBandingOverride(null);
     store.setBandingStartsWithBand(null);
+    store.resetRowKindHeights();
     queueMicrotask(() => {
       resetConfirmOpen = false;
     });
@@ -252,7 +254,7 @@
   <ConfirmDialog
     open={resetConfirmOpen}
     title="Reset all edits?"
-    message="This will discard every in-panel theme edit (colors, banding, phase, …) and restore the preset."
+    message="This will discard every in-panel edit — theme fields, banding, row-height pins, watermark — and restore the initial state."
     confirmLabel="Reset"
     cancelLabel="Keep edits"
     variant="danger"

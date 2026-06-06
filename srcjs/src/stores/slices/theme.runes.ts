@@ -14,17 +14,23 @@ function buildDeps(initialSpec?: WebSpec) {
   let spec: WebSpec | null = initialSpec ?? null;
   const opLog: OpRecord[] = [];
   const calls = { clearAuto: 0, measure: 0 };
+  // Cross-slice dirty probes (mutable so tests can simulate row-height
+  // pins / banding overrides owned by other slices).
+  const probes = { rowKindPins: false, banding: false };
   const deps = {
     getSpec: () => spec,
     setSpec: (next: WebSpec) => { spec = next; },
     clearAutoWidthsKeepingUserResizes: () => { calls.clearAuto++; },
     measureAutoColumns: () => { calls.measure++; },
     appendOp: (r: OpRecord) => { opLog.push(r); },
+    hasRowKindHeightPins: () => probes.rowKindPins,
+    hasBandingOverride: () => probes.banding,
   };
   return {
     deps,
     opLog,
     calls,
+    probes,
     get spec() { return spec; },
   };
 }
@@ -177,6 +183,33 @@ describe("theme slice — hasThemeEdits", () => {
     harness.deps.setSpec({ ...(harness.spec as WebSpec), watermark: "DRAFT" });
     expect(theme.hasThemeEdits).toBe(true);
   });
+
+  test("hasThemeEdits picks up watermark color / opacity drift", () => {
+    const initial = buildSpec(THEME_PRESETS.cochrane, "DRAFT");
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    expect(theme.hasThemeEdits).toBe(false);
+    harness.deps.setSpec({ ...(harness.spec as WebSpec), watermarkColor: "#ff0000" });
+    expect(theme.hasThemeEdits).toBe(true);
+    harness.deps.setSpec({ ...(harness.spec as WebSpec), watermarkColor: undefined, watermarkOpacity: 0.5 });
+    expect(theme.hasThemeEdits).toBe(true);
+  });
+
+  test("hasThemeEdits folds cross-slice probes (row pins, banding)", () => {
+    const initial = buildSpec();
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    expect(theme.hasThemeEdits).toBe(false);
+    harness.probes.rowKindPins = true;
+    expect(theme.hasThemeEdits).toBe(true);
+    harness.probes.rowKindPins = false;
+    harness.probes.banding = true;
+    expect(theme.hasThemeEdits).toBe(true);
+    harness.probes.banding = false;
+    expect(theme.hasThemeEdits).toBe(false);
+  });
 });
 
 describe("theme slice — snapshot persistence", () => {
@@ -219,6 +252,25 @@ describe("theme slice — resetThemeEdits", () => {
     theme.resetThemeEdits();
     expect(theme.themeEdits).toEqual({});
     expect(harness.spec?.watermark).toBe("");
+  });
+
+  test("resetThemeEdits restores watermark color/opacity + clears overrides", () => {
+    const initial = buildSpec(THEME_PRESETS.cochrane, "DRAFT");
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    theme.setThemeField(["accent", "default"], "#ff0000");
+    expect(theme.themeOverrides.size).toBeGreaterThan(0);
+    harness.deps.setSpec({
+      ...(harness.spec as WebSpec),
+      watermarkColor: "#00ff00",
+      watermarkOpacity: 0.8,
+    });
+    theme.resetThemeEdits();
+    expect(harness.spec?.watermarkColor).toBeUndefined();
+    expect(harness.spec?.watermarkOpacity).toBeUndefined();
+    // Override tracking resets with the values it tracks.
+    expect(theme.themeOverrides.size).toBe(0);
   });
 });
 
