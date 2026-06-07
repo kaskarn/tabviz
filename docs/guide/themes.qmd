@@ -227,7 +227,8 @@ Two ways to override:
   set_theme_field(t, c("semantic", "fill"), "#1F3A5F")  # custom fill navy
   ```
 
-  Or interactively: Settings panel → **Tokens** tab → Token colors.
+  Or interactively: in the studio's **Token pins** panel (the settings
+  panel stays Tier-1-only — deep token edits live in the studio).
 
 * **Per-bundle override** for any field on any token:
 
@@ -237,9 +238,8 @@ Two ways to override:
   set_theme_field(t, c("row", "accent", "border"), "#C8553D")  # red border on accent rows
   ```
 
-  Or interactively: Settings panel → **Tokens** tab → expand a token →
-  edit any field. All bundle fields are override-aware (reset reverts
-  to the resolved default).
+  Or interactively: studio **Token pins** — pin any manifest token to a
+  direct value; per-pin release reverts to the resolved default.
 
 ### Variants — three knobs every table can flip
 
@@ -455,16 +455,50 @@ See the [Gallery → LOTR Easter Egg](../gallery/lotr.qmd) page for a worked LOT
 
 Two surfaces, deliberately split:
 
-* **The widget cog** is the *everyday* surface: theme switcher in the
-  toolbar plus a curated drawer (polarity + density). Quick flips, not
-  theme design.
-* **The Studio** ([open it here](../studio.qmd)) is the *forge*:
-  LCH-native anchor sliders (paper / ink / brand / accent / ink2), a
-  five-tab rail (Color / Type / Size / Shell / Effects), a "Match brand"
-  one-click hue alignment, 50-step undo, and a live cascade
-  visualization. **Alt+click any element in the preview** to trace which
-  theme token paints it. "Copy R code" exports your edits as a
-  reproducible `web_theme()` / `set_*()` chain.
+* **The widget settings panel** (cog) carries the full **Tier-1
+  surface**: anchor colors with LCH editors (paper / ink / brand /
+  accent / ink2 + status), polarity, density, shell, header style,
+  border preset, texture, type scale, effects, geometry — everything
+  that re-resolves through the cascade — plus per-figure state
+  (banding, watermark, row pins) with its own scoped reset. It exports
+  and imports the portable theme-JSON envelope.
+* **The Studio** ([open it here](../studio.qmd)) is the superset for
+  *total* control: the same Tier-1 rail (roomier face of the same
+  controls) **plus** the Tier-2 role spine, token pins, validate
+  matrix, 50-step undo, and the live cascade visualization. **Alt+click
+  any element in the preview** to trace which theme token paints it.
+  "Copy R code" exports your edits as a reproducible `web_theme()` /
+  `set_*()` chain — including `set_role()` rebinds and `set_pin()`
+  token pins.
+
+## The theme JSON envelope
+
+Both editing surfaces export and import **one** portable artifact:
+
+```json
+{
+  "$schema": "tabviz-theme/v4",
+  "name": "cochrane",
+  "inputs": { "anchors": { "...": "..." }, "polarity": "light", "...": "..." },
+  "roleOverrides": { "text-muted": { "ramp": "brand", "grade": 8 } },
+  "pins": { "--tv-text-footnote-size": "0.7rem" }
+}
+```
+
+* `inputs` are the Tier-1 authoring values — everything the settings
+  panel writes.
+* `roleOverrides` (studio spine / `set_role()`) and `pins` (studio
+  token pins / `set_pin()`) are the optional total-control members; a
+  settings-only export simply carries them empty.
+* The settings panel's **export / import** buttons, the studio's
+  "Copy JSON" / "Download .json" / "Save as…", and R's
+  `read_theme()` all speak this envelope; `theme_from_wire()` resolves
+  one into a `WebTheme`. Files written by the resolved-blob
+  `write_theme()` form are also read back transparently.
+
+Pins and role overrides **survive Tier-1 edits**: change the brand
+anchor on an imported pinned theme and the pins re-overlay after the
+cascade re-resolves.
 
 ## Saving a custom theme as a function
 

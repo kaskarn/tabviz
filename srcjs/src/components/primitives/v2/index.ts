@@ -24,7 +24,6 @@ export { default as Swatch }    from "./Swatch.svelte";
 export { default as Slider }    from "./Slider.svelte";
 export { default as Select }    from "./Select.svelte";
 export { default as FontFamily } from "./FontFamily.svelte";
-export { default as TabBar }    from "./TabBar.svelte";
 export { default as VariantPicker } from "./VariantPicker.svelte";
 export { default as ColumnPreview } from "./ColumnPreview.svelte";
 

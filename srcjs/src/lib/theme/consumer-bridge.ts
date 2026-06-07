@@ -86,32 +86,43 @@ export function applyTokenPins(
   return cssVars;
 }
 
-export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
-  if (!theme?.authoringInputs) return {};
-  let byOverrides = cascadeCache.get(theme.authoringInputs);
+/** The cached raw cascade resolve (pins applied; NO v3-bridge overlay,
+ *  NO spacing pins). Shared by getCssVars and theme-css's paint-path
+ *  emitter so a single paint never runs the cascade twice (perf review:
+ *  _emitV4CssVarsBody re-resolved uncached on every theme CSS build).
+ *  Throws on resolver errors — callers choose their fallback. */
+export function getCssVarsRaw(theme: WebTheme): Record<string, string> {
+  let byOverrides = cascadeCache.get(theme.authoringInputs!);
   if (!byOverrides) {
     byOverrides = new Map();
-    cascadeCache.set(theme.authoringInputs, byOverrides);
+    cascadeCache.set(theme.authoringInputs!, byOverrides);
   }
   const key = overridesKey(theme.roleOverrides, theme.pins);
   let base = byOverrides.get(key);
   if (!base) {
-    try {
-      const wire = {
-        ...createWire(theme.authoringInputs, theme.name ?? "custom"),
-        roleOverrides: theme.roleOverrides ?? {},
-      };
-      base = applyTokenPins(
-        { ...(resolveTheme(wire).cssVars as Record<string, string>) },
-        theme.pins,
-      );
-    } catch {
-      // Resolver errors during the sprint are tolerated; consumers fall
-      // back to v3 reads. Drift gates + visual regression catch silent
-      // mismatches.
-      base = {};
-    }
+    const wire = {
+      ...createWire(theme.authoringInputs!, theme.name ?? "custom"),
+      roleOverrides: theme.roleOverrides ?? {},
+    };
+    base = applyTokenPins(
+      { ...(resolveTheme(wire).cssVars as Record<string, string>) },
+      theme.pins,
+    );
     byOverrides.set(key, base);
+  }
+  return base;
+}
+
+export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
+  if (!theme?.authoringInputs) return {};
+  let base: Record<string, string>;
+  try {
+    base = getCssVarsRaw(theme);
+  } catch {
+    // Resolver errors during the sprint are tolerated; consumers fall
+    // back to v3 reads. Drift gates + visual regression catch silent
+    // mismatches.
+    base = {};
   }
   // Overlay the v3 user-config bridge values over their "<v3-bridge>"
   // sentinels so every consumer of getCssVars (TS readers, R's

@@ -63,6 +63,12 @@ export interface WebThemeArgs {
   diverging?: string;
   fonts?: { body?: string; display?: string; mono?: string };
   status?: ThemeInputs["status"];
+  /** Structural variants — Tier-1 enums R's web_theme() also accepts
+   *  (docs review: the settings-overhaul promoted these to first-class
+   *  inputs; the TS constructor lagged the R surface). */
+  headerStyle?: ThemeInputs["header_style"];
+  borderPreset?: ThemeInputs["border_preset"];
+  slotStyle?: ThemeInputs["slot_style"];
   /** Base preset name; defaults to `"cochrane"`. */
   baseTheme?: PresetName;
 }
@@ -72,6 +78,14 @@ const INPUT_KEYS: readonly (keyof ThemeInputs)[] = [
   "categorical", "sequential", "diverging", "status", "fonts", "density",
 ];
 
+/** camelCase arg → snake_case ThemeInputs key (authoring sugar only;
+ *  the wire stays snake_case per the locked naming convention). */
+const VARIANT_KEYS = {
+  headerStyle: "header_style",
+  borderPreset: "border_preset",
+  slotStyle: "slot_style",
+} as const;
+
 export function webTheme(args: WebThemeArgs = {}): WebTheme {
   const baseName = args.baseTheme ?? "cochrane";
   const baseInputs = PRESETS[baseName];
@@ -79,6 +93,10 @@ export function webTheme(args: WebThemeArgs = {}): WebTheme {
   for (const k of INPUT_KEYS) {
     const v = (args as Record<string, unknown>)[k as string];
     if (v !== undefined) (overlay as Record<string, unknown>)[k as string] = v;
+  }
+  for (const [argKey, inputKey] of Object.entries(VARIANT_KEYS)) {
+    const v = (args as Record<string, unknown>)[argKey];
+    if (v !== undefined) (overlay as Record<string, unknown>)[inputKey] = v;
   }
   // Anchors deep-merge: partial anchor overrides inherit unspecified slots
   // from the base preset.

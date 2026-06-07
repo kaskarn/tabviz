@@ -117,6 +117,12 @@ export interface ThemeSlice {
   setThemeFieldDerived: (path: (string | number)[], value: unknown) => void;
   isOverridden: (path: (string | number)[]) => boolean;
   clearOverride: (path: (string | number)[]) => void;
+  /** Release one studio/R token pin from the theme artifact (DT-12:
+   *  pins must be visible AND clearable wherever the theme is live —
+   *  re-resolves without the pin). */
+  clearThemePin: (cssVar: string) => void;
+  /** Release one Tier-2 role override from the theme artifact. */
+  clearThemeRoleOverride: (role: string) => void;
   resetThemeEdits: () => void;
   resetWatermark: () => void;
   captureThemeSnapshot: () => ThemeSnapshot | null;
@@ -276,7 +282,17 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     authoringEdited = !initialInputs ||
       JSON.stringify(merged) !== JSON.stringify(initialInputs);
     const name = spec.theme.name ?? "custom";
-    const rebuilt = reapplyEdits(buildTheme(merged, name) as WebSpec["theme"]);
+    // roleOverrides + pins MUST ride the rebuild (final-review P1): the
+    // string-name form defaulted them to {}, so the FIRST Tier-1 edit
+    // silently wiped any pins the theme arrived with (import, R
+    // set_pin()/set_role(), studio handoff) — defeating the artifact's
+    // survives-re-resolution promise.
+    const carried = spec.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] };
+    const rebuilt = reapplyEdits(buildTheme(merged, {
+      name,
+      roleOverrides: carried.roleOverrides ?? {},
+      pins: carried.pins ?? {},
+    }) as WebSpec["theme"]);
     deps.setSpec({ ...spec, theme: rebuilt });
     // Identity changes (mode, brand, decorative, density) can shift text
     // metrics + cell paint. Invalidate auto-widths; user-resized columns
@@ -297,8 +313,54 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     if (!current) return;
     const merged: ThemeInputs = { ...current, ...partial };
     const name = spec.theme.name ?? "custom";
-    const rebuilt = reapplyEdits(buildTheme(merged, name) as WebSpec["theme"]);
+    const carried = spec.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] };
+    const rebuilt = reapplyEdits(buildTheme(merged, {
+      name,
+      roleOverrides: carried.roleOverrides ?? {},
+      pins: carried.pins ?? {},
+      // Drag-tick path: contrast validation re-runs on the pointer-up
+      // commit anyway; per-tick it's a second half-cascade (perf review).
+      skipValidation: true,
+    }) as WebSpec["theme"]);
     deps.setSpec({ ...spec, theme: rebuilt });
+  }
+
+  // DT-12 (final review board): a theme that arrives with studio/R pins
+  // or role overrides must let the settings host RELEASE them — otherwise
+  // they're invisible-unclearable in the widget. Both rebuild through the
+  // same cascade path as setAuthoringInputs (inputs unchanged).
+  function rebuildWithArtifacts(
+    roleOverrides: WebSpec["theme"]["roleOverrides"],
+    pins: WebSpec["theme"]["pins"],
+  ): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return;
+    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
+    if (!current) return;
+    const rebuilt = reapplyEdits(buildTheme(current, {
+      name: spec.theme.name ?? "custom",
+      roleOverrides: roleOverrides ?? {},
+      pins: pins ?? {},
+    }) as WebSpec["theme"]);
+    deps.setSpec({ ...spec, theme: rebuilt });
+  }
+
+  function clearThemePin(cssVar: string): void {
+    const spec = deps.getSpec();
+    const carried = spec?.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] } | undefined;
+    if (!carried?.pins || !(cssVar in carried.pins)) return;
+    const pins = { ...carried.pins };
+    delete pins[cssVar];
+    rebuildWithArtifacts(carried.roleOverrides, pins);
+  }
+
+  function clearThemeRoleOverride(role: string): void {
+    const spec = deps.getSpec();
+    const carried = spec?.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] } | undefined;
+    if (!carried?.roleOverrides || !(role in carried.roleOverrides)) return;
+    const roleOverrides = { ...carried.roleOverrides } as Record<string, unknown>;
+    delete roleOverrides[role];
+    rebuildWithArtifacts(roleOverrides as WebSpec["theme"]["roleOverrides"], carried.pins);
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -517,6 +579,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     captureInitial, clearInitial,
     cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewAuthoringInputs, previewThemeField,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
+    clearThemePin, clearThemeRoleOverride,
     resetThemeEdits, resetWatermark, captureThemeSnapshot, applyThemeSnapshot,
     reset,
   };

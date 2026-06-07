@@ -23,14 +23,6 @@ export interface ThemeSwatch {
   token: string;
 }
 
-/** One entry in a TabBar. Glyph optional (compact mode hides label). */
-export interface TabEntry<U extends string> {
-  value: U;
-  label: string;
-  glyph?: GlyphToken;
-  title?: string;
-}
-
 /** One row in a Picker dropdown menu. */
 export interface PickerItem<U> {
   value: U;

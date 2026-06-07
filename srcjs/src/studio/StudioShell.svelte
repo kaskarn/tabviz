@@ -33,11 +33,26 @@
 
   onMount(() => {
     // Bootstrap the store from the initial inputs.
-    const theme = initialTheme as { authoringInputs?: unknown; name?: string };
+    const theme = initialTheme as {
+      authoringInputs?: unknown;
+      name?: string;
+      roleOverrides?: Record<string, { ramp: string; grade: number }>;
+      pins?: Record<string, string>;
+    };
     const inputs = theme.authoringInputs as import("../types/theme-inputs").ThemeInputs | undefined;
     if (inputs) {
       const baseName = theme.name ?? "(default)";
       studioStore.init(inputs, baseName);
+      // The handoff carries the WHOLE artifact (final review P2/DT-12):
+      // an R-authored or imported theme arrives with roleOverrides/pins;
+      // dropping them at studio entry made "Edit in studio" lossy for
+      // exactly the themes that most need the studio.
+      if (theme.roleOverrides && Object.keys(theme.roleOverrides).length > 0) {
+        studioStore.roleOverrides = theme.roleOverrides as never;
+      }
+      if (theme.pins && Object.keys(theme.pins).length > 0) {
+        studioStore.pins = theme.pins;
+      }
     }
     // Wire keyboard shortcuts (Cmd/Ctrl-Z undo, Shift redo).
     const onKey = (e: KeyboardEvent): void => {

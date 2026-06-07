@@ -47,6 +47,7 @@
     class="snippet"
     onclick={copyAll}
     title="Click to copy"
+    aria-label="Copy R snippet to clipboard"
   >
     <code>{snippet}</code>
   </button>
@@ -60,10 +61,12 @@
             aria-label={redoLabel ? `Redo ${redoLabel}` : "Redo"}>↷</button>
     <button type="button" onclick={() => (expanded = !expanded)}
             title={expanded ? "Collapse snippet" : "Expand snippet to full multi-line view"}
+            aria-label={expanded ? "Collapse snippet" : "Expand snippet"}
             aria-expanded={expanded}>
       {expanded ? "⌃" : "⌄"}
     </button>
-    <button type="button" onclick={copyAll} title="Copy snippet">
+    <button type="button" onclick={copyAll} title="Copy snippet"
+            aria-label={copied ? "Snippet copied" : "Copy snippet"}>
       {copied ? "✓" : "📋"}
     </button>
   </div>
@@ -73,8 +76,8 @@
   .snippet-strip {
     display: flex;
     align-items: center;
-    border-top: 1px solid #e2e8f0;
-    background: #fafafa;
+    border-top: 1px solid var(--v2-rule, #d6d0c1);
+    background: var(--v2-paper-2, #f3efe5);
     padding: 4px 12px;
     gap: 8px;
     height: 32px;
@@ -93,9 +96,9 @@
     overflow: hidden;
   }
   .snippet code {
-    font-family: ui-monospace, monospace;
-    font-size: 11.5px;
-    color: #1a1a1a;
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-body, 11.5px);
+    color: var(--v2-ink, #15140e);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -113,9 +116,10 @@
   .controls button {
     padding: 2px 8px;
     font-size: 12px;
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
+    background: var(--v2-paper-edge, #fff);
+    border: 1px solid var(--v2-rule, #d6d0c1);
+    border-radius: var(--v2-r-soft, 3px);
+    color: var(--v2-ink, #15140e);
     cursor: pointer;
   }
   .controls button:disabled {
@@ -123,6 +127,6 @@
     cursor: not-allowed;
   }
   .controls button:not(:disabled):hover {
-    background: #f1f5f9;
+    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
   }
 </style>

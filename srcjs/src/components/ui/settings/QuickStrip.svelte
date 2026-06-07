@@ -9,9 +9,9 @@
   import type { ThemeInputs } from "$types/theme-inputs";
   import type { WebTheme } from "$types/theme-resolved";
   import { EnumRow } from "$components/theme-controls";
-  import { buildSnippetSteps } from "../../../studio/snippet-generator";
+  import { buildSnippetSteps } from "$lib/theme/theme-diff";
   import { buildTheme } from "$lib/theme/theme-adapter";
-  import { WIRE_SCHEMA } from "$lib/theme/theme-wire";
+  import { buildThemeWire } from "$lib/theme/theme-wire";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -28,13 +28,29 @@
 
   // ── Divergence badge (P4): how many inputs differ from the loaded
   // theme — counted with the SAME diff that generates the R snippet, so
-  // the number is the length of the set_*() chain that reproduces it. ──
+  // the number is the length of the set_*() chain that reproduces it.
+  // Pins/overrides count RELATIVE to the loaded theme too (flow review
+  // F1: importing a pinned theme used to show its own pins as "edits"
+  // with nothing to reset). ──
+  function recordDelta(
+    cur: Record<string, unknown>,
+    init: Record<string, unknown>,
+  ): number {
+    const keys = new Set([...Object.keys(cur), ...Object.keys(init)]);
+    let n = 0;
+    for (const k of keys) {
+      if (JSON.stringify(cur[k]) !== JSON.stringify(init[k])) n += 1;
+    }
+    return n;
+  }
   const divergence = $derived.by(() => {
-    const initial = (store.initialTheme as WebTheme | null)?.authoringInputs;
+    const init = store.initialTheme as WebTheme | null;
+    const initial = init?.authoringInputs;
     if (!initial || !inputs) return 0;
+    const t = theme as WebTheme | undefined;
     let n = buildSnippetSteps(initial, inputs).length;
-    n += Object.keys((theme as WebTheme | undefined)?.roleOverrides ?? {}).length;
-    n += Object.keys((theme as WebTheme | undefined)?.pins ?? {}).length;
+    n += recordDelta(t?.roleOverrides ?? {}, init?.roleOverrides ?? {});
+    n += recordDelta(t?.pins ?? {}, init?.pins ?? {});
     return n;
   });
 
@@ -43,13 +59,10 @@
   function exportWire(): void {
     if (!inputs) return;
     const t = theme as WebTheme | undefined;
-    const wire = {
-      $schema: WIRE_SCHEMA,
-      name: store.baseThemeName,
-      inputs,
-      roleOverrides: t?.roleOverrides ?? {},
-      ...(t?.pins && Object.keys(t.pins).length > 0 ? { pins: t.pins } : {}),
-    };
+    // ONE envelope builder for every egress (quality review).
+    const wire = buildThemeWire(
+      inputs, store.baseThemeName, t?.roleOverrides ?? {}, t?.pins ?? {},
+    );
     const blob = new Blob([JSON.stringify(wire, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -62,6 +75,7 @@
   }
 
   let importError = $state<string | null>(null);
+  let fileInput = $state<HTMLInputElement | null>(null);
   function importWire(file: File): void {
     importError = null;
     file.text().then((text) => {
@@ -95,18 +109,20 @@
     <div class="echo">
       <span class="preset">{store.baseThemeName}</span>
       {#if divergence > 0}
-        <span class="edited" title="Edits that the R snippet / export would carry">· {divergence} differ</span>
+        <span class="edited" title="Theme edits vs the loaded theme — the length of the set_*() chain the export carries">· {divergence} {divergence === 1 ? "edit" : "edits"}</span>
       {/if}
       <span class="echo-actions">
-        <button type="button" class="echo-btn" title="Export theme JSON (wire envelope)" onclick={exportWire}>⇩</button>
-        <label class="echo-btn" title="Import theme JSON">
-          ⇧<input type="file" accept=".json,application/json" class="file-input"
-                  onchange={(e) => {
-                    const f = (e.currentTarget as HTMLInputElement).files?.[0];
-                    if (f) importWire(f);
-                    (e.currentTarget as HTMLInputElement).value = "";
-                  }} />
-        </label>
+        <button type="button" class="echo-btn" aria-label="Export theme JSON"
+                title="Export theme JSON (wire envelope)" onclick={exportWire}>export</button>
+        <button type="button" class="echo-btn" aria-label="Import theme JSON"
+                title="Import theme JSON" onclick={() => fileInput?.click()}>import</button>
+        <input bind:this={fileInput} type="file" accept=".json,application/json" class="file-input"
+               aria-label="Import theme JSON file"
+               onchange={(e) => {
+                 const f = (e.currentTarget as HTMLInputElement).files?.[0];
+                 if (f) importWire(f);
+                 (e.currentTarget as HTMLInputElement).value = "";
+               }} />
       </span>
     </div>
     {#if importError}
@@ -155,7 +171,8 @@
   }
   .edited {
     font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-hot, #b53a1f);
+    /* Neutral counter, not an alarm (UX review P1-4). */
+    color: var(--v2-ink-2, #4a463c);
   }
   .echo-actions {
     margin-left: auto;
@@ -163,17 +180,20 @@
     gap: 2px;
   }
   .echo-btn {
-    width: 20px;
-    height: 20px;
+    min-width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 0;
     background: transparent;
-    color: var(--v2-ink-3, #8a8478);
+    color: var(--v2-ink-2, #4a463c);
     cursor: pointer;
     border-radius: var(--v2-r-hair, 2px);
-    font-size: 12px;
+    font-size: var(--v2-text-small, 10.5px);
+    padding: 0 4px;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
   }
   .echo-btn:hover { color: var(--v2-ink, #15140e); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
   .file-input {

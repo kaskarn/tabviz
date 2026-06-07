@@ -189,7 +189,9 @@
   }
   .seam-sub {
     font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
+    /* ink-2, not ink-3: this band sits on recessed paper-2 where ink-3
+       drops below readable contrast (a11y review). */
+    color: var(--v2-ink-2, #4a463c);
   }
   .pin-row {
     display: flex;
@@ -200,11 +202,11 @@
   }
   .pin-clear {
     flex: none;
-    width: 18px;
+    width: 24px;
     height: var(--v2-control-h, 22px);
     border: 0;
     background: transparent;
-    color: var(--v2-ink-3, #8a8478);
+    color: var(--v2-ink-2, #4a463c);
     cursor: pointer;
     border-radius: var(--v2-r-hair, 2px);
     padding: 0;

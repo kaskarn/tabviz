@@ -26,6 +26,13 @@ ramps. Pins ride the theme as part of the portable artifact (the wire\'s
 \code{roleOverrides}), survive every other \verb{set_*()} re-resolve, and are what
 the studio\'s "Copy R code" emits for rebinds.
 }
+\examples{
+\dontrun{
+web_theme_cochrane() |>
+  set_role("text-muted", "brand", 8) |>
+  set_role("row-alt-bg", "neutral", 2)
+}
+}
 \seealso{
 \code{\link[=clear_role]{clear_role()}}
 }

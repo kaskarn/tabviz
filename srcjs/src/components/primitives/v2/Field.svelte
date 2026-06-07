@@ -215,4 +215,7 @@
     color: var(--v2-ink, #15140e);
     outline: none;
   }
+  @media (prefers-reduced-motion: reduce) {
+    .dot, .info { transition: none; }
+  }
 </style>

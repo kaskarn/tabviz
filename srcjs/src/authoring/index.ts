@@ -72,6 +72,15 @@ export type { WidgetCSSContext } from "../lib/theme/theme-css";
 // resolved theme blob that the renderer consumes.
 export { buildTheme } from "../lib/theme/theme-adapter";
 
+// Bindable Tier-2 roles (ALL_ROLES minus off-ramp). R's set_role()
+// validates against this roster via ts_call so the R assert can never
+// drift from the TS spine (flow review F3: an unknown role silently
+// no-oped in the resolver yet persisted on the artifact).
+import { ALL_ROLES as _ALL_ROLES, OFF_RAMP_ROLES as _OFF_RAMP_ROLES } from "../types/theme-roles";
+export function listBindableRoles(): string[] {
+  return _ALL_ROLES.filter((r) => !_OFF_RAMP_ROLES.has(r));
+}
+
 // V4 substrate inspection helpers. R wraps these via `ts_call(...)` to
 // expose `list_component_tokens()` / `inspect_token()` / `theme_css_vars()`
 // at the R user surface (Stage 1 §40 step 9).

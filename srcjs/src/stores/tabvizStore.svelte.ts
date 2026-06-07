@@ -1348,6 +1348,8 @@ export function createTabvizStore() {
     setThemeObject: theme.setThemeObject,
     setAuthoringInputs: theme.setAuthoringInputs,
     previewAuthoringInputs: theme.previewAuthoringInputs,
+    clearThemePin: theme.clearThemePin,
+    clearThemeRoleOverride: theme.clearThemeRoleOverride,
     captureThemeSnapshot: theme.captureThemeSnapshot,
     applyThemeSnapshot: theme.applyThemeSnapshot,
     // Zoom & auto-fit actions — layout-zoom slice passthrough.

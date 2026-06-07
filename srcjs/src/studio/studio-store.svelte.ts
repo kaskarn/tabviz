@@ -11,10 +11,11 @@ import type { ResolvedTheme } from "../lib/theme/resolve-theme";
 import { resolveTheme } from "../lib/theme/resolve-theme";
 import { collectContrastFailures } from "../lib/theme/theme-validate";
 import {
+  buildThemeWire,
   createWire,
   setRoleBinding as wireSetRoleBinding,
+  type PinnedThemeWire,
   type RoleOverrides,
-  type ThemeWire,
 } from "../lib/theme/theme-wire";
 import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
 import { applyTokenPins } from "../lib/theme/consumer-bridge";
@@ -157,15 +158,9 @@ class StudioStore {
    *  Every egress (Copy JSON / download / save-as / studio_done) emits
    *  THIS — never bare `inputs`, which silently dropped the spine
    *  rebinds (the studio exported less than its own UI edited). */
-  exportWire(): (ThemeWire & { pins?: Record<string, string> }) | null {
+  exportWire(): PinnedThemeWire | null {
     if (!this.inputs) return null;
-    const wire = {
-      ...createWire(this.inputs, this.baseName),
-      roleOverrides: this.roleOverrides,
-    };
-    return Object.keys(this.pins).length > 0
-      ? { ...wire, pins: this.pins }
-      : wire;
+    return buildThemeWire(this.inputs, this.baseName, this.roleOverrides, this.pins);
   }
 
   /** Pin a manifest token to a direct value (TOTAL control, P3).

@@ -28,7 +28,7 @@ set_fonts <- function(theme, body = NULL, display = NULL, mono = NULL) {
   if (!is.null(body))    inputs@fonts_body    <- body
   if (!is.null(display)) inputs@fonts_display <- display
   if (!is.null(mono))    inputs@fonts_mono    <- mono
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
+  re_resolve(theme, inputs)
 }
 
 #' Set the typography modular size scale on a theme.
@@ -52,7 +52,7 @@ set_type_scale <- function(theme, base = NULL, ratio = NULL) {
   inputs <- theme@inputs
   if (!is.null(base))  inputs@type_base_size   <- base
   if (!is.null(ratio)) inputs@type_scale_ratio <- ratio
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
+  re_resolve(theme, inputs)
 }
 
 #' Set the typography weight axis on a theme.
@@ -79,5 +79,5 @@ set_type_weights <- function(theme, regular = NULL, medium = NULL,
   if (!is.null(medium))   inputs@type_weights_medium   <- medium
   if (!is.null(semibold)) inputs@type_weights_semibold <- semibold
   if (!is.null(bold))     inputs@type_weights_bold     <- bold
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
+  re_resolve(theme, inputs)
 }

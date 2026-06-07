@@ -45,12 +45,11 @@
     }
   }
 
-  /** The pre-pin derived value, for the provenance readout. */
-  function derivedValue(cssVar: string): string {
-    // resolved.cssVars already carries the pin overlay; recompute the
-    // underlying value lazily only for display by asking the manifest's
-    // resolve — cheap shortcut: show the pin and mark it pinned; the
-    // inspector (Alt+click / trace) shows full provenance.
+  /** The resolved (post-pin) value, for the release-button tooltip.
+   *  Named for what it IS (quality review: the old name `derivedValue`
+   *  promised the PRE-pin cascade value, which resolved.cssVars cannot
+   *  supply — full provenance lives in the inspector trace). */
+  function resolvedPinValue(cssVar: string): string {
     return studioStore.resolved?.cssVars?.[cssVar] ?? "";
   }
 </script>
@@ -66,7 +65,9 @@
             ariaLabel="{cssVar} pinned value"
             oncommit={(v) => v.trim() && studioStore.setPin(cssVar, v.trim())}
           />
-          <button type="button" class="pin-clear" title="Release pin ({derivedValue(cssVar)})"
+          <button type="button" class="pin-clear"
+                  title="Release pin ({resolvedPinValue(cssVar)})"
+                  aria-label="Release pin {cssVar}"
                   onclick={() => studioStore.clearPin(cssVar)}>↻</button>
         </span>
       </Field>
@@ -77,18 +78,22 @@
         alignLeft
         placeholder="token (e.g. text-footnote-size)"
         ariaLabel="Token name to pin"
+        ariaDescribedby={error ? "pin-error" : undefined}
+        ariaInvalid={error != null}
       />
       <TextInput
         bind:value={draftValue}
         alignLeft
         placeholder="value"
         ariaLabel="Pinned value"
+        ariaDescribedby={error ? "pin-error" : undefined}
+        ariaInvalid={error != null}
         oncommit={addPin}
       />
       <button type="button" class="add-btn" onclick={addPin}>pin</button>
     </div>
     {#if error}
-      <p class="pin-error" role="alert">{error}</p>
+      <p class="pin-error" id="pin-error" role="alert">{error}</p>
     {/if}
     <p class="pin-hint">
       Pins write a manifest token directly — total control, validated

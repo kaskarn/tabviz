@@ -73,6 +73,7 @@ When in doubt: render-or-not is `show_`; can-the-user-do-it is `enable_`.
 | `enable_reorder_rows` | `TRUE` | Drag to reorder rows (within a group) |
 | `enable_reorder_columns` | `TRUE` | Drag to reorder columns (within a column group) |
 | `enable_edit` | `TRUE` | Double-click inline editing for text/numeric/label cells |
+| `enable_theme_edit` | `TRUE` | Settings cog + panel. `FALSE` = author freeze: viewers of a published dashboard can't restyle the figure live (the theme *switcher* stays governed by `enable_themes`) |
 | `enable_themes` | `"default"` | Theme menu: `"default"`, `NULL`, or list of `WebTheme` |
 
 ## Customizing Interactions
@@ -229,7 +230,7 @@ The toolbar's zoom button (the magnifier icon) opens a dropdown with three sizin
 | **Readable rows toggle** | Below the aspect slider. When **on**, the slider uses `anchor = "auto"`: wide ratios grow output width and preserve row legibility, scaling content to fit the canvas. When **off**, behaves like `anchor = "width"`: narrows row heights to fit a strict aspect within the canvas. The toggle auto-flips on first slider drag so interactive use is "ambitious" by default. |
 | Max-width / max-height selects | Container constraints, independent of the aspect slider. |
 
-Behind the scenes, the slider mutates the spec's `target_aspect` and `target_aspect_anchor` fields. The "View source" panel emits the corresponding `set_aspect_ratio(N, anchor = "auto")` call so any slider position round-trips into reproducible R code. The settings panel's **Spacing** tab also shows a banner and live row-height value when the slider is active (see [Themes — live spacing values](themes.qmd#aspect-aware-spacing)).
+Behind the scenes, the slider mutates the spec's `target_aspect` and `target_aspect_anchor` fields. The "View source" panel emits the corresponding `set_aspect_ratio(N, anchor = "auto")` call so any slider position round-trips into reproducible R code. The settings panel's **This figure** band shows the per-figure row-height pins the slider creates (see [Themes — live spacing values](themes.qmd#aspect-aware-spacing)).
 
 For the static-export side of the same machinery, see [`save_plot(..., ratio = , anchor = )`](../reference/save_plot.qmd#save_plot) and [`set_aspect_ratio()`](../reference/save_plot.qmd#set_aspect_ratio).
 
@@ -315,9 +316,10 @@ When `enable_edit` is on:
 
 - **Double-click** any existing title, subtitle, caption, or footnote
   to edit it inline (Enter to commit, Esc to cancel).
-- **Add** a missing label via the **Basics** tab in the settings
-  panel — it exposes four text fields (Title / Subtitle / Caption /
-  Footnote). Populating any of them makes the matching slot appear.
+- **Add** a missing label from R (`title =`, `subtitle =`, `caption =`,
+  `footnote =` on `tabviz()`). The settings panel deliberately carries
+  no text fields — content is edited on the canvas, appearance in the
+  panel.
 
 Edits merge into `exportSpec.labels`, so `save_plot()` reflects them.
 

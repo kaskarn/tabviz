@@ -115,6 +115,23 @@ export function createWire(inputs: ThemeInputs, name = "custom"): ThemeWire {
   };
 }
 
+/** A wire that may carry token pins (the optional envelope member). */
+export type PinnedThemeWire = ThemeWire & { pins?: Record<string, string> };
+
+/** THE envelope builder (quality review: settings exportWire, the studio
+ *  store, and the static download path each hand-rolled the same shape —
+ *  one drift away from two envelopes). `pins` rides only when non-empty
+ *  so pin-less exports stay byte-identical to the prefix artifact. */
+export function buildThemeWire(
+  inputs: ThemeInputs,
+  name: string,
+  roleOverrides: RoleOverrides = {},
+  pins: Record<string, string> = {},
+): PinnedThemeWire {
+  const wire: PinnedThemeWire = { $schema: WIRE_SCHEMA, name, inputs, roleOverrides };
+  return Object.keys(pins).length > 0 ? { ...wire, pins } : wire;
+}
+
 /** Pin a role to a (ramp, grade) pair. Returns a new wire.
  *  Throws RoleNotBindableError if the role is off-ramp. */
 export function setRoleBinding(

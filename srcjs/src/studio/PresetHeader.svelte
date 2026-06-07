@@ -172,6 +172,8 @@
       <button
         type="button"
         class:primary={isStatic}
+        aria-haspopup="menu"
+        aria-expanded={exportOpen}
         onclick={() => (exportOpen = !exportOpen)}
       >Export ▾</button>
       {#if exportOpen}
@@ -235,8 +237,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 16px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #fafafa;
+    border-bottom: 1px solid var(--v2-rule, #d6d0c1);
+    background: var(--v2-paper-2, #f3efe5);
     position: relative;
     gap: 12px;
   }
@@ -246,9 +248,9 @@
     gap: 8px;
     font-size: 13px;
   }
-  .separator { color: #94a3b8; }
+  .separator { color: var(--v2-ink-3, #8a8478); }
   .base {
-    color: #475569;
+    color: var(--v2-ink-2, #4a463c);
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -256,10 +258,10 @@
   .base select {
     font-size: 12px;
     padding: 2px 4px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    background: #fff;
-    color: #1e293b;
+    border: 1px solid var(--v2-rule, #d6d0c1);
+    border-radius: var(--v2-r-soft, 3px);
+    background: var(--v2-paper-edge, #fff);
+    color: var(--v2-ink, #15140e);
     cursor: pointer;
   }
   .dirty {
@@ -284,35 +286,31 @@
   }
   button {
     padding: 4px 10px;
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    border-radius: 4px;
+    border: 1px solid var(--v2-rule, #d6d0c1);
+    background: var(--v2-paper-edge, #fff);
+    border-radius: var(--v2-r-soft, 3px);
     cursor: pointer;
     font-size: 12px;
-    color: inherit;
+    color: var(--v2-ink, #15140e);
   }
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
   button:not(:disabled):hover {
-    background: #f1f5f9;
+    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
   }
-  button.done {
-    background: #2563eb;
-    color: #fff;
-    border-color: #1d4ed8;
-  }
-  button.done:hover {
-    background: #1d4ed8;
-  }
+  /* Primary CTA = ink inversion, the v2 active grammar (not blue —
+     accent is reserved for ACTIVE state, never chrome decoration). */
+  button.done,
   button.primary {
-    background: #2563eb;
-    color: #fff;
-    border-color: #1d4ed8;
+    background: var(--v2-active-bg, #15140e);
+    color: var(--v2-active-fg, #faf7f0);
+    border-color: var(--v2-active-bg, #15140e);
   }
+  button.done:hover,
   button.primary:hover {
-    background: #1d4ed8;
+    background: color-mix(in srgb, var(--v2-active-bg, #15140e) 85%, var(--v2-paper, #faf7f0));
   }
   .export-wrap {
     position: relative;
@@ -322,8 +320,8 @@
     top: 100%;
     right: 0;
     margin-top: 4px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--v2-paper, #faf7f0);
+    border: 1px solid var(--v2-rule, #d6d0c1);
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     z-index: 10;
@@ -338,16 +336,16 @@
     padding: 8px 12px;
   }
   .menu button:hover {
-    background: #f1f5f9;
+    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
   }
   .save-popover {
     position: absolute;
     top: 100%;
     right: 200px;
     margin-top: 4px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
+    background: var(--v2-paper, #faf7f0);
+    border: 1px solid var(--v2-rule, #d6d0c1);
+    border-radius: var(--v2-r-soft, 3px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     z-index: 10;
     padding: 12px;
@@ -360,8 +358,8 @@
   }
   .save-popover input {
     padding: 4px 8px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
+    border: 1px solid var(--v2-rule, #d6d0c1);
+    border-radius: var(--v2-r-soft, 3px);
     font-size: 13px;
     min-width: 180px;
   }
@@ -371,8 +369,8 @@
     left: 50%;
     transform: translateX(-50%);
     padding: 8px 14px;
-    background: #1a1a1a;
-    color: #fff;
+    background: var(--v2-active-bg, #15140e);
+    color: var(--v2-active-fg, #faf7f0);
     border-radius: 6px;
     font-size: 12.5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

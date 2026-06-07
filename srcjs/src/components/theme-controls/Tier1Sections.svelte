@@ -15,6 +15,7 @@
   disclosures with value-chip summaries. Disclosure depth ≤ 1 (law).
 -->
 <script lang="ts">
+  import type { ControlLayout } from "./index";
   import type { ThemeInputs, OklchTriple } from "$types/theme-inputs";
   import AnchorRow from "./AnchorRow.svelte";
   import EnumRow from "./EnumRow.svelte";
@@ -33,7 +34,7 @@
     cssVars?: Record<string, string>;
     /** "compact" (settings) or "roomy" (studio rail — LCH always open,
      *  disclosures open by default). */
-    layout?: "compact" | "roomy";
+    layout?: ControlLayout;
     onchange: (next: ThemeInputs, label?: string) => void;
     onpreview?: (next: ThemeInputs) => void;
     /** Show the studio's Match-brand compound move. */
@@ -339,7 +340,7 @@
 {/if}
 
 <style>
-  .match-brand { padding: 8px 12px 0; }
+  .match-brand { padding: 8px 0 0; }
   .match-brand button {
     font-size: var(--v2-text-body, 11.5px);
     padding: 3px 10px;
@@ -357,11 +358,14 @@
     display: flex;
     flex-direction: column;
     gap: var(--v2-gap-hair, 2px);
-    padding: 4px 12px 8px;
+    /* Horizontal inset comes from the HOST band on both sides (visual
+       review: the old half-here/half-host split put the THEME rows 12px
+       off the QuickStrip/FigureBand spine). */
+    padding: 4px 0 8px;
   }
   .studio-pointer {
     margin: 0;
-    padding: 8px 12px 12px;
+    padding: 8px 0 12px;
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-ink-3, #8a8478);
   }

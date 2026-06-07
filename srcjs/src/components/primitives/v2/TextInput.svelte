@@ -17,6 +17,8 @@
     /** Left-align (prose) instead of the hex field's right-align. */
     alignLeft?: boolean;
     ariaLabel?: string;
+    ariaDescribedby?: string;
+    ariaInvalid?: boolean;
     oninput?: (next: string) => void;
     oncommit?: (next: string) => void;
   }
@@ -28,6 +30,8 @@
     id,
     alignLeft = false,
     ariaLabel,
+    ariaDescribedby,
+    ariaInvalid = false,
     oninput,
     oncommit,
   }: Props = $props();
@@ -64,6 +68,8 @@
   {disabled}
   {value}
   aria-label={ariaLabel}
+  aria-describedby={ariaDescribedby}
+  aria-invalid={ariaInvalid || undefined}
   oninput={handleInput}
   onblur={commit}
   onkeydown={handleKeydown}

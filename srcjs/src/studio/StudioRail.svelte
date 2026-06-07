@@ -3,7 +3,9 @@
   (settings-overhaul P3). The roomy face of the SAME component the
   settings panel mounts: LCH editors always open, disclosures open,
   Match-brand compound move. Replaces ThemeControlsStrip + the whole
-  theme-panel/controls/* dialect (--tp-*), which are deleted.
+  theme-panel/controls/* dialect, which are deleted. (The --tp-* token
+  namespace survives ONLY inside the cascade-pedagogy components, which
+  self-define it — no control reads it.)
 
   Same sections, same vocabulary, same order as settings — learn one
   surface, know both. What the studio ADDS over settings is below the
@@ -44,5 +46,7 @@
   .studio-rail {
     background: var(--v2-paper, #faf7f0);
     min-height: 100%;
+    /* Hosts own the horizontal gutter (one spine across both faces). */
+    padding: 0 12px;
   }
 </style>

@@ -24,7 +24,7 @@ set_shell_mode <- function(theme, mode) {
   checkmate::assert_choice(mode, c("flush", "raised", "float", "transparent"))
   inputs <- theme@inputs
   inputs@shell_mode <- mode
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
+  re_resolve(theme, inputs)
 }
 
 #' Set the surface texture on a theme.
@@ -50,5 +50,5 @@ set_shell_texture <- function(theme, texture) {
   checkmate::assert_choice(texture, c("none", "ruled", "grid", "dotted", "grain"))
   inputs <- theme@inputs
   inputs@shell_texture <- texture
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
+  re_resolve(theme, inputs)
 }

@@ -6,6 +6,8 @@
 
 import { describe, expect, test } from "vitest";
 import { createThemeSlice } from "./theme.svelte";
+import { buildTheme } from "$lib/theme/theme-adapter";
+import { PRESETS } from "$lib/theme/theme-presets-inputs";
 import { THEME_PRESETS } from "$lib/theme/theme-presets";
 import type { WebSpec } from "$types";
 import type { OpRecord } from "$lib/op-recorder";
@@ -291,5 +293,64 @@ describe("theme slice — reset", () => {
     expect(theme.themeEdits).toEqual({});
     expect(theme.themeOverrides.size).toBe(0);
     expect(theme.initialTheme).not.toBeNull();
+  });
+});
+
+describe("theme slice — artifact survival through Tier-1 edits (final review P1)", () => {
+  // The shipped bug class: setAuthoringInputs rebuilt via the string-name
+  // buildTheme form, defaulting roleOverrides/pins to {} — the FIRST
+  // Tier-1 edit silently wiped any pins the theme arrived with (import,
+  // R set_pin()/set_role(), studio handoff). These tests pin survival
+  // across a polarity flip, the canonical full re-resolve.
+  function buildArtifactSpec() {
+    const themed = buildTheme(PRESETS["cochrane"]!, {
+      name: "cochrane",
+      roleOverrides: { "text-muted": { ramp: "brand", grade: 8 } },
+      pins: { "--tv-text-footnote-size": "0.7rem" },
+    }) as WebSpec["theme"];
+    return buildSpec(themed);
+  }
+
+  test("pins + roleOverrides survive setAuthoringInputs polarity flip", () => {
+    const initial = buildArtifactSpec();
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    theme.setAuthoringInputs({ polarity: "dark" });
+    const t = harness.spec?.theme as {
+      authoringInputs?: { polarity?: string };
+      roleOverrides?: Record<string, unknown>;
+      pins?: Record<string, string>;
+    };
+    expect(t.authoringInputs?.polarity).toBe("dark");
+    expect(t.roleOverrides?.["text-muted"]).toEqual({ ramp: "brand", grade: 8 });
+    expect(t.pins?.["--tv-text-footnote-size"]).toBe("0.7rem");
+  });
+
+  test("preview path carries the artifacts too", () => {
+    const initial = buildArtifactSpec();
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    theme.previewAuthoringInputs({ polarity: "dark" });
+    const t = harness.spec?.theme as { pins?: Record<string, string> };
+    expect(t.pins?.["--tv-text-footnote-size"]).toBe("0.7rem");
+  });
+
+  test("clearThemePin / clearThemeRoleOverride release exactly one entry (DT-12)", () => {
+    const initial = buildArtifactSpec();
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    theme.clearThemePin("--tv-text-footnote-size");
+    let t = harness.spec?.theme as {
+      roleOverrides?: Record<string, unknown>;
+      pins?: Record<string, string>;
+    };
+    expect(t.pins ?? {}).toEqual({});
+    expect(t.roleOverrides?.["text-muted"]).toEqual({ ramp: "brand", grade: 8 });
+    theme.clearThemeRoleOverride("text-muted");
+    t = harness.spec?.theme as { roleOverrides?: Record<string, unknown> };
+    expect(t.roleOverrides ?? {}).toEqual({});
   });
 });

@@ -52,6 +52,30 @@
     if (e.key === "Escape") {
       e.stopPropagation();
       store.closeSettings();
+      return;
+    }
+    // Focus trap (a11y review): aria-modal promises focus containment —
+    // without it Tab walks out into the table behind the backdrop. The
+    // ConfirmDialog portals OUTSIDE the panel, so the trap stands down
+    // while it's open.
+    if (e.key === "Tab" && panelRef && !resetConfirmOpen) {
+      const focusables = panelRef.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === panelRef)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      } else if (!panelRef.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
 
@@ -112,8 +136,8 @@
       </div>
     </div>
 
+    <QuickStrip {store} />
     <div class="panel-body">
-      <QuickStrip {store} />
       <div class="theme-band">
         <ThemeBand {store} />
       </div>
@@ -235,5 +259,10 @@
   }
   .theme-band {
     flex: none;
+    /* ONE spine: this band owns the same 12px gutter QuickStrip and
+       FigureBand use, so every label column right-aligns to one edge
+       (visual review MEDIUM — THEME rows sat 12px off-grid; the right
+       half also fixes UX review P0 clipped readouts). */
+    padding: 0 12px;
   }
 </style>

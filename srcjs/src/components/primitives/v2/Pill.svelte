@@ -59,6 +59,24 @@
     value = v;
     onchange?.(v);
   }
+
+  // Radiogroup keyboard contract (a11y review): arrow keys move + select,
+  // roving tabindex keeps ONE tab stop per pill. Without this each
+  // segment was a separate Tab stop and arrows did nothing — neither is
+  // what role="radio" promises a screen-reader user.
+  const activeIndex = $derived(Math.max(0, segments.findIndex((s) => s.value === value)));
+  function handleKeydown(e: KeyboardEvent, i: number) {
+    let next: number | null = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % segments.length;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (i - 1 + segments.length) % segments.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = segments.length - 1;
+    if (next == null) return;
+    e.preventDefault();
+    select(segments[next].value);
+    const root = (e.currentTarget as HTMLElement).parentElement;
+    (root?.children[next] as HTMLElement | undefined)?.focus();
+  }
 </script>
 
 <div
@@ -77,9 +95,11 @@
       class="seg"
       class:active
       aria-checked={active}
+      tabindex={i === activeIndex ? 0 : -1}
       title={seg.title}
       {disabled}
       onclick={() => select(seg.value)}
+      onkeydown={(e) => handleKeydown(e, i)}
     >
       {#if seg.glyph}
         <span class="seg-glyph" aria-hidden="true">{glyphChar(seg.glyph)}</span>
@@ -157,5 +177,8 @@
   }
   .seg-label {
     line-height: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .seg { transition: none; }
   }
 </style>

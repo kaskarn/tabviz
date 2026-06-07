@@ -25,7 +25,12 @@
   --v2-paper:        var(--tv-surface-bg, #faf7f0);   /* popover background */
   --v2-paper-2:      color-mix(in srgb, var(--tv-text, #15140e) 6%, var(--tv-surface-bg, #faf7f0));   /* recessed surface — input wells */
   --v2-paper-sunk:   color-mix(in srgb, var(--tv-text, #15140e) 10%, var(--tv-surface-bg, #faf7f0));  /* lowest panel */
-  --v2-paper-edge:   color-mix(in srgb, #ffffff 30%, var(--tv-surface-bg, #ffffff));                  /* highest paper — chip surfaces */
+  /* Highest paper — chip + input-well surfaces. 8%, not more: white-mix
+     is invisible on light surfaces at any % but EXPLODES on dark ones
+     (30% turned dark-theme inputs into mid-gray slabs with weak text
+     contrast — visual review HIGH). 8% = same chip pop in light, subtle
+     elevation lift in dark. */
+  --v2-paper-edge:   color-mix(in srgb, #ffffff 8%, var(--tv-surface-bg, #ffffff));
 
   /* ── Ink (text) ──────────────────────────────────────────────── */
   --v2-ink:          var(--tv-text, #15140e);         /* primary — labels, values */

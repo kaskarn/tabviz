@@ -113,8 +113,16 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
         cli::cli_warn("Studio save-as: could not resolve the posted theme wire.")
         return()
       }
-      write_theme(th, payload$name)
-      cli::cli_inform("Saved theme {.val {payload$name}} to {.path {.tabviz_theme_dir()}}.")
+      # Persist the WIRE ENVELOPE verbatim, not the resolved blob (flow
+      # review F2: "both surfaces export theme JSON, one envelope" — the
+      # resolved form is 50x larger and de-canonicalizes the artifact;
+      # theme_from_wire() above already proved it resolves).
+      dir <- .tabviz_theme_dir()
+      if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
+      path <- file.path(dir, paste0(payload$name, ".json"))
+      jsonlite::write_json(payload$wire, path,
+                           auto_unbox = TRUE, pretty = TRUE, null = "null")
+      cli::cli_inform("Saved theme {.val {payload$name}} to {.path {path}}.")
     })
     shiny::observeEvent(input$studio_cancel, {
       final$action <<- "cancel"

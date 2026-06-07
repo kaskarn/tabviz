@@ -1,3 +1,39 @@
+# tabviz 0.37.2 (dev) — the settings overhaul
+
+The settings ⇄ studio boundary is now **tier-gated writes,
+artifact-typed travel** (plan: `docs/dev/settings-overhaul-plan.md`;
+locked after three agent-debate rounds + an 8-scope final review):
+
+* **Settings panel, total rebuild**: fixed 400px, tabs gone — one
+  vertical document (quick strip → THEME band → THIS FIGURE band). The
+  THEME band carries the **full Tier-1 surface** (anchor rows with LCH
+  expanders, status colors, shell / header / series / border preset /
+  texture, type scale, color system, effects, geometry); the FIGURE
+  band holds per-spec state (banding, watermark, row pins) on recessed
+  paper with its **own scoped reset**. Two resets, one per scope.
+* **One control dialect**: the shared `theme-controls/Tier1Sections`
+  is mounted by BOTH the settings panel (compact) and the studio rail
+  (roomy). The `--tp-*` controls dialect and LayoutControl's bespoke
+  cards are deleted.
+* **The theme JSON envelope** `{$schema, name, inputs, roleOverrides,
+  pins?}` is the one portable artifact: settings export/import, studio
+  Copy JSON / Download / Save-as…, and `read_theme()` all speak it.
+* **Total control channels**: `set_role()` / `clear_role()` (Tier-2
+  role rebinds, validated against the live TS roster) and `set_pin()` /
+  `clear_pin()` (manifest-validated token pins) ride the artifact,
+  survive every Tier-1 re-resolve, appear in the studio's R snippet,
+  and are visible + releasable from the settings panel (DT-12).
+* **Author freeze**: `web_interaction(enable_theme_edit = FALSE)`
+  removes the settings cog on published dashboards (the theme switcher
+  stays governed by `enable_themes`).
+* **Divergence badge**: the quick strip counts edits with the same
+  diff that generates the R snippet — the number IS the length of the
+  `set_*()` chain the export carries.
+* Studio "Save as…" now persists the wire envelope (not the resolved
+  blob); `web_theme()`'s TS twin gained `headerStyle` / `borderPreset` /
+  `slotStyle`; dark-mode input fields re-skin with polarity; settings
+  panel traps focus; pills gained the radiogroup arrow-key contract.
+
 # tabviz 0.37.1 (dev) — the spacing rework
 
 A three-agent spacing/shell review (geometry audit, rgc_v4 aesthetics

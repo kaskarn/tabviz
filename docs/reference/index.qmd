@@ -121,6 +121,10 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 | [`set_density()` / `set_header_style()` / `set_first_column_style()`](themes.qmd#set_variants) | Per-table variant setters |
 | [`set_spacing()`](themes.qmd#set_spacing) | Per-token spacing override on top of the density preset |
 | [`set_theme_field()`](themes.qmd#set_theme_field) | Generic deep setter; `path` walks the theme tree |
+| `set_paper()` / `set_ink()` / `set_brand()` / `set_accent()` / `set_ink2()` | Tier-1 anchor setters — hex or `oklch()` triple; re-resolve the cascade |
+| `set_border_preset()` | Tier-1 border preset (`none` / `hairline` / `ruled` / `boxed`) |
+| `set_role()` / `clear_role()` | Pin / release a Tier-2 role to a `(ramp, grade)` binding (the studio spine's R twin) |
+| `set_pin()` / `clear_pin()` | Pin / release a component token (`--tv-*`) to a direct value — total control, manifest-validated |
 
 ## Annotations
 

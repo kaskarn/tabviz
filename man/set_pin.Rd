@@ -24,6 +24,13 @@ derives. Total control — the value is applied after resolution and
 before contrast validation, and rides the portable theme artifact
 (the wire's \code{pins}). Use \code{\link[=list_component_tokens]{list_component_tokens()}} to discover names.
 }
+\examples{
+\dontrun{
+web_theme_nejm() |>
+  set_pin("--tv-text-footnote-size", "0.7rem") |>
+  set_pin("text-title-weight", "700")
+}
+}
 \seealso{
 \code{\link[=clear_pin]{clear_pin()}}, \code{\link[=set_role]{set_role()}}
 }

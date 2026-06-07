@@ -47,7 +47,9 @@ describe("theme-controls host-agnosticism (DT-11 precursor)", () => {
     const src = stripHtmlComments(
       readFileSync(path.join(HERE, "AnchorRow.svelte"), "utf8"),
     );
-    expect(src).toMatch(/layout\s*\?\s*:\s*"compact"\s*\|\s*"roomy"/);
+    // ControlLayout (index.ts) IS the "compact" | "roomy" union — wired
+    // through as the single source (quality review).
+    expect(src).toMatch(/layout\s*\?\s*:\s*(ControlLayout|"compact"\s*\|\s*"roomy")/);
     expect(src).toMatch(/oncommit\s*:/);
     expect(src).toMatch(/onpreview\s*\?\s*:/);
   });

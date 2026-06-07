@@ -176,14 +176,56 @@ studio rail adopts the shared controls).
 P0–P4 EXECUTED (commits 48030de, 13c8a9f, 04d09fc, eb50684, 0dfe523 +
 the P4 batch). All design tests have gates; two adversarial review
 passes ran mid-arc (P0 review: paint-path fix; P1/P2 review: scenario
-harness, hex NaN gate, banding restoration). Remaining backlog: the
-divergence badge counts vs the LOADED theme (not a named org base);
-per-field Tier-1 revert deferred (DT-13 documents it); `themeEdits`/
-`reapplyEdits` SURVIVE deliberately — canvas gestures (title-gap /
-footer-gap drags on the plot) still write spacing paths, which is
-per-figure APPLY under the doctrine; the DT-11 gate guarantees the
-SETTINGS tree never does. Full deletion needs the canvas gestures
-migrated to a figure-scoped channel first.
+harness, hex NaN gate, banding restoration).
+
+**8-SCOPE FINAL REVIEW BOARD — EXECUTED + FIXED (2026-06-07).** Scopes:
+UX / flow / wiring / a11y / code-quality / performance / docs /
+visual-design. All findings triaged; the fix batch landed:
+- **Wiring P1 (the arc's one real blocker):** setAuthoringInputs/
+  previewAuthoringInputs rebuilt via the string-name buildTheme form —
+  the FIRST Tier-1 edit silently wiped roleOverrides/pins the theme
+  arrived with. Fixed (artifacts carried through both paths) + a
+  `theme.runes.ts` survival regression (polarity flip keeps pins).
+  Studio handoff now seeds roleOverrides/pins too.
+- **DT-12 completed:** ThemeBand gained a "Studio overrides" disclosure
+  listing pins + role overrides with per-entry release
+  (`clearThemePin`/`clearThemeRoleOverride` on the theme slice).
+- **Visual HIGH:** `--v2-paper-edge` white-mix 30%→8% (dark themes got
+  mid-gray input slabs; 8% = same light-mode pop, subtle dark lift).
+  Gutter unified: hosts own `padding: 0 12px` (SettingsPanel theme-band,
+  StudioRail); Tier1Sections' compensating insets removed. Roomy
+  anchors get inter-anchor rules (studio wall).
+- **Flow F1:** divergence badge counts pins/overrides RELATIVE to
+  initialTheme (imported pinned themes no longer show phantom edits).
+  F2: Shiny Save-as… persists the wire envelope verbatim. F3:
+  `set_role()` validates against the live TS roster
+  (`listBindableRoles` via V8, cached).
+- **A11y:** SettingsPanel focus trap; Pill roving tabindex + arrow keys;
+  SnippetStrip/PresetHeader rethemed to v2 tokens + aria; PinsPanel
+  aria-describedby/invalid; ink-3→ink-2 on interactive glyphs +
+  paper-2 prose; 24px targets; reduced-motion on Field dot + Pill;
+  AnchorRow invalid-hex feedback (snap-back + transient ring).
+- **Quality:** `re_resolve()` collapses 24 R re-resolution sites;
+  `buildThemeWire()` is THE envelope builder; `theme-diff.ts` extracted
+  (settings no longer imports studio code); TabBar + weight-ladder
+  deleted; ControlLayout wired through.
+- **Perf:** preview path skips validateResolvedTheme (`skipValidation`);
+  `getCssVarsRaw` shares ONE cached cascade between getCssVars and the
+  paint emitter (was a second uncached resolve per CSS build); bundle
+  budgets re-baselined (widget −33 kB from the dialect cull).
+- **Docs:** themes.qmd (boundary rewrite + envelope section),
+  interactivity/reference rows for enable_theme_edit + new setters,
+  NEWS 0.37.2 entry, set_role/set_pin @examples; TS `webTheme()` gained
+  headerStyle/borderPreset/slotStyle; tabviz() gained enableThemeEdit.
+
+Remaining backlog: per-field Tier-1 revert deferred (DT-13 documents
+it); `themeEdits`/`reapplyEdits` SURVIVE deliberately — canvas gestures
+(title-gap / footer-gap drags on the plot) still write spacing paths,
+which is per-figure APPLY under the doctrine; the DT-11 gate guarantees
+the SETTINGS tree never does. Full deletion needs the canvas gestures
+migrated to a figure-scoped channel first. Slider height 24px vs 22px
+rhythm (LOW, optional). Disclosure-nested rows (banding Start) indent
+12px from the spine — reads as child rows, kept.
 
 ## Build sequence
 

@@ -84,6 +84,9 @@ export interface TabvizArgs {
   enableReorderRows?: boolean;
   enableReorderColumns?: boolean;
   enableEdit?: boolean;
+  /** Author freeze: FALSE removes the settings cog so viewers of a
+   *  published dashboard can't restyle the figure live. Default TRUE. */
+  enableThemeEdit?: boolean;
   showGroupCounts?: boolean;
   tooltipFields?: string[];
   // Layout
@@ -179,6 +182,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
     enableReorderRows: args.enableReorderRows ?? true,
     enableReorderColumns: args.enableReorderColumns ?? true,
     enableEdit: args.enableEdit ?? true,
+    ...(args.enableThemeEdit !== undefined ? { enableThemeEdit: args.enableThemeEdit } : {}),
     enableFilters: args.enableFilters ?? true,
     showGroupCounts: args.showGroupCounts ?? false,
     tooltipFields: args.tooltipFields ?? null,

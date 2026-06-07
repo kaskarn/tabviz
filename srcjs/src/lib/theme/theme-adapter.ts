@@ -144,6 +144,11 @@ export interface BuildThemeOpts {
   roleOverrides?: NonNullable<WebTheme["roleOverrides"]>;
   /** Tier-2/3 token pins (cssVar → value) — see WebTheme.pins. */
   pins?: NonNullable<WebTheme["pins"]>;
+  /** Skip the dev-mode contrast validation pass. Set ONLY by drag-time
+   *  preview paths (perf review: the validator re-derives contrast for
+   *  every role — a second half-cascade per slider tick that the commit
+   *  on pointer-up re-runs anyway). */
+  skipValidation?: boolean;
 }
 
 export function buildTheme(
@@ -445,7 +450,8 @@ export function buildTheme(
   // still build; they just complain), throw-mode in the CI preset gate
   // (theme-validate.test.ts). The validator was dead code until the
   // adversarial color review (H4) noticed nothing ever called it.
-  if (typeof process === "undefined" || process.env?.NODE_ENV !== "production") {
+  if (!opts.skipValidation &&
+      (typeof process === "undefined" || process.env?.NODE_ENV !== "production")) {
     try {
       validateResolvedTheme(built);
     } catch (e) {

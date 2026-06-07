@@ -56,6 +56,7 @@ web_interaction(
 | `enable_edit` | `logical(1)` | `TRUE` | Double-click cells to edit; popover editor for forest-cell numerics. Also enables inline editing of title / subtitle / caption / footnote (v0.15+). |
 | `show_group_counts` | `logical(1)` | `FALSE` | Append `(n)` after each row-group label. |
 | `tooltip_fields` | `character` | `NULL` | Column names shown in the hover tooltip. `NULL` disables tooltips. |
+| `enable_theme_edit` | `logical(1)` | `TRUE` | Settings cog + panel. `FALSE` = author freeze — viewers can't restyle a published figure live; the theme *switcher* stays governed by `enable_themes`. |
 | `enable_themes` | `"default"` / `NULL` / `list` of `WebTheme` | `getOption("tabviz.enable_themes", "default")` | Curate the theme switcher (see below). |
 
 **Returns:** an `InteractionSpec`.

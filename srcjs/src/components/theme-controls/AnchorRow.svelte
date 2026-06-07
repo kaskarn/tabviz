@@ -20,6 +20,7 @@
   optional anchor gets the clear-↻ (onclear).
 -->
 <script lang="ts">
+  import type { ControlLayout } from "./index";
   import type { OklchTriple } from "$types/theme-inputs";
   import { oklchToHex, hexToOklch, isValidHex } from "$lib/oklch";
   import Field from "$components/primitives/v2/Field.svelte";
@@ -32,7 +33,7 @@
     triple: OklchTriple;
     /** Host layout: "compact" = collapsed row + inline expand (settings);
      *  "roomy" = LCH editor always open (studio rail). */
-    layout?: "compact" | "roomy";
+    layout?: ControlLayout;
     /** Compact-host expand state (accordion-of-one lives in the host). */
     expanded?: boolean;
     onexpand?: (open: boolean) => void;
@@ -87,11 +88,24 @@
     else (onpreview ?? oncommit)(next);
   }
 
+  // Key bump re-mounts the TextInput so an invalid entry visibly snaps
+  // back to the committed hex (UX review P1-2: silent-swallow left the
+  // garbage text in the field with no feedback). `hexInvalid` drives a
+  // transient red ring.
+  let hexKey = $state(0);
+  let hexInvalid = $state(false);
+  let invalidTimer: ReturnType<typeof setTimeout> | null = null;
+
   function commitHex(h: string): void {
-    // hexToOklch never returns null — it NaN-poisons on garbage. Gate
-    // user input here (review P1 #2); invalid text is simply ignored
-    // and the field re-syncs to the current triple on next render.
-    if (!isValidHex(h)) return;
+    // hexToOklch never returns null — it NaN-poisons on garbage; gate
+    // user input here.
+    if (!isValidHex(h)) {
+      hexKey += 1;
+      hexInvalid = true;
+      if (invalidTimer) clearTimeout(invalidTimer);
+      invalidTimer = setTimeout(() => (hexInvalid = false), 900);
+      return;
+    }
     oncommit(hexToOklch(h));
   }
 
@@ -100,7 +114,7 @@
   }
 </script>
 
-<div class="anchor-row" class:mirrored>
+<div class="anchor-row" class:mirrored class:roomy={layout === "roomy"}>
   <Field {label} {hint} {pinned} {onreset}>
     <span class="control">
       <button
@@ -108,16 +122,19 @@
         class="chip"
         style:background={hex}
         aria-label="{label} color {hex}"
-        aria-expanded={layout === "compact" ? open : undefined}
         onclick={() => layout === "compact" && onexpand?.(!expanded)}
       ></button>
-      <TextInput
-        value={hex}
-        ariaLabel="{label} hex"
-        oncommit={commitHex}
-      />
+      {#key hexKey}
+        <span class="hex-wrap" class:invalid={hexInvalid}>
+          <TextInput
+            value={hex}
+            ariaLabel="{label} hex"
+            oncommit={commitHex}
+          />
+        </span>
+      {/key}
       {#if mirrored}
-        <span class="tag" title="Inherits — edit to pin">↻</span>
+        <span class="tag" title="Inherits — edit to pin" role="img" aria-label="Inherits — edit to pin">↻</span>
       {:else if onclear}
         <button type="button" class="clear" title="Clear (inherit again)" onclick={onclear}>↻</button>
       {/if}
@@ -163,6 +180,14 @@
 
 <style>
   .anchor-row { display: flex; flex-direction: column; }
+  /* Roomy (studio rail): the always-open LCH triples stack into a 20-row
+     wall — a faint rule + air between anchors keeps them scannable
+     (visual review LOW). */
+  .anchor-row.roomy {
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
+  }
+  .anchor-row.roomy:last-of-type { border-bottom: 0; padding-bottom: 0; }
   .control {
     display: flex;
     align-items: center;
@@ -180,19 +205,25 @@
     cursor: pointer;
     padding: 0;
   }
+  .hex-wrap { display: contents; }
+  .hex-wrap.invalid :global(.ti) {
+    box-shadow: inset 0 0 0 1px var(--v2-hot, #b53a1f);
+  }
   .chip:focus-visible {
     outline: 1px solid var(--v2-focus-ring, #15140e);
     outline-offset: 1px;
   }
   .tag, .clear {
     flex: none;
-    width: 18px;
+    width: 24px;
     height: var(--v2-control-h, 22px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: var(--v2-ink-3, #8a8478);
+    /* ink-2: these are interactive/meaningful glyphs, not placeholders —
+       ink-3 fails the 3:1 UI-component floor (a11y review). */
+    color: var(--v2-ink-2, #4a463c);
     background: transparent;
     border: 0;
     padding: 0;
@@ -202,13 +233,13 @@
   .clear:hover { color: var(--v2-ink, #15140e); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
   .caret {
     flex: none;
-    width: 18px;
+    width: 24px;
     height: var(--v2-control-h, 22px);
     border: 0;
     background: transparent;
     padding: 0;
     font-size: 10px;
-    color: var(--v2-ink-3, #8a8478);
+    color: var(--v2-ink-2, #4a463c);
     cursor: pointer;
     border-radius: var(--v2-r-hair, 2px);
   }
