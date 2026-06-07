@@ -227,6 +227,55 @@ migrated to a figure-scoped channel first. Slider height 24px vs 22px
 rhythm (LOW, optional). Disclosure-nested rows (banding Start) indent
 12px from the spine — reads as child rows, kept.
 
+## ROUND-2 REVIEW BOARD — EXECUTED + FIXED (2026-06-07, commits [review2-A..D])
+
+Six agents in scopes the first board did NOT touch: cross-runtime
+fidelity, adversarial state-machine, input robustness, test-gap audit,
+TS code-quality, R code-quality. 1 P0 + 8 P1s found; the artifact CORE
+(pins/roleOverrides surviving re-resolution, one envelope, paint↔export
+parity for token pins) verified solid (test-gap planted 10 regressions,
+gates caught 7). Failures clustered at the EDGES the arc opened. Landed
+in four committed batches:
+
+- **A — security (the P0):** pin VALUES were free text into SVG
+  `fill="…"` → stored XSS in a SHARED exported artifact (reproduced
+  end-to-end through save_plot). Two layers: ingress grammar gate
+  `isValidPinValue` (consumer-bridge) at the chokepoint every resolve
+  path shares + R `set_pin`/`theme_from_wire`/studio `setPin`/the new
+  `parseThemeWire`; egress neutralizer wrapping `getCssVars` in
+  svg-generator. Plus: settings import now validates via `parseThemeWire`
+  (was raw JSON.parse+buildTheme — skipped `validateThemeInputs`
+  entirely; R↔TS asymmetry); `Number.isFinite` NaN gate in checkTriple/
+  checkRange; path-traversal slug gate on `studio_save_as` + `write_theme`.
+- **B — state/runtime:** studio "Edit in studio" seeded pins/roleOverrides
+  AFTER init → first undo wiped them; `init(base, name, seed)` captures
+  them in history[0]. `clearThemePin/clearThemeRoleOverride` didn't flip
+  `hasThemeEdits` → Reset disabled while badge showed divergence; the
+  getter now compares live pins/roleOverrides vs initialTheme.
+  `applyThemeSnapshot` left initialTheme at the bare per-spec theme →
+  split-nav Reset dropped the snapshot's pins; now snaps the restored
+  theme. Shiny `set_theme(<WebTheme>)` was a dispatcher no-op → wired to
+  `setThemeObject`. Spacing paint≠export: `_emitV4CssVarsBody` overlays
+  `applySpacingPins` on the cached raw resolve. R `set_spacing()` was
+  never serialized → overlaid onto `blob$spacing`. Broken
+  `@param enable_theme_edit` Rd un-split.
+- **C — gate hardening:** DT-11 now walks SettingsPanel's TRANSITIVE
+  .svelte import graph (was settings/ dir glob — blind to controls
+  authored elsewhere) + bracket/computed-member evasion patterns;
+  `computeDivergence`/`recordDelta` extracted pure + unit-tested;
+  `.studio_save_as_payload` extracted so the verbatim-write + traversal
+  guard are testable without Shiny.
+- **D — quality:** the redundant `as`-cast cluster deleted (WebSpec.theme
+  IS WebTheme); FOUR rebuild blocks → one private `rebuild()`; `rString`
+  unified on op-recorder's (newline-safe); `writeThemePath` calls
+  `writePathImmutable`; 7 dead theme-css imports dropped.
+
+NEW GATES: theme-wire-parse.test.ts (9), theme-diff.test.ts (8),
+role-overrides-wiring XSS+spacing-parity (+4), theme.runes state cases
+(+3), studio-store seeding (+1), test-theme-wire.R security+save-as (+6),
+DT-11 import-graph (5→22 files). Pre-existing known fail: vitest
+layout-zoom null-spec headerHeight (jsdom canvas).
+
 ## Build sequence
 
 0. Wire prerequisites (roleOverrides export/wire/parity; border-preset enum;
