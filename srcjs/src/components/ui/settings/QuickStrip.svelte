@@ -12,6 +12,7 @@
   import { buildSnippetSteps } from "$lib/theme/theme-diff";
   import { buildTheme } from "$lib/theme/theme-adapter";
   import { buildThemeWire } from "$lib/theme/theme-wire";
+  import { parseThemeWire } from "$lib/theme/theme-wire-parse";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -80,20 +81,15 @@
     importError = null;
     file.text().then((text) => {
       try {
-        const wire = JSON.parse(text) as {
-          $schema?: string;
-          name?: string;
-          inputs?: ThemeInputs;
-          roleOverrides?: WebTheme["roleOverrides"];
-          pins?: WebTheme["pins"];
-        };
-        if (!wire.inputs?.anchors) {
-          importError = "Not a theme wire (missing inputs.anchors).";
-          return;
-        }
+        // parseThemeWire is the validating ingress (round-2 robustness
+        // review): Tier-1 range/enum checks (the same wall R's S7
+        // validator gives), pin value grammar, roleOverride shape — a
+        // malformed file gets a named error here, never a half-applied
+        // theme or a cryptic resolver crash.
+        const wire = parseThemeWire(text);
         const built = buildTheme(wire.inputs, {
-          name: wire.name ?? "imported",
-          roleOverrides: wire.roleOverrides ?? {},
+          name: wire.name,
+          roleOverrides: wire.roleOverrides,
           pins: wire.pins ?? {},
         });
         store.setThemeObject(built as never);

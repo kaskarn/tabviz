@@ -58,13 +58,36 @@ import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } 
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
 import {
-  getCssVars, readVar, readVarPx,
+  getCssVars as getCssVarsUnsanitized, readVar, readVarPx,
   readTypeFamily, readTypeSize, readTypeWeight,
   readContentPrimary, readContentSecondary, readContentMuted,
   readDividerSubtle, readDividerStrong,
   readAccentDefault, readSurfaceBg, readRowAltBg,
   readBodyFamily, readBodySize, readLabelSize, readCellSize,
 } from "$lib/theme/consumer-bridge";
+
+/** SVG-boundary defense-in-depth (round-2 robustness review P0): cssVar
+ *  values are interpolated into double-quoted SVG attributes throughout
+ *  this module. The ingress gate (`isValidPinValue`) already rejects
+ *  structural chars in pin values, but ANY value that somehow still
+ *  carries them must not be able to break out of an attribute or inject
+ *  elements into the exported document. `"` → `'` (CSS-equivalent for
+ *  font lists, inert inside a double-quoted attribute); `<` `>` stripped
+ *  (never valid in any CSS value we emit). Every getCssVars read in this
+ *  module goes through this wrapper — keep it that way. */
+function getCssVars(theme: Parameters<typeof getCssVarsUnsanitized>[0]): Record<string, string> {
+  const raw = getCssVarsUnsanitized(theme);
+  let dirty = false;
+  for (const v of Object.values(raw)) {
+    if (v.includes('"') || v.includes("<") || v.includes(">")) { dirty = true; break; }
+  }
+  if (!dirty) return raw;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    out[k] = v.replace(/"/g, "'").replace(/[<>]/g, "");
+  }
+  return out;
+}
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { resolveForestLegend, legendGlyphSvg } from "../lib/legend";

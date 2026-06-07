@@ -107,8 +107,17 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
                            simplifyDataFrame = FALSE),
         error = function(e) NULL
       )
-      if (is.null(payload) || is.null(payload$name) || is.null(payload$wire)) return()
-      th <- tryCatch(theme_from_wire(payload$wire), error = function(e) NULL)
+      if (is.null(payload) || is.null(payload[["name"]]) || is.null(payload[["wire"]])) return()
+      # Name comes off the Shiny wire (attacker-controllable from a
+      # crafted client): bare-slug names only, or "../x" escapes the
+      # theme dir (round-2 robustness P1 — path traversal).
+      name <- payload[["name"]]
+      if (!checkmate::test_string(name, pattern = "^[A-Za-z0-9._-]+$") ||
+          grepl("\\.\\.", name, fixed = FALSE)) {
+        cli::cli_warn("Studio save-as: invalid theme name {.val {name}} (letters, digits, . _ - only).")
+        return()
+      }
+      th <- tryCatch(theme_from_wire(payload[["wire"]]), error = function(e) NULL)
       if (is.null(th)) {
         cli::cli_warn("Studio save-as: could not resolve the posted theme wire.")
         return()
@@ -119,10 +128,10 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
       # theme_from_wire() above already proved it resolves).
       dir <- .tabviz_theme_dir()
       if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
-      path <- file.path(dir, paste0(payload$name, ".json"))
-      jsonlite::write_json(payload$wire, path,
+      path <- file.path(dir, paste0(name, ".json"))
+      jsonlite::write_json(payload[["wire"]], path,
                            auto_unbox = TRUE, pretty = TRUE, null = "null")
-      cli::cli_inform("Saved theme {.val {payload$name}} to {.path {path}}.")
+      cli::cli_inform("Saved theme {.val {name}} to {.path {path}}.")
     })
     shiny::observeEvent(input$studio_cancel, {
       final$action <<- "cancel"
@@ -254,7 +263,12 @@ write_theme <- function(theme, name) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_string(name)
+  # Bare-slug names only — `name` is pasted into a filesystem path
+  # (round-2 robustness P1: "../x" wrote outside the theme dir).
+  checkmate::assert_string(name, pattern = "^[A-Za-z0-9._-]+$")
+  if (grepl("..", name, fixed = TRUE)) {
+    cli::cli_abort("{.arg name} must be a bare theme name (no {.val ..}).")
+  }
   dir <- .tabviz_theme_dir()
   if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
   path <- file.path(dir, paste0(name, ".json"))

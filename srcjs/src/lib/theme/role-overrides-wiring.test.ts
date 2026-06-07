@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from "bun:test";
 import { buildTheme } from "./theme-adapter";
-import { getCssVars } from "./consumer-bridge";
+import { getCssVars, isValidPinValue } from "./consumer-bridge";
 import { buildThemeCSS } from "./theme-css";
 import { PRESETS } from "./theme-presets-inputs";
 
@@ -108,5 +108,41 @@ describe("token pins (P3 — the typed T2/3 channel)", () => {
   it("non --tv- keys are ignored by the overlay (no style injection)", () => {
     const t = buildTheme(inputs, { name: "x", pins: { "background": "red" } as Record<string, string> });
     expect(getCssVars(t)["background"]).toBeUndefined();
+  });
+
+  // Round-2 robustness P0: a pin value with structural chars must not
+  // reach getCssVars / the paint CSS — it would break out of the SVG
+  // attribute / CSS declaration in a SHARED exported artifact.
+  it("hostile pin values are dropped by the value gate (XSS guard)", () => {
+    const hostile = '#fff"/><script>alert(1)</script><rect x="0';
+    const t = buildTheme(inputs, { name: "h", pins: { "--tv-surface-bg": hostile } });
+    expect(getCssVars(t)["--tv-surface-bg"]).not.toBe(hostile);
+    expect(getCssVars(t)["--tv-surface-bg"] ?? "").not.toContain("<");
+    expect(buildThemeCSS(t)).not.toContain("<script>");
+  });
+
+  it("valid pin values with single quotes / parens survive the gate", () => {
+    const t = buildTheme(inputs, {
+      name: "ok",
+      pins: { "--tv-text-body-family": "'Inter', sans-serif" },
+    });
+    expect(getCssVars(t)["--tv-text-body-family"]).toBe("'Inter', sans-serif");
+  });
+});
+
+describe("isValidPinValue (the shared ingress gate)", () => {
+  it("rejects structural chars, control chars, over-length; accepts normal CSS", () => {
+    expect(isValidPinValue("#abcdef")).toBe(true);
+    expect(isValidPinValue("0.7rem")).toBe(true);
+    expect(isValidPinValue("'Inter', sans-serif")).toBe(true);
+    expect(isValidPinValue("rgb(1,2,3)")).toBe(true);
+    expect(isValidPinValue('a"b')).toBe(false);
+    expect(isValidPinValue("a<b")).toBe(false);
+    expect(isValidPinValue("a;b")).toBe(false);
+    expect(isValidPinValue("a{b}")).toBe(false);
+    expect(isValidPinValue("a\nb")).toBe(false);
+    expect(isValidPinValue("")).toBe(false);
+    expect(isValidPinValue("x".repeat(513))).toBe(false);
+    expect(isValidPinValue(42)).toBe(false);
   });
 });

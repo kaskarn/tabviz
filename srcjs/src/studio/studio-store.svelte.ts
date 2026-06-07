@@ -18,7 +18,7 @@ import {
   type RoleOverrides,
 } from "../lib/theme/theme-wire";
 import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
-import { applyTokenPins } from "../lib/theme/consumer-bridge";
+import { applyTokenPins, isValidPinValue } from "../lib/theme/consumer-bridge";
 
 /** Per-edit history step. `inputs` + `roleOverrides` are complete snapshots
  *  (cheap; <1kB combined). */
@@ -171,6 +171,15 @@ class StudioStore {
       throw new Error(
         `setPin: "${cssVar}" is not in the component-token manifest. ` +
         `Use list_component_tokens() / the inspector to find token names.`,
+      );
+    }
+    // Value grammar gate (round-2 robustness P0): structural chars in a
+    // pin value can break out of CSS declarations / SVG attributes in
+    // the exported artifact. Same rule as the import + overlay paths.
+    if (!isValidPinValue(value)) {
+      throw new Error(
+        `setPin: invalid value for "${cssVar}" — pin values may not contain ` +
+        `angle brackets, braces, semicolons, or double quotes (use single quotes for font lists).`,
       );
     }
     this.pins = { ...this.pins, [cssVar]: value };

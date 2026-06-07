@@ -1101,7 +1101,21 @@ set_pin <- function(theme, css_var, value) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   checkmate::assert_string(css_var, min.chars = 1)
-  checkmate::assert_string(value, min.chars = 1)
+  checkmate::assert_string(value, min.chars = 1, max.chars = 512)
+  # Value grammar gate (round-2 robustness P0): structural characters in
+  # a pin value can break out of CSS declarations / SVG attributes in the
+  # EXPORTED artifact (a shared theme JSON or analysis script plants the
+  # payload; everyone the figure is sent to is the victim). No single CSS
+  # declaration value legitimately contains these; double quotes are
+  # banned because they break out of double-quoted SVG attributes — use
+  # single quotes for font lists.
+  if (grepl('[<>{};"]|[[:cntrl:]]', value)) {
+    cli::cli_abort(c(
+      "Invalid {.arg value} for pin {.val {css_var}}.",
+      "x" = "Pin values may not contain angle brackets, braces, semicolons, double quotes, or control characters.",
+      "i" = "For font lists, use single quotes: {.code 'Inter', sans-serif}."
+    ))
+  }
   if (!startsWith(css_var, "--tv-")) css_var <- paste0("--tv-", css_var)
   known <- list_component_tokens()$css_var
   if (!css_var %in% known) {

@@ -162,3 +162,40 @@ test_that("pins ride the wire envelope round-trip (P3)", {
   expect_identical(rt@pins[["--tv-text-footnote-size"]], "0.7rem")
   expect_identical(theme_css_vars(rt)[["--tv-text-footnote-size"]], "0.7rem")
 })
+
+test_that("set_pin rejects hostile values (round-2 robustness P0)", {
+  th <- web_theme_cochrane()
+  expect_error(
+    set_pin(th, "--tv-surface-bg", '#fff"/><script>alert(1)</script>'),
+    "angle brackets|double quotes|Invalid"
+  )
+  expect_error(set_pin(th, "--tv-surface-bg", "red; }"), "semicolons|braces|Invalid")
+  # Valid single-quote font list survives.
+  ok <- set_pin(th, "--tv-text-body-family", "'Inter', sans-serif")
+  expect_identical(ok@pins[["--tv-text-body-family"]], "'Inter', sans-serif")
+})
+
+test_that("theme_from_wire rejects a hostile pin value in an imported envelope", {
+  env <- list(
+    "$schema" = "tabviz-theme/v4", name = "evil",
+    inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs),
+    pins = list("--tv-surface-bg" = '#fff"/><script>x</script>')
+  )
+  expect_error(
+    theme_from_wire(jsonlite::toJSON(env, auto_unbox = TRUE)),
+    "Invalid pin value"
+  )
+})
+
+test_that("set_role rejects an unknown bindable role (flow F3 gate)", {
+  expect_error(set_role(web_theme_cochrane(), "not-a-role", "brand", 8), "bindable")
+  # A valid role still works.
+  ok <- set_role(web_theme_cochrane(), "text-muted", "brand", 8)
+  expect_identical(ok@role_overrides[["text-muted"]]$ramp, "brand")
+})
+
+test_that("write_theme rejects path-traversal names (round-2 robustness P1)", {
+  th <- web_theme_cochrane()
+  expect_error(write_theme(th, "../evil"), "pattern|bare theme name")
+  expect_error(write_theme(th, "a/b"), "pattern")
+})

@@ -203,14 +203,17 @@ function checkTriple(triple: OklchTriple | undefined, name: string, problems: st
     if (required) problems.push(`${name}: required, got undefined`);
     return;
   }
-  if (typeof triple.L !== "number" || triple.L < 0 || triple.L > 1) {
-    problems.push(`${name}.L must be a number in [0, 1], got ${triple.L}`);
+  // Number.isFinite, not typeof: `typeof NaN === "number"` and both
+  // NaN<0 / NaN>1 are false, so NaN sailed through and #NANNANNAN-
+  // poisoned every derived color (round-2 robustness review).
+  if (!Number.isFinite(triple.L) || triple.L < 0 || triple.L > 1) {
+    problems.push(`${name}.L must be a finite number in [0, 1], got ${triple.L}`);
   }
-  if (typeof triple.C !== "number" || triple.C < 0 || triple.C > 0.5) {
-    problems.push(`${name}.C must be a number in [0, 0.5], got ${triple.C}`);
+  if (!Number.isFinite(triple.C) || triple.C < 0 || triple.C > 0.5) {
+    problems.push(`${name}.C must be a finite number in [0, 0.5], got ${triple.C}`);
   }
-  if (typeof triple.H !== "number" || triple.H < 0 || triple.H >= 360) {
-    problems.push(`${name}.H must be a number in [0, 360), got ${triple.H}`);
+  if (!Number.isFinite(triple.H) || triple.H < 0 || triple.H >= 360) {
+    problems.push(`${name}.H must be a finite number in [0, 360), got ${triple.H}`);
   }
 }
 
@@ -227,7 +230,7 @@ function checkRange(
   value: number | undefined, lo: number, hi: number, name: string, problems: string[],
 ): void {
   if (value === undefined) return;
-  if (typeof value !== "number" || value < lo || value > hi) {
+  if (!Number.isFinite(value) || value < lo || value > hi) {
     problems.push(`${name} must be a number in [${lo}, ${hi}], got ${value}`);
   }
 }

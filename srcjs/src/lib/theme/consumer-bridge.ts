@@ -73,13 +73,36 @@ function overridesKey(ro: WebTheme["roleOverrides"], pins?: WebTheme["pins"]): s
  *  the cssVar layer AFTER resolve — never a post-resolve cluster stamp
  *  (the reapplyEdits anti-pattern). Validators downstream see pinned
  *  values because the overlay happens before they read the map. */
+/** Characters no single CSS declaration VALUE can legitimately contain.
+ *  `<` `>` break out of SVG/XML structure, `{` `}` `;` break out of the
+ *  CSS declaration, control chars are never valid. `"` breaks out of a
+ *  double-quoted SVG attribute (a value like `#fff" onload="..."` injects
+ *  an event handler with no `<` at all) — banned; single quotes stay
+ *  legal and are CSS-equivalent for font lists. This is the security gate
+ *  the round-2 robustness review demanded: a pin value containing
+ *  `"/><script>` reached exported SVG fill attributes verbatim (stored
+ *  XSS in a SHARED artifact — the wire envelope spreads pins). */
+const PIN_VALUE_FORBIDDEN = /[<>{};"\u0000-\u001f]/;
+const PIN_VALUE_MAX_LEN = 512;
+
+/** True when `v` is acceptable as a token-pin value. Exported so every
+ *  ingress (settings import, studio setPin, R via wire) shares ONE rule. */
+export function isValidPinValue(v: unknown): v is string {
+  return typeof v === "string" && v.length > 0 &&
+    v.length <= PIN_VALUE_MAX_LEN && !PIN_VALUE_FORBIDDEN.test(v);
+}
+
 export function applyTokenPins(
   cssVars: Record<string, string>,
   pins: WebTheme["pins"],
 ): Record<string, string> {
   if (!pins) return cssVars;
   for (const [k, v] of Object.entries(pins)) {
-    if (k.startsWith("--tv-") && typeof v === "string" && v.length > 0) {
+    // Name gate (--tv- prefix) + VALUE gate (structural-char ban): a
+    // hostile value in an imported envelope is dropped here, the one
+    // chokepoint every resolve path shares (getCssVarsRaw → both the
+    // widget paint block and the SVG export read through this).
+    if (k.startsWith("--tv-") && isValidPinValue(v)) {
       cssVars[k] = v;
     }
   }

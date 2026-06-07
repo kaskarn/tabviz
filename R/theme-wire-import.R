@@ -166,5 +166,19 @@ theme_from_wire <- function(wire) {
   name <- wire[["name"]] %||% "imported"
   overrides <- wire[["roleOverrides"]] %||% list()
   pins <- wire[["pins"]] %||% list()
+  # Pin value grammar gate (round-2 robustness P0): a wire envelope is
+  # UNTRUSTED input — a colleague-shared file with a hostile pin value
+  # must abort here, not ride into exported SVG attributes. Same rule as
+  # set_pin() / the TS importers.
+  for (nm in names(pins)) {
+    v <- pins[[nm]]
+    if (!is.character(v) || length(v) != 1L || nchar(v) > 512L ||
+        grepl('[<>{};"]|[[:cntrl:]]', v)) {
+      cli::cli_abort(c(
+        "Invalid pin value for {.val {nm}} in theme wire.",
+        "x" = "Pin values may not contain angle brackets, braces, semicolons, double quotes, or control characters."
+      ))
+    }
+  }
   resolve_from_inputs(inputs, name = name, role_overrides = overrides, pins = pins)
 }
