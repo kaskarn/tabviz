@@ -175,15 +175,18 @@ theme_inputs_to_json <- function(inputs) {
 # (role -> list(ramp, grade)) passed through to buildTheme's options bag so
 # the v4 resolve reflects spine rebinds; stored back on the S7 theme so the
 # artifact round-trips.
-resolve_from_inputs <- function(inputs, name = "custom", role_overrides = list()) {
+resolve_from_inputs <- function(inputs, name = "custom", role_overrides = list(),
+                                pins = list()) {
   inputs_json <- theme_inputs_to_json(inputs)
   opts <- list(name = name)
   if (length(role_overrides) > 0L) opts$roleOverrides <- role_overrides
+  if (length(pins) > 0L) opts$pins <- pins
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- name
   theme <- deserialize_resolved_theme(blob)
   theme@inputs <- inputs
   theme@role_overrides <- role_overrides
+  theme@pins <- pins
   theme@name <- name
   theme
 }
@@ -483,7 +486,7 @@ set_anchor_and_resolve <- function(theme, prefix, value, arg_name,
   }
   slots <- anchor_slots(triple)
   inputs <- set_anchor_on_inputs(inputs, prefix, slots)
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the paper anchor on a theme and re-resolve.
@@ -570,7 +573,7 @@ tint_from_brand <- function(theme, strength = c("medium", "subtle", "vivid")) {
   if (!is.na(inputs@anchors_ink2_H)) {
     inputs@anchors_ink2_H <- toward(inputs@anchors_ink2_H)
   }
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Toggle monochrome (neutral ramp rides the brand hue) and re-resolve.
@@ -588,7 +591,7 @@ set_monochrome <- function(theme, monochrome = TRUE) {
   checkmate::assert_flag(monochrome)
   inputs <- theme@inputs
   inputs@monochrome <- monochrome
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the theme polarity (light/dark) and re-resolve.
@@ -608,7 +611,7 @@ set_polarity <- function(theme, polarity) {
   checkmate::assert_choice(polarity, c("light", "dark"))
   inputs <- theme@inputs
   inputs@polarity <- polarity
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the accessibility mode (HC / RT) and re-resolve.
@@ -629,7 +632,7 @@ set_mode <- function(theme, mode) {
   checkmate::assert_choice(mode, c("standard", "high-contrast", "reduced-transparency"))
   inputs <- theme@inputs
   inputs@mode <- mode
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the categorical data scheme and re-resolve.
@@ -649,7 +652,7 @@ set_categorical <- function(theme, scheme) {
   checkmate::assert_choice(scheme, c("okabe_ito", "neon", "ink_vermilion", "tableau10", "set1", "set2", "dark2", "paired", "wong", "brand_mono"))
   inputs <- theme@inputs
   inputs@categorical <- scheme
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the density preset (and optionally the continuous factor) and re-resolve.
@@ -679,7 +682,7 @@ set_density <- function(theme, density = NULL, factor = NULL) {
     checkmate::assert_number(factor, lower = 0.5, upper = 2)
     inputs@density_factor <- factor
   }
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the sequential data scheme and re-resolve.
@@ -695,7 +698,7 @@ set_sequential <- function(theme, scheme) {
   checkmate::assert_choice(scheme, c("viridis", "magma", "plasma", "blues", "greens", "greys", "oranges", "reds"))
   inputs <- theme@inputs
   inputs@sequential <- scheme
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the diverging data scheme and re-resolve.
@@ -711,7 +714,7 @@ set_diverging <- function(theme, scheme) {
   checkmate::assert_choice(scheme, c("rdbu", "piyg", "spectral", "brbg"))
   inputs <- theme@inputs
   inputs@diverging <- scheme
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set per-ramp curve shapes and re-resolve.
@@ -743,7 +746,7 @@ set_curves <- function(theme, neutral = NULL, brand = NULL, accent = NULL) {
   if (!is.null(neutral)) inputs@curves_neutral <- neutral
   if (!is.null(brand))   inputs@curves_brand   <- brand
   if (!is.null(accent))  inputs@curves_accent  <- accent
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set Phase D GEOMETRY axis (radius + border-width scales) and re-resolve.
@@ -777,7 +780,7 @@ set_geometry <- function(theme, radius = NULL, border_width = NULL) {
     if (!is.null(border_width$regular)) inputs@geometry_border_width_regular <- border_width$regular
     if (!is.null(border_width$thick))   inputs@geometry_border_width_thick   <- border_width$thick
   }
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set Phase D EFFECTS axis (glow + gradient + elevation) and re-resolve.
@@ -850,7 +853,7 @@ set_effects <- function(theme,
   if (!is.null(caption_style))            inputs@effects_caption_style            <- caption_style
   if (!is.null(glass))                    inputs@effects_glass                    <- glass
   if (!is.null(title_style))              inputs@effects_title_style              <- title_style
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the full status palette atomically and re-resolve.
@@ -922,7 +925,7 @@ set_status <- function(theme,
     triple <- coerce_anchor(pair$value, prefix)
     inputs <- set_anchor_on_inputs(inputs, prefix, anchor_slots(triple))
   }
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set per-row-kind theme-default heightRatios and re-resolve.
@@ -955,7 +958,7 @@ set_row_kinds <- function(theme,
   if (!is.null(summary))      inputs@row_kinds_summary_height_ratio      <- summary
   if (!is.null(header))       inputs@row_kinds_header_height_ratio       <- header
   if (!is.null(panel))        inputs@row_kinds_panel_height_ratio        <- panel
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Set the header chrome variant.
@@ -978,7 +981,7 @@ set_header_style <- function(theme, header_style) {
   checkmate::assert_choice(header_style, c("light", "tint", "bold"))
   inputs <- theme@inputs
   inputs@header_style <- header_style
-  theme <- resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  theme <- resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
   theme@header_style <- header_style
   theme
 }
@@ -1002,7 +1005,7 @@ set_border_preset <- function(theme, border_preset) {
                            c("none", "hairline", "ruled", "frame", "boxed"))
   inputs <- theme@inputs
   inputs@border_preset <- border_preset
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Pin a Tier-2 role to a ramp grade.
@@ -1030,7 +1033,60 @@ set_role <- function(theme, role, ramp, grade) {
   checkmate::assert_int(grade, lower = 1, upper = 11)
   overrides <- theme@role_overrides
   overrides[[role]] <- list(ramp = ramp, grade = as.integer(grade))
-  resolve_from_inputs(theme@inputs, name = theme@name, role_overrides = overrides)
+  resolve_from_inputs(theme@inputs, name = theme@name, role_overrides = overrides, pins = theme@pins)
+}
+
+#' Pin a component token to a direct value.
+#'
+#' The R twin of the studio's token-pin channel (settings-overhaul P3):
+#' writes a manifest cssVar directly, overriding whatever the cascade
+#' derives. Total control — the value is applied after resolution and
+#' before contrast validation, and rides the portable theme artifact
+#' (the wire's `pins`). Use [list_component_tokens()] to discover names.
+#'
+#' @param theme A [WebTheme].
+#' @param css_var Manifest token name (e.g. `"--tv-text-footnote-size"`;
+#'   the `--tv-` prefix may be omitted).
+#' @param value CSS value string (e.g. `"0.7rem"`, `"#1a2b3c"`).
+#' @return The [WebTheme] re-resolved with the token pinned.
+#' @seealso [clear_pin()], [set_role()]
+#' @export
+set_pin <- function(theme, css_var, value) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(css_var, min.chars = 1)
+  checkmate::assert_string(value, min.chars = 1)
+  if (!startsWith(css_var, "--tv-")) css_var <- paste0("--tv-", css_var)
+  known <- list_component_tokens()$css_var
+  if (!css_var %in% known) {
+    cli::cli_abort(c(
+      "{.val {css_var}} is not in the component-token manifest.",
+      "i" = "Use {.fn list_component_tokens} to discover token names."
+    ))
+  }
+  pins <- theme@pins
+  pins[[css_var]] <- value
+  resolve_from_inputs(theme@inputs, name = theme@name,
+                      role_overrides = theme@role_overrides, pins = pins)
+}
+
+#' Release a token pin back to its derived value.
+#'
+#' @param theme A [WebTheme].
+#' @param css_var Token previously pinned via [set_pin()].
+#' @return The [WebTheme] re-resolved with the pin removed.
+#' @export
+clear_pin <- function(theme, css_var) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(css_var, min.chars = 1)
+  if (!startsWith(css_var, "--tv-")) css_var <- paste0("--tv-", css_var)
+  pins <- theme@pins
+  pins[[css_var]] <- NULL
+  resolve_from_inputs(theme@inputs, name = theme@name,
+                      role_overrides = theme@role_overrides, pins = pins)
 }
 
 #' Release a pinned role back to its cascade default.
@@ -1046,7 +1102,7 @@ clear_role <- function(theme, role) {
   checkmate::assert_string(role, min.chars = 1)
   overrides <- theme@role_overrides
   overrides[[role]] <- NULL
-  resolve_from_inputs(theme@inputs, name = theme@name, role_overrides = overrides)
+  resolve_from_inputs(theme@inputs, name = theme@name, role_overrides = overrides, pins = theme@pins)
 }
 
 #' Set the first (label) column variant.
@@ -1111,7 +1167,7 @@ set_inputs <- function(theme, ...) {
     }
   }
   if (length(args) > 0) inputs <- apply_named_props(inputs, args)
-  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides)
+  resolve_from_inputs(inputs, name = theme@name, role_overrides = theme@role_overrides, pins = theme@pins)
 }
 
 #' Override density-derived spacing tokens.
@@ -1190,7 +1246,8 @@ set_theme_field <- function(theme, path, value) {
   # If an input changed, re-resolve so derived tokens refresh.
   if (identical(as.character(path[[1]]), "inputs")) {
     return(resolve_from_inputs(theme@inputs, name = theme@name,
-                               role_overrides = theme@role_overrides))
+                               role_overrides = theme@role_overrides,
+                               pins = theme@pins))
   }
   theme
 }

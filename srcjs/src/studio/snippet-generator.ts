@@ -185,6 +185,21 @@ export function buildRoleOverrideSteps(
     }));
 }
 
+/** Emit token pins as `set_pin()` steps — same artifact-honesty rule
+ *  as role overrides: the copied R chain must reproduce everything the
+ *  chart shows, including raw T2/3 pins (settings-overhaul P3). */
+export function buildPinSteps(
+  pins: Record<string, string> | undefined,
+): SnippetStep[] {
+  if (!pins) return [];
+  return Object.entries(pins)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([cssVar, value]) => ({
+      setter: "set_pin",
+      args: `${rString(cssVar)}, ${rString(value)}`,
+    }));
+}
+
 /** Diff two flat numeric records; returns the changed keys or null. */
 function diffNumericRecord(
   a: Record<string, number | undefined> | undefined,

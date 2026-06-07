@@ -986,6 +986,10 @@ WebTheme <- new_class(
     # TS v4 resolve, and round-trips through R. Named list keyed by role,
     # each entry list(ramp = <chr>, grade = <int 1..11>). Empty = defaults.
     role_overrides = new_property(class_list, default = list()),
+    # Tier-2/3 token pins (cssVar -> value) — the studio's raw fine-tuning
+    # channel (settings-overhaul P3). Applied as a cssVars overlay after
+    # resolve, before contrast validation. Rides the wire as `pins`.
+    pins = new_property(class_list, default = list()),
 
     # Tier 2 (derived; NA until the TS cascade runs)
     # Note: surface/content/divider chrome slots were dropped in the

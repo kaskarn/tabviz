@@ -41,3 +41,27 @@ describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
     expect(Object.keys(wire).sort()).toEqual(["$schema", "inputs", "name", "roleOverrides"]);
   });
 });
+
+describe("studio token pins (P3)", () => {
+  test("setPin validates against the manifest and rides the envelope", () => {
+    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    expect(() => studioStore.setPin("--tv-not-a-token", "1px")).toThrow(/manifest/);
+    studioStore.setPin("--tv-text-footnote-size", "0.7rem");
+    const wire = studioStore.exportWire() as { pins?: Record<string, string> };
+    expect(wire.pins?.["--tv-text-footnote-size"]).toBe("0.7rem");
+    // contrast/validate read the PINNED cssVars
+    expect(studioStore.resolved?.cssVars?.["--tv-text-footnote-size"]).toBe("0.7rem");
+  });
+
+  test("undo restores the pre-pin state; clearPin releases", () => {
+    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.setPin("--tv-text-footnote-size", "0.7rem");
+    expect(Object.keys(studioStore.pins)).toHaveLength(1);
+    studioStore.undo();
+    expect(Object.keys(studioStore.pins)).toHaveLength(0);
+    studioStore.redo();
+    studioStore.clearPin("--tv-text-footnote-size");
+    expect(Object.keys(studioStore.pins)).toHaveLength(0);
+    expect(studioStore.dirty).toBe(false);
+  });
+});

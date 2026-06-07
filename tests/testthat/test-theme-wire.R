@@ -129,3 +129,36 @@ test_that("read_theme routes wire-envelope files through theme_from_wire", {
   expect_s3_class(rt, "tabviz::WebTheme")
   expect_length(rt@role_overrides, 1L)
 })
+
+test_that("set_pin overrides a token through the full chain (P3)", {
+  t0 <- web_theme_cochrane()
+  t1 <- set_pin(t0, "text-footnote-size", "0.7rem")
+  expect_identical(t1@pins[["--tv-text-footnote-size"]], "0.7rem")
+  v <- theme_css_vars(t1)
+  expect_identical(v[["--tv-text-footnote-size"]], "0.7rem")
+  # paint path too (the P0.1 lesson)
+  css <- tabviz_theme_css(t1)
+  expect_match(css, "--tv-text-footnote-size: 0.7rem", fixed = TRUE)
+  # survives other setters
+  t2 <- suppressWarnings(set_brand(t1, "#7a1f3d"))
+  expect_identical(t2@pins[["--tv-text-footnote-size"]], "0.7rem")
+  # clears
+  t3 <- clear_pin(t2, "text-footnote-size")
+  expect_length(t3@pins, 0L)
+  # unknown token rejected
+  expect_error(set_pin(t0, "not-a-real-token", "1px"), "manifest")
+})
+
+test_that("pins ride the wire envelope round-trip (P3)", {
+  t1 <- set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem")
+  env <- list(
+    "$schema" = "tabviz-theme/v4",
+    name = "cochrane",
+    inputs = tabviz:::theme_inputs_to_json(t1@inputs),
+    roleOverrides = t1@role_overrides,
+    pins = t1@pins
+  )
+  rt <- theme_from_wire(jsonlite::toJSON(env, auto_unbox = TRUE))
+  expect_identical(rt@pins[["--tv-text-footnote-size"]], "0.7rem")
+  expect_identical(theme_css_vars(rt)[["--tv-text-footnote-size"]], "0.7rem")
+})

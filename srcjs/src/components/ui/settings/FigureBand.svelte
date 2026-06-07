@@ -23,11 +23,32 @@
   const { store }: Props = $props();
 
   // ── Banding (data-slice override; finite structural pick) ──────────
+  // The pill must not lie (review P1 #3): group-N themes surface their
+  // level in the Level slider, and re-picking "group" PRESERVES the
+  // current level instead of collapsing it to null.
+  const banding = $derived(store.effectiveBanding);
   const bandingValue = $derived.by(() => {
-    const b = store.effectiveBanding;
-    if (!b || b.mode === "none") return "none";
-    return b.mode === "row" ? "row" : "group";
+    if (!banding || banding.mode === "none") return "none";
+    return banding.mode === "row" ? "row" : "group";
   });
+  const bandingLevel = $derived(
+    banding && banding.mode !== "none" && banding.mode !== "row"
+      ? (banding.level ?? 1)
+      : 1,
+  );
+  const groupDepth = $derived(store.maxGroupDepth);
+  const startsWithBand = $derived(store.bandingStartsWithBand);
+
+  function setBandingMode(v: string): void {
+    if (v === "group") {
+      // Preserve the active level when one exists.
+      const lvl = banding && banding.mode !== "none" && banding.mode !== "row"
+        ? banding.level : null;
+      store.setBandingOverride(lvl ? `group-${lvl}` : "group");
+    } else {
+      store.setBandingOverride(v === "none" ? "none" : "row");
+    }
+  }
 
   // ── Watermark ───────────────────────────────────────────────────────
   let watermarkOpen = $state(false);
@@ -60,13 +81,37 @@
   <EnumRow
     label="Banding"
     value={bandingValue}
-    segments={[
-      { value: "none", label: "none" },
-      { value: "row", label: "row" },
-      { value: "group", label: "group" },
-    ]}
-    onchange={(v) => store.setBandingOverride(v === "none" ? "none" : v)}
+    segments={groupDepth > 0
+      ? [
+          { value: "none", label: "none" },
+          { value: "row", label: "row" },
+          { value: "group", label: "group" },
+        ]
+      : [
+          { value: "none", label: "none" },
+          { value: "row", label: "row" },
+        ]}
+    onchange={setBandingMode}
   />
+  {#if bandingValue === "group" && groupDepth > 1}
+    <Field label="Level" hint="Which group depth alternates the band.">
+      <Slider value={bandingLevel} min={1} max={groupDepth} step={1}
+              ariaLabel="Banding group level"
+              oncommit={(v) => store.setBandingOverride(`group-${v}`)} />
+    </Field>
+  {/if}
+  {#if bandingValue !== "none"}
+    <EnumRow
+      label="Start"
+      hint="Whether the first band is shaded or plain."
+      value={startsWithBand ? "band" : "plain"}
+      segments={[
+        { value: "band", label: "band" },
+        { value: "plain", label: "plain" },
+      ]}
+      onchange={(v) => store.setBandingStartsWithBand(v === "band")}
+    />
+  {/if}
 
   <DisclosureField label="Watermark" summary={wmSummary} bind:open={watermarkOpen}>
     <Field label="Text">

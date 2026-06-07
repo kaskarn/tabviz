@@ -55,14 +55,35 @@ import { resolveTheme } from "./resolve-theme";
 // overrides, so studio spine rebinds never affected widget rendering.
 const cascadeCache = new WeakMap<object, Map<string, Record<string, string>>>();
 
-/** Canonical, order-independent key for a roleOverrides map. */
-function overridesKey(ro: WebTheme["roleOverrides"]): string {
-  if (!ro) return "";
-  const entries = Object.entries(ro)
+/** Canonical, order-independent key for roleOverrides + pins. */
+function overridesKey(ro: WebTheme["roleOverrides"], pins?: WebTheme["pins"]): string {
+  const roPart = !ro ? "" : Object.entries(ro)
     .filter(([, b]) => b != null)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([role, b]) => `${role}:${b!.ramp}[${b!.grade}]`);
-  return entries.join("|");
+    .map(([role, b]) => `${role}:${b!.ramp}[${b!.grade}]`)
+    .join("|");
+  const pinPart = !pins ? "" : Object.entries(pins)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([k, v]) => `${k}=${v}`)
+    .join("|");
+  return `${roPart}//${pinPart}`;
+}
+
+/** Overlay Tier-2/3 token pins onto a resolved cssVars map. Applied at
+ *  the cssVar layer AFTER resolve — never a post-resolve cluster stamp
+ *  (the reapplyEdits anti-pattern). Validators downstream see pinned
+ *  values because the overlay happens before they read the map. */
+export function applyTokenPins(
+  cssVars: Record<string, string>,
+  pins: WebTheme["pins"],
+): Record<string, string> {
+  if (!pins) return cssVars;
+  for (const [k, v] of Object.entries(pins)) {
+    if (k.startsWith("--tv-") && typeof v === "string" && v.length > 0) {
+      cssVars[k] = v;
+    }
+  }
+  return cssVars;
 }
 
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
@@ -72,7 +93,7 @@ export function getCssVars(theme: WebTheme | undefined | null): Record<string, s
     byOverrides = new Map();
     cascadeCache.set(theme.authoringInputs, byOverrides);
   }
-  const key = overridesKey(theme.roleOverrides);
+  const key = overridesKey(theme.roleOverrides, theme.pins);
   let base = byOverrides.get(key);
   if (!base) {
     try {
@@ -80,7 +101,10 @@ export function getCssVars(theme: WebTheme | undefined | null): Record<string, s
         ...createWire(theme.authoringInputs, theme.name ?? "custom"),
         roleOverrides: theme.roleOverrides ?? {},
       };
-      base = resolveTheme(wire).cssVars as Record<string, string>;
+      base = applyTokenPins(
+        { ...(resolveTheme(wire).cssVars as Record<string, string>) },
+        theme.pins,
+      );
     } catch {
       // Resolver errors during the sprint are tolerated; consumers fall
       // back to v3 reads. Drift gates + visual regression catch silent

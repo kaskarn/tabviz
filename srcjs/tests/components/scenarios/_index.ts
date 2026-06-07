@@ -111,7 +111,7 @@ export const SCENARIOS: ScenarioMeta[] = [
   },
   {
     name: "v2-settings-scaffold",
-    description: "Settings panel design scaffold — each tab rendered against a real store, no widget behind. Pick a menu from the right rail.",
+    description: "Settings panel design scaffold — the overhauled two-band panel (QuickStrip + THEME + FIGURE) against a real store, no widget behind.",
     group: "v2 settings",
     component: V2SettingsScaffoldScenario,
   },

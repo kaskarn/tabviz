@@ -263,12 +263,18 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   // the source emitter still matches presets when the inputs happen to
   // round-trip to a known one.
   function setAuthoringInputs(partial: Partial<ThemeInputs>): void {
-    authoringEdited = true;
     const spec = deps.getSpec();
     if (!spec || !spec.theme) return;
     const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
     if (!current) return;
     const merged: ThemeInputs = { ...current, ...partial };
+    // Un-stick the dirty flag when the edit lands back on the initial
+    // inputs (review P2 nit: dragging an anchor back to its original
+    // value left "Reset theme" enabled with nothing to reset).
+    const initialInputs = (initialTheme as { authoringInputs?: ThemeInputs } | null)
+      ?.authoringInputs;
+    authoringEdited = !initialInputs ||
+      JSON.stringify(merged) !== JSON.stringify(initialInputs);
     const name = spec.theme.name ?? "custom";
     const rebuilt = reapplyEdits(buildTheme(merged, name) as WebSpec["theme"]);
     deps.setSpec({ ...spec, theme: rebuilt });

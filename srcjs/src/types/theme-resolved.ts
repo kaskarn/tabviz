@@ -410,6 +410,16 @@ export interface WebTheme {
     import("./theme-roles").RoleName,
     { ramp: import("./theme-roles").RampName; grade: number }
   >>;
+  /**
+   * Tier-2/3 token pins — direct values for manifest cssVars
+   * (`--tv-text-footnote-size: "0.7rem"`), the studio's raw fine-tuning
+   * channel (settings-overhaul P3). Validated against the component-token
+   * manifest at set time; applied as a cssVars overlay AFTER resolve and
+   * BEFORE contrast validation (never a post-resolve cluster stamp — the
+   * reapplyEdits anti-pattern this channel replaces). Part of the
+   * portable artifact; rides the wire next to roleOverrides.
+   */
+  pins?: Record<string, string>;
   axis: AxisConfig;
   layout: Layout;
   borders: ThemeBorders;

@@ -104,7 +104,15 @@ function hexToOklch(hex: string): OKLCH {
 }
 
 /** Direct hex↔OKLCH access for theme rationalization layer. */
-export { hexToOklch, oklchToHex };
+/** True iff `hex` parses as a 3- or 6-digit hex color. hexToOklch does
+ *  NOT validate (parseInt yields NaN → a truthy {NaN,NaN,NaN} triple), so
+ *  every USER-INPUT path must gate on this first — committing a NaN
+ *  triple cascades into a black/broken resolve (P1/P2 review #2). */
+function isValidHex(hex: string): boolean {
+  return /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex.trim());
+}
+
+export { hexToOklch, oklchToHex, isValidHex };
 export type { OKLCH };
 
 /**

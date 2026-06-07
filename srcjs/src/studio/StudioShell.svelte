@@ -13,9 +13,10 @@
   import PresetHeader from "./PresetHeader.svelte";
   import StudioChart from "./StudioChart.svelte";
   import SnippetStrip from "./SnippetStrip.svelte";
-  import ThemeControlsStrip from "../components/theme-panel/ThemeControlsStrip.svelte";
+  import StudioRail from "./StudioRail.svelte";
+  import PinsPanel from "./PinsPanel.svelte";
   import CascadeView from "../components/theme-panel/CascadeView.svelte";
-  import { buildBaseExpression, buildRoleOverrideSteps, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
+  import { buildBaseExpression, buildPinSteps, buildRoleOverrideSteps, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
   import { resolveTheme } from "../lib/theme/resolve-theme";
   import { createWire } from "../lib/theme/theme-wire";
   import { collectContrastFailures } from "../lib/theme/theme-validate";
@@ -65,6 +66,7 @@
       // Spine rebinds ride the chain too — the snippet must reproduce
       // EVERYTHING the chart shows (P0 artifact honesty).
       ...buildRoleOverrideSteps(studioStore.roleOverrides),
+      ...buildPinSteps(studioStore.pins),
     ];
     return formatSnippet(baseExpression, steps);
   });
@@ -164,12 +166,11 @@
   <div class="studio-main">
     {#if studioStore.inputs}
       <aside class="controls-rail">
-        <ThemeControlsStrip
-          inputs={studioStore.inputs}
-          layout="tabs"
+        <StudioRail
           onchange={commitEdit}
           onpreview={(next) => studioStore.preview(next)}
         />
+        <PinsPanel />
       </aside>
       <main class="cascade-main">
         {#if studioStore.resolveError}

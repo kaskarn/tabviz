@@ -16,12 +16,16 @@ import {
   type RoleOverrides,
   type ThemeWire,
 } from "../lib/theme/theme-wire";
+import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
+import { applyTokenPins } from "../lib/theme/consumer-bridge";
 
 /** Per-edit history step. `inputs` + `roleOverrides` are complete snapshots
  *  (cheap; <1kB combined). */
 export interface HistoryStep {
   readonly inputs: ThemeInputs;
   readonly roleOverrides: RoleOverrides;
+  /** Tier-2/3 token pins (cssVar → value) — see setPin(). */
+  readonly pins: Record<string, string>;
   /** Brief description for UI hints (e.g. "Brand color", "Polarity"). */
   readonly label: string;
 }
@@ -43,6 +47,13 @@ class StudioStore {
    *  Spine drag-to-rebind. */
   roleOverrides = $state.raw<RoleOverrides>({});
 
+  /** Tier-2/3 token pins — direct values for manifest cssVars (the
+   *  studio's TOTAL-control channel, settings-overhaul P3). Validated
+   *  against TOKENS_BY_VAR at set time; applied as a cssVars overlay
+   *  after resolve and BEFORE the contrast check, so the validator sees
+   *  pinned values (the no-reapplyEdits-clone condition). */
+  pins = $state.raw<Record<string, string>>({});
+
   /** History stack: undo pops from end; redo follows the cursor. */
   history = $state<HistoryStep[]>([]);
   /** Index of the current state in history (-1 = no history). */
@@ -63,10 +74,18 @@ class StudioStore {
   }>(() => {
     if (!this.inputs) return { theme: null, error: null };
     try {
-      const theme = resolveTheme({
+      const resolved = resolveTheme({
         ...createWire(this.inputs, this.baseName),
         roleOverrides: this.roleOverrides,
       });
+      // Pins overlay BEFORE anything reads cssVars — contrastWarnings
+      // below must judge the pinned values, not the pre-pin resolve.
+      const theme = Object.keys(this.pins).length > 0
+        ? {
+            ...resolved,
+            cssVars: applyTokenPins({ ...(resolved.cssVars as Record<string, string>) }, this.pins),
+          } as ResolvedTheme
+        : resolved;
       this.lastGoodResolved = theme;
       return { theme, error: null };
     } catch (e) {
@@ -102,7 +121,9 @@ class StudioStore {
 
   /** Derived: dirty iff the current state differs from the base. */
   dirty = $derived<boolean>(
-    !inputsEqual(this.base, this.inputs) || Object.keys(this.roleOverrides).length > 0,
+    !inputsEqual(this.base, this.inputs) ||
+      Object.keys(this.roleOverrides).length > 0 ||
+      Object.keys(this.pins).length > 0,
   );
 
   /** Initialize the store with a base + initial inputs (usually identical). */
@@ -111,7 +132,8 @@ class StudioStore {
     this.baseName = baseName;
     this.inputs = base;
     this.roleOverrides = {};
-    this.history = [{ inputs: base, roleOverrides: {}, label: "Loaded" }];
+    this.pins = {};
+    this.history = [{ inputs: base, roleOverrides: {}, pins: {}, label: "Loaded" }];
     this.cursor = 0;
   }
 
@@ -119,7 +141,7 @@ class StudioStore {
    *  truncates any redo trail. */
   apply(next: ThemeInputs, label: string): void {
     this.inputs = next;
-    this.pushHistory(next, this.roleOverrides, label);
+    this.pushHistory(next, this.roleOverrides, this.pins, label);
   }
 
   /** C53 (wire-audit Pass 4a): drag-time preview — updates the working
@@ -135,12 +157,42 @@ class StudioStore {
    *  Every egress (Copy JSON / download / save-as / studio_done) emits
    *  THIS — never bare `inputs`, which silently dropped the spine
    *  rebinds (the studio exported less than its own UI edited). */
-  exportWire(): ThemeWire | null {
+  exportWire(): (ThemeWire & { pins?: Record<string, string> }) | null {
     if (!this.inputs) return null;
-    return {
+    const wire = {
       ...createWire(this.inputs, this.baseName),
       roleOverrides: this.roleOverrides,
     };
+    return Object.keys(this.pins).length > 0
+      ? { ...wire, pins: this.pins }
+      : wire;
+  }
+
+  /** Pin a manifest token to a direct value (TOTAL control, P3).
+   *  Throws on unknown cssVars — typed-by-validation against the
+   *  component-token manifest, never a blind string write. */
+  setPin(cssVar: string, value: string): void {
+    if (!TOKENS_BY_VAR.has(cssVar)) {
+      throw new Error(
+        `setPin: "${cssVar}" is not in the component-token manifest. ` +
+        `Use list_component_tokens() / the inspector to find token names.`,
+      );
+    }
+    this.pins = { ...this.pins, [cssVar]: value };
+    if (this.inputs) {
+      this.pushHistory(this.inputs, this.roleOverrides, this.pins, `Pin ${cssVar}`);
+    }
+  }
+
+  /** Release a token pin back to its derived value. */
+  clearPin(cssVar: string): void {
+    if (!(cssVar in this.pins)) return;
+    const { [cssVar]: _gone, ...rest } = this.pins;
+    void _gone;
+    this.pins = rest;
+    if (this.inputs) {
+      this.pushHistory(this.inputs, this.roleOverrides, this.pins, `Unpin ${cssVar}`);
+    }
   }
 
   /** Rebind a role to a (ramp, grade) pair. Used by Spine drag-to-rebind. */
@@ -150,15 +202,20 @@ class StudioStore {
     try {
       const next = wireSetRoleBinding(wire, role, ramp, grade);
       this.roleOverrides = next.roleOverrides;
-      this.pushHistory(this.inputs, next.roleOverrides, `Rebind ${role} → ${ramp}[${grade}]`);
+      this.pushHistory(this.inputs, next.roleOverrides, this.pins, `Rebind ${role} → ${ramp}[${grade}]`);
     } catch {
       // Off-ramp role or invalid grade — silently no-op; UI prevents this.
     }
   }
 
-  private pushHistory(inputs: ThemeInputs, roleOverrides: RoleOverrides, label: string): void {
+  private pushHistory(
+    inputs: ThemeInputs,
+    roleOverrides: RoleOverrides,
+    pins: Record<string, string>,
+    label: string,
+  ): void {
     const truncated = this.history.slice(0, this.cursor + 1);
-    truncated.push({ inputs, roleOverrides, label });
+    truncated.push({ inputs, roleOverrides, pins, label });
     while (truncated.length > HISTORY_CAP) truncated.shift();
     this.history = truncated;
     this.cursor = truncated.length - 1;
@@ -171,6 +228,7 @@ class StudioStore {
     const step = this.history[this.cursor];
     this.inputs = step.inputs;
     this.roleOverrides = step.roleOverrides;
+    this.pins = step.pins;
     return true;
   }
 
@@ -181,6 +239,7 @@ class StudioStore {
     const step = this.history[this.cursor];
     this.inputs = step.inputs;
     this.roleOverrides = step.roleOverrides;
+    this.pins = step.pins;
     return true;
   }
 
@@ -189,7 +248,8 @@ class StudioStore {
     if (this.base) {
       this.inputs = this.base;
       this.roleOverrides = {};
-      this.pushHistory(this.base, {}, "Revert to base");
+      this.pins = {};
+      this.pushHistory(this.base, {}, {}, "Revert to base");
     }
   }
 
@@ -199,6 +259,7 @@ class StudioStore {
     this.baseName = "(default)";
     this.inputs = null;
     this.roleOverrides = {};
+    this.pins = {};
     this.history = [];
     this.cursor = -1;
   }

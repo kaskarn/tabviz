@@ -164,6 +164,7 @@ theme_from_wire <- function(wire) {
   }
   inputs <- theme_inputs_from_wire(wire[["inputs"]])
   name <- wire[["name"]] %||% "imported"
-  overrides <- wire$roleOverrides %||% list()
-  resolve_from_inputs(inputs, name = name, role_overrides = overrides)
+  overrides <- wire[["roleOverrides"]] %||% list()
+  pins <- wire[["pins"]] %||% list()
+  resolve_from_inputs(inputs, name = name, role_overrides = overrides, pins = pins)
 }

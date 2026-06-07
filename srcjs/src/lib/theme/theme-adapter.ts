@@ -142,6 +142,8 @@ export interface BuildThemeOpts {
    *  role overrides are part of the portable artifact, not
    *  studio-preview-only state). */
   roleOverrides?: NonNullable<WebTheme["roleOverrides"]>;
+  /** Tier-2/3 token pins (cssVar → value) — see WebTheme.pins. */
+  pins?: NonNullable<WebTheme["pins"]>;
 }
 
 export function buildTheme(
@@ -152,6 +154,7 @@ export function buildTheme(
     typeof nameOrOpts === "string" ? { name: nameOrOpts } : nameOrOpts;
   const name = opts.name ?? "custom";
   const roleOverrides = opts.roleOverrides ?? {};
+  const pins = opts.pins ?? {};
   const reflected = applyPolarityToInputs(inputs);
   const v3 = buildThemeStructure(inputs, name);
   const t = v3.tokens;
@@ -417,6 +420,7 @@ export function buildTheme(
     variants: variants,
     authoringInputs: inputs,
     roleOverrides,
+    pins,
     axis,
     layout,
     borders,

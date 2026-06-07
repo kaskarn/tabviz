@@ -162,6 +162,7 @@ deserialize_resolved_theme <- function(x) {
   # Tier-2 role pins (wire `roleOverrides`) — preserved verbatim so the
   # artifact round-trips R -> TS -> R without dropping spine rebinds.
   role_overrides <- x$roleOverrides %||% list()
+  pins <- x$pins %||% list()
 
   # ---- Tier 2: chrome roles ----
   # V4: surface/content/divider chrome dropped from the R S7 class.
@@ -351,6 +352,7 @@ deserialize_resolved_theme <- function(x) {
     light_dark_pair = .coerce_chr(x$lightDarkPair),
     inputs          = inputs,
     role_overrides  = role_overrides,
+    pins            = pins,
     accent          = accent,
     status          = status,
     semantic        = semantic,

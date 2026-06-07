@@ -49,6 +49,7 @@
       : studioStore.inputs;
     const baseName = studioStore.baseName;
     const roleOverrides = studioStore.roleOverrides;
+    const pins = studioStore.pins;
     untrack(() => {
       const currentSpec = store.spec;
       if (!currentSpec) return;
@@ -56,7 +57,7 @@
         // roleOverrides ride the built theme so the chart preview (and
         // anything reading getCssVars off it) reflects spine rebinds —
         // they are part of the artifact, not studio-side state (P0).
-        const newTheme = buildTheme(inputs, { name: baseName, roleOverrides }) as unknown as WebSpec["theme"];
+        const newTheme = buildTheme(inputs, { name: baseName, roleOverrides, pins }) as unknown as WebSpec["theme"];
         store.setSpec({ ...currentSpec, theme: newTheme });
       } catch (e) {
         console.warn("[StudioChart] buildTheme failed:", e);

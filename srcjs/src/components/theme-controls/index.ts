@@ -14,6 +14,7 @@
 
 export { default as AnchorRow } from "./AnchorRow.svelte";
 export { default as EnumRow } from "./EnumRow.svelte";
+export { default as Tier1Sections } from "./Tier1Sections.svelte";
 
 /** Host layout for the shared controls. */
 export type ControlLayout = "compact" | "roomy";

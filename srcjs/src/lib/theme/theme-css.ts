@@ -20,6 +20,7 @@
 
 import type { WebTheme } from "../../types/theme-resolved";
 import { computeV3BridgeVars } from "./v3-bridge-vars";
+import { applyTokenPins } from "./consumer-bridge";
 import { VIZ_MARGIN } from "../axis-utils";
 import { createWire } from "./theme-wire";
 import { resolveTheme } from "./resolve-theme";
@@ -195,8 +196,14 @@ function _emitV4CssVarsBody(theme: WebTheme): string {
       roleOverrides: theme.roleOverrides ?? {},
     };
     const resolved = resolveTheme(wire);
+    // Token pins overlay here too — paint path parity with getCssVars
+    // (the P0.1 lesson: BOTH wires or the widget diverges from export).
+    const varsWithPins = applyTokenPins(
+      { ...(resolved.cssVars as Record<string, string>) },
+      theme.pins,
+    );
     const lines: string[] = [];
-    for (const [name, value] of Object.entries(resolved.cssVars)) {
+    for (const [name, value] of Object.entries(varsWithPins)) {
       // Skip placeholder values (TBD / input / computed sentinels).
       if (value.startsWith("<")) continue;
       lines.push(`      ${name}: ${value};`);

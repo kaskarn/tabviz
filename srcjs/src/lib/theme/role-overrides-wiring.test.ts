@@ -87,3 +87,26 @@ describe("border_preset → borders cluster expansion", () => {
     expect(unset).toEqual(hair);
   });
 });
+
+describe("token pins (P3 — the typed T2/3 channel)", () => {
+  it("pins overlay both resolve paths (getCssVars + paint CSS)", () => {
+    const pinned = buildTheme(inputs, {
+      name: "p",
+      pins: { "--tv-text-footnote-size": "0.7rem" },
+    });
+    expect(getCssVars(pinned)["--tv-text-footnote-size"]).toBe("0.7rem");
+    expect(buildThemeCSS(pinned)).toContain("--tv-text-footnote-size: 0.7rem");
+  });
+
+  it("pin cache key separates pinned from unpinned (same inputs identity)", () => {
+    const a = buildTheme(inputs, { name: "a", pins: { "--tv-text-footnote-size": "0.7rem" } });
+    const b = buildTheme(inputs, "b");
+    expect(getCssVars(a)["--tv-text-footnote-size"]).toBe("0.7rem");
+    expect(getCssVars(b)["--tv-text-footnote-size"]).not.toBe("0.7rem");
+  });
+
+  it("non --tv- keys are ignored by the overlay (no style injection)", () => {
+    const t = buildTheme(inputs, { name: "x", pins: { "background": "red" } as Record<string, string> });
+    expect(getCssVars(t)["background"]).toBeUndefined();
+  });
+});

@@ -13,7 +13,7 @@
  *   paint-keyboard  — Enter on the focused primary cell does the same (C54)
  *   edit            — dblclick → inline editor → commit updates the cell
  *   zoom            — toolbar zoom-in changes data-zoom
- *   settings        — cog opens the D14 curated drawer (polarity + density ONLY)
+ *   settings — cog opens the two-band overhaul panel (full Tier-1 + figure state)
  *   theme-switch    — switcher swaps theme; data-polarity flips
  *   filter          — filter popover narrows visible rows
  *   export          — SVG download path produces a non-empty SVG

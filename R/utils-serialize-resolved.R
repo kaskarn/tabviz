@@ -118,6 +118,7 @@ serialize_theme <- function(theme) {
   # them (settings-overhaul P0 — pins are part of the portable artifact).
   opts <- list(name = theme@name)
   if (length(theme@role_overrides) > 0L) opts$roleOverrides <- theme@role_overrides
+  if (length(theme@pins) > 0L) opts$pins <- theme@pins
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- theme@name
   if (!is.na(theme@light_dark_pair)) blob$lightDarkPair <- theme@light_dark_pair

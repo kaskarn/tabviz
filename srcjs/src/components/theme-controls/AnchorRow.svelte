@@ -21,7 +21,7 @@
 -->
 <script lang="ts">
   import type { OklchTriple } from "$types/theme-inputs";
-  import { oklchToHex, hexToOklch } from "$lib/oklch";
+  import { oklchToHex, hexToOklch, isValidHex } from "$lib/oklch";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import TextInput from "$components/primitives/v2/TextInput.svelte";
@@ -88,8 +88,11 @@
   }
 
   function commitHex(h: string): void {
-    const t = hexToOklch(h);
-    if (t) oncommit(t);
+    // hexToOklch never returns null — it NaN-poisons on garbage. Gate
+    // user input here (review P1 #2); invalid text is simply ignored
+    // and the field re-syncs to the current triple on next render.
+    if (!isValidHex(h)) return;
+    oncommit(hexToOklch(h));
   }
 
   function fmt(axis: "L" | "C" | "H", v: number): string {
@@ -122,7 +125,7 @@
         <button
           type="button"
           class="caret"
-          aria-label={open ? "Collapse {label} editor" : "Expand {label} editor"}
+          aria-label={open ? `Collapse ${label} editor` : `Expand ${label} editor`}
           aria-expanded={open}
           onclick={() => onexpand?.(!expanded)}
         >{open ? "⌃" : "⌄"}</button>

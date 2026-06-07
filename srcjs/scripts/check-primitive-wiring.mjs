@@ -90,7 +90,10 @@ for (const rel of files) {
     const [whole, tag, attrs] = m;
     const hasOnchange = /\sonchange\s*=/.test(attrs);
     const hasBind     = /\sbind:value\s*=/.test(attrs);
-    if (hasOnchange || hasBind) continue;
+    // `oncommit=` is Slider's release-commit channel (settings-overhaul
+    // P1): drag previews are optional; the commit wire is what matters.
+    const hasCommit   = /\soncommit\s*=/.test(attrs);
+    if (hasOnchange || hasBind || hasCommit) continue;
 
     // Skip Knob/Slider used purely for display (no value mutation
     // expected): heuristic — the call passes `disabled` or
