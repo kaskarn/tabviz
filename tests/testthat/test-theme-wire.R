@@ -199,3 +199,31 @@ test_that("write_theme rejects path-traversal names (round-2 robustness P1)", {
   expect_error(write_theme(th, "../evil"), "pattern|bare theme name")
   expect_error(write_theme(th, "a/b"), "pattern")
 })
+
+test_that("studio_save_as persists the wire envelope verbatim (flow F2)", {
+  withr::local_options(tabviz.theme_dir = withr::local_tempdir())
+  t1 <- set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem")
+  wire <- list(
+    "$schema" = "tabviz-theme/v4", name = "verbatim-test",
+    inputs = tabviz:::theme_inputs_to_json(t1@inputs),
+    roleOverrides = t1@role_overrides, pins = t1@pins
+  )
+  payload <- jsonlite::toJSON(list(name = "verbatim-test", wire = wire), auto_unbox = TRUE)
+  path <- tabviz:::.studio_save_as_payload(payload)
+  expect_true(!is.null(path) && file.exists(path))
+  on_disk <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_identical(on_disk[["$schema"]], "tabviz-theme/v4")
+  expect_true(!is.null(on_disk[["inputs"]]))
+  expect_null(on_disk[["cssVars"]])
+  expect_identical(on_disk[["pins"]][["--tv-text-footnote-size"]], "0.7rem")
+  expect_s7_class(read_theme(path), tabviz::WebTheme)
+})
+
+test_that("studio_save_as rejects path-traversal names (round-2 robustness P1)", {
+  withr::local_options(tabviz.theme_dir = withr::local_tempdir())
+  wire <- list("$schema" = "tabviz-theme/v4", name = "x",
+               inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs))
+  payload <- jsonlite::toJSON(list(name = "../evil", wire = wire), auto_unbox = TRUE)
+  expect_warning(p <- tabviz:::.studio_save_as_payload(payload), "invalid theme name")
+  expect_null(p)
+})

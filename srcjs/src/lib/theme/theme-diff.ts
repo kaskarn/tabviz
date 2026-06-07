@@ -210,3 +210,39 @@ function fontsEqual(
          (a?.display ?? null) === (b?.display ?? null) &&
          (a?.mono ?? null) === (b?.mono ?? null);
 }
+
+/** Count how many string-keyed entries differ between two records (key
+ *  set ∪, shallow JSON value compare). Shared by the QuickStrip
+ *  divergence badge and the theme slice's hasThemeEdits check so the
+ *  two never disagree (round-2 state review F1/P1). */
+export function recordDelta(
+  cur: Record<string, unknown> | undefined,
+  init: Record<string, unknown> | undefined,
+): number {
+  const keys = new Set([...Object.keys(cur ?? {}), ...Object.keys(init ?? {})]);
+  let n = 0;
+  for (const k of keys) {
+    if (JSON.stringify(cur?.[k]) !== JSON.stringify(init?.[k])) n += 1;
+  }
+  return n;
+}
+
+/** The divergence count shown in the settings quick strip: how many
+ *  set_*() steps reproduce the live theme from the loaded one. Tier-1
+ *  inputs via the snippet diff + role-override deltas + pin deltas, all
+ *  RELATIVE to the loaded theme (flow review F1: an imported pinned theme
+ *  must not show its own pins as phantom edits). Pure + unit-tested so a
+ *  double-count regression can't ship as a silent trust-eroding badge. */
+export function computeDivergence(
+  initialInputs: ThemeInputs | undefined,
+  liveInputs: ThemeInputs | undefined,
+  initialRoleOverrides: Record<string, unknown> | undefined,
+  liveRoleOverrides: Record<string, unknown> | undefined,
+  initialPins: Record<string, unknown> | undefined,
+  livePins: Record<string, unknown> | undefined,
+): number {
+  if (!initialInputs || !liveInputs) return 0;
+  return buildSnippetSteps(initialInputs, liveInputs).length +
+    recordDelta(liveRoleOverrides, initialRoleOverrides) +
+    recordDelta(livePins, initialPins);
+}

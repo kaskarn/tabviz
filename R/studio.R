@@ -102,36 +102,8 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
     # name and nothing listened. The payload is now {name, wire}; write
     # the envelope-resolved theme into the user theme dir, keep editing.
     shiny::observeEvent(input$studio_save_as, {
-      payload <- tryCatch(
-        jsonlite::fromJSON(input$studio_save_as, simplifyVector = FALSE,
-                           simplifyDataFrame = FALSE),
-        error = function(e) NULL
-      )
-      if (is.null(payload) || is.null(payload[["name"]]) || is.null(payload[["wire"]])) return()
-      # Name comes off the Shiny wire (attacker-controllable from a
-      # crafted client): bare-slug names only, or "../x" escapes the
-      # theme dir (round-2 robustness P1 — path traversal).
-      name <- payload[["name"]]
-      if (!checkmate::test_string(name, pattern = "^[A-Za-z0-9._-]+$") ||
-          grepl("\\.\\.", name, fixed = FALSE)) {
-        cli::cli_warn("Studio save-as: invalid theme name {.val {name}} (letters, digits, . _ - only).")
-        return()
-      }
-      th <- tryCatch(theme_from_wire(payload[["wire"]]), error = function(e) NULL)
-      if (is.null(th)) {
-        cli::cli_warn("Studio save-as: could not resolve the posted theme wire.")
-        return()
-      }
-      # Persist the WIRE ENVELOPE verbatim, not the resolved blob (flow
-      # review F2: "both surfaces export theme JSON, one envelope" — the
-      # resolved form is 50x larger and de-canonicalizes the artifact;
-      # theme_from_wire() above already proved it resolves).
-      dir <- .tabviz_theme_dir()
-      if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
-      path <- file.path(dir, paste0(name, ".json"))
-      jsonlite::write_json(payload[["wire"]], path,
-                           auto_unbox = TRUE, pretty = TRUE, null = "null")
-      cli::cli_inform("Saved theme {.val {name}} to {.path {path}}.")
+      path <- .studio_save_as_payload(input$studio_save_as)
+      if (!is.null(path)) cli::cli_inform("Saved theme to {.path {path}}.")
     })
     shiny::observeEvent(input$studio_cancel, {
       final$action <<- "cancel"
@@ -213,6 +185,39 @@ list_user_themes <- function() {
   if (!dir.exists(dir)) return(character())
   files <- list.files(dir, pattern = "\\.json$", full.names = FALSE)
   tools::file_path_sans_ext(files)
+}
+
+# Internal: handle a studio_save_as Shiny payload (JSON string with
+# {name, wire}). Validates the name (path-traversal guard), resolves the
+# wire to prove it's a real theme, then persists the WIRE ENVELOPE
+# VERBATIM (flow review F2 — not the 50x resolved blob; read_theme sniffs
+# the shape on the way back). Returns the written path, or NULL on any
+# rejection. Extracted from the observeEvent so the verbatim-write +
+# traversal-guard behavior is unit-testable without a live Shiny session
+# (round-2 test-gap audit: this F2 promise had no gate).
+.studio_save_as_payload <- function(json) {
+  payload <- tryCatch(
+    jsonlite::fromJSON(json, simplifyVector = FALSE, simplifyDataFrame = FALSE),
+    error = function(e) NULL
+  )
+  if (is.null(payload) || is.null(payload[["name"]]) || is.null(payload[["wire"]])) return(NULL)
+  name <- payload[["name"]]
+  if (!checkmate::test_string(name, pattern = "^[A-Za-z0-9._-]+$") ||
+      grepl("..", name, fixed = TRUE)) {
+    cli::cli_warn("Studio save-as: invalid theme name {.val {name}} (letters, digits, . _ - only).")
+    return(NULL)
+  }
+  th <- tryCatch(theme_from_wire(payload[["wire"]]), error = function(e) NULL)
+  if (is.null(th)) {
+    cli::cli_warn("Studio save-as: could not resolve the posted theme wire.")
+    return(NULL)
+  }
+  dir <- .tabviz_theme_dir()
+  if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
+  path <- file.path(dir, paste0(name, ".json"))
+  jsonlite::write_json(payload[["wire"]], path,
+                       auto_unbox = TRUE, pretty = TRUE, null = "null")
+  path
 }
 
 #' Read a saved theme by name (or path).

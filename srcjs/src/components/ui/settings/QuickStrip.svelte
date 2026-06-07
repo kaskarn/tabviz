@@ -9,7 +9,7 @@
   import type { ThemeInputs } from "$types/theme-inputs";
   import type { WebTheme } from "$types/theme-resolved";
   import { EnumRow } from "$components/theme-controls";
-  import { buildSnippetSteps } from "$lib/theme/theme-diff";
+  import { computeDivergence } from "$lib/theme/theme-diff";
   import { buildTheme } from "$lib/theme/theme-adapter";
   import { buildThemeWire } from "$lib/theme/theme-wire";
   import { parseThemeWire } from "$lib/theme/theme-wire-parse";
@@ -27,32 +27,19 @@
     store.setAuthoringInputs({ ...inputs, [key]: value });
   }
 
-  // ── Divergence badge (P4): how many inputs differ from the loaded
-  // theme — counted with the SAME diff that generates the R snippet, so
-  // the number is the length of the set_*() chain that reproduces it.
-  // Pins/overrides count RELATIVE to the loaded theme too (flow review
-  // F1: importing a pinned theme used to show its own pins as "edits"
-  // with nothing to reset). ──
-  function recordDelta(
-    cur: Record<string, unknown>,
-    init: Record<string, unknown>,
-  ): number {
-    const keys = new Set([...Object.keys(cur), ...Object.keys(init)]);
-    let n = 0;
-    for (const k of keys) {
-      if (JSON.stringify(cur[k]) !== JSON.stringify(init[k])) n += 1;
-    }
-    return n;
-  }
+  // ── Divergence badge (P4): how many set_*() steps reproduce the live
+  // theme from the loaded one (Tier-1 inputs + role overrides + pins, all
+  // relative to the loaded theme). The formula is the pure, unit-tested
+  // computeDivergence (theme-diff.ts) so a double-count can't ship as a
+  // silent badge regression (test-gap audit). ──
   const divergence = $derived.by(() => {
     const init = store.initialTheme as WebTheme | null;
-    const initial = init?.authoringInputs;
-    if (!initial || !inputs) return 0;
     const t = theme as WebTheme | undefined;
-    let n = buildSnippetSteps(initial, inputs).length;
-    n += recordDelta(t?.roleOverrides ?? {}, init?.roleOverrides ?? {});
-    n += recordDelta(t?.pins ?? {}, init?.pins ?? {});
-    return n;
+    return computeDivergence(
+      init?.authoringInputs, inputs ?? undefined,
+      init?.roleOverrides, t?.roleOverrides,
+      init?.pins, t?.pins,
+    );
   });
 
   // ── Export / import the theme-wire envelope (P4: both surfaces emit
