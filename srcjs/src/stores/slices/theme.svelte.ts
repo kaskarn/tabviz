@@ -28,6 +28,7 @@
 // initial-* capture migrates with `setSpec`.
 
 import type { WebSpec } from "$types";
+import type { WebTheme } from "$types/theme-resolved";
 import type { ThemeInputs } from "$types/theme-inputs";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
 import { buildTheme } from "$lib/theme/theme-adapter";
@@ -178,25 +179,12 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   function writeThemePath(path: (string | number)[], value: unknown): void {
     const spec = deps.getSpec();
     if (!spec || !spec.theme || path.length === 0) return;
-    const updateAt = (obj: unknown, p: (string | number)[]): unknown => {
-      const key = p[0];
-      if (p.length === 1) {
-        if (Array.isArray(obj)) {
-          const next = [...obj];
-          next[key as number] = value;
-          return next;
-        }
-        return { ...(obj as Record<string, unknown>), [key as string]: value };
-      }
-      if (Array.isArray(obj)) {
-        const next = [...obj];
-        next[key as number] = updateAt(obj[key as number], p.slice(1));
-        return next;
-      }
-      const cur = (obj as Record<string, unknown>)?.[key as string];
-      return { ...(obj as Record<string, unknown>), [key as string]: updateAt(cur, p.slice(1)) };
-    };
-    deps.setSpec({ ...spec, theme: updateAt(spec.theme, path) as WebSpec["theme"] });
+    // Single immutable-path-write idiom (quality review #6): was a verbatim
+    // copy of writePathImmutable's recursion (hoisted, defined below).
+    deps.setSpec({
+      ...spec,
+      theme: writePathImmutable(spec.theme, path, value) as WebSpec["theme"],
+    });
   }
 
   function captureInitial(spec: WebSpec): void {
@@ -238,7 +226,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   }
 
   // Write `value` into `obj` at `path`, returning a new object (immutable
-  // path-write). Mirrors the inline updater in `writeThemePath`.
+  // path-write). THE recursion; writeThemePath wraps it with setSpec.
   function writePathImmutable(obj: unknown, path: (string | number)[], value: unknown): unknown {
     if (path.length === 0) return obj;
     const key = path[0];
@@ -279,104 +267,91 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     return next as WebSpec["theme"];
   }
 
-  // V3 authoring path — merges a partial ThemeInputs over the current
-  // theme's authoringInputs, rebuilds the resolved theme via buildTheme(),
-  // re-applies tracked pins, and writes back. Theme name is preserved so
-  // the source emitter still matches presets when the inputs happen to
-  // round-trip to a known one.
-  function setAuthoringInputs(partial: Partial<ThemeInputs>): void {
+  // THE one rebuild idiom (quality review #5): read current authoring
+  // inputs, re-run the cascade with the carried/overridden artifacts, and
+  // write back. setAuthoringInputs / previewAuthoringInputs / the pin &
+  // role clears are all thin wrappers — this is the single site where the
+  // "roleOverrides + pins MUST ride every rebuild" invariant lives (the
+  // final-review P1 bug was three copies drifting), so a future change
+  // can't reintroduce the silent-wipe in just one path.
+  //
+  // `opts.inputs` overrides the current inputs (the edit); `roleOverrides`
+  // / `pins` override the carried artifacts (the clears); both default to
+  // carrying forward. `remeasure` runs the column re-measure (off for the
+  // drag-tick preview); `skipValidation` skips the dev contrast pass.
+  function rebuild(opts: {
+    inputs?: ThemeInputs;
+    roleOverrides?: WebTheme["roleOverrides"];
+    pins?: WebTheme["pins"];
+    remeasure?: boolean;
+    skipValidation?: boolean;
+  }): void {
     const spec = deps.getSpec();
     if (!spec || !spec.theme) return;
-    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
+    const carried: WebTheme = spec.theme;
+    const inputs = opts.inputs ?? carried.authoringInputs;
+    if (!inputs) return;
+    const rebuilt = reapplyEdits(buildTheme(inputs, {
+      name: carried.name ?? "custom",
+      roleOverrides: opts.roleOverrides ?? carried.roleOverrides ?? {},
+      pins: opts.pins ?? carried.pins ?? {},
+      ...(opts.skipValidation ? { skipValidation: true } : {}),
+    }) as WebSpec["theme"]);
+    deps.setSpec({ ...spec, theme: rebuilt });
+    if (opts.remeasure) {
+      // Identity changes (mode, brand, density) can shift text metrics +
+      // cell paint. Invalidate auto-widths; user-resized columns stay.
+      deps.clearAutoWidthsKeepingUserResizes();
+      deps.measureAutoColumns();
+    }
+  }
+
+  // V3 authoring path — merge a partial over the current authoring inputs,
+  // re-resolve, write back. Theme name is preserved so the source emitter
+  // still matches presets when the inputs round-trip to a known one.
+  function setAuthoringInputs(partial: Partial<ThemeInputs>): void {
+    const spec = deps.getSpec();
+    const current = spec?.theme?.authoringInputs;
     if (!current) return;
     const merged: ThemeInputs = { ...current, ...partial };
     // Un-stick the dirty flag when the edit lands back on the initial
     // inputs (review P2 nit: dragging an anchor back to its original
     // value left "Reset theme" enabled with nothing to reset).
-    const initialInputs = (initialTheme as { authoringInputs?: ThemeInputs } | null)
-      ?.authoringInputs;
+    const initialInputs = initialTheme?.authoringInputs;
     authoringEdited = !initialInputs ||
       JSON.stringify(merged) !== JSON.stringify(initialInputs);
-    const name = spec.theme.name ?? "custom";
-    // roleOverrides + pins MUST ride the rebuild (final-review P1): the
-    // string-name form defaulted them to {}, so the FIRST Tier-1 edit
-    // silently wiped any pins the theme arrived with (import, R
-    // set_pin()/set_role(), studio handoff) — defeating the artifact's
-    // survives-re-resolution promise.
-    const carried = spec.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] };
-    const rebuilt = reapplyEdits(buildTheme(merged, {
-      name,
-      roleOverrides: carried.roleOverrides ?? {},
-      pins: carried.pins ?? {},
-    }) as WebSpec["theme"]);
-    deps.setSpec({ ...spec, theme: rebuilt });
-    // Identity changes (mode, brand, decorative, density) can shift text
-    // metrics + cell paint. Invalidate auto-widths; user-resized columns
-    // stay frozen.
-    deps.clearAutoWidthsKeepingUserResizes();
-    deps.measureAutoColumns();
+    rebuild({ inputs: merged, remeasure: true });
   }
 
-  // C53 (wire-audit Pass 4a): drag-time preview path. Identical cascade
-  // re-resolve to setAuthoringInputs but SKIPS the column re-measure —
-  // anchor-color edits don't change text metrics, and re-measuring every
-  // column per slider tick was the fps trap the Round-3 architecture
-  // review flagged. Callers commit via setAuthoringInputs on pointer-up.
+  // C53 (wire-audit Pass 4a): drag-time preview path. Same re-resolve as
+  // setAuthoringInputs but SKIPS the column re-measure (anchor-color edits
+  // don't change text metrics; re-measuring per slider tick was an fps
+  // trap) and the contrast validation. Callers commit via
+  // setAuthoringInputs on pointer-up.
   function previewAuthoringInputs(partial: Partial<ThemeInputs>): void {
-    const spec = deps.getSpec();
-    if (!spec || !spec.theme) return;
-    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
+    const current = deps.getSpec()?.theme?.authoringInputs;
     if (!current) return;
-    const merged: ThemeInputs = { ...current, ...partial };
-    const name = spec.theme.name ?? "custom";
-    const carried = spec.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] };
-    const rebuilt = reapplyEdits(buildTheme(merged, {
-      name,
-      roleOverrides: carried.roleOverrides ?? {},
-      pins: carried.pins ?? {},
-      // Drag-tick path: contrast validation re-runs on the pointer-up
-      // commit anyway; per-tick it's a second half-cascade (perf review).
-      skipValidation: true,
-    }) as WebSpec["theme"]);
-    deps.setSpec({ ...spec, theme: rebuilt });
+    rebuild({ inputs: { ...current, ...partial }, skipValidation: true });
   }
 
-  // DT-12 (final review board): a theme that arrives with studio/R pins
-  // or role overrides must let the settings host RELEASE them — otherwise
-  // they're invisible-unclearable in the widget. Both rebuild through the
-  // same cascade path as setAuthoringInputs (inputs unchanged).
-  function rebuildWithArtifacts(
-    roleOverrides: WebSpec["theme"]["roleOverrides"],
-    pins: WebSpec["theme"]["pins"],
-  ): void {
-    const spec = deps.getSpec();
-    if (!spec || !spec.theme) return;
-    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
-    if (!current) return;
-    const rebuilt = reapplyEdits(buildTheme(current, {
-      name: spec.theme.name ?? "custom",
-      roleOverrides: roleOverrides ?? {},
-      pins: pins ?? {},
-    }) as WebSpec["theme"]);
-    deps.setSpec({ ...spec, theme: rebuilt });
-  }
-
+  // DT-12 (final review board): a theme that arrives with studio/R pins or
+  // role overrides must let the settings host RELEASE them — otherwise
+  // they're invisible-unclearable in the widget.
   function clearThemePin(cssVar: string): void {
-    const spec = deps.getSpec();
-    const carried = spec?.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] } | undefined;
+    const carried = deps.getSpec()?.theme;
     if (!carried?.pins || !(cssVar in carried.pins)) return;
     const pins = { ...carried.pins };
     delete pins[cssVar];
-    rebuildWithArtifacts(carried.roleOverrides, pins);
+    rebuild({ pins });
   }
 
   function clearThemeRoleOverride(role: string): void {
-    const spec = deps.getSpec();
-    const carried = spec?.theme as { roleOverrides?: WebSpec["theme"]["roleOverrides"]; pins?: WebSpec["theme"]["pins"] } | undefined;
-    if (!carried?.roleOverrides || !(role in carried.roleOverrides)) return;
-    const roleOverrides = { ...carried.roleOverrides } as Record<string, unknown>;
-    delete roleOverrides[role];
-    rebuildWithArtifacts(roleOverrides as WebSpec["theme"]["roleOverrides"], carried.pins);
+    const carried = deps.getSpec()?.theme;
+    const ro = carried?.roleOverrides as Record<string, unknown> | undefined;
+    if (!ro || !(role in ro)) return;
+    const next = { ...ro };
+    delete next[role];
+    rebuild({ roleOverrides: next as WebTheme["roleOverrides"] });
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -490,8 +465,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     // field reverts to its cascade-computed value. Re-applies any
     // remaining pins on top.
     const spec = deps.getSpec();
-    const hasAuthoring = spec?.theme &&
-      (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs != null;
+    const hasAuthoring = spec?.theme?.authoringInputs != null;
     if (hasAuthoring) setAuthoringInputs({});
   }
 

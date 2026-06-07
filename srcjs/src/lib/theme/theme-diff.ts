@@ -9,6 +9,12 @@
 // IS the length of the chain the export carries.
 
 import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
+// Canonical R-string escaper — single source (quality review: a narrower
+// copy here escaped only \\ and " but not newlines/tabs, so a font name
+// or pin value with a newline produced a broken R literal through the
+// snippet path while op-recorder got it right).
+import { rString } from "../op-recorder";
+export { rString };
 
 /** Emit an anchor as an R `oklch()` call — the studio is LCH-native and
  *  R's anchor coercion accepts oklch() triples, so the author's actual
@@ -195,11 +201,6 @@ export function formatSnippet(baseExpression: string, steps: SnippetStep[]): str
   return parts.join(" |> ");
 }
 
-/** Quote a string as an R double-quoted literal (escapes `"` and `\`). */
-export function rString(s: string): string {
-  const escaped = s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  return `"${escaped}"`;
-}
 
 function fontsEqual(
   a: ThemeInputs["fonts"] | undefined,

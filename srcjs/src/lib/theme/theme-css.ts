@@ -20,18 +20,9 @@
 
 import type { WebTheme } from "../../types/theme-resolved";
 import { computeV3BridgeVars } from "./v3-bridge-vars";
-import { getCssVarsRaw, applySpacingPins } from "./consumer-bridge";
+import { getCssVars, getCssVarsRaw, applySpacingPins } from "./consumer-bridge";
 import { VIZ_MARGIN } from "../axis-utils";
-import { resolveTheme } from "./resolve-theme";
-import {
-  getCssVars, readContentPrimary, readContentMuted,
-  readDividerStrong, readAccentDefault,
-} from "./consumer-bridge";
-import {
-  TEXT_MEASUREMENT,
-  BADGE_VARIANTS,
-  generateCSSVariables,
-} from "../rendering-constants";
+import { generateCSSVariables } from "../rendering-constants";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Caches

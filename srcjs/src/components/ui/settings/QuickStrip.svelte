@@ -7,7 +7,6 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeInputs } from "$types/theme-inputs";
-  import type { WebTheme } from "$types/theme-resolved";
   import { EnumRow } from "$components/theme-controls";
   import { computeDivergence } from "$lib/theme/theme-diff";
   import { buildTheme } from "$lib/theme/theme-adapter";
@@ -18,9 +17,7 @@
   const { store }: Props = $props();
 
   const theme = $derived(store.spec?.theme);
-  const inputs = $derived(
-    (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null,
-  );
+  const inputs = $derived(theme?.authoringInputs ?? null);
 
   function patch<K extends keyof ThemeInputs>(key: K, value: ThemeInputs[K]): void {
     if (!inputs) return;
@@ -33,12 +30,11 @@
   // computeDivergence (theme-diff.ts) so a double-count can't ship as a
   // silent badge regression (test-gap audit). ──
   const divergence = $derived.by(() => {
-    const init = store.initialTheme as WebTheme | null;
-    const t = theme as WebTheme | undefined;
+    const init = store.initialTheme;
     return computeDivergence(
       init?.authoringInputs, inputs ?? undefined,
-      init?.roleOverrides, t?.roleOverrides,
-      init?.pins, t?.pins,
+      init?.roleOverrides, theme?.roleOverrides,
+      init?.pins, theme?.pins,
     );
   });
 
@@ -46,10 +42,9 @@
   // ONE schema; import is what makes export useful for no-R users). ──
   function exportWire(): void {
     if (!inputs) return;
-    const t = theme as WebTheme | undefined;
     // ONE envelope builder for every egress (quality review).
     const wire = buildThemeWire(
-      inputs, store.baseThemeName, t?.roleOverrides ?? {}, t?.pins ?? {},
+      inputs, store.baseThemeName, theme?.roleOverrides ?? {}, theme?.pins ?? {},
     );
     const blob = new Blob([JSON.stringify(wire, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -79,7 +74,7 @@
           roleOverrides: wire.roleOverrides,
           pins: wire.pins ?? {},
         });
-        store.setThemeObject(built as never);
+        store.setThemeObject(built);
       } catch (e) {
         importError = (e as Error).message;
       }
