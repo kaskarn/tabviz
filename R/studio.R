@@ -26,9 +26,25 @@
 #' to the console so the edits are recoverable even if the return value
 #' wasn't assigned.
 #'
+#' @section Shiny handoff:
+#' A tabviz widget's settings panel has an "Edit in studio" control. In a
+#' live Shiny app it copies the portable theme wire to the clipboard AND
+#' posts it to the Shiny input `tabviz_studio_request` (a JSON string). To
+#' launch the studio live from that control, observe the input:
+#' ```r
+#' observeEvent(input$tabviz_studio_request, {
+#'   edited <- tabviz_studio(theme_from_wire(input$tabviz_studio_request))
+#'   # ... apply `edited` back to your reactive theme/spec ...
+#' })
+#' ```
+#' Without such an observer the control still copies the wire to the
+#' clipboard; reopen it anywhere with
+#' `tabviz_studio(read_theme("<pasted JSON>"))`.
+#'
 #' @param x A [WebSpec] or [WebTheme].
 #' @param ... Reserved for future arguments; currently unused.
 #' @return The edited object (WebSpec or WebTheme), or NULL on Cancel.
+#' @seealso [read_theme()], [theme_from_wire()]
 #' @export
 tabviz_studio <- S7::new_generic("tabviz_studio", "x")
 

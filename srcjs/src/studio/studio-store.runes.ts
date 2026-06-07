@@ -59,6 +59,22 @@ describe("studio token pins (P3)", () => {
     expect(studioStore.resolved?.cssVars?.["--tv-text-footnote-size"]).toBe("0.7rem");
   });
 
+  test("clearRoleBinding releases a single rebind (Wave 1.5)", () => {
+    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.setRoleBinding("text-muted", "brand", 8);
+    studioStore.setRoleBinding("surface", "neutral", 2);
+    expect(Object.keys(studioStore.roleOverrides).sort()).toEqual(["surface", "text-muted"]);
+    studioStore.clearRoleBinding("text-muted");
+    expect(Object.keys(studioStore.roleOverrides)).toEqual(["surface"]);
+    // clearing the last one leaves an empty map (clean envelope)
+    studioStore.clearRoleBinding("surface");
+    expect(studioStore.roleOverrides).toEqual({});
+    // releasing a non-existent role is a no-op (no spurious history step)
+    const before = studioStore.history.length;
+    studioStore.clearRoleBinding("text-muted");
+    expect(studioStore.history.length).toBe(before);
+  });
+
   test("undo restores the pre-pin state; clearPin releases", () => {
     studioStore.init(PRESETS["cochrane"]!, "cochrane");
     studioStore.setPin("--tv-text-footnote-size", "0.7rem");

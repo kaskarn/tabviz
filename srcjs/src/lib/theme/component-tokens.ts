@@ -136,6 +136,17 @@ export interface ComponentToken {
   readonly modes?: ModeBehavior;
   /** Optional: short human-readable description for the Inspector. */
   readonly description?: string;
+  // DEFERRED (theme-rework): `dtcgPath` (DTCG token path) and `pinnable`
+  // (public/private classification gating raw setPin + wire-import) were
+  // scoped to Wave 0 in the plan but are NOT yet declared here — they land
+  // with their consumers, NOT as empty scaffolding (ecosystem-lens review):
+  //   - `pinnable` → Wave 3, when the scale-role layer reclassifies which
+  //     tokens are user-pinnable vs internal (closes the two-ingress pin
+  //     gap: parseThemeWire / theme_from_wire currently validate grammar +
+  //     `--tv-` prefix but not pinnability).
+  //   - `dtcgPath` → Wave 4, when the DTCG adapter needs the explicit token
+  //     path. The alias NAMES (lib/theme/alias.ts) are already the shared
+  //     namespace; `dtcgPath` only makes the per-token path declarative.
 }
 
 // ============================================================================

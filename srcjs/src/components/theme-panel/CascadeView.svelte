@@ -40,9 +40,17 @@
      *  resolves locally — convenient when the consumer doesn't already
      *  hold a resolved blob. */
     resolved,
+    /** When the host already mounts the LIVE, editable RoleSpine (the
+     *  studio rail), suppress the read-only SpineDiagram twin here — two
+     *  spines a screenful apart read as "the bottom one is broken" (Wave
+     *  1.5 studio review). The pedagogy prose + OffTheScales tray stay; the
+     *  diagram is replaced by a pointer to the rail. Docs/viewer pedagogy
+     *  (no editor) leaves this false and keeps the full diagram. */
+    liveSpine = false,
   }: {
     inputs: ThemeInputs;
     resolved?: ResolvedTheme;
+    liveSpine?: boolean;
   } = $props();
 
   const localResolved = $derived<ResolvedTheme>(
@@ -90,7 +98,11 @@
         heading="Role spine — drag tokens along & across the scales"
         prose="Three generated scales — <strong>neutral</strong>, <strong>brand</strong>, <strong>accent</strong> — top (paper-ward) to bottom (ink-ward). Every role token sits at the grade it binds to. <strong>Hover a token to light up what it paints</strong>; click to trace. Status & computed roles live in the tray below — they don't bind to a grade."
       >
-        <SpineDiagram resolved={localResolved} />
+        {#if liveSpine}
+          <p class="spine-pointer">↖ Rebind roles in the live <strong>Role spine</strong> (left rail) — drag a token across ramps / grades.</p>
+        {:else}
+          <SpineDiagram resolved={localResolved} />
+        {/if}
         <div class="off-tray">
           <OffTheScales resolved={localResolved} />
         </div>
@@ -165,6 +177,15 @@
     --tp-trace-bg: #eef4fb;
   }
   .cascade { display: flex; flex-direction: column; }
+  .spine-pointer {
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    border: 1px dashed var(--tp-chip-rule, #d8d4cc);
+    border-radius: 6px;
+    background: var(--tp-chip-bg, #faf9f6);
+    color: var(--tp-fg-muted, #4d4a45);
+    font-size: 12px;
+  }
   .row.two-up {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);

@@ -19,7 +19,7 @@
 
   const ramps = $derived(resolved.ramps);
 
-  type SpineRole = { name: string; ramp: "neutral" | "brand" | "accent"; grade: number };
+  type SpineRole = { name: string; ramp: "neutral" | "brand" | "accent"; grade: number; overridden: boolean };
 
   // Effective bindings = defaults overlaid with the studio's role overrides.
   const effectiveBindings = $derived.by((): SpineRole[] => {
@@ -31,11 +31,17 @@
       const r = binding.ramp;
       const g = binding.grade;
       if (r === "neutral" || r === "brand" || r === "accent") {
-        out.push({ name, ramp: r, grade: g });
+        // overridden = diverges from the cascade default (Wave 1.5): mark it
+        // so a rebind is distinguishable from a default, and offer a reset.
+        out.push({ name, ramp: r, grade: g, overridden: override != null });
       }
     }
     return out;
   });
+
+  function resetRole(roleName: string): void {
+    studioStore.clearRoleBinding(roleName as RoleName);
+  }
 
   function rolesAt(ramp: "neutral" | "brand" | "accent", grade: number): SpineRole[] {
     return effectiveBindings.filter(r => r.ramp === ramp && r.grade === grade);
@@ -119,6 +125,9 @@
       if (next !== idx) studioStore.setRoleBinding(role.name as RoleName, order[next], role.grade);
     } else if (e.key === "Enter") {
       clickRole(role.name);
+    } else if ((e.key === "Backspace" || e.key === "Delete") && role.overridden) {
+      e.preventDefault();
+      resetRole(role.name);
     }
   }
 </script>
@@ -148,8 +157,10 @@
                 <span
                   class="role-token"
                   class:dragging={dragging?.role === role.name}
+                  class:overridden={role.overridden}
                   role="button"
                   tabindex="0"
+                  aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Delete"
                   onmouseenter={() => hoverRole(role.name)}
                   onmouseleave={unhoverRole}
                   onclick={() => clickRole(role.name)}
@@ -157,8 +168,15 @@
                   onpointermove={onPointerMove}
                   onpointerup={onPointerUp}
                   onkeydown={(e) => onKeyDown(e, role)}
-                  title={`Role: ${role.name} → ${role.ramp}[${role.grade}] (drag or arrow-keys to rebind)`}
-                ><span class="grip" aria-hidden="true">⋮⋮</span>{role.name}</span>
+                  title={`Role: ${role.name} → ${role.ramp}[${role.grade}]${role.overridden ? " (rebound)" : ""} — drag or arrow-keys to rebind${role.overridden ? "; ⌫ to reset" : ""}`}
+                ><span class="grip" aria-hidden="true">⋮⋮</span>{role.name}{#if role.overridden}<button
+                    type="button"
+                    class="role-reset"
+                    aria-label={`Reset ${role.name} to its cascade default`}
+                    title="Reset to cascade default"
+                    onpointerdown={(e) => e.stopPropagation()}
+                    onclick={(e) => { e.stopPropagation(); resetRole(role.name); }}
+                  >↺</button>{/if}</span>
               {/each}
             </div>
           </div>
@@ -250,6 +268,25 @@
   .role-token.dragging {
     opacity: 0.5;
     cursor: grabbing;
+  }
+  .role-token.overridden {
+    border-color: var(--tv-accent, #2563eb);
+    box-shadow: inset 2px 0 0 var(--tv-accent, #2563eb);
+    font-weight: 600;
+  }
+  .role-reset {
+    margin-left: 3px;
+    padding: 0 2px;
+    border: 0;
+    background: transparent;
+    color: var(--tv-accent, #2563eb);
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+    border-radius: 2px;
+  }
+  .role-reset:hover {
+    background: var(--tv-row-alt-bg, #eef2ff);
   }
   .grip {
     font-size: 10px;

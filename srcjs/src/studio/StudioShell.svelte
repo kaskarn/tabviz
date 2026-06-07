@@ -205,12 +205,12 @@
           <!-- Tier-2 role rebind surface (theme-rework Wave 1): the spine
                was fully store-wired but never mounted. It speaks role
                NAMES; the exported wire serializes the rebind as a name
-               alias (Wave 0), so a later ramp re-tune can't silently
-               re-target it. -->
+               alias (Wave 0) — DTCG-shaped + rename-migratable (not
+               re-tune-proof; see lib/theme/alias.ts header). -->
           <div class="spine-host">
             <div class="spine-host-head">
               <span>Role spine</span>
-              <span class="spine-host-hint">drag a role across ramps / grades to rebind</span>
+              <span class="spine-host-hint">drag or arrow-key a role to rebind · ⌫ resets</span>
             </div>
             <RoleSpine resolved={studioStore.resolved} />
           </div>
@@ -287,6 +287,7 @@
         <CascadeView
           inputs={studioStore.inputs}
           resolved={studioStore.resolved ?? undefined}
+          liveSpine
         />
       </main>
     {:else}

@@ -67,7 +67,11 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   const server = await serve();
   const { port } = server.address();
-  const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+  const browser = await puppeteer.launch({
+    headless: true,
+    protocolTimeout: 120000, // the deviceScaleFactor screenshot can be slow in CI
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   let failed = false;
   try {
     const page = await browser.newPage();
@@ -75,7 +79,8 @@ async function main() {
     const errors = [];
     page.on("pageerror", (e) => errors.push(String(e)));
     await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0", timeout: 30000 });
-    // The Wave-1 deliverable: the role spine mounts in the left rail.
+    // The Wave-1 deliverable + the actual GATE: the role spine mounts in the
+    // left rail with >0 roles and the page throws nothing. These set `failed`.
     await page.waitForSelector(".role-spine", { timeout: 15000 });
     await page.waitForSelector(".studio-chart", { timeout: 15000 });
     await new Promise((r) => setTimeout(r, 600));
@@ -83,8 +88,15 @@ async function main() {
     console.log(`✓ role spine mounted with ${roleCount} role tokens`);
     if (roleCount === 0) { failed = true; console.error("✗ spine mounted but rendered 0 roles"); }
     if (errors.length) { failed = true; console.error("✗ page errors:\n  " + errors.join("\n  ")); }
-    await page.screenshot({ path: OUT, type: "png", fullPage: false });
-    console.log(`screenshot → ${OUT}`);
+    // The screenshot is the eyeball AID, not the gate — a capture timeout
+    // (puppeteer protocol flake) must not fail the smoke when the assertions
+    // above already passed.
+    try {
+      await page.screenshot({ path: OUT, type: "png", fullPage: false });
+      console.log(`screenshot → ${OUT}`);
+    } catch (shotErr) {
+      console.warn(`(screenshot skipped: ${shotErr.message})`);
+    }
   } catch (err) {
     failed = true;
     console.error("studio-shot failed:", err.message);

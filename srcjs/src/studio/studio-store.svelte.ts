@@ -223,6 +223,21 @@ class StudioStore {
     }
   }
 
+  /** Release a single role rebind back to its cascade default (Wave 1.5
+   *  studio review: the editor could SET a rebind via the spine but had no
+   *  per-role reset short of global undo — while the read-only viewer host
+   *  could already release one via clearThemeRoleOverride). Twin of
+   *  clearPin. */
+  clearRoleBinding(role: RoleName): void {
+    if (!(role in this.roleOverrides)) return;
+    const { [role]: _gone, ...rest } = this.roleOverrides as Record<string, unknown>;
+    void _gone;
+    this.roleOverrides = rest as RoleOverrides;
+    if (this.inputs) {
+      this.pushHistory(this.inputs, this.roleOverrides, this.pins, `Reset ${role}`);
+    }
+  }
+
   private pushHistory(
     inputs: ThemeInputs,
     roleOverrides: RoleOverrides,

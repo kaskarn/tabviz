@@ -46,6 +46,15 @@ export function parseThemeWire(json: string): PinnedThemeWire {
   if (!wire.inputs || typeof wire.inputs !== "object" || !wire.inputs.anchors) {
     throw new ThemeWireParseError(["Not a theme wire (missing inputs.anchors)."]);
   }
+  // Unknown-schema lint (parity with R theme_from_wire, Wave 1.5): a future
+  // schema imports best-effort, but the version mismatch shouldn't be silent
+  // (R warns; the studio/settings importer was the silent half).
+  if (typeof wire.$schema === "string" && wire.$schema !== "tabviz-theme/v4") {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `tabviz: unknown theme wire schema "${wire.$schema}" (expected "tabviz-theme/v4"); importing anyway.`,
+    );
+  }
   // Tier-1 inputs: the same wall R authors hit via the S7 validator.
   validateThemeInputs(wire.inputs);
 

@@ -56,22 +56,28 @@
     };
     const inShiny = typeof win.Shiny?.setInputValue === "function";
     if (inShiny) {
-      // App authors observe input$tabviz_studio_request to call
-      // tabviz_studio(theme_from_wire(...)). No-op if unobserved.
+      // Opt-in Shiny handoff: app authors wire
+      //   observeEvent(input$tabviz_studio_request, { tabviz_studio(theme_from_wire(...)) })
+      // to launch the studio live. Documented in ?tabviz_studio. This is a
+      // no-op when unobserved — so the toast below must NOT claim success,
+      // only that the request was SENT (the clipboard copy is the reliable
+      // path that always works).
       win.Shiny!.setInputValue("tabviz_studio_request", json, { priority: "event" });
     }
     const clip = (navigator as Navigator | undefined)?.clipboard;
     if (clip?.writeText) {
       clip.writeText(json).then(
         () => flashHandoff(inShiny
-          ? "Studio requested · theme also copied to clipboard"
-          : "Theme copied — reopen with tabviz_studio(read_theme('<paste>'))"),
-        () => flashHandoff("Could not copy theme to clipboard."),
+          ? "Theme copied to clipboard · studio request sent (needs an app observer)"
+          : "Theme JSON copied to clipboard — open it in tabviz studio"),
+        () => flashHandoff(inShiny
+          ? "Studio request sent (needs an app observer); clipboard copy failed."
+          : "Could not copy theme to clipboard."),
       );
     } else {
       flashHandoff(inShiny
-        ? "Studio requested (Shiny)."
-        : "Clipboard unavailable — export the theme JSON to reopen it.");
+        ? "Studio request sent (needs an app observer)."
+        : "Clipboard unavailable — export the theme JSON to open it in the studio.");
     }
   }
 

@@ -85,24 +85,44 @@ export function listBindableRoles(): string[] {
 // (round-3 API review: valid roles were only knowable by erroring). The
 // `domain` facet ships now (all current roles are "color") so the Wave-3
 // non-color scale-roles register into the SAME roster + shape, not a
-// second namespace. Each row carries the default ramp/grade and one
-// example `--tv-*` token the role drives (for orientation).
+// second namespace.
 import { DEFAULT_ROLE_BINDINGS as _DEFAULTS } from "../lib/theme/role-bindings";
 import { TOKENS_BY_ROLE as _TOKENS_BY_ROLE } from "../lib/theme/component-tokens";
+import { bindingToAlias as _bindingToAlias } from "../lib/theme/alias";
 export interface RoleRosterEntry {
   role: string;
+  /** Which generated scale the role indexes. `color` roles bind a ramp+grade;
+   *  Wave-3 `type`/`spacing`/`geometry` roles will index their own scales. */
   domain: "color" | "type" | "spacing" | "geometry";
-  ramp: string;
-  grade: number;
+  /** The role's default coordinate as a portable alias string — the ONE
+   *  domain-agnostic column (Wave 1.5 keystone fix). For color roles this is
+   *  `"ramp.grade"` (e.g. `"neutral.5"`); non-color roles encode their scale
+   *  slot here without needing a ramp/grade. */
+  coordinate: string;
+  /** Color-domain coordinate parts — present ONLY when `domain === "color"`.
+   *  Non-color roles leave these undefined (don't widen the type to force a
+   *  bogus ramp/grade onto a type/spacing role). */
+  ramp?: string;
+  grade?: number;
+  /** One example `--tv-*` token the role drives, or `null` for roles consumed
+   *  ONLY via computed tokens (series slots, alpha companions, focus-ring) —
+   *  those have no direct manifest token, NOT that the role is inert. */
   example: string | null;
 }
 export function listRoles(): RoleRosterEntry[] {
   return _ALL_ROLES
     .filter((r) => !_OFF_RAMP_ROLES.has(r))
-    .map((role) => {
+    .map((role): RoleRosterEntry => {
       const b = _DEFAULTS[role];
       const example = _TOKENS_BY_ROLE.get(role)?.[0]?.cssVar ?? null;
-      return { role, domain: "color" as const, ramp: b.ramp, grade: b.grade, example };
+      return {
+        role,
+        domain: "color",
+        coordinate: _bindingToAlias(b),
+        ramp: b.ramp,
+        grade: b.grade,
+        example,
+      };
     });
 }
 

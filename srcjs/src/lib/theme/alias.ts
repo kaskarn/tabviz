@@ -2,17 +2,21 @@
 //
 // The resolver consumes role bindings as positional COORDINATES
 // (`{ramp, grade}`), which is right for a generative, anchor-driven system.
-// But the COORDINATE is the wrong PORTABLE contract: a bare `grade: 5` is a
-// positional index into a generated ramp, so a saved artifact silently
-// re-targets if the ramp is ever re-tuned/re-indexed, and no external tool
-// (Figma / Tokens Studio / Style Dictionary / DTCG) speaks `{ramp, grade}`.
+// But the COORDINATE is the wrong PORTABLE contract: no external tool
+// (Figma / Tokens Studio / Style Dictionary / DTCG) speaks `{ramp, grade}`,
+// and a bare numeric index is opaque in a saved artifact.
 //
 // So we project bindings to a stable NAME at the wire boundary
 // (`"neutral.5"`) and keep coordinates internal. Readers accept BOTH the
 // name form and the legacy coordinate-object form (one-way migration: old
-// files keep working; new files are name-shaped and DTCG-ready). The
-// resolver, `set_role(role, ramp, grade)`, and `DEFAULT_ROLE_BINDINGS` are
-// unchanged — only the serialized shape changes.
+// files keep working; new files are name-shaped). What this buys: DTCG
+// SHAPE (a string token reference, not an object) and rename-MIGRATABILITY
+// — a future ramp re-index can ship a rename map (`neutral.5 → neutral.500`)
+// that rewrites artifacts. NOTE it does NOT by itself make a binding survive
+// a ramp re-TUNE: `"neutral.5"` re-targets to whatever grade 5 becomes,
+// exactly as `{neutral, 5}` would. The resolver, `set_role(role, ramp,
+// grade)`, and `DEFAULT_ROLE_BINDINGS` are unchanged — only the serialized
+// shape changes.
 //
 // Round-3 design-tokens review insisted this land BEFORE the studio spine
 // mounts (the spine teaches users to mint rebinds; their artifacts should be
@@ -70,7 +74,7 @@ export function normalizeRoleOverrides(
 }
 
 /** WRITER: project a coordinate roleOverrides map to name aliases for the
- *  portable wire (DTCG-shaped, re-index-migratable). */
+ *  portable wire (DTCG-shaped + rename-migratable; see module header). */
 export function roleOverridesToAliases(
   ro: Record<string, RoleBinding> | undefined | null,
 ): Record<string, string> {

@@ -24,3 +24,24 @@ On close (Done OR Cancel), the studio echoes an R \verb{set_*()} pipe chain
 to the console so the edits are recoverable even if the return value
 wasn't assigned.
 }
+\section{Shiny handoff}{
+
+A tabviz widget's settings panel has an "Edit in studio" control. In a
+live Shiny app it copies the portable theme wire to the clipboard AND
+posts it to the Shiny input \code{tabviz_studio_request} (a JSON string). To
+launch the studio live from that control, observe the input:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{observeEvent(input$tabviz_studio_request, \{
+  edited <- tabviz_studio(theme_from_wire(input$tabviz_studio_request))
+  # ... apply `edited` back to your reactive theme/spec ...
+\})
+}\if{html}{\out{</div>}}
+
+Without such an observer the control still copies the wire to the
+clipboard; reopen it anywhere with
+\code{tabviz_studio(read_theme("<pasted JSON>"))}.
+}
+
+\seealso{
+\code{\link[=read_theme]{read_theme()}}, \code{\link[=theme_from_wire]{theme_from_wire()}}
+}

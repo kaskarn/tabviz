@@ -7,16 +7,21 @@
 list_roles()
 }
 \value{
-A data frame with columns \code{role}, \code{domain}, \code{ramp}, \code{grade},
-\code{example}.
+A data frame with columns \code{role}, \code{domain}, \code{coordinate},
+\code{ramp}, \code{grade}, \code{example}.
 }
 \description{
 The discoverable roster of Tier-2 roles you can rebind with
 \code{\link[=set_role]{set_role()}} — so valid role names aren't knowable only by triggering
-an error. Each row carries the role's default \code{ramp}/\code{grade}, its
-\code{domain} (currently all \code{"color"}; the non-color scale-role domains
-join this roster as they ship), and one example \verb{--tv-*} token the role
-drives. Pair with \code{\link[=list_component_tokens]{list_component_tokens()}} (the \code{set_pin()} companion).
+an error. Each row carries the role's \code{domain} (currently all
+\code{"color"}; the non-color scale-role domains join this roster as they
+ship), its default \code{coordinate} (a portable alias string — \code{"ramp.grade"}
+for color roles), the color-domain \code{ramp}/\code{grade} parts (\code{NA} for
+non-color roles), and one example \verb{--tv-*} token the role drives.
+\code{example} is \code{NA} for roles consumed only via computed tokens (series
+slots, alpha companions, focus-ring) — those have no direct manifest
+token, which does NOT mean the role is inert. Pair with
+\code{\link[=list_component_tokens]{list_component_tokens()}} (the \code{set_pin()} companion).
 }
 \seealso{
 \code{\link[=set_role]{set_role()}}, \code{\link[=list_component_tokens]{list_component_tokens()}}

@@ -13,13 +13,18 @@
 #'
 #' The discoverable roster of Tier-2 roles you can rebind with
 #' [set_role()] — so valid role names aren't knowable only by triggering
-#' an error. Each row carries the role's default `ramp`/`grade`, its
-#' `domain` (currently all `"color"`; the non-color scale-role domains
-#' join this roster as they ship), and one example `--tv-*` token the role
-#' drives. Pair with [list_component_tokens()] (the `set_pin()` companion).
+#' an error. Each row carries the role's `domain` (currently all
+#' `"color"`; the non-color scale-role domains join this roster as they
+#' ship), its default `coordinate` (a portable alias string — `"ramp.grade"`
+#' for color roles), the color-domain `ramp`/`grade` parts (`NA` for
+#' non-color roles), and one example `--tv-*` token the role drives.
+#' `example` is `NA` for roles consumed only via computed tokens (series
+#' slots, alpha companions, focus-ring) — those have no direct manifest
+#' token, which does NOT mean the role is inert. Pair with
+#' [list_component_tokens()] (the `set_pin()` companion).
 #'
-#' @return A data frame with columns `role`, `domain`, `ramp`, `grade`,
-#'   `example`.
+#' @return A data frame with columns `role`, `domain`, `coordinate`,
+#'   `ramp`, `grade`, `example`.
 #' @seealso [set_role()], [list_component_tokens()]
 #' @export
 list_roles <- function() {
@@ -30,15 +35,18 @@ list_roles <- function() {
   )
   if (length(raw) == 0L) {
     return(data.frame(role = character(), domain = character(),
-                      ramp = character(), grade = integer(),
-                      example = character()))
+                      coordinate = character(), ramp = character(),
+                      grade = integer(), example = character()))
   }
   data.frame(
-    role    = vapply(raw, function(r) r$role, ""),
-    domain  = vapply(raw, function(r) r$domain, ""),
-    ramp    = vapply(raw, function(r) r$ramp, ""),
-    grade   = vapply(raw, function(r) as.integer(r$grade), 0L),
-    example = vapply(raw, function(r) r$example %||% NA_character_, ""),
+    role       = vapply(raw, function(r) r$role, ""),
+    domain     = vapply(raw, function(r) r$domain, ""),
+    coordinate = vapply(raw, function(r) r$coordinate %||% NA_character_, ""),
+    # ramp/grade are color-domain parts; NA-safe so Wave-3 non-color roles
+    # (which carry only a `coordinate`) don't error the vapply.
+    ramp       = vapply(raw, function(r) r$ramp %||% NA_character_, ""),
+    grade      = vapply(raw, function(r) if (is.null(r$grade)) NA_integer_ else as.integer(r$grade), 0L),
+    example    = vapply(raw, function(r) r$example %||% NA_character_, ""),
     stringsAsFactors = FALSE
   )
 }
