@@ -10,6 +10,7 @@
 
 import type { ThemeInputs } from "../../types/theme-inputs";
 import type { PinnedThemeWire, RoleOverrides } from "./theme-wire";
+import { normalizeBinding, type RoleOverrideWire } from "./alias";
 import { validateThemeInputs } from "./theme-validate";
 import { isValidPinValue } from "./consumer-bridge";
 
@@ -55,17 +56,17 @@ export function parseThemeWire(json: string): PinnedThemeWire {
     if (typeof wire.roleOverrides !== "object" || wire.roleOverrides === null || Array.isArray(wire.roleOverrides)) {
       problems.push("roleOverrides must be an object.");
     } else {
-      for (const [role, b] of Object.entries(wire.roleOverrides as Record<string, unknown>)) {
-        const binding = b as { ramp?: unknown; grade?: unknown } | null;
-        if (!binding || typeof binding.ramp !== "string" ||
-            !Number.isFinite(binding.grade as number)) {
-          problems.push(`roleOverrides.${role}: expected {ramp, grade}.`);
+      // Accept BOTH the name-alias form ("neutral.5") and the legacy
+      // coordinate-object form ({ramp,grade}) — one-way migration so old
+      // files keep importing (theme-rework Wave 0). normalizeBinding returns
+      // null for malformed entries, which we surface rather than drop.
+      for (const [role, entry] of Object.entries(wire.roleOverrides as Record<string, RoleOverrideWire>)) {
+        const binding = normalizeBinding(entry);
+        if (!binding) {
+          problems.push(`roleOverrides.${role}: expected a "ramp.grade" alias or {ramp, grade}.`);
           continue;
         }
-        (roleOverrides as Record<string, unknown>)[role] = {
-          ramp: binding.ramp,
-          grade: binding.grade as number,
-        };
+        (roleOverrides as Record<string, unknown>)[role] = binding;
       }
     }
   }

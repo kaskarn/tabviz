@@ -291,7 +291,11 @@ theme_to_wire <- function(theme) {
     name = theme@name,
     inputs = theme_inputs_to_json(theme@inputs)
   )
-  if (length(theme@role_overrides) > 0L) wire$roleOverrides <- theme@role_overrides
+  # roleOverrides serialize as NAME aliases ("neutral.5"), not positional
+  # {ramp,grade} — DTCG-shaped + re-index-migratable (theme-rework Wave 0).
+  if (length(theme@role_overrides) > 0L) {
+    wire$roleOverrides <- .role_overrides_to_aliases(theme@role_overrides)
+  }
   if (length(theme@pins) > 0L) wire$pins <- theme@pins
   wire
 }

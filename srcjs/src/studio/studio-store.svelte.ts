@@ -14,7 +14,7 @@ import {
   buildThemeWire,
   createWire,
   setRoleBinding as wireSetRoleBinding,
-  type PinnedThemeWire,
+  type ThemeWireEnvelope,
   type RoleOverrides,
 } from "../lib/theme/theme-wire";
 import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
@@ -169,7 +169,7 @@ class StudioStore {
    *  Every egress (Copy JSON / download / save-as / studio_done) emits
    *  THIS — never bare `inputs`, which silently dropped the spine
    *  rebinds (the studio exported less than its own UI edited). */
-  exportWire(): PinnedThemeWire | null {
+  exportWire(): ThemeWireEnvelope | null {
     if (!this.inputs) return null;
     return buildThemeWire(this.inputs, this.baseName, this.roleOverrides, this.pins);
   }

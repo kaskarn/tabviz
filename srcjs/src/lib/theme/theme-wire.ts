@@ -36,6 +36,7 @@ import type { RoleName, RampName } from "../../types/theme-roles";
 import { OFF_RAMP_ROLES } from "../../types/theme-roles";
 import { buildThemeStructure } from "./theme-resolve";
 import { TOKENS_BY_VAR } from "./component-tokens";
+import { roleOverridesToAliases } from "./alias";
 import {
   DEFAULT_ROLE_BINDINGS as DEFAULT_ROLE_BINDINGS_IMPORT,
   type RoleBinding as RoleBindingImport,
@@ -115,20 +116,39 @@ export function createWire(inputs: ThemeInputs, name = "custom"): ThemeWire {
   };
 }
 
-/** A wire that may carry token pins (the optional envelope member). */
+/** A wire that may carry token pins (the optional envelope member).
+ *  COORDINATE form (`roleOverrides: {ramp,grade}`) — the resolver-/import-
+ *  facing shape `parseThemeWire` returns and `buildTheme` consumes. */
 export type PinnedThemeWire = ThemeWire & { pins?: Record<string, string> };
+
+/** The PORTABLE export envelope: identical to PinnedThemeWire except
+ *  `roleOverrides` is the NAME-alias form (`"neutral.5"`) — DTCG-shaped,
+ *  re-index-migratable. What `buildThemeWire` emits + JSON-serializes;
+ *  readers normalize it back to coordinates (theme-rework Wave 0). */
+export type ThemeWireEnvelope = {
+  $schema: WireSchema;
+  name: string;
+  inputs: ThemeInputs;
+  roleOverrides: Record<string, string>;
+  pins?: Record<string, string>;
+};
 
 /** THE envelope builder (quality review: settings exportWire, the studio
  *  store, and the static download path each hand-rolled the same shape —
- *  one drift away from two envelopes). `pins` rides only when non-empty
- *  so pin-less exports stay byte-identical to the prefix artifact. */
+ *  one drift away from two envelopes). `roleOverrides` is projected to
+ *  NAME aliases (Wave 0); `pins` ride only when non-empty so pin-less
+ *  exports stay byte-stable. Takes COORDINATE roleOverrides (resolver
+ *  form) and aliases them on the way out. */
 export function buildThemeWire(
   inputs: ThemeInputs,
   name: string,
   roleOverrides: RoleOverrides = {},
   pins: Record<string, string> = {},
-): PinnedThemeWire {
-  const wire: PinnedThemeWire = { $schema: WIRE_SCHEMA, name, inputs, roleOverrides };
+): ThemeWireEnvelope {
+  const wire: ThemeWireEnvelope = {
+    $schema: WIRE_SCHEMA, name, inputs,
+    roleOverrides: roleOverridesToAliases(roleOverrides),
+  };
   return Object.keys(pins).length > 0 ? { ...wire, pins } : wire;
 }
 

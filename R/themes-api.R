@@ -1008,8 +1008,8 @@ set_border_preset <- function(theme, border_preset) {
 #' the studio\'s "Copy R code" emits for rebinds.
 #'
 #' @param theme A [WebTheme].
-#' @param role Role name (see the studio spine, or
-#'   [list_component_tokens()] for tokens\' source roles).
+#' @param role Role name. Discover valid roles with [list_roles()] (the
+#'   companion roster: role, default ramp/grade, example token).
 #' @param ramp One of `"neutral"`, `"brand"`, `"accent"`.
 #' @param grade Integer ramp step in `1:11`.
 #' @return The [WebTheme] re-resolved with the role pinned.

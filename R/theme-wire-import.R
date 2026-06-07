@@ -10,6 +10,50 @@
 # Tolerant by design: unknown wire keys are ignored (newer studio, older
 # R), absent keys leave the S7 defaults in place (= TS resolver defaults).
 
+# ── Role-override named-alias projection (theme-rework Wave 0) ───────────
+# The portable wire serializes role bindings as stable NAME aliases
+# ("neutral.5") rather than positional {ramp,grade} coordinates — DTCG-
+# shaped + re-index-migratable. The R authoring surface keeps coordinate
+# lists internally (set_role(role, ramp, grade)); these translate at the
+# wire boundary. Readers accept BOTH forms (one-way migration: old files
+# keep importing). Mirrors srcjs/src/lib/theme/alias.ts.
+.ROLE_RAMPS <- c("neutral", "brand", "accent")
+
+# WRITER: named role-override list -> {role: "ramp.grade"} for the wire.
+.role_overrides_to_aliases <- function(ro) {
+  if (length(ro) == 0L) return(stats::setNames(list(), character(0)))
+  lapply(ro, function(b) paste0(b$ramp, ".", b$grade))
+}
+
+# Parse one wire entry (alias string OR {ramp,grade} list) -> coordinate
+# list, or NULL if malformed.
+.normalize_binding <- function(entry) {
+  if (is.character(entry) && length(entry) == 1L) {
+    dot <- regexpr("\\.[^.]*$", entry)
+    if (dot < 2L) return(NULL)
+    ramp <- substr(entry, 1L, dot - 1L)
+    grade <- suppressWarnings(as.integer(substr(entry, dot + 1L, nchar(entry))))
+    if (!ramp %in% .ROLE_RAMPS || is.na(grade) || grade < 1L || grade > 11L) return(NULL)
+    return(list(ramp = ramp, grade = grade))
+  }
+  if (is.list(entry) && !is.null(entry$ramp) && !is.null(entry$grade)) {
+    return(list(ramp = as.character(entry$ramp), grade = as.integer(entry$grade)))
+  }
+  NULL
+}
+
+# READER: a roleOverrides map in EITHER form -> coordinate list (drops
+# malformed entries).
+.normalize_role_overrides <- function(raw) {
+  if (length(raw) == 0L) return(stats::setNames(list(), character(0)))
+  out <- list()
+  for (role in names(raw)) {
+    b <- .normalize_binding(raw[[role]])
+    if (!is.null(b)) out[[role]] <- b
+  }
+  out
+}
+
 # Internal — write a nested L/C/H triple into the flat slots for `prefix`.
 .wire_triple_to_slots <- function(values, x, prefix) {
   t <- x
@@ -163,7 +207,8 @@ theme_from_wire <- function(wire) {
   }
   inputs <- theme_inputs_from_wire(wire[["inputs"]])
   name <- wire[["name"]] %||% "imported"
-  overrides <- wire[["roleOverrides"]] %||% list()
+  # Accept name-alias OR legacy coordinate form (Wave 0 migration).
+  overrides <- .normalize_role_overrides(wire[["roleOverrides"]])
   pins <- wire[["pins"]] %||% list()
   # Pin value grammar gate (round-2 robustness P0): a wire envelope is
   # UNTRUSTED input — a colleague-shared file with a hostile pin value

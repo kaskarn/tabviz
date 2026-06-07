@@ -9,6 +9,40 @@
 # the helpers carry user-facing names (`list_component_tokens`,
 # `inspect_token`, `theme_css_vars`) per the design doc §40 step 9.
 
+#' List the bindable theme roles (the `set_role()` companion).
+#'
+#' The discoverable roster of Tier-2 roles you can rebind with
+#' [set_role()] — so valid role names aren't knowable only by triggering
+#' an error. Each row carries the role's default `ramp`/`grade`, its
+#' `domain` (currently all `"color"`; the non-color scale-role domains
+#' join this roster as they ship), and one example `--tv-*` token the role
+#' drives. Pair with [list_component_tokens()] (the `set_pin()` companion).
+#'
+#' @return A data frame with columns `role`, `domain`, `ramp`, `grade`,
+#'   `example`.
+#' @seealso [set_role()], [list_component_tokens()]
+#' @export
+list_roles <- function() {
+  ctx <- tabviz_v8()
+  raw <- jsonlite::fromJSON(
+    ctx$call("callBuilder", "listRoles", "null"),
+    simplifyVector = FALSE, simplifyDataFrame = FALSE
+  )
+  if (length(raw) == 0L) {
+    return(data.frame(role = character(), domain = character(),
+                      ramp = character(), grade = integer(),
+                      example = character()))
+  }
+  data.frame(
+    role    = vapply(raw, function(r) r$role, ""),
+    domain  = vapply(raw, function(r) r$domain, ""),
+    ramp    = vapply(raw, function(r) r$ramp, ""),
+    grade   = vapply(raw, function(r) as.integer(r$grade), 0L),
+    example = vapply(raw, function(r) r$example %||% NA_character_, ""),
+    stringsAsFactors = FALSE
+  )
+}
+
 #' List V4 component tokens declared in the manifest.
 #'
 #' Returns one row per declared `--tv-*` cssVar from the substrate

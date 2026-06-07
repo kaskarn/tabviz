@@ -9,8 +9,8 @@ set_role(theme, role, ramp, grade)
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{role}{Role name (see the studio spine, or
-\code{\link[=list_component_tokens]{list_component_tokens()}} for tokens\' source roles).}
+\item{role}{Role name. Discover valid roles with \code{\link[=list_roles]{list_roles()}} (the
+companion roster: role, default ramp/grade, example token).}
 
 \item{ramp}{One of \code{"neutral"}, \code{"brand"}, \code{"accent"}.}
 

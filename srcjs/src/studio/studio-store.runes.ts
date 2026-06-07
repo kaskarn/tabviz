@@ -8,6 +8,7 @@ import { describe, expect, test } from "vitest";
 import { studioStore } from "./studio-store.svelte";
 import { PRESETS } from "../lib/theme/theme-presets-inputs";
 import { WIRE_SCHEMA } from "../lib/theme/theme-wire";
+import { normalizeRoleOverrides } from "../lib/theme/alias";
 
 describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
   test("envelope carries schema, name, inputs AND roleOverrides", () => {
@@ -18,18 +19,23 @@ describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
     expect(wire!.$schema).toBe(WIRE_SCHEMA);
     expect(wire!.name).toBe("cochrane");
     expect(wire!.inputs).toBe(studioStore.inputs);
-    expect(wire!.roleOverrides["text-muted"]).toEqual({ ramp: "brand", grade: 8 });
+    // The portable envelope serializes role bindings as NAME aliases
+    // ("brand.8"), not positional {ramp,grade} (theme-rework Wave 0).
+    expect(wire!.roleOverrides["text-muted"]).toBe("brand.8");
   });
 
   test("self round-trip: export → re-init → rebind intact (DT-8)", () => {
     studioStore.init(PRESETS["cochrane"]!, "cochrane");
     studioStore.setRoleBinding("text-muted", "accent", 9);
     const wire = JSON.parse(JSON.stringify(studioStore.exportWire()));
-    // Re-import (what a fresh studio session / theme_from_wire does).
-    studioStore.init(wire.inputs, wire.name);
-    studioStore.roleOverrides = wire.roleOverrides;
+    expect(wire.roleOverrides["text-muted"]).toBe("accent.9");
+    // Re-import: a real importer normalizes the alias back to a coordinate
+    // before seeding the store (what parseThemeWire / theme_from_wire do).
+    studioStore.init(wire.inputs, wire.name, {
+      roleOverrides: normalizeRoleOverrides(wire.roleOverrides) as never,
+    });
     const again = studioStore.exportWire()!;
-    expect(again.roleOverrides["text-muted"]).toEqual({ ramp: "accent", grade: 9 });
+    expect(again.roleOverrides["text-muted"]).toBe("accent.9");
   });
 
   test("no edits → empty roleOverrides object, same envelope shape (DT-10)", () => {

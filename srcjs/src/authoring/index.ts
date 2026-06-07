@@ -81,6 +81,31 @@ export function listBindableRoles(): string[] {
   return _ALL_ROLES.filter((r) => !_OFF_RAMP_ROLES.has(r));
 }
 
+// Domain-aware role roster — the discoverable companion to set_role()
+// (round-3 API review: valid roles were only knowable by erroring). The
+// `domain` facet ships now (all current roles are "color") so the Wave-3
+// non-color scale-roles register into the SAME roster + shape, not a
+// second namespace. Each row carries the default ramp/grade and one
+// example `--tv-*` token the role drives (for orientation).
+import { DEFAULT_ROLE_BINDINGS as _DEFAULTS } from "../lib/theme/role-bindings";
+import { TOKENS_BY_ROLE as _TOKENS_BY_ROLE } from "../lib/theme/component-tokens";
+export interface RoleRosterEntry {
+  role: string;
+  domain: "color" | "type" | "spacing" | "geometry";
+  ramp: string;
+  grade: number;
+  example: string | null;
+}
+export function listRoles(): RoleRosterEntry[] {
+  return _ALL_ROLES
+    .filter((r) => !_OFF_RAMP_ROLES.has(r))
+    .map((role) => {
+      const b = _DEFAULTS[role];
+      const example = _TOKENS_BY_ROLE.get(role)?.[0]?.cssVar ?? null;
+      return { role, domain: "color" as const, ramp: b.ramp, grade: b.grade, example };
+    });
+}
+
 // V4 substrate inspection helpers. R wraps these via `ts_call(...)` to
 // expose `list_component_tokens()` / `inspect_token()` / `theme_css_vars()`
 // at the R user surface (Stage 1 §40 step 9).
