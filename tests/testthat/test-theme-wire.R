@@ -196,8 +196,53 @@ test_that("set_role rejects an unknown bindable role (flow F3 gate)", {
 
 test_that("write_theme rejects path-traversal names (round-2 robustness P1)", {
   th <- web_theme_cochrane()
-  expect_error(write_theme(th, "../evil"), "pattern|bare theme name")
-  expect_error(write_theme(th, "a/b"), "pattern")
+  expect_error(write_theme(th, "../evil"), "bare theme name")
+  expect_error(write_theme(th, "a/b"), "bare theme name")
+})
+
+test_that("write_theme/read_theme round-trip is lossless (round-2 user-review blocker)", {
+  th <- web_theme(name = "rt", brand = "#7aa2f7", accent = "#bb9af7") |>
+    set_polarity("dark") |>
+    set_pin("--tv-accent", "#ff4400") |>
+    set_role("text-muted", "brand", 8)
+  # Registry round-trip.
+  withr::local_options(tabviz.theme_dir = withr::local_tempdir())
+  write_theme(th, "rt")
+  back <- read_theme("rt")
+  expect_equal(back@inputs@anchors_paper_L, th@inputs@anchors_paper_L, tolerance = 1e-6)
+  expect_identical(back@pins[["--tv-accent"]], "#ff4400")
+  expect_identical(back@role_overrides[["text-muted"]]$ramp, "brand")
+  # Render fidelity: resolved cssVars match the original (the bug returned
+  # a DIFFERENT theme — dark paper came back white).
+  expect_identical(theme_css_vars(back)[["--tv-surface-bg"]],
+                   theme_css_vars(th)[["--tv-surface-bg"]])
+})
+
+test_that("write_theme emits the wire envelope, not a resolved blob (flow F2)", {
+  th <- web_theme_cochrane()
+  f <- withr::local_tempfile(fileext = ".json")
+  write_theme(th, file = f)
+  on_disk <- jsonlite::fromJSON(f, simplifyVector = FALSE)
+  expect_identical(on_disk[["$schema"]], "tabviz-theme/v4")
+  expect_false(is.null(on_disk[["inputs"]]))
+  expect_null(on_disk[["cssVars"]])     # NOT the resolved blob
+})
+
+test_that("write_theme requires exactly one destination", {
+  th <- web_theme_cochrane()
+  expect_error(write_theme(th), "destination")
+  expect_error(write_theme(th, name = "x", file = "y.json"), "only one")
+})
+
+test_that("read_theme restores inputs from a legacy resolved blob (back-compat)", {
+  # Simulate a file written by the OLD write_theme (resolved blob with
+  # authoringInputs but no $schema/inputs envelope keys).
+  th <- web_theme(name = "legacy", brand = "#7aa2f7") |> set_polarity("dark")
+  f <- withr::local_tempfile(fileext = ".json")
+  jsonlite::write_json(tabviz:::serialize_theme(th), f,
+                       auto_unbox = TRUE, pretty = TRUE, null = "null")
+  back <- read_theme(f)
+  expect_equal(back@inputs@anchors_paper_L, th@inputs@anchors_paper_L, tolerance = 1e-6)
 })
 
 test_that("studio_save_as persists the wire envelope verbatim (flow F2)", {

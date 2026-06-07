@@ -245,40 +245,105 @@ read_theme <- function(x) {
   }
   blob <- jsonlite::fromJSON(path, simplifyVector = FALSE, simplifyDataFrame = FALSE)
   # Two JSON shapes share the extension (P0 review #3): the WIRE ENVELOPE
-  # ({$schema, inputs, roleOverrides} — what the studio downloads/saves)
-  # and the resolved blob (what write_theme/serialize_theme emits).
+  # ({$schema, inputs, roleOverrides} — what write_theme + the studio now
+  # emit) and the legacy resolved blob (what write_theme USED to emit).
   # Route envelopes through the canonical importer.
   if (!is.null(blob[["$schema"]]) || (!is.null(blob[["inputs"]]) && !is.null(blob[["inputs"]][["anchors"]]))) {
     return(theme_from_wire(blob))
   }
+  # Legacy resolved blob. It carries `authoringInputs` — reconstruct from
+  # it so the round-trip preserves the AUTHORED theme. Round-2 review
+  # blocker (3 personas): deserialize_resolved_theme stubs default inputs,
+  # so re-reading a write_theme()-saved file used to return a DIFFERENT
+  # theme (dark paper came back white) with no error. Rebuilding through
+  # resolve_from_inputs mirrors the envelope path exactly.
+  if (!is.null(blob[["authoringInputs"]])) {
+    inputs <- theme_inputs_from_wire(blob[["authoringInputs"]])
+    return(resolve_from_inputs(
+      inputs,
+      name = blob[["name"]] %||% "imported",
+      role_overrides = blob[["roleOverrides"]] %||% list(),
+      pins = blob[["pins"]] %||% list()
+    ))
+  }
   deserialize_resolved_theme(blob)
 }
 
-#' Write a theme to the user theme directory.
+#' Build the portable wire envelope from a resolved theme.
 #'
-#' Used internally by `tabviz_studio()` when the user clicks Save as
-#' preset. Exposed so theme authors can write themes from R sessions too.
+#' The R twin of the studio's export: returns the canonical, self-contained
+#' artifact `{$schema, name, inputs, roleOverrides?, pins?}` — the same
+#' shape `read_theme()` / [theme_from_wire()] consume and the studio
+#' emits. This is what [write_theme()] persists. `roleOverrides` / `pins`
+#' are omitted when empty so the JSON stays a clean object (and survives
+#' the JS-side `parseThemeWire` shape check).
 #'
-#' @param theme A [WebTheme] to save.
-#' @param name Bare name (e.g. `"my-blue"`); writes to
-#'   `~/.tabviz/themes/<name>.json`.
-#' @return Invisibly, the path written.
+#' @param theme A [WebTheme].
+#' @return A named list ready for `jsonlite::toJSON(auto_unbox = TRUE)`.
+#' @seealso [write_theme()], [theme_from_wire()], [read_theme()]
 #' @export
-write_theme <- function(theme, name) {
+theme_to_wire <- function(theme) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  # Bare-slug names only — `name` is pasted into a filesystem path
-  # (round-2 robustness P1: "../x" wrote outside the theme dir).
-  checkmate::assert_string(name, pattern = "^[A-Za-z0-9._-]+$")
-  if (grepl("..", name, fixed = TRUE)) {
-    cli::cli_abort("{.arg name} must be a bare theme name (no {.val ..}).")
+  wire <- list(
+    "$schema" = "tabviz-theme/v4",
+    name = theme@name,
+    inputs = theme_inputs_to_json(theme@inputs)
+  )
+  if (length(theme@role_overrides) > 0L) wire$roleOverrides <- theme@role_overrides
+  if (length(theme@pins) > 0L) wire$pins <- theme@pins
+  wire
+}
+
+#' Write a theme to the user theme directory or to a file.
+#'
+#' Persists the portable **wire envelope** (`{$schema, name, inputs,
+#' roleOverrides?, pins?}`) — the same self-contained artifact the studio
+#' exports and [read_theme()] / [theme_from_wire()] consume. (It used to
+#' write a resolved blob, which [read_theme()] could not faithfully
+#' restore — round-2 review blocker.)
+#'
+#' @param theme A [WebTheme] to save.
+#' @param name Bare registry name (e.g. `"my-blue"`); writes to
+#'   `~/.tabviz/themes/<name>.json`. Mutually exclusive with `file`.
+#' @param file Path to a `.json` file to write (e.g. a repo-committed
+#'   theme that travels with a project). Mutually exclusive with `name`.
+#' @return Invisibly, the path written.
+#' @seealso [theme_to_wire()], [read_theme()]
+#' @export
+write_theme <- function(theme, name = NULL, file = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  dir <- .tabviz_theme_dir()
-  if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
-  path <- file.path(dir, paste0(name, ".json"))
-  blob <- serialize_theme(theme)
-  jsonlite::write_json(blob, path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  if (is.null(name) && is.null(file)) {
+    cli::cli_abort(c(
+      "Provide a destination.",
+      "i" = "{.arg name} writes to the user theme registry; {.arg file} writes to a path."
+    ))
+  }
+  if (!is.null(name) && !is.null(file)) {
+    cli::cli_abort("Provide only one of {.arg name} or {.arg file}.")
+  }
+  path <- if (!is.null(file)) {
+    checkmate::assert_string(file, min.chars = 1)
+    file
+  } else {
+    # Bare-slug names only — `name` is pasted into a filesystem path
+    # (round-2 robustness P1: "../x" wrote outside the theme dir).
+    if (!checkmate::test_string(name, pattern = "^[A-Za-z0-9._-]+$") ||
+        grepl("..", name, fixed = TRUE)) {
+      cli::cli_abort(c(
+        "{.arg name} must be a bare theme name (letters, digits, . _ - only).",
+        "i" = "To write to an arbitrary path, use {.arg file}."
+      ))
+    }
+    dir <- .tabviz_theme_dir()
+    if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
+    file.path(dir, paste0(name, ".json"))
+  }
+  jsonlite::write_json(theme_to_wire(theme), path,
+                       auto_unbox = TRUE, pretty = TRUE, null = "null")
   cli::cli_alert_success("Theme written to {.path {path}}")
   invisible(path)
 }

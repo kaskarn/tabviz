@@ -2,20 +2,28 @@
 % Please edit documentation in R/studio.R
 \name{write_theme}
 \alias{write_theme}
-\title{Write a theme to the user theme directory.}
+\title{Write a theme to the user theme directory or to a file.}
 \usage{
-write_theme(theme, name)
+write_theme(theme, name = NULL, file = NULL)
 }
 \arguments{
 \item{theme}{A \link{WebTheme} to save.}
 
-\item{name}{Bare name (e.g. \code{"my-blue"}); writes to
-\verb{~/.tabviz/themes/<name>.json}.}
+\item{name}{Bare registry name (e.g. \code{"my-blue"}); writes to
+\verb{~/.tabviz/themes/<name>.json}. Mutually exclusive with \code{file}.}
+
+\item{file}{Path to a \code{.json} file to write (e.g. a repo-committed
+theme that travels with a project). Mutually exclusive with \code{name}.}
 }
 \value{
 Invisibly, the path written.
 }
 \description{
-Used internally by \code{tabviz_studio()} when the user clicks Save as
-preset. Exposed so theme authors can write themes from R sessions too.
+Persists the portable \strong{wire envelope} (\verb{\{$schema, name, inputs, roleOverrides?, pins?\}}) — the same self-contained artifact the studio
+exports and \code{\link[=read_theme]{read_theme()}} / \code{\link[=theme_from_wire]{theme_from_wire()}} consume. (It used to
+write a resolved blob, which \code{\link[=read_theme]{read_theme()}} could not faithfully
+restore — round-2 review blocker.)
+}
+\seealso{
+\code{\link[=theme_to_wire]{theme_to_wire()}}, \code{\link[=read_theme]{read_theme()}}
 }
