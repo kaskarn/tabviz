@@ -26,6 +26,7 @@ import type { WebTheme } from "../../types/theme-resolved";
 import { createWire } from "./theme-wire";
 import { computeV3BridgeVars } from "./v3-bridge-vars";
 import { resolveTheme } from "./resolve-theme";
+import { TOKENS_BY_VAR } from "./component-tokens";
 
 /** Build the v4 cssVars map for a given v3 WebTheme.
  *
@@ -95,16 +96,28 @@ export function isValidPinValue(v: unknown): v is string {
 export function applyTokenPins(
   cssVars: Record<string, string>,
   pins: WebTheme["pins"],
+  activeMode?: string,
 ): Record<string, string> {
   if (!pins) return cssVars;
+  // Accessibility ratchet wins at PAINT, not just a lint (round-3 design-
+  // tokens + inclusive-design): a raw pin overlays AFTER the cascade's mode
+  // logic, so a pin on a token that HC/RT wants to drop/swap would defeat
+  // the accessibility behavior and ship e.g. dark-on-dark to a high-
+  // contrast viewer. When a mode is active, skip pins on tokens whose
+  // manifest declares behavior for that mode.
+  const hc = activeMode === "high-contrast";
+  const rt = activeMode === "reduced-transparency";
   for (const [k, v] of Object.entries(pins)) {
     // Name gate (--tv- prefix) + VALUE gate (structural-char ban): a
     // hostile value in an imported envelope is dropped here, the one
     // chokepoint every resolve path shares (getCssVarsRaw → both the
     // widget paint block and the SVG export read through this).
-    if (k.startsWith("--tv-") && isValidPinValue(v)) {
-      cssVars[k] = v;
+    if (!k.startsWith("--tv-") || !isValidPinValue(v)) continue;
+    if (hc || rt) {
+      const m = TOKENS_BY_VAR.get(k)?.modes;
+      if (m && ((hc && m.hc) || (rt && m.rt))) continue; // ratchet beats pin
     }
+    cssVars[k] = v;
   }
   return cssVars;
 }
@@ -130,6 +143,7 @@ export function getCssVarsRaw(theme: WebTheme): Record<string, string> {
     base = applyTokenPins(
       { ...(resolveTheme(wire).cssVars as Record<string, string>) },
       theme.pins,
+      theme.authoringInputs!.mode,
     );
     byOverrides.set(key, base);
   }

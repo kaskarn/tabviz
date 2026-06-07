@@ -216,7 +216,7 @@ list_user_themes <- function() {
   if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
   path <- file.path(dir, paste0(name, ".json"))
   jsonlite::write_json(payload[["wire"]], path,
-                       auto_unbox = TRUE, pretty = TRUE, null = "null")
+                       auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
   path
 }
 
@@ -343,7 +343,7 @@ write_theme <- function(theme, name = NULL, file = NULL) {
     file.path(dir, paste0(name, ".json"))
   }
   jsonlite::write_json(theme_to_wire(theme), path,
-                       auto_unbox = TRUE, pretty = TRUE, null = "null")
+                       auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
   cli::cli_alert_success("Theme written to {.path {path}}")
   invisible(path)
 }

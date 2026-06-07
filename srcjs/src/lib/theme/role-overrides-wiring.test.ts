@@ -10,6 +10,7 @@
 import { describe, it, expect } from "bun:test";
 import { buildTheme } from "./theme-adapter";
 import { getCssVars, isValidPinValue } from "./consumer-bridge";
+import { TOKENS_BY_VAR } from "./component-tokens";
 import { buildThemeCSS } from "./theme-css";
 import { PRESETS } from "./theme-presets-inputs";
 
@@ -85,6 +86,21 @@ describe("border_preset → borders cluster expansion", () => {
     const unset = buildTheme(inputs, "u").borders;
     const hair = buildTheme({ ...inputs, border_preset: "hairline" }, "h").borders;
     expect(unset).toEqual(hair);
+  });
+});
+
+describe("pin accessibility ratchet (theme-rework W0 — paint enforcement)", () => {
+  it("a pin on a modes.hc token applies in standard mode but is DROPPED under HC", () => {
+    // The accessibility ratchet must win at paint, not just lint: a raw pin
+    // overlays after the cascade's mode logic, so without this a pin would
+    // defeat modes.hc:"drop" and ship the wrong color to an HC viewer.
+    const hcTok = [...TOKENS_BY_VAR.values()].find((t) => t.modes?.hc)!;
+    const pin = "#abcdef";
+    const std = buildTheme(inputs, { name: "std", pins: { [hcTok.cssVar]: pin } });
+    const hc = buildTheme({ ...inputs, mode: "high-contrast" },
+      { name: "hc", pins: { [hcTok.cssVar]: pin }, skipValidation: true });
+    expect(getCssVars(std)[hcTok.cssVar]).toBe(pin);        // standard: pin wins
+    expect(getCssVars(hc)[hcTok.cssVar]).not.toBe(pin);     // HC: ratchet wins
   });
 });
 

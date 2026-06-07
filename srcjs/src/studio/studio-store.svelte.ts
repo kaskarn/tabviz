@@ -84,7 +84,7 @@ class StudioStore {
       const theme = Object.keys(this.pins).length > 0
         ? {
             ...resolved,
-            cssVars: applyTokenPins({ ...(resolved.cssVars as Record<string, string>) }, this.pins),
+            cssVars: applyTokenPins({ ...(resolved.cssVars as Record<string, string>) }, this.pins, this.inputs?.mode),
           } as ResolvedTheme
         : resolved;
       this.lastGoodResolved = theme;
