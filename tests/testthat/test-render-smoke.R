@@ -98,3 +98,21 @@ test_that("tabviz preserves theme bold header bg through wire", {
     }
   }
 })
+
+test_that("static knit output renders via save_plot, not a blank widget (round-2 Quarto blocker)", {
+  withr::local_dir(withr::local_tempdir())
+  spec <- forest_plot(
+    data.frame(study = c("A", "B", "C"), est = c(.7, .8, .9),
+               lo = c(.5, .6, .7), hi = c(.9, 1, 1.1)),
+    point = "est", lower = "lo", upper = "hi", label = "study",
+    theme = web_theme_nejm()
+  )
+  # PNG (non-LaTeX target) and PDF (LaTeX target) must both produce a real,
+  # non-trivial image file — the bug shipped a blank figure via webshot.
+  png <- tabviz:::.render_static_image(spec, ext = "png")
+  expect_true(file.exists(png))
+  expect_gt(file.info(png)$size, 2000)
+  pdf <- tabviz:::.render_static_image(spec, ext = "pdf")
+  expect_true(file.exists(pdf))
+  expect_gt(file.info(pdf)$size, 2000)
+})

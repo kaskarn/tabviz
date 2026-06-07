@@ -267,5 +267,36 @@ knit_print_splitforest <- function(x, ...) {
 
 #' @noRd
 knit_print_webspec <- function(x, ...) {
+  # Static (non-HTML) knit output — PDF / LaTeX / Word — cannot run the V4
+  # htmlwidget: the default htmlwidget knit_print falls back to webshot,
+  # which can't render the `--tv-*` custom-property cascade / OKLCH and so
+  # emits a BLANK figure with no warning (round-2 Quarto review blocker —
+  # a build succeeds and ships a paper with a missing figure). Route
+  # static output through tabviz's own rsvg save_plot() pipeline instead.
+  if (isTRUE(getOption("knitr.in.progress")) &&
+      requireNamespace("knitr", quietly = TRUE) &&
+      !isTRUE(knitr::is_html_output())) {
+    return(.knit_print_static(x, ...))
+  }
   knitr::knit_print(render_tabviz_widget(x), ...)
+}
+
+# Render a spec to a static image file for non-HTML knit embedding. Vector
+# PDF for LaTeX targets (print-clean), PNG otherwise. Returns the path.
+# Split from `.knit_print_static` so the rendering is unit-testable
+# without a full LaTeX toolchain.
+#' @noRd
+.render_static_image <- function(x,
+                                 ext = if (isTRUE(knitr::is_latex_output())) "pdf" else "png") {
+  suffix <- paste0(".", ext)
+  path <- tryCatch(knitr::fig_path(suffix), error = function(e) tempfile(fileext = suffix))
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  # save_plot warns honestly about any browser-only effects it can't export.
+  save_plot(x, path)
+  path
+}
+
+#' @noRd
+.knit_print_static <- function(x, ...) {
+  knitr::knit_print(knitr::include_graphics(.render_static_image(x)), ...)
 }
