@@ -90,7 +90,7 @@ test_that("PDF export embeds the theme's declared web font, not the fallback", {
   # path), which makes any R subprocess started from a different working
   # directory die at startup ("could not start R") — the standard callr-
   # inside-check workaround.
-  base_fonts <- callr::r(function() {
+  probe <- callr::r(function() {
     df <- data.frame(study = c("Alpha", "Beta"),
                      hr = c(0.72, 0.85), lo = c(0.6, 0.7), hi = c(0.9, 1.02))
     w <- tabviz::tabviz(df, label = "study",
@@ -99,7 +99,17 @@ test_that("PDF export embeds the theme's declared web font, not the fallback", {
     f <- tempfile(fileext = ".pdf")
     suppressWarnings(tabviz::save_plot(w, f))
     txt <- suppressWarnings(readLines(f, warn = FALSE))
-    grep("BaseFont", txt, value = TRUE, useBytes = TRUE)
+    # Diagnostic payload alongside the assertion target: each link of the
+    # registration chain (TTF fetch → font dir → fontconfig env) reported
+    # separately so a platform failure names its broken link instead of
+    # just "DejaVu" (the chain is macOS-verified; Linux CI failed opaque).
+    font_dir <- file.path(tempdir(), "tabviz-fonts")
+    list(
+      base_fonts = grep("BaseFont", txt, value = TRUE, useBytes = TRUE),
+      ttfs = if (dir.exists(font_dir)) list.files(font_dir) else character(0),
+      fontconfig_file = Sys.getenv("FONTCONFIG_FILE", ""),
+      pango_backend = Sys.getenv("PANGOCAIRO_BACKEND", "")
+    )
   }, env = c(callr::rcmd_safe_env(), R_TESTS = ""))
 
   # NEJM declares Lora. Before the fix, librsvg ignored the base64
@@ -108,8 +118,12 @@ test_that("PDF export embeds the theme's declared web font, not the fallback", {
   # iconv-sanitize the info string: BaseFont lines come from raw PDF bytes
   # and an invalid multibyte sequence inside testthat's failure formatting
   # produced a hard `nchar()` error on CI instead of a clean failure.
-  expect_true(any(grepl("Lora", base_fonts, useBytes = TRUE)),
-              info = paste("BaseFont lines:",
-                           paste(iconv(base_fonts, to = "UTF-8", sub = "?"),
-                                 collapse = " | ")))
+  expect_true(any(grepl("Lora", probe$base_fonts, useBytes = TRUE)),
+              info = paste0(
+                "BaseFont lines: ",
+                paste(iconv(probe$base_fonts, to = "UTF-8", sub = "?"), collapse = " | "),
+                " || fetched TTFs: ",
+                paste(probe$ttfs, collapse = ", "),
+                " || FONTCONFIG_FILE: ", probe$fontconfig_file,
+                " || PANGOCAIRO_BACKEND: ", probe$pango_backend))
 })
