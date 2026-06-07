@@ -291,3 +291,40 @@ layout-zoom null-spec headerHeight (jsdom canvas).
    Gates: DT-12, DT-14.
 4. Polish: divergence badge, import affordance, author freeze, frame-text
    carve-out decision.
+
+## ROUND-3 USER-PERSONA REVIEW — EXECUTED 2026-06-07 (commits [review2-user])
+
+Six adversarial USER personas (biostatistician / Shiny-dev / no-code
+journalist / accessibility / LLM-driver / Quarto-author), each attempting
+a real task. Convergent blocker + per-persona findings, all fixed:
+
+- **write_theme/read_theme round-trip (3 personas, blocker):** write_theme
+  emitted the resolved blob; read_theme stubbed default inputs → re-reading
+  a saved theme returned a DIFFERENT theme (dark paper → white), silently.
+  Fix: write_theme emits the wire envelope via new `theme_to_wire()` +
+  `write_theme(theme, file=)`; read_theme reconstructs legacy blobs from
+  authoringInputs. (#43)
+- **Quarto blank-PDF (blocker):** widget in a `format: pdf` chunk rendered
+  blank (webshot can't do the V4 cascade). knit_print now routes static
+  output through save_plot (`.render_static_image`). (#44)
+- **ink2/accent redundancy (maintainer-flagged):** ink2 silently won the
+  accent-ramp seed. Merged ink2 → accent (behavior-preserving:
+  accent:=old ink2); rubrication is the kept `--tv-ink2` token (defaults
+  accent, pinnable). Anchor removed TS+R; parity + resolver snapshot
+  unchanged. (#45)
+- **End-user high-contrast (a11y B2):** OS prefers-contrast/forced-colors
+  honored + a viewer `contrastOverride` toggle, applied as a paint-time
+  re-resolve without mutating the artifact. (#46)
+- **Dark-mode hex display + "Match brand" (journalist):** anchors show the
+  reflected on-screen value in dark mode; button renamed. (#47)
+- **Doc drift (3 personas):** README set_colors/set_axis (dead),
+  ?set_theme fake names, enable_theme_edit freeze claim, update_data,
+  themes.qmd @surface/@content + preset count, CLAUDE.md fonts-fixed. (#48)
+
+Verified-and-fine (no change): explicit axis_range honored+clipped; PDF
+fonts embed (Lora/Cinzel via pdffonts); proxy set_theme(WebTheme) applies.
+Several a11y findings (radiogroup keys, focus trap, icon labels) were
+STALE-BUNDLE artifacts — fixed in round-1 source, just unshipped; the dev
+symlink (`link-htmlwidgets-dev.mjs`) is now active so docs/installed track
+the build. Gates: TS bun 1455 + vitest 222 (1 known jsdom), R 122, bundles
+fit, docs render clean.
