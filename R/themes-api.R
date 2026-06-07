@@ -109,6 +109,11 @@ theme_inputs_to_json <- function(inputs) {
 
   monochrome_out <- if (isTRUE(inputs@monochrome)) TRUE else NULL
 
+  # Tier-2 type-role rebinds (Wave 3). The slot already holds the wire
+  # shape `list(<role> = list(family=, size=, weight=))`; emit verbatim
+  # (omit when empty so unedited themes carry nothing).
+  type_roles_out <- if (length(inputs@type_roles) > 0L) inputs@type_roles else NULL
+
   marks_out <- drop_null(list(
     point_shape     = na_to_null(inputs@marks_point_shape),
     interval_weight = na_to_null(inputs@marks_interval_weight)
@@ -159,6 +164,7 @@ theme_inputs_to_json <- function(inputs) {
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
+    type_roles            = type_roles_out,
     curves                = if (length(curves) > 0L) curves else NULL,
     geometry              = if (length(geometry_out) > 0L) geometry_out else NULL,
     effects               = if (length(effects_out)  > 0L) effects_out  else NULL,
@@ -1032,9 +1038,30 @@ set_role <- function(theme, role, ramp, grade) {
   # manifest gate; the roster comes from the bundle so it can't drift.
   roles <- .bindable_roles()
   if (!role %in% roles) {
+    # Redirect non-color scale roles (Wave 3) to their focused setters
+    # rather than a bare "unknown role" — list_roles() shows them but
+    # set_role() is the COLOR channel (ramp+grade).
+    if (role %in% .TYPE_ROLE_NAMES) {
+      cli::cli_abort(c(
+        "{.val {role}} is a TYPE role, not a color role.",
+        "i" = "Rebind it with {.fn set_type_role} (family / size / weight)."
+      ))
+    }
+    if (role %in% c("corners", "rules")) {
+      cli::cli_abort(c(
+        "{.val {role}} is a GEOMETRY role, not a color role.",
+        "i" = "Set it with {.fn set_corners} / {.fn set_rules}, or {.fn web_theme}(geometry=)."
+      ))
+    }
+    if (role == "density") {
+      cli::cli_abort(c(
+        "{.val density} is a spacing role, not a color role.",
+        "i" = "Set it with {.fn web_theme}(density=) or {.fn set_inputs}(density=)."
+      ))
+    }
     cli::cli_abort(c(
       "Unknown bindable role {.val {role}}.",
-      "i" = "Bindable roles: {.val {roles}}."
+      "i" = "Color roles: {.val {roles}}. See {.fn list_roles} for all domains."
     ))
   }
   checkmate::assert_choice(ramp, c("neutral", "brand", "accent"))
@@ -1042,6 +1069,59 @@ set_role <- function(theme, role, ramp, grade) {
   overrides <- theme@role_overrides
   overrides[[role]] <- list(ramp = ramp, grade = as.integer(grade))
   re_resolve(theme, role_overrides = overrides)
+}
+
+# The 9 type-role names (Wave 3) — mirrors typography.ts::DEFAULT_TYPE_ROLES.
+# Guarded against drift by test-parity (the roster's type rows come from TS).
+.TYPE_ROLE_NAMES <- c(
+  "title", "subtitle", "body", "numeric", "label",
+  "caption", "footnote", "cell", "tick"
+)
+
+#' Rebind a Tier-2 TYPE role (theme-rework Wave 3).
+#'
+#' The type-domain twin of [set_role()]: rebinds one of the nine type roles
+#' (`title`, `subtitle`, `body`, `numeric`, `label`, `caption`, `footnote`,
+#' `cell`, `tick`) by overriding any subset of its `{family, size, weight}`
+#' recipe. Unset arguments keep the role's default. Cascade-safe — it rides
+#' the theme inputs (`type_roles`) and re-resolves. Discover roles with
+#' [list_roles()] (the `domain == "type"` rows).
+#'
+#' @param theme A [WebTheme].
+#' @param role A type role name.
+#' @param family Font slot: `"display"`, `"body"`, or `"mono"`.
+#' @param size Size step: one of `"label"`, `"foot"`, `"body"`, `"head"`,
+#'   `"subtitle"`, `"title"`, `"display"`.
+#' @param weight Weight name: `"regular"`, `"medium"`, `"semibold"`, `"bold"`.
+#' @return The [WebTheme] re-resolved with the type role rebound.
+#' @examples
+#' \dontrun{
+#' web_theme_nejm() |>
+#'   set_type_role("footnote", size = "label") |>
+#'   set_type_role("title", family = "display", weight = "bold")
+#' }
+#' @seealso [set_role()], [list_roles()]
+#' @export
+set_type_role <- function(theme, role, family = NULL, size = NULL, weight = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(role, .TYPE_ROLE_NAMES)
+  checkmate::assert_choice(family, c("display", "body", "mono"), null.ok = TRUE)
+  checkmate::assert_choice(size,
+    c("label", "foot", "body", "head", "subtitle", "title", "display"), null.ok = TRUE)
+  checkmate::assert_choice(weight,
+    c("regular", "medium", "semibold", "bold"), null.ok = TRUE)
+  if (is.null(family) && is.null(size) && is.null(weight)) {
+    cli::cli_abort("Provide at least one of {.arg family}, {.arg size}, {.arg weight}.")
+  }
+  rec <- list(family = family, size = size, weight = weight)
+  rec <- rec[!vapply(rec, is.null, logical(1))]
+  inputs <- theme@inputs
+  tr <- inputs@type_roles
+  tr[[role]] <- modifyList(tr[[role]] %||% list(), rec)
+  inputs@type_roles <- tr
+  re_resolve(theme, inputs)
 }
 
 #' Pin a component token to a direct value.

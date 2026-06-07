@@ -135,6 +135,17 @@ theme_inputs_from_wire <- function(wire_inputs) {
   v$type_weights_semibold <- .wire_num(tw[["semibold"]])
   v$type_weights_bold     <- .wire_num(tw[["bold"]])
 
+  # Tier-2 type-role rebinds (Wave 3) — the wire `type_roles` object maps
+  # 1:1 to the S7 list slot. Keep only recognized {family,size,weight}
+  # leaves per role so a malformed wire can't smuggle arbitrary keys.
+  tr <- w[["type_roles"]] %||% list()
+  if (length(tr) > 0L) {
+    keep <- c("family", "size", "weight")
+    v$type_roles <- lapply(tr, function(rec) {
+      rec[intersect(names(rec), keep)]
+    })
+  }
+
   # Curves.
   cv <- w[["curves"]] %||% list()
   v$curves_neutral <- .wire_chr(cv[["neutral"]])

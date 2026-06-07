@@ -184,6 +184,13 @@ ThemeInputs <- new_class(
     type_weights_semibold = new_property(class_numeric, default = NA_real_),
     type_weights_bold     = new_property(class_numeric, default = NA_real_),
 
+    # Tier-2 TYPE-ROLE rebinds (theme-rework Wave 3). A nested list
+    # `list(<role> = list(family=, size=, weight=))` — any subset of a
+    # role's recipe overrides DEFAULT_TYPE_ROLES; serializes to the wire's
+    # `type_roles`. Stored as ONE list slot (not 27 flat slots). Empty =
+    # all roles use their default recipe. Set via set_type_role().
+    type_roles = new_property(class_list, default = quote(list())),
+
     # Phase D — GEOMETRY axis. Numeric scale tokens that drive corner
     # softness + line weight. Optional; all NA → TS resolver defaults
     # (2/6/10/999 px radius, 0.5/1/1.5/2.5 px border-width).

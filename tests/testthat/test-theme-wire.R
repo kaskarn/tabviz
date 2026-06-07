@@ -297,6 +297,33 @@ test_that("read_theme accepts an inline wire JSON string (Wave 1 handoff)", {
   expect_identical(back@role_overrides[["text-muted"]]$grade, 8L)
 })
 
+test_that("set_type_role rebinds a type role + round-trips the wire (Wave 3)", {
+  th <- web_theme_nejm()
+  before <- theme_css_vars(th)[["--tv-text-footnote-size"]]
+  t2 <- set_type_role(th, "footnote", size = "title", weight = "bold")
+  after <- theme_css_vars(t2)[["--tv-text-footnote-size"]]
+  expect_false(identical(before, after))                     # rebind took effect
+  expect_identical(t2@inputs@type_roles[["footnote"]]$size, "title")
+  # The override lives in inputs.type_roles on the wire (not a top-level key).
+  wire <- theme_to_wire(t2)
+  expect_identical(wire$inputs$type_roles$footnote$size, "title")
+  # Round-trip restores the rebound size exactly.
+  back <- theme_from_wire(jsonlite::toJSON(wire, auto_unbox = TRUE, digits = NA))
+  expect_identical(theme_css_vars(back)[["--tv-text-footnote-size"]], after)
+})
+
+test_that("R .TYPE_ROLE_NAMES mirror matches the TS roster (Wave 3 drift gate)", {
+  ts_type_roles <- sort(list_roles()$role[list_roles()$domain == "type"])
+  expect_identical(ts_type_roles, sort(tabviz:::.TYPE_ROLE_NAMES))
+})
+
+test_that("set_role redirects non-color (scale) roles to their setters (Wave 3)", {
+  th <- web_theme_cochrane()
+  expect_error(set_role(th, "footnote", "brand", 8), "TYPE role")
+  expect_error(set_role(th, "corners", "neutral", 5), "GEOMETRY role")
+  expect_error(set_role(th, "density", "neutral", 5), "spacing role")
+})
+
 test_that("studio_save_as rejects path-traversal names (round-2 robustness P1)", {
   withr::local_options(tabviz.theme_dir = withr::local_tempdir())
   wire <- list("$schema" = "tabviz-theme/v4", name = "x",
