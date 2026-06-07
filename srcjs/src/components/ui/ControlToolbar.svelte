@@ -8,6 +8,7 @@
   import ZoomControls from "./ZoomControls.svelte";
   import AspectLockPill from "./AspectLockPill.svelte";
   import SettingsButton from "./SettingsButton.svelte";
+  import ContrastButton from "./ContrastButton.svelte";
   import TokenPicker from "./TokenPicker.svelte";
   import SourceButton from "./SourceButton.svelte";
   import FullscreenButton from "./FullscreenButton.svelte";
@@ -70,6 +71,10 @@
   {/if}
   {#if store.spec?.interaction?.enableThemeEdit !== false}
     <SettingsButton {store} />
+  {:else}
+    <!-- Cog frozen: the settings-panel Contrast control is gone, so surface
+         the always-on accessibility escape here instead (regression fix). -->
+    <ContrastButton {store} />
   {/if}
 </div>
 

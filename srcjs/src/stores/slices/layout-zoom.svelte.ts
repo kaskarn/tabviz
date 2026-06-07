@@ -672,6 +672,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
   function setContrastOverride(value: "auto" | "more") {
     contrastOverride = value;
+    persistZoomState();
     deps.markSource("zoom");
   }
 
@@ -712,7 +713,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     if (!key) return;
     try {
       const state: ZoomState = {
-        zoom, autoFit, maxWidth, maxHeight, version: 2,
+        zoom, autoFit, maxWidth, maxHeight, contrastOverride, version: 2,
       };
       localStorage.setItem(key, JSON.stringify(state));
     } catch {
@@ -732,6 +733,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
           autoFit = state.autoFit ?? true;
           maxWidth = state.maxWidth ?? null;
           maxHeight = state.maxHeight ?? null;
+          contrastOverride = state.contrastOverride ?? "auto";
         }
         // Version 1 (old format) is silently ignored — users get defaults.
       }

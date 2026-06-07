@@ -1214,6 +1214,10 @@ export interface ZoomState {
   autoFit: boolean;
   maxWidth: number | null;
   maxHeight: number | null;
+  /** Viewer accessibility contrast preference. Persisted so a low-vision
+   *  viewer doesn't re-assert it on every reload (the regression: zoom
+   *  persisted but the a11y choice didn't). */
+  contrastOverride?: "auto" | "more";
   version: number;
 }
 

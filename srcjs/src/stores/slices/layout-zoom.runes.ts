@@ -259,4 +259,17 @@ describe("layout-zoom slice — contrast override (a11y B2)", () => {
     expect(h.slice.contrastOverride).toBe("more");
     expect(h.sourceMarks).toContain("zoom");
   });
+
+  test("contrastOverride persists + restores across a reload (regression fix)", () => {
+    // The regression: zoom persisted but the a11y choice didn't, so a
+    // low-vision viewer re-asserted contrast on every reload.
+    localStorage.clear();
+    const a = buildLayoutZoomHarness();
+    a.slice.setContainerElementId("persist-test");
+    a.slice.setContrastOverride("more");
+    const b = buildLayoutZoomHarness();
+    b.slice.setContainerElementId("persist-test"); // same id → loads persisted
+    expect(b.slice.contrastOverride).toBe("more");
+    localStorage.clear();
+  });
 });
