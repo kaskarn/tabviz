@@ -33,11 +33,9 @@ import { hexToOklch } from "../oklch";
 interface PresetIdentitySeeds {
   /** Brand hex. Powers the brand ramp and identity tokens. */
   brand: string;
-  /** Optional accent hex. Defaults to brand. */
+  /** Optional accent hex. Defaults to brand. Also drives the rubrication
+   *  channel (--tv-ink2); pin --tv-ink2 to make rubrication differ. */
   accent?: string;
-  /** Optional secondary/rubrication ink hex (B7). Seeds the accent ramp
-   *  with precedence over `accent`. */
-  ink2?: string;
   /** Polarity. Default light. */
   polarity?: "light" | "dark";
   /** Hue source for the paper/ink anchors. Either "brand" (default),
@@ -65,7 +63,6 @@ const DEFAULT_INK_L = 0.180;
 function deriveAnchors(seeds: PresetIdentitySeeds): ThemeInputs["anchors"] {
   const brandLch = hexToOklch(seeds.brand);
   const accentLch = seeds.accent ? hexToOklch(seeds.accent) : undefined;
-  const ink2Lch = seeds.ink2 ? hexToOklch(seeds.ink2) : undefined;
 
   // Pick the hue for the neutral anchors (paper + ink).
   let neutralH: number;
@@ -90,7 +87,6 @@ function deriveAnchors(seeds: PresetIdentitySeeds): ThemeInputs["anchors"] {
     ink,
     brand: brandLch,
     ...(accentLch ? { accent: accentLch } : {}),
-    ...(ink2Lch ? { ink2: ink2Lch } : {}),
   };
 }
 
@@ -553,10 +549,10 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
 export const BRUTALIST: ThemeInputs = defineInputs(
   {
     brand: "#000000",
-    accent: "#000000",
-    // C39a: vermilion rubrication ink — the lab brutalist's chromatic
-    // identity signal over achromatic neutrals. Seeds the accent ramp.
-    ink2: "#D42320",
+    // C39a: vermilion engagement hue (was the ink2 anchor, which won the
+    // accent-ramp seed — the old accent#000 was black-on-black, invisible).
+    // The lab brutalist's chromatic identity signal over achromatic neutrals.
+    accent: "#D42320",
     neutralHueFrom: null,
   },
   {
@@ -677,7 +673,7 @@ export const EXECUTIVE: ThemeInputs = defineInputs(
 export const LEDGER: ThemeInputs = defineInputs(
   {
     brand: "#006266",
-    ink2: "#862721",
+    accent: "#862721",
     neutralHueFrom: "#DECBB1",
     paperC: 0.012,
     inkC: 0.014,
@@ -700,12 +696,12 @@ export const LEDGER: ThemeInputs = defineInputs(
 );
 
 /** Terminal — phosphor CRT. Single green hue carries the whole surface
- *  via `monochrome`; amber ink2 is the rubrication channel. Ruled
+ *  via `monochrome`; amber accent doubles as the rubrication channel. Ruled
  *  texture reads as scanlines; subtle glow reads as phosphor bleed. */
 export const TERMINAL: ThemeInputs = defineInputs(
   {
     brand: "#20C45F",
-    ink2: "#DAA500",
+    accent: "#DAA500",
     polarity: "dark",
   },
   {
@@ -725,14 +721,14 @@ export const TERMINAL: ThemeInputs = defineInputs(
   },
 );
 
-/** Aurora — borealis glass. Magenta-violet brand (H305), cyan ink2
+/** Aurora — borealis glass. Magenta-violet brand (H305), cyan accent
  *  (H200), dark float card with glow + gradient shell. The full glass
  *  stack (backdrop blobs, sheen, bevel) lands in Pass 5; these pins
  *  already give it the chromatic identity. */
 export const AURORA: ThemeInputs = defineInputs(
   {
     brand: "#B15DFC",
-    ink2: "#17D0D8",
+    accent: "#17D0D8",
     polarity: "dark",
   },
   {
@@ -764,7 +760,7 @@ export const AURORA: ThemeInputs = defineInputs(
 export const BLUEPRINT: ThemeInputs = defineInputs(
   {
     brand: "#007D9F",
-    ink2: "#E69C3A",
+    accent: "#E69C3A",
     polarity: "dark",
     paperC: 0.045,
     inkC: 0.02,
@@ -792,7 +788,7 @@ export const BLUEPRINT: ThemeInputs = defineInputs(
 export const SUNPRINT: ThemeInputs = defineInputs(
   {
     brand: "#CB6440",
-    ink2: "#5E7D3B",
+    accent: "#5E7D3B",
     neutralHueFrom: "brand",
     paperC: 0.018,
     inkC: 0.022,
@@ -866,7 +862,6 @@ export function tintFromBrand(
       paper: nudge(inputs.anchors.paper)!,
       ink: nudge(inputs.anchors.ink)!,
       ...(inputs.anchors.accent ? { accent: nudge(inputs.anchors.accent) } : {}),
-      ...(inputs.anchors.ink2 ? { ink2: nudge(inputs.anchors.ink2) } : {}),
     },
   };
 }

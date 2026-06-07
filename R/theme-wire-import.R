@@ -44,13 +44,12 @@ theme_inputs_from_wire <- function(wire_inputs) {
   w <- wire_inputs %||% list()
   v <- list()
 
-  # Anchors (paper/ink/brand required on the wire; accent/ink2 optional).
+  # Anchors (paper/ink/brand required on the wire; accent optional).
   a <- w[["anchors"]] %||% list()
   v <- .wire_triple_to_slots(v, a[["paper"]],  "anchors_paper")
   v <- .wire_triple_to_slots(v, a[["ink"]],    "anchors_ink")
   v <- .wire_triple_to_slots(v, a[["brand"]],  "anchors_brand")
   v <- .wire_triple_to_slots(v, a[["accent"]], "anchors_accent")
-  v <- .wire_triple_to_slots(v, a[["ink2"]],   "anchors_ink2")
 
   # Status anchors.
   st <- w[["status"]] %||% list()

@@ -10,7 +10,7 @@ web_theme_ledger()
 A \link{WebTheme}.
 }
 \description{
-Teal-ink brand (H200), oxblood rubrication ink2 (H28), warm cream
+Teal-ink brand (H200), oxblood rubrication accent (H28), warm cream
 paper. Chip + stripe caption (the two deliberately source different
 anchors: oxblood chip on brand-gradient strip). Hairline interval
 rules; ruled shell texture.

@@ -74,9 +74,6 @@ validate_oklch_triple <- function(self, prefix, required = TRUE) {
 #'   Defines text, text-muted, text-subtle.
 #' @field anchors_brand_L,anchors_brand_C,anchors_brand_H Identity hue.
 #'   Drives brand_solid, brand_text, header_bg.
-#' @field anchors_ink2_L,anchors_ink2_C,anchors_ink2_H Optional
-#'   secondary/rubrication ink anchor (B7); seeds the accent ramp with
-#'   precedence over accent when set.
 #' @field anchors_accent_L,anchors_accent_C,anchors_accent_H Optional
 #'   engagement hue (hover/selected/callouts). All-NA = defaults to brand.
 #' @field polarity `"light"` or `"dark"`. The L-reflection axis.
@@ -113,11 +110,6 @@ ThemeInputs <- new_class(
     anchors_accent_L = new_property(class_numeric, default = NA_real_),
     anchors_accent_C = new_property(class_numeric, default = NA_real_),
     anchors_accent_H = new_property(class_numeric, default = NA_real_),
-    # Secondary / rubrication ink (B7). Optional; when set the TS resolver
-    # seeds the accent ramp from it (precedence ink2 > accent > brand).
-    anchors_ink2_L   = new_property(class_numeric, default = NA_real_),
-    anchors_ink2_C   = new_property(class_numeric, default = NA_real_),
-    anchors_ink2_H   = new_property(class_numeric, default = NA_real_),
 
     polarity        = new_property(class_character, default = "light"),
     # B8 (wire-audit 2b, D3): neutral ramp rides the brand hue (phosphor /
@@ -244,7 +236,7 @@ ThemeInputs <- new_class(
       err <- validate_oklch_triple(self, anchor, required = TRUE)
       if (!is.null(err)) return(err)
     }
-    for (anchor in c("anchors_accent", "anchors_ink2",
+    for (anchor in c("anchors_accent",
                      "status_positive", "status_negative",
                      "status_warning",  "status_info")) {
       err <- validate_oklch_triple(self, anchor, required = FALSE)

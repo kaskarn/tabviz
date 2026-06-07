@@ -66,13 +66,12 @@
   }
 
   // ── Anchors ─────────────────────────────────────────────────────────
-  type AnchorKey = "paper" | "ink" | "brand" | "accent" | "ink2";
+  type AnchorKey = "paper" | "ink" | "brand" | "accent";
   const ANCHOR_ROWS: ReadonlyArray<{ key: AnchorKey; label: string; optional: boolean }> = [
     { key: "paper",  label: "Paper",  optional: false },
     { key: "ink",    label: "Ink",    optional: false },
     { key: "brand",  label: "Brand",  optional: false },
     { key: "accent", label: "Accent", optional: true },
-    { key: "ink2",   label: "Ink 2",  optional: true },
   ];
   // Accordion-of-one across every AnchorRow in the band.
   let openAnchor = $state<string | null>(null);
@@ -80,18 +79,16 @@
   function anchorTriple(key: AnchorKey): OklchTriple {
     const a = inputs.anchors;
     if (key === "accent") return a.accent ?? a.brand;
-    if (key === "ink2") return a.ink2 ?? a.accent ?? a.brand;
     return a[key];
   }
   function anchorMirrored(key: AnchorKey): boolean {
     if (key === "accent") return !inputs.anchors.accent;
-    if (key === "ink2") return !inputs.anchors.ink2;
     return false;
   }
   function withAnchor(key: AnchorKey, t: OklchTriple): ThemeInputs {
     return { ...inputs, anchors: { ...inputs.anchors, [key]: t } };
   }
-  function clearAnchor(key: "accent" | "ink2"): void {
+  function clearAnchor(key: "accent"): void {
     const next = { ...inputs.anchors };
     delete (next as Record<string, unknown>)[key];
     commit({ ...inputs, anchors: next });
@@ -195,7 +192,7 @@
 {#if showMatchBrand}
   <div class="match-brand">
     <button type="button" onclick={() => onmatchbrand?.()}
-            title="Nudge paper / ink / accent / ink2 hues toward brand (L unchanged)">
+            title="Tint paper, ink and accent hues toward brand (lightness unchanged)">
       Match brand
     </button>
   </div>
@@ -211,7 +208,7 @@
         onexpand={(o) => (openAnchor = o ? row.key : null)}
         mirrored={anchorMirrored(row.key)}
         onclear={row.optional && !anchorMirrored(row.key)
-          ? () => clearAnchor(row.key as "accent" | "ink2")
+          ? () => clearAnchor(row.key as "accent")
           : undefined}
         oncommit={(t) => commit(withAnchor(row.key, t))}
         onpreview={(t) => preview(withAnchor(row.key, t))}

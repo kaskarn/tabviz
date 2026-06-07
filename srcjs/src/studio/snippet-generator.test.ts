@@ -31,7 +31,6 @@ describe("buildBaseExpression — preset coverage", () => {
 describe("buildSnippetSteps — no silent drops", () => {
   const cases: Array<[string, ThemeInputs, string]> = [
     ["brand anchor", { ...base, anchors: { ...base.anchors, brand: { L: 0.4, C: 0.12, H: 300 } } }, "set_brand"],
-    ["ink2 anchor", { ...base, anchors: { ...base.anchors, ink2: { L: 0.45, C: 0.15, H: 25 } } }, "set_ink2"],
     ["header_style", { ...base, header_style: "bold" }, "set_header_style"],
     ["slot_style", { ...base, slot_style: "flat" as never }, "set_inputs"],
     ["geometry radius", { ...base, geometry: { ...base.geometry, radius: { ...(base.geometry?.radius ?? {}), md: 9 } } }, "set_geometry"],

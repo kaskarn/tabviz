@@ -10,7 +10,7 @@ web_theme_aurora()
 A \link{WebTheme}.
 }
 \description{
-Magenta-violet brand (H305), cyan ink2 (H200), dark float card with
+Magenta-violet brand (H305), cyan accent (H200), dark float card with
 glow + gradient shell. The full glass stack (backdrop blobs, sheen,
 bevel) lands with the glass substrate; these pins carry the chromatic
 identity.

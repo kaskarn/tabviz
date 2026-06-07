@@ -122,13 +122,6 @@ export function buildSnippetSteps(
     }
   }
 
-  // ink2 (rubrication) — clearable anchor.
-  if (!triplesEqual(edits.anchors.ink2, base.anchors.ink2)) {
-    if (edits.anchors.ink2) {
-      steps.push({ setter: "set_ink2", args: rOklch(edits.anchors.ink2) });
-    }
-  }
-
   // header_style — top-level structural variant input.
   if (edits.header_style !== base.header_style && edits.header_style !== undefined) {
     steps.push({ setter: "set_header_style", args: rString(edits.header_style) });

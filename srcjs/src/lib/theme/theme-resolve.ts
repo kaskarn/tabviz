@@ -105,9 +105,9 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
   const paper = inputs.anchors.paper;
   const ink = inputs.anchors.ink;
   const brand = inputs.anchors.brand;
-  // B7 (wire-audit 2a): ink2 (rubrication) takes precedence as the
-  // accent-ramp seed — mirrors rgc_v4 engine.jsx:322-326.
-  const accent = inputs.anchors.ink2 ?? inputs.anchors.accent ?? brand;
+  // accent seeds the engagement ramp (the former ink2 anchor was merged
+  // in — it silently won this seed, making it a redundant second hue).
+  const accent = inputs.anchors.accent ?? brand;
   const brandHex = oklchToHex(brand);
   const accentHex = oklchToHex(accent);
 

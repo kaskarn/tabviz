@@ -16,7 +16,7 @@ tint_from_brand(theme, strength = c("medium", "subtle", "vivid"))
 The re-resolved \link{WebTheme}.
 }
 \description{
-C17 (wire-audit 4d): nudges the HUE of paper / ink / accent / ink2
+C17 (wire-audit 4d): nudges the HUE of paper / ink / accent
 toward \code{brand}'s hue without touching lightness — "everything tinted
 from one brand color" in one move. A refinement tool: the usual
 on-ramp is still picking a preset and calling \code{\link[=set_brand]{set_brand()}}.

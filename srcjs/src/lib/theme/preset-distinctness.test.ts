@@ -6,7 +6,7 @@
 // makes silent identity convergence a TEST FAILURE:
 //
 //   1. IDENTITY TUPLES — no two presets may share a near-identical
-//      (brand, accent, ink2) anchor tuple. This is the gate that would
+//      (brand, accent) anchor tuple. This is the gate that would
 //      have caught jama ≡ brutalist at the moment of introduction.
 //   2. ROW-HEIGHT SPREAD — ≥ 6 distinct resolved row heights across the
 //      roster (density preset × density_factor identity pins).
@@ -42,7 +42,7 @@ const TUPLE_MIN_DIST = 0.02; // jama≡brutalist was 0.0; post-C39a min observed
 describe("preset distinctness (C39c)", () => {
   const names = Object.keys(PRESETS);
 
-  it("no two same-polarity presets share a near-identical (brand, accent, ink2) tuple", () => {
+  it("no two same-polarity presets share a near-identical (brand, accent) tuple", () => {
     // Polarity-pair siblings (solarized / solarized_dark) legitimately
     // share anchors — Schoonover's palette uses the same accents in both
     // modes and the resolver's L-reflection is the distinguishing axis.
@@ -57,8 +57,7 @@ describe("preset distinctness (C39c)", () => {
         const b = PRESETS[names[j]!]!.anchors;
         const d =
           dist(a.brand, b.brand) +
-          dist(a.accent, b.accent) +
-          dist(a.ink2, b.ink2);
+          dist(a.accent, b.accent);
         if (d < TUPLE_MIN_DIST) {
           collisions.push(`${names[i]} ≈ ${names[j]} (d=${d.toFixed(4)})`);
         }

@@ -30,8 +30,7 @@ theme_inputs_to_json <- function(inputs) {
     paper = triple_to_json(inputs, "anchors_paper", required = TRUE),
     ink   = triple_to_json(inputs, "anchors_ink",   required = TRUE),
     brand = triple_to_json(inputs, "anchors_brand", required = TRUE),
-    accent = triple_to_json(inputs, "anchors_accent"),
-    ink2   = triple_to_json(inputs, "anchors_ink2")
+    accent = triple_to_json(inputs, "anchors_accent")
   )
   anchors <- anchors[!vapply(anchors, is.null, logical(1))]
 
@@ -255,15 +254,9 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #' # The usual on-ramp: start from a preset, swap the brand (C56).
 #' th <- set_brand(web_theme_cochrane(), "#006266")
 #'
-#' # Rubrication (B7): ink2 seeds the accent ramp — significance stars,
-#' # caption chips, and accent roles pick up the editorial ink without
-#' # tinting hover/selected states' identity.
-#' th <- web_theme(
-#'   brand = "#1A1A1A",
-#'   ink2 = "#D42320",          # vermilion rubrication
-#'   density = "compact",
-#'   effects = list(title_style = "bar")
-#' )
+#' # Rubrication (significance stars, caption chips) follows `accent` by
+#' # default; pin --tv-ink2 to make it differ from the interaction hue:
+#' th <- set_pin(web_theme_cochrane(), "--tv-ink2", "#D42320")
 #'
 #' # Monochrome (B8): one toggle for phosphor/sepia/cyanotype themes.
 #' th <- web_theme(brand = "#20C45F", polarity = "dark", monochrome = TRUE)
@@ -276,9 +269,6 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #' @param brand Identity hue. Drives brand_solid, brand_text, header_bg.
 #' @param accent Optional engagement hue (hover/selected/callouts). NULL
 #'   mirrors brand at resolution.
-#' @param ink2 Optional secondary/rubrication ink (B7). When set it seeds
-#'   the accent ramp with precedence over `accent` — the editorial channel
-#'   for vermilion significance stars / oxblood chips.
 #' @param polarity `"light"` or `"dark"`. Polarity reflection inverts every
 #'   anchor's L around the midpoint. Default `"light"`.
 #' @param monochrome When `TRUE` the neutral ramp rides the brand hue with
@@ -352,7 +342,6 @@ web_theme <- function(
     ink = NULL,
     brand = DEFAULT_BRAND_HEX,
     accent = NULL,
-    ink2 = NULL,
     polarity = "light",
     monochrome = FALSE,
     mode = "standard",
@@ -409,7 +398,6 @@ web_theme <- function(
     cli::cli_abort("{.arg brand} is required.")
   }
   accent_t <- coerce_anchor(accent, "accent")
-  ink2_t   <- coerce_anchor(ink2,   "ink2")
   status_p <- coerce_anchor(status_positive, "status_positive")
   status_n <- coerce_anchor(status_negative, "status_negative")
   status_w <- coerce_anchor(status_warning,  "status_warning")
@@ -417,7 +405,6 @@ web_theme <- function(
 
   ap <- anchor_slots(paper_t);  ai <- anchor_slots(ink_t)
   ab <- anchor_slots(brand_t);  aa <- anchor_slots(accent_t)
-  a2 <- anchor_slots(ink2_t)
   sp <- anchor_slots(status_p); sn <- anchor_slots(status_n)
   sw <- anchor_slots(status_w); si <- anchor_slots(status_i)
 
@@ -426,7 +413,6 @@ web_theme <- function(
     anchors_ink_L   = ai$L, anchors_ink_C   = ai$C, anchors_ink_H   = ai$H,
     anchors_brand_L = ab$L, anchors_brand_C = ab$C, anchors_brand_H = ab$H,
     anchors_accent_L = aa$L, anchors_accent_C = aa$C, anchors_accent_H = aa$H,
-    anchors_ink2_L   = a2$L, anchors_ink2_C   = a2$C, anchors_ink2_H   = a2$H,
     polarity = polarity,
     monochrome = monochrome,
     mode = mode,
@@ -538,20 +524,6 @@ set_brand <- function(theme, brand) {
   set_anchor_and_resolve(theme, "anchors_brand", brand, "brand")
 }
 
-#' Set the secondary/rubrication ink anchor (ink2) and re-resolve.
-#'
-#' ink2 (B7) seeds the accent ramp with precedence over `accent`,
-#' giving editorial themes a rubrication channel (vermilion significance
-#' stars, oxblood caption chips) without tinting interaction states.
-#' @param theme A [WebTheme].
-#' @param ink2 Hex string, [oklch()] triple, or `NULL` to clear.
-#' @return The re-resolved [WebTheme].
-#' @export
-set_ink2 <- function(theme, ink2) {
-  set_anchor_and_resolve(theme, "anchors_ink2", ink2, "ink2",
-                         clearable = TRUE)
-}
-
 #' Set the accent anchor on a theme and re-resolve.
 #' @param theme A [WebTheme].
 #' @param accent Hex string, [oklch()] triple, or `NULL` to clear (accent
@@ -565,7 +537,7 @@ set_accent <- function(theme, accent) {
 
 #' Tint supporting anchors toward the brand hue and re-resolve.
 #'
-#' C17 (wire-audit 4d): nudges the HUE of paper / ink / accent / ink2
+#' C17 (wire-audit 4d): nudges the HUE of paper / ink / accent
 #' toward `brand`'s hue without touching lightness — "everything tinted
 #' from one brand color" in one move. A refinement tool: the usual
 #' on-ramp is still picking a preset and calling [set_brand()].
@@ -591,9 +563,6 @@ tint_from_brand <- function(theme, strength = c("medium", "subtle", "vivid")) {
   inputs@anchors_ink_H   <- toward(inputs@anchors_ink_H)
   if (!is.na(inputs@anchors_accent_H)) {
     inputs@anchors_accent_H <- toward(inputs@anchors_accent_H)
-  }
-  if (!is.na(inputs@anchors_ink2_H)) {
-    inputs@anchors_ink2_H <- toward(inputs@anchors_ink2_H)
   }
   re_resolve(theme, inputs)
 }
@@ -1212,10 +1181,10 @@ set_inputs <- function(theme, ...) {
   args <- list(...)
   inputs <- theme@inputs
   # Anchor sugar (wire-audit 6c): accept the web_theme() anchor names
-  # (paper / ink / brand / accent / ink2) as hex or oklch() and expand to
+  # (paper / ink / brand / accent) as hex or oklch() and expand to
   # the flat L/C/H slots — set_inputs("brand" = "#X") previously errored
   # with "Can't find property @brand" (caught by the docs render).
-  for (anchor in c("paper", "ink", "brand", "accent", "ink2")) {
+  for (anchor in c("paper", "ink", "brand", "accent")) {
     if (!is.null(args[[anchor]])) {
       slots <- anchor_slots(coerce_anchor(args[[anchor]], anchor))
       prefix <- paste0("anchors_", anchor)

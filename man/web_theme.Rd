@@ -9,7 +9,6 @@ web_theme(
   ink = NULL,
   brand = DEFAULT_BRAND_HEX,
   accent = NULL,
-  ink2 = NULL,
   polarity = "light",
   monochrome = FALSE,
   mode = "standard",
@@ -51,10 +50,6 @@ surface, paper_alt, paper_raised. Default: near-white at brand hue.}
 
 \item{accent}{Optional engagement hue (hover/selected/callouts). NULL
 mirrors brand at resolution.}
-
-\item{ink2}{Optional secondary/rubrication ink (B7). When set it seeds
-the accent ramp with precedence over \code{accent} — the editorial channel
-for vermilion significance stars / oxblood chips.}
 
 \item{polarity}{\code{"light"} or \code{"dark"}. Polarity reflection inverts every
 anchor's L around the midpoint. Default \code{"light"}.}
@@ -159,15 +154,9 @@ anchor's L. \code{accent} defaults to \code{brand} when unset. Status anchors
 # The usual on-ramp: start from a preset, swap the brand (C56).
 th <- set_brand(web_theme_cochrane(), "#006266")
 
-# Rubrication (B7): ink2 seeds the accent ramp — significance stars,
-# caption chips, and accent roles pick up the editorial ink without
-# tinting hover/selected states' identity.
-th <- web_theme(
-  brand = "#1A1A1A",
-  ink2 = "#D42320",          # vermilion rubrication
-  density = "compact",
-  effects = list(title_style = "bar")
-)
+# Rubrication (significance stars, caption chips) follows `accent` by
+# default; pin --tv-ink2 to make it differ from the interaction hue:
+th <- set_pin(web_theme_cochrane(), "--tv-ink2", "#D42320")
 
 # Monochrome (B8): one toggle for phosphor/sepia/cyanotype themes.
 th <- web_theme(brand = "#20C45F", polarity = "dark", monochrome = TRUE)

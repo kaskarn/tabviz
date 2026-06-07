@@ -11,6 +11,6 @@ A \link{WebTheme}.
 }
 \description{
 A single green hue carries the whole surface via \code{monochrome = TRUE};
-amber ink2 is the rubrication channel. Ruled texture reads as
+amber accent doubles as the rubrication channel. Ruled texture reads as
 scanlines; subtle glow reads as phosphor bleed.
 }

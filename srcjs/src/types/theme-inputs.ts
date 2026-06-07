@@ -40,19 +40,17 @@ export type SchemeName = string;
  *  - paper: the light-end neutral anchor; defines surface, paper_alt, paper_raised.
  *  - ink:   the dark-end neutral anchor; defines text, text-muted, text-subtle.
  *  - brand: the identity hue; powers brand_solid, brand_text, header_bg.
- *  - accent: optional engagement hue; powers hover/selected/callouts.
- *    Defaults to brand when unset.
- *  - ink2: optional secondary / rubrication ink (B7, wire-audit Pass 2a).
- *    When set it SEEDS THE ACCENT RAMP (precedence: ink2 ?? accent ??
- *    brand — mirrors rgc_v4 engine.jsx:322-326), giving editorial themes
- *    a rubrication channel (vermilion stars, oxblood chips) without the
- *    author having to overload `accent`. */
+ *  - accent: optional engagement hue; powers hover/selected/callouts
+ *    AND the rubrication channel (--tv-ink2: significance stars, caption
+ *    chips). Defaults to brand when unset. (The former separate `ink2`
+ *    anchor was merged into accent — it silently won the accent-ramp
+ *    seed, so it was a redundant second engagement hue; rubrication that
+ *    must differ from interaction is now a pin on `--tv-ink2`.) */
 export interface ThemeAnchors {
   paper: OklchTriple;
   ink: OklchTriple;
   brand: OklchTriple;
   accent?: OklchTriple;
-  ink2?: OklchTriple;
 }
 
 /** Optional status anchors (positive/negative/warning/info) as OKLCH

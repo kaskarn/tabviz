@@ -11,6 +11,6 @@ A \link{WebTheme}.
 }
 \description{
 Deep cyan-navy paper (dark polarity with brand-hued neutrals), amber
-rubrication ink2 for callouts, grid texture as the drafting sheet,
+rubrication accent for callouts, grid texture as the drafting sheet,
 monospace annotations, radius 0.
 }

@@ -821,7 +821,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     consumedBy: ["lib/theme/theme-runtime.css"],
     description:
       "Caption chip (TABLE-N stamp) background — rubrication channel " +
-      "(accent-solid; ink2-seeded when the theme pins ink2). B17/C62.",
+      "(accent-solid; pin --tv-ink2 to override rubrication). B17/C62.",
   },
   {
     cssVar: "--tv-caption-chip-fg",
@@ -838,9 +838,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     source: { tier: "anchor", anchor: "accent-anchor" },
     consumedBy: ["components/table/CellPvalue.svelte"],
     description:
-      "Rubrication ink — resolves ink2 ?? accent ?? brand (the same " +
-      "precedence as the accent-ramp seed). The editorial emphasis " +
-      "channel: significance stars, caption chips.",
+      "Rubrication ink — the editorial emphasis channel (significance " +
+      "stars, caption chips). Defaults to accent (accent-anchor); pin " +
+      "--tv-ink2 to make rubrication differ from the interaction hue.",
   },
   {
     cssVar: "--tv-status-positive",

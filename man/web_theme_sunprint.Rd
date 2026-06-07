@@ -10,6 +10,6 @@ web_theme_sunprint()
 A \link{WebTheme}.
 }
 \description{
-Terracotta brand (H40), olive rubrication ink2 (H130), warm bleached
+Terracotta brand (H40), olive rubrication accent (H130), warm bleached
 paper, ruled texture, generous reading rhythm, gradient caption stripe.
 }
