@@ -86,6 +86,10 @@ test_that("PDF export embeds the theme's declared web font, not the fallback", {
   # this test fails ONLY when run after other tests (passed locally,
   # failed in R CMD check on CI). A fresh process is also the supported
   # production path; see the first-init note in utils-embed-fonts.R.
+  # R_TESTS = "": R CMD check exports R_TESTS=startup.Rs (a RELATIVE
+  # path), which makes any R subprocess started from a different working
+  # directory die at startup ("could not start R") — the standard callr-
+  # inside-check workaround.
   base_fonts <- callr::r(function() {
     df <- data.frame(study = c("Alpha", "Beta"),
                      hr = c(0.72, 0.85), lo = c(0.6, 0.7), hi = c(0.9, 1.02))
@@ -96,7 +100,7 @@ test_that("PDF export embeds the theme's declared web font, not the fallback", {
     suppressWarnings(tabviz::save_plot(w, f))
     txt <- suppressWarnings(readLines(f, warn = FALSE))
     grep("BaseFont", txt, value = TRUE, useBytes = TRUE)
-  })
+  }, env = c(callr::rcmd_safe_env(), R_TESTS = ""))
 
   # NEJM declares Lora. Before the fix, librsvg ignored the base64
   # @font-face splice and the PDF silently embedded Georgia (the CSS

@@ -21,12 +21,24 @@ test_that("a default spec R-serializes under the weight budget", {
 
   raw <- serialize(spec, NULL)
   mb <- length(raw) / 1e6
-  # Budget ratcheted after the lazy-defaults fix (S7 property defaults are
-  # now quote()d calls, not evaluated instances embedded in every class
-  # object): current weight ~3.2 MB. 10 MB headroom catches both
-  # regressions — eager defaults land at ~21 MB, the per-preset roster
-  # embedding at 500+ MB.
-  expect_lt(mb, 10)
+  # Generous ABSOLUTE cap: absolute serialized size is platform/R-version
+  # dependent (3.2 MB on macOS R 4.5, 11.6 MB on CI R 4.6 — bytecode and
+  # class-graph encoding differ), so the cap only guards the catastrophic
+  # regression (the per-preset roster embedding lands at 500+ MB). The
+  # eager-defaults regression is pinned structurally below instead.
+  expect_lt(mb, 50)
+
+  # Structural pin for the lazy-defaults fix (platform-independent):
+  # every S7-instance property default in the theme class tree must be a
+  # quote()d call, NOT an evaluated instance — `default = SomeClass()`
+  # embeds the instance (recursive class graph included) in the class
+  # object, which serialize() writes by value into every WebTheme.
+  props <- attr(tabviz:::WebTheme, "properties")
+  for (nm in c("row_group", "text", "row", "header", "inputs", "borders")) {
+    d <- props[[nm]]$default
+    expect_true(is.call(d) || is.null(d),
+                label = sprintf("WebTheme property '%s' default is lazy (a call)", nm))
+  }
 
   # The raw enable_themes value must survive construction unfinalized —
   # a resolved list of WebThemes here is the regression signature.
