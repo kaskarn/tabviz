@@ -29,6 +29,18 @@
     valueWidth?: number;
     disabled?: boolean;
     ariaLabel?: string;
+    /** Override the value display (e.g. "28°", "×1.20"). Defaults to
+     *  `${value}${suffix}`. Also used as aria-valuetext. */
+    valueText?: string;
+    /** CSS background for the track — e.g. a hue-wheel or axis gradient
+     *  (AnchorRow's LCH sliders). Default: the hairline paper-2 fill. */
+    track?: string;
+    /** CSS color for the thumb dot. Default: ink. */
+    thumbColor?: string;
+    /** Fired on every input tick (drag) — the C53 preview channel.
+     *  `onchange` then fires once on commit (release). When `oncommit`
+     *  is absent, `onchange` fires per-tick (legacy behavior). */
+    oncommit?: (next: number) => void;
     onchange?: (next: number) => void;
   }
 
@@ -41,6 +53,10 @@
     valueWidth = 4,
     disabled = false,
     ariaLabel,
+    valueText,
+    track,
+    thumbColor,
+    oncommit,
     onchange,
   }: Props = $props();
 
@@ -49,6 +65,14 @@
     if (Number.isFinite(v)) {
       value = v;
       onchange?.(v);
+    }
+  }
+
+  function handleCommit(e: Event) {
+    const v = parseFloat((e.target as HTMLInputElement).value);
+    if (Number.isFinite(v)) {
+      value = v;
+      oncommit?.(v);
     }
   }
 </script>
@@ -62,11 +86,14 @@
     {value}
     {disabled}
     aria-label={ariaLabel}
-    aria-valuetext={suffix ? `${value}${suffix}` : undefined}
+    aria-valuetext={valueText ?? (suffix ? `${value}${suffix}` : undefined)}
+    style:--slider-track={track}
+    style:--slider-thumb={thumbColor}
     oninput={handleInput}
+    onchange={handleCommit}
   />
   <span class="val" style:width="{valueWidth + 1}ch">
-    {value}{#if suffix}<span class="suf">{suffix}</span>{/if}
+    {#if valueText}{valueText}{:else}{value}{#if suffix}<span class="suf">{suffix}</span>{/if}{/if}
   </span>
 </span>
 
@@ -96,34 +123,43 @@
   /* Track + thumb: 2px hairline + 12px ink dot. Webkit + Firefox each
      need their own rule — the pseudo-element selectors don't merge. */
   input[type="range"]::-webkit-slider-runnable-track {
-    height: 2px;
-    background: var(--v2-paper-2, #f3efe5);
-    border-radius: 2px;
+    /* `--slider-track` lets callers paint a meaning-bearing track (the
+       AnchorRow hue wheel / axis gradients); taller when custom so the
+       gradient reads. Default stays the 2px hairline. */
+    height: var(--slider-track-h, 2px);
+    background: var(--slider-track, var(--v2-paper-2, #f3efe5));
+    border-radius: 999px;
   }
   input[type="range"]::-moz-range-track {
-    height: 2px;
-    background: var(--v2-paper-2, #f3efe5);
-    border-radius: 2px;
+    height: var(--slider-track-h, 2px);
+    background: var(--slider-track, var(--v2-paper-2, #f3efe5));
+    border-radius: 999px;
+  }
+  input[type="range"][style*="--slider-track:"] {
+    --slider-track-h: 10px;
   }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 12px;
     height: 12px;
-    margin-top: -5px; /* center the 12px dot on the 2px track */
+    /* center the 12px dot: (track-h - 12)/2 */
+    margin-top: calc((var(--slider-track-h, 2px) - 12px) / 2);
     border-radius: 50%;
-    background: var(--v2-ink, #15140e);
+    background: var(--slider-thumb, var(--v2-ink, #15140e));
     cursor: pointer;
     border: 0;
+    box-shadow: 0 0 0 1.5px var(--v2-paper, #faf7f0);
     transition: transform var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
   }
   input[type="range"]::-moz-range-thumb {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--v2-ink, #15140e);
+    background: var(--slider-thumb, var(--v2-ink, #15140e));
     cursor: pointer;
     border: 0;
+    box-shadow: 0 0 0 1.5px var(--v2-paper, #faf7f0);
   }
   input[type="range"]:hover::-webkit-slider-thumb,
   input[type="range"]:focus::-webkit-slider-thumb { transform: scale(1.15); }

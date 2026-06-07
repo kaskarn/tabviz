@@ -29,3 +29,5 @@ export { default as VariantPicker } from "./VariantPicker.svelte";
 export { default as ColumnPreview } from "./ColumnPreview.svelte";
 
 export type { PillSegment, PickerItem, MappedMode, ThemeSwatch } from "./types";
+export { default as DisclosureField } from "./DisclosureField.svelte";
+export { default as TextInput } from "./TextInput.svelte";
