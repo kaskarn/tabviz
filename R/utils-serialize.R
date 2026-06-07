@@ -607,6 +607,7 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     enableHover = interaction@enable_hover,
     enableResize = interaction@enable_resize,
     enableExport = interaction@enable_export,
+    enableThemeEdit = interaction@enable_theme_edit,
     enableFilters = interaction@enable_filters || interaction@show_filters,
     enableReorderRows = interaction@enable_reorder_rows,
     enableReorderColumns = interaction@enable_reorder_columns,

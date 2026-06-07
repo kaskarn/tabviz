@@ -13,6 +13,7 @@ InteractionSpec(
   enable_hover = TRUE,
   enable_resize = TRUE,
   enable_export = TRUE,
+  enable_theme_edit = TRUE,
   enable_filters = TRUE,
   enable_reorder_rows = TRUE,
   enable_reorder_columns = TRUE,
@@ -39,6 +40,10 @@ InteractionSpec(
 
 \item{enable_export}{Enable download/export button}
 
+\item{enable_theme_edit}{Show the settings cog (theme + figure panel). \code{FALSE}
+freezes a published dashboard's styling — viewers cannot restyle live.
+and a popover editor for forest-cell numerics (estimate / lower / upper).}
+
 \item{enable_filters}{Enable per-column filter popovers in column headers}
 
 \item{enable_reorder_rows}{Enable drag-and-drop reordering of rows (within a group)
@@ -48,8 +53,7 @@ reflects the reorder automatically.}
 \item{enable_reorder_columns}{Enable drag-and-drop reordering of columns (within a
 column group) and column-groups (among top-level siblings).}
 
-\item{enable_edit}{Enable double-click inline editing for text/numeric/label cells,
-and a popover editor for forest-cell numerics (estimate / lower / upper).}
+\item{enable_edit}{Enable double-click inline editing for text/numeric/label cells,}
 
 \item{show_group_counts}{Show the row count in parentheses next to each row-group
 header label (e.g. "Main Trials (12)"). Default \code{FALSE}.}

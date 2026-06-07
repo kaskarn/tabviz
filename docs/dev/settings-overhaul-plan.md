@@ -146,10 +146,11 @@ proof for `reapplyEdits`/`themeEdits`.
 
 - **Status colors** ("make negatives red") — satisfied by construction:
   `status_*` are Tier-1 anchors → IDENTITY ▸ Status.
-- **Frame text size** (biostat: "shrink the footnote without the studio") —
-  OPEN CARVE-OUT: either a variant-ish "frame text" nudge joins TYPE, or the
-  per-role size stays studio-only and the biostat condition is consciously
-  declined. Decide during implementation.
+- **Frame text size** — DECIDED (P4): consciously declined for settings.
+  The per-role size is a token pin — `set_pin("--tv-text-footnote-size",
+  "0.7rem")` in R or the studio PinsPanel — both one-liners. Settings
+  stays Tier-1-pure; the carve-out would have been the first cosmetic
+  T3 write in the panel and the thin end of the boundary's wedge.
 - **JSON import affordance** in settings (export-only is write-only for
   no-R Shiny consumers) — backlog, pairs with the single-envelope work.
 - **Author freeze** `enable_theme_edit = FALSE` on `web_interaction()` —
@@ -169,6 +170,20 @@ callerless) · settings' Spacing/Viz/Text/Tokens tabs (→ studio) ·
 the studio-hint paragraph (replaced by the Quick-strip handoff) ·
 `--tp-*` tokens + `theme-panel/controls/*` (end of migration, after the
 studio rail adopts the shared controls).
+
+## Status (2026-06-07)
+
+P0–P4 EXECUTED (commits 48030de, 13c8a9f, 04d09fc, eb50684, 0dfe523 +
+the P4 batch). All design tests have gates; two adversarial review
+passes ran mid-arc (P0 review: paint-path fix; P1/P2 review: scenario
+harness, hex NaN gate, banding restoration). Remaining backlog: the
+divergence badge counts vs the LOADED theme (not a named org base);
+per-field Tier-1 revert deferred (DT-13 documents it); `themeEdits`/
+`reapplyEdits` SURVIVE deliberately — canvas gestures (title-gap /
+footer-gap drags on the plot) still write spacing paths, which is
+per-figure APPLY under the doctrine; the DT-11 gate guarantees the
+SETTINGS tree never does. Full deletion needs the canvas gestures
+migrated to a figure-scoped channel first.
 
 ## Build sequence
 

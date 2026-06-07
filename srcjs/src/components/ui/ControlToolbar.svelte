@@ -68,7 +68,9 @@
   {#if enableExport}
     <DownloadButton {store} />
   {/if}
-  <SettingsButton {store} />
+  {#if store.spec?.interaction?.enableThemeEdit !== false}
+    <SettingsButton {store} />
+  {/if}
 </div>
 
 <style>

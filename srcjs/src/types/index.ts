@@ -784,6 +784,7 @@ export interface InteractionSpec {
   enableReorderRows?: boolean;      // Drag rows within a group; drag row-groups among siblings
   enableReorderColumns?: boolean;   // Drag columns within a column-group; drag column-groups among siblings
   enableEdit?: boolean;             // Double-click to edit cells / labels / forest numerics
+  enableThemeEdit?: boolean;        // Settings cog + panel (author freeze: FALSE hides the cog on published dashboards)
   enableFilters?: boolean;          // Render per-column filter popovers (supersedes showFilters)
   showGroupCounts?: boolean;        // Show "(n)" next to row-group labels (default: false)
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)

@@ -7,7 +7,11 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeInputs } from "$types/theme-inputs";
+  import type { WebTheme } from "$types/theme-resolved";
   import { EnumRow } from "$components/theme-controls";
+  import { buildSnippetSteps } from "../../../studio/snippet-generator";
+  import { buildTheme } from "$lib/theme/theme-adapter";
+  import { WIRE_SCHEMA } from "$lib/theme/theme-wire";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -21,16 +25,93 @@
     if (!inputs) return;
     store.setAuthoringInputs({ ...inputs, [key]: value });
   }
+
+  // ── Divergence badge (P4): how many inputs differ from the loaded
+  // theme — counted with the SAME diff that generates the R snippet, so
+  // the number is the length of the set_*() chain that reproduces it. ──
+  const divergence = $derived.by(() => {
+    const initial = (store.initialTheme as WebTheme | null)?.authoringInputs;
+    if (!initial || !inputs) return 0;
+    let n = buildSnippetSteps(initial, inputs).length;
+    n += Object.keys((theme as WebTheme | undefined)?.roleOverrides ?? {}).length;
+    n += Object.keys((theme as WebTheme | undefined)?.pins ?? {}).length;
+    return n;
+  });
+
+  // ── Export / import the theme-wire envelope (P4: both surfaces emit
+  // ONE schema; import is what makes export useful for no-R users). ──
+  function exportWire(): void {
+    if (!inputs) return;
+    const t = theme as WebTheme | undefined;
+    const wire = {
+      $schema: WIRE_SCHEMA,
+      name: store.baseThemeName,
+      inputs,
+      roleOverrides: t?.roleOverrides ?? {},
+      ...(t?.pins && Object.keys(t.pins).length > 0 ? { pins: t.pins } : {}),
+    };
+    const blob = new Blob([JSON.stringify(wire, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${store.baseThemeName || "theme"}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  let importError = $state<string | null>(null);
+  function importWire(file: File): void {
+    importError = null;
+    file.text().then((text) => {
+      try {
+        const wire = JSON.parse(text) as {
+          $schema?: string;
+          name?: string;
+          inputs?: ThemeInputs;
+          roleOverrides?: WebTheme["roleOverrides"];
+          pins?: WebTheme["pins"];
+        };
+        if (!wire.inputs?.anchors) {
+          importError = "Not a theme wire (missing inputs.anchors).";
+          return;
+        }
+        const built = buildTheme(wire.inputs, {
+          name: wire.name ?? "imported",
+          roleOverrides: wire.roleOverrides ?? {},
+          pins: wire.pins ?? {},
+        });
+        store.setThemeObject(built as never);
+      } catch (e) {
+        importError = (e as Error).message;
+      }
+    });
+  }
 </script>
 
 {#if inputs}
   <div class="quick-strip">
     <div class="echo">
       <span class="preset">{store.baseThemeName}</span>
-      {#if store.hasThemeEdits}
-        <span class="edited" title="Theme inputs differ from the loaded preset">· edited</span>
+      {#if divergence > 0}
+        <span class="edited" title="Edits that the R snippet / export would carry">· {divergence} differ</span>
       {/if}
+      <span class="echo-actions">
+        <button type="button" class="echo-btn" title="Export theme JSON (wire envelope)" onclick={exportWire}>⇩</button>
+        <label class="echo-btn" title="Import theme JSON">
+          ⇧<input type="file" accept=".json,application/json" class="file-input"
+                  onchange={(e) => {
+                    const f = (e.currentTarget as HTMLInputElement).files?.[0];
+                    if (f) importWire(f);
+                    (e.currentTarget as HTMLInputElement).value = "";
+                  }} />
+        </label>
+      </span>
     </div>
+    {#if importError}
+      <p class="import-error" role="alert">{importError}</p>
+    {/if}
     <EnumRow
       label="Polarity"
       value={inputs.polarity ?? "light"}
@@ -73,6 +154,37 @@
     color: var(--v2-ink, #15140e);
   }
   .edited {
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-hot, #b53a1f);
+  }
+  .echo-actions {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 2px;
+  }
+  .echo-btn {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--v2-ink-3, #8a8478);
+    cursor: pointer;
+    border-radius: var(--v2-r-hair, 2px);
+    font-size: 12px;
+  }
+  .echo-btn:hover { color: var(--v2-ink, #15140e); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
+  .file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+  }
+  .import-error {
+    margin: 0 0 4px;
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-hot, #b53a1f);
   }

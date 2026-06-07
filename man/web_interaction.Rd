@@ -19,6 +19,7 @@ web_interaction(
   enable_reorder_rows = TRUE,
   enable_reorder_columns = TRUE,
   enable_edit = TRUE,
+  enable_theme_edit = TRUE,
   show_group_counts = FALSE,
   tooltip_fields = NULL,
   enable_themes = getOption("tabviz.enable_themes", "default"),

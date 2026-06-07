@@ -2150,6 +2150,8 @@ col_group <- function(header, ...) {
 #' @param enable_reorder_columns Enable drag-and-drop reordering of columns (within a
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells,
+#' @param enable_theme_edit Show the settings cog (theme + figure panel). `FALSE`
+#'   freezes a published dashboard's styling — viewers cannot restyle live.
 #'   and a popover editor for forest-cell numerics (estimate / lower / upper).
 #' @param show_group_counts Show the row count in parentheses next to each row-group
 #'   header label (e.g. "Main Trials (12)"). Default `FALSE`.
@@ -2184,6 +2186,11 @@ InteractionSpec <- new_class(
     enable_hover = new_property(class_logical, default = TRUE),
     enable_resize = new_property(class_logical, default = TRUE),
     enable_export = new_property(class_logical, default = TRUE),
+    # Author freeze (settings-overhaul P4): FALSE removes the settings cog
+    # so a published dashboard's viewers can't restyle the figure live.
+    # The inverse knob ("widen the panel") is obsolete — settings now
+    # carries the full Tier-1 surface by default.
+    enable_theme_edit = new_property(class_logical, default = TRUE),
     enable_filters = new_property(class_logical, default = TRUE),
     enable_reorder_rows = new_property(class_logical, default = TRUE),
     enable_reorder_columns = new_property(class_logical, default = TRUE),
@@ -2330,6 +2337,7 @@ web_interaction <- function(
     enable_reorder_rows = TRUE,
     enable_reorder_columns = TRUE,
     enable_edit = TRUE,
+    enable_theme_edit = TRUE,
     show_group_counts = FALSE,
     tooltip_fields = NULL,
     enable_themes = getOption("tabviz.enable_themes", "default"),
@@ -2353,6 +2361,7 @@ web_interaction <- function(
     enable_reorder_rows = enable_reorder_rows,
     enable_reorder_columns = enable_reorder_columns,
     enable_edit = enable_edit,
+    enable_theme_edit = enable_theme_edit,
     show_group_counts = show_group_counts,
     tooltip_fields = tooltip_fields,
     enable_themes = enable_themes

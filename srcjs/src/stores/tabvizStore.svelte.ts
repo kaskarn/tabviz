@@ -952,6 +952,9 @@ export function createTabvizStore() {
     get hasFigureEdits() {
       return theme.hasFigureEdits;
     },
+    get initialTheme() {
+      return theme.initialTheme;
+    },
     get tooltipRow() {
       return tooltipRow;
     },

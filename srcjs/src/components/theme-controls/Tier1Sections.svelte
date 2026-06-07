@@ -248,9 +248,9 @@
              onchange={(v) => patch("border_preset", v as ThemeInputs["border_preset"])} />
     <Field label="Texture">
       <Select value={inputs.shell_texture ?? "none"}
-              options={TEXTURE.map((v) => ({ value: v, label: v }))}
               ariaLabel="Texture"
-              onchange={(v) => patch("shell_texture", v as ThemeInputs["shell_texture"])} />
+              onchange={(v) => patch("shell_texture", v as ThemeInputs["shell_texture"])}
+              options={TEXTURE.map((v) => ({ value: v, label: v }))} />
     </Field>
   </Section>
 
@@ -285,9 +285,9 @@
                onchange={(v) => patch("mode", v as ThemeInputs["mode"])} />
       <Field label="Scheme" hint="Categorical palette for series slots 1+; slot 0 keeps brand identity.">
         <Select value={inputs.categorical ?? ""}
-                options={schemeOptions}
                 ariaLabel="Categorical scheme"
-                onchange={(v) => patch("categorical", (v || undefined) as ThemeInputs["categorical"])} />
+                onchange={(v) => patch("categorical", (v || undefined) as ThemeInputs["categorical"])}
+                options={schemeOptions} />
       </Field>
     </DisclosureField>
 
