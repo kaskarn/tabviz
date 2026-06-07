@@ -39,8 +39,9 @@
     this justification per the spec's stopping rule.
 -->
 <script lang="ts">
-  import { tick } from "svelte";
+  import { tick, onMount } from "svelte";
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
+  import { buildTheme } from "$lib/theme/theme-adapter";
   import type { ThemeName } from "$lib/theme/theme-presets";
   import type { WebTheme, ColumnSpec, ColumnDef, Row, DisplayRow, DataRow, CellStyle, Annotation, SemanticBundle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
@@ -181,6 +182,40 @@
   const forestAxes = $derived(store.forestAxes);
   const primaryForestAxis = $derived(store.primaryForestAxis);
   const theme = $derived(spec?.theme);
+
+  // ── Accessibility contrast override (round-2 a11y B2) ─────────────────
+  // The authored theme.inputs.mode is the AUTHOR's choice; a low-vision
+  // VIEWER must be able to force high-contrast without it being baked into
+  // the artifact. `osHc` tracks the OS prefers-contrast / forced-colors
+  // signal; `store.contrastOverride` is the in-widget toggle ("auto" honors
+  // the OS, "more" forces). When active we re-resolve the theme with
+  // mode="high-contrast" for the PAINT cssVars only — no spec mutation, no
+  // export change.
+  let osHc = $state(false);
+  onMount(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mqs = [
+      window.matchMedia("(prefers-contrast: more)"),
+      window.matchMedia("(forced-colors: active)"),
+    ];
+    const update = () => { osHc = mqs.some((m) => m.matches); };
+    update();
+    mqs.forEach((m) => m.addEventListener("change", update));
+    return () => mqs.forEach((m) => m.removeEventListener("change", update));
+  });
+  const hcActive = $derived(
+    store.contrastOverride === "more" || (store.contrastOverride === "auto" && osHc),
+  );
+  const effectiveTheme = $derived.by(() => {
+    if (!hcActive || !theme?.authoringInputs ||
+        theme.authoringInputs.mode === "high-contrast") return theme;
+    return buildTheme({ ...theme.authoringInputs, mode: "high-contrast" }, {
+      name: theme.name ?? "custom",
+      roleOverrides: theme.roleOverrides ?? {},
+      pins: theme.pins ?? {},
+      skipValidation: true,
+    }) as typeof theme;
+  });
 
   // ── V4 shell/paper scope attributes (wire-audit Pass 1a, C35) ──────────
   // The scope root carries the FULL data-attribute set theme-runtime.css
@@ -1383,7 +1418,7 @@
   // To inspect or export the resolved theme as CSS, call `getThemeCSS(theme)`
   // from `$lib/theme/theme-css`.
   const cssVars = $derived(
-    buildWidgetCSS(theme ?? null, {
+    buildWidgetCSS(effectiveTheme ?? null, {
       maxWidth: maxWidth ?? null,
       maxHeight: maxHeight ?? null,
       anyHeaderVisible,

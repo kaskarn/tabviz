@@ -78,6 +78,20 @@
     <span class="seam-sub">stays with this figure · not exported with the theme</span>
   </div>
 
+  <!-- Accessibility: a low-vision VIEWER can force high-contrast without
+       the author having baked it into the theme (round-2 a11y B2). "auto"
+       honors the OS prefers-contrast / forced-colors signal. Viewer
+       preference — overlaid at paint time, never written to the theme. -->
+  <EnumRow
+    label="Contrast"
+    value={store.contrastOverride}
+    segments={[
+      { value: "auto", label: "auto" },
+      { value: "more", label: "more" },
+    ]}
+    onchange={(v) => store.setContrastOverride(v as "auto" | "more")}
+  />
+
   <EnumRow
     label="Banding"
     value={bandingValue}

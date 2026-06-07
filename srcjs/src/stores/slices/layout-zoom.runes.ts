@@ -250,3 +250,13 @@ describe("layout-zoom slice — reset", () => {
     expect(h.slice.plotWidthOverride).toBeNull();
   });
 });
+
+describe("layout-zoom slice — contrast override (a11y B2)", () => {
+  test("defaults to auto; setContrastOverride flips it + tags source", () => {
+    const h = buildLayoutZoomHarness();
+    expect(h.slice.contrastOverride).toBe("auto");
+    h.slice.setContrastOverride("more");
+    expect(h.slice.contrastOverride).toBe("more");
+    expect(h.sourceMarks).toContain("zoom");
+  });
+});

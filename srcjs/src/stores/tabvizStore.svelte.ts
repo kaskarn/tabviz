@@ -971,6 +971,9 @@ export function createTabvizStore() {
     get autoFit() {
       return autoFit;
     },
+    get contrastOverride() {
+      return layoutZoom.contrastOverride;
+    },
     get actualScale() {
       return actualScale;
     },
@@ -1358,6 +1361,7 @@ export function createTabvizStore() {
     zoomIn: layoutZoom.zoomIn,
     zoomOut: layoutZoom.zoomOut,
     setAutoFit: layoutZoom.setAutoFit,
+    setContrastOverride: layoutZoom.setContrastOverride,
     fitToWidth: layoutZoom.fitToWidth,
     setMaxWidth: layoutZoom.setMaxWidth,
     setMaxHeight: layoutZoom.setMaxHeight,

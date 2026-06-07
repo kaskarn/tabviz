@@ -153,6 +153,7 @@ export interface LayoutZoomSlice {
   readonly plotWidthOverride: number | null;
   readonly zoom: number;
   readonly autoFit: boolean;
+  readonly contrastOverride: "auto" | "more";
   readonly maxWidth: number | null;
   readonly maxHeight: number | null;
   readonly showZoomControls: boolean;
@@ -185,6 +186,7 @@ export interface LayoutZoomSlice {
   zoomIn: () => void;
   zoomOut: () => void;
   setAutoFit: (value: boolean) => void;
+  setContrastOverride: (value: "auto" | "more") => void;
   fitToWidth: () => void;
   setMaxWidth: (value: number | null) => void;
   setMaxHeight: (value: number | null) => void;
@@ -215,6 +217,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
   let zoom = $state<number>(1.0);
   let autoFit = $state<boolean>(true);
+  // Viewer accessibility override (round-2 a11y B2): "auto" honors the
+  // OS prefers-contrast/forced-colors signal; "more" forces high-contrast.
+  // A VIEWER preference — overlays mode=high-contrast at paint time without
+  // mutating the theme artifact (theme.inputs.mode is the AUTHOR's choice).
+  let contrastOverride = $state<"auto" | "more">("auto");
   let maxWidth = $state<number | null>(null);
   let maxHeight = $state<number | null>(null);
   let showZoomControls = $state<boolean>(true);
@@ -663,6 +670,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     deps.markSource("zoom");
   }
 
+  function setContrastOverride(value: "auto" | "more") {
+    contrastOverride = value;
+    deps.markSource("zoom");
+  }
+
   function fitToWidth() {
     if (!containerWidth || !scalableNaturalWidth) return;
     // ResizeObserver returns the content box (excludes padding).
@@ -751,6 +763,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     get plotWidthOverride()     { return plotWidthOverride; },
     get zoom()                  { return zoom; },
     get autoFit()               { return autoFit; },
+    get contrastOverride()      { return contrastOverride; },
     get maxWidth()              { return maxWidth; },
     get maxHeight()             { return maxHeight; },
     get showZoomControls()      { return showZoomControls; },
@@ -770,7 +783,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     setPlotWidth, getPlotWidth,
     setMeasuredRowHeights,
     setRowKindHeight, resetRowKindHeights,
-    setZoom, resetZoom, zoomIn, zoomOut, setAutoFit, fitToWidth,
+    setZoom, resetZoom, zoomIn, zoomOut, setAutoFit, setContrastOverride, fitToWidth,
     setMaxWidth, setMaxHeight, setShowZoomControls,
     reset,
   };
