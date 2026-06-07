@@ -95,3 +95,37 @@ test_that("set_role validates ramp and grade", {
   expect_error(set_role(web_theme_cochrane(), "text-muted", "brand", 0))
   expect_error(set_role(web_theme_cochrane(), "text-muted", "brand", 12))
 })
+
+test_that("role pins reach tabviz_theme_css (the widget paint path)", {
+  # P0 review #1: theme_css_vars honored pins while tabviz_theme_css
+  # (getThemeCSS -> _emitV4CssVarsBody) dropped them — two R entry
+  # points disagreed and the live widget diverged from SVG export.
+  t0 <- web_theme_cochrane()
+  t1 <- suppressWarnings(set_role(t0, "text-muted", "brand", 8))
+  css0 <- tabviz_theme_css(t0)
+  css1 <- suppressWarnings(tabviz_theme_css(t1))
+  expect_false(identical(css0, css1))
+  pinned_val <- suppressWarnings(theme_css_vars(t1))[["--tv-text-muted"]]
+  expect_match(css1, pinned_val, fixed = TRUE)
+})
+
+test_that("set_theme_field on inputs preserves role pins", {
+  t <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t2 <- suppressWarnings(set_theme_field(t, c("inputs", "density"), "spacious"))
+  expect_length(t2@role_overrides, 1L)
+})
+
+test_that("read_theme routes wire-envelope files through theme_from_wire", {
+  t1 <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  env <- list(
+    "$schema" = "tabviz-theme/v4",
+    name = "envtest",
+    inputs = tabviz:::theme_inputs_to_json(t1@inputs),
+    roleOverrides = t1@role_overrides
+  )
+  f <- tempfile(fileext = ".json")
+  jsonlite::write_json(env, f, auto_unbox = TRUE)
+  rt <- suppressWarnings(read_theme(f))
+  expect_s3_class(rt, "tabviz::WebTheme")
+  expect_length(rt@role_overrides, 1L)
+})

@@ -10,6 +10,7 @@
 import { describe, it, expect } from "bun:test";
 import { buildTheme } from "./theme-adapter";
 import { getCssVars } from "./consumer-bridge";
+import { buildThemeCSS } from "./theme-css";
 import { PRESETS } from "./theme-presets-inputs";
 
 const inputs = PRESETS["cochrane"]!;
@@ -44,6 +45,23 @@ describe("roleOverrides on the theme artifact", () => {
     // And the unpinned resolve is not contaminated either.
     const plain = getCssVars(buildTheme(inputs, "c"));
     expect(plain["--tv-text-muted"]).not.toBe(va["--tv-text-muted"]);
+  });
+
+  it("pins reach the WIDGET PAINT CSS, not just getCssVars (P0 review #1)", () => {
+    // The paint path (_emitV4CssVarsBody -> buildThemeCSS/buildWidgetCSS/
+    // getThemeCSS) builds its own wire — it dropped roleOverrides while
+    // getCssVars carried them, so the live widget diverged from SVG
+    // export for any pinned theme. This is the gate for the test blind
+    // spot the adversarial review found.
+    const plain = buildTheme(inputs, "p");
+    const pinned = buildTheme(inputs, {
+      name: "p",
+      roleOverrides: { "text-muted": { ramp: "brand", grade: 8 } },
+    });
+    expect(buildThemeCSS(pinned)).not.toBe(buildThemeCSS(plain));
+    expect(buildThemeCSS(pinned)).toContain(
+      getCssVars(pinned)["--tv-text-muted"]!,
+    );
   });
 
   it("string second arg stays a name shorthand (back-compat)", () => {

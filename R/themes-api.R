@@ -1189,7 +1189,8 @@ set_theme_field <- function(theme, path, value) {
   theme <- set_at(theme, as.list(path), value)
   # If an input changed, re-resolve so derived tokens refresh.
   if (identical(as.character(path[[1]]), "inputs")) {
-    return(resolve_from_inputs(theme@inputs, name = theme@name))
+    return(resolve_from_inputs(theme@inputs, name = theme@name,
+                               role_overrides = theme@role_overrides))
   }
   theme
 }

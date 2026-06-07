@@ -98,6 +98,24 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
       final$theme  <<- input$studio_done
       shiny::stopApp()
     })
+    # Save-as (P0 review #4): previously a dead input — the JS posted the
+    # name and nothing listened. The payload is now {name, wire}; write
+    # the envelope-resolved theme into the user theme dir, keep editing.
+    shiny::observeEvent(input$studio_save_as, {
+      payload <- tryCatch(
+        jsonlite::fromJSON(input$studio_save_as, simplifyVector = FALSE,
+                           simplifyDataFrame = FALSE),
+        error = function(e) NULL
+      )
+      if (is.null(payload) || is.null(payload$name) || is.null(payload$wire)) return()
+      th <- tryCatch(theme_from_wire(payload$wire), error = function(e) NULL)
+      if (is.null(th)) {
+        cli::cli_warn("Studio save-as: could not resolve the posted theme wire.")
+        return()
+      }
+      write_theme(th, payload$name)
+      cli::cli_inform("Saved theme {.val {payload$name}} to {.path {.tabviz_theme_dir()}}.")
+    })
     shiny::observeEvent(input$studio_cancel, {
       final$action <<- "cancel"
       shiny::stopApp()
@@ -204,6 +222,13 @@ read_theme <- function(x) {
     ))
   }
   blob <- jsonlite::fromJSON(path, simplifyVector = FALSE, simplifyDataFrame = FALSE)
+  # Two JSON shapes share the extension (P0 review #3): the WIRE ENVELOPE
+  # ({$schema, inputs, roleOverrides} — what the studio downloads/saves)
+  # and the resolved blob (what write_theme/serialize_theme emits).
+  # Route envelopes through the canonical importer.
+  if (!is.null(blob[["$schema"]]) || (!is.null(blob[["inputs"]]) && !is.null(blob[["inputs"]][["anchors"]]))) {
+    return(theme_from_wire(blob))
+  }
   deserialize_resolved_theme(blob)
 }
 

@@ -79,7 +79,14 @@
     if (!name) return;
     const win = window as unknown as { Shiny?: { setInputValue: (k: string, v: unknown, opts?: { priority?: string }) => void } };
     if (win.Shiny) {
-      win.Shiny.setInputValue("studio_save_as", name, { priority: "event" });
+      // {name, wire} — the R server resolves the envelope and writes it
+      // to the user theme dir (the bare-name payload was a dead input:
+      // nothing ever listened; P0 review #4).
+      const wire = studioStore.exportWire();
+      if (!wire) return;
+      win.Shiny.setInputValue("studio_save_as",
+        JSON.stringify({ name, wire }), { priority: "event" });
+      flashToast(`Saved ${name}`);
     } else {
       // Static mode: download the JSON locally with the given name.
       downloadJson(`${name}.json`);

@@ -27,5 +27,5 @@
 </script>
 
 <Field {label} {hint} {pinned} {onreset}>
-  <Pill {value} {segments} {disabled} ariaLabel={label} {onchange} />
+  <Pill {value} {segments} {disabled} ariaLabel={label} onchange={(v) => onchange(v)} />
 </Field>

@@ -60,7 +60,7 @@ function overridesKey(ro: WebTheme["roleOverrides"]): string {
   if (!ro) return "";
   const entries = Object.entries(ro)
     .filter(([, b]) => b != null)
-    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([role, b]) => `${role}:${b!.ramp}[${b!.grade}]`);
   return entries.join("|");
 }

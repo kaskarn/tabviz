@@ -186,7 +186,14 @@ ${bridgeBody}
 function _emitV4CssVarsBody(theme: WebTheme): string {
   if (!theme.authoringInputs) return "";
   try {
-    const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
+    // roleOverrides MUST ride this wire too (P0 review finding #1): this
+    // is the WIDGET PAINT path — getCssVars carrying the pins while this
+    // block dropped them made the live widget diverge from SVG export
+    // for any pinned theme.
+    const wire = {
+      ...createWire(theme.authoringInputs, theme.name ?? "custom"),
+      roleOverrides: theme.roleOverrides ?? {},
+    };
     const resolved = resolveTheme(wire);
     const lines: string[] = [];
     for (const [name, value] of Object.entries(resolved.cssVars)) {
