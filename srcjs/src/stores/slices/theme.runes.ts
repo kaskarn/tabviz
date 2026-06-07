@@ -365,6 +365,27 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
     expect(t.roleOverrides?.["text-subtle"]).toEqual({ ramp: "accent", grade: 6 }); // sibling survives
   });
 
+  test("setThemeRoleOverride rebinds one role, clamps grade, flips Reset (Wave 2)", () => {
+    const initial = buildArtifactSpec({
+      roleOverrides: { "text-subtle": { ramp: "accent", grade: 6 } },
+    });
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    expect(theme.hasThemeEdits).toBe(false);
+    theme.setThemeRoleOverride("surface-subtle", "neutral", 4);
+    let t = harness.spec?.theme as { roleOverrides?: Record<string, unknown> };
+    expect(t.roleOverrides?.["surface-subtle"]).toEqual({ ramp: "neutral", grade: 4 });
+    expect(t.roleOverrides?.["text-subtle"]).toEqual({ ramp: "accent", grade: 6 }); // sibling survives
+    expect(theme.hasThemeEdits).toBe(true); // diverges from initial → Reset enabled
+    // grade clamps to 1..11 (the viewer stepper can't, but a bad caller can)
+    theme.setThemeRoleOverride("surface-subtle", "neutral", 99);
+    const ro2 = (harness.spec?.theme as {
+      roleOverrides?: Record<string, { grade: number }>;
+    }).roleOverrides;
+    expect(ro2?.["surface-subtle"]?.grade).toBe(11);
+  });
+
   test("clearThemePin flips hasThemeEdits so Reset is enabled (round-2 state P1)", () => {
     const initial = buildArtifactSpec();
     const harness = buildDeps(initial);

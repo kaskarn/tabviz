@@ -14,9 +14,11 @@
   import type { ThemeInputs } from "$types/theme-inputs";
   import type { WebTheme } from "$types/theme-resolved";
   import Tier1Sections from "$components/theme-controls/Tier1Sections.svelte";
+  import RoleTones from "$components/theme-controls/RoleTones.svelte";
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
   import { getCssVars } from "$lib/theme/consumer-bridge";
   import { buildThemeWire } from "$lib/theme/theme-wire";
+  import type { RampName } from "$types/theme-roles";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -113,7 +115,16 @@
     onchange={(next) => store.setAuthoringInputs(next)}
     onpreview={(next) => store.previewAuthoringInputs(next)}
     onOpenStudio={openStudio}
-  />
+  >
+    {#snippet advancedExtra()}
+      <RoleTones
+        roleOverrides={(theme as WebTheme | undefined)?.roleOverrides ?? {}}
+        {cssVars}
+        onset={(role: string, ramp: RampName, grade: number) => store.setThemeRoleOverride(role, ramp, grade)}
+        onclear={(role: string) => store.clearThemeRoleOverride(role)}
+      />
+    {/snippet}
+  </Tier1Sections>
   {#if handoffMsg}
     <p class="handoff-msg" role="status">{handoffMsg}</p>
   {/if}

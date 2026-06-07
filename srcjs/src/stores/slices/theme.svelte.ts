@@ -30,6 +30,7 @@
 import type { WebSpec } from "$types";
 import type { WebTheme } from "$types/theme-resolved";
 import type { ThemeInputs } from "$types/theme-inputs";
+import type { RampName } from "$types/theme-roles";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
 import { buildTheme } from "$lib/theme/theme-adapter";
 import { ops, type OpRecord } from "$lib/op-recorder";
@@ -138,6 +139,11 @@ export interface ThemeSlice {
    *  pins must be visible AND clearable wherever the theme is live —
    *  re-resolves without the pin). */
   clearThemePin: (cssVar: string) => void;
+  /** Set one Tier-2 role override (the viewer's "safe middle rung",
+   *  theme-rework Wave 2): rebind a curated role to a ramp+grade. Cascade-
+   *  safe (re-resolves; survives polarity/HC) — NOT a raw pin. Grade is
+   *  clamped to 1..11. */
+  setThemeRoleOverride: (role: string, ramp: RampName, grade: number) => void;
   /** Release one Tier-2 role override from the theme artifact. */
   clearThemeRoleOverride: (role: string) => void;
   resetThemeEdits: () => void;
@@ -352,6 +358,19 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     const next = { ...ro };
     delete next[role];
     rebuild({ roleOverrides: next as WebTheme["roleOverrides"] });
+  }
+
+  // The viewer's curated role-rebind path (Wave 2 fork-1 "safe middle
+  // rung"): a Tier-2 cascade operation (re-resolves; survives polarity/HC),
+  // NOT a setThemeField/writeThemePath raw write — so it's DT-11-clean. The
+  // caller (RoleTones, scoped by a curated allowlist) supplies the role; we
+  // carry the rest of the override map forward and clamp the grade.
+  function setThemeRoleOverride(role: string, ramp: RampName, grade: number): void {
+    const carried = deps.getSpec()?.theme;
+    if (!carried) return;
+    const g = Math.max(1, Math.min(11, Math.round(grade)));
+    const ro = { ...(carried.roleOverrides ?? {}), [role]: { ramp, grade: g } };
+    rebuild({ roleOverrides: ro as WebTheme["roleOverrides"], remeasure: true });
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -589,7 +608,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     captureInitial, clearInitial,
     cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewAuthoringInputs, previewThemeField,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
-    clearThemePin, clearThemeRoleOverride,
+    clearThemePin, setThemeRoleOverride, clearThemeRoleOverride,
     resetThemeEdits, resetWatermark, captureThemeSnapshot, applyThemeSnapshot,
     reset,
   };

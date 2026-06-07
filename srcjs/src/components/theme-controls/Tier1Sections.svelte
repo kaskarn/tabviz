@@ -47,6 +47,11 @@
      *  host wires to a runtime-honest handoff (clipboard wire + Shiny
      *  request) instead of the dead `tabviz_studio(plot)` R-snippet text. */
     onOpenStudio?: () => void;
+    /** Extra content rendered at the END of the advanced section (compact
+     *  host only, theme-rework Wave 2). The viewer injects its curated
+     *  RoleTones here — kept OUT of this store-agnostic component so it can
+     *  carry the store-wired callbacks. */
+    advancedExtra?: import("svelte").Snippet;
   }
   const {
     inputs,
@@ -57,6 +62,7 @@
     showMatchBrand = false,
     onmatchbrand,
     onOpenStudio,
+    advancedExtra,
   }: Props = $props();
 
   const roomy = $derived(layout === "roomy");
@@ -163,6 +169,16 @@
   let effectsOpen = $state(startOpen);
   let geometryOpen = $state(startOpen);
 
+  // ── Lean core / advanced split (theme-rework Wave 2, fork-1) ─────────
+  // The viewer (compact) leads with IDENTITY — the high-frequency "make it
+  // mine" task — and tucks the engine-vocab rungs (surface / type / color
+  // system / effects / geometry) behind one opt-in toggle. The studio rail
+  // (roomy) is the power surface: everything stays flat + open, no toggle.
+  // NOT a disclosure wrapping disclosures — that would break the depth≤1
+  // law; it's a plain toggle gating sections that remain top-level.
+  let advancedOpen = $state(false);
+  const showAdvanced = $derived(roomy || advancedOpen);
+
   const fx = $derived(inputs?.effects ?? {});
   const effectsSummary = $derived.by(() => {
     const parts: string[] = [];
@@ -249,6 +265,21 @@
     </DisclosureField>
   </Section>
 
+  {#if !roomy}
+    <button
+      type="button"
+      class="advanced-toggle"
+      class:open={advancedOpen}
+      aria-expanded={advancedOpen}
+      onclick={() => (advancedOpen = !advancedOpen)}
+    >
+      <span class="chev" aria-hidden="true">{advancedOpen ? "▾" : "▸"}</span>
+      Advanced controls
+      <span class="advanced-hint">surface · type · color · effects · geometry</span>
+    </button>
+  {/if}
+
+  {#if showAdvanced}
   <Section title="surface" glyph="section.layout"
            hint="Structural variants — shell, header band, series marks, borders, texture. Each re-resolves the cascade.">
     <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
@@ -347,6 +378,13 @@
       <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? 2.5} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" oncommit={(v) => patchGeometry("border_width", "thick", v)} /></Field>
     </DisclosureField>
   </div>
+  {#if advancedExtra}
+    <Section title="role tones" glyph="section.style"
+             hint="Curated Tier-2 role nudges — cascade-safe, survives polarity & contrast. The full role spine lives in the studio.">
+      {@render advancedExtra()}
+    </Section>
+  {/if}
+  {/if}
 
 {#if !roomy}
   {#if onOpenStudio}
@@ -380,6 +418,37 @@
   .match-brand button:hover {
     background: var(--v2-hover-tint, rgba(21,20,14,0.05));
     color: var(--v2-ink, #15140e);
+  }
+  .advanced-toggle {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    margin: 4px 0 2px;
+    padding: 6px 0;
+    border: 0;
+    border-top: 1px solid var(--v2-rule-soft, #e6e0d1);
+    background: transparent;
+    color: var(--v2-ink-2, #4a463c);
+    font-size: var(--v2-text-body, 11.5px);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+  }
+  .advanced-toggle:hover { color: var(--v2-ink, #15140e); }
+  .advanced-toggle .chev {
+    font-size: 9px;
+    color: var(--v2-ink-3, #8a8478);
+  }
+  .advanced-toggle .advanced-hint {
+    margin-left: auto;
+    font-weight: 400;
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
   .disclosures {
     display: flex;

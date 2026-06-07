@@ -2,13 +2,19 @@
  * settings-band-contract.test.ts — DT-11, the boundary-is-real gate
  * (settings-overhaul P2).
  *
- * The settings panel may write Tier-1 inputs ONLY (setAuthoringInputs /
- * previewAuthoringInputs) plus the figure-scoped slice methods (banding,
- * watermark, row pins). It must NEVER write a Tier-2/3 theme path —
- * setThemeField / setThemeFieldDerived / writeThemePath are the studio's
+ * The settings panel may write Tier-1 inputs (setAuthoringInputs /
+ * previewAuthoringInputs), the figure-scoped slice methods (banding,
+ * watermark, row pins), and — since theme-rework Wave 2 — the SANCTIONED
+ * Tier-2 role-rebind channel (setThemeRoleOverride / clearThemeRoleOverride,
+ * the viewer's "safe middle rung"). Those RE-RESOLVE the cascade through the
+ * role layer; they are NOT raw T2/3 path WRITES.
+ *
+ * It must NEVER write a Tier-2/3 component-token PATH — setThemeField /
+ * setThemeFieldDerived / writeThemePath / previewThemeField are the studio's
  * (P3) and the deleted tabs' vocabulary. If a control in this tree grows
  * one of those calls, the tier boundary has become cosmetic and the
- * whole overhaul premise is void.
+ * whole overhaul premise is void. (Role rebinding is fine; raw token-path
+ * writes are the line.)
  */
 import { describe, test, expect } from "vitest";
 import { existsSync, readFileSync } from "node:fs";

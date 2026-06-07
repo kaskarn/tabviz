@@ -455,23 +455,37 @@ See the [Gallery → LOTR Easter Egg](../gallery/lotr.qmd) page for a worked LOT
 
 ## Editing themes interactively
 
-Two surfaces, deliberately split:
+Two surfaces, deliberately split — and the settings panel itself is
+**task-framed**: lean by default, with depth one click away.
 
-* **The widget settings panel** (cog) carries the full **Tier-1
-  surface**: anchor colors with LCH editors (paper / ink / brand /
-  accent / ink2 + status), polarity, density, shell, header style,
-  border preset, texture, type scale, effects, geometry — everything
-  that re-resolves through the cascade — plus per-figure state
-  (banding, watermark, row pins) with its own scoped reset. It exports
-  and imports the portable theme-JSON envelope.
+* **The widget settings panel** (cog) leads with the high-frequency
+  "make it mine" task — the **identity anchors** (paper / ink / brand /
+  accent + status, each with an LCH editor) — alongside polarity and
+  density in the quick strip. One **Advanced controls** toggle reveals
+  the rest of the Tier-1 surface (shell, header style, border preset,
+  texture, type scale, color system, effects, geometry) plus **role
+  tones** — a curated, cascade-safe rung for nudging muted / subtle /
+  alt-row / border tones lighter or darker (it rebinds Tier-2 roles, so
+  it survives polarity and high-contrast — *not* a raw pin). An **Edit
+  in studio →** button copies the portable theme wire to the clipboard
+  (and, in Shiny, posts a `tabviz_studio_request` input — see
+  `?tabviz_studio`) so you can reopen it with
+  `tabviz_studio(read_theme("<paste>"))`. The panel's **This figure**
+  band carries per-figure state (contrast, banding, watermark, row
+  pins) with its own scoped reset, and a carried-pin banner warns when
+  an imported theme hard-codes tokens.
 * **The Studio** ([open it here](../studio.qmd)) is the superset for
-  *total* control: the same Tier-1 rail (roomier face of the same
-  controls) **plus** the Tier-2 role spine, token pins, validate
-  matrix, 50-step undo, and the live cascade visualization. **Alt+click
-  any element in the preview** to trace which theme token paints it.
-  "Copy R code" exports your edits as a reproducible `web_theme()` /
-  `set_*()` chain — including `set_role()` rebinds and `set_pin()`
-  token pins.
+  *total* control: the same Tier-1 controls (roomier face) **plus** the
+  live Tier-2 **role spine** (drag — or arrow-key — a role across ramps
+  and grades; ⌫ resets one), token pins, a pin-aware validate matrix,
+  50-step undo, and the live cascade visualization. **Alt+click any
+  element in the preview** to trace which theme token paints it. "Copy R
+  code" exports your edits as a reproducible `web_theme()` / `set_*()`
+  chain — including `set_role()` rebinds and `set_pin()` token pins.
+
+Discover the bindable roles from R with `list_roles()` (the `set_role()`
+companion) and the pinnable tokens with `list_component_tokens()` (the
+`set_pin()` companion).
 
 ## The theme JSON envelope
 
@@ -482,16 +496,20 @@ Both editing surfaces export and import **one** portable artifact:
   "$schema": "tabviz-theme/v4",
   "name": "cochrane",
   "inputs": { "anchors": { "...": "..." }, "polarity": "light", "...": "..." },
-  "roleOverrides": { "text-muted": { "ramp": "brand", "grade": 8 } },
+  "roleOverrides": { "text-muted": "brand.8" },
   "pins": { "--tv-text-footnote-size": "0.7rem" }
 }
 ```
 
 * `inputs` are the Tier-1 authoring values — everything the settings
   panel writes.
-* `roleOverrides` (studio spine / `set_role()`) and `pins` (studio
-  token pins / `set_pin()`) are the optional total-control members; a
-  settings-only export simply carries them empty.
+* `roleOverrides` (studio spine / settings role-tones / `set_role()`)
+  and `pins` (studio token pins / `set_pin()`) are the optional
+  total-control members; a settings-only export simply carries them
+  empty. Role bindings serialize as stable **name aliases**
+  (`"brand.8"` = ramp `brand`, grade 8) — DTCG-shaped and
+  rename-migratable; the legacy `{ "ramp": "brand", "grade": 8 }`
+  coordinate form is still read back.
 * The settings panel's **export / import** buttons, the studio's
   "Copy JSON" / "Download .json" / "Save as…", and R's
   `read_theme()` all speak this envelope; `theme_from_wire()` resolves
