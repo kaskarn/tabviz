@@ -142,6 +142,25 @@ export interface ThemeInputs {
     bold?: number;
   };
 
+  /** Tier-2 TYPE-ROLE rebinds (theme-rework Wave 3 — the non-color
+   *  scale-role keystone). Each of the 9 type roles
+   *  (title/subtitle/body/numeric/label/caption/footnote/cell/tick)
+   *  composes a `{family, size, weight}` recipe over the Tier-1 type
+   *  knobs; this map overrides any subset of that recipe per role. Absent
+   *  (or absent fields) → the role's `DEFAULT_TYPE_ROLES` recipe. This is
+   *  the rebindable layer behind the studio/viewer "Text sizes" control
+   *  and `set_role()` for type-domain roles. Lives on inputs (not a
+   *  separate wire field) because a type recipe IS a composition of Tier-1
+   *  knobs — it rides the existing inputs channel through wire/R/studio. */
+  type_roles?: Partial<Record<
+    "title" | "subtitle" | "body" | "numeric" | "label" | "caption" | "footnote" | "cell" | "tick",
+    {
+      family?: "display" | "body" | "mono";
+      size?: "label" | "foot" | "body" | "head" | "subtitle" | "title" | "display";
+      weight?: "regular" | "medium" | "semibold" | "bold";
+    }
+  >>;
+
   /** Density preset (the curated spacing baseline). */
   density?: "compact" | "comfortable" | "spacious";
   /** Continuous multiplier on the density preset's spacing tokens — a fine

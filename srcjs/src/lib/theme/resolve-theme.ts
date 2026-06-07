@@ -52,8 +52,11 @@ function reflectAnchorMaybe(a: OklchTriple | undefined): OklchTriple | undefined
 import {
   resolveTypographyInputs,
   resolveTypeRole,
+  DEFAULT_TYPE_ROLES,
   type TypeRoleName,
+  type TypeRole,
 } from "./typography";
+import { effectiveTypeRoles } from "./scale-roles";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
 import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } from "./textures";
@@ -689,7 +692,10 @@ function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string 
   if (!TYPOGRAPHY_ROLE_NAMES.has(role)) return null;
   if (!TYPOGRAPHY_PROPS.includes(prop as (typeof TYPOGRAPHY_PROPS)[number])) return null;
   const typo = resolveTypographyInputs(inputs);
-  const r = resolveTypeRole(role, typo);
+  // Tier-2 type-role overlay (Wave 3): inputs.type_roles rebinds any subset
+  // of a role's {family,size,weight} recipe. No overrides → DEFAULT_TYPE_ROLES
+  // (resolution byte-identical, so the resolver-dispatch snapshot is stable).
+  const r = resolveTypeRole(role, typo, effectiveTypeRoles(inputs));
   switch (prop) {
     case "family": return r.family;
     case "size":   return `${r.size}px`;

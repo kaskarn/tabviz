@@ -89,6 +89,8 @@ export function listBindableRoles(): string[] {
 import { DEFAULT_ROLE_BINDINGS as _DEFAULTS } from "../lib/theme/role-bindings";
 import { TOKENS_BY_ROLE as _TOKENS_BY_ROLE } from "../lib/theme/component-tokens";
 import { bindingToAlias as _bindingToAlias } from "../lib/theme/alias";
+import { TYPE_ROLE_NAMES as _TYPE_ROLE_NAMES, typeRoleToAlias as _typeRoleToAlias } from "../lib/theme/scale-roles";
+import { DEFAULT_TYPE_ROLES as _DEFAULT_TYPE_ROLES } from "../lib/theme/typography";
 export interface RoleRosterEntry {
   role: string;
   /** Which generated scale the role indexes. `color` roles bind a ramp+grade;
@@ -110,7 +112,7 @@ export interface RoleRosterEntry {
   example: string | null;
 }
 export function listRoles(): RoleRosterEntry[] {
-  return _ALL_ROLES
+  const color = _ALL_ROLES
     .filter((r) => !_OFF_RAMP_ROLES.has(r))
     .map((role): RoleRosterEntry => {
       const b = _DEFAULTS[role];
@@ -124,6 +126,23 @@ export function listRoles(): RoleRosterEntry[] {
         example,
       };
     });
+  // Non-color scale roles (Wave 3 keystone) — same roster, ONE namespace
+  // for set_role() + the DTCG adapter. Their `coordinate` is the default
+  // recipe/slot, NOT a ramp.grade (ramp/grade stay undefined for them).
+  const type: RoleRosterEntry[] = _TYPE_ROLE_NAMES.map((role) => ({
+    role,
+    domain: "type" as const,
+    coordinate: _typeRoleToAlias(_DEFAULT_TYPE_ROLES[role]),
+    example: `--tv-text-${role}-size`,
+  }));
+  const geometry: RoleRosterEntry[] = [
+    { role: "corners", domain: "geometry", coordinate: "soft", example: "--tv-radius-md" },
+    { role: "rules", domain: "geometry", coordinate: "normal", example: "--tv-border-width-thin" },
+  ];
+  const spacing: RoleRosterEntry[] = [
+    { role: "density", domain: "spacing", coordinate: "comfortable", example: "--tv-spacing-row-height" },
+  ];
+  return [...color, ...type, ...geometry, ...spacing];
 }
 
 // V4 substrate inspection helpers. R wraps these via `ts_call(...)` to
