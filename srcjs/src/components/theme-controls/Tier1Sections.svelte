@@ -26,6 +26,7 @@
   import FontFamily from "$components/primitives/v2/FontFamily.svelte";
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
   import { hexToOklch } from "$lib/oklch";
+  import { reflectL } from "$lib/theme/polarity";
   import { CATEGORICAL_SCHEMES } from "$lib/data-schemes";
 
   interface Props {
@@ -76,17 +77,29 @@
   // Accordion-of-one across every AnchorRow in the band.
   let openAnchor = $state<string | null>(null);
 
+  // In dark polarity the resolver reflects paper/ink/brand/accent L, so the
+  // raw input anchor (e.g. paper #F8FBFE) doesn't match the dark surface on
+  // screen — a non-coder reads it as a bug (round-2 journalist review). Show
+  // the REFLECTED (on-screen) value; un-reflect on commit. reflectL is an
+  // involution, so the round-trip is lossless (modulo the L clamp).
+  const isDark = $derived((inputs.polarity ?? "light") === "dark");
+  function reflectTriple(t: OklchTriple): OklchTriple {
+    return { L: reflectL(t.L), C: t.C, H: t.H };
+  }
+  function toDisplay(t: OklchTriple): OklchTriple { return isDark ? reflectTriple(t) : t; }
+  function fromDisplay(t: OklchTriple): OklchTriple { return isDark ? reflectTriple(t) : t; }
+
   function anchorTriple(key: AnchorKey): OklchTriple {
     const a = inputs.anchors;
-    if (key === "accent") return a.accent ?? a.brand;
-    return a[key];
+    const raw = key === "accent" ? (a.accent ?? a.brand) : a[key];
+    return toDisplay(raw);
   }
   function anchorMirrored(key: AnchorKey): boolean {
     if (key === "accent") return !inputs.anchors.accent;
     return false;
   }
   function withAnchor(key: AnchorKey, t: OklchTriple): ThemeInputs {
-    return { ...inputs, anchors: { ...inputs.anchors, [key]: t } };
+    return { ...inputs, anchors: { ...inputs.anchors, [key]: fromDisplay(t) } };
   }
   function clearAnchor(key: "accent"): void {
     const next = { ...inputs.anchors };
@@ -193,7 +206,7 @@
   <div class="match-brand">
     <button type="button" onclick={() => onmatchbrand?.()}
             title="Tint paper, ink and accent hues toward brand (lightness unchanged)">
-      Match brand
+      Harmonize hues to brand
     </button>
   </div>
 {/if}
