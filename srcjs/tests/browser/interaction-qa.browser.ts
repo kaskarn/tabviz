@@ -280,34 +280,45 @@ const SCENARIOS: Record<string, Scenario> = {
       btn.click();
     });
     await new Promise((r) => setTimeout(r, 400));
-    // The panel's sections live behind a TabSelect combobox
-    // (aria-label "Settings section"): open it, pick the Theme option.
-    const sectionOpened = await page.evaluate(() => {
-      const sel = document.querySelector<HTMLElement>("[aria-label='Settings section']");
-      if (!sel) return "no-selector";
-      sel.click();
-      return "ok";
+    // Overhaul P2 contract: single-scroll two-band panel. Assert the
+    // quick strip (Polarity + Density pills), the THEME band sections,
+    // and the FIGURE band seam — no tabs anywhere (D14 is rescinded;
+    // the panel now carries the FULL Tier-1 surface).
+    const shape = await page.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>(".settings-panel");
+      if (!panel) return "no-panel";
+      if (panel.querySelector("[role=tablist], [aria-label='Settings section']")) {
+        return "tabs-resurrected";
+      }
+      const pills = [...panel.querySelectorAll<HTMLElement>(".quick-strip [role=radiogroup], .quick-strip .pill")];
+      const sections = [...panel.querySelectorAll<HTMLElement>(".section .title, .section-title, .head .title")]
+        .map((el) => el.textContent?.trim().toLowerCase() ?? "");
+      const figure = panel.querySelector(".figure-band .seam-title");
+      const anchors = panel.querySelectorAll(".anchor-row").length;
+      return JSON.stringify({
+        pills: pills.length,
+        hasIdentity: sections.some((t) => t.includes("identity")),
+        figure: !!figure,
+        anchors,
+      });
     });
-    if (sectionOpened !== "ok") throw new Error(`settings panel: ${sectionOpened}`);
-    await new Promise((r) => setTimeout(r, 300));
-    const picked = await page.evaluate(() => {
-      const opt = [...document.querySelectorAll<HTMLElement>("[role=option]")]
-        .find((o) => /\bTheme\b/.test(o.textContent ?? ""));
-      if (!opt) return false;
-      opt.click();
-      return true;
+    if (shape === "no-panel") throw new Error("settings panel did not open");
+    if (shape === "tabs-resurrected") throw new Error("tab apparatus resurrected in settings panel");
+    const parsed = JSON.parse(shape) as { pills: number; hasIdentity: boolean; figure: boolean; anchors: number };
+    if (parsed.anchors < 5) throw new Error(`expected ≥5 anchor rows in THEME band, got ${parsed.anchors}`);
+    if (!parsed.figure) throw new Error("FIGURE band seam missing");
+    // Flagship interaction: expand the Brand anchor row, assert the LCH
+    // editor appears with 3 sliders.
+    const lch = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll<HTMLElement>(".anchor-row")];
+      const brand = rows.find((r) => /Brand/i.test(r.textContent ?? ""));
+      if (!brand) return -1;
+      brand.querySelector<HTMLElement>(".caret")?.click();
+      return new Promise<number>((resolve) => setTimeout(() =>
+        resolve(brand.querySelectorAll("input[type=range]").length), 300));
     });
-    if (!picked) throw new Error("settings panel: Theme option not in section list");
-    await new Promise((r) => setTimeout(r, 400));
-    const cats = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>(".theme-controls-strip .category")]
-        .map((c) => c.dataset.category),
-    );
-    if (cats.length === 0) throw new Error("settings drawer did not open / no theme controls");
-    // D14: curated subset — polarity + density ONLY.
-    const extra = cats.filter((c) => c !== "polarity" && c !== "density");
-    if (extra.length > 0) throw new Error(`D14 violated: drawer shows extra categories: ${extra.join(",")}`);
-    return `drawer categories: ${cats.join(",")}`;
+    if (lch !== 3) throw new Error(`Brand anchor expand: expected 3 LCH sliders, got ${lch}`);
+    return `panel: ${shape}, brand LCH sliders: ${lch}`;
   },
 
   async "theme-switch"(page) {

@@ -602,6 +602,7 @@ export function createTabvizStore() {
     // which would silently drop any pre-customization the caller baked in
     // via `web_theme_*() |> set_spacing(...)`).
     theme.resetThemeEdits();
+    theme.resetWatermark();
 
     // ── Re-measure auto-width columns ─────────────────────────────────────
     // Without this, columnWidths stays empty and the renderer falls through
@@ -948,6 +949,9 @@ export function createTabvizStore() {
     get hasThemeEdits() {
       return theme.hasThemeEdits;
     },
+    get hasFigureEdits() {
+      return theme.hasFigureEdits;
+    },
     get tooltipRow() {
       return tooltipRow;
     },
@@ -1240,6 +1244,7 @@ export function createTabvizStore() {
     setWatermarkColor: data.setWatermarkColor,
     setWatermarkOpacity: data.setWatermarkOpacity,
     resetThemeEdits: theme.resetThemeEdits,
+    resetWatermark: theme.resetWatermark,
     // Sort + filter — sort-filter slice passthrough.
     sortBy: sortFilter.sortBy,
     toggleSort: sortFilter.toggleSort,

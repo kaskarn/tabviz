@@ -172,43 +172,45 @@ describe("theme slice — hasThemeEdits", () => {
     expect(theme.hasThemeEdits).toBe(true);
   });
 
-  test("hasThemeEdits picks up watermark drift", () => {
+  test("watermark drift is FIGURE-scoped, not theme-scoped (P2 seam)", () => {
     const initial = buildSpec(THEME_PRESETS.cochrane, "");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
-    expect(theme.hasThemeEdits).toBe(false);
-    // Mutate spec.watermark behind theme's back (mirrors what setWatermark
-    // does in the main store).
+    expect(theme.hasFigureEdits).toBe(false);
     harness.deps.setSpec({ ...(harness.spec as WebSpec), watermark: "DRAFT" });
-    expect(theme.hasThemeEdits).toBe(true);
+    expect(theme.hasFigureEdits).toBe(true);
+    // The THEME gate must NOT light up for figure state.
+    expect(theme.hasThemeEdits).toBe(false);
   });
 
-  test("hasThemeEdits picks up watermark color / opacity drift", () => {
+  test("watermark color / opacity drift is FIGURE-scoped", () => {
     const initial = buildSpec(THEME_PRESETS.cochrane, "DRAFT");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
-    expect(theme.hasThemeEdits).toBe(false);
+    expect(theme.hasFigureEdits).toBe(false);
     harness.deps.setSpec({ ...(harness.spec as WebSpec), watermarkColor: "#ff0000" });
-    expect(theme.hasThemeEdits).toBe(true);
+    expect(theme.hasFigureEdits).toBe(true);
     harness.deps.setSpec({ ...(harness.spec as WebSpec), watermarkColor: undefined, watermarkOpacity: 0.5 });
-    expect(theme.hasThemeEdits).toBe(true);
+    expect(theme.hasFigureEdits).toBe(true);
+    expect(theme.hasThemeEdits).toBe(false);
   });
 
-  test("hasThemeEdits folds cross-slice probes (row pins, banding)", () => {
+  test("hasFigureEdits folds cross-slice probes (row pins, banding)", () => {
     const initial = buildSpec();
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
-    expect(theme.hasThemeEdits).toBe(false);
+    expect(theme.hasFigureEdits).toBe(false);
     harness.probes.rowKindPins = true;
-    expect(theme.hasThemeEdits).toBe(true);
+    expect(theme.hasFigureEdits).toBe(true);
+    expect(theme.hasThemeEdits).toBe(false);
     harness.probes.rowKindPins = false;
     harness.probes.banding = true;
-    expect(theme.hasThemeEdits).toBe(true);
+    expect(theme.hasFigureEdits).toBe(true);
     harness.probes.banding = false;
-    expect(theme.hasThemeEdits).toBe(false);
+    expect(theme.hasFigureEdits).toBe(false);
   });
 });
 
@@ -241,20 +243,23 @@ describe("theme slice — snapshot persistence", () => {
 });
 
 describe("theme slice — resetThemeEdits", () => {
-  test("resetThemeEdits restores spec.theme + spec.watermark + clears edits", () => {
+  test("resetThemeEdits restores spec.theme only; resetWatermark restores the trio (P2 seam)", () => {
     const initial = buildSpec(THEME_PRESETS.cochrane, "");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
     theme.setThemeField(["accent", "default"], "#ff0000");
-    // Pretend the user wrote a watermark mid-session.
     harness.deps.setSpec({ ...(harness.spec as WebSpec), watermark: "DRAFT" });
     theme.resetThemeEdits();
     expect(theme.themeEdits).toEqual({});
+    // Theme reset leaves FIGURE state alone…
+    expect(harness.spec?.watermark).toBe("DRAFT");
+    // …and the figure-side reset restores it.
+    theme.resetWatermark();
     expect(harness.spec?.watermark).toBe("");
   });
 
-  test("resetThemeEdits restores watermark color/opacity + clears overrides", () => {
+  test("resetWatermark restores color/opacity; resetThemeEdits clears overrides", () => {
     const initial = buildSpec(THEME_PRESETS.cochrane, "DRAFT");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
@@ -267,10 +272,11 @@ describe("theme slice — resetThemeEdits", () => {
       watermarkOpacity: 0.8,
     });
     theme.resetThemeEdits();
-    expect(harness.spec?.watermarkColor).toBeUndefined();
-    expect(harness.spec?.watermarkOpacity).toBeUndefined();
     // Override tracking resets with the values it tracks.
     expect(theme.themeOverrides.size).toBe(0);
+    theme.resetWatermark();
+    expect(harness.spec?.watermarkColor).toBeUndefined();
+    expect(harness.spec?.watermarkOpacity).toBeUndefined();
   });
 });
 

@@ -86,12 +86,14 @@ export interface ThemeSlice {
   readonly baseThemeName: string;
   readonly initialTheme: WebSpec["theme"] | null;
   readonly initialWatermark: string | undefined;
-  /** True iff at least one section in themeEdits has a non-empty edit,
-   *  OR the watermark (text / color / opacity) differs from its captured
-   *  initial value, OR a cross-slice edit the Reset button clears is
-   *  active (row-height pins, banding override). The gate must match
-   *  exactly what `confirmReset` undoes. */
+  /** THEME-scoped dirty: authoring-input edits or themeEdits pins.
+   *  Figure-scoped state (watermark, banding, row pins) is hasFigureEdits
+   *  — the settings panel's THEME/FIGURE seam gives each its own reset
+   *  (settings-overhaul P2). */
   readonly hasThemeEdits: boolean;
+  /** FIGURE-scoped dirty: watermark drift + banding override + row-height
+   *  pins. Matches exactly what resetFigure() undoes. */
+  readonly hasFigureEdits: boolean;
 
   /** Capture the "clean" theme + watermark at setSpec / setThemeObject /
    *  setTheme time. Clears themeEdits/themeOverrides. Used both when a
@@ -116,6 +118,7 @@ export interface ThemeSlice {
   isOverridden: (path: (string | number)[]) => boolean;
   clearOverride: (path: (string | number)[]) => void;
   resetThemeEdits: () => void;
+  resetWatermark: () => void;
   captureThemeSnapshot: () => ThemeSnapshot | null;
   applyThemeSnapshot: (snap: ThemeSnapshot) => void;
   /** Lighter than `resetThemeEdits` — wipes the tracking maps without
@@ -412,27 +415,28 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     authoringEdited = false;
     const spec = deps.getSpec();
     if (!spec) return;
-    let nextSpec = spec;
     if (initialTheme) {
-      nextSpec = { ...nextSpec, theme: cloneTheme(initialTheme) };
+      deps.setSpec({ ...spec, theme: cloneTheme(initialTheme) });
     }
-    if (initialWatermark !== undefined) {
-      // Watermark color/opacity restore alongside the text — they were
-      // captured at the same moment and the Reset dialog promises a full
-      // revert (undefined restores the unset state).
-      nextSpec = {
-        ...nextSpec,
-        watermark: initialWatermark,
-        watermarkColor: initialWatermarkColor,
-        watermarkOpacity: initialWatermarkOpacity,
-      };
-    }
-    deps.setSpec(nextSpec);
     themeEdits = {};
     // Override tracking must reset with the values it tracks — a stale
     // themeOverrides set made post-reset cascade edits skip fields that
     // looked "user-pinned" but had just been reverted.
     themeOverrides = new Set();
+  }
+
+  /** Restore the watermark trio to its captured initial — the theme-slice
+   *  half of the FIGURE reset (banding + row pins live on their own
+   *  slices; the panel's resetFigure orchestrates all three). */
+  function resetWatermark(): void {
+    const spec = deps.getSpec();
+    if (!spec || initialWatermark === undefined) return;
+    deps.setSpec({
+      ...spec,
+      watermark: initialWatermark,
+      watermarkColor: initialWatermarkColor,
+      watermarkOpacity: initialWatermarkOpacity,
+    });
   }
 
   function captureThemeSnapshot(): ThemeSnapshot | null {
@@ -486,6 +490,9 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
       for (const key of Object.keys(themeEdits)) {
         if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
       }
+      return false;
+    },
+    get hasFigureEdits() {
       const spec = deps.getSpec();
       if (initialWatermark !== undefined && (spec?.watermark ?? "") !== initialWatermark) {
         return true;
@@ -496,7 +503,6 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
       )) {
         return true;
       }
-      // Cross-slice edits the Reset button clears (see ThemeSliceDeps).
       if (deps.hasRowKindHeightPins()) return true;
       if (deps.hasBandingOverride()) return true;
       return false;
@@ -505,7 +511,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     captureInitial, clearInitial,
     cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewAuthoringInputs, previewThemeField,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
-    resetThemeEdits, captureThemeSnapshot, applyThemeSnapshot,
+    resetThemeEdits, resetWatermark, captureThemeSnapshot, applyThemeSnapshot,
     reset,
   };
 }
