@@ -15,7 +15,7 @@
   import SnippetStrip from "./SnippetStrip.svelte";
   import ThemeControlsStrip from "../components/theme-panel/ThemeControlsStrip.svelte";
   import CascadeView from "../components/theme-panel/CascadeView.svelte";
-  import { buildBaseExpression, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
+  import { buildBaseExpression, buildRoleOverrideSteps, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
   import { resolveTheme } from "../lib/theme/resolve-theme";
   import { createWire } from "../lib/theme/theme-wire";
   import { collectContrastFailures } from "../lib/theme/theme-validate";
@@ -60,18 +60,25 @@
 
   const snippetText = $derived.by(() => {
     if (!studioStore.base || !studioStore.inputs) return baseExpression;
-    const steps = buildSnippetSteps(studioStore.base, studioStore.inputs);
+    const steps = [
+      ...buildSnippetSteps(studioStore.base, studioStore.inputs),
+      // Spine rebinds ride the chain too — the snippet must reproduce
+      // EVERYTHING the chart shows (P0 artifact honesty).
+      ...buildRoleOverrideSteps(studioStore.roleOverrides),
+    ];
     return formatSnippet(baseExpression, steps);
   });
 
   function handleDone(): void {
-    // Bridge to R via Shiny custom input. The serialized resolved theme
-    // round-trips through the buildTheme TS → R deserializer.
+    // Bridge to R via Shiny custom input — the WIRE envelope
+    // ({$schema, name, inputs, roleOverrides}), which R re-resolves via
+    // resolve_from_inputs(). The old payload sent the ResolvedTheme blob
+    // (cssVars/ramps/roles) — NOT the shape deserialize_resolved_theme
+    // expects — and dropped roleOverrides entirely (P0 shipped bug).
     const win = window as unknown as { Shiny?: { setInputValue: (k: string, v: unknown, opts?: { priority?: string }) => void } };
-    if (win.Shiny && studioStore.resolved) {
-      // We pass back the serialized theme blob (the same shape R sent in).
-      const serialized = JSON.stringify(studioStore.resolved);
-      win.Shiny.setInputValue("studio_done", serialized, { priority: "event" });
+    const wire = studioStore.exportWire();
+    if (win.Shiny && wire) {
+      win.Shiny.setInputValue("studio_done", JSON.stringify(wire), { priority: "event" });
     }
   }
 
@@ -128,7 +135,10 @@
     for (const cell of VALIDATE_CELLS) {
       try {
         const merged = { ...studioStore.inputs, ...cell.overrides } as ThemeInputs;
-        const resolved = resolveTheme(createWire(merged, studioStore.baseName));
+        const resolved = resolveTheme({
+          ...createWire(merged, studioStore.baseName),
+          roleOverrides: studioStore.roleOverrides,
+        });
         out[cell.key] = collectContrastFailures(
           resolved.cssVars as Record<string, string>,
         ).length;

@@ -110,10 +110,12 @@ S7::method(tabviz_studio, WebTheme) <- function(x) {
     .echo_studio_snippet(NULL, "cancel")
     return(NULL)
   }
-  # Deserialize the edited theme back to an R WebTheme.
-  edited <- deserialize_resolved_theme(jsonlite::fromJSON(final$theme,
-                                                          simplifyVector = FALSE,
-                                                          simplifyDataFrame = FALSE))
+  # The studio posts the WIRE envelope ({$schema, name, inputs,
+  # roleOverrides}) — re-resolve it through the canonical cascade. The
+  # pre-P0 payload was the ResolvedTheme blob (cssVars/ramps/roles), which
+  # was NOT the shape deserialize_resolved_theme expects and silently
+  # dropped roleOverrides.
+  edited <- theme_from_wire(final$theme)
   .echo_studio_snippet(edited, "done")
   edited
 }

@@ -276,6 +276,28 @@ save_plot <- function(x, file,
     spec@paginate <- NULL
   }
 
+  # rsvg font registration MUST happen before ANY fontconfig consumer
+  # touches this process — and on Linux that includes systemfonts (the
+  # width injection right below): fontconfig reads FONTCONFIG_FILE once,
+  # at first init. The original order (inject widths → render → register)
+  # meant the registration env vars were set AFTER systemfonts had
+  # already initialized fontconfig, so librsvg silently fell back to
+  # DejaVu on every Linux PDF/PNG — even in a fresh R session. macOS
+  # masked it (systemfonts uses CoreText there). Diagnosed by the CI
+  # probe: TTFs fetched ✓, env set ✓, DejaVu anyway.
+  # Bonus of the hoist: systemfonts now measures WITH the fetched faces,
+  # so injected widths match the embedded font exactly.
+  web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
+  if (length(web_fonts) > 0L && ext %in% c("pdf", "png", "eps", "tiff", "tif")) {
+    registered <- register_web_fonts_for_rsvg(web_fonts)
+    if (!isTRUE(registered)) {
+      cli::cli_warn(c(
+        "Web fonts could not be registered for {.file .{ext}} rendering.",
+        "i" = "The output will use system fallback faces, not the theme's declared fonts."
+      ))
+    }
+  }
+
   # Phase 2.5: pixel-exact auto-widths via systemfonts. V8 SVG export
   # would otherwise use the character-class estimator (a few px off on
   # non-Inter fonts). systemfonts measures the actual installed font;
@@ -336,7 +358,8 @@ save_plot <- function(x, file,
   # static path — say so at export time instead of silently flattening.
   .warn_dropped_effects(spec, ext)
 
-  web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
+  # (rsvg registration happens BEFORE width injection above — fontconfig
+  # first-init ordering. Here we only splice @font-face into the SVG.)
   if (length(web_fonts) > 0L) {
     svg_string <- tryCatch(
       embed_web_fonts(svg_string, web_fonts),
@@ -348,15 +371,6 @@ save_plot <- function(x, file,
         svg_string
       }
     )
-    if (ext %in% c("pdf", "png", "eps", "tiff", "tif")) {
-      registered <- register_web_fonts_for_rsvg(web_fonts)
-      if (!isTRUE(registered)) {
-        cli::cli_warn(c(
-          "Web fonts could not be registered for {.file .{ext}} rendering.",
-          "i" = "The output will use system fallback faces, not the theme's declared fonts."
-        ))
-      }
-    }
   }
 
   output_dir <- dirname(file)

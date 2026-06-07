@@ -10,7 +10,12 @@ import type { RoleName, RampName } from "../types/theme-roles";
 import type { ResolvedTheme } from "../lib/theme/resolve-theme";
 import { resolveTheme } from "../lib/theme/resolve-theme";
 import { collectContrastFailures } from "../lib/theme/theme-validate";
-import { createWire, setRoleBinding as wireSetRoleBinding, type RoleOverrides } from "../lib/theme/theme-wire";
+import {
+  createWire,
+  setRoleBinding as wireSetRoleBinding,
+  type RoleOverrides,
+  type ThemeWire,
+} from "../lib/theme/theme-wire";
 
 /** Per-edit history step. `inputs` + `roleOverrides` are complete snapshots
  *  (cheap; <1kB combined). */
@@ -123,6 +128,19 @@ class StudioStore {
    *  slider drag is one undo step, not a hundred. */
   preview(next: ThemeInputs): void {
     this.inputs = next;
+  }
+
+  /** The COMPLETE portable theme artifact (settings-overhaul P0): the
+   *  canonical wire envelope `{$schema, name, inputs, roleOverrides}`.
+   *  Every egress (Copy JSON / download / save-as / studio_done) emits
+   *  THIS — never bare `inputs`, which silently dropped the spine
+   *  rebinds (the studio exported less than its own UI edited). */
+  exportWire(): ThemeWire | null {
+    if (!this.inputs) return null;
+    return {
+      ...createWire(this.inputs, this.baseName),
+      roleOverrides: this.roleOverrides,
+    };
   }
 
   /** Rebind a role to a (ramp, grade) pair. Used by Spine drag-to-rebind. */

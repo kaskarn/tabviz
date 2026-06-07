@@ -167,6 +167,11 @@ ThemeInputs <- new_class(
     # "fill_with_darker_stroke" / "flat_fill" / "outlined". NA defaults to
     # "fill_with_darker_stroke" at resolution.
     slot_style      = new_property(class_character, default = NA_character_),
+    # Border treatment as a Tier-1 structural enum (settings-overhaul P0).
+    # The TS resolver expands it into the full T3 borders cluster (the
+    # header_style precedent). One of "none" / "hairline" / "ruled" /
+    # "frame" / "boxed". NA keeps the default cluster (= "hairline").
+    border_preset   = new_property(class_character, default = NA_character_),
 
     # Stage 1 §25 / Q-P4.3 — per-ramp curve shape. Each of "linear" / "ease" /
     # "smooth" / "log" / "exp". NA defaults: neutral=ease, brand=linear,
@@ -304,6 +309,10 @@ ThemeInputs <- new_class(
     ss <- self@slot_style
     if (!is.na(ss) && !ss %in% c("fill_with_darker_stroke", "flat_fill", "outlined")) {
       return("slot_style must be 'fill_with_darker_stroke', 'flat_fill', or 'outlined'")
+    }
+    bp <- self@border_preset
+    if (!is.na(bp) && !bp %in% c("none", "hairline", "ruled", "frame", "boxed")) {
+      return("border_preset must be 'none', 'hairline', 'ruled', 'frame', or 'boxed'")
     }
     ts2 <- self@effects_title_style
     if (!is.na(ts2) && !ts2 %in% c("normal", "bar", "underline")) {
@@ -971,6 +980,12 @@ WebTheme <- new_class(
     header_style       = new_property(class_character, default = "light"),
     first_column_style = new_property(class_character, default = "default"),
     inputs   = new_property(ThemeInputs,    default = quote(ThemeInputs())),
+    # Tier-2 role pins ({ramp, grade} per role) — the studio spine's
+    # drag-to-rebind state. Part of the portable theme artifact
+    # (settings-overhaul P0): rides the wire as `roleOverrides`, feeds the
+    # TS v4 resolve, and round-trips through R. Named list keyed by role,
+    # each entry list(ramp = <chr>, grade = <int 1..11>). Empty = defaults.
+    role_overrides = new_property(class_list, default = list()),
 
     # Tier 2 (derived; NA until the TS cascade runs)
     # Note: surface/content/divider chrome slots were dropped in the

@@ -397,6 +397,19 @@ export interface WebTheme {
    * map is built from these — see `lib/theme/resolve-theme.ts`.
    */
   authoringInputs?: import("./theme-inputs").ThemeInputs;
+  /**
+   * User-pinned Tier-2 role bindings ({ramp, grade} per role), the
+   * studio spine's drag-to-rebind state. Part of the portable theme
+   * artifact (settings-overhaul P0): rides the wire next to
+   * authoringInputs, feeds the v4 resolve (`getCssVars` includes it in
+   * the wire), and round-trips through R. Absent/empty = all defaults.
+   * Shape mirrors `theme-wire.ts::RoleOverrides`, declared inline here
+   * to keep types/ free of lib/ imports.
+   */
+  roleOverrides?: Partial<Record<
+    import("./theme-roles").RoleName,
+    { ramp: import("./theme-roles").RampName; grade: number }
+  >>;
   axis: AxisConfig;
   layout: Layout;
   borders: ThemeBorders;

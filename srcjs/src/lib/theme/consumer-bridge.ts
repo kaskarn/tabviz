@@ -48,14 +48,38 @@ import { resolveTheme } from "./resolve-theme";
 // stale pins — caught immediately by svg-centering.test.ts's
 // rowGroupPadding gate. The pin application is ~17 assignments on a
 // spread; the cascade is the expensive part.
-const cascadeCache = new WeakMap<object, Record<string, string>>();
+// Two-level cache (settings-overhaul P0): the outer WeakMap keys on the
+// stable authoringInputs identity; the inner Map keys on a canonical
+// stringification of roleOverrides. Role pins are part of the portable
+// artifact now — before this, getCssVars built its wire with EMPTY
+// overrides, so studio spine rebinds never affected widget rendering.
+const cascadeCache = new WeakMap<object, Map<string, Record<string, string>>>();
+
+/** Canonical, order-independent key for a roleOverrides map. */
+function overridesKey(ro: WebTheme["roleOverrides"]): string {
+  if (!ro) return "";
+  const entries = Object.entries(ro)
+    .filter(([, b]) => b != null)
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([role, b]) => `${role}:${b!.ramp}[${b!.grade}]`);
+  return entries.join("|");
+}
 
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
   if (!theme?.authoringInputs) return {};
-  let base = cascadeCache.get(theme.authoringInputs);
+  let byOverrides = cascadeCache.get(theme.authoringInputs);
+  if (!byOverrides) {
+    byOverrides = new Map();
+    cascadeCache.set(theme.authoringInputs, byOverrides);
+  }
+  const key = overridesKey(theme.roleOverrides);
+  let base = byOverrides.get(key);
   if (!base) {
     try {
-      const wire = createWire(theme.authoringInputs, theme.name ?? "custom");
+      const wire = {
+        ...createWire(theme.authoringInputs, theme.name ?? "custom"),
+        roleOverrides: theme.roleOverrides ?? {},
+      };
       base = resolveTheme(wire).cssVars as Record<string, string>;
     } catch {
       // Resolver errors during the sprint are tolerated; consumers fall
@@ -63,7 +87,7 @@ export function getCssVars(theme: WebTheme | undefined | null): Record<string, s
       // mismatches.
       base = {};
     }
-    cascadeCache.set(theme.authoringInputs, base);
+    byOverrides.set(key, base);
   }
   // Overlay the v3 user-config bridge values over their "<v3-bridge>"
   // sentinels so every consumer of getCssVars (TS readers, R's

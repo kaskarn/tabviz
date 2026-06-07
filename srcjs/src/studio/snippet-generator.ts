@@ -127,6 +127,9 @@ export function buildSnippetSteps(
   if (edits.header_style !== base.header_style && edits.header_style !== undefined) {
     steps.push({ setter: "set_header_style", args: rString(edits.header_style) });
   }
+  if ((edits.border_preset ?? null) !== (base.border_preset ?? null) && edits.border_preset) {
+    steps.push({ setter: "set_border_preset", args: rString(edits.border_preset) });
+  }
 
   // slot_style — Tier-1 series styling.
   if (edits.slot_style !== base.slot_style && edits.slot_style !== undefined) {
@@ -163,6 +166,23 @@ export function buildSnippetSteps(
   }
 
   return steps;
+}
+
+/** Emit role-override pins as `set_role()` steps so the snippet stays
+ *  honest about TOTAL control (settings-overhaul P0): spine rebinds are
+ *  part of the artifact and must appear in the R chain, or the copied
+ *  code reproduces less than the chart shows. */
+export function buildRoleOverrideSteps(
+  roleOverrides: Record<string, { ramp: string; grade: number } | undefined> | undefined,
+): SnippetStep[] {
+  if (!roleOverrides) return [];
+  return Object.entries(roleOverrides)
+    .filter((e): e is [string, { ramp: string; grade: number }] => e[1] != null)
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([role, b]) => ({
+      setter: "set_role",
+      args: `${rString(role)}, ${rString(b.ramp)}, ${b.grade}`,
+    }));
 }
 
 /** Diff two flat numeric records; returns the changed keys or null. */

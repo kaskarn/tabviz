@@ -182,6 +182,18 @@ export interface ThemeInputs {
    *  Default: "fill_with_darker_stroke". */
   slot_style?: "fill_with_darker_stroke" | "flat_fill" | "outlined";
 
+  /** Border treatment as a STRUCTURAL VARIANT input (settings-overhaul P0).
+   *  A Tier-1 enum the resolver expands into the full T3 borders cluster —
+   *  the `header_style` precedent. Replaces per-edge border editing in the
+   *  settings panel (raw cluster pins remain studio/R territory).
+   *    none     — no rules anywhere
+   *    hairline — 1px horizontal rules, subtle minors (the default look)
+   *    ruled    — heavier editorial horizontals (2px majors)
+   *    frame    — journal top+bottom table frame, light interior
+   *    boxed    — full grid + table outline
+   *  Unset keeps the resolver's default cluster (≡ hairline). */
+  border_preset?: "none" | "hairline" | "ruled" | "frame" | "boxed";
+
   /** Per-row-kind theme defaults — currently only height ratio; Stage 2
    *  paint fields (bg, fg, border, weight) extend this shape per Q10
    *  closure. Layer 3 of the row-kind height cascade (Stage 1 §33). */

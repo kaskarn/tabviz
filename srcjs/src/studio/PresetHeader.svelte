@@ -99,9 +99,13 @@
   }
 
   async function copyJson(): Promise<void> {
-    if (!studioStore.inputs) return;
+    // The wire envelope, never bare inputs — bare inputs silently
+    // dropped roleOverrides (the spine rebinds didn't survive the
+    // studio's own export; settings-overhaul P0 shipped bug).
+    const wire = studioStore.exportWire();
+    if (!wire) return;
     try {
-      await navigator.clipboard.writeText(JSON.stringify(studioStore.inputs, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(wire, null, 2));
       flashToast("Theme JSON copied");
     } catch {
       flashToast("Copy failed — clipboard unavailable");
@@ -110,8 +114,9 @@
   }
 
   function downloadJson(filename = "theme.json"): void {
-    if (!studioStore.inputs) return;
-    const blob = new Blob([JSON.stringify(studioStore.inputs, null, 2)], { type: "application/json" });
+    const wire = studioStore.exportWire();
+    if (!wire) return;
+    const blob = new Blob([JSON.stringify(wire, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

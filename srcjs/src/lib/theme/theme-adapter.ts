@@ -83,10 +83,75 @@ function textRoleTitle(family: string, fg: string): TextRole {
  *  re-applied locally to back-fill the small set of v3-shaped
  *  computations (series anchors, text-role fonts) that still need
  *  the reflected ramps. */
+/** Expand the Tier-1 `border_preset` enum into the T3 borders cluster.
+ *  Five treatments over the theme's own rule colors; "hairline" is the
+ *  named form of the historical default (so unset ≡ hairline byte-for-
+ *  byte and no existing theme shifts). */
+function expandBorderPreset(
+  preset: ThemeInputs["border_preset"],
+  ruleStrong: string,
+  ruleSubtle: string,
+): ThemeBorders {
+  switch (preset) {
+    case "none":
+      return {
+        layout: "none",
+        major: { thickness: 0, style: "single", color: ruleStrong },
+        minor: { thickness: 0, style: "single", color: ruleSubtle },
+        table: { thickness: 0, style: "single", color: ruleStrong },
+      };
+    case "ruled":
+      return {
+        layout: "horizontal",
+        major: { thickness: 2, style: "single", color: ruleStrong },
+        minor: { thickness: 1, style: "single", color: ruleSubtle },
+        table: { thickness: 0, style: "single", color: ruleStrong },
+      };
+    case "frame":
+      return {
+        layout: "horizontal",
+        major: { thickness: 1, style: "single", color: ruleStrong },
+        minor: { thickness: 1, style: "single", color: ruleSubtle },
+        table: { thickness: 2, style: "single", color: ruleStrong },
+      };
+    case "boxed":
+      return {
+        layout: "grid",
+        major: { thickness: 1, style: "single", color: ruleStrong },
+        minor: { thickness: 1, style: "single", color: ruleSubtle },
+        table: { thickness: 1, style: "single", color: ruleStrong },
+      };
+    case "hairline":
+    default:
+      // The historical default cluster, now nameable.
+      return {
+        layout: "horizontal",
+        major: { thickness: 1, style: "single", color: ruleStrong },
+        minor: { thickness: 1, style: "single", color: ruleSubtle },
+        table: { thickness: 0, style: "single", color: ruleStrong },
+      };
+  }
+}
+
+/** Options bag for buildTheme's second argument. A bare string remains
+ *  accepted as shorthand for `{ name }` (every pre-P0 call site). */
+export interface BuildThemeOpts {
+  name?: string;
+  /** Tier-2 role pins ({ramp, grade} per role) — stored on the built
+   *  theme so `getCssVars` resolves with them (settings-overhaul P0:
+   *  role overrides are part of the portable artifact, not
+   *  studio-preview-only state). */
+  roleOverrides?: NonNullable<WebTheme["roleOverrides"]>;
+}
+
 export function buildTheme(
   inputs: ThemeInputs,
-  name = "custom",
+  nameOrOpts: string | BuildThemeOpts = "custom",
 ): WebTheme {
+  const opts: BuildThemeOpts =
+    typeof nameOrOpts === "string" ? { name: nameOrOpts } : nameOrOpts;
+  const name = opts.name ?? "custom";
+  const roleOverrides = opts.roleOverrides ?? {};
   const reflected = applyPolarityToInputs(inputs);
   const v3 = buildThemeStructure(inputs, name);
   const t = v3.tokens;
@@ -334,12 +399,15 @@ export function buildTheme(
     banding: { mode: "group", level: null },
   };
 
-  const borders: ThemeBorders = {
-    layout: "horizontal",
-    major: { thickness: 1, style: "single", color: t.rule_strong },
-    minor: { thickness: 1, style: "single", color: t.rule_subtle },
-    table: { thickness: 0, style: "single", color: t.rule_strong },
-  };
+  // Border treatment — `border_preset` is a Tier-1 structural enum the
+  // resolver expands into the full T3 cluster (settings-overhaul P0,
+  // header_style precedent). Unset keeps the default cluster, which is
+  // deliberately ≡ "hairline" so existing themes are byte-stable.
+  const borders: ThemeBorders = expandBorderPreset(
+    inputs.border_preset,
+    t.rule_strong,
+    t.rule_subtle,
+  );
 
   const built: WebTheme = {
     schemaVersion: 4,
@@ -348,6 +416,7 @@ export function buildTheme(
     lightDarkPair: null,
     variants: variants,
     authoringInputs: inputs,
+    roleOverrides,
     axis,
     layout,
     borders,

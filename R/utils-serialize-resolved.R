@@ -113,7 +113,12 @@ serialize_theme <- function(theme) {
   # the inputs that authored this theme. R-side axis/layout/borders/
   # web_fonts can have been modified after construction; overlay them.
   inputs_json <- theme_inputs_to_json(theme@inputs)
-  blob <- ts_call("buildTheme", inputs_json)
+  # role_overrides ride the options bag so the TS adapter stamps them on
+  # the built blob (wire key `roleOverrides`) and the v4 resolve reflects
+  # them (settings-overhaul P0 — pins are part of the portable artifact).
+  opts <- list(name = theme@name)
+  if (length(theme@role_overrides) > 0L) opts$roleOverrides <- theme@role_overrides
+  blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- theme@name
   if (!is.na(theme@light_dark_pair)) blob$lightDarkPair <- theme@light_dark_pair
 

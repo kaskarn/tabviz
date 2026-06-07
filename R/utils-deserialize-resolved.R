@@ -159,6 +159,9 @@ deserialize_resolved_theme <- function(x) {
   # ThemeInputs S7 holds authoring inputs only; we stub it here. Callers (web_theme,
   # set_*) set theme@inputs to the actual ThemeInputs after deserialize.
   inputs <- ThemeInputs()
+  # Tier-2 role pins (wire `roleOverrides`) — preserved verbatim so the
+  # artifact round-trips R -> TS -> R without dropping spine rebinds.
+  role_overrides <- x$roleOverrides %||% list()
 
   # ---- Tier 2: chrome roles ----
   # V4: surface/content/divider chrome dropped from the R S7 class.
@@ -347,6 +350,7 @@ deserialize_resolved_theme <- function(x) {
     web_fonts       = web_fonts,
     light_dark_pair = .coerce_chr(x$lightDarkPair),
     inputs          = inputs,
+    role_overrides  = role_overrides,
     accent          = accent,
     status          = status,
     semantic        = semantic,

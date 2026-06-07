@@ -42,6 +42,7 @@ Collate:
     'themes-design.R'
     'themes-showcase.R'
     'themes-api.R'
+    'theme-wire-import.R'
     'typography-api.R'
     'shell-paper-api.R'
     'v4-inspect.R'
