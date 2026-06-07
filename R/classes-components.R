@@ -2151,8 +2151,11 @@ col_group <- function(header, ...) {
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells,
 #'   and a popover editor for forest-cell numerics (estimate / lower / upper).
-#' @param enable_theme_edit Show the settings cog (theme + figure panel). `FALSE`
-#'   freezes a published dashboard's styling — viewers cannot restyle live.
+#' @param enable_theme_edit Show the settings cog (theme + figure panel).
+#'   `FALSE` removes the cog so viewers can't open the editor. NOTE: this
+#'   is independent of the theme SWITCHER — to fully freeze styling on a
+#'   published dashboard, also pass `enable_themes = NULL` (otherwise the
+#'   switcher dropdown still lets viewers swap presets).
 #' @param show_group_counts Show the row count in parentheses next to each row-group
 #'   header label (e.g. "Main Trials (12)"). Default `FALSE`.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)

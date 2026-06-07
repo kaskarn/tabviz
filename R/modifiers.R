@@ -305,9 +305,11 @@ set_marker_style <- function(
 #' the running widget swaps its theme without a full re-render.
 #'
 #' @param x A WebSpec object, htmlwidget, or tabviz_proxy
-#' @param theme Either a WebTheme object or a string matching a built-in theme name:
-#'   "default", "minimal", "dark", "jama", "lancet", "modern", "presentation",
-#'   "cochrane", or "nature"
+#' @param theme Either a WebTheme object or a string naming a built-in
+#'   preset: one of "default", "cochrane", "lancet", "jama", "nejm",
+#'   "nature", "bmj", "dark", "bauhaus", "swiss", "tufte", "newsprint",
+#'   "solarized", "solarized_dark", "tonal", "tonal_dark", "dwarven",
+#'   "elvish", "hobbit". (Unknown names error with the full list.)
 #'
 #' @return The modified WebSpec, htmlwidget, or proxy (invisibly)
 #'
@@ -918,7 +920,10 @@ move_row <- function(x, row_id, to) {
 #' Replace the data frame
 #'
 #' @param x A WebSpec, htmlwidget, or tabviz_proxy
-#' @param data A data.frame with the same column names as the existing one
+#' @param data A data.frame with the same column names as the existing
+#'   one. NOTE: for a tabviz_proxy (Shiny live update) pass a rebuilt
+#'   WebSpec instead — a bare data.frame is rejected on the proxy path,
+#'   since the running widget needs the full re-serialized spec.
 #'
 #' @return The modified input
 #' @export

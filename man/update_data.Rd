@@ -9,7 +9,10 @@ update_data(x, data)
 \arguments{
 \item{x}{A WebSpec, htmlwidget, or tabviz_proxy}
 
-\item{data}{A data.frame with the same column names as the existing one}
+\item{data}{A data.frame with the same column names as the existing
+one. NOTE: for a tabviz_proxy (Shiny live update) pass a rebuilt
+WebSpec instead — a bare data.frame is rejected on the proxy path,
+since the running widget needs the full re-serialized spec.}
 }
 \value{
 The modified input

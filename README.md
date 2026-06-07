@@ -163,9 +163,10 @@ markers.
 tabviz(data, ..., theme = web_theme_lancet())
 
 web_theme_jama() |>
-  set_colors(primary = "#0066cc") |>
-  set_axis(gridlines = TRUE) |>
-  set_spacing(row_height = 28)
+  set_brand("#0066cc") |>
+  set_spacing(row_height = 28) |>
+  set_type_scale(base = 15)
+# axis options are per-column: viz_forest(..., axis_gridlines = TRUE)
 ```
 
 | Theme | Identity |
@@ -177,8 +178,9 @@ web_theme_jama() |>
 
 All four ride the same 3-tier OKLCH-derived cascade with an
 orthogonal accent slot, so semantic markers (selected, hover,
-callout) stay legible across the palette. Customize via
-`set_colors()`, `set_axis()`, `set_spacing()`, `set_typography()`.
+callout) stay legible across the palette. Customize colors with `set_brand()` / `set_paper()` / `set_ink()` /
+`set_accent()`, type with `set_fonts()` / `set_type_scale()`, spacing
+with `set_spacing()`, and axis options per-column on `viz_forest()`.
 
 ## More capabilities
 

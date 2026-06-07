@@ -30,7 +30,7 @@ flowchart LR
     style C fill:#93c5fd
 ```
 
-* **Step 1** — `theme = web_theme_lancet()`. Done. Seven presets cover the common publication, dashboard, and illustrative surfaces.
+* **Step 1** — `theme = web_theme_lancet()`. Done. Twenty-seven presets cover the common publication, dashboard, and illustrative surfaces.
 * **Step 2** — Swap a primary color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
 * **Step 3** — Reach into a specific component (e.g. the L1 row-group bar background) for surgical control. Rare; the preset cascade handles 95% of cases.
 
@@ -48,7 +48,7 @@ tabviz(
 )
 ```
 
-Seven presets ship in the package — four **journal-style** themes designed for publication, and three **illustrative LOTR** themes that exercise the full surface for non-journal contexts (talks, blog posts, internal reports). Each leans into a clear identity rather than trying to be everything.
+Twenty-seven presets ship in the package across five families — **journals** (6), **design** (8), **showcase** (9), **lotr** (3), and **modes** (1). The journal themes are tuned for publication; the rest exercise the full surface for non-journal contexts (talks, blog posts, internal reports). Each leans into a clear identity rather than trying to be everything.
 
 | Preset | Style | Designed for |
 |--------|-------|--------------|
@@ -67,7 +67,7 @@ Switch presets at any point with `set_theme()`:
 my_table |> set_theme("jama")
 ```
 
-The full registry is in `package_themes()` (returns a 2-level list keyed `journals` / `lotr`).
+The full registry is in `package_themes()` (a named list keyed `journals` / `modes` / `design` / `lotr` / `showcase`).
 
 ### Curating the in-widget switcher
 
@@ -308,11 +308,13 @@ If you want to inspect a resolved theme:
 ```{r}
 #| eval: false
 t <- web_theme_lancet()
-t@surface@base       # "#FDFCFB"
-t@content@primary    # "#1E3A5F"
-t@accent@tint_subtle # tinted accent for L1 group bar
+# Resolved --tv-* tokens (the canonical inspection path):
+theme_css_vars(t)[["--tv-surface-bg"]]  # paper / surface background
+theme_css_vars(t)[["--tv-text"]]        # primary ink
+theme_css_vars(t)[["--tv-accent"]]      # accent
+# Or read S7 slots directly:
+t@accent@default     # accent role
 t@series[[1]]@fill   # first series anchor
-t@series[[1]]@stroke # auto-darkened companion
 t@row@hover@bg       # accent.muted blend
 ```
 

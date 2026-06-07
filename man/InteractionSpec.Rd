@@ -40,8 +40,11 @@ InteractionSpec(
 
 \item{enable_export}{Enable download/export button}
 
-\item{enable_theme_edit}{Show the settings cog (theme + figure panel). \code{FALSE}
-freezes a published dashboard's styling — viewers cannot restyle live.}
+\item{enable_theme_edit}{Show the settings cog (theme + figure panel).
+\code{FALSE} removes the cog so viewers can't open the editor. NOTE: this
+is independent of the theme SWITCHER — to fully freeze styling on a
+published dashboard, also pass \code{enable_themes = NULL} (otherwise the
+switcher dropdown still lets viewers swap presets).}
 
 \item{enable_filters}{Enable per-column filter popovers in column headers}
 
