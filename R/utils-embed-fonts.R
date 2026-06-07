@@ -199,6 +199,16 @@ splice_font_face_into_svg <- function(svg, font_face_rules) {
 
 #' Register a theme's web fonts with fontconfig for rsvg rendering
 #'
+#' FIRST-INIT CONSTRAINT: fontconfig reads `FONTCONFIG_FILE` exactly once,
+#' at pango's first initialization in the process. Registration therefore
+#' only takes effect if it happens BEFORE the session's first rsvg render.
+#' If some earlier rsvg call already initialized fontconfig (e.g. a PNG
+#' export of a non-web-font theme), the env-var swap below is silently
+#' ignored and the PDF embeds the platform fallback face. Tests of this
+#' mechanism must run in a fresh process (see test-embed-fonts.R); a
+#' robust any-time registration would need fontconfig's app-font API,
+#' which librsvg does not expose.
+#'
 #' @param web_fonts List of `list(family = ..., url = ...)` entries.
 #' @return Invisibly, TRUE if registration is active, FALSE otherwise.
 #' @noRd

@@ -76,20 +76,36 @@ test_that("PDF export embeds the theme's declared web font, not the fallback", {
   skip_if_offline()
   skip_if_not_installed("rsvg")
   skip_if_not_installed("curl")
+  skip_if_not_installed("callr")
 
-  df <- data.frame(study = c("Alpha", "Beta"),
-                   hr = c(0.72, 0.85), lo = c(0.6, 0.7), hi = c(0.9, 1.02))
-  w <- tabviz(df, label = "study",
-              columns = list(col_interval("hr", "lo", "hi")),
-              theme = web_theme_nejm())
-  f <- tempfile(fileext = ".pdf")
-  suppressWarnings(save_plot(w, f))
+  # The export MUST run in a fresh R process: fontconfig reads
+  # FONTCONFIG_FILE once, at pango's first initialization. In a test
+  # suite, earlier rsvg-using tests have already initialized fontconfig,
+  # so the session-font registration save_plot performs is invisible —
+  # the PDF silently embeds the platform fallback (DejaVu on Linux) and
+  # this test fails ONLY when run after other tests (passed locally,
+  # failed in R CMD check on CI). A fresh process is also the supported
+  # production path; see the first-init note in utils-embed-fonts.R.
+  base_fonts <- callr::r(function() {
+    df <- data.frame(study = c("Alpha", "Beta"),
+                     hr = c(0.72, 0.85), lo = c(0.6, 0.7), hi = c(0.9, 1.02))
+    w <- tabviz::tabviz(df, label = "study",
+                        columns = list(tabviz::col_interval("hr", "lo", "hi")),
+                        theme = tabviz::web_theme_nejm())
+    f <- tempfile(fileext = ".pdf")
+    suppressWarnings(tabviz::save_plot(w, f))
+    txt <- suppressWarnings(readLines(f, warn = FALSE))
+    grep("BaseFont", txt, value = TRUE, useBytes = TRUE)
+  })
 
-  txt <- suppressWarnings(readLines(f, warn = FALSE))
-  base_fonts <- grep("BaseFont", txt, value = TRUE)
   # NEJM declares Lora. Before the fix, librsvg ignored the base64
   # @font-face splice and the PDF silently embedded Georgia (the CSS
   # fallback) — the R3 publication review's headline bug.
-  expect_true(any(grepl("Lora", base_fonts)),
-              info = paste("BaseFont lines:", paste(base_fonts, collapse = " | ")))
+  # iconv-sanitize the info string: BaseFont lines come from raw PDF bytes
+  # and an invalid multibyte sequence inside testthat's failure formatting
+  # produced a hard `nchar()` error on CI instead of a clean failure.
+  expect_true(any(grepl("Lora", base_fonts, useBytes = TRUE)),
+              info = paste("BaseFont lines:",
+                           paste(iconv(base_fonts, to = "UTF-8", sub = "?"),
+                                 collapse = " | ")))
 })
