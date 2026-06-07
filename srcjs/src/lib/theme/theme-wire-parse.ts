@@ -92,6 +92,18 @@ export function parseThemeWire(json: string): PinnedThemeWire {
 
   if (problems.length > 0) throw new ThemeWireParseError(problems);
 
+  // Pins-are-last-resort lint (theme-rework Wave 1): an imported envelope
+  // that pins tokens bypasses the cascade — surface it so a silently
+  // pinned, polarity-unresponsive theme doesn't arrive unannounced. The
+  // UI banner is the primary signal; this is the console twin.
+  if (Object.keys(pins).length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `tabviz: imported theme pins ${Object.keys(pins).length} token(s) directly — ` +
+        `pinned tokens bypass the cascade and may not respond to polarity / high-contrast.`,
+    );
+  }
+
   return {
     $schema: "tabviz-theme/v4",
     name: typeof wire.name === "string" && wire.name.length > 0 ? wire.name : "imported",

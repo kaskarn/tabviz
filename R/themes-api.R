@@ -1093,6 +1093,20 @@ set_pin <- function(theme, css_var, value) {
       "i" = "Use {.fn list_component_tokens} to discover token names."
     ))
   }
+  # Pins-are-last-resort guidance (theme-rework Wave 1). A pin bypasses the
+  # cascade: it won't reflect polarity/high-contrast and rides the exported
+  # artifact as a hardcoded value. Prefer set_role() (rebind a Tier-2 role)
+  # where a derived value will do. Throttled to once per session so pipe
+  # chains of several set_pin() calls don't spam.
+  cli::cli_warn(
+    c(
+      "{.fn set_pin} writes {.val {css_var}} as a hardcoded value, bypassing the cascade.",
+      "i" = "Pinned tokens won't respond to polarity/high-contrast and ride the exported theme.",
+      "i" = "Where a derived value will do, prefer {.fn set_role} (see {.fn list_roles})."
+    ),
+    .frequency = "once",
+    .frequency_id = "tabviz_set_pin_last_resort"
+  )
   pins <- theme@pins
   pins[[css_var]] <- value
   re_resolve(theme, pins = pins)

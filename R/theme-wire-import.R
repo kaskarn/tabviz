@@ -224,5 +224,14 @@ theme_from_wire <- function(wire) {
       ))
     }
   }
+  # Pins-are-last-resort lint (theme-rework Wave 1): an imported envelope
+  # that pins tokens arrives with cascade-bypassing values. Surface it so a
+  # polarity-unresponsive theme doesn't load silently.
+  if (length(pins) > 0L) {
+    cli::cli_warn(c(
+      "Imported theme {.val {name}} pins {length(pins)} token{?s} directly.",
+      "i" = "Pinned tokens bypass the cascade and may not respond to polarity/high-contrast."
+    ))
+  }
   resolve_from_inputs(inputs, name = name, role_overrides = overrides, pins = pins)
 }

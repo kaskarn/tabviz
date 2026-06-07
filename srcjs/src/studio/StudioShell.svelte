@@ -15,12 +15,15 @@
   import SnippetStrip from "./SnippetStrip.svelte";
   import StudioRail from "./StudioRail.svelte";
   import PinsPanel from "./PinsPanel.svelte";
+  import RoleSpine from "../components/spine/RoleSpine.svelte";
   import CascadeView from "../components/theme-panel/CascadeView.svelte";
   import { buildBaseExpression, buildPinSteps, buildRoleOverrideSteps, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
   import { resolveTheme } from "../lib/theme/resolve-theme";
   import type { WebTheme } from "../types/theme-resolved";
   import { createWire } from "../lib/theme/theme-wire";
   import { collectContrastFailures } from "../lib/theme/theme-validate";
+  import { applyTokenPins } from "../lib/theme/consumer-bridge";
+  import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
   import type { ThemeInputs } from "../types/theme-inputs";
 
   // Initial spec + theme come from data-* attributes on the mount element.
@@ -143,6 +146,8 @@
   const validateVerdicts = $derived.by<Record<string, number | null>>(() => {
     const out: Record<string, number | null> = {};
     if (!validateOpen || !studioStore.inputs) return out;
+    const pins = studioStore.pins;
+    const hasPins = Object.keys(pins).length > 0;
     for (const cell of VALIDATE_CELLS) {
       try {
         const merged = { ...studioStore.inputs, ...cell.overrides } as ThemeInputs;
@@ -150,15 +155,31 @@
           ...createWire(merged, studioStore.baseName),
           roleOverrides: studioStore.roleOverrides,
         });
-        out[cell.key] = collectContrastFailures(
-          resolved.cssVars as Record<string, string>,
-        ).length;
+        // Judge the PINNED values under each cell's mode — pins on
+        // mode-gated tokens drop under high-contrast (the paint-layer
+        // ratchet, Wave 0), so the verdict reflects what actually paints.
+        const cssVars = hasPins
+          ? applyTokenPins({ ...(resolved.cssVars as Record<string, string>) }, pins, merged.mode)
+          : (resolved.cssVars as Record<string, string>);
+        out[cell.key] = collectContrastFailures(cssVars).length;
       } catch {
         out[cell.key] = null; // resolve failed — shown as "—"
       }
     }
     return out;
   });
+
+  // ── Pin governance surface (theme-rework Wave 1) ────────────────────
+  // Pins bypass the cascade — "last resort". Count them, and flag the
+  // subset that DROP under high-contrast (token.modes.hc), so the author
+  // sees the accessibility cost before shipping. The drop itself happens
+  // at paint (consumer-bridge applyTokenPins); this is the lint on top.
+  const pinCount = $derived(Object.keys(studioStore.pins).length);
+  const pinsDroppedUnderHc = $derived(
+    Object.keys(studioStore.pins).filter(
+      (v) => TOKENS_BY_VAR.get(v)?.modes?.hc != null,
+    ).length,
+  );
 </script>
 
 <div class="studio">
@@ -180,6 +201,20 @@
           onpreview={(next) => studioStore.preview(next)}
         />
         <PinsPanel />
+        {#if studioStore.resolved}
+          <!-- Tier-2 role rebind surface (theme-rework Wave 1): the spine
+               was fully store-wired but never mounted. It speaks role
+               NAMES; the exported wire serializes the rebind as a name
+               alias (Wave 0), so a later ramp re-tune can't silently
+               re-target it. -->
+          <div class="spine-host">
+            <div class="spine-host-head">
+              <span>Role spine</span>
+              <span class="spine-host-hint">drag a role across ramps / grades to rebind</span>
+            </div>
+            <RoleSpine resolved={studioStore.resolved} />
+          </div>
+        {/if}
       </aside>
       <main class="cascade-main">
         {#if studioStore.resolveError}
@@ -198,6 +233,14 @@
                produced an unreadable chart with zero feedback). -->
           <div class="contrast-warn-banner" role="status">
             ⚠ Contrast check: {studioStore.contrastWarnings[0]}{studioStore.contrastWarnings.length > 1 ? ` (+${studioStore.contrastWarnings.length - 1} more)` : ""}
+          </div>
+        {/if}
+        {#if pinCount > 0}
+          <!-- Pins-are-last-resort banner (theme-rework Wave 1): a pinned
+               token bypasses the cascade and may not respond to polarity
+               / high-contrast. Name the cost; the studio still ships it. -->
+          <div class="pins-warn-banner" role="status">
+            📌 This theme has {pinCount} hardcoded pin{pinCount > 1 ? "s" : ""} — pinned tokens bypass the cascade and may not respond to polarity / theme edits.{pinsDroppedUnderHc > 0 ? ` ${pinsDroppedUnderHc} drop under high-contrast.` : ""}
           </div>
         {/if}
         <div class="preview-bar">
@@ -225,6 +268,9 @@
                     <span class="v-bad">⚠ {n} contrast</span>
                   {:else}
                     <span class="v-ok">✓ contrast</span>
+                  {/if}
+                  {#if cell.overrides.mode === "high-contrast" && pinsDroppedUnderHc > 0}
+                    <span class="v-bad" title="Pins on mode-gated tokens drop under high-contrast">📌 {pinsDroppedUnderHc} dropped</span>
                   {/if}
                 </div>
                 <div class="validate-chart">
@@ -301,6 +347,37 @@
     background: color-mix(in srgb, #d97706 12%, var(--tp-bg, #fff));
     border: 1px solid color-mix(in srgb, #d97706 35%, transparent);
     color: var(--tp-fg, #1c1a17);
+  }
+  .pins-warn-banner {
+    margin: 8px 12px 0;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    background: color-mix(in srgb, #7c3aed 10%, #fff);
+    border: 1px solid color-mix(in srgb, #7c3aed 30%, transparent);
+    color: #4c2889;
+  }
+  .spine-host {
+    border-top: 1px solid #e2e8f0;
+    padding: 8px 12px 12px;
+  }
+  .spine-host-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .spine-host-head > span:first-child {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #334155;
+  }
+  .spine-host-hint {
+    font-size: 10.5px;
+    color: #94a3b8;
   }
 
   .resolve-error-banner {

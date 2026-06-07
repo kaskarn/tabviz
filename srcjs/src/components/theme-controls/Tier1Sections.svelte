@@ -42,6 +42,11 @@
     showMatchBrand?: boolean;
     /** Match-brand handler (host supplies tintFromBrand wiring). */
     onmatchbrand?: () => void;
+    /** Compact-host handoff to the full studio (theme-rework Wave 1).
+     *  When provided, the footer renders an "Edit in studio" button the
+     *  host wires to a runtime-honest handoff (clipboard wire + Shiny
+     *  request) instead of the dead `tabviz_studio(plot)` R-snippet text. */
+    onOpenStudio?: () => void;
   }
   const {
     inputs,
@@ -51,6 +56,7 @@
     onpreview,
     showMatchBrand = false,
     onmatchbrand,
+    onOpenStudio,
   }: Props = $props();
 
   const roomy = $derived(layout === "roomy");
@@ -343,10 +349,21 @@
   </div>
 
 {#if !roomy}
-  <p class="studio-pointer">
-    Fine-grained control — per-role type, tokens, raw borders, role
-    rebinding — lives in the studio: <code>tabviz_studio(plot)</code> in R.
-  </p>
+  {#if onOpenStudio}
+    <div class="studio-handoff">
+      <button type="button" class="studio-handoff-btn" onclick={onOpenStudio}>
+        Edit in studio →
+      </button>
+      <span class="studio-handoff-hint">
+        Per-role type, tokens, raw borders, role rebinding.
+      </span>
+    </div>
+  {:else}
+    <p class="studio-pointer">
+      Fine-grained control — per-role type, tokens, raw borders, role
+      rebinding — lives in the studio: <code>tabviz_studio(plot)</code> in R.
+    </p>
+  {/if}
 {/if}
 
 <style>
@@ -384,5 +401,31 @@
     background: var(--v2-paper-2, #f3efe5);
     padding: 1px 4px;
     border-radius: var(--v2-r-hair, 2px);
+  }
+  .studio-handoff {
+    display: flex;
+    align-items: center;
+    gap: var(--v2-gap-small, 6px);
+    padding: 8px 0 12px;
+    flex-wrap: wrap;
+  }
+  .studio-handoff-btn {
+    font-size: var(--v2-text-body, 11.5px);
+    padding: 3px 10px;
+    border: 1px solid var(--v2-rule, #d6d0c1);
+    border-radius: var(--v2-r-soft, 3px);
+    background: transparent;
+    color: var(--v2-ink-2, #4a463c);
+    cursor: pointer;
+    flex: none;
+  }
+  .studio-handoff-btn:hover {
+    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
+    color: var(--v2-ink, #15140e);
+  }
+  .studio-handoff-hint {
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
+    min-width: 0;
   }
 </style>

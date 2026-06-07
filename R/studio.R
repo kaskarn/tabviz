@@ -226,11 +226,20 @@ list_user_themes <- function() {
 #' under the user theme directory (`~/.tabviz/themes/` by default).
 #' Otherwise treated as a path.
 #'
-#' @param x Theme name (e.g. `"my-blue"`) or path to a `.json` file.
+#' @param x Theme name (e.g. `"my-blue"`), a path to a `.json` file, or a
+#'   theme-wire JSON string (e.g. pasted from the viewer's "Edit in
+#'   studio" handoff, which copies the portable wire to the clipboard).
 #' @return A [WebTheme] reconstructed from the saved JSON.
 #' @export
 read_theme <- function(x) {
   checkmate::assert_string(x)
+  # Inline wire JSON (theme-rework Wave 1): the viewer's "Edit in studio"
+  # handoff copies the portable envelope to the clipboard, so a pasted
+  # string IS a valid theme source — route it straight to the importer.
+  # (Heuristic: starts with `{` and is not an existing path.)
+  if (!file.exists(x) && grepl("^\\s*\\{", x)) {
+    return(theme_from_wire(x))
+  }
   path <- if (file.exists(x)) {
     x
   } else {

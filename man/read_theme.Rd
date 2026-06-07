@@ -7,7 +7,9 @@
 read_theme(x)
 }
 \arguments{
-\item{x}{Theme name (e.g. \code{"my-blue"}) or path to a \code{.json} file.}
+\item{x}{Theme name (e.g. \code{"my-blue"}), a path to a \code{.json} file, or a
+theme-wire JSON string (e.g. pasted from the viewer's "Edit in
+studio" handoff, which copies the portable wire to the clipboard).}
 }
 \value{
 A \link{WebTheme} reconstructed from the saved JSON.

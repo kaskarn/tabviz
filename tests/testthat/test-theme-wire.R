@@ -132,7 +132,7 @@ test_that("read_theme routes wire-envelope files through theme_from_wire", {
 
 test_that("set_pin overrides a token through the full chain (P3)", {
   t0 <- web_theme_cochrane()
-  t1 <- set_pin(t0, "text-footnote-size", "0.7rem")
+  t1 <- suppressWarnings(set_pin(t0, "text-footnote-size", "0.7rem"))  # last-resort lint (Wave 1)
   expect_identical(t1@pins[["--tv-text-footnote-size"]], "0.7rem")
   v <- theme_css_vars(t1)
   expect_identical(v[["--tv-text-footnote-size"]], "0.7rem")
@@ -150,7 +150,7 @@ test_that("set_pin overrides a token through the full chain (P3)", {
 })
 
 test_that("pins ride the wire envelope round-trip (P3)", {
-  t1 <- set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem")
+  t1 <- suppressWarnings(set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem"))
   env <- list(
     "$schema" = "tabviz-theme/v4",
     name = "cochrane",
@@ -158,7 +158,9 @@ test_that("pins ride the wire envelope round-trip (P3)", {
     roleOverrides = t1@role_overrides,
     pins = t1@pins
   )
-  rt <- theme_from_wire(jsonlite::toJSON(env, auto_unbox = TRUE))
+  # suppressWarnings: pin import now emits a "last resort" lint (Wave 1) —
+  # asserted directly in its own gate below.
+  rt <- suppressWarnings(theme_from_wire(jsonlite::toJSON(env, auto_unbox = TRUE)))
   expect_identical(rt@pins[["--tv-text-footnote-size"]], "0.7rem")
   expect_identical(theme_css_vars(rt)[["--tv-text-footnote-size"]], "0.7rem")
 })
@@ -171,7 +173,7 @@ test_that("set_pin rejects hostile values (round-2 robustness P0)", {
   )
   expect_error(set_pin(th, "--tv-surface-bg", "red; }"), "semicolons|braces|Invalid")
   # Valid single-quote font list survives.
-  ok <- set_pin(th, "--tv-text-body-family", "'Inter', sans-serif")
+  ok <- suppressWarnings(set_pin(th, "--tv-text-body-family", "'Inter', sans-serif"))
   expect_identical(ok@pins[["--tv-text-body-family"]], "'Inter', sans-serif")
 })
 
@@ -203,12 +205,12 @@ test_that("write_theme rejects path-traversal names (round-2 robustness P1)", {
 test_that("write_theme/read_theme round-trip is lossless (round-2 user-review blocker)", {
   th <- web_theme(name = "rt", brand = "#7aa2f7", accent = "#bb9af7") |>
     set_polarity("dark") |>
-    set_pin("--tv-accent", "#ff4400") |>
+    (\(t) suppressWarnings(set_pin(t, "--tv-accent", "#ff4400")))() |>
     set_role("text-muted", "brand", 8)
   # Registry round-trip.
   withr::local_options(tabviz.theme_dir = withr::local_tempdir())
   write_theme(th, "rt")
-  back <- read_theme("rt")
+  back <- suppressWarnings(read_theme("rt"))  # pin import lints (Wave 1)
   expect_equal(back@inputs@anchors_paper_L, th@inputs@anchors_paper_L, tolerance = 1e-6)
   expect_identical(back@pins[["--tv-accent"]], "#ff4400")
   expect_identical(back@role_overrides[["text-muted"]]$ramp, "brand")
@@ -247,21 +249,52 @@ test_that("read_theme restores inputs from a legacy resolved blob (back-compat)"
 
 test_that("studio_save_as persists the wire envelope verbatim (flow F2)", {
   withr::local_options(tabviz.theme_dir = withr::local_tempdir())
-  t1 <- set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem")
+  t1 <- suppressWarnings(set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem"))
   wire <- list(
     "$schema" = "tabviz-theme/v4", name = "verbatim-test",
     inputs = tabviz:::theme_inputs_to_json(t1@inputs),
     roleOverrides = t1@role_overrides, pins = t1@pins
   )
   payload <- jsonlite::toJSON(list(name = "verbatim-test", wire = wire), auto_unbox = TRUE)
-  path <- tabviz:::.studio_save_as_payload(payload)
+  path <- suppressWarnings(tabviz:::.studio_save_as_payload(payload))  # pin import lints (Wave 1)
   expect_true(!is.null(path) && file.exists(path))
   on_disk <- jsonlite::fromJSON(path, simplifyVector = FALSE)
   expect_identical(on_disk[["$schema"]], "tabviz-theme/v4")
   expect_true(!is.null(on_disk[["inputs"]]))
   expect_null(on_disk[["cssVars"]])
   expect_identical(on_disk[["pins"]][["--tv-text-footnote-size"]], "0.7rem")
-  expect_s7_class(read_theme(path), tabviz::WebTheme)
+  expect_s7_class(suppressWarnings(read_theme(path)), tabviz::WebTheme)
+})
+
+test_that("pins-are-last-resort lints fire (theme-rework Wave 1)", {
+  # theme_from_wire warns when an imported envelope pins tokens directly
+  # (cascade-bypassing). The un-throttled import lint, gated here.
+  env <- list(
+    "$schema" = "tabviz-theme/v4", name = "pinned",
+    inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs),
+    pins = list("--tv-text-footnote-size" = "0.7rem")
+  )
+  expect_warning(
+    theme_from_wire(jsonlite::toJSON(env, auto_unbox = TRUE)),
+    "pin.*token.*directly|bypass the cascade"
+  )
+  # An envelope with NO pins imports silently.
+  clean <- list(
+    "$schema" = "tabviz-theme/v4", name = "clean",
+    inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs)
+  )
+  expect_no_warning(theme_from_wire(jsonlite::toJSON(clean, auto_unbox = TRUE)))
+})
+
+test_that("read_theme accepts an inline wire JSON string (Wave 1 handoff)", {
+  # The viewer's "Edit in studio" handoff copies the portable wire to the
+  # clipboard; a pasted string IS a valid theme source.
+  th <- set_role(web_theme_cochrane(), "text-muted", "brand", 8)
+  json <- as.character(jsonlite::toJSON(theme_to_wire(th), auto_unbox = TRUE, digits = NA))
+  back <- read_theme(json)
+  expect_s7_class(back, tabviz::WebTheme)
+  expect_identical(back@role_overrides[["text-muted"]]$ramp, "brand")
+  expect_identical(back@role_overrides[["text-muted"]]$grade, 8L)
 })
 
 test_that("studio_save_as rejects path-traversal names (round-2 robustness P1)", {
