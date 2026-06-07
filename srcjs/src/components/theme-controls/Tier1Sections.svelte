@@ -28,6 +28,7 @@
   import { hexToOklch } from "$lib/oklch";
   import { reflectL } from "$lib/theme/polarity";
   import { CATEGORICAL_SCHEMES } from "$lib/data-schemes";
+  import { CORNER_SLOTS, RULE_SLOTS, type CornerSlot, type RuleSlot } from "$lib/theme/scale-roles";
 
   interface Props {
     inputs: ThemeInputs;
@@ -214,6 +215,32 @@
       },
     });
   }
+  // ── Geometry named SLOTS (Wave 3) — coarse corner/rule rebinds that
+  // expand onto the four fine-grained stops (single source: scale-roles.ts).
+  // The fine sliders below still work; picking a slot just sets all four.
+  function applyCorners(slot: CornerSlot): void {
+    commit({ ...inputs, geometry: { ...inputs.geometry, radius: { ...CORNER_SLOTS[slot] } } });
+  }
+  function applyRules(slot: RuleSlot): void {
+    commit({ ...inputs, geometry: { ...inputs.geometry, border_width: { ...RULE_SLOTS[slot] } } });
+  }
+  // Reflect the active slot when the four stops match one exactly, else
+  // "custom" (the fine sliders diverged from any preset).
+  function matchSlot<T extends Record<string, number>>(
+    cur: Partial<T> | undefined, table: Record<string, T>, keys: (keyof T)[],
+  ): string {
+    if (!cur) return "custom";
+    for (const [name, vals] of Object.entries(table)) {
+      if (keys.every((k) => cur[k] === vals[k])) return name;
+    }
+    return "custom";
+  }
+  const currentCorners = $derived(
+    matchSlot(inputs.geometry?.radius, CORNER_SLOTS as unknown as Record<string, Record<string, number>>,
+      ["sm", "md", "lg", "pill"]));
+  const currentRules = $derived(
+    matchSlot(inputs.geometry?.border_width, RULE_SLOTS as unknown as Record<string, Record<string, number>>,
+      ["hair", "thin", "regular", "thick"]));
   function patchFonts(key: "body" | "display" | "mono", value: string): void {
     commit({ ...inputs, fonts: { ...inputs.fonts, [key]: value } });
   }
@@ -370,6 +397,16 @@
     </DisclosureField>
 
     <DisclosureField label="Geometry" summary={geometrySummary} bind:open={geometryOpen}>
+      <!-- Named SLOTS (Wave 3 geometry roles) — coarse rebinds above the
+           fine stops. "custom" shows when the sliders diverge from a preset. -->
+      <EnumRow label="Corners" hint="Coarse radius preset; the stops below fine-tune."
+               value={currentCorners}
+               segments={["sharp", "soft", "round", ...(currentCorners === "custom" ? ["custom"] : [])].map((v) => ({ value: v, label: v }))}
+               onchange={(v) => v !== "custom" && applyCorners(v as CornerSlot)} />
+      <EnumRow label="Rules" hint="Coarse border-weight preset; the stops below fine-tune."
+               value={currentRules}
+               segments={["fine", "normal", "strong", ...(currentRules === "custom" ? ["custom"] : [])].map((v) => ({ value: v, label: v }))}
+               onchange={(v) => v !== "custom" && applyRules(v as RuleSlot)} />
       <Field label="Radius sm"><Slider value={inputs.geometry?.radius?.sm ?? 2} min={0} max={24} step={1} suffix="px" ariaLabel="Radius sm" oncommit={(v) => patchGeometry("radius", "sm", v)} /></Field>
       <Field label="Radius md"><Slider value={inputs.geometry?.radius?.md ?? 6} min={0} max={32} step={1} suffix="px" ariaLabel="Radius md" oncommit={(v) => patchGeometry("radius", "md", v)} /></Field>
       <Field label="Radius lg"><Slider value={inputs.geometry?.radius?.lg ?? 10} min={0} max={48} step={1} suffix="px" ariaLabel="Radius lg" oncommit={(v) => patchGeometry("radius", "lg", v)} /></Field>
