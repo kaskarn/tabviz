@@ -160,7 +160,7 @@ export function getCssVars(theme: WebTheme | undefined | null): Record<string, s
 /** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override
  *  pins on the cssVars map. Mirrors the v3-side "spec.theme.spacing.X = N"
  *  mutation pattern so the v4 path stays in sync with v3 mutations. */
-function applySpacingPins(
+export function applySpacingPins(
   cssVars: Record<string, string>,
   theme: WebTheme,
 ): Record<string, string> {

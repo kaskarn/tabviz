@@ -65,3 +65,21 @@ describe("studio token pins (P3)", () => {
     expect(studioStore.dirty).toBe(false);
   });
 });
+
+describe("studio handoff seeding (round-2 state review P1)", () => {
+  test("seeded pins/roleOverrides live in history[0] — first undo keeps them", () => {
+    // The "Edit in studio" handoff seeds an R-authored/imported theme's
+    // artifacts THROUGH init. They must survive the first undo (cursor→0),
+    // which previously reverted to an empty base and wiped them.
+    studioStore.init(PRESETS["cochrane"]!, "cochrane", {
+      roleOverrides: { "text-muted": { ramp: "brand", grade: 8 } },
+      pins: { "--tv-text-footnote-size": "0.7rem" },
+    });
+    expect(studioStore.pins["--tv-text-footnote-size"]).toBe("0.7rem");
+    expect(studioStore.roleOverrides["text-muted"]).toEqual({ ramp: "brand", grade: 8 });
+    studioStore.apply({ ...studioStore.inputs!, polarity: "dark" }, "Polarity");
+    studioStore.undo();
+    expect(studioStore.pins["--tv-text-footnote-size"]).toBe("0.7rem");
+    expect(studioStore.roleOverrides["text-muted"]).toEqual({ ramp: "brand", grade: 8 });
+  });
+});

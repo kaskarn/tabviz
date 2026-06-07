@@ -18,6 +18,7 @@
   import CascadeView from "../components/theme-panel/CascadeView.svelte";
   import { buildBaseExpression, buildPinSteps, buildRoleOverrideSteps, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
   import { resolveTheme } from "../lib/theme/resolve-theme";
+  import type { WebTheme } from "../types/theme-resolved";
   import { createWire } from "../lib/theme/theme-wire";
   import { collectContrastFailures } from "../lib/theme/theme-validate";
   import type { ThemeInputs } from "../types/theme-inputs";
@@ -33,26 +34,19 @@
 
   onMount(() => {
     // Bootstrap the store from the initial inputs.
-    const theme = initialTheme as {
-      authoringInputs?: unknown;
-      name?: string;
-      roleOverrides?: Record<string, { ramp: string; grade: number }>;
-      pins?: Record<string, string>;
-    };
-    const inputs = theme.authoringInputs as import("../types/theme-inputs").ThemeInputs | undefined;
+    const theme = initialTheme as WebTheme | null;
+    const inputs = theme?.authoringInputs;
     if (inputs) {
-      const baseName = theme.name ?? "(default)";
-      studioStore.init(inputs, baseName);
+      const baseName = theme?.name ?? "(default)";
       // The handoff carries the WHOLE artifact (final review P2/DT-12):
-      // an R-authored or imported theme arrives with roleOverrides/pins;
-      // dropping them at studio entry made "Edit in studio" lossy for
-      // exactly the themes that most need the studio.
-      if (theme.roleOverrides && Object.keys(theme.roleOverrides).length > 0) {
-        studioStore.roleOverrides = theme.roleOverrides as never;
-      }
-      if (theme.pins && Object.keys(theme.pins).length > 0) {
-        studioStore.pins = theme.pins;
-      }
+      // an R-authored or imported theme arrives with roleOverrides/pins.
+      // Seed them THROUGH init so history[0] captures them (round-2 state
+      // review P1: post-init assignment left the base step empty, so the
+      // first undo wiped the seeded pins/rebinds).
+      studioStore.init(inputs, baseName, {
+        roleOverrides: theme?.roleOverrides ?? {},
+        pins: theme?.pins ?? {},
+      });
     }
     // Wire keyboard shortcuts (Cmd/Ctrl-Z undo, Shift redo).
     const onKey = (e: KeyboardEvent): void => {

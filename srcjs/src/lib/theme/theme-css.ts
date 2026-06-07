@@ -20,7 +20,7 @@
 
 import type { WebTheme } from "../../types/theme-resolved";
 import { computeV3BridgeVars } from "./v3-bridge-vars";
-import { getCssVarsRaw } from "./consumer-bridge";
+import { getCssVarsRaw, applySpacingPins } from "./consumer-bridge";
 import { VIZ_MARGIN } from "../axis-utils";
 import { resolveTheme } from "./resolve-theme";
 import {
@@ -187,11 +187,15 @@ function _emitV4CssVarsBody(theme: WebTheme): string {
   if (!theme.authoringInputs) return "";
   try {
     // roleOverrides + pins ride this resolve too (P0 review finding #1 /
-    // the P0.1 lesson): this is the WIDGET PAINT path — it shares
-    // getCssVarsRaw with the export path, so the two CANNOT diverge and
-    // a single paint runs the cascade once (perf review: the inline
-    // resolve here was a second uncached cascade per CSS build).
-    const varsWithPins = getCssVarsRaw(theme);
+    // the P0.1 lesson): this is the WIDGET PAINT path. It shares the
+    // CACHED getCssVarsRaw with the export path (one cascade per paint),
+    // then overlays spacing pins — which live OUTSIDE the cache key
+    // (theme.spacing is per-figure, not cascade-derived). Without the
+    // overlay the painted CSS padding diverged from both the JS layout
+    // and the SVG export, which read the full getCssVars (round-2
+    // cross-runtime review P1). The v3-bridge vars are emitted separately
+    // by _buildThemeCSSImpl, so only spacing is overlaid here.
+    const varsWithPins = applySpacingPins({ ...getCssVarsRaw(theme) }, theme);
     const lines: string[] = [];
     for (const [name, value] of Object.entries(varsWithPins)) {
       // Skip placeholder values (TBD / input / computed sentinels).

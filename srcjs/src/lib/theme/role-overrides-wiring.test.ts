@@ -130,6 +130,19 @@ describe("token pins (P3 — the typed T2/3 channel)", () => {
   });
 });
 
+describe("spacing pins: paint CSS matches export (round-2 cross-runtime P1)", () => {
+  it("a theme.spacing edit appears in BOTH getCssVars and the paint CSS", () => {
+    const t = buildTheme(inputs, "s") as unknown as { spacing: Record<string, number> };
+    t.spacing.cellPaddingX = 77;
+    const theme = t as never;
+    // Export/layout path:
+    expect(getCssVars(theme)["--tv-spacing-cell-padding-x"]).toBe("77px");
+    // Paint path (the divergence the review caught): must agree, not the
+    // density default.
+    expect(buildThemeCSS(theme)).toContain("--tv-spacing-cell-padding-x: 77px");
+  });
+});
+
 describe("isValidPinValue (the shared ingress gate)", () => {
   it("rejects structural chars, control chars, over-length; accepts normal CSS", () => {
     expect(isValidPinValue("#abcdef")).toBe(true);

@@ -128,13 +128,24 @@ class StudioStore {
   );
 
   /** Initialize the store with a base + initial inputs (usually identical). */
-  init(base: ThemeInputs, baseName: string): void {
+  init(
+    base: ThemeInputs,
+    baseName: string,
+    seed?: { roleOverrides?: RoleOverrides; pins?: Record<string, string> },
+  ): void {
     this.base = base;
     this.baseName = baseName;
     this.inputs = base;
-    this.roleOverrides = {};
-    this.pins = {};
-    this.history = [{ inputs: base, roleOverrides: {}, pins: {}, label: "Loaded" }];
+    // Seed roleOverrides/pins INTO the loaded base (round-2 state review
+    // P1): an R-authored / imported theme arrives carrying them via the
+    // "Edit in studio" handoff. They must live in history[0] — otherwise
+    // the FIRST undo (cursor→0) reverts to an empty base and silently
+    // wipes the seeded pins/rebinds, unreachable via redo.
+    const roleOverrides = seed?.roleOverrides ?? {};
+    const pins = seed?.pins ?? {};
+    this.roleOverrides = roleOverrides;
+    this.pins = pins;
+    this.history = [{ inputs: base, roleOverrides, pins, label: "Loaded" }];
     this.cursor = 0;
   }
 

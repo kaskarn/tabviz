@@ -176,5 +176,32 @@ serialize_theme <- function(theme) {
   blob$layout  <- layout_block
   blob$borders <- borders_block
 
+  # Overlay R-side spacing edits (round-2 cross-runtime review P2):
+  # set_spacing() writes theme@spacing slots, but they were NEVER
+  # serialized — so a per-figure spacing edit silently reverted to the
+  # density-derived default in EVERY runtime (export, static, widget).
+  # Only non-NA slots override; NA = "inherit the density preset". Wire
+  # keys are camelCase (WebTheme surface), consumed by applySpacingPins.
+  spacing_map <- list(
+    rowHeight          = theme@spacing@row_height,
+    headerHeight       = theme@spacing@header_height,
+    padding            = theme@spacing@padding,
+    containerPadding   = theme@spacing@container_padding,
+    axisGap            = theme@spacing@axis_gap,
+    columnGroupPadding = theme@spacing@column_group_padding,
+    rowGroupPadding    = theme@spacing@row_group_padding,
+    cellPaddingX       = theme@spacing@cell_padding_x,
+    footerGap          = theme@spacing@footer_gap,
+    titleSubtitleGap   = theme@spacing@title_subtitle_gap,
+    headerGap          = theme@spacing@header_gap,
+    bottomMargin       = theme@spacing@bottom_margin,
+    indentPerLevel     = theme@spacing@indent_per_level
+  )
+  spacing_set <- spacing_map[!vapply(spacing_map, is.na, logical(1))]
+  if (length(spacing_set) > 0L) {
+    if (is.null(blob$spacing)) blob$spacing <- list()
+    blob$spacing[names(spacing_set)] <- spacing_set
+  }
+
   blob
 }

@@ -28,6 +28,7 @@ function makeFakeStore(overrides: Record<string, unknown> = {}) {
     setRowLabel: record("setRowLabel"),
     clearAllEdits: record("clearAllEdits"),
     setTheme: record("setTheme"),
+    setThemeObject: record("setThemeObject"),
     setZoom: record("setZoom"),
     setAutoFit: record("setAutoFit"),
     setMaxWidth: record("setMaxWidth"),
@@ -311,12 +312,14 @@ describe("proxyMethods dispatch", () => {
   });
 
   // ── setTheme explicit discrimination (PR6 / S8) ───────────────────────
-  test("setTheme with theme payload is accepted but no-ops today", () => {
+  test("setTheme with a WebTheme payload applies it via setThemeObject", () => {
+    // Round-2 cross-runtime review P1: R set_theme(proxy, web_theme(...))
+    // must apply the resolved theme (pins/roleOverrides included), or
+    // Shiny diverges from export/static for every custom theme.
     const s = makeFakeStore();
-    dispatch("setTheme", { theme: { /* opaque payload */ } as unknown as object }, s);
-    // Theme objects aren't applied runtime-side until C5 ships the
-    // setThemeObject store method. For now the dispatcher accepts the
-    // payload without erroring.
-    expect((s.calls as unknown[]).length).toBe(0);
+    const theme = { authoringInputs: {}, pins: { "--tv-accent": "#abcdef" } };
+    dispatch("setTheme", { theme: theme as unknown as object }, s);
+    const methods = (s.calls as { method: string }[]).map((c) => c.method);
+    expect(methods).toContain("setThemeObject");
   });
 });

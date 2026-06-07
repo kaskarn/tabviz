@@ -167,10 +167,15 @@ export const proxyMethods: Record<string, (store: TabvizStore, args: Record<stri
     if (!a) return;
     if (a.kind === "name") {
       store.setTheme(a.name);
+    } else if (a.kind === "theme") {
+      // Apply a full WebTheme payload (round-2 cross-runtime review P1):
+      // R `set_theme(proxy, web_theme(...))` serializes the resolved
+      // theme — incl. pins/roleOverrides — and the DOM widget must apply
+      // it, or Shiny diverges from export/static for every custom theme.
+      // setThemeObject already exists; the dispatch branch was the only
+      // missing link.
+      store.setThemeObject(a.theme as never);
     }
-    // Full WebTheme payloads aren't applied runtime-side yet; the
-    // normalizer accepts them so the proxy call doesn't error. Future
-    // store wiring will add `setThemeObject(a.theme)` here.
   },
   setZoom: (store, raw) => {
     const a = normalize.setZoom(raw);

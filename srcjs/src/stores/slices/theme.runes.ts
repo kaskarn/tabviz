@@ -302,11 +302,14 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
   // Tier-1 edit silently wiped any pins the theme arrived with (import,
   // R set_pin()/set_role(), studio handoff). These tests pin survival
   // across a polarity flip, the canonical full re-resolve.
-  function buildArtifactSpec() {
+  function buildArtifactSpec(extra?: {
+    roleOverrides?: Record<string, { ramp: string; grade: number }>;
+    pins?: Record<string, string>;
+  }) {
     const themed = buildTheme(PRESETS["cochrane"]!, {
       name: "cochrane",
-      roleOverrides: { "text-muted": { ramp: "brand", grade: 8 } },
-      pins: { "--tv-text-footnote-size": "0.7rem" },
+      roleOverrides: { "text-muted": { ramp: "brand", grade: 8 }, ...(extra?.roleOverrides ?? {}) },
+      pins: { "--tv-text-footnote-size": "0.7rem", ...(extra?.pins ?? {}) },
     }) as WebSpec["theme"];
     return buildSpec(themed);
   }
@@ -337,8 +340,14 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
     expect(t.pins?.["--tv-text-footnote-size"]).toBe("0.7rem");
   });
 
-  test("clearThemePin / clearThemeRoleOverride release exactly one entry (DT-12)", () => {
-    const initial = buildArtifactSpec();
+  test("clearThemePin / clearThemeRoleOverride release exactly one entry, siblings survive (DT-12)", () => {
+    // ≥2 entries each (test-gap audit SURVIVED-1): a single-entry fixture
+    // can't tell "release one" from "clear all". Assert the OTHER entries
+    // survive the targeted clear.
+    const initial = buildArtifactSpec({
+      roleOverrides: { "text-subtle": { ramp: "accent", grade: 6 } },
+      pins: { "--tv-text-title-size": "1.4rem" },
+    });
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
@@ -347,10 +356,40 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
       roleOverrides?: Record<string, unknown>;
       pins?: Record<string, string>;
     };
-    expect(t.pins ?? {}).toEqual({});
+    expect(t.pins?.["--tv-text-footnote-size"]).toBeUndefined();
+    expect(t.pins?.["--tv-text-title-size"]).toBe("1.4rem"); // sibling survives
     expect(t.roleOverrides?.["text-muted"]).toEqual({ ramp: "brand", grade: 8 });
     theme.clearThemeRoleOverride("text-muted");
     t = harness.spec?.theme as { roleOverrides?: Record<string, unknown> };
-    expect(t.roleOverrides ?? {}).toEqual({});
+    expect(t.roleOverrides?.["text-muted"]).toBeUndefined();
+    expect(t.roleOverrides?.["text-subtle"]).toEqual({ ramp: "accent", grade: 6 }); // sibling survives
+  });
+
+  test("clearThemePin flips hasThemeEdits so Reset is enabled (round-2 state P1)", () => {
+    const initial = buildArtifactSpec();
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    expect(theme.hasThemeEdits).toBe(false); // loaded pinned theme = clean
+    theme.clearThemePin("--tv-text-footnote-size");
+    expect(theme.hasThemeEdits).toBe(true); // diverges from initialTheme → Reset enabled
+  });
+
+  test("applyThemeSnapshot sets the reset target to the restored theme (round-2 state P2)", () => {
+    const snapSpec = buildArtifactSpec();
+    const snapHarness = buildDeps(snapSpec);
+    const snapSlice = createThemeSlice(snapHarness.deps);
+    snapSlice.captureInitial(snapSpec);
+    const snap = snapSlice.captureThemeSnapshot()!;
+
+    // A DIFFERENT slice (split-widget navigation) captures a bare theme
+    // as its initial target, then applies the pinned snapshot.
+    const bare = buildSpec(buildTheme(PRESETS["cochrane"]!, "cochrane") as WebSpec["theme"]);
+    const harness = buildDeps(bare);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(bare);
+    theme.applyThemeSnapshot(snap);
+    const reset = theme.initialTheme as { pins?: Record<string, string> } | null;
+    expect(reset?.pins?.["--tv-text-footnote-size"]).toBe("0.7rem");
   });
 });

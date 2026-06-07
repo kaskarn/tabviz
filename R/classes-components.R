@@ -2150,9 +2150,9 @@ col_group <- function(header, ...) {
 #' @param enable_reorder_columns Enable drag-and-drop reordering of columns (within a
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells,
+#'   and a popover editor for forest-cell numerics (estimate / lower / upper).
 #' @param enable_theme_edit Show the settings cog (theme + figure panel). `FALSE`
 #'   freezes a published dashboard's styling — viewers cannot restyle live.
-#'   and a popover editor for forest-cell numerics (estimate / lower / upper).
 #' @param show_group_counts Show the row count in parentheses next to each row-group
 #'   header label (e.g. "Main Trials (12)"). Default `FALSE`.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)

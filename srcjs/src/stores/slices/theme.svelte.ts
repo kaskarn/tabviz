@@ -57,6 +57,22 @@ function spacingFieldAffectsWidth(field: string | undefined): boolean {
   return field == null ? true : SPACING_WIDTH_FIELDS.has(field);
 }
 
+/** True when two string-keyed records differ by key set or by any value
+ *  (shallow JSON compare). Shared by the hasThemeEdits pins/roleOverrides
+ *  divergence check; mirrors QuickStrip's recordDelta used by the badge. */
+function recordsDiffer(
+  a: Record<string, unknown> | undefined,
+  b: Record<string, unknown> | undefined,
+): boolean {
+  const ak = a ? Object.keys(a) : [];
+  const bk = b ? Object.keys(b) : [];
+  if (ak.length !== bk.length) return true;
+  for (const k of ak) {
+    if (JSON.stringify(a?.[k]) !== JSON.stringify(b?.[k])) return true;
+  }
+  return false;
+}
+
 export interface ThemeSnapshot {
   theme: WebSpec["theme"];
   themeEdits: Record<string, Record<string, unknown>>;
@@ -526,13 +542,20 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
   function applyThemeSnapshot(snap: ThemeSnapshot): void {
     const spec = deps.getSpec();
     if (!spec) return;
-    deps.setSpec({ ...spec, theme: cloneTheme(snap.theme) });
+    const restored = cloneTheme(snap.theme);
+    deps.setSpec({ ...spec, theme: restored });
     // snap.themeEdits was unwrapped via $state.snapshot at capture
     // time, so it's already plain. structuredClone works here, but
     // a shallow walk is enough — $state(...) re-proxies on assign.
     themeEdits = JSON.parse(JSON.stringify(snap.themeEdits));
     themeOverrides = new Set(snap.themeOverrides);
     baseThemeName = snap.baseThemeName;
+    // The reset target must match what we just applied (round-2 state
+    // review P2): split-widget navigation runs captureInitial(bareSpec)
+    // BEFORE this, leaving initialTheme pointing at the un-customized
+    // per-spec theme — so "Reset theme" after navigating back dropped the
+    // snapshot's pins/cascade. Snap the restored theme as the new target.
+    initialTheme = cloneTheme(restored);
     deps.clearAutoWidthsKeepingUserResizes();
     deps.measureAutoColumns();
   }
@@ -558,6 +581,19 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
       for (const key of Object.keys(themeEdits)) {
         if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
       }
+      // Pins / role overrides that differ from the loaded theme also count
+      // as theme edits (round-2 state review P1): clearThemePin /
+      // clearThemeRoleOverride change the live artifact without touching
+      // authoringEdited or themeEdits — without this the Reset button
+      // stayed disabled while the divergence badge showed "1 edit" and the
+      // user had no way back. Mirrors QuickStrip's recordDelta.
+      const spec = deps.getSpec();
+      const live = spec?.theme as
+        { roleOverrides?: Record<string, unknown>; pins?: Record<string, string> } | undefined;
+      const init = initialTheme as
+        { roleOverrides?: Record<string, unknown>; pins?: Record<string, string> } | null;
+      if (recordsDiffer(live?.pins, init?.pins)) return true;
+      if (recordsDiffer(live?.roleOverrides, init?.roleOverrides)) return true;
       return false;
     },
     get hasFigureEdits() {
