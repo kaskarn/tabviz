@@ -89,8 +89,22 @@ export function listBindableRoles(): string[] {
 import { DEFAULT_ROLE_BINDINGS as _DEFAULTS } from "../lib/theme/role-bindings";
 import { TOKENS_BY_ROLE as _TOKENS_BY_ROLE } from "../lib/theme/component-tokens";
 import { bindingToAlias as _bindingToAlias } from "../lib/theme/alias";
-import { TYPE_ROLE_NAMES as _TYPE_ROLE_NAMES, typeRoleToAlias as _typeRoleToAlias } from "../lib/theme/scale-roles";
+import {
+  TYPE_ROLE_NAMES as _TYPE_ROLE_NAMES, typeRoleToAlias as _typeRoleToAlias,
+  CORNER_SLOTS as _CORNER_SLOTS, RULE_SLOTS as _RULE_SLOTS,
+} from "../lib/theme/scale-roles";
 import { DEFAULT_TYPE_ROLES as _DEFAULT_TYPE_ROLES } from "../lib/theme/typography";
+
+/** The geometry SLOT tables (Wave 3) — single source for R's set_corners /
+ *  set_rules (R caches these via ts_call + a parity test guards the mirror,
+ *  the density-presets pattern). corners → radius {sm,md,lg,pill};
+ *  rules → border-width {hair,thin,regular,thick}. */
+export function geometrySlotTables(): {
+  corners: typeof _CORNER_SLOTS;
+  rules: typeof _RULE_SLOTS;
+} {
+  return { corners: _CORNER_SLOTS, rules: _RULE_SLOTS };
+}
 export interface RoleRosterEntry {
   role: string;
   /** Which generated scale the role indexes. `color` roles bind a ramp+grade;

@@ -1124,6 +1124,69 @@ set_type_role <- function(theme, role, family = NULL, size = NULL, weight = NULL
   re_resolve(theme, inputs)
 }
 
+# Internal: cached geometry SLOT tables, fetched once from the TS bundle so
+# the corner/rule slot values have ONE source (scale-roles.ts). Parity-
+# guarded in test-theme-wire.R.
+.tabviz_geom_slots <- new.env(parent = emptyenv())
+.geometry_slot_tables <- function() {
+  if (is.null(.tabviz_geom_slots$tables)) {
+    .tabviz_geom_slots$tables <- ts_call("geometrySlotTables", list())
+  }
+  .tabviz_geom_slots$tables
+}
+
+#' Set the corner-radius SLOT (theme-rework Wave 3 geometry role).
+#'
+#' A named coarse rebind of the radius scale — `"sharp"` (square),
+#' `"soft"` (the default editorial radius), or `"round"` (pill-ish). Expands
+#' to the four radius stops (`sm`/`md`/`lg`/`pill`) on `theme@inputs`. For
+#' fine-grained control, set `web_theme(geometry = ...)` directly.
+#'
+#' @param theme A [WebTheme].
+#' @param slot `"sharp"`, `"soft"`, or `"round"`.
+#' @return The [WebTheme] re-resolved with the corner slot applied.
+#' @seealso [set_rules()], [list_roles()]
+#' @export
+set_corners <- function(theme, slot) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(slot, c("sharp", "soft", "round"))
+  r <- .geometry_slot_tables()$corners[[slot]]
+  inputs <- theme@inputs
+  inputs@geometry_radius_sm   <- as.numeric(r$sm)
+  inputs@geometry_radius_md   <- as.numeric(r$md)
+  inputs@geometry_radius_lg   <- as.numeric(r$lg)
+  inputs@geometry_radius_pill <- as.numeric(r$pill)
+  re_resolve(theme, inputs)
+}
+
+#' Set the rule-weight SLOT (theme-rework Wave 3 geometry role).
+#'
+#' A named coarse rebind of the border-width scale — `"fine"`, `"normal"`
+#' (the default), or `"strong"`. Expands to the four width stops
+#' (`hair`/`thin`/`regular`/`thick`) on `theme@inputs`. For fine-grained
+#' control, set `web_theme(geometry = ...)` directly.
+#'
+#' @param theme A [WebTheme].
+#' @param slot `"fine"`, `"normal"`, or `"strong"`.
+#' @return The [WebTheme] re-resolved with the rule slot applied.
+#' @seealso [set_corners()], [list_roles()]
+#' @export
+set_rules <- function(theme, slot) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_choice(slot, c("fine", "normal", "strong"))
+  w <- .geometry_slot_tables()$rules[[slot]]
+  inputs <- theme@inputs
+  inputs@geometry_border_width_hair    <- as.numeric(w$hair)
+  inputs@geometry_border_width_thin    <- as.numeric(w$thin)
+  inputs@geometry_border_width_regular <- as.numeric(w$regular)
+  inputs@geometry_border_width_thick   <- as.numeric(w$thick)
+  re_resolve(theme, inputs)
+}
+
 #' Pin a component token to a direct value.
 #'
 #' The R twin of the studio's token-pin channel (settings-overhaul P3):

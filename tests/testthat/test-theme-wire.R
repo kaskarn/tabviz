@@ -324,6 +324,21 @@ test_that("set_role redirects non-color (scale) roles to their setters (Wave 3)"
   expect_error(set_role(th, "density", "neutral", 5), "spacing role")
 })
 
+test_that("set_corners / set_rules expand geometry slots from the TS tables (Wave 3)", {
+  th <- web_theme_cochrane()
+  round <- set_corners(th, "round")
+  expect_identical(round@inputs@geometry_radius_md, 12)   # CORNER_SLOTS.round.md
+  sharp <- set_corners(th, "sharp")
+  expect_identical(sharp@inputs@geometry_radius_sm, 0)
+  strong <- set_rules(th, "strong")
+  expect_identical(strong@inputs@geometry_border_width_thick, 3.5)
+  expect_error(set_corners(th, "bevelled"), "sharp|soft|round")
+  # Slots come from ONE source (scale-roles.ts) via ts_call — drift-proof.
+  tabs <- tabviz:::.geometry_slot_tables()
+  expect_identical(as.numeric(tabs$corners$round$md), 12)
+  expect_identical(as.numeric(tabs$rules$strong$thick), 3.5)
+})
+
 test_that("studio_save_as rejects path-traversal names (round-2 robustness P1)", {
   withr::local_options(tabviz.theme_dir = withr::local_tempdir())
   wire <- list("$schema" = "tabviz-theme/v4", name = "x",
