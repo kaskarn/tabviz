@@ -197,6 +197,13 @@ const BORDER_PRESET_VALUES = ["none", "hairline", "ruled", "frame", "boxed"] as 
 const TITLE_STYLE_VALUES = ["normal", "bar", "underline"] as const;
 const POINT_SHAPE_VALUES = ["circle", "square", "diamond", "triangle"] as const;
 const INTERVAL_WEIGHT_VALUES = ["hair", "regular", "thick"] as const;
+// Tier-2 type-role vocab (Wave 3.5 ingress validation).
+const TYPE_ROLE_VALUES = [
+  "title", "subtitle", "body", "numeric", "label", "caption", "footnote", "cell", "tick",
+] as const;
+const TYPE_FAMILY_VALUES = ["display", "body", "mono"] as const;
+const TYPE_SIZE_VALUES = ["label", "foot", "body", "head", "subtitle", "title", "display"] as const;
+const TYPE_WEIGHT_VALUES = ["regular", "medium", "semibold", "bold"] as const;
 
 function checkTriple(triple: OklchTriple | undefined, name: string, problems: string[], required: boolean): void {
   if (triple === undefined) {
@@ -291,6 +298,23 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
     checkRange(inputs.geometry?.border_width?.[k], 0, 999, `geometry.border_width.${k}`, p);
   }
   checkRange(inputs.effects?.gradient_shell_angle, 0, 360, "effects.gradient_shell_angle", p);
+
+  // Tier-2 type-role rebinds (Wave 3.5): the ONE validating ingress must
+  // reject out-of-vocab leaves — an unchecked `size:"garbage"` resolved to
+  // `--tv-text-*-size: undefinedpx` in exported CSS (review P0). Unknown
+  // role keys are also flagged (inert at resolve, but pollute the artifact).
+  if (inputs.type_roles && typeof inputs.type_roles === "object") {
+    for (const [role, rec] of Object.entries(inputs.type_roles)) {
+      if (!TYPE_ROLE_VALUES.includes(role as (typeof TYPE_ROLE_VALUES)[number])) {
+        p.push(`type_roles: '${role}' is not a type role (one of [${TYPE_ROLE_VALUES.join(", ")}])`);
+        continue;
+      }
+      if (!rec || typeof rec !== "object") continue;
+      checkEnum(rec.family, TYPE_FAMILY_VALUES, `type_roles.${role}.family`, p);
+      checkEnum(rec.size, TYPE_SIZE_VALUES, `type_roles.${role}.size`, p);
+      checkEnum(rec.weight, TYPE_WEIGHT_VALUES, `type_roles.${role}.weight`, p);
+    }
+  }
 
   if (p.length > 0) throw new ThemeInputsValidationError(p);
 }

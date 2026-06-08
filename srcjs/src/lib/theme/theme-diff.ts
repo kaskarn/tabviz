@@ -15,6 +15,8 @@ import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
 // snippet path while op-recorder got it right).
 import { rString } from "../op-recorder";
 export { rString };
+import { CORNER_SLOTS, RULE_SLOTS, TYPE_ROLE_NAMES } from "./scale-roles";
+import { DEFAULT_TYPE_ROLES, type TypeRoleName } from "./typography";
 
 /** Emit an anchor as an R `oklch()` call — the studio is LCH-native and
  *  R's anchor coercion accepts oklch() triples, so the author's actual
@@ -135,15 +137,37 @@ export function buildSnippetSteps(
     steps.push({ setter: "set_inputs", args: `slot_style = ${rString(edits.slot_style)}` });
   }
 
-  // Geometry — radius / border_width scales. set_geometry(radius = list(...),
-  // border_width = list(...)) takes named numeric lists.
-  const geomArgs: string[] = [];
+  // Geometry — prefer the NAMED slot setters (set_corners / set_rules) when
+  // the four stops exactly match a slot (the vocabulary the viewer enum + R
+  // API speak); fall back to raw set_geometry(list(...)) for custom stops
+  // (Wave 3.5 review P2: the snippet emitted raw stops even for a named slot).
   const radiusDiff = diffNumericRecord(edits.geometry?.radius, base.geometry?.radius);
-  if (radiusDiff) geomArgs.push(`radius = ${rList(radiusDiff)}`);
+  if (radiusDiff) {
+    const slot = matchFullSlot(edits.geometry?.radius, CORNER_SLOTS, ["sm", "md", "lg", "pill"]);
+    if (slot) steps.push({ setter: "set_corners", args: rString(slot) });
+    else steps.push({ setter: "set_geometry", args: `radius = ${rList(radiusDiff)}` });
+  }
   const borderDiff = diffNumericRecord(edits.geometry?.border_width, base.geometry?.border_width);
-  if (borderDiff) geomArgs.push(`border_width = ${rList(borderDiff)}`);
-  if (geomArgs.length > 0) {
-    steps.push({ setter: "set_geometry", args: geomArgs.join(", ") });
+  if (borderDiff) {
+    const slot = matchFullSlot(edits.geometry?.border_width, RULE_SLOTS, ["hair", "thin", "regular", "thick"]);
+    if (slot) steps.push({ setter: "set_rules", args: rString(slot) });
+    else steps.push({ setter: "set_geometry", args: `border_width = ${rList(borderDiff)}` });
+  }
+
+  // Type roles — emit set_type_role(role, family=, size=, weight=) per role
+  // whose recipe diverges from the default (Wave 3.5 review P1: Copy R code
+  // silently dropped inputs.type_roles).
+  for (const role of TYPE_ROLE_NAMES) {
+    const ov = edits.type_roles?.[role];
+    if (!ov || Object.keys(ov).length === 0) continue;
+    const def = DEFAULT_TYPE_ROLES[role as TypeRoleName];
+    const trArgs: string[] = [];
+    if (ov.family !== undefined && ov.family !== def.family) trArgs.push(`family = ${rString(ov.family)}`);
+    if (ov.size !== undefined && ov.size !== def.size) trArgs.push(`size = ${rString(ov.size)}`);
+    if (ov.weight !== undefined && ov.weight !== def.weight) trArgs.push(`weight = ${rString(ov.weight)}`);
+    if (trArgs.length > 0) {
+      steps.push({ setter: "set_type_role", args: `${rString(role)}, ${trArgs.join(", ")}` });
+    }
   }
 
   // Effects — every key set_effects() accepts.
@@ -184,6 +208,21 @@ function diffNumericRecord(
 /** Format a flat numeric record as an R list(...) literal. */
 function rList(rec: Record<string, number>): string {
   return `list(${Object.entries(rec).map(([k, v]) => `${k} = ${v}`).join(", ")})`;
+}
+
+/** Return the slot name whose four stops the record matches EXACTLY (all
+ *  keys present + equal), else null — so the snippet can emit set_corners /
+ *  set_rules for a named slot but fall back to raw stops for custom values. */
+function matchFullSlot<T extends Record<string, number>>(
+  cur: Partial<T> | undefined,
+  table: Record<string, T>,
+  keys: (keyof T)[],
+): string | null {
+  if (!cur) return null;
+  for (const [name, vals] of Object.entries(table)) {
+    if (keys.every((k) => cur[k] === vals[k])) return name;
+  }
+  return null;
 }
 
 

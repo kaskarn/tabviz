@@ -58,10 +58,14 @@
       <span class="rt-label">{t.label}</span>
       <span class="rt-swatch" style:background={cssVars[t.token] ?? "transparent"} title={cssVars[t.token] ?? ""}></span>
       <span class="rt-stepper">
-        <button type="button" class="rt-btn" aria-label="{t.label} lighter" title="lighter"
+        <!-- "toward paper / ink" is polarity-STABLE: lower grade is always
+             paper-ward, higher always ink-ward, regardless of light/dark
+             (Wave 3.5 review — "lighter/darker" was wrong for SR users in
+             dark themes). The swatch shows the actual on-screen result. -->
+        <button type="button" class="rt-btn" aria-label="{t.label} toward paper" title="toward paper"
                 disabled={b.grade <= 1} onclick={() => step(t.role, -1)}>−</button>
         <span class="rt-grade" aria-label="{t.label} grade {b.grade} of 11">{b.grade}</span>
-        <button type="button" class="rt-btn" aria-label="{t.label} darker" title="darker"
+        <button type="button" class="rt-btn" aria-label="{t.label} toward ink" title="toward ink"
                 disabled={b.grade >= 11} onclick={() => step(t.role, 1)}>+</button>
       </span>
       <button type="button" class="rt-reset" class:on={overridden(t.role)}

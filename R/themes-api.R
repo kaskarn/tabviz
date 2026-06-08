@@ -1056,7 +1056,7 @@ set_role <- function(theme, role, ramp, grade) {
     if (role == "density") {
       cli::cli_abort(c(
         "{.val density} is a spacing role, not a color role.",
-        "i" = "Set it with {.fn web_theme}(density=) or {.fn set_inputs}(density=)."
+        "i" = "Set it with {.fn set_density} (or {.fn web_theme}(density=))."
       ))
     }
     cli::cli_abort(c(

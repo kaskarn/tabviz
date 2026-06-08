@@ -28,7 +28,8 @@
   import { hexToOklch } from "$lib/oklch";
   import { reflectL } from "$lib/theme/polarity";
   import { CATEGORICAL_SCHEMES } from "$lib/data-schemes";
-  import { CORNER_SLOTS, RULE_SLOTS, type CornerSlot, type RuleSlot } from "$lib/theme/scale-roles";
+  import { CORNER_SLOTS, RULE_SLOTS, TYPE_ROLE_NAMES, type CornerSlot, type RuleSlot } from "$lib/theme/scale-roles";
+  import { DEFAULT_TYPE_ROLES, type TypeRoleName, type TypeRole } from "$lib/theme/typography";
 
   interface Props {
     inputs: ThemeInputs;
@@ -225,11 +226,14 @@
     commit({ ...inputs, geometry: { ...inputs.geometry, border_width: { ...RULE_SLOTS[slot] } } });
   }
   // Reflect the active slot when the four stops match one exactly, else
-  // "custom" (the fine sliders diverged from any preset).
+  // "custom". An UNSET scale means the theme is at the resolver defaults,
+  // which ARE the default slot (soft / normal) — report that, not "custom"
+  // (Wave 3.5 review P1: pristine themes mislabelled themselves diverged).
   function matchSlot<T extends Record<string, number>>(
     cur: Partial<T> | undefined, table: Record<string, T>, keys: (keyof T)[],
+    defaultSlot: string,
   ): string {
-    if (!cur) return "custom";
+    if (!cur || keys.every((k) => cur[k] === undefined)) return defaultSlot;
     for (const [name, vals] of Object.entries(table)) {
       if (keys.every((k) => cur[k] === vals[k])) return name;
     }
@@ -237,12 +241,43 @@
   }
   const currentCorners = $derived(
     matchSlot(inputs.geometry?.radius, CORNER_SLOTS as unknown as Record<string, Record<string, number>>,
-      ["sm", "md", "lg", "pill"]));
+      ["sm", "md", "lg", "pill"], "soft"));
   const currentRules = $derived(
     matchSlot(inputs.geometry?.border_width, RULE_SLOTS as unknown as Record<string, Record<string, number>>,
-      ["hair", "thin", "regular", "thick"]));
+      ["hair", "thin", "regular", "thick"], "normal"));
   function patchFonts(key: "body" | "display" | "mono", value: string): void {
     commit({ ...inputs, fonts: { ...inputs.fonts, [key]: value } });
+  }
+
+  // ── Type-role rebind ("Text sizes", Wave 3.5) — the shared per-role
+  // {family,size,weight} editor. Writes inputs.type_roles via the Tier-1
+  // onchange (DT-11-clean), so it appears in BOTH the studio rail (roomy)
+  // and the viewer's advanced section (compact) — closing the
+  // viewer/R-ahead-of-studio inversion the review flagged.
+  let typeRoleSel = $state<TypeRoleName>("footnote");
+  const TYPE_ROLE_OPTS = TYPE_ROLE_NAMES.map((r) => ({ value: r, label: r }));
+  const TYPE_FAMILY_OPTS = ["display", "body", "mono"].map((v) => ({ value: v, label: v }));
+  const TYPE_SIZE_OPTS = ["label", "foot", "body", "head", "subtitle", "title", "display"]
+    .map((v) => ({ value: v, label: v }));
+  const TYPE_WEIGHT_OPTS = ["regular", "medium", "semibold", "bold"].map((v) => ({ value: v, label: v }));
+  const effectiveTypeRole = $derived<TypeRole>({
+    ...DEFAULT_TYPE_ROLES[typeRoleSel],
+    ...(inputs.type_roles?.[typeRoleSel] ?? {}),
+  });
+  const typeRoleOverridden = $derived(
+    Object.keys(inputs.type_roles?.[typeRoleSel] ?? {}).length > 0,
+  );
+  function patchTypeRole(key: "family" | "size" | "weight", value: string): void {
+    const cur = inputs.type_roles?.[typeRoleSel] ?? {};
+    commit({
+      ...inputs,
+      type_roles: { ...inputs.type_roles, [typeRoleSel]: { ...cur, [key]: value } },
+    });
+  }
+  function resetTypeRole(): void {
+    const next = { ...inputs.type_roles };
+    delete (next as Record<string, unknown>)[typeRoleSel];
+    commit({ ...inputs, type_roles: Object.keys(next).length ? next : undefined });
   }
 
   const schemeOptions = $derived([
@@ -345,6 +380,27 @@
       <Slider value={inputs.type_scale_ratio ?? 1.2} min={1.05} max={1.5} step={0.01} valueWidth={4}
               ariaLabel="Type scale ratio"
               oncommit={(v) => patch("type_scale_ratio", v)} />
+    </Field>
+    <!-- Text sizes — Tier-2 type-role rebind (Wave 3.5). Pick a role, then
+         rebind its family / size / weight. Cascade-safe (rides
+         inputs.type_roles); present in both the studio rail and the viewer's
+         advanced section. -->
+    <Field label="Role" hint="Rebind one type role's family / size / weight.">
+      <Select value={typeRoleSel} ariaLabel="Type role to rebind"
+              onchange={(v) => (typeRoleSel = v as TypeRoleName)} options={TYPE_ROLE_OPTS} />
+    </Field>
+    <Field label="· family">
+      <Select value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
+              onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
+    </Field>
+    <Field label="· size">
+      <Select value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
+              onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
+    </Field>
+    <Field label="· weight"
+           onreset={typeRoleOverridden ? resetTypeRole : undefined}>
+      <Select value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
+              onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
     </Field>
   </Section>
 

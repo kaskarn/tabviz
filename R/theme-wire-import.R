@@ -136,14 +136,30 @@ theme_inputs_from_wire <- function(wire_inputs) {
   v$type_weights_bold     <- .wire_num(tw[["bold"]])
 
   # Tier-2 type-role rebinds (Wave 3) — the wire `type_roles` object maps
-  # 1:1 to the S7 list slot. Keep only recognized {family,size,weight}
-  # leaves per role so a malformed wire can't smuggle arbitrary keys.
+  # 1:1 to the S7 list slot. A wire is UNTRUSTED: drop unknown role keys
+  # AND out-of-vocab leaf VALUES (Wave 3.5 review P0 — a garbage size
+  # rendered `--tv-text-*-size: undefinedpx`), keeping only valid
+  # {family,size,weight}. Mirrors the TS validateThemeInputs gate.
   tr <- w[["type_roles"]] %||% list()
   if (length(tr) > 0L) {
-    keep <- c("family", "size", "weight")
-    v$type_roles <- lapply(tr, function(rec) {
-      rec[intersect(names(rec), keep)]
-    })
+    role_ok <- c("title", "subtitle", "body", "numeric", "label",
+                 "caption", "footnote", "cell", "tick")
+    vocab <- list(
+      family = c("display", "body", "mono"),
+      size   = c("label", "foot", "body", "head", "subtitle", "title", "display"),
+      weight = c("regular", "medium", "semibold", "bold")
+    )
+    clean <- list()
+    for (role in intersect(names(tr), role_ok)) {
+      rec <- tr[[role]]
+      kept <- list()
+      for (k in c("family", "size", "weight")) {
+        val <- rec[[k]]
+        if (!is.null(val) && as.character(val) %in% vocab[[k]]) kept[[k]] <- as.character(val)
+      }
+      if (length(kept) > 0L) clean[[role]] <- kept
+    }
+    if (length(clean) > 0L) v$type_roles <- clean
   }
 
   # Curves.
