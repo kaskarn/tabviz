@@ -11,15 +11,19 @@
 import type { ThemeInputs } from "../../types/theme-inputs";
 import type { PinnedThemeWire, RoleOverrides } from "./theme-wire";
 import { normalizeBinding, type RoleOverrideWire } from "./alias";
-import { validateThemeInputs } from "./theme-validate";
+import { validateThemeInputs, type ThemeIssue } from "./theme-validate";
 import { isValidPinValue } from "./consumer-bridge";
 
 export class ThemeWireParseError extends Error {
+  /** Structured issues — the machine contract (Wave 4). */
+  issues: ThemeIssue[];
+  /** Back-compat string view. */
   problems: string[];
-  constructor(problems: string[]) {
-    super(problems.join(" · "));
+  constructor(issues: ThemeIssue[]) {
+    super(issues.map((i) => i.message).join(" · "));
     this.name = "ThemeWireParseError";
-    this.problems = problems;
+    this.issues = issues;
+    this.problems = issues.map((i) => i.message);
   }
 }
 
@@ -38,13 +42,13 @@ export function parseThemeWire(json: string): PinnedThemeWire {
   try {
     wire = JSON.parse(json) as typeof wire;
   } catch {
-    throw new ThemeWireParseError(["Not valid JSON."]);
+    throw new ThemeWireParseError([{ path: "$", code: "parse", message: "Not valid JSON." }]);
   }
   if (typeof wire !== "object" || wire === null) {
-    throw new ThemeWireParseError(["Not a theme wire (expected a JSON object)."]);
+    throw new ThemeWireParseError([{ path: "$", code: "shape", message: "Not a theme wire (expected a JSON object)." }]);
   }
   if (!wire.inputs || typeof wire.inputs !== "object" || !wire.inputs.anchors) {
-    throw new ThemeWireParseError(["Not a theme wire (missing inputs.anchors)."]);
+    throw new ThemeWireParseError([{ path: "inputs.anchors", code: "shape", message: "Not a theme wire (missing inputs.anchors)." }]);
   }
   // Unknown-schema lint (parity with R theme_from_wire, Wave 1.5): a future
   // schema imports best-effort, but the version mismatch shouldn't be silent
@@ -58,12 +62,12 @@ export function parseThemeWire(json: string): PinnedThemeWire {
   // Tier-1 inputs: the same wall R authors hit via the S7 validator.
   validateThemeInputs(wire.inputs);
 
-  const problems: string[] = [];
+  const problems: ThemeIssue[] = [];
 
   const roleOverrides: RoleOverrides = {};
   if (wire.roleOverrides !== undefined) {
     if (typeof wire.roleOverrides !== "object" || wire.roleOverrides === null || Array.isArray(wire.roleOverrides)) {
-      problems.push("roleOverrides must be an object.");
+      problems.push({ path: "roleOverrides", code: "shape", message: "roleOverrides must be an object." });
     } else {
       // Accept BOTH the name-alias form ("neutral.5") and the legacy
       // coordinate-object form ({ramp,grade}) — one-way migration so old
@@ -72,7 +76,7 @@ export function parseThemeWire(json: string): PinnedThemeWire {
       for (const [role, entry] of Object.entries(wire.roleOverrides as Record<string, RoleOverrideWire>)) {
         const binding = normalizeBinding(entry);
         if (!binding) {
-          problems.push(`roleOverrides.${role}: expected a "ramp.grade" alias or {ramp, grade}.`);
+          problems.push({ path: `roleOverrides.${role}`, code: "shape", message: `roleOverrides.${role}: expected a "ramp.grade" alias or {ramp, grade}.` });
           continue;
         }
         (roleOverrides as Record<string, unknown>)[role] = binding;
@@ -83,15 +87,15 @@ export function parseThemeWire(json: string): PinnedThemeWire {
   const pins: Record<string, string> = {};
   if (wire.pins !== undefined) {
     if (typeof wire.pins !== "object" || wire.pins === null || Array.isArray(wire.pins)) {
-      problems.push("pins must be an object of cssVar → value.");
+      problems.push({ path: "pins", code: "shape", message: "pins must be an object of cssVar → value." });
     } else {
       for (const [k, v] of Object.entries(wire.pins as Record<string, unknown>)) {
         if (!k.startsWith("--tv-")) {
-          problems.push(`pins: "${k}" is not a --tv- token.`);
+          problems.push({ path: `pins.${k}`, code: "shape", message: `pins: "${k}" is not a --tv- token.` });
         } else if (!isValidPinValue(v)) {
           // Surfacing (not silently dropping) is deliberate: an envelope
           // that SAYS it pins a token must either apply or explain.
-          problems.push(`pins: "${k}" has an invalid value (structural characters or over-length).`);
+          problems.push({ path: `pins.${k}`, code: "shape", message: `pins: "${k}" has an invalid value (structural characters or over-length).` });
         } else {
           pins[k] = v;
         }

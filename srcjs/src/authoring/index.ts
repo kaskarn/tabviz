@@ -179,8 +179,32 @@ import type { ThemeInputs as _ThemeInputs } from "../types/theme-inputs";
 import type { ResolvedTheme as _ResolvedTheme } from "../lib/theme/resolve-theme";
 export { resolveTheme } from "../lib/theme/resolve-theme";
 export type { ResolvedTheme } from "../lib/theme/resolve-theme";
-export { createWire } from "../lib/theme/theme-wire";
-export type { ThemeWire } from "../lib/theme/theme-wire";
+export { createWire, buildThemeWire } from "../lib/theme/theme-wire";
+export type { ThemeWire, ThemeWireEnvelope, PinnedThemeWire } from "../lib/theme/theme-wire";
+
+// The portable-theme contract surface (Wave 4): the validating ingress +
+// envelope builder must be reachable to any `@tabviz/core` consumer (an
+// LLM driver / JS author parsing untrusted theme JSON) — previously they
+// were studio-internal, so the "portable envelope" was a comment, not a
+// usable API (ecosystem-lens W1 P1). normalizeRoleOverrides accepts both
+// the alias + legacy coordinate forms.
+export { parseThemeWire, ThemeWireParseError } from "../lib/theme/theme-wire-parse";
+export { normalizeRoleOverrides, bindingToAlias, aliasToBinding } from "../lib/theme/alias";
+export { validateThemeInputs, ThemeInputsValidationError } from "../lib/theme/theme-validate";
+export type { ThemeIssue } from "../lib/theme/theme-validate";
+
+// TS author-facade (Wave 4): the wire-op verbs the token-compiler story
+// needs in BOTH languages — R has set_role/set_pin/clear_role; expose the
+// matching TS surface so a JS author / LLM driver isn't second-class.
+export { setRoleBinding, pinTokenByName, releaseRole } from "../lib/theme/theme-wire";
+
+// DTCG interop + brand bootstrap (Wave 4 flagship). toDtcg/fromDtcg
+// round-trip a theme through the Design Tokens format; suggestTheme derives
+// a contrast-safe theme from one brand hex.
+export { toDtcg, fromDtcg, dtcgFromTheme } from "../lib/theme/dtcg-adapter";
+export type { DtcgDocument } from "../lib/theme/dtcg-adapter";
+export { suggestTheme } from "../lib/theme/suggest-theme";
+export type { SuggestThemeOptions } from "../lib/theme/suggest-theme";
 
 /** R-friendly inspection bridge: resolves a `ThemeInputs` to a
  *  `ResolvedTheme` in one V8 hop. Internal — R wrappers chain it with

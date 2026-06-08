@@ -43,6 +43,18 @@ extend.__resetRuntimeRegistries();
 const checks = [
   ["core.createTabviz", typeof core.createTabviz === "function"],
   ["core.createSplitTabviz", typeof core.createSplitTabviz === "function"],
+  // Portable-theme contract surface (Wave 4) — the spec-first promise is
+  // only real if these ride the published artifact. A broken re-export
+  // ships silently without this canary (ecosystem-lens W1 P1).
+  ["core.listRoles", typeof core.listRoles === "function"],
+  ["core.listComponentTokens", typeof core.listComponentTokens === "function"],
+  ["core.createWire", typeof core.createWire === "function"],
+  ["core.resolveTheme", typeof core.resolveTheme === "function"],
+  ["core.buildThemeWire", typeof core.buildThemeWire === "function"],
+  ["core.parseThemeWire", typeof core.parseThemeWire === "function"],
+  ["core.toDtcg", typeof core.toDtcg === "function"],
+  ["core.fromDtcg", typeof core.fromDtcg === "function"],
+  ["core.suggestTheme", typeof core.suggestTheme === "function"],
   ["svelte.TabvizPlot", svelte.TabvizPlot != null],
   ["svelte.SplitTabvizPlot", svelte.SplitTabvizPlot != null],
   ["svelte.createTabvizStore", typeof svelte.createTabvizStore === "function"],

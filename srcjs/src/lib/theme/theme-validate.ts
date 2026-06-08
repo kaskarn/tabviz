@@ -171,12 +171,27 @@ export function collectContrastFailures(
 // Inputs validation — mirrors R `classes-theme.R::ThemeInputs` S7 validator
 // ────────────────────────────────────────────────────────────────────────────
 
+/** A structured validation issue (Wave 4 contract pull): the machine-
+ *  actionable shape an MCP server / LLM driver needs, vs a join-string.
+ *  `path` is the dotted input path (e.g. `anchors.paper.L`), `code` a stable
+ *  category (`enum` | `range` | `required` | `unknown`), `message` the
+ *  human sentence. */
+export interface ThemeIssue {
+  readonly path: string;
+  readonly code: "enum" | "range" | "required" | "unknown" | "shape" | "parse";
+  readonly message: string;
+}
+
 export class ThemeInputsValidationError extends Error {
+  /** Structured issues — the contract surface. */
+  issues: ThemeIssue[];
+  /** Back-compat string view (issues' messages); existing consumers read this. */
   problems: string[];
-  constructor(problems: string[]) {
-    super(`ThemeInputs failed ${problems.length} validation check${problems.length === 1 ? "" : "s"}.\n${problems.map((p) => "  - " + p).join("\n")}`);
+  constructor(issues: ThemeIssue[]) {
+    super(`ThemeInputs failed ${issues.length} validation check${issues.length === 1 ? "" : "s"}.\n${issues.map((i) => "  - " + i.message).join("\n")}`);
     this.name = "ThemeInputsValidationError";
-    this.problems = problems;
+    this.issues = issues;
+    this.problems = issues.map((i) => i.message);
   }
 }
 
@@ -205,40 +220,40 @@ const TYPE_FAMILY_VALUES = ["display", "body", "mono"] as const;
 const TYPE_SIZE_VALUES = ["label", "foot", "body", "head", "subtitle", "title", "display"] as const;
 const TYPE_WEIGHT_VALUES = ["regular", "medium", "semibold", "bold"] as const;
 
-function checkTriple(triple: OklchTriple | undefined, name: string, problems: string[], required: boolean): void {
+function checkTriple(triple: OklchTriple | undefined, name: string, problems: ThemeIssue[], required: boolean): void {
   if (triple === undefined) {
-    if (required) problems.push(`${name}: required, got undefined`);
+    if (required) problems.push({ path: name, code: "required", message: `${name}: required, got undefined` });
     return;
   }
   // Number.isFinite, not typeof: `typeof NaN === "number"` and both
   // NaN<0 / NaN>1 are false, so NaN sailed through and #NANNANNAN-
   // poisoned every derived color (round-2 robustness review).
   if (!Number.isFinite(triple.L) || triple.L < 0 || triple.L > 1) {
-    problems.push(`${name}.L must be a finite number in [0, 1], got ${triple.L}`);
+    problems.push({ path: `${name}.L`, code: "range", message: `${name}.L must be a finite number in [0, 1], got ${triple.L}` });
   }
   if (!Number.isFinite(triple.C) || triple.C < 0 || triple.C > 0.5) {
-    problems.push(`${name}.C must be a finite number in [0, 0.5], got ${triple.C}`);
+    problems.push({ path: `${name}.C`, code: "range", message: `${name}.C must be a finite number in [0, 0.5], got ${triple.C}` });
   }
   if (!Number.isFinite(triple.H) || triple.H < 0 || triple.H >= 360) {
-    problems.push(`${name}.H must be a finite number in [0, 360), got ${triple.H}`);
+    problems.push({ path: `${name}.H`, code: "range", message: `${name}.H must be a finite number in [0, 360), got ${triple.H}` });
   }
 }
 
 function checkEnum<T extends readonly string[]>(
-  value: T[number] | undefined, choices: T, name: string, problems: string[],
+  value: T[number] | undefined, choices: T, name: string, problems: ThemeIssue[],
 ): void {
   if (value === undefined) return;
   if (!(choices as readonly string[]).includes(value)) {
-    problems.push(`${name} must be one of [${choices.join(", ")}], got '${value}'`);
+    problems.push({ path: name, code: "enum", message: `${name} must be one of [${choices.join(", ")}], got '${value}'` });
   }
 }
 
 function checkRange(
-  value: number | undefined, lo: number, hi: number, name: string, problems: string[],
+  value: number | undefined, lo: number, hi: number, name: string, problems: ThemeIssue[],
 ): void {
   if (value === undefined) return;
   if (!Number.isFinite(value) || value < lo || value > hi) {
-    problems.push(`${name} must be a number in [${lo}, ${hi}], got ${value}`);
+    problems.push({ path: name, code: "range", message: `${name} must be a number in [${lo}, ${hi}], got ${value}` });
   }
 }
 
@@ -249,7 +264,7 @@ function checkRange(
  * and other authoring mistakes that the type system can't catch.
  */
 export function validateThemeInputs(inputs: ThemeInputs): void {
-  const p: string[] = [];
+  const p: ThemeIssue[] = [];
 
   // Anchors — paper / ink / brand required; accent optional.
   checkTriple(inputs.anchors?.paper, "anchors.paper", p, true);
@@ -306,7 +321,7 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
   if (inputs.type_roles && typeof inputs.type_roles === "object") {
     for (const [role, rec] of Object.entries(inputs.type_roles)) {
       if (!TYPE_ROLE_VALUES.includes(role as (typeof TYPE_ROLE_VALUES)[number])) {
-        p.push(`type_roles: '${role}' is not a type role (one of [${TYPE_ROLE_VALUES.join(", ")}])`);
+        p.push({ path: `type_roles.${role}`, code: "unknown", message: `type_roles: '${role}' is not a type role (one of [${TYPE_ROLE_VALUES.join(", ")}])` });
         continue;
       }
       if (!rec || typeof rec !== "object") continue;
