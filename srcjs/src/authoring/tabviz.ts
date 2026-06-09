@@ -23,6 +23,7 @@ import {
 } from "../schema/conditions";
 import { CURRENT_VERSION } from "../spec";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme/theme-api";
+import { applyThemeColumnDefaults } from "../lib/theme/column-defaults";
 import { colText } from "./columns";
 
 /**
@@ -241,6 +242,17 @@ export function tabviz(args: TabvizArgs): WebSpec {
       // label column will render.
       r.label = String(i + 1);
     });
+  }
+
+  // Theme-as-house-style: a theme's `column_defaults` fill unset styling/
+  // editor options per column TYPE (kind-gated; the author always wins).
+  // Applied at construction so the wire stays a normal spec. (Interactive
+  // theme-switch re-application is a follow-up — this is the authoring path.)
+  const themeColumnDefaults =
+    (theme as { authoringInputs?: { column_defaults?: Parameters<typeof applyThemeColumnDefaults>[1] } })
+      .authoringInputs?.column_defaults;
+  if (themeColumnDefaults) {
+    columns = applyThemeColumnDefaults(columns, themeColumnDefaults);
   }
 
   // Available-fields manifest — drives the in-widget column editor's

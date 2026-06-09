@@ -224,6 +224,17 @@ export interface ThemeInputs {
     { heightRatio?: number }
   >>;
 
+  /** Theme-as-house-style: per-column-TYPE default OPTIONS the theme suggests
+   *  (2026-06-09; the maintainer's "a clinical theme makes p-value columns
+   *  show stars by default" goal). Keyed by column type → a partial options
+   *  object (e.g. `{ pvalue: { stars: true, significantStyle: "pill" } }`).
+   *  Applied at spec construction UNDER each matching column's own options
+   *  (author always wins — `default` mode), and KIND-GATED: only options whose
+   *  schema `kind` is "styling" or "editor" are accepted; "core" (data/
+   *  behavior) options are dropped, so a theme can never silently change what
+   *  the data MEANS. See lib/theme/column-defaults.ts. */
+  column_defaults?: Partial<Record<string, Record<string, unknown>>>;
+
   /** Phase D — GEOMETRY cascade axis.
    *
    *  Numeric scale tokens that drive corner softness + line weight across

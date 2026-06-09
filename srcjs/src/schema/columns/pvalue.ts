@@ -33,7 +33,10 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: false,
       hint: "Show significance stars",
-      kind: "core",
+      // STYLING (2026-06-09): a presentation toggle a theme house-style may
+      // default (the p-value DATA is unchanged; stars are a visual annotation).
+      // Theme-defaultable via theme.column_defaults; author always overrides.
+      kind: "styling",
       consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
@@ -48,7 +51,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
         { value: "none",     label: "Plain" },
       ],
       hint: "Color channel for significance stars",
-      kind: "core",
+      kind: "styling",  // pure visual — theme-defaultable
       visibleWhen: (s) => s.stars === true,
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
@@ -62,7 +65,7 @@ export const PVALUE_SCHEMA: ColumnSchema = {
         { value: "pill", label: "Pill" },
       ],
       hint: "Paint a soft positive pill on significant values (p < first threshold).",
-      kind: "core",
+      kind: "styling",  // pure visual — theme-defaultable
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
