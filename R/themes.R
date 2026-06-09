@@ -197,43 +197,25 @@ web_theme_bmj <- function() {
 #' @return A nested list: category -> list of resolved [WebTheme] objects.
 #' @export
 package_themes <- function() {
+  # The 9 committed identities (27→9 cull, locked 2026-06-09). Each owns a
+  # distinct expressive axis (the rgc_v4 model); grouped here by register.
   list(
-    journals = list(
-      cochrane  = web_theme_cochrane(),
-      lancet    = web_theme_lancet(),
-      jama      = web_theme_jama(),
-      nejm      = web_theme_nejm(),
-      nature    = web_theme_nature(),
-      bmj       = web_theme_bmj()
+    clinical = list(
+      nejm      = web_theme_nejm()       # restraint / the default
     ),
-    modes = list(
-      dark      = web_theme_dark()
+    editorial = list(
+      newsprint = web_theme_newsprint(), # TEXTURE — warm grain serif
+      dwarven   = web_theme_dwarven()    # FANTASY — Cinzel display serif
     ),
     design = list(
-      bauhaus         = web_theme_bauhaus(),
-      swiss           = web_theme_swiss(),
-      tufte           = web_theme_tufte(),
-      newsprint       = web_theme_newsprint(),
-      solarized       = web_theme_solarized(),
-      solarized_dark  = web_theme_solarized_dark(),
-      tonal           = web_theme_tonal(),
-      tonal_dark      = web_theme_tonal_dark()
+      ledger    = web_theme_ledger(),    # COLOR — teal + oxblood
+      brutalist = web_theme_brutalist()  # GEOMETRY — sharp, thick rules
     ),
-    lotr = list(
-      dwarven = web_theme_dwarven(),
-      elvish  = web_theme_elvish(),
-      hobbit  = web_theme_hobbit()
-    ),
-    showcase = list(
-      synthwave = web_theme_synthwave(),
-      brutalist = web_theme_brutalist(),
-      atelier   = web_theme_atelier(),
-      executive = web_theme_executive(),
-      ledger    = web_theme_ledger(),
-      terminal  = web_theme_terminal(),
-      aurora    = web_theme_aurora(),
-      blueprint = web_theme_blueprint(),
-      sunprint  = web_theme_sunprint()
+    expressive = list(
+      aurora    = web_theme_aurora(),    # EFFECTS — glass + glow
+      terminal  = web_theme_terminal(),  # ALIASING — mono phosphor
+      blueprint = web_theme_blueprint(), # DRAFT / GRID — cyanotype
+      synthwave = web_theme_synthwave()  # NEON
     )
   )
 }
