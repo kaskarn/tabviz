@@ -9,6 +9,7 @@
  */
 
 import type { ColumnOptions, Row } from "../types";
+import { recipeFor } from "../schema/columns/interval-renderer";
 
 // ============================================================================
 // Memoization
@@ -327,7 +328,22 @@ function _formatIntervalImpl(
     return "—";
   }
 
-  return `${fmt(point)}${sep}(${fmt(lower)}, ${fmt(upper)})`;
+  // Mirror the cell renderer's VARIANT recipe so the measured string matches
+  // what actually paints (user feedback 2026-06-08: the old hardcoded
+  // `(lo, hi)` over-sized the `plus_minus` (renders half-width ±δ) and
+  // `stacked` (renders TWO lines) variants). For column/stacked layout the
+  // column width is the WIDER of the two lines, not their concatenation.
+  const recipe = recipeFor(i);
+  const boundsBody = recipe.boundsContent === "half_width"
+    ? fmt((upper - lower) / 2)
+    : `${fmt(lower)}${recipe.boundsSeparator}${fmt(upper)}`;
+  const boundsStr = `${recipe.boundsDelimiter[0]}${recipe.boundsPrefix}${boundsBody}${recipe.boundsDelimiter[1]}`;
+  const pointStr = fmt(point);
+  if (recipe.boundsLayout === "column") {
+    // Two stacked lines → width = the longer single line.
+    return pointStr.length >= boundsStr.length ? pointStr : boundsStr;
+  }
+  return `${pointStr}${sep}${boundsStr}`;
 }
 
 /** Format p-value for display with Unicode superscript notation */

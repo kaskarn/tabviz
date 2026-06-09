@@ -38,7 +38,7 @@ function text(value: string): RenderText {
   return { kind: "text", value };
 }
 
-interface IntervalRecipe {
+export interface IntervalRecipe {
   boundsLayout: "row" | "column";
   boundsContent: "range" | "half_width";
   boundsDelimiter: readonly [string, string];
@@ -46,7 +46,11 @@ interface IntervalRecipe {
   boundsPrefix: string;
 }
 
-function recipeFor(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
+/** Resolve the layout recipe for an interval column (exported so the
+ *  width-measurement formatter mirrors EXACTLY what this renderer draws —
+ *  the two diverged for the stacked/plus_minus variants, mis-sizing the
+ *  column; user feedback 2026-06-08). */
+export function recipeFor(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
   // Prefer the pre-compiled __resolved shape (compileVariants ingest pass);
   // fall back to looking up the variant id directly so test fixtures and
   // ad-hoc render paths that bypass setSpec still work correctly.
