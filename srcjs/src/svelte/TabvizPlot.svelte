@@ -3349,13 +3349,17 @@
       0 0 var(--tv-glow-blur, 0) var(--tv-glow-spread, 0) var(--tv-glow-color, transparent);
   }
 
-  /* Hero-row inset bar (wire-audit 1c, lab .is-highlight): the first
-     cell of an emphasis-painted row carries a 3px accent bar. Composed
-     with the emphasis/glow stack — every component is a composable
+  /* Hero-row inset bar (wire-audit 1c, lab .is-highlight; rgc table-craft):
+     the first cell of an emphasis row carries a 3px accent bar. Covers BOTH
+     paths — paint-tool emphasis (.row-active-emphasis) AND data-driven
+     emphasis from a style-mapping column (.cell-emphasis), the common case
+     in an authored table (the teal "this row matters" rail in rgc Ledger).
+     Composed with the emphasis/glow stack — every component is a composable
      no-op when its tokens are unset ("none" in a multi-shadow list is
      invalid CSS and silently drops the whole declaration; the resolver
      emits "0 0 0 transparent" for the same reason). */
-  :global(.tabviz-container .data-cell.row-active-emphasis:first-child) {
+  :global(.tabviz-container .data-cell.row-active-emphasis:first-child),
+  :global(.tabviz-container .data-cell.cell-emphasis:first-child) {
     box-shadow:
       inset 3px 0 0 var(--tv-row-emphasis-bar, transparent),
       var(--tv-shadow-emphasis, 0 0 0 transparent),
