@@ -159,6 +159,7 @@ export const JAMA: ThemeInputs = defineInputs(
   { brand: "#0F171F", accent: "#0F171F", neutralHueFrom: null },
   {
     categorical: "brand_mono",
+    border_preset: "frame",
     density: "compact",
     type_base_size: 13,
     type_scale_ratio: 1.15,
@@ -172,6 +173,7 @@ export const NEJM: ThemeInputs = defineInputs(
   { brand: "#BD2F2F", accent: "#1B5377" },
   {
     categorical: "okabe_ito",
+    border_preset: "frame",
     type_scale_ratio: 1.25,
     fonts: {
       body: "'Lora', Georgia, serif",
@@ -213,6 +215,7 @@ export const BMJ: ThemeInputs = defineInputs(
       body: "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
       display: "'IBM Plex Serif', Georgia, serif",
     },
+    border_preset: "frame",
     curves: { neutral: "ease" },
   },
 );

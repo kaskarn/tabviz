@@ -117,6 +117,7 @@ web_theme_jama <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "brand_mono",
+    border_preset = "frame",
     density = "compact",
     type_base_size = 13,
     type_scale_ratio = 1.15,
@@ -136,6 +137,7 @@ web_theme_nejm <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
+    border_preset = "frame",
     type_scale_ratio = 1.25,
     fonts_body = "'Lora', Georgia, serif",
     fonts_display = "'Lora', Georgia, serif",
@@ -178,6 +180,7 @@ web_theme_bmj <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
+    border_preset = "frame",
     fonts_body = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
     fonts_display = "'IBM Plex Serif', Georgia, serif",
     web_fonts = list(
