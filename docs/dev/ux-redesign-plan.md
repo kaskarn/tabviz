@@ -194,10 +194,17 @@ R parity/render-smoke):
   controls verified live, 0 dead.** See CLAUDE.md for the hard-won design notes
   (comprehensive outerHTML+style-CSS fingerprint; keyboard-driven dropdowns;
   never-Escape; forest-column fixture; timeout-bounded everything).
-- **B (started)** `web_theme(border_preset=)` unlocked; journal family
-  (cochrane/nejm/jama/bmj/nature) → `border_preset:"frame"` (texture out).
-  `fonts.numeric` figure-font slot + reachable "Numbers" picker. REMAINING: the
-  27→8 ΔE-vetted cull + committed identities; the rest of the table-craft.
+- **B ✓ COMPLETE (27→9 cull)** — the headline. 9 committed identities, each
+  owning one axis, 4-dark/5-light (user-finalized): nejm(default)/ledger/
+  brutalist/aurora/terminal/newsprint/blueprint(light cyanotype)/synthwave/
+  dwarven. Two expert-review passes hardened it (terminal≈blueprint near-
+  neighbor fixed via Archivo + light flip; ledger paper saturated; honest
+  migration comments). FULL HARD DELETE done: 18 constructors + 18 man +
+  NAMESPACE + ~44 examples + ~43 docs migrated. R↔TS parity green; distinctness
+  gate re-tuned for 9; resolver-dispatch snapshot pruned. Commits fed2f9c /
+  2e6211a / 7751e53 / 355d6ef. theme_blend() deferred as a feature, not a
+  migration crutch. REMAINING (separate): the rest of the table-craft
+  (emphasis-row border, spanner rules, footnote band).
 - **B-craft** the rgc green p-value PILL (`significant_style:"pill"`).
 - **D1 ✓** CI column-width variant-aware measurement + parity gate.
 
