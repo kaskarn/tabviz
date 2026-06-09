@@ -312,12 +312,38 @@
 
 <style>
   .studio {
+    /* Editorial studio token layer (UX redesign A0). The studio rail lives
+       OUTSIDE the widget DOM and can't inherit --tv-*, so the studio chrome
+       defines its OWN warm-editorial palette instead of cold slate literals
+       — the "two design systems in one viewport" fix. Mirrors the v2 control
+       language so rail + shell are ONE surface. */
+    --studio-bg: #fbf9f3;          /* warm paper chrome */
+    --studio-surface: #ffffff;     /* chart / card surface */
+    --studio-paper-2: #f3efe5;     /* recessed bands */
+    --studio-fg: #15140e;          /* warm ink */
+    --studio-fg-2: #4a463c;        /* secondary ink */
+    --studio-fg-3: #8a8478;        /* muted */
+    --studio-rule: #ddd7c9;        /* hairline */
+    --studio-rule-soft: #ece7da;
+    --studio-rule-strong: #15140e;
+    --studio-accent: var(--tv-accent, #2563eb);
+    --studio-font: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --studio-good: #2f7d4f;
+    --studio-warn: #b07314;        /* amber ink (verdict / contrast) */
+    --studio-warn-tint: #f6ecd6;
+    --studio-bad: #a23b2e;
+    --studio-bad-tint: #fbeae6;
+    --studio-bad-ink: #7a2118;
+    --studio-pins: #6b4fb0;
+    --studio-pins-tint: #efeaf8;
+    --studio-pins-ink: #4c2889;
+
     display: grid;
     grid-template-rows: auto 1fr auto;
     height: 100vh;
-    background: var(--studio-bg, #ffffff);
-    color: var(--studio-fg, #1a1a1a);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--studio-bg);
+    color: var(--studio-fg);
+    font-family: var(--studio-font);
     font-size: 13px;
   }
 
@@ -326,18 +352,18 @@
     grid-template-columns: minmax(320px, 380px) 1fr;
     overflow: hidden;
     min-height: 0;
-    background: #ffffff;
+    background: var(--studio-surface);
   }
   .controls-rail {
     overflow-y: auto;
-    border-right: 1px solid #e2e8f0;
-    background: #ffffff;
+    border-right: 1px solid var(--studio-rule);
+    background: var(--studio-bg);
   }
   .cascade-main {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    background: #ffffff;
+    background: var(--studio-surface);
     min-height: 0;
   }
   .contrast-warn-banner {
@@ -345,21 +371,21 @@
     padding: 7px 12px;
     border-radius: 6px;
     font-size: 12px;
-    background: color-mix(in srgb, #d97706 12%, var(--tp-bg, #fff));
-    border: 1px solid color-mix(in srgb, #d97706 35%, transparent);
-    color: var(--tp-fg, #1c1a17);
+    background: var(--studio-warn-tint);
+    border: 1px solid color-mix(in srgb, var(--studio-warn) 35%, transparent);
+    color: var(--studio-warn);
   }
   .pins-warn-banner {
     margin: 8px 12px 0;
     padding: 7px 12px;
     border-radius: 6px;
     font-size: 12px;
-    background: color-mix(in srgb, #7c3aed 10%, #fff);
-    border: 1px solid color-mix(in srgb, #7c3aed 30%, transparent);
-    color: #4c2889;
+    background: var(--studio-pins-tint);
+    border: 1px solid color-mix(in srgb, var(--studio-pins) 30%, transparent);
+    color: var(--studio-pins-ink);
   }
   .spine-host {
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--studio-rule);
     padding: 8px 12px 12px;
   }
   .spine-host-head {
@@ -374,28 +400,28 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #334155;
+    color: var(--studio-fg-2);
   }
   .spine-host-hint {
     font-size: 10.5px;
-    color: #94a3b8;
+    color: var(--studio-fg-3);
   }
 
   .resolve-error-banner {
     flex: 0 0 auto;
     margin: 8px 12px 0;
     padding: 8px 12px;
-    border: 1px solid #fca5a5;
+    border: 1px solid color-mix(in srgb, var(--studio-bad) 40%, transparent);
     border-radius: 6px;
-    background: #fef2f2;
-    color: #991b1b;
+    background: var(--studio-bad-tint);
+    color: var(--studio-bad-ink);
     font-size: 12px;
   }
   .resolve-error-banner code {
     display: block;
     margin-top: 4px;
     font-size: 11px;
-    color: #7f1d1d;
+    color: var(--studio-bad-ink);
     word-break: break-word;
   }
   .preview-bar {
@@ -404,30 +430,30 @@
     justify-content: space-between;
     gap: 8px;
     padding: 4px 12px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #fcfcfc;
+    border-bottom: 1px solid var(--studio-rule-soft);
+    background: var(--studio-paper-2);
   }
   .trace-chip {
     font-size: 11px;
-    color: #64748b;
-    background: #f1f5f9;
+    color: var(--studio-fg-3);
+    background: var(--studio-paper-2);
     border-radius: 999px;
     padding: 2px 10px;
   }
   .validate-toggle {
     font-size: 11.5px;
     padding: 3px 10px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--studio-rule);
     border-radius: 5px;
-    background: #fff;
-    color: #334155;
+    background: var(--studio-surface);
+    color: var(--studio-fg-2);
     cursor: pointer;
   }
-  .validate-toggle:hover { background: #f1f5f9; }
+  .validate-toggle:hover { background: var(--studio-paper-2); }
   .validate-toggle.on {
-    background: #1e293b;
-    color: #fff;
-    border-color: #1e293b;
+    background: var(--studio-rule-strong);
+    color: var(--studio-bg);
+    border-color: var(--studio-rule-strong);
   }
   .validate-matrix {
     flex: 0 0 auto;
@@ -435,14 +461,14 @@
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     padding: 8px 12px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #fafafa;
+    border-bottom: 1px solid var(--studio-rule);
+    background: var(--studio-paper-2);
   }
   .validate-cell {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--studio-rule);
     border-radius: 6px;
     overflow: hidden;
-    background: #fff;
+    background: var(--studio-surface);
     display: flex;
     flex-direction: column;
   }
@@ -453,11 +479,11 @@
     padding: 4px 10px;
     font-size: 11px;
     font-weight: 600;
-    color: #334155;
-    border-bottom: 1px solid #f1f5f9;
+    color: var(--studio-fg-2);
+    border-bottom: 1px solid var(--studio-rule-soft);
   }
-  .v-ok  { color: #15803d; font-weight: 500; }
-  .v-bad { color: #b45309; font-weight: 500; }
+  .v-ok  { color: var(--studio-good); font-weight: 500; }
+  .v-bad { color: var(--studio-warn); font-weight: 500; }
   .validate-chart {
     height: 260px;
     overflow: hidden;
@@ -474,8 +500,8 @@
     left: 50%;
     transform: translateX(-50%);
     padding: 8px 14px;
-    background: #1a1a1a;
-    color: #fff;
+    background: var(--studio-fg);
+    color: var(--studio-bg);
     border-radius: 6px;
     font-size: 12.5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -485,8 +511,8 @@
   .live-preview {
     flex: 0 0 auto;
     height: min(560px, 50vh);
-    border-bottom: 1px solid #e2e8f0;
-    background: #fafafa;
+    border-bottom: 1px solid var(--studio-rule);
+    background: var(--studio-paper-2);
     overflow: hidden;
   }
   .live-preview > :global(.studio-chart) {
@@ -494,7 +520,7 @@
   }
   .theme-panel-placeholder {
     padding: 24px;
-    color: #475569;
+    color: var(--studio-fg-2);
     font-style: italic;
   }
 
@@ -503,6 +529,6 @@
       grid-template-columns: 1fr;
       grid-template-rows: auto 1fr;
     }
-    .controls-rail { border-right: 0; border-bottom: 1px solid #e2e8f0; }
+    .controls-rail { border-right: 0; border-bottom: 1px solid var(--studio-rule); }
   }
 </style>
