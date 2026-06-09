@@ -163,8 +163,8 @@ test_that("R presets all serialize to the v4 anchors shape", {
 })
 
 test_that("Polarity round-trips through serialization for dark presets", {
-  # Dark-polarity survivors (27→9 cull, 2026-06-09).
-  for (name in c("aurora", "terminal", "blueprint", "synthwave", "dwarven")) {
+  # Dark-polarity survivors (27→9 cull; blueprint→light 2026-06-09).
+  for (name in c("aurora", "terminal", "synthwave", "dwarven")) {
     inputs_json <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     expect_equal(inputs_json$polarity, "dark",
                  label = paste0("polarity (preset: ", name, ")"))
@@ -172,8 +172,8 @@ test_that("Polarity round-trips through serialization for dark presets", {
 })
 
 test_that("Light presets DO NOT emit polarity (default omitted symmetric R↔TS)", {
-  # Light-polarity survivors (27→9 cull, 2026-06-09).
-  for (name in c("nejm", "ledger", "brutalist", "newsprint")) {
+  # Light-polarity survivors (blueprint flipped to a light drafting sheet).
+  for (name in c("nejm", "ledger", "brutalist", "newsprint", "blueprint")) {
     inputs_json <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     expect_null(inputs_json$polarity,
                 info = paste0("light preset '", name, "' should omit polarity"))

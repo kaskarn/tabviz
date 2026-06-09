@@ -328,7 +328,11 @@ export const LEDGER: ThemeInputs = defineInputs(
     brand: "#006266",
     accent: "#862721",
     neutralHueFrom: "#DECBB1",
-    paperC: 0.012,
+    // Saturated cream/parchment (distinctness review 2026-06-09): Ledger owns
+    // COLOR, so its paper earns more chroma — keeps the three warm-light
+    // themes (nejm near-white / ledger cream / newsprint warm-grey) from
+    // blurring together at thumbnail size.
+    paperC: 0.028,
     inkC: 0.014,
   },
   {
@@ -412,11 +416,15 @@ export const AURORA: ThemeInputs = defineInputs(
  *  texture as the drafting sheet, monospace annotations, radius 0. */
 export const BLUEPRINT: ThemeInputs = defineInputs(
   {
+    // LIGHT cyanotype DRAFTING SHEET (distinctness review 2026-06-09): a
+    // pale-blue paper with navy ink lines (the architect's table), NOT the
+    // dark cyanotype negative — so the set is 4-dark/5-light and Blueprint
+    // sits far from Terminal's black-phosphor CRT. The high paperC + blue
+    // brand hue tint the paper blue; ink stays blue-navy.
     brand: "#007D9F",
     accent: "#E69C3A",
-    polarity: "dark",
     paperC: 0.045,
-    inkC: 0.02,
+    inkC: 0.03,
   },
   {
     // ARCHITECTURAL DRAFT, not a code terminal. Blueprint reads as a drafting

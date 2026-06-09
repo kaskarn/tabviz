@@ -199,7 +199,9 @@ web_theme_executive <- function() {
 web_theme_ledger <- function() {
   a <- derive_preset_anchors("#006266",
                              neutral_hue_from = "#DECBB1",
-                             paper_C = 0.012, ink_C = 0.014)
+                             # Saturated cream/parchment — Ledger owns COLOR,
+                             # so its paper earns chroma (distinctness 2026-06-09).
+                             paper_C = 0.028, ink_C = 0.014)
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand,
     accent = "#862721",
@@ -290,20 +292,19 @@ web_theme_aurora <- function() {
   )
 }
 
-#' Blueprint theme - drafting-table cyanotype (rgc_v4 lab port).
+#' Blueprint theme - architectural drafting sheet (rgc_v4 lab port).
 #'
-#' Deep cyan-navy paper (dark polarity with brand-hued neutrals), amber
-#' rubrication accent for callouts, grid texture as the drafting sheet,
-#' monospace annotations, radius 0.
+#' LIGHT cyanotype: pale-blue paper with navy ink lines (the architect's
+#' table, not the dark negative), amber rubrication accent for callouts, grid
+#' texture as the drafting sheet, Archivo drafting-label sans, radius 0.
 #' @return A [WebTheme].
 #' @export
 web_theme_blueprint <- function() {
   a <- derive_preset_anchors("#007D9F",
-                             paper_C = 0.045, ink_C = 0.02)
+                             paper_C = 0.045, ink_C = 0.03)
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand,
     accent = "#E69C3A",
-    polarity = "dark",
     categorical = "paired",
     density = "compact",
     shell_texture = "grid",
