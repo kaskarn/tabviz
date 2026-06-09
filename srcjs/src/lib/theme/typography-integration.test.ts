@@ -42,11 +42,14 @@ describe("typography → cssVars integration", () => {
     expect(r.cssVars["--tv-text-body-family"]).toContain("Inter");
   });
 
-  it("numeric family = mono font", () => {
+  it("numeric family = BODY font (not mono — 2026-06-08)", () => {
     const r = resolveTheme(createWire(inputsFromHex({ brand: "#0099CC" }, {
-      fonts: { mono: "JetBrains Mono, monospace" },
+      fonts: { body: "Lora, serif", mono: "JetBrains Mono, monospace" },
     }), "test"));
-    expect(r.cssVars["--tv-text-numeric-family"]).toContain("JetBrains");
+    // numbers follow the body font now; mono stays available for the
+    // `mono`-family roles + a future dedicated `fonts.numeric` slot.
+    expect(r.cssVars["--tv-text-numeric-family"]).toContain("Lora");
+    expect(r.cssVars["--tv-text-numeric-family"]).not.toContain("JetBrains");
   });
 
   it("size reflects type_scale_ratio", () => {

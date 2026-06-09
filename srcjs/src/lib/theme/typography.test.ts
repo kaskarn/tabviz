@@ -80,9 +80,9 @@ describe("resolveTypeRole", () => {
     expect(r.weight).toBe(DEFAULT_TYPE_WEIGHTS.semibold);
   });
 
-  it("numeric role uses mono family + body size", () => {
+  it("numeric role uses BODY family + body size (not mono — 2026-06-08)", () => {
     const r = resolveTypeRole("numeric", resolved);
-    expect(r.family).toBe(resolved.fonts.mono);
+    expect(r.family).toBe(resolved.fonts.body);
     expect(r.size).toBe(resolved.scale.body);
     expect(r.weight).toBe(DEFAULT_TYPE_WEIGHTS.regular);
   });

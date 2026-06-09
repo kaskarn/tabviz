@@ -29,7 +29,7 @@
     { key: "title",    base: "text-title",    family: "display", sample: "Change in primary endpoint" },
     { key: "subtitle", base: "text-subtitle", family: "body",    sample: "A randomised controlled trial" },
     { key: "body",     base: "text-body",     family: "body",    sample: "Compound A, 50 mg" },
-    { key: "numeric",  base: "text-numeric",  family: "mono",    sample: "−8.4 (−10.1 to −6.7)" },
+    { key: "numeric",  base: "text-numeric",  family: "body",    sample: "−8.4 (−10.1 to −6.7)" },
     { key: "label",    base: "text-label",    family: "mono",    sample: "TABLE 2" },
     { key: "caption",  base: "text-caption",  family: "body",    sample: "Adjusted for baseline score, age, and study site." },
     { key: "footnote", base: "text-footnote", family: "body",    sample: "Lower scores indicate improvement." },

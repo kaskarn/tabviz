@@ -162,11 +162,14 @@
     position: absolute;
     inset: 0;
     z-index: 10010;
-    background: color-mix(in srgb, var(--tv-text, #0f172a) 12%, transparent);
+    /* No scrim over the figure (user feedback 2026-06-08: dimming the table
+       while editing its appearance defeats the purpose — you can't judge the
+       change against a darkened preview). The element stays as an invisible
+       click-outside-to-close target only. */
+    background: transparent;
     border: none;
     padding: 0;
-    cursor: pointer;
-    animation: backdrop-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: default;
   }
 
   .settings-panel {

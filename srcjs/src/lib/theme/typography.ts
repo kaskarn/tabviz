@@ -56,12 +56,19 @@ export const DEFAULT_TYPE_ROLES: Readonly<Record<TypeRoleName, TypeRole>> = {
   title:    { family: "display", size: "title",    weight: "semibold" },
   subtitle: { family: "body",    size: "subtitle", weight: "regular"  },
   body:     { family: "body",    size: "body",     weight: "regular"  },
-  numeric:  { family: "mono",    size: "body",     weight: "regular"  },
+  // Numbers default to the BODY font, NOT mono (user feedback 2026-06-08):
+  // a monospace number font clashes with most editorial/journal type — the
+  // body font reads far more elegant, and tabular alignment is a separate
+  // font-feature (`--tv-text-numeric-figures: tnum`), not the family. A
+  // theme that WANTS a distinct figure font sets `fonts.numeric` (which
+  // falls back to body when unset) and rebinds the `numeric` role to it.
+  // This also aligns the DOM with the SVG export, which already used body.
+  numeric:  { family: "body",    size: "body",     weight: "regular"  },
   label:    { family: "mono",    size: "label",    weight: "bold"     },
   caption:  { family: "body",    size: "foot",     weight: "regular"  },
   footnote: { family: "body",    size: "foot",     weight: "regular"  },
   cell:     { family: "body",    size: "body",     weight: "regular"  },
-  tick:     { family: "mono",    size: "foot",     weight: "regular"  },
+  tick:     { family: "body",    size: "foot",     weight: "regular"  },
 };
 
 /** Tier 1 typography inputs (defaults). The values match v3 conventions: base
