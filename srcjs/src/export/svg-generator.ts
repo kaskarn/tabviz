@@ -1748,7 +1748,10 @@ function makeThemeResolver(theme: WebTheme, cssVars: Record<string, string> = {}
   const fontFamily: Record<string, string> = {
     base:    readBodyFamily(cssVars),
     display: readTypeFamily(cssVars, "title", readBodyFamily(cssVars)),
-    number:  readBodyFamily(cssVars),  // theme-controlled tabular handled via figures
+    // The dedicated numeric/figure font (--tv-text-numeric-family; falls back
+    // to body) — so a theme's fonts.numeric reaches export, not just the DOM
+    // (user feedback 2026-06-08). Tabular alignment is still the figures feature.
+    number:  readTypeFamily(cssVars, "numeric", readBodyFamily(cssVars)),
     mono:    "ui-monospace, SFMono-Regular, monospace",
   };
   const fontSize: Record<string, number> = {

@@ -90,11 +90,16 @@ export interface ThemeInputs {
   /** Optional status anchor overrides. */
   status?: ThemeStatusAnchors;
 
-  /** Typography. */
+  /** Typography. `numeric` is a dedicated FIGURE font for the data columns
+   *  (user feedback 2026-06-08: a theme should be able to set a number font
+   *  separately from the monospace font — an elegant tabular/lining figure
+   *  face when one exists). Falls back to `body` when unset, so numbers
+   *  follow the body font by default (never the clashing mono). */
   fonts?: {
     body?: string;
     display?: string;
     mono?: string;
+    numeric?: string;
   };
 
   /** Stage 2 §3 surface texture. Themeable background pattern applied to

@@ -127,6 +127,7 @@ theme_inputs_from_wire <- function(wire_inputs) {
   v$fonts_body    <- .wire_chr(f[["body"]])
   v$fonts_display <- .wire_chr(f[["display"]])
   v$fonts_mono    <- .wire_chr(f[["mono"]])
+  v$fonts_numeric <- .wire_chr(f[["numeric"]])
 
   # Type weights.
   tw <- w[["type_weights"]] %||% list()

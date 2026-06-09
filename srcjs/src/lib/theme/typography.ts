@@ -46,7 +46,7 @@ export type TypeRoleName =
  *  need a role-aware knob, add it back here AND wire a consumer reading
  *  `--tv-text-{role}-{lh|track}` in the same change. */
 export interface TypeRole {
-  family: "display" | "body" | "mono";
+  family: "display" | "body" | "mono" | "numeric";
   size: SizeScaleStep;
   weight: "regular" | "medium" | "semibold" | "bold";
 }
@@ -63,7 +63,7 @@ export const DEFAULT_TYPE_ROLES: Readonly<Record<TypeRoleName, TypeRole>> = {
   // theme that WANTS a distinct figure font sets `fonts.numeric` (which
   // falls back to body when unset) and rebinds the `numeric` role to it.
   // This also aligns the DOM with the SVG export, which already used body.
-  numeric:  { family: "body",    size: "body",     weight: "regular"  },
+  numeric:  { family: "numeric", size: "body",     weight: "regular"  },
   label:    { family: "mono",    size: "label",    weight: "bold"     },
   caption:  { family: "body",    size: "foot",     weight: "regular"  },
   footnote: { family: "body",    size: "foot",     weight: "regular"  },
@@ -103,7 +103,7 @@ export function buildSizeScale(base: number, ratio: number): SizeScale {
 /** Read typography inputs from `ThemeInputs` with defaults applied.
  *  Returns the fully-resolved Tier 1 typography. */
 export function resolveTypographyInputs(inputs: ThemeInputs): {
-  fonts: { display: string; body: string; mono: string };
+  fonts: { display: string; body: string; mono: string; numeric: string };
   baseSize: number;
   ratio: number;
   weights: { regular: number; medium: number; semibold: number; bold: number };
@@ -114,6 +114,9 @@ export function resolveTypographyInputs(inputs: ThemeInputs): {
     body,
     display: inputs.fonts?.display ?? body,
     mono: inputs.fonts?.mono ?? "ui-monospace, SFMono-Regular, monospace",
+    // The dedicated figure font; falls back to body so numbers never
+    // default to the clashing mono (user feedback 2026-06-08).
+    numeric: inputs.fonts?.numeric ?? body,
   };
   const baseSize = inputs.type_base_size ?? DEFAULT_TYPE_BASE_SIZE;
   const ratio = inputs.type_scale_ratio ?? DEFAULT_TYPE_SCALE_RATIO;

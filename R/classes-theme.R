@@ -143,6 +143,9 @@ ThemeInputs <- new_class(
                                     default = "system-ui, -apple-system, sans-serif"),
     fonts_display    = new_property(class_character, default = NA_character_),
     fonts_mono       = new_property(class_character, default = NA_character_),
+    # Dedicated FIGURE font for number columns (user feedback 2026-06-08).
+    # NA falls back to fonts_body, so numbers follow body, never mono.
+    fonts_numeric    = new_property(class_character, default = NA_character_),
 
     density         = new_property(class_character, default = "comfortable"),
     # Continuous multiplier on the density preset's spacing (fine dial atop the

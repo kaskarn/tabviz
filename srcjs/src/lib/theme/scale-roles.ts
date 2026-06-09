@@ -36,7 +36,7 @@ export type ScaleDomain = "type" | "geometry" | "spacing";
 // ── TYPE ────────────────────────────────────────────────────────────────
 export const TYPE_ROLE_NAMES = Object.keys(DEFAULT_TYPE_ROLES) as TypeRoleName[];
 
-const TYPE_FAMILIES = ["display", "body", "mono"] as const;
+const TYPE_FAMILIES = ["display", "body", "mono", "numeric"] as const;
 const TYPE_SIZES: readonly SizeScaleStep[] = [
   "label", "foot", "body", "head", "subtitle", "title", "display",
 ];

@@ -256,7 +256,7 @@
   // viewer/R-ahead-of-studio inversion the review flagged.
   let typeRoleSel = $state<TypeRoleName>("footnote");
   const TYPE_ROLE_OPTS = TYPE_ROLE_NAMES.map((r) => ({ value: r, label: r }));
-  const TYPE_FAMILY_OPTS = ["display", "body", "mono"].map((v) => ({ value: v, label: v }));
+  const TYPE_FAMILY_OPTS = ["display", "body", "mono", "numeric"].map((v) => ({ value: v, label: v }));
   const TYPE_SIZE_OPTS = ["label", "foot", "body", "head", "subtitle", "title", "display"]
     .map((v) => ({ value: v, label: v }));
   const TYPE_WEIGHT_OPTS = ["regular", "medium", "semibold", "bold"].map((v) => ({ value: v, label: v }));

@@ -22,6 +22,7 @@ web_theme(
   fonts_body = NULL,
   fonts_display = NULL,
   fonts_mono = NULL,
+  fonts_numeric = NULL,
   density = "comfortable",
   density_factor = 1,
   shell_mode = NULL,
@@ -74,6 +75,9 @@ the TS resolver's defaults.}
 
 \item{fonts_body, fonts_display, fonts_mono}{Font stacks. fonts_display NULL
 mirrors fonts_body.}
+
+\item{fonts_numeric}{Dedicated figure font for number columns. NULL falls
+back to fonts_body (numbers follow the body font, never the mono).}
 
 \item{density}{\code{"compact"}, \code{"comfortable"}, or \code{"spacious"}.}
 

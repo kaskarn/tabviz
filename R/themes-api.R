@@ -50,7 +50,8 @@ theme_inputs_to_json <- function(inputs) {
   fonts <- list(
     body    = fonts_body,
     display = na_to_null(inputs@fonts_display),
-    mono    = na_to_null(inputs@fonts_mono)
+    mono    = na_to_null(inputs@fonts_mono),
+    numeric = na_to_null(inputs@fonts_numeric)
   )
   fonts <- fonts[!vapply(fonts, is.null, logical(1))]
 
@@ -292,6 +293,8 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   the TS resolver's defaults.
 #' @param fonts_body,fonts_display,fonts_mono Font stacks. fonts_display NULL
 #'   mirrors fonts_body.
+#' @param fonts_numeric Dedicated figure font for number columns. NULL falls
+#'   back to fonts_body (numbers follow the body font, never the mono).
 #' @param density `"compact"`, `"comfortable"`, or `"spacious"`.
 #' @param density_factor Continuous multiplier on the density preset's spacing,
 #'   in `[0.5, 2]` (1 = preset unchanged) — a fine dial on top of the named
@@ -361,6 +364,7 @@ web_theme <- function(
     fonts_body = NULL,
     fonts_display = NULL,
     fonts_mono = NULL,
+    fonts_numeric = NULL,
     density = "comfortable",
     density_factor = 1,
     shell_mode = NULL,
@@ -432,6 +436,7 @@ web_theme <- function(
     fonts_body       = fonts_body       %||% "system-ui, -apple-system, sans-serif",
     fonts_display    = if (is.null(fonts_display)) NA_character_ else fonts_display,
     fonts_mono       = if (is.null(fonts_mono))    NA_character_ else fonts_mono,
+    fonts_numeric    = if (is.null(fonts_numeric)) NA_character_ else fonts_numeric,
     density = density,
     density_factor = density_factor,
     shell_mode    = shell_mode    %||% NA_character_,

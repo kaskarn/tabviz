@@ -216,7 +216,7 @@ const INTERVAL_WEIGHT_VALUES = ["hair", "regular", "thick"] as const;
 const TYPE_ROLE_VALUES = [
   "title", "subtitle", "body", "numeric", "label", "caption", "footnote", "cell", "tick",
 ] as const;
-const TYPE_FAMILY_VALUES = ["display", "body", "mono"] as const;
+const TYPE_FAMILY_VALUES = ["display", "body", "mono", "numeric"] as const;
 const TYPE_SIZE_VALUES = ["label", "foot", "body", "head", "subtitle", "title", "display"] as const;
 const TYPE_WEIGHT_VALUES = ["regular", "medium", "semibold", "bold"] as const;
 
