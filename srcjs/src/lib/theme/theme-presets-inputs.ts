@@ -419,14 +419,19 @@ export const BLUEPRINT: ThemeInputs = defineInputs(
     inkC: 0.02,
   },
   {
+    // ARCHITECTURAL DRAFT, not a code terminal. Blueprint reads as a drafting
+    // sheet: a geometric SANS for labels/annotations (Archivo) — deliberately
+    // NOT the all-mono of Terminal, so the two dark/grid identities don't
+    // collapse to one "dark mono grid" gestalt (distinctness review
+    // 2026-06-09). Two-color (paired) vs Terminal's monochrome single-hue.
     categorical: "paired",
     density: "compact",
     shell_texture: "grid",
     geometry: { radius: { sm: 0, md: 0, lg: 0, pill: 0 } },
     marks: { point_shape: "triangle" },
     fonts: {
-      body: "'IBM Plex Mono', 'Courier New', monospace",
-      display: "'IBM Plex Mono', 'Courier New', monospace",
+      body: "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
+      display: "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
       mono: "'IBM Plex Mono', 'Courier New', monospace",
     },
     type_base_size: 13,
@@ -439,8 +444,11 @@ export const BLUEPRINT: ThemeInputs = defineInputs(
 // `nejm` is the Clinical representative AND the default (replaced cochrane).
 // The 18 deleted looks (cochrane, lancet, jama, nature, bmj, swiss, bauhaus,
 // tufte, solarized(+dark), tonal(+dark), elvish, hobbit, atelier, executive,
-// sunprint, dark) are gone from the roster; their distinct brand colors are a
-// `set_brand()` recolor away. See docs/dev/ux-redesign-plan.md (Workstream B).
+// sunprint, dark) are gone from the roster. Their BRAND COLOR is a
+// `set_brand()` recolor of a survivor away; their FULL personality (the
+// journals differed in shell_mode / type scale / density / neutrals too) is a
+// `webTheme({ baseTheme: "nejm", shell_mode, type_scale_ratio, … })` away —
+// set_brand alone does NOT reproduce them. See docs/dev/ux-redesign-plan.md.
 export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
   nejm:       NEJM,        // Clinical / restraint (default)
   ledger:     LEDGER,      // COLOR axis

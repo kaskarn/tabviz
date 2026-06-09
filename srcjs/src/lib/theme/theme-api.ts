@@ -17,8 +17,10 @@ export type PresetName = keyof typeof PRESETS;
 // ────────────────────────────────────────────────────────────────────
 // Preset constructors — the 9 committed identities (27→9 cull, 2026-06-09).
 // One per axis (rgc_v4 model). The 18 deleted constructors (themeCochrane,
-// themeLancet, …) are gone; their looks are a set_brand()/webTheme() recolor
-// of a survivor away.
+// themeLancet, …) are gone; a deleted look's BRAND is a set_brand() away, its
+// FULL personality a webTheme({ baseTheme: "nejm", … }) away (set_brand alone
+// recolors only the brand anchor — it does NOT reproduce a journal's shell /
+// type-scale / density).
 // ────────────────────────────────────────────────────────────────────
 
 export const themeNejm          = (): WebTheme => buildTheme(PRESETS.nejm,       "nejm");

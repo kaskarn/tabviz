@@ -309,10 +309,13 @@ web_theme_blueprint <- function() {
     shell_texture = "grid",
     geometry = list(radius = list(sm = 0, md = 0, lg = 0, pill = 0)),
     marks = list(point_shape = "triangle"),
-    fonts_body = "'IBM Plex Mono', 'Courier New', monospace",
-    fonts_display = "'IBM Plex Mono', 'Courier New', monospace",
+    # Architectural DRAFT, not a code terminal: a geometric sans for drafting
+    # labels (Archivo), NOT the all-mono of Terminal (distinctness 2026-06-09).
+    fonts_body = "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
+    fonts_display = "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
     fonts_mono = "'IBM Plex Mono', 'Courier New', monospace",
     web_fonts = list(
+      web_font("Archivo", FONT_URLS$archivo),
       web_font("IBM Plex Mono", FONT_URLS$ibm_plex_mono)
     ),
     type_base_size = 13,
