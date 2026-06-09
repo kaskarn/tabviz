@@ -128,6 +128,10 @@ export const COCHRANE: ThemeInputs = defineInputs(
     fonts: {
       body: "'Source Sans 3', -apple-system, system-ui, sans-serif",
     },
+    // Elegance pass (user feedback 2026-06-08): the default theme leads with
+    // the clean journal FRAME (top+bottom table frame, light interior) — the
+    // hairline-framed look a serious table has, instead of bare hairlines.
+    border_preset: "frame",
     curves: { neutral: "ease" },
   },
 );

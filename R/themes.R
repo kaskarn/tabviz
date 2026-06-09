@@ -74,6 +74,9 @@ web_theme_cochrane <- function() {
     web_fonts = list(
       web_font("Source Sans 3", FONT_URLS$source_sans_3)
     ),
+    # Elegance pass (user feedback 2026-06-08): default leads with the clean
+    # journal frame, not bare hairlines.
+    border_preset = "frame",
     curves = list(neutral = "ease"),
     name = "cochrane"
   )
