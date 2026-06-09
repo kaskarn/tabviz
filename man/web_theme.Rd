@@ -36,6 +36,7 @@ web_theme(
   marks = NULL,
   row_kinds = NULL,
   header_style = NULL,
+  border_preset = NULL,
   first_column_style = "default",
   web_fonts = NULL,
   name = "custom"
@@ -136,6 +137,11 @@ row-kind intrinsics apply.}
 \item{header_style}{Header chrome treatment (a structural variant
 input): \code{"light"}, \code{"tint"}, or
 \code{"bold"}. Default \code{"light"}.}
+
+\item{border_preset}{Border treatment (a Tier-1 structural enum): one of
+\code{"none"}, \code{"hairline"}, \code{"ruled"}, \code{"frame"}, or \code{"boxed"}. \code{"frame"} is
+the clean journal look (top+bottom table frame). Default resolver cluster
+(≈ hairline) when unset.}
 
 \item{first_column_style}{First (label) column treatment: \code{"default"},
 \code{"tint"}, or \code{"bold"}. Default \code{"default"}.}

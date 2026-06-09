@@ -189,9 +189,12 @@ export const NATURE: ThemeInputs = defineInputs(
   },
   {
     categorical: "okabe_ito",
-    shell_mode: "raised",
-    shell_texture: "ruled",
-    type_scale_ratio: 1.25,
+    // Elegance pass (user feedback 2026-06-08): a serious medical journal's
+    // tables are FLAT and hairline-FRAMED, not ruled-paper scans. Texture out,
+    // frame in; flush (no card lift); confident title scale.
+    shell_mode: "flush",
+    border_preset: "frame",
+    type_scale_ratio: 1.333,
     curves: { brand: "smooth" },
   },
 );

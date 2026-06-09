@@ -340,6 +340,10 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #' @param header_style Header chrome treatment (a structural variant
 #'   input): `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
+#' @param border_preset Border treatment (a Tier-1 structural enum): one of
+#'   `"none"`, `"hairline"`, `"ruled"`, `"frame"`, or `"boxed"`. `"frame"` is
+#'   the clean journal look (top+bottom table frame). Default resolver cluster
+#'   (≈ hairline) when unset.
 #' @param first_column_style First (label) column treatment: `"default"`,
 #'   `"tint"`, or `"bold"`. Default `"default"`.
 #' @param web_fonts Optional list of [web_font()] declarations to embed.
@@ -378,6 +382,7 @@ web_theme <- function(
     marks = NULL,
     row_kinds = NULL,
     header_style = NULL,
+    border_preset = NULL,
     first_column_style = "default",
     web_fonts = NULL,
     name = "custom") {
@@ -441,6 +446,7 @@ web_theme <- function(
     density_factor = density_factor,
     shell_mode    = shell_mode    %||% NA_character_,
     header_style       = header_style %||% NA_character_,
+    border_preset = border_preset %||% NA_character_,
     shell_texture = shell_texture %||% NA_character_,
     type_base_size   = type_base_size   %||% NA_real_,
     type_scale_ratio = type_scale_ratio %||% NA_real_,

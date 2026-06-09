@@ -156,9 +156,12 @@ web_theme_nature <- function() {
   web_theme(
     paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
     categorical = "okabe_ito",
-    shell_mode = "raised",
-    shell_texture = "ruled",
-    type_scale_ratio = 1.25,
+    # Elegance pass (user feedback 2026-06-08): a serious medical journal's
+    # tables are FLAT + hairline-FRAMED, not ruled-paper scans. Texture out,
+    # frame in; flush; confident title scale.
+    shell_mode = "flush",
+    border_preset = "frame",
+    type_scale_ratio = 1.333,
     curves = list(brand = "smooth"),
     name = "nature"
   )
