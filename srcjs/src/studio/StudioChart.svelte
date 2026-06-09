@@ -129,10 +129,10 @@
   .studio-chart {
     overflow: auto;
     padding: 12px;
-    background: #fafafa;
+    background: var(--studio-paper-2, #f3efe5);
   }
   .loading {
-    color: #94a3b8;
+    color: var(--studio-fg-3, #8a8478);
     font-style: italic;
     text-align: center;
     padding: 48px;

@@ -179,8 +179,8 @@
 
 <style>
   .oklch-picker {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--v2-paper, #fbf9f3);
+    border: 1px solid var(--v2-rule, #d6d0c1);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
     padding: 12px;
@@ -188,7 +188,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--v2-font-sans, -apple-system, sans-serif);
     font-size: 12px;
   }
   header {
@@ -212,7 +212,7 @@
     cursor: crosshair;
     border-radius: 4px;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--v2-rule, #d6d0c1);
   }
   .checkerboard {
     position: absolute;
@@ -258,7 +258,7 @@
       oklch(0.7 0.2 240),  oklch(0.7 0.2 300),
       oklch(0.7 0.2 360)
     );
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--v2-rule, #d6d0c1);
   }
   .hue-thumb {
     position: absolute;
@@ -279,7 +279,7 @@
   .hex-input {
     width: 100%;
     padding: 4px 6px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--v2-rule, #d6d0c1);
     border-radius: 4px;
     font-family: ui-monospace, monospace;
     font-size: 12px;
@@ -287,7 +287,7 @@
   .lch-values {
     font-family: ui-monospace, monospace;
     font-size: 10.5px;
-    color: #64748b;
+    color: var(--v2-ink-3, #8a8478);
   }
   .oog-row {
     display: flex;
@@ -312,14 +312,14 @@
   }
   .done {
     padding: 4px 12px;
-    background: #2563eb;
-    color: #fff;
-    border: 1px solid #1d4ed8;
+    background: var(--v2-rule-strong, #15140e);
+    color: var(--v2-paper, #fff);
+    border: 1px solid var(--v2-rule-strong, #15140e);
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
   }
   .done:hover {
-    background: #1d4ed8;
+    background: var(--v2-ink, #15140e);
   }
 </style>

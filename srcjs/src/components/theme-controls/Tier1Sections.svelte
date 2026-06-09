@@ -245,7 +245,7 @@
   const currentRules = $derived(
     matchSlot(inputs.geometry?.border_width, RULE_SLOTS as unknown as Record<string, Record<string, number>>,
       ["hair", "thin", "regular", "thick"], "normal"));
-  function patchFonts(key: "body" | "display" | "mono", value: string): void {
+  function patchFonts(key: "body" | "display" | "mono" | "numeric", value: string): void {
     commit({ ...inputs, fonts: { ...inputs.fonts, [key]: value } });
   }
 
@@ -370,6 +370,11 @@
       <FontFamily value={inputs.fonts?.body ?? null}
                   ariaLabel="Body font"
                   onchange={(v) => patchFonts("body", v)} />
+    </Field>
+    <Field label="Numbers" hint="Figure font for number columns. Blank = follow the body font.">
+      <FontFamily value={inputs.fonts?.numeric ?? null}
+                  ariaLabel="Numeric figure font"
+                  onchange={(v) => patchFonts("numeric", v)} />
     </Field>
     <Field label="Base">
       <Slider value={inputs.type_base_size ?? 14} min={10} max={22} step={0.5} suffix="px"

@@ -35,6 +35,12 @@
     onchange,
   }: Props = $props();
 
+  // Stable id base so the listbox can point aria-activedescendant at the
+  // active option (SR announces the arrowed-to row, not just the selected
+  // one — the listbox-pattern requirement).
+  const uid = `dd-${Math.random().toString(36).slice(2, 9)}`;
+  const optId = (i: number): string => `${uid}-opt-${i}`;
+
   let open = $state(false);
   let flipUp = $state(false);
   let active = $state(-1); // keyboard-focused index while open
@@ -143,12 +149,14 @@
       role="listbox"
       tabindex="-1"
       aria-label={ariaLabel}
+      aria-activedescendant={active >= 0 ? optId(active) : undefined}
       bind:this={listEl}
       onkeydown={onListKey}
     >
       {#each options as opt, i (String(opt.value))}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
+          id={optId(i)}
           role="option"
           aria-selected={opt.value === value}
           class="dd-opt"
