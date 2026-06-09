@@ -22,7 +22,7 @@
   import Section from "$components/primitives/v2/Section.svelte";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
-  import Select from "$components/primitives/v2/Select.svelte";
+  import Dropdown from "$components/primitives/v2/Dropdown.svelte";
   import FontFamily from "$components/primitives/v2/FontFamily.svelte";
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
   import { hexToOklch } from "$lib/oklch";
@@ -357,7 +357,7 @@
              segments={BORDERS.map((v) => ({ value: v, label: v }))}
              onchange={(v) => patch("border_preset", v as ThemeInputs["border_preset"])} />
     <Field label="Texture">
-      <Select value={inputs.shell_texture ?? "none"}
+      <Dropdown value={inputs.shell_texture ?? "none"}
               ariaLabel="Texture"
               onchange={(v) => patch("shell_texture", v as ThemeInputs["shell_texture"])}
               options={TEXTURE.map((v) => ({ value: v, label: v }))} />
@@ -386,20 +386,20 @@
          inputs.type_roles); present in both the studio rail and the viewer's
          advanced section. -->
     <Field label="Role" hint="Rebind one type role's family / size / weight.">
-      <Select value={typeRoleSel} ariaLabel="Type role to rebind"
+      <Dropdown value={typeRoleSel} ariaLabel="Type role to rebind"
               onchange={(v) => (typeRoleSel = v as TypeRoleName)} options={TYPE_ROLE_OPTS} />
     </Field>
     <Field label="· family">
-      <Select value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
+      <Dropdown value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
               onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
     </Field>
     <Field label="· size">
-      <Select value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
+      <Dropdown value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
               onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
     </Field>
     <Field label="· weight"
            onreset={typeRoleOverridden ? resetTypeRole : undefined}>
-      <Select value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
+      <Dropdown value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
               onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
     </Field>
   </Section>
@@ -415,7 +415,7 @@
                ]}
                onchange={(v) => patch("mode", v as ThemeInputs["mode"])} />
       <Field label="Scheme" hint="Categorical palette for series slots 1+; slot 0 keeps brand identity.">
-        <Select value={inputs.categorical ?? ""}
+        <Dropdown value={inputs.categorical ?? ""}
                 ariaLabel="Categorical scheme"
                 onchange={(v) => patch("categorical", (v || undefined) as ThemeInputs["categorical"])}
                 options={schemeOptions} />
