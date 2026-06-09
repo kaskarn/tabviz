@@ -37,7 +37,7 @@ function buildSpec(): WebSpec {
         options: { forest: { point: "hr", lower: "lo", upper: "hi",
           scale: "linear", nullValue: 1, axisLabel: "HR", showAxis: true } } },
     ],
-    theme: THEME_PRESETS.cochrane,
+    theme: THEME_PRESETS.nejm,
     interaction: {
       showFilters: false, showLegend: true, enableSort: true,
       enableCollapse: true, enableSelect: true, enableHover: true,

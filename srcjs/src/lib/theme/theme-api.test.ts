@@ -1,35 +1,32 @@
 import { expect, test, describe } from "bun:test";
 import {
-  themeCochrane, themeLancet, themeJama, themeDark,
-  themeDwarven, themeElvish, themeHobbit,
+  themeNejm, themeLedger, themeBrutalist, themeAurora, themeTerminal,
+  themeNewsprint, themeBlueprint, themeSynthwave, themeDwarven,
   webTheme, resolveThemeRef,
 } from "./theme-api";
 import { hexToOklch, oklchToHex } from "../oklch";
 
-describe("preset constructors", () => {
+describe("preset constructors (the 9 committed identities)", () => {
   test("all preset constructors resolve without throwing", () => {
-    expect(() => themeCochrane()).not.toThrow();
-    expect(() => themeLancet()).not.toThrow();
-    expect(() => themeJama()).not.toThrow();
-    expect(() => themeDark()).not.toThrow();
-    expect(() => themeDwarven()).not.toThrow();
-    expect(() => themeElvish()).not.toThrow();
-    expect(() => themeHobbit()).not.toThrow();
+    for (const ctor of [themeNejm, themeLedger, themeBrutalist, themeAurora,
+      themeTerminal, themeNewsprint, themeBlueprint, themeSynthwave, themeDwarven]) {
+      expect(() => ctor()).not.toThrow();
+    }
   });
 
-  test("cochrane has expected brand seed", () => {
-    const t = themeCochrane();
-    expect(t.authoringInputs && oklchToHex(t.authoringInputs.anchors.brand).toUpperCase()).toBe("#0099CC");
+  test("nejm has the expected crimson brand seed", () => {
+    const t = themeNejm();
+    expect(t.authoringInputs && oklchToHex(t.authoringInputs.anchors.brand).toUpperCase()).toBe("#BD2F2F");
   });
 
   test("preset name is preserved", () => {
-    expect(themeCochrane().name).toBe("nejm");
-    expect(themeLancet().name).toBe("nejm");
+    expect(themeNejm().name).toBe("nejm");
+    expect(themeLedger().name).toBe("ledger");
   });
 });
 
 describe("webTheme", () => {
-  test("with no args returns a cochrane-shaped theme", () => {
+  test("with no args returns a custom theme on the nejm base", () => {
     const t = webTheme();
     expect(t.name).toBe("custom");
   });
@@ -66,7 +63,7 @@ describe("resolveThemeRef", () => {
   });
 
   test("already-resolved theme passes through", () => {
-    const t1 = themeCochrane();
+    const t1 = themeNejm();
     const t2 = resolveThemeRef(t1);
     expect(t2).toBe(t1);
   });

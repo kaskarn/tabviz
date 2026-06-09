@@ -16,7 +16,7 @@ beforeEach(() => {
   bootDomRenderers();
 });
 
-const theme = THEME_PRESETS.bmj;
+const theme = THEME_PRESETS.nejm;
 
 function callDom(value: unknown, options: Record<string, unknown> = {}, ctx: Partial<RenderContext> = {}): RenderComponent {
   const fn = dispatchRenderer("bar", "dom");

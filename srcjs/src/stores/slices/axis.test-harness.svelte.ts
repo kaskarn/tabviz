@@ -19,7 +19,7 @@ function buildSpec(): WebSpec {
       summaries: [],
     },
     columns: [],
-    theme: THEME_PRESETS.cochrane,
+    theme: THEME_PRESETS.nejm,
     interaction: {
       showFilters: false, showLegend: true, enableSort: true,
       enableCollapse: true, enableSelect: true, enableHover: true,

@@ -8,43 +8,28 @@
 //   `tabviz({ theme: "lancet" })` and the View Source emitter.
 
 import { buildTheme } from "./theme-adapter";
-import { PRESETS } from "./theme-presets-inputs";
+import { PRESETS, preset } from "./theme-presets-inputs";
 import type { ThemeInputs } from "../../types/theme-inputs";
 import type { WebTheme } from "../../types/theme-resolved";
 
 export type PresetName = keyof typeof PRESETS;
 
 // ────────────────────────────────────────────────────────────────────
-// Preset constructors
+// Preset constructors — the 9 committed identities (27→9 cull, 2026-06-09).
+// One per axis (rgc_v4 model). The 18 deleted constructors (themeCochrane,
+// themeLancet, …) are gone; their looks are a set_brand()/webTheme() recolor
+// of a survivor away.
 // ────────────────────────────────────────────────────────────────────
 
-export const themeCochrane      = (): WebTheme => buildTheme(PRESETS.cochrane,        "cochrane");
-export const themeLancet        = (): WebTheme => buildTheme(PRESETS.lancet,          "lancet");
-export const themeJama          = (): WebTheme => buildTheme(PRESETS.jama,            "jama");
-export const themeNejm          = (): WebTheme => buildTheme(PRESETS.nejm,            "nejm");
-export const themeNature        = (): WebTheme => buildTheme(PRESETS.nature,          "nature");
-export const themeBmj           = (): WebTheme => buildTheme(PRESETS.bmj,             "bmj");
-export const themeDark          = (): WebTheme => buildTheme(PRESETS.dark,            "dark");
-export const themeBauhaus       = (): WebTheme => buildTheme(PRESETS.bauhaus,         "bauhaus");
-export const themeSwiss         = (): WebTheme => buildTheme(PRESETS.swiss,           "swiss");
-export const themeTufte         = (): WebTheme => buildTheme(PRESETS.tufte,           "tufte");
-export const themeNewsprint     = (): WebTheme => buildTheme(PRESETS.newsprint,       "newsprint");
-export const themeSolarized     = (): WebTheme => buildTheme(PRESETS.solarized,       "solarized");
-export const themeSolarizedDark = (): WebTheme => buildTheme(PRESETS.solarized_dark,  "solarized_dark");
-export const themeTonal         = (): WebTheme => buildTheme(PRESETS.tonal,           "tonal");
-export const themeTonalDark     = (): WebTheme => buildTheme(PRESETS.tonal_dark,      "tonal_dark");
-export const themeDwarven       = (): WebTheme => buildTheme(PRESETS.dwarven,         "dwarven");
-export const themeElvish        = (): WebTheme => buildTheme(PRESETS.elvish,          "elvish");
-export const themeHobbit        = (): WebTheme => buildTheme(PRESETS.hobbit,          "hobbit");
-export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave,       "synthwave");
-export const themeLedger        = (): WebTheme => buildTheme(PRESETS.ledger,          "ledger");
-export const themeTerminal      = (): WebTheme => buildTheme(PRESETS.terminal,        "terminal");
-export const themeAurora        = (): WebTheme => buildTheme(PRESETS.aurora,          "aurora");
-export const themeBlueprint     = (): WebTheme => buildTheme(PRESETS.blueprint,       "blueprint");
-export const themeSunprint      = (): WebTheme => buildTheme(PRESETS.sunprint,        "sunprint");
-export const themeBrutalist     = (): WebTheme => buildTheme(PRESETS.brutalist,       "brutalist");
-export const themeAtelier       = (): WebTheme => buildTheme(PRESETS.atelier,         "atelier");
-export const themeExecutive     = (): WebTheme => buildTheme(PRESETS.executive,       "executive");
+export const themeNejm          = (): WebTheme => buildTheme(PRESETS.nejm,       "nejm");
+export const themeLedger        = (): WebTheme => buildTheme(PRESETS.ledger,     "ledger");
+export const themeBrutalist     = (): WebTheme => buildTheme(PRESETS.brutalist,  "brutalist");
+export const themeAurora        = (): WebTheme => buildTheme(PRESETS.aurora,     "aurora");
+export const themeTerminal      = (): WebTheme => buildTheme(PRESETS.terminal,   "terminal");
+export const themeNewsprint     = (): WebTheme => buildTheme(PRESETS.newsprint,  "newsprint");
+export const themeBlueprint     = (): WebTheme => buildTheme(PRESETS.blueprint,  "blueprint");
+export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave,  "synthwave");
+export const themeDwarven       = (): WebTheme => buildTheme(PRESETS.dwarven,    "dwarven");
 
 // ────────────────────────────────────────────────────────────────────
 // webTheme: custom theme constructor (mirrors R::web_theme)
@@ -87,8 +72,9 @@ const VARIANT_KEYS = {
 } as const;
 
 export function webTheme(args: WebThemeArgs = {}): WebTheme {
-  const baseName = args.baseTheme ?? "cochrane";
-  const baseInputs = PRESETS[baseName];
+  const baseName = args.baseTheme ?? "nejm";
+  // preset() falls back to NEJM for an unknown/deleted base name.
+  const baseInputs = preset(baseName);
   const overlay: Partial<ThemeInputs> = {};
   for (const k of INPUT_KEYS) {
     const v = (args as Record<string, unknown>)[k as string];
@@ -125,10 +111,11 @@ export type ThemeRef =
 
 export function resolveThemeRef(ref: ThemeRef): WebTheme {
   if (typeof ref === "string") {
-    return buildTheme(PRESETS[ref], ref);
+    // preset() falls back to NEJM for an unknown/deleted name (post-cull).
+    return buildTheme(preset(ref), ref);
   }
   if (isResolvedTheme(ref)) return ref;
-  const baseInputs = PRESETS[ref.extend];
+  const baseInputs = preset(ref.extend);
   // V4: anchors deep-merge so a partial `{ anchors: { brand } }` override
   // inherits the base's paper/ink/accent.
   const mergedAnchors = ref.overrides?.anchors

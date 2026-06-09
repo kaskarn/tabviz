@@ -50,16 +50,11 @@ export {
 } from "./modifiers";
 export type { SetZoomArgs } from "./modifiers";
 
-// Theme API (re-exported from lib/ for convenience — same surface, one import path)
+// Theme API (re-exported from lib/ for convenience — same surface, one import
+// path). The 9 committed identities after the 27→9 cull (one per axis).
 export {
-  themeCochrane, themeLancet, themeJama, themeDark,
-  themeNejm, themeNature, themeBmj,
-  themeBauhaus, themeSwiss, themeTufte, themeNewsprint,
-  themeSolarized, themeSolarizedDark, themeTonal, themeTonalDark,
-  themeDwarven, themeElvish, themeHobbit,
-  themeSynthwave, themeBrutalist, themeAtelier, themeExecutive,
-  themeLedger, themeTerminal, themeAurora,
-  themeBlueprint, themeSunprint,
+  themeNejm, themeLedger, themeBrutalist, themeAurora, themeTerminal,
+  themeNewsprint, themeBlueprint, themeSynthwave, themeDwarven,
   webTheme, resolveThemeRef,
 } from "../lib/theme/theme-api";
 

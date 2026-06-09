@@ -66,13 +66,17 @@ describe("preset distinctness (C39c)", () => {
     expect(collisions).toEqual([]);
   });
 
-  it("row heights spread across the roster (≥ 6 distinct)", () => {
+  it("row heights spread across the roster (≥ 5 distinct of 9)", () => {
+    // Post 27→9 cull (2026-06-09): the committed 9 produce 5 distinct row
+    // heights — some legitimately share a density (e.g. several sit at
+    // "comfortable"). The bar is a RATCHET on the curated set: density must
+    // stay an identity dial, not collapse to one value.
     const heights = new Set<string>();
     for (const name of names) {
       const cssVars = resolveTheme(createWire(PRESETS[name]!, name)).cssVars;
       heights.add(cssVars["--tv-spacing-row-height"] ?? "?");
     }
-    expect(heights.size).toBeGreaterThanOrEqual(6);
+    expect(heights.size).toBeGreaterThanOrEqual(5);
   });
 
   it("radius-md spreads across the roster (≥ 3 distinct)", () => {

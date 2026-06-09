@@ -15,41 +15,19 @@ import type { WebTheme } from "$types";
 import { PRESETS } from "./theme-presets-inputs";
 import { buildTheme } from "./theme-adapter";
 
-// Preset names, grouped by category in declaration order. Categories
-// mirror R's `package_themes()` 2-level list shape:
-//   * journals: clinical / publication identities
-//   * modes:    dark variant
-//   * design:   design-movement interpretations (light + dark pairs)
-//   * lotr:     editorial easter-egg themes
-//   * showcase: substrate-ceiling demos (synthwave / brutalist / atelier / executive)
+// The 9 committed identities (27→9 cull, 2026-06-09) — one per axis, in
+// switcher display order. Must stay in lockstep with PRESETS in
+// theme-presets-inputs.ts (and R's package_themes()).
 export const THEME_NAMES = [
-  "cochrane",
-  "lancet",
-  "jama",
-  "nejm",
-  "nature",
-  "bmj",
-  "dark",
-  "bauhaus",
-  "swiss",
-  "tufte",
-  "newsprint",
-  "solarized",
-  "solarized_dark",
-  "tonal",
-  "tonal_dark",
-  "dwarven",
-  "elvish",
-  "hobbit",
-  "synthwave",
-  "brutalist",
-  "atelier",
-  "executive",
-  "ledger",
-  "terminal",
-  "aurora",
-  "blueprint",
-  "sunprint",
+  "nejm",       // Clinical / restraint (default)
+  "ledger",     // COLOR
+  "brutalist",  // GEOMETRY
+  "aurora",     // EFFECTS
+  "terminal",   // ALIASING
+  "newsprint",  // TEXTURE
+  "blueprint",  // DRAFT / GRID
+  "synthwave",  // NEON
+  "dwarven",    // FANTASY / display-serif
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -60,31 +38,13 @@ export const THEME_PRESETS: Record<ThemeName, WebTheme> = Object.fromEntries(
 
 // Human-readable theme labels for the in-widget switcher UI.
 export const THEME_LABELS: Record<ThemeName, string> = {
-  cochrane:       "Cochrane",
-  lancet:         "Lancet",
-  jama:           "JAMA",
   nejm:           "NEJM",
-  nature:         "Nature",
-  bmj:            "BMJ",
-  dark:           "Dark",
-  bauhaus:        "Bauhaus",
-  swiss:          "Swiss",
-  tufte:          "Tufte",
-  newsprint:      "Newsprint",
-  solarized:      "Solarized",
-  solarized_dark: "Solarized Dark",
-  tonal:          "Tonal",
-  tonal_dark:     "Tonal Dark",
-  dwarven:        "Dwarven",
-  elvish:         "Elvish",
-  hobbit:         "Hobbit",
-  synthwave:      "Synthwave",
-  brutalist:      "Brutalist",
-  atelier:        "Atelier",
-  executive:      "Executive",
   ledger:         "Ledger",
-  terminal:       "Terminal",
+  brutalist:      "Brutalist",
   aurora:         "Aurora",
+  terminal:       "Terminal",
+  newsprint:      "Newsprint",
   blueprint:      "Blueprint",
-  sunprint:       "Sunprint",
+  synthwave:      "Synthwave",
+  dwarven:        "Dwarven",
 };

@@ -14,7 +14,7 @@ beforeEach(() => {
   bootBuiltinBehaviors();
 });
 
-const theme = THEME_PRESETS.bmj;
+const theme = THEME_PRESETS.nejm;
 
 function callRing(value: unknown, options: Record<string, unknown> = {}, ctx: Partial<RenderContext> = {}): RenderSvg {
   const fn = dispatchRenderer("ring", "svg");

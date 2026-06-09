@@ -2,7 +2,7 @@
 // that npm consumers reach for under the main `@tabviz/core` entry.
 // Per spec §3.3:
 //
-//   import { createTabviz, createSplitTabviz, tabviz, colText, themeLancet } from "@tabviz/core";
+//   import { createTabviz, createSplitTabviz, tabviz, colText, themeNejm } from "@tabviz/core";
 //
 // Runtime factories: mount a pre-built WebSpec into a DOM node.
 // Authoring API (added 0.2.0): build a WebSpec programmatically. See

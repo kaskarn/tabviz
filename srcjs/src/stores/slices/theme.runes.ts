@@ -37,7 +37,7 @@ function buildDeps(initialSpec?: WebSpec) {
   };
 }
 
-function buildSpec(theme = THEME_PRESETS.cochrane, watermark: string | undefined = undefined): WebSpec {
+function buildSpec(theme = THEME_PRESETS.nejm, watermark: string | undefined = undefined): WebSpec {
   return {
     version: "1.0",
     data: { rows: [], groups: [], summaries: [] },
@@ -57,7 +57,7 @@ function buildSpec(theme = THEME_PRESETS.cochrane, watermark: string | undefined
 
 describe("theme slice — captureInitial / clearInitial", () => {
   test("captureInitial seeds baseThemeName from spec.theme.name", () => {
-    const initial = buildSpec(THEME_PRESETS.jama);
+    const initial = buildSpec(THEME_PRESETS.nejm);
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
@@ -68,7 +68,7 @@ describe("theme slice — captureInitial / clearInitial", () => {
   });
 
   test("captureInitial stores watermark, undefined → empty string", () => {
-    const initial = buildSpec(THEME_PRESETS.cochrane, "draft");
+    const initial = buildSpec(THEME_PRESETS.nejm, "draft");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
@@ -93,7 +93,7 @@ describe("theme slice — setTheme / setThemeObject", () => {
     const harness = buildDeps(buildSpec());
     const theme = createThemeSlice(harness.deps);
     theme.setTheme("nejm");
-    expect(harness.spec?.theme.name).toBe(THEME_PRESETS.jama.name);
+    expect(harness.spec?.theme.name).toBe(THEME_PRESETS.nejm.name);
     expect(theme.baseThemeName).toBe("nejm");
     expect(harness.opLog[0].kind).toBe("set_theme");
     expect(harness.calls.measure).toBe(1);
@@ -111,9 +111,9 @@ describe("theme slice — setTheme / setThemeObject", () => {
   test("setThemeObject preserves edits map (no op-log), updates baseThemeName", () => {
     const harness = buildDeps(buildSpec());
     const theme = createThemeSlice(harness.deps);
-    theme.setThemeObject(THEME_PRESETS.lancet);
-    expect(harness.spec?.theme.name).toBe(THEME_PRESETS.lancet.name);
-    expect(theme.baseThemeName).toBe(THEME_PRESETS.lancet.name ?? "default");
+    theme.setThemeObject(THEME_PRESETS.nejm);
+    expect(harness.spec?.theme.name).toBe(THEME_PRESETS.nejm.name);
+    expect(theme.baseThemeName).toBe(THEME_PRESETS.nejm.name ?? "default");
     expect(harness.opLog).toHaveLength(0); // not recorded
   });
 });
@@ -175,7 +175,7 @@ describe("theme slice — hasThemeEdits", () => {
   });
 
   test("watermark drift is FIGURE-scoped, not theme-scoped (P2 seam)", () => {
-    const initial = buildSpec(THEME_PRESETS.cochrane, "");
+    const initial = buildSpec(THEME_PRESETS.nejm, "");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
@@ -187,7 +187,7 @@ describe("theme slice — hasThemeEdits", () => {
   });
 
   test("watermark color / opacity drift is FIGURE-scoped", () => {
-    const initial = buildSpec(THEME_PRESETS.cochrane, "DRAFT");
+    const initial = buildSpec(THEME_PRESETS.nejm, "DRAFT");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
@@ -246,7 +246,7 @@ describe("theme slice — snapshot persistence", () => {
 
 describe("theme slice — resetThemeEdits", () => {
   test("resetThemeEdits restores spec.theme only; resetWatermark restores the trio (P2 seam)", () => {
-    const initial = buildSpec(THEME_PRESETS.cochrane, "");
+    const initial = buildSpec(THEME_PRESETS.nejm, "");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);
@@ -262,7 +262,7 @@ describe("theme slice — resetThemeEdits", () => {
   });
 
   test("resetWatermark restores color/opacity; resetThemeEdits clears overrides", () => {
-    const initial = buildSpec(THEME_PRESETS.cochrane, "DRAFT");
+    const initial = buildSpec(THEME_PRESETS.nejm, "DRAFT");
     const harness = buildDeps(initial);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(initial);

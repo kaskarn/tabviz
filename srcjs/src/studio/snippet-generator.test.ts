@@ -59,7 +59,7 @@ describe("buildSnippetSteps — no silent drops", () => {
   it("formatSnippet chains base + steps", () => {
     const steps = buildSnippetSteps(base, { ...base, header_style: "bold" });
     const out = formatSnippet(buildBaseExpression("nejm"), steps);
-    expect(out).toBe('web_theme_cochrane() |> set_header_style("bold")');
+    expect(out).toBe('web_theme_nejm() |> set_header_style("bold")');
   });
 });
 

@@ -23,7 +23,7 @@ beforeEach(() => {
 
 // Use any concrete preset — color resolution + geometry depend only
 // on the shape of the WebTheme, not its specific palette.
-const theme = THEME_PRESETS.bmj;
+const theme = THEME_PRESETS.nejm;
 
 function ctxWith(over: Partial<RenderContext> = {}): RenderContext {
   return {
