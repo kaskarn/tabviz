@@ -28,10 +28,10 @@ const COCHRANE: ThemeInputs = inputsFromHex({ brand: "#0099CC", accent: "#C8553D
 
 describe("createWire — initial state", () => {
   it("has the v4 schema, name, inputs, and empty roleOverrides", () => {
-    const w = createWire(COCHRANE, "cochrane");
+    const w = createWire(COCHRANE, "nejm");
     expect(w.$schema).toBe(WIRE_SCHEMA);
     expect(w.$schema).toBe("tabviz-theme/v4");
-    expect(w.name).toBe("cochrane");
+    expect(w.name).toBe("nejm");
     expect(w.inputs).toEqual(COCHRANE);
     expect(w.roleOverrides).toEqual({});
   });
@@ -174,9 +174,9 @@ describe("pinTokenByName — friendly lookup", () => {
 
 describe("resolveWire — pre-step-4 behavior", () => {
   it("resolves an empty wire to a ThemeStructure", () => {
-    const theme = resolveWire(createWire(COCHRANE, "cochrane"));
+    const theme = resolveWire(createWire(COCHRANE, "nejm"));
     expect(theme.schemaVersion).toBe(4);
-    expect(theme.name).toBe("cochrane");
+    expect(theme.name).toBe("nejm");
     expect(theme.tokens.ink).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });
 

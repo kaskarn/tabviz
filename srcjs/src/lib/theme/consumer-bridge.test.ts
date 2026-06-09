@@ -7,7 +7,7 @@ import { COCHRANE } from "./theme-presets-inputs";
 
 describe("getCssVars", () => {
   it("returns the cssVars map when theme has authoringInputs", () => {
-    const theme = buildTheme(COCHRANE, "cochrane");
+    const theme = buildTheme(COCHRANE, "nejm");
     const cssVars = getCssVars(theme);
     expect(Object.keys(cssVars).length).toBeGreaterThan(0);
     expect(cssVars["--tv-row-base-bg"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
@@ -19,7 +19,7 @@ describe("getCssVars", () => {
   });
 
   it("returns empty map when authoringInputs is missing", () => {
-    const theme = buildTheme(COCHRANE, "cochrane");
+    const theme = buildTheme(COCHRANE, "nejm");
     delete (theme as { authoringInputs?: unknown }).authoringInputs;
     expect(getCssVars(theme)).toEqual({});
   });

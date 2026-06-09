@@ -17,7 +17,7 @@ describe("tabviz top-level constructor", () => {
       columns: [colNumeric({ field: "hr" })],
     });
     expect(spec.version).toBe("1.3");
-    expect(spec.theme.name).toBe("bmj");
+    expect(spec.theme.name).toBe("nejm");
     expect(spec.data.rows.length).toBe(3);
     expect(spec.data.rows[0].label).toBe("A");
   });
@@ -26,20 +26,20 @@ describe("tabviz top-level constructor", () => {
     const spec = tabviz({
       data: SAMPLE_DATA,
       label: "study",
-      theme: "lancet",
+      theme: "nejm",
       columns: [colText({ field: "study" })],
     });
-    expect(spec.theme.name).toBe("lancet");
+    expect(spec.theme.name).toBe("nejm");
   });
 
   test("theme {extend, overrides} applies on top of preset", () => {
     const spec = tabviz({
       data: SAMPLE_DATA,
       label: "study",
-      theme: { extend: "lancet", overrides: { density: "compact" } },
+      theme: { extend: "nejm", overrides: { density: "compact" } },
       columns: [colText({ field: "study" })],
     });
-    expect(spec.theme.name).toBe("lancet");
+    expect(spec.theme.name).toBe("nejm");
     expect(spec.theme.spacing.rowHeight).toBe(20); // compact density preset rowHeight
   });
 

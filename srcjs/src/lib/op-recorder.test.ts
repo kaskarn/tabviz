@@ -139,7 +139,7 @@ describe("ops helpers", () => {
   });
 
   test("setTheme", () => {
-    expect(ops.setTheme("jama").rCall).toBe('set_theme("jama")');
+    expect(ops.setTheme("nejm").rCall).toBe('set_theme("nejm")');
   });
 
   test("setSharedColumnWidths", () => {

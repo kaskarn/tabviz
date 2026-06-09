@@ -11,8 +11,8 @@ import { hexToOklch, oklchToHex } from "../lib/oklch";
 
 describe("ThemeStore — reactive theme store", () => {
   it("initializes from inputs", () => {
-    const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
-    expect(s.wire.name).toBe("cochrane");
+    const s = createThemeStoreV3Plain(COCHRANE, "nejm");
+    expect(s.wire.name).toBe("nejm");
     expect(oklchToHex(s.wire.inputs.anchors.brand)).toBe("#0099CC");
     expect(s.wire.$schema).toBe("tabviz-theme/v4");
     expect(s.theme.schemaVersion).toBe(4);
@@ -74,9 +74,9 @@ describe("ThemeStore — reactive theme store", () => {
   });
 
   it("reset to a different preset swaps inputs", () => {
-    const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
-    s.reset(LANCET, "lancet");
-    expect(s.wire.name).toBe("lancet");
+    const s = createThemeStoreV3Plain(COCHRANE, "nejm");
+    s.reset(LANCET, "nejm");
+    expect(s.wire.name).toBe("nejm");
     expect(oklchToHex(s.wire.inputs.anchors.brand)).toBe("#00407A");
     // V4: Lancet's v3 gold (#A6792A) lives on the accent anchor.
     expect(s.wire.inputs.anchors.accent).toBeDefined();
@@ -92,12 +92,12 @@ describe("ThemeStore — reactive theme store", () => {
   });
 
   it("load swaps the entire wire", () => {
-    const s = createThemeStoreV3Plain(COCHRANE, "cochrane");
+    const s = createThemeStoreV3Plain(COCHRANE, "nejm");
     s.setRoleBinding("surface", "neutral", 5);
     // Load a fresh wire with no overrides
-    s.reset(LANCET, "lancet");
+    s.reset(LANCET, "nejm");
     expect(s.wire.roleOverrides).toEqual({});
-    expect(s.wire.name).toBe("lancet");
+    expect(s.wire.name).toBe("nejm");
   });
 });
 

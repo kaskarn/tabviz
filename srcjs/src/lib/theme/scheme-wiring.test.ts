@@ -15,8 +15,8 @@ const strokes = (t: { series: ReadonlyArray<{ stroke: string }> }): string[] =>
 
 describe("categorical scheme → series wiring", () => {
   it("a pinned scheme changes slots 1+ but never slot 0 (identity)", () => {
-    const base = buildTheme({ ...PRESETS["cochrane"]!, categorical: undefined }, "a");
-    const okabe = buildTheme({ ...PRESETS["cochrane"]!, categorical: "okabe_ito" }, "b");
+    const base = buildTheme({ ...PRESETS["nejm"]!, categorical: undefined }, "a");
+    const okabe = buildTheme({ ...PRESETS["nejm"]!, categorical: "okabe_ito" }, "b");
     const sBase = strokes(base as never);
     const sOkabe = strokes(okabe as never);
     expect(sOkabe[0]).toBe(sBase[0]); // identity slot untouched
@@ -28,13 +28,13 @@ describe("categorical scheme → series wiring", () => {
   });
 
   it("two different schemes produce different series", () => {
-    const a = buildTheme({ ...PRESETS["cochrane"]!, categorical: "tableau10" }, "a");
-    const b = buildTheme({ ...PRESETS["cochrane"]!, categorical: "wong" }, "b");
+    const a = buildTheme({ ...PRESETS["nejm"]!, categorical: "tableau10" }, "a");
+    const b = buildTheme({ ...PRESETS["nejm"]!, categorical: "wong" }, "b");
     expect(strokes(a as never)).not.toEqual(strokes(b as never));
   });
 
   it("brand_mono derives from the brand ramp (special scheme)", () => {
-    const t = buildTheme({ ...PRESETS["cochrane"]!, categorical: "brand_mono" }, "m");
+    const t = buildTheme({ ...PRESETS["nejm"]!, categorical: "brand_mono" }, "m");
     const s = strokes(t as never);
     // All five slots present and distinct (ramp grades 4/6/8/9 + solid).
     expect(new Set(s).size).toBeGreaterThanOrEqual(4);

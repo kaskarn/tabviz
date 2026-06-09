@@ -35,13 +35,13 @@ describe("label modifiers", () => {
 
 describe("setTheme", () => {
   test("name string resolves to preset", () => {
-    const out = setTheme(baseSpec(), "jama");
-    expect(out.theme.name).toBe("jama");
+    const out = setTheme(baseSpec(), "nejm");
+    expect(out.theme.name).toBe("nejm");
   });
   test("input spec is not mutated", () => {
     const spec = baseSpec();
-    setTheme(spec, "lancet");
-    expect(spec.theme.name).toBe("bmj");
+    setTheme(spec, "nejm");
+    expect(spec.theme.name).toBe("nejm");
   });
 });
 

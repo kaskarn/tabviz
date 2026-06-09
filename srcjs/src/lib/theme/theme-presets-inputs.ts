@@ -817,34 +817,23 @@ export const SUNPRINT: ThemeInputs = defineInputs(
   },
 );
 
+// THE COMMITTED IDENTITY SET (9). The 27→9 hard cull (UX-redesign B, locked
+// with the user 2026-06-09): each survivor owns a distinct axis (rgc_v4 model).
+// `nejm` is the Clinical representative AND the default (replaced cochrane).
+// The 18 deleted looks (cochrane, lancet, jama, nature, bmj, swiss, bauhaus,
+// tufte, solarized(+dark), tonal(+dark), elvish, hobbit, atelier, executive,
+// sunprint, dark) are gone from the roster; their distinct brand colors are a
+// `set_brand()` recolor away. See docs/dev/ux-redesign-plan.md (Workstream B).
 export const PRESETS: Readonly<Record<string, ThemeInputs>> = {
-  cochrane:        COCHRANE,
-  lancet:          LANCET,
-  jama:            JAMA,
-  nejm:            NEJM,
-  nature:          NATURE,
-  bmj:             BMJ,
-  dark:            DARK,
-  bauhaus:         BAUHAUS,
-  swiss:           SWISS,
-  tufte:           TUFTE,
-  newsprint:       NEWSPRINT,
-  solarized:       SOLARIZED,
-  solarized_dark:  SOLARIZED_DARK,
-  tonal:           TONAL,
-  tonal_dark:      TONAL_DARK,
-  dwarven:         DWARVEN,
-  elvish:          ELVISH,
-  hobbit:          HOBBIT,
-  synthwave:       SYNTHWAVE,
-  brutalist:       BRUTALIST,
-  atelier:         ATELIER,
-  executive:       EXECUTIVE,
-  ledger:          LEDGER,
-  terminal:        TERMINAL,
-  aurora:          AURORA,
-  blueprint:       BLUEPRINT,
-  sunprint:        SUNPRINT,
+  nejm:       NEJM,        // Clinical / restraint (default)
+  ledger:     LEDGER,      // COLOR axis
+  brutalist:  BRUTALIST,   // GEOMETRY axis
+  aurora:     AURORA,      // EFFECTS axis
+  terminal:   TERMINAL,    // ALIASING axis
+  newsprint:  NEWSPRINT,   // TEXTURE axis
+  blueprint:  BLUEPRINT,   // DRAFT / GRID
+  synthwave:  SYNTHWAVE,   // NEON
+  dwarven:    DWARVEN,     // FANTASY / display-serif (fonts-in-PDF showcase)
 };
 
 /** C17/C56 (wire-audit Pass 4d): nudge the supporting anchors' HUES
@@ -876,7 +865,7 @@ export function tintFromBrand(
   };
 }
 
-/** Get a preset by name. Unknown name → cochrane (default). */
+/** Get a preset by name. Unknown name → nejm (default after the 27→9 cull). */
 export function preset(name: string): ThemeInputs {
-  return PRESETS[name] ?? COCHRANE;
+  return PRESETS[name] ?? NEJM;
 }

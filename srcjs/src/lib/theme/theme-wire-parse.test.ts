@@ -8,7 +8,7 @@ import { PRESETS } from "./theme-presets-inputs";
 import { buildThemeWire } from "./theme-wire";
 
 const validWire = JSON.stringify(
-  buildThemeWire(PRESETS.cochrane, "cochrane", {}, {}),
+  buildThemeWire(PRESETS.cochrane, "nejm", {}, {}),
 );
 
 describe("parseThemeWire", () => {

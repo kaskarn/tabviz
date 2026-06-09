@@ -92,9 +92,9 @@ describe("theme slice — setTheme / setThemeObject", () => {
   test("setTheme swaps spec.theme + records op + remeasures", () => {
     const harness = buildDeps(buildSpec());
     const theme = createThemeSlice(harness.deps);
-    theme.setTheme("jama");
+    theme.setTheme("nejm");
     expect(harness.spec?.theme.name).toBe(THEME_PRESETS.jama.name);
-    expect(theme.baseThemeName).toBe("jama");
+    expect(theme.baseThemeName).toBe("nejm");
     expect(harness.opLog[0].kind).toBe("set_theme");
     expect(harness.calls.measure).toBe(1);
     expect(harness.calls.clearAuto).toBe(1);
@@ -103,7 +103,7 @@ describe("theme slice — setTheme / setThemeObject", () => {
   test("setTheme no-ops when spec is null", () => {
     const harness = buildDeps();
     const theme = createThemeSlice(harness.deps);
-    theme.setTheme("jama");
+    theme.setTheme("nejm");
     expect(harness.spec).toBeNull();
     expect(harness.opLog).toHaveLength(0);
   });
@@ -306,8 +306,8 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
     roleOverrides?: Record<string, { ramp: string; grade: number }>;
     pins?: Record<string, string>;
   }) {
-    const themed = buildTheme(PRESETS["cochrane"]!, {
-      name: "cochrane",
+    const themed = buildTheme(PRESETS["nejm"]!, {
+      name: "nejm",
       roleOverrides: { "text-muted": { ramp: "brand", grade: 8 }, ...(extra?.roleOverrides ?? {}) },
       pins: { "--tv-text-footnote-size": "0.7rem", ...(extra?.pins ?? {}) },
     }) as WebSpec["theme"];
@@ -405,7 +405,7 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
 
     // A DIFFERENT slice (split-widget navigation) captures a bare theme
     // as its initial target, then applies the pinned snapshot.
-    const bare = buildSpec(buildTheme(PRESETS["cochrane"]!, "cochrane") as WebSpec["theme"]);
+    const bare = buildSpec(buildTheme(PRESETS["nejm"]!, "nejm") as WebSpec["theme"]);
     const harness = buildDeps(bare);
     const theme = createThemeSlice(harness.deps);
     theme.captureInitial(bare);

@@ -225,10 +225,10 @@ describe("proxyMethods dispatch", () => {
 
   test("setTheme with name -> setTheme", () => {
     const s = makeFakeStore();
-    dispatch("setTheme", { name: "jama" }, s);
+    dispatch("setTheme", { name: "nejm" }, s);
     expect((s.calls as { method: string; args: unknown[] }[])[0]).toEqual({
       method: "setTheme",
-      args: ["jama"],
+      args: ["nejm"],
     });
   });
 

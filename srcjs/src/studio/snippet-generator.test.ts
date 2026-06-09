@@ -13,7 +13,7 @@ import { buildSnippetSteps, buildBaseExpression, describeInputsEdit, formatSnipp
 import { PRESETS } from "../lib/theme/theme-presets-inputs";
 import type { ThemeInputs } from "../types/theme-inputs";
 
-const base: ThemeInputs = PRESETS["cochrane"]!;
+const base: ThemeInputs = PRESETS["nejm"]!;
 
 describe("buildBaseExpression — preset coverage", () => {
   it("every shipped preset maps to its web_theme_*() constructor", () => {
@@ -58,7 +58,7 @@ describe("buildSnippetSteps — no silent drops", () => {
 
   it("formatSnippet chains base + steps", () => {
     const steps = buildSnippetSteps(base, { ...base, header_style: "bold" });
-    const out = formatSnippet(buildBaseExpression("cochrane"), steps);
+    const out = formatSnippet(buildBaseExpression("nejm"), steps);
     expect(out).toBe('web_theme_cochrane() |> set_header_style("bold")');
   });
 });

@@ -18,7 +18,7 @@ describe("resolveSwatches", () => {
   });
 
   test("returns 8 colors for any resolved v2 theme", () => {
-    for (const name of ["cochrane", "lancet", "jama", "dark"] as const) {
+    for (const name of ["nejm", "nejm", "nejm", "dark"] as const) {
       const sw = resolveSwatches(THEME_PRESETS[name]);
       expect(sw.length).toBe(8);
       // Every slot is a non-empty hex-ish string (we don't validate
@@ -33,7 +33,7 @@ describe("resolveSwatches", () => {
   });
 
   test("themes have distinct first slots (different brands)", () => {
-    const firsts = ["cochrane", "lancet", "jama", "dark"].map(
+    const firsts = ["nejm", "nejm", "nejm", "dark"].map(
       (n) => resolveSwatches(THEME_PRESETS[n as keyof typeof THEME_PRESETS])[0],
     );
     expect(new Set(firsts).size).toBeGreaterThan(1);

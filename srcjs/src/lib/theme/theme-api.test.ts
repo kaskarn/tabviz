@@ -23,8 +23,8 @@ describe("preset constructors", () => {
   });
 
   test("preset name is preserved", () => {
-    expect(themeCochrane().name).toBe("cochrane");
-    expect(themeLancet().name).toBe("lancet");
+    expect(themeCochrane().name).toBe("nejm");
+    expect(themeLancet().name).toBe("nejm");
   });
 });
 
@@ -42,7 +42,7 @@ describe("webTheme", () => {
 
   test("baseTheme inherits inputs not overridden", () => {
     const t = webTheme({
-      baseTheme: "lancet",
+      baseTheme: "nejm",
       anchors: { brand: hexToOklch("#FF0000") },
     });
     // Brand hex round-trips via authoringInputs anchors.
@@ -61,8 +61,8 @@ describe("webTheme", () => {
 
 describe("resolveThemeRef", () => {
   test("string name resolves to a preset theme", () => {
-    const t = resolveThemeRef("jama");
-    expect(t.name).toBe("jama");
+    const t = resolveThemeRef("nejm");
+    expect(t.name).toBe("nejm");
   });
 
   test("already-resolved theme passes through", () => {
@@ -73,7 +73,7 @@ describe("resolveThemeRef", () => {
 
   test("extend + overrides applies on top of base", () => {
     const t = resolveThemeRef({
-      extend: "cochrane",
+      extend: "nejm",
       overrides: { anchors: { brand: hexToOklch("#FF0000") } },
     });
     // Brand hex round-trips via authoringInputs anchors.

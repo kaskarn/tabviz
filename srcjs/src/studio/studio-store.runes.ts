@@ -12,12 +12,12 @@ import { normalizeRoleOverrides } from "../lib/theme/alias";
 
 describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
   test("envelope carries schema, name, inputs AND roleOverrides", () => {
-    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.init(PRESETS["nejm"]!, "nejm");
     studioStore.setRoleBinding("text-muted", "brand", 8);
     const wire = studioStore.exportWire();
     expect(wire).not.toBeNull();
     expect(wire!.$schema).toBe(WIRE_SCHEMA);
-    expect(wire!.name).toBe("cochrane");
+    expect(wire!.name).toBe("nejm");
     expect(wire!.inputs).toBe(studioStore.inputs);
     // The portable envelope serializes role bindings as NAME aliases
     // ("brand.8"), not positional {ramp,grade} (theme-rework Wave 0).
@@ -25,7 +25,7 @@ describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
   });
 
   test("self round-trip: export → re-init → rebind intact (DT-8)", () => {
-    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.init(PRESETS["nejm"]!, "nejm");
     studioStore.setRoleBinding("text-muted", "accent", 9);
     const wire = JSON.parse(JSON.stringify(studioStore.exportWire()));
     expect(wire.roleOverrides["text-muted"]).toBe("accent.9");
@@ -39,7 +39,7 @@ describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
   });
 
   test("no edits → empty roleOverrides object, same envelope shape (DT-10)", () => {
-    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.init(PRESETS["nejm"]!, "nejm");
     const wire = studioStore.exportWire()!;
     expect(wire.roleOverrides).toEqual({});
     // One schema for both surfaces: the prefix artifact is the SAME
@@ -50,7 +50,7 @@ describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
 
 describe("studio token pins (P3)", () => {
   test("setPin validates against the manifest and rides the envelope", () => {
-    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.init(PRESETS["nejm"]!, "nejm");
     expect(() => studioStore.setPin("--tv-not-a-token", "1px")).toThrow(/manifest/);
     studioStore.setPin("--tv-text-footnote-size", "0.7rem");
     const wire = studioStore.exportWire() as { pins?: Record<string, string> };
@@ -60,7 +60,7 @@ describe("studio token pins (P3)", () => {
   });
 
   test("clearRoleBinding releases a single rebind (Wave 1.5)", () => {
-    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.init(PRESETS["nejm"]!, "nejm");
     studioStore.setRoleBinding("text-muted", "brand", 8);
     studioStore.setRoleBinding("surface", "neutral", 2);
     expect(Object.keys(studioStore.roleOverrides).sort()).toEqual(["surface", "text-muted"]);
@@ -76,7 +76,7 @@ describe("studio token pins (P3)", () => {
   });
 
   test("undo restores the pre-pin state; clearPin releases", () => {
-    studioStore.init(PRESETS["cochrane"]!, "cochrane");
+    studioStore.init(PRESETS["nejm"]!, "nejm");
     studioStore.setPin("--tv-text-footnote-size", "0.7rem");
     expect(Object.keys(studioStore.pins)).toHaveLength(1);
     studioStore.undo();
@@ -93,7 +93,7 @@ describe("studio handoff seeding (round-2 state review P1)", () => {
     // The "Edit in studio" handoff seeds an R-authored/imported theme's
     // artifacts THROUGH init. They must survive the first undo (cursor→0),
     // which previously reverted to an empty base and wiped them.
-    studioStore.init(PRESETS["cochrane"]!, "cochrane", {
+    studioStore.init(PRESETS["nejm"]!, "nejm", {
       roleOverrides: { "text-muted": { ramp: "brand", grade: 8 } },
       pins: { "--tv-text-footnote-size": "0.7rem" },
     });

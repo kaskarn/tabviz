@@ -267,8 +267,8 @@ describe("buildThemeStructure — full theme assembly", () => {
   });
 
   it("custom theme name flows through", () => {
-    const t = buildThemeStructure(COCHRANE, "cochrane");
-    expect(t.name).toBe("cochrane");
+    const t = buildThemeStructure(COCHRANE, "nejm");
+    expect(t.name).toBe("nejm");
   });
 
   it("cluster refs resolve correctly against the built theme", () => {

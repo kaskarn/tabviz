@@ -23,11 +23,11 @@ describe("emitJsSource — compact builder output", () => {
 
   test("non-default theme emitted as name string", () => {
     const spec = tabviz({
-      data: DATA, label: "study", theme: "lancet",
+      data: DATA, label: "study", theme: "nejm",
       columns: [colText({ field: "study" })],
     });
     const src = emitJsSource({ spec });
-    expect(src).toContain(`theme: "lancet"`);
+    expect(src).toContain(`theme: "nejm"`);
   });
 
   test("data is replaced by placeholder, not inlined", () => {
