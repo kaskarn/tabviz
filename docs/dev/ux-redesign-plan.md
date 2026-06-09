@@ -177,8 +177,23 @@ R parity/render-smoke):
   activedescendant) replaces native `<select>` in the panel.
 - **A3 ✓** the 4-axis TAB IA (IDENTITY/COLOR/FORM/EFFECTS, colored dots) replaces
   the long-scroll + "Advanced controls" junk-drawer. Both viewer + studio rail.
-- **A2 (partial)** inline OKLCH coordinate readout on AnchorRow (rgc instrument
-  texture). REMAINING: the Kicker/serif Section voice; coords on more controls.
+- **A2 ✓** the editorial Section voice (rgc "editor IS documentation"):
+  `Section.svelte` gained an opt-in editorial variant — mono-uppercase accent
+  KICKER + serif display TITLE + visible prose LEDE (gated on `kicker`/`lede`;
+  default compact voice unchanged for the column editor). The panel's four
+  structural sections now render the magazine masthead (Tier 1 · Anchors /
+  Identity / prose, etc.). Plus the earlier inline OKLCH coords on AnchorRow.
+  New `--v2-text-display` (18px); activates `--v2-font-serif`.
+- **A4 ✓** zero-dead-buttons. (a) Deleted the dead `tabviz_studio(plot)`
+  snippet that printed an inert R string in the GUI when onOpenStudio was
+  unwired. (b) The two-scoped live reset gutter (Reset theme / Reset figure,
+  dirty-gated) already existed and is now machine-verified. (c) The standing
+  machine gate `panel-liveness.browser.ts` (`npm run qa:liveness`) WALKS every
+  value/nav control across all four tabs + quick strip + figure band, operating
+  each with REAL input and asserting a widget-or-panel delta. Current: **73
+  controls verified live, 0 dead.** See CLAUDE.md for the hard-won design notes
+  (comprehensive outerHTML+style-CSS fingerprint; keyboard-driven dropdowns;
+  never-Escape; forest-column fixture; timeout-bounded everything).
 - **B (started)** `web_theme(border_preset=)` unlocked; journal family
   (cochrane/nejm/jama/bmj/nature) → `border_preset:"frame"` (texture out).
   `fonts.numeric` figure-font slot + reachable "Numbers" picker. REMAINING: the
@@ -186,9 +201,9 @@ R parity/render-smoke):
 - **B-craft** the rgc green p-value PILL (`significant_style:"pill"`).
 - **D1 ✓** CI column-width variant-aware measurement + parity gate.
 
-NEXT (priority for the panel-polish + theme-elegance maintainer): finish A2
-voice · A4 zero-dead-buttons gate · B 27→8 cull + table-craft · C bold internals
-(in-widget trace + permalink).
+NEXT (priority for the panel-polish + theme-elegance maintainer): COLOR-tab
+read-only mini-spine (give the stub weight) · B 27→8 cull + table-craft ·
+C bold internals (in-widget trace + permalink).
 
 ## Guardrails to keep green throughout
 DT-11 (`settings-band-contract`), control-contract, resolver-dispatch snapshot
