@@ -115,6 +115,12 @@ theme_inputs_to_json <- function(inputs) {
   # (omit when empty so unedited themes carry nothing).
   type_roles_out <- if (length(inputs@type_roles) > 0L) inputs@type_roles else NULL
 
+  # Theme house-style per-column-type defaults. Open nested map keyed by
+  # column type; emit verbatim (omit when empty). The TS engine applies the
+  # kind-gated merge at spec-ingest.
+  column_defaults_out <-
+    if (length(inputs@column_defaults) > 0L) inputs@column_defaults else NULL
+
   marks_out <- drop_null(list(
     point_shape     = na_to_null(inputs@marks_point_shape),
     interval_weight = na_to_null(inputs@marks_interval_weight)
@@ -171,7 +177,8 @@ theme_inputs_to_json <- function(inputs) {
     effects               = if (length(effects_out)  > 0L) effects_out  else NULL,
     marks                 = if (length(marks_out)    > 0L) marks_out    else NULL,
     monochrome            = monochrome_out,
-    row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL
+    row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL,
+    column_defaults       = column_defaults_out
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -337,6 +344,14 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   height). Layer 3 of the row-kind height cascade (Stage 1 §33);
 #'   constructor `row_heights=` and user pins layer above this. NULL =
 #'   row-kind intrinsics apply.
+#' @param column_defaults Theme-as-house-style per-column-TYPE default
+#'   options. Named list keyed by column type, each a named list of option
+#'   values, e.g. `list(pvalue = list(stars = TRUE, significantStyle =
+#'   "pill"))`. Merged UNDER each matching column at render: a column author's
+#'   explicit choice always wins, and only presentational (`styling`/`editor`)
+#'   options are accepted — a theme can never change what the data means
+#'   (precision, thresholds). NULL = no house-style defaults. See
+#'   [set_column_default()].
 #' @param header_style Header chrome treatment (a structural variant
 #'   input): `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
@@ -381,6 +396,7 @@ web_theme <- function(
     effects = NULL,
     marks = NULL,
     row_kinds = NULL,
+    column_defaults = NULL,
     header_style = NULL,
     border_preset = NULL,
     first_column_style = "default",
@@ -405,6 +421,7 @@ web_theme <- function(
   checkmate::assert_list(effects, null.ok = TRUE)
   checkmate::assert_list(marks, null.ok = TRUE)
   checkmate::assert_list(row_kinds, null.ok = TRUE)
+  checkmate::assert_list(column_defaults, null.ok = TRUE, names = "named")
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
   ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
@@ -483,7 +500,8 @@ web_theme <- function(
     row_kinds_spacer_height_ratio       = row_kinds$spacer$heightRatio       %||% NA_real_,
     row_kinds_summary_height_ratio      = row_kinds$summary$heightRatio      %||% NA_real_,
     row_kinds_header_height_ratio       = row_kinds$header$heightRatio       %||% NA_real_,
-    row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_
+    row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_,
+    column_defaults                     = column_defaults %||% list()
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style %||% "light"
@@ -1132,6 +1150,57 @@ set_type_role <- function(theme, role, family = NULL, size = NULL, weight = NULL
   tr <- inputs@type_roles
   tr[[role]] <- modifyList(tr[[role]] %||% list(), rec)
   inputs@type_roles <- tr
+  re_resolve(theme, inputs)
+}
+
+#' Set a theme's house-style default options for a column type
+#'
+#' Theme-as-house-style: declare per-column-TYPE default options that merge
+#' UNDER every matching column at render time. For example, a clinical theme
+#' can make all p-value columns show significance stars and a pill by default,
+#' without the table author touching each column.
+#'
+#' Two rules keep this safe, both enforced by the engine at spec-ingest:
+#' \itemize{
+#'   \item \strong{The author always wins.} A theme default fills only an
+#'     option the column left at its own default; an explicit
+#'     `col_pvalue(stars = FALSE)` is never overridden.
+#'   \item \strong{Presentation only.} Only `styling`/`editor` options are
+#'     accepted. Options that change what the data *means* (precision,
+#'     thresholds, the bound field) are dropped — a theme can restyle, never
+#'     re-compute.
+#' }
+#'
+#' @param theme A [WebTheme].
+#' @param type A column type string, e.g. `"pvalue"`, `"numeric"`, `"bar"`.
+#' @param ... Named option values to default for that type, e.g.
+#'   `stars = TRUE, significantStyle = "pill"`. Passing no options clears any
+#'   existing defaults for `type`.
+#' @return The [WebTheme] re-resolved with the column defaults recorded.
+#' @examples
+#' \dontrun{
+#' web_theme_nejm() |>
+#'   set_column_default("pvalue", stars = TRUE, significantStyle = "pill")
+#' }
+#' @seealso [web_theme()], [set_type_role()]
+#' @export
+set_column_default <- function(theme, type, ...) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(type, min.chars = 1L)
+  opts <- list(...)
+  if (length(opts) > 0L && (is.null(names(opts)) || any(!nzchar(names(opts))))) {
+    cli::cli_abort("All options passed to {.fn set_column_default} must be named.")
+  }
+  inputs <- theme@inputs
+  cd <- inputs@column_defaults
+  if (length(opts) == 0L) {
+    cd[[type]] <- NULL                          # clear this type's defaults
+  } else {
+    cd[[type]] <- modifyList(cd[[type]] %||% list(), opts)
+  }
+  inputs@column_defaults <- cd
   re_resolve(theme, inputs)
 }
 

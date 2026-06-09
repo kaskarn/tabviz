@@ -35,6 +35,7 @@ web_theme(
   effects = NULL,
   marks = NULL,
   row_kinds = NULL,
+  column_defaults = NULL,
   header_style = NULL,
   border_preset = NULL,
   first_column_style = "default",
@@ -133,6 +134,14 @@ named lists with \code{heightRatio} (numeric, multiplies the base row
 height). Layer 3 of the row-kind height cascade (Stage 1 §33);
 constructor \verb{row_heights=} and user pins layer above this. NULL =
 row-kind intrinsics apply.}
+
+\item{column_defaults}{Theme-as-house-style per-column-TYPE default
+options. Named list keyed by column type, each a named list of option
+values, e.g. \code{list(pvalue = list(stars = TRUE, significantStyle = "pill"))}. Merged UNDER each matching column at render: a column author's
+explicit choice always wins, and only presentational (\code{styling}/\code{editor})
+options are accepted — a theme can never change what the data means
+(precision, thresholds). NULL = no house-style defaults. See
+\code{\link[=set_column_default]{set_column_default()}}.}
 
 \item{header_style}{Header chrome treatment (a structural variant
 input): \code{"light"}, \code{"tint"}, or

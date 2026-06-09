@@ -93,6 +93,7 @@ import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { resolveForestLegend, legendGlyphSvg } from "../lib/legend";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
 import { compileVariants } from "../schema/variant-compile";
+import { applyThemeColumnDefaultsToSpec } from "../lib/theme/column-defaults";
 import { computeEffectiveBanks } from "../schema/banks";
 import { resolveStyleMapping } from "$lib/style-mapping-resolve";
 import {
@@ -3747,6 +3748,7 @@ export function computeLayoutMetrics(
   options: ExportOptions = {},
 ): LayoutMetrics {
   spec = normalizeLabelColumn(spec);
+  spec = applyThemeColumnDefaultsToSpec(spec);
   spec = compileVariants(spec);
   validateSpec(spec);
 
@@ -4174,7 +4176,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // variant-bearing columns so renderers read primitives instead of
   // branching on the variant id. The browser path runs this inside
   // setSpec; the SVG export path mirrors here so V8 stays equivalent.
-  // Pure + idempotent.
+  // Pure + idempotent. The theme house-style merge mirrors setSpec too, so
+  // static/PDF exports honor theme.column_defaults like the live widget.
+  spec = applyThemeColumnDefaultsToSpec(spec);
   spec = compileVariants(spec);
   // Validate input
   validateSpec(spec);

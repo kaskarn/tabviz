@@ -31,6 +31,7 @@ export const mintUniqueId = _mintUniqueId;
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 import { compileVariants } from "../schema/variant-compile";
+import { applyThemeColumnDefaultsToSpec } from "../lib/theme/column-defaults";
 
 // ====================================================================
 // Op recorder contract
@@ -391,11 +392,14 @@ export function createTabvizStore() {
 
   // Actions
   function setSpec(newSpec: WebSpec) {
-    // Variant compile pass — populates options.<bucket>.__resolved on
-    // every variant-bearing column so renderers read primitive options
-    // instead of branching on the variant id (schema-sprint Phase 3).
-    // Pure + idempotent; safe to run on every setSpec.
-    const compiledSpec = compileVariants(newSpec);
+    // Theme house-style pass first — merge theme.column_defaults UNDER each
+    // column (kind-gated, author-wins). This is what makes an R-authored spec
+    // (which never ran the TS tabviz() builder) honor a theme's per-type
+    // defaults. Pure + idempotent. Then the variant compile pass populates
+    // options.<bucket>.__resolved on every variant-bearing column so renderers
+    // read primitive options instead of branching on the variant id
+    // (schema-sprint Phase 3). Both safe to run on every setSpec.
+    const compiledSpec = compileVariants(applyThemeColumnDefaultsToSpec(newSpec));
     // Create a new object reference to ensure derived values recompute properly
     // when switching between specs (e.g., in split forest navigation)
     spec = { ...compiledSpec };

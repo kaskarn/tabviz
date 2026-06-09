@@ -163,6 +163,29 @@ theme_inputs_from_wire <- function(wire_inputs) {
     if (length(clean) > 0L) v$type_roles <- clean
   }
 
+  # Theme house-style per-column-type defaults (2026-06-09). UNTRUSTED wire:
+  # keep only the structural shape (named type -> named list of SCALAR option
+  # values); drop non-scalar leaves. The kind-gate (styling/editor only,
+  # author-wins) is enforced TS-side at spec-ingest, so R does not need the
+  # schema here — it only guards structure.
+  cd <- w[["column_defaults"]] %||% list()
+  if (length(cd) > 0L && !is.null(names(cd))) {
+    clean_cd <- list()
+    for (type in names(cd)) {
+      if (!nzchar(type)) next
+      entry <- cd[[type]]
+      if (!is.list(entry) || is.null(names(entry))) next
+      kept <- list()
+      for (opt in names(entry)) {
+        if (!nzchar(opt)) next
+        val <- entry[[opt]]
+        if (length(val) == 1L && is.atomic(val) && !is.na(val)) kept[[opt]] <- val
+      }
+      if (length(kept) > 0L) clean_cd[[type]] <- kept
+    }
+    if (length(clean_cd) > 0L) v$column_defaults <- clean_cd
+  }
+
   # Curves.
   cv <- w[["curves"]] %||% list()
   v$curves_neutral <- .wire_chr(cv[["neutral"]])

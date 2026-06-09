@@ -18,7 +18,7 @@
 
 import { getSchema } from "../../schema/extend";
 import type { OptionKind } from "../../schema/types";
-import type { ColumnDef } from "../../types";
+import type { ColumnDef, WebSpec } from "../../types";
 
 interface OptionMeta { kind: OptionKind; default: unknown }
 
@@ -98,4 +98,26 @@ export function applyThemeColumnDefaults(
     if (!changed) return col;
     return { ...c, options: { ...(c.options ?? {}), [type]: mergedNs } } as ColumnDef;
   });
+}
+
+/**
+ * Spec-level entry: apply `spec.theme.authoringInputs.column_defaults` to the
+ * spec's columns. This is the CROSS-RUNTIME, CROSS-LANGUAGE seam — it runs at
+ * every engine spec-ingest point (store `setSpec` + svg-generator export),
+ * just before `compileVariants`. Because it reads the theme that already rode
+ * the wire, an R-authored spec (which never runs the TS `tabviz()` builder)
+ * gets the same house-style merge as a TS-authored one, with NO schema/kind
+ * logic replicated R-side: R declares `column_defaults`, the TS engine applies
+ * it. Pure + idempotent (re-applying is a no-op — the merged value is no
+ * longer at the schema default), so it is safe on every ingest.
+ */
+export function applyThemeColumnDefaultsToSpec(spec: WebSpec): WebSpec {
+  const cd = spec.theme?.authoringInputs?.column_defaults;
+  if (!cd) return spec;
+  const columns = applyThemeColumnDefaults(spec.columns, cd);
+  // applyThemeColumnDefaults always returns a fresh array but reuses the
+  // element ref for any unchanged column — skip the spec reallocation when
+  // nothing actually moved (the common case in the hot setSpec path).
+  if (columns.every((c, i) => c === spec.columns[i])) return spec;
+  return { ...spec, columns };
 }

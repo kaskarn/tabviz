@@ -1,8 +1,8 @@
 // Theme-as-house-style: theme.column_defaults kind-gate + author-wins tests.
 
 import { describe, it, expect } from "bun:test";
-import { applyThemeColumnDefaults } from "./column-defaults";
-import type { ColumnDef } from "../../types";
+import { applyThemeColumnDefaults, applyThemeColumnDefaultsToSpec } from "./column-defaults";
+import type { ColumnDef, WebSpec } from "../../types";
 
 // Explicit wire-shaped pvalue column (avoids any builder default-omission
 // ambiguity — we control exactly which options are set).
@@ -53,5 +53,33 @@ describe("applyThemeColumnDefaults", () => {
     const cols = [pcol({ stars: true })];
     const out = applyThemeColumnDefaults(cols, undefined);
     expect(out[0]).toBe(cols[0]);
+  });
+});
+
+describe("applyThemeColumnDefaultsToSpec (cross-runtime ingest seam)", () => {
+  const specWith = (column_defaults?: Record<string, Record<string, unknown>>): WebSpec =>
+    ({
+      columns: [pcol({})],
+      theme: { authoringInputs: column_defaults ? { column_defaults } : {} },
+    }) as unknown as WebSpec;
+
+  it("applies theme.authoringInputs.column_defaults to the spec's columns", () => {
+    const out = applyThemeColumnDefaultsToSpec(specWith({ pvalue: { stars: true } }));
+    const col = out.columns[0] as unknown as { options: { pvalue: Record<string, unknown> } };
+    expect(col.options.pvalue.stars).toBe(true);
+  });
+
+  it("returns the SAME spec reference when nothing changes (hot-path no-op)", () => {
+    const spec = specWith(undefined);
+    expect(applyThemeColumnDefaultsToSpec(spec)).toBe(spec);
+    // A core-only default also changes nothing → same ref.
+    const coreOnly = specWith({ pvalue: { digits: 5 } });
+    expect(applyThemeColumnDefaultsToSpec(coreOnly)).toBe(coreOnly);
+  });
+
+  it("is idempotent — re-applying does not move the value again", () => {
+    const once = applyThemeColumnDefaultsToSpec(specWith({ pvalue: { stars: true } }));
+    const twice = applyThemeColumnDefaultsToSpec(once);
+    expect(twice).toBe(once); // already merged → no further change → same ref
   });
 });

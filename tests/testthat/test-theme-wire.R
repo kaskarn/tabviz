@@ -312,6 +312,55 @@ test_that("set_type_role rebinds a type role + round-trips the wire (Wave 3)", {
   expect_identical(theme_css_vars(back)[["--tv-text-footnote-size"]], after)
 })
 
+test_that("set_column_default records house-style defaults + round-trips the wire", {
+  th <- web_theme_nejm()
+  expect_length(th@inputs@column_defaults, 0L)            # none by default
+
+  t2 <- set_column_default(th, "pvalue", stars = TRUE, significantStyle = "pill")
+  expect_true(t2@inputs@column_defaults$pvalue$stars)
+  expect_identical(t2@inputs@column_defaults$pvalue$significantStyle, "pill")
+
+  # Lives under inputs.column_defaults on the wire (not a top-level key).
+  wire <- theme_to_wire(t2)
+  expect_true(wire$inputs$column_defaults$pvalue$stars)
+  expect_identical(wire$inputs$column_defaults$pvalue$significantStyle, "pill")
+
+  # Round-trips through serialize + re-hydration exactly.
+  back <- theme_from_wire(jsonlite::toJSON(wire, auto_unbox = TRUE, digits = NA))
+  expect_true(back@inputs@column_defaults$pvalue$stars)
+  expect_identical(back@inputs@column_defaults$pvalue$significantStyle, "pill")
+
+  # A second call MERGES into the same type; passing nothing clears it.
+  t3 <- set_column_default(t2, "pvalue", starsColor = "negative")
+  expect_true(t3@inputs@column_defaults$pvalue$stars)        # earlier opt kept
+  expect_identical(t3@inputs@column_defaults$pvalue$starsColor, "negative")
+  t4 <- set_column_default(t3, "pvalue")
+  expect_null(t4@inputs@column_defaults$pvalue)
+})
+
+test_that("web_theme(column_defaults=) seeds the slot + the wire-import drops junk", {
+  th <- web_theme(column_defaults = list(pvalue = list(stars = TRUE)))
+  expect_true(th@inputs@column_defaults$pvalue$stars)
+
+  # Untrusted wire-import keeps only scalar leaves under named types. The
+  # empty-name entry is built via setNames (a literal "" = is a parse error).
+  cd_junk <- c(
+    list(pvalue = list(stars = TRUE, bad = list(1, 2))),  # non-scalar leaf dropped
+    setNames(list(list(x = 1)), "")                       # empty type key dropped
+  )
+  wire <- list(
+    name = "junk", schemaVersion = 4,
+    inputs = list(
+      anchors = theme_to_wire(web_theme_nejm())$inputs$anchors,
+      column_defaults = cd_junk
+    )
+  )
+  back <- theme_from_wire(jsonlite::toJSON(wire, auto_unbox = TRUE, digits = NA))
+  expect_true(back@inputs@column_defaults$pvalue$stars)
+  expect_null(back@inputs@column_defaults$pvalue$bad)
+  expect_false("" %in% names(back@inputs@column_defaults))
+})
+
 test_that("R .TYPE_ROLE_NAMES mirror matches the TS roster (Wave 3 drift gate)", {
   ts_type_roles <- sort(list_roles()$role[list_roles()$domain == "type"])
   expect_identical(ts_type_roles, sort(tabviz:::.TYPE_ROLE_NAMES))

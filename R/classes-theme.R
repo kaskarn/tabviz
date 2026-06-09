@@ -239,7 +239,19 @@ ThemeInputs <- new_class(
     row_kinds_spacer_height_ratio       = new_property(class_numeric, default = NA_real_),
     row_kinds_summary_height_ratio      = new_property(class_numeric, default = NA_real_),
     row_kinds_header_height_ratio       = new_property(class_numeric, default = NA_real_),
-    row_kinds_panel_height_ratio        = new_property(class_numeric, default = NA_real_)
+    row_kinds_panel_height_ratio        = new_property(class_numeric, default = NA_real_),
+
+    # Theme-as-house-style (2026-06-09). A theme may declare per-column-TYPE
+    # default options, merged UNDER each matching column at engine spec-
+    # ingest: `list(<type> = list(<option> = value, ...))`, e.g.
+    # `list(pvalue = list(stars = TRUE, significantStyle = "pill"))`.
+    # Stored as ONE list slot (mirrors `type_roles`); serializes to the wire's
+    # `column_defaults`. The MERGE itself (kind-gate so a theme can only touch
+    # `styling`/`editor` options, never `core` data/precision; author-wins
+    # precedence) runs TS-side in applyThemeColumnDefaultsToSpec — the schema
+    # is the single source of truth, so R replicates none of it. Empty = no
+    # house-style defaults. Set via set_column_default().
+    column_defaults = new_property(class_list, default = quote(list()))
   ),
   validator = function(self) {
     for (anchor in c("anchors_paper", "anchors_ink", "anchors_brand")) {
@@ -338,6 +350,31 @@ ThemeInputs <- new_class(
       v <- S7::prop(self, slot)
       if (!is.na(v) && (v <= 0 || v > 10)) {
         return(paste0(slot, " must be a positive number in (0, 10], got ", v))
+      }
+    }
+    # column_defaults — structural only (the kind-gate lives TS-side). Must be a
+    # named list keyed by column type, each a named list of scalar option
+    # values. Semantic validity (real type / real option / right kind) is the
+    # engine's job at spec-ingest.
+    cd <- self@column_defaults
+    if (length(cd) > 0L) {
+      if (is.null(names(cd)) || any(!nzchar(names(cd)))) {
+        return("column_defaults must be a named list keyed by column type")
+      }
+      for (type in names(cd)) {
+        entry <- cd[[type]]
+        if (!is.list(entry) || (length(entry) > 0L &&
+              (is.null(names(entry)) || any(!nzchar(names(entry)))))) {
+          return(paste0("column_defaults$", type,
+                        " must be a named list of option values"))
+        }
+        for (opt in names(entry)) {
+          val <- entry[[opt]]
+          if (!is.null(val) && (length(val) != 1L || !is.atomic(val))) {
+            return(paste0("column_defaults$", type, "$", opt,
+                          " must be a single scalar value"))
+          }
+        }
       }
     }
     NULL
