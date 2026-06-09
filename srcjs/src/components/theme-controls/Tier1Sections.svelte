@@ -426,6 +426,11 @@
       <EnumRow label="Title" value={fx.title_style ?? "normal"}
                segments={["normal", "bar", "underline"].map((v) => ({ value: v, label: v }))}
                onchange={(v) => patchEffects("title_style", v)} />
+      <EnumRow label="Title tag"
+               hint="A boxed stamp beside the title (the 'Table 1' chip). Set its text with tag= on tabviz() or by double-clicking it on the canvas."
+               value={fx.caption_style ?? "none"}
+               segments={["none", "chip", "stripe", "both"].map((v) => ({ value: v, label: v }))}
+               onchange={(v) => patchEffects("caption_style", v)} />
       <EnumRow label="Glow" value={fx.glow_intensity ?? "none"}
                segments={["none", "subtle", "neon"].map((v) => ({ value: v, label: v }))}
                onchange={(v) => patchEffects("glow_intensity", v)} />
@@ -450,6 +455,10 @@
                value={fx.elevation ?? "none"}
                segments={["none", "low", "medium", "high"].map((v) => ({ value: v, label: v }))}
                onchange={(v) => patchEffects("elevation", v)} />
+      <EnumRow label="Glass" hint="Translucent frosted / aurora shell (browser only)."
+               value={fx.glass ?? "none"}
+               segments={["none", "frosted", "aurora"].map((v) => ({ value: v, label: v }))}
+               onchange={(v) => patchEffects("glass", v)} />
     </DisclosureField>
 
     <DisclosureField label="Geometry" summary={geometrySummary} bind:open={geometryOpen}>
