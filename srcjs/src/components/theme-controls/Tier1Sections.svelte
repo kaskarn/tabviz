@@ -308,8 +308,8 @@
 
 <div class="tab-panel">
 {#if activeTab === "identity"}
-<Section title="identity" glyph="section.style"
-           hint="The theme's color anchors. Everything downstream derives from these through the cascade.">
+<Section title="Identity" kicker="Tier 1 · Anchors"
+           lede="The theme's color anchors. Everything downstream derives from these through the cascade.">
     {#each ANCHOR_ROWS as row (row.key)}
       <AnchorRow
         label={row.label}
@@ -343,8 +343,8 @@
 {/if}
 
 {#if activeTab === "form"}
-  <Section title="surface" glyph="section.layout"
-           hint="Structural variants — shell, header band, series marks, borders, texture. Each re-resolves the cascade.">
+  <Section title="Surface" kicker="Tier 1 · Structure"
+           lede="Structural variants — shell, header band, series marks, borders, texture. Each re-resolves the cascade.">
     <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
              segments={SHELL.map((v) => ({ value: v, label: v }))}
              onchange={(v) => patch("shell_mode", v)} />
@@ -365,8 +365,8 @@
     </Field>
   </Section>
 
-  <Section title="type" glyph="type.text"
-           hint="Body family + the two Tier-1 scale knobs. Per-role typography is studio territory.">
+  <Section title="Type" kicker="Tier 1 · Type"
+           lede="Body family + the two Tier-1 scale knobs. Per-role typography is studio territory.">
     <Field label="Body">
       <FontFamily value={inputs.fonts?.body ?? null}
                   ariaLabel="Body font"
@@ -494,30 +494,27 @@
 
 {#if activeTab === "color"}
   {#if advancedExtra}
-    <Section title="role tones" glyph="section.style"
-             hint="Curated Tier-2 role nudges — cascade-safe, survives polarity & contrast. The full role spine lives in the studio.">
+    <Section title="Role tones" kicker="Tier 2 · Roles"
+             lede="Curated Tier-2 role nudges — cascade-safe, survives polarity & contrast. The full role spine lives in the studio.">
       {@render advancedExtra()}
     </Section>
   {/if}
 {/if}
 </div>
 
-{#if !roomy}
-  {#if onOpenStudio}
-    <div class="studio-handoff">
-      <button type="button" class="studio-handoff-btn" onclick={onOpenStudio}>
-        Edit in studio →
-      </button>
-      <span class="studio-handoff-hint">
-        Per-role type, tokens, raw borders, role rebinding.
-      </span>
-    </div>
-  {:else}
-    <p class="studio-pointer">
-      Fine-grained control — per-role type, tokens, raw borders, role
-      rebinding — lives in the studio: <code>tabviz_studio(plot)</code> in R.
-    </p>
-  {/if}
+<!-- The handoff renders ONLY when the host wires a real action (onOpenStudio
+     → clipboard wire + Shiny request). The old `{:else}` printed a dead
+     `tabviz_studio(plot)` R-snippet with no live effect in a GUI — deleted
+     (A4 zero-dead-buttons). -->
+{#if !roomy && onOpenStudio}
+  <div class="studio-handoff">
+    <button type="button" class="studio-handoff-btn" onclick={onOpenStudio}>
+      Edit in studio →
+    </button>
+    <span class="studio-handoff-hint">
+      Per-role type, tokens, raw borders, role rebinding.
+    </span>
+  </div>
 {/if}
 
 <style>
@@ -578,18 +575,6 @@
   }
   .tab.active .tab-dot { opacity: 1; }
   .tab-panel { display: flex; flex-direction: column; }
-  .studio-pointer {
-    margin: 0;
-    padding: 8px 0 12px;
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
-  }
-  .studio-pointer code {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    background: var(--v2-paper-2, #f3efe5);
-    padding: 1px 4px;
-    border-radius: var(--v2-r-hair, 2px);
-  }
   .studio-handoff {
     display: flex;
     align-items: center;

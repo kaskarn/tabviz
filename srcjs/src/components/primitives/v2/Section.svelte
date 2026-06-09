@@ -32,32 +32,75 @@
     count?: number | null;
     /** Mute the section — used when its options are all defaults. */
     dim?: boolean;
+    /**
+     * Editorial voice (rgc "editor IS documentation"): a mono-uppercase
+     * kicker eyebrow above a serif title. When set, the section renders the
+     * magazine masthead treatment — kicker / serif title / prose lede — used
+     * for the theme panel's top-level structural headers. Omit it and the
+     * section keeps the compact tracked-small-caps voice the column editor
+     * uses.
+     */
+    kicker?: string;
+    /**
+     * Visible prose hint below the title (editorial mode). Distinct from
+     * `hint`, which stays an inline tooltip "i". Use a full sentence — it
+     * documents the section the way rgc's picker subtitles do.
+     */
+    lede?: string;
     children?: Snippet;
   }
 
-  const { title, hint, glyph, count, dim, children }: Props = $props();
+  const { title, hint, glyph, count, dim, kicker, lede, children }: Props =
+    $props();
+
+  const editorial = $derived(kicker != null || lede != null);
 </script>
 
-<section class="section" class:dim>
-  <header class="head">
-    {#if glyph}
-      <span class="head-glyph" aria-hidden="true">{glyphChar(glyph)}</span>
-    {/if}
-    <div class="head-text">
-      <h3 class="head-title">{title}</h3>
-      {#if hint}
-        <Tooltip text={hint}>
-          <span class="info" aria-label={hint}>i</span>
-        </Tooltip>
+<section class="section" class:dim class:editorial>
+  {#if editorial}
+    <header class="ed-head">
+      {#if kicker}
+        <p class="ed-kicker">{kicker}</p>
       {/if}
-    </div>
-    {#if count != null && count > 0}
-      <span class="head-count" title="{count} overridden">
-        <span class="count-dot"></span>
-        {count}
-      </span>
-    {/if}
-  </header>
+      <div class="ed-title-row">
+        <h3 class="ed-title">{title}</h3>
+        {#if hint}
+          <Tooltip text={hint}>
+            <span class="info" aria-label={hint}>i</span>
+          </Tooltip>
+        {/if}
+        {#if count != null && count > 0}
+          <span class="head-count" title="{count} overridden">
+            <span class="count-dot"></span>
+            {count}
+          </span>
+        {/if}
+      </div>
+      {#if lede}
+        <p class="ed-lede">{lede}</p>
+      {/if}
+    </header>
+  {:else}
+    <header class="head">
+      {#if glyph}
+        <span class="head-glyph" aria-hidden="true">{glyphChar(glyph)}</span>
+      {/if}
+      <div class="head-text">
+        <h3 class="head-title">{title}</h3>
+        {#if hint}
+          <Tooltip text={hint}>
+            <span class="info" aria-label={hint}>i</span>
+          </Tooltip>
+        {/if}
+      </div>
+      {#if count != null && count > 0}
+        <span class="head-count" title="{count} overridden">
+          <span class="count-dot"></span>
+          {count}
+        </span>
+      {/if}
+    </header>
+  {/if}
   <div class="body">
     {@render children?.()}
   </div>
@@ -69,8 +112,58 @@
     flex-direction: column;
     position: relative;
   }
-  .section.dim .head-title { color: var(--v2-ink-3, #8a8478); }
+  .section.dim .head-title,
+  .section.dim .ed-title { color: var(--v2-ink-3, #8a8478); }
   .section.dim .body { opacity: 0.75; }
+
+  /* ── Editorial masthead (rgc picker voice) ────────────────────────────
+     kicker eyebrow (mono, tracked, accent) → serif title → prose lede →
+     hairline rule. The "editor IS documentation" treatment: each top-level
+     theme section announces itself like a magazine department head. */
+  .ed-head {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: var(--v2-gap-wide, 12px) 0 var(--v2-gap-mid, 8px);
+    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
+    margin-bottom: var(--v2-gap-small, 6px);
+  }
+  .ed-kicker {
+    margin: 0;
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-micro, 9.5px);
+    font-weight: 500;
+    letter-spacing: var(--v2-track-flag, 0.18em);
+    text-transform: uppercase;
+    color: var(--v2-accent, var(--tv-accent, #b53a1f));
+    line-height: 1;
+  }
+  .ed-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+  }
+  .ed-title {
+    margin: 0;
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
+    font-size: var(--v2-text-display, 17px);
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    color: var(--v2-ink, #15140e);
+    line-height: 1.15;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .ed-lede {
+    margin: 0;
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: var(--v2-text-small, 10.5px);
+    font-weight: 400;
+    color: var(--v2-ink-3, #8a8478);
+    line-height: 1.45;
+    max-width: 46ch;
+  }
 
   /* Editorial section header — hanging-indent glyph in a 20px gutter,
      title's first letter aligns with every field's label baseline below.

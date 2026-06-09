@@ -66,6 +66,7 @@
   --v2-text-body:    11.5px;  /* default field label/value */
   --v2-text-strong:  13px;    /* section titles */
   --v2-text-large:   16px;    /* popover heading */
+  --v2-text-display: 18px;    /* editorial masthead title (Section kicker mode) */
 
   --v2-track-tight:  -0.005em;
   --v2-track-flat:    0em;
