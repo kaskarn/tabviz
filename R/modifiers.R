@@ -306,10 +306,9 @@ set_marker_style <- function(
 #'
 #' @param x A WebSpec object, htmlwidget, or tabviz_proxy
 #' @param theme Either a WebTheme object or a string naming a built-in
-#'   preset: one of "default", "cochrane", "lancet", "jama", "nejm",
-#'   "nature", "bmj", "dark", "bauhaus", "swiss", "tufte", "newsprint",
-#'   "solarized", "solarized_dark", "tonal", "tonal_dark", "dwarven",
-#'   "elvish", "hobbit". (Unknown names error with the full list.)
+#'   preset (the 9 committed identities): one of "default", "nejm", "ledger",
+#'   "brutalist", "aurora", "terminal", "newsprint", "blueprint", "synthwave",
+#'   "dwarven". (Unknown names error with the full list.)
 #'
 #' @return The modified WebSpec, htmlwidget, or proxy (invisibly)
 #'
@@ -322,31 +321,19 @@ set_marker_style <- function(
 #'
 #' @export
 set_theme <- function(x, theme) {
+  # The 9 committed identities (27→9 cull, 2026-06-09). One per axis.
   theme_map <- list(
-    # Journal presets (R/themes.R)
-    cochrane = web_theme_cochrane,
-    lancet   = web_theme_lancet,
-    jama     = web_theme_jama,
-    nejm     = web_theme_nejm,
-    nature   = web_theme_nature,
-    bmj      = web_theme_bmj,
-    dark     = web_theme_dark,
-    # Design presets (R/themes-design.R)
-    bauhaus        = web_theme_bauhaus,
-    swiss          = web_theme_swiss,
-    tufte          = web_theme_tufte,
-    newsprint      = web_theme_newsprint,
-    solarized      = web_theme_solarized,
-    solarized_dark = web_theme_solarized_dark,
-    tonal          = web_theme_tonal,
-    tonal_dark     = web_theme_tonal_dark,
-    # LOTR presets (R/themes-lotr.R) — illustrative, non-journal
-    dwarven  = web_theme_dwarven,
-    elvish   = web_theme_elvish,
-    hobbit   = web_theme_hobbit,
-    # `set_theme("default")` is a non-breaking alias for the package's
-    # current default theme (BMJ — modern editorial register).
-    default  = web_theme_bmj
+    nejm      = web_theme_nejm,       # Clinical / restraint (the default)
+    ledger    = web_theme_ledger,     # COLOR
+    brutalist = web_theme_brutalist,  # GEOMETRY
+    aurora    = web_theme_aurora,     # EFFECTS
+    terminal  = web_theme_terminal,   # ALIASING
+    newsprint = web_theme_newsprint,  # TEXTURE
+    blueprint = web_theme_blueprint,  # DRAFT / GRID
+    synthwave = web_theme_synthwave,  # NEON
+    dwarven   = web_theme_dwarven,    # FANTASY / display-serif
+    # `set_theme("default")` is an alias for the package default (NEJM).
+    default   = web_theme_nejm
   )
 
   resolved <- if (is.character(theme) && length(theme) == 1) {

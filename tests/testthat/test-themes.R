@@ -60,16 +60,16 @@ test_that("JAMA preset uses brand_mono categorical", {
 })
 
 test_that("package_themes() registry exposes all categories", {
+  # 27→9 cull (2026-06-09): 9 committed identities across 4 registers.
   reg <- package_themes()
-  expect_setequal(names(reg), c("journals", "modes", "design", "lotr", "showcase"))
-  expect_length(reg$journals, 6L)
-  expect_length(reg$modes, 1L)
-  expect_length(reg$design, 8L)
-  expect_length(reg$lotr, 3L)
-  expect_length(reg$showcase, 9L)
+  expect_setequal(names(reg), c("clinical", "editorial", "design", "expressive"))
+  expect_length(reg$clinical, 1L)    # nejm
+  expect_length(reg$editorial, 2L)   # newsprint, dwarven
+  expect_length(reg$design, 2L)      # ledger, brutalist
+  expect_length(reg$expressive, 4L)  # aurora, terminal, blueprint, synthwave
 })
 
 test_that("theme_registry returns flat name-to-theme map", {
   s <- theme_registry()
-  expect_true(length(s) >= 21L)
+  expect_length(s, 9L)
 })

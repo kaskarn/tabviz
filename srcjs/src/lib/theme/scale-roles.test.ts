@@ -45,10 +45,10 @@ describe("effectiveTypeRoles overlay", () => {
 
 describe("type-role rebind reaches the resolved cssVars", () => {
   it("a footnote size rebind changes --tv-text-footnote-size", () => {
-    const base = PRESETS["cochrane"]!;
-    const before = resolveTheme(createWire(base, "cochrane")).cssVars["--tv-text-footnote-size"];
+    const base = PRESETS["nejm"]!;
+    const before = resolveTheme(createWire(base, "nejm")).cssVars["--tv-text-footnote-size"];
     const rebound = resolveTheme(
-      createWire({ ...base, type_roles: { footnote: { size: "title" } } }, "cochrane"),
+      createWire({ ...base, type_roles: { footnote: { size: "title" } } }, "nejm"),
     ).cssVars["--tv-text-footnote-size"];
     expect(rebound).not.toBe(before);
     // title is larger than foot → the px value grew
@@ -57,7 +57,7 @@ describe("type-role rebind reaches the resolved cssVars", () => {
 });
 
 describe("type_roles ingress validation (Wave 3.5 review P0)", () => {
-  const ok = PRESETS["cochrane"]!; // valid anchors so only type_roles can fail
+  const ok = PRESETS["nejm"]!; // valid anchors so only type_roles can fail
   it("rejects an out-of-vocab size / family / weight", () => {
     expect(() => validateThemeInputs({ ...ok, type_roles: { footnote: { size: "garbage" } } } as never))
       .toThrow(ThemeInputsValidationError);
@@ -75,7 +75,7 @@ describe("type_roles ingress validation (Wave 3.5 review P0)", () => {
 });
 
 describe("snippet emits named setters (Wave 3.5 review P1/P2)", () => {
-  const base = PRESETS["cochrane"]!;
+  const base = PRESETS["nejm"]!;
   it("set_type_role for a type rebind", () => {
     const steps = buildSnippetSteps(base, { ...base, type_roles: { footnote: { size: "title" } } });
     const s = steps.find((x) => x.setter === "set_type_role");

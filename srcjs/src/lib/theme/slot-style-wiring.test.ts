@@ -15,9 +15,9 @@ const series = (t: unknown): SlotRole[] =>
 
 describe("slot_style → series slot wiring", () => {
   it("default (unset) equals fill_with_darker_stroke", () => {
-    const unset = buildTheme({ ...PRESETS["cochrane"]! }, "a");
+    const unset = buildTheme({ ...PRESETS["nejm"]! }, "a");
     const explicit = buildTheme(
-      { ...PRESETS["cochrane"]!, slot_style: "fill_with_darker_stroke" },
+      { ...PRESETS["nejm"]!, slot_style: "fill_with_darker_stroke" },
       "b",
     );
     expect(series(unset)).toEqual(series(explicit));
@@ -29,7 +29,7 @@ describe("slot_style → series slot wiring", () => {
   });
 
   it("flat_fill makes stroke ≡ fill on every slot", () => {
-    const t = buildTheme({ ...PRESETS["cochrane"]!, slot_style: "flat_fill" }, "f");
+    const t = buildTheme({ ...PRESETS["nejm"]!, slot_style: "flat_fill" }, "f");
     for (const s of series(t)) {
       expect(s.stroke).toBe(s.fill);
       expect(s.strokeDim).toBe(s.fillDim);
@@ -38,8 +38,8 @@ describe("slot_style → series slot wiring", () => {
   });
 
   it("outlined pales the fill while the stroke keeps the anchor", () => {
-    const ring = buildTheme({ ...PRESETS["cochrane"]! }, "r");
-    const outlined = buildTheme({ ...PRESETS["cochrane"]!, slot_style: "outlined" }, "o");
+    const ring = buildTheme({ ...PRESETS["nejm"]! }, "r");
+    const outlined = buildTheme({ ...PRESETS["nejm"]!, slot_style: "outlined" }, "o");
     const rs = series(ring);
     const os = series(outlined);
     for (let i = 0; i < os.length; i++) {
@@ -53,7 +53,7 @@ describe("slot_style → series slot wiring", () => {
   it("the three conventions are pairwise distinct", () => {
     const variants = (["fill_with_darker_stroke", "flat_fill", "outlined"] as const)
       .map((v) => JSON.stringify(series(
-        buildTheme({ ...PRESETS["cochrane"]!, slot_style: v }, v),
+        buildTheme({ ...PRESETS["nejm"]!, slot_style: v }, v),
       )));
     expect(new Set(variants).size).toBe(3);
   });

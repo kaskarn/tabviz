@@ -5,9 +5,9 @@
  * mount. Accepts:
  *  - `data`: array of row objects (each row's fields are read by column builders)
  *  - `columns`: array of `ColumnDef` from `colText` / `vizForest` / `colGroup` etc.
- *  - `theme`: a name string (`"lancet"`), a `{ extend, overrides }` object, or
- *    a pre-resolved `WebTheme`. Defaults to `"bmj"` — the package's
- *    current default theme (modern editorial register).
+ *  - `theme`: a name string (`"nejm"`), a `{ extend, overrides }` object, or
+ *    a pre-resolved `WebTheme`. Defaults to `"nejm"` — the package's default
+ *    theme (the Clinical archetype, post 27→9 cull).
  *  - Other top-level args mirror the R `tabviz()` signature.
  */
 
@@ -200,7 +200,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
     footnote: args.footnote ?? null,
   };
 
-  const theme = resolveThemeRef(args.theme ?? "bmj");
+  const theme = resolveThemeRef(args.theme ?? "nejm");
 
   // Build the row-label column as a top-level `labelColumn` slot when
   // `label` is set, rather than prepending to `columns`. Gives the

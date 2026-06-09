@@ -20,7 +20,7 @@ describe("recordDelta", () => {
 });
 
 describe("computeDivergence", () => {
-  const base = PRESETS.cochrane;
+  const base = PRESETS.nejm;
 
   it("is 0 for an unedited loaded theme (no phantom edits)", () => {
     expect(computeDivergence(base, base, {}, {}, {}, {})).toBe(0);

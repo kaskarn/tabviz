@@ -14,7 +14,7 @@ beforeEach(() => {
   bootBuiltinBehaviors();
 });
 
-const theme = THEME_PRESETS.bmj;
+const theme = THEME_PRESETS.nejm;
 
 function callProgress(value: unknown, options: Record<string, unknown> = {}, cellWidth = 120): RenderSvg {
   const fn = dispatchRenderer("progress", "svg");

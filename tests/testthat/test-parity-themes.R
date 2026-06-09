@@ -65,34 +65,17 @@
 }
 
 # Preset name → (R constructor, TS constructor).
+# The 9 committed identities (27→9 cull, locked 2026-06-09). One per axis.
 PRESET_PAIRS <- list(
-  cochrane       = list(r = web_theme_cochrane,       ts = "themeCochrane"),
-  lancet         = list(r = web_theme_lancet,         ts = "themeLancet"),
-  jama           = list(r = web_theme_jama,           ts = "themeJama"),
   nejm           = list(r = web_theme_nejm,           ts = "themeNejm"),
-  nature         = list(r = web_theme_nature,         ts = "themeNature"),
-  bmj            = list(r = web_theme_bmj,            ts = "themeBmj"),
-  dark           = list(r = web_theme_dark,           ts = "themeDark"),
-  bauhaus        = list(r = web_theme_bauhaus,        ts = "themeBauhaus"),
-  swiss          = list(r = web_theme_swiss,          ts = "themeSwiss"),
-  tufte          = list(r = web_theme_tufte,          ts = "themeTufte"),
-  newsprint      = list(r = web_theme_newsprint,      ts = "themeNewsprint"),
-  solarized      = list(r = web_theme_solarized,      ts = "themeSolarized"),
-  solarized_dark = list(r = web_theme_solarized_dark, ts = "themeSolarizedDark"),
-  tonal          = list(r = web_theme_tonal,          ts = "themeTonal"),
-  tonal_dark     = list(r = web_theme_tonal_dark,     ts = "themeTonalDark"),
-  dwarven        = list(r = web_theme_dwarven,        ts = "themeDwarven"),
-  elvish         = list(r = web_theme_elvish,         ts = "themeElvish"),
-  hobbit         = list(r = web_theme_hobbit,         ts = "themeHobbit"),
-  synthwave      = list(r = web_theme_synthwave,      ts = "themeSynthwave"),
-  brutalist      = list(r = web_theme_brutalist,      ts = "themeBrutalist"),
-  atelier        = list(r = web_theme_atelier,        ts = "themeAtelier"),
-  executive      = list(r = web_theme_executive,      ts = "themeExecutive"),
   ledger         = list(r = web_theme_ledger,         ts = "themeLedger"),
-  terminal       = list(r = web_theme_terminal,       ts = "themeTerminal"),
+  brutalist      = list(r = web_theme_brutalist,      ts = "themeBrutalist"),
   aurora         = list(r = web_theme_aurora,         ts = "themeAurora"),
+  terminal       = list(r = web_theme_terminal,       ts = "themeTerminal"),
+  newsprint      = list(r = web_theme_newsprint,      ts = "themeNewsprint"),
   blueprint      = list(r = web_theme_blueprint,      ts = "themeBlueprint"),
-  sunprint       = list(r = web_theme_sunprint,       ts = "themeSunprint")
+  synthwave      = list(r = web_theme_synthwave,      ts = "themeSynthwave"),
+  dwarven        = list(r = web_theme_dwarven,        ts = "themeDwarven")
 )
 
 test_that("R and TS preset constructors emit the same top-level wire fields", {
@@ -180,8 +163,8 @@ test_that("R presets all serialize to the v4 anchors shape", {
 })
 
 test_that("Polarity round-trips through serialization for dark presets", {
-  for (name in c("dark", "solarized_dark", "tonal_dark", "dwarven", "synthwave",
-                 "terminal", "aurora", "blueprint")) {
+  # Dark-polarity survivors (27→9 cull, 2026-06-09).
+  for (name in c("aurora", "terminal", "blueprint", "synthwave", "dwarven")) {
     inputs_json <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     expect_equal(inputs_json$polarity, "dark",
                  label = paste0("polarity (preset: ", name, ")"))
@@ -189,10 +172,8 @@ test_that("Polarity round-trips through serialization for dark presets", {
 })
 
 test_that("Light presets DO NOT emit polarity (default omitted symmetric R↔TS)", {
-  for (name in c("cochrane", "lancet", "jama", "nature", "bmj",
-                 "bauhaus", "swiss", "tufte", "newsprint", "solarized",
-                 "tonal", "elvish", "hobbit", "brutalist", "atelier",
-                 "executive", "ledger", "sunprint")) {
+  # Light-polarity survivors (27→9 cull, 2026-06-09).
+  for (name in c("nejm", "ledger", "brutalist", "newsprint")) {
     inputs_json <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     expect_null(inputs_json$polarity,
                 info = paste0("light preset '", name, "' should omit polarity"))
@@ -201,13 +182,14 @@ test_that("Light presets DO NOT emit polarity (default omitted symmetric R↔TS)
 
 test_that("maximal theme (every wire-1.3 input set) round-trips through V8", {
   # 6b (wire-audit): one theme exercising EVERY field added in the 1.3
-  # arc — ink2, monochrome, status palette, marks, glass, caption/header/
+  # arc — monochrome, status palette, marks, glass, caption/header/
   # title styles, geometry, density_factor — must serialize, resolve via
-  # the TS engine, and re-serialize identically.
+  # the TS engine, and re-serialize identically. (`ink2` was REMOVED as an
+  # anchor/web_theme arg — folded into accent; --tv-ink2 survives only as a
+  # token defaulting to accent. Pin it via set_pin() to differ.)
   maximal <- web_theme(
     brand = "#006266",
     accent = "#C8553D",
-    ink2 = "#862721",
     polarity = "dark",
     monochrome = TRUE,
     status_positive = "#2E7D32",
@@ -233,7 +215,7 @@ test_that("maximal theme (every wire-1.3 input set) round-trips through V8", {
   )
   j1 <- theme_inputs_to_json(maximal@inputs)
   # Every 1.3-arc field present on the wire:
-  expect_false(is.null(j1$anchors$ink2))
+  expect_null(j1$anchors$ink2)  # ink2 anchor REMOVED — folded into accent
   expect_true(isTRUE(j1$monochrome))
   expect_equal(j1$marks$point_shape, "square")
   expect_equal(j1$marks$interval_weight, "thick")

@@ -7,7 +7,7 @@ import { createWire } from "./theme-wire";
 import { PRESETS } from "./theme-presets-inputs";
 
 describe("toDtcg shape", () => {
-  const doc = toDtcg(PRESETS["cochrane"]!, "cochrane");
+  const doc = toDtcg(PRESETS["nejm"]!, "nejm");
   it("emits the three token groups + provenance", () => {
     expect(doc.tabviz.reference).toBeDefined();
     expect(doc.tabviz.semantic).toBeDefined();
@@ -29,7 +29,7 @@ describe("toDtcg shape", () => {
 });
 
 describe("DTCG round-trip is byte-stable (plan Wave-4 verification)", () => {
-  for (const name of ["cochrane", "nejm", "dwarven"]) {
+  for (const name of ["nejm", "nejm", "dwarven"]) {
     it(`${name}: theme → DTCG → wire → resolve, cssVars stable`, () => {
       const inputs = PRESETS[name]!;
       const before = resolveTheme(createWire(inputs, name)).cssVars;
@@ -39,10 +39,10 @@ describe("DTCG round-trip is byte-stable (plan Wave-4 verification)", () => {
     });
   }
   it("round-trips roleOverrides + pins through $extensions", () => {
-    const inputs = PRESETS["cochrane"]!;
+    const inputs = PRESETS["nejm"]!;
     const ro = { "text-muted": { ramp: "brand" as const, grade: 8 } };
     const pins = { "--tv-text-footnote-size": "0.7rem" };
-    const wire = fromDtcg(toDtcg(inputs, "cochrane", ro, pins));
+    const wire = fromDtcg(toDtcg(inputs, "nejm", ro, pins));
     expect(wire.roleOverrides["text-muted"]).toBe("brand.8"); // alias form on the envelope
     expect(wire.pins?.["--tv-text-footnote-size"]).toBe("0.7rem");
   });

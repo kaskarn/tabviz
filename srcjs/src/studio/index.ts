@@ -23,7 +23,7 @@ import StudioShell from "./StudioShell.svelte";
 import { tabviz } from "../authoring/tabviz";
 import { colText, colN, colInterval } from "../authoring/columns";
 import { vizForest } from "../authoring/viz";
-import { themeCochrane } from "../lib/theme/theme-api";
+import { themeNejm } from "../lib/theme/theme-api";
 
 function buildSampleSpec(): unknown {
   // 8-row meta-analysis - representative chart for the studio to render.
@@ -37,7 +37,7 @@ function buildSampleSpec(): unknown {
     { study: "Eta 2022",     region: "Africa",   n: 134, hr: 0.79, lo: 0.62, hi: 1.01 },
     { study: "Theta 2025",   region: "Oceania",  n: 412, hr: 0.83, lo: 0.69, hi: 0.99 },
   ];
-  const theme = themeCochrane();
+  const theme = themeNejm();
   return tabviz({
     data: rows,
     label: "study",
@@ -72,9 +72,9 @@ function bootstrap(): void {
       initialSpec = JSON.parse(initialSpecJson);
       initialTheme = JSON.parse(initialThemeJson);
     } else {
-      // Static / forge mode — synthesize a sample spec + cochrane theme.
+      // Static / forge mode — synthesize a sample spec + nejm theme.
       initialSpec = buildSampleSpec();
-      initialTheme = themeCochrane();
+      initialTheme = themeNejm();
     }
 
     // Clear any docs-side fallback ("Loading studio…") before mounting.

@@ -8,13 +8,11 @@
 # R wrapper and the TS engine, run via V8, must emit identical theme CSS) for
 # full R↔TS theme drift detection.
 
+# The 9 committed identities (27→9 cull, locked 2026-06-09). Must stay in
+# lockstep with TS THEME_NAMES and PRESETS, and R package_themes().
 EXPECTED_THEME_NAMES <- c(
-  "cochrane", "lancet", "jama", "nejm", "nature", "bmj", "dark",
-  "bauhaus", "swiss", "tufte", "newsprint",
-  "solarized", "solarized_dark", "tonal", "tonal_dark",
-  "dwarven", "elvish", "hobbit",
-  "synthwave", "brutalist", "atelier", "executive",
-  "ledger", "terminal", "aurora", "blueprint", "sunprint"
+  "nejm", "ledger", "brutalist", "aurora", "terminal",
+  "newsprint", "blueprint", "synthwave", "dwarven"
 )
 
 # snake_case → camelCase builder symbol.

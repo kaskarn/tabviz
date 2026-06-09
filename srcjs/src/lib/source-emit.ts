@@ -207,10 +207,10 @@ export function emitJsSource({ spec, opLog, dataVarName = "tabvizData" }: EmitJs
     }
   }
   tabvizArgs.push(`  columns: [\n    ${columns},\n  ],`);
-  // Omit `theme:` when it resolves to the package default ("bmj").
+  // Omit `theme:` when it resolves to the package default ("nejm").
   // Authors who want explicit theme provenance can still pass it; the
   // emitter just doesn't pad the snippet with the default.
-  if (themeRef !== `"bmj"`) {
+  if (themeRef !== `"nejm"`) {
     tabvizArgs.push(`  theme: ${themeRef},`);
   }
   if (spec.labels?.title)    tabvizArgs.push(`  title: ${JSON.stringify(spec.labels.title)},`);
@@ -218,7 +218,7 @@ export function emitJsSource({ spec, opLog, dataVarName = "tabvizData" }: EmitJs
   if (spec.labels?.caption)  tabvizArgs.push(`  caption: ${JSON.stringify(spec.labels.caption)},`);
   if (spec.labels?.footnote) tabvizArgs.push(`  footnote: ${JSON.stringify(spec.labels.footnote)},`);
 
-  const importLine = imports(themeRef !== `"bmj"` && themeRef.startsWith("webTheme"));
+  const importLine = imports(themeRef !== `"nejm"` && themeRef.startsWith("webTheme"));
   const ops = (opLog ?? []).map((r) => r.jsCall).filter(Boolean).join("\n");
 
   return [

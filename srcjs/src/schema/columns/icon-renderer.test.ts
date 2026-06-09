@@ -14,7 +14,7 @@ beforeEach(() => {
   bootBuiltinBehaviors();
 });
 
-const theme = THEME_PRESETS.bmj;
+const theme = THEME_PRESETS.nejm;
 
 function ctxWith(over: Partial<RenderContext> = {}): RenderContext {
   return { cellWidth: 100, rowHeight: 24, row: {}, target: "svg", theme, ...over };

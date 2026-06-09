@@ -14,7 +14,7 @@ import { TOKENS_BY_VAR } from "./component-tokens";
 import { buildThemeCSS } from "./theme-css";
 import { PRESETS } from "./theme-presets-inputs";
 
-const inputs = PRESETS["cochrane"]!;
+const inputs = PRESETS["nejm"]!;
 
 describe("roleOverrides on the theme artifact", () => {
   it("buildTheme stores overrides and getCssVars resolves with them", () => {

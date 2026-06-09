@@ -18,7 +18,7 @@ beforeEach(() => {
   bootBuiltinBehaviors();
 });
 
-const theme = THEME_PRESETS.bmj;
+const theme = THEME_PRESETS.nejm;
 
 function callPicto(value: unknown, options: Record<string, unknown> = {}, row: Record<string, unknown> = {}): RenderSvg {
   const fn = dispatchRenderer("pictogram", "svg");

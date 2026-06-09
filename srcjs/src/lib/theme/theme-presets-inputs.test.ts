@@ -1,29 +1,30 @@
 import { describe, it, expect } from "bun:test";
-import { PRESETS, preset, COCHRANE, LANCET, DARK } from "./theme-presets-inputs";
+import { PRESETS, preset, NEJM, LEDGER } from "./theme-presets-inputs";
 import { buildThemeStructure } from "./theme-resolve";
 import { apcaLc } from "../oklch";
 
-describe("PRESETS — preset registry", () => {
-  it("registers all 27 presets", () => {
-    expect(Object.keys(PRESETS).length).toBe(27);
+describe("PRESETS — preset registry (27→9 cull, locked 2026-06-09)", () => {
+  // The committed identity set. Each owns a distinct axis (rgc_v4 model).
+  const COMMITTED = [
+    "nejm", "ledger", "brutalist", "aurora", "terminal",
+    "newsprint", "blueprint", "synthwave", "dwarven",
+  ];
+
+  it("registers exactly the 9 committed presets", () => {
+    expect(Object.keys(PRESETS).sort()).toEqual([...COMMITTED].sort());
   });
 
-  it("includes all expected names", () => {
-    const expected = [
-      "cochrane", "lancet", "jama", "nejm", "nature", "bmj", "dark",
-      "bauhaus", "swiss", "tufte", "newsprint",
-      "solarized", "solarized_dark", "tonal", "tonal_dark",
-      "dwarven", "elvish", "hobbit",
-      "synthwave", "brutalist", "atelier", "executive",
-      "ledger", "terminal", "aurora", "blueprint", "sunprint",
-    ];
-    for (const name of expected) {
-      expect(PRESETS).toHaveProperty(name);
+  it("includes every committed name and NONE of the deleted ones", () => {
+    for (const name of COMMITTED) expect(PRESETS).toHaveProperty(name);
+    for (const dead of ["cochrane", "lancet", "jama", "nature", "bmj", "dark",
+      "swiss", "bauhaus", "tufte", "solarized", "tonal", "elvish", "hobbit",
+      "atelier", "executive", "sunprint"]) {
+      expect(PRESETS).not.toHaveProperty(dead);
     }
   });
 
-  it("preset() returns cochrane for unknown name", () => {
-    expect(preset("not_a_theme")).toBe(COCHRANE);
+  it("preset() returns nejm (the default) for an unknown name", () => {
+    expect(preset("not_a_theme")).toBe(NEJM);
   });
 });
 
@@ -45,10 +46,10 @@ describe("Preset structural correctness (V4 anchors)", () => {
     }
   });
 
-  it("dark themes have polarity: dark", () => {
-    expect(DARK.polarity).toBe("dark");
-    expect(PRESETS.solarized_dark!.polarity).toBe("dark");
-    expect(PRESETS.tonal_dark!.polarity).toBe("dark");
+  it("dark-polarity survivors carry polarity: dark", () => {
+    expect(PRESETS.aurora!.polarity).toBe("dark");
+    expect(PRESETS.terminal!.polarity).toBe("dark");
+    expect(PRESETS.synthwave!.polarity).toBe("dark");
   });
 });
 
@@ -78,17 +79,17 @@ describe("Preset resolution — APCA invariants hold for every preset", () => {
   });
 });
 
-describe("V4 has no decorative anchor — Lancet's v3 gold folded into accent", () => {
-  it("Lancet accent differs from brand", () => {
+describe("V4 has no decorative anchor — a two-color theme's 2nd hue folds into accent", () => {
+  it("a two-color preset's accent differs from brand (Ledger: teal + oxblood)", () => {
     // V3 had a separate decorative anchor for two-color themes; V4 folds
     // the second hue into accent (or threads it through neutrals via
-    // neutralHueFrom for editorial paper themes like Newsprint/Hobbit).
-    expect(LANCET.anchors.accent).toBeDefined();
-    expect(LANCET.anchors.accent!.H).not.toBe(LANCET.anchors.brand.H);
+    // neutralHueFrom for editorial paper themes like Newsprint).
+    expect(LEDGER.anchors.accent).toBeDefined();
+    expect(LEDGER.anchors.accent!.H).not.toBe(LEDGER.anchors.brand.H);
   });
 
   it("buildThemeStructure no longer emits a `decorative` ramp", () => {
-    const t = buildThemeStructure(COCHRANE, "cochrane");
+    const t = buildThemeStructure(NEJM, "nejm");
     expect(t.ramps).not.toHaveProperty("decorative");
   });
 });

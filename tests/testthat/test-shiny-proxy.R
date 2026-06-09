@@ -170,10 +170,10 @@ test_that("set_cell/set_row_label/clear_edits on proxy route correctly", {
 test_that("set_theme on proxy with theme name sends setTheme{name}", {
   sess <- fake_session()
   p <- fake_proxy(sess)
-  set_theme(p, "jama")
+  set_theme(p, "ledger")  # a committed survivor (post 27→9 cull)
   msg <- sess$calls()[[1]]$message
   expect_equal(msg$method, "setTheme")
-  expect_equal(msg$args, list(name = "jama"))
+  expect_equal(msg$args, list(name = "ledger"))
 })
 
 test_that("set_zoom on proxy sends setZoom with all knobs", {
