@@ -631,6 +631,10 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
 #'   `"ink2"` (the raw rubrication anchor chain), `"negative"` (explicit
 #'   bad-news semantics via the status palette — note significance is not
 #'   inherently bad, so this is opt-in), or `"none"` (inherit cell color).
+#' @param significant_style Styling for significant values (p below the first
+#'   threshold): `"none"` (default, plain text) or `"pill"` — a soft
+#'   status-positive lozenge (the journal "green pill" look). Renders in the
+#'   live widget; static export shows the plain value.
 #' @param thresholds Numeric vector of 3 significance thresholds (default c(0.05, 0.01, 0.001))
 #' @param format P-value format: "auto", "scientific", or "decimal"
 #' @param digits Number of significant figures to display (default 2)
@@ -665,6 +669,7 @@ col_pvalue <- function(
     width = NULL,
     stars = FALSE,
     stars_color = c("accent", "ink2", "negative", "none"),
+    significant_style = c("none", "pill"),
     thresholds = c(0.05, 0.01, 0.001),
     format = c("auto", "scientific", "decimal"),
     digits = 2,
@@ -682,11 +687,13 @@ col_pvalue <- function(
   }
   format <- match.arg(format)
   stars_color <- match.arg(stars_color)
+  significant_style <- match.arg(significant_style)
   ts_args <- list(
     field = field, stars = stars, thresholds = thresholds,
     format = format, digits = digits, expThreshold = exp_threshold
   )
   if (!identical(stars_color, "accent")) ts_args$starsColor <- stars_color
+  if (!identical(significant_style, "none")) ts_args$significantStyle <- significant_style
   if (!identical(header, "P-value")) ts_args$header          <- header
   if (!is.null(width))               ts_args$width           <- width
   if (!is.null(abbrev_threshold))    ts_args$abbrevThreshold <- abbrev_threshold

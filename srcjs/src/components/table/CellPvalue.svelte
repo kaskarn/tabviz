@@ -61,6 +61,14 @@
 
   const isSignificant = $derived(stars.length > 0);
 
+  // The rgc "green pill" on significant values (table-craft, 2026-06-08):
+  // significant_style:"pill" paints a soft status-positive lozenge when the
+  // p-value clears the first threshold — independent of whether stars are on.
+  const pillStyle = $derived(options?.significantStyle ?? "none");
+  const pillSignificant = $derived(
+    pillStyle === "pill" && value != null && value < (thresholds[0] ?? 0.05),
+  );
+
   // wire-audit 1b (C37): stars color channel. Rubrication, not status —
   // "accent" rides the (possibly ink2-seeded) accent ramp by default.
   const starsColor = $derived.by(() => {
@@ -76,6 +84,7 @@
 <span
   class="cell-pvalue"
   class:significant={isSignificant}
+  class:pill={pillSignificant}
   class:cell-bold={isBold}
   class:cell-italic={isItalic}
   class:cell-emphasis={isEmphasis}
@@ -96,6 +105,15 @@
     align-items: baseline;
     gap: 1px;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Significant-value pill (rgc signature) — a soft positive lozenge. */
+  .cell-pvalue.pill {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--tv-status-positive, #2f9e6b) 15%, transparent);
+    color: color-mix(in srgb, var(--tv-status-positive, #2f9e6b) 78%, var(--tv-text, #15140e));
+    font-weight: 600;
   }
 
   .pvalue-number {

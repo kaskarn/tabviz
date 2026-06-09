@@ -53,6 +53,19 @@ export const PVALUE_SCHEMA: ColumnSchema = {
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
+      key: "significantStyle",
+      label: "Significant",
+      control: "segmented",
+      default: "none",
+      segments: [
+        { value: "none", label: "Plain" },
+        { value: "pill", label: "Pill" },
+      ],
+      hint: "Paint a soft positive pill on significant values (p < first threshold).",
+      kind: "core",
+      consumedBy: ["renderCell", "emitSource", "editor"],
+    },
+    {
       key: "format",
       label: "Format",
       control: "segmented",

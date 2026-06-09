@@ -241,6 +241,9 @@ export interface PvalueColumnOptions {
    *  semantics — NOT the default; significance is not inherently bad);
    *  "none" inherits the cell text color. */
   starsColor?: "accent" | "ink2" | "negative" | "none";
+  /** Paint a soft status-positive PILL on significant values (p < the first
+   *  threshold) — the rgc table-craft signature. "none" (default) = plain. */
+  significantStyle?: "none" | "pill";
   thresholds?: [number, number, number]; // e.g., [0.05, 0.01, 0.001]
   format?: "scientific" | "decimal" | "auto";
   digits?: number; // Number of significant figures (default: 2)

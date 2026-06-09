@@ -10,6 +10,7 @@ col_pvalue(
   width = NULL,
   stars = FALSE,
   stars_color = c("accent", "ink2", "negative", "none"),
+  significant_style = c("none", "pill"),
   thresholds = c(0.05, 0.01, 0.001),
   format = c("auto", "scientific", "decimal"),
   digits = 2,
@@ -34,6 +35,11 @@ accent/rubrication ramp, so an \code{\link[=set_ink2]{set_ink2()}} pin colors th
 \code{"ink2"} (the raw rubrication anchor chain), \code{"negative"} (explicit
 bad-news semantics via the status palette — note significance is not
 inherently bad, so this is opt-in), or \code{"none"} (inherit cell color).}
+
+\item{significant_style}{Styling for significant values (p below the first
+threshold): \code{"none"} (default, plain text) or \code{"pill"} — a soft
+status-positive lozenge (the journal "green pill" look). Renders in the
+live widget; static export shows the plain value.}
 
 \item{thresholds}{Numeric vector of 3 significance thresholds (default c(0.05, 0.01, 0.001))}
 
