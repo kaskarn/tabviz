@@ -120,22 +120,27 @@
      kicker eyebrow (mono, tracked, accent) → serif title → prose lede →
      hairline rule. The "editor IS documentation" treatment: each top-level
      theme section announces itself like a magazine department head. */
+  /* Staged rhythm, NOT a uniform gap: kicker hugs the title (the eyebrow
+     belongs to it), then a larger title→lede beat, then generous air before
+     the rule. A flat gap flattens the very hierarchy editorial mode exists to
+     create (honesty-check 2026-06-09). */
   .ed-head {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding: var(--v2-gap-wide, 12px) 0 var(--v2-gap-mid, 8px);
+    padding: var(--v2-gap-wide, 12px) 0 var(--v2-gap-wide, 12px);
     border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
     margin-bottom: var(--v2-gap-small, 6px);
   }
   .ed-kicker {
-    margin: 0;
+    margin: 0 0 2px;          /* tight to the title */
     font-family: var(--v2-font-mono, ui-monospace, monospace);
     font-size: var(--v2-text-micro, 9.5px);
     font-weight: 500;
     letter-spacing: var(--v2-track-flag, 0.18em);
     text-transform: uppercase;
-    color: var(--v2-accent, var(--tv-accent, #b53a1f));
+    /* Cool, recessive eyebrow — NOT the hot accent (which fought the red
+       override count-dot and read as an alert). */
+    color: var(--v2-kicker, #4a5a6a);
     line-height: 1;
   }
   .ed-title-row {
@@ -147,16 +152,16 @@
   .ed-title {
     margin: 0;
     font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
-    font-size: var(--v2-text-display, 17px);
+    font-size: var(--v2-text-display, 21px);
     font-weight: 600;
     letter-spacing: 0.005em;
     color: var(--v2-ink, #15140e);
-    line-height: 1.15;
+    line-height: 1.08;        /* tight — let the size carry the masthead */
     flex: 1 1 auto;
     min-width: 0;
   }
   .ed-lede {
-    margin: 0;
+    margin: 7px 0 0;          /* a real beat below the title */
     font-family: var(--v2-font-sans, system-ui);
     font-size: var(--v2-text-small, 10.5px);
     font-weight: 400;

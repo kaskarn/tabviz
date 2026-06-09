@@ -219,9 +219,16 @@ const ALLOW: { match: RegExp; reason: string }[] = [
 const allowed = (name: string): string | null =>
   ALLOW.find((a) => a.match.test(name))?.reason ?? null;
 
-// Panel-only controls (navigation / retarget): require a PANEL delta, not a
-// widget delta. Everything else that isn't allow-listed is a widget control.
-const PANEL_ONLY = /^(identity|color|form|effects)$|expand|collapse|role to rebind|status colors|color system|effects$|geometry/i;
+// Legitimately panel-only WALKED controls. Every control the walk drives is a
+// value control (seg / range / dropdown) — sections/disclosures/tabs are NOT
+// in CONTROL_QUERY — so a value control MUST move the widget. The ONE honest
+// exception is the type-role RETARGET dropdown ("Type role to rebind"), which
+// only changes which role the family/size/weight editors target (a panel
+// concern, no theme re-resolve). This is deliberately NARROW and name-exact:
+// the previous broad `/…|geometry|effects$/i` regex let a dead geometry/effects
+// value control ride a neighbour's panel reflow and score "panel update ✓"
+// (honesty-check 2026-06-09). Nothing else gets the panel-only pass.
+const PANEL_RETARGET = /role to rebind/i;
 
 // Repaint-exempt (justified-no-op): the FIGURE-band Contrast a11y toggle
 // (seg labels "auto"/"more") applies a paint-time HC re-resolve that is
@@ -446,17 +453,21 @@ async function run(): Promise<void> {
         }
         const widgetMoved = wAfter !== wBefore;
         const panelMoved = pAfter !== pBefore;
-        const isPanelOnly = PANEL_ONLY.test(c.name) || c.name === "";
         if (REPAINT_EXEMPT.test(c.name)) {
           live.push(`${label} · "${c.name}" [${c.kind}] → operable, repaint-exempt (a11y re-resolve) ✓ (${desc})`);
         } else if (widgetMoved) {
+          // The honest bar: a VALUE control must change the rendered widget.
           live.push(`${label} · "${c.name}" [${c.kind}] → widget repaint ✓ (${desc})`);
-        } else if (isPanelOnly && panelMoved) {
-          live.push(`${label} · "${c.name}" [${c.kind}] → panel update ✓ (${desc})`);
-        } else if (panelMoved) {
-          live.push(`${label} · "${c.name}" [${c.kind}] → panel-only (state changed, no repaint) — ${desc}`);
+        } else if (PANEL_RETARGET.test(c.name) && panelMoved) {
+          // The one legitimate panel-only walked control (role retarget).
+          live.push(`${label} · "${c.name}" [${c.kind}] → panel retarget ✓ (${desc})`);
         } else {
-          failures.push(`${label} · "${c.name}" [${c.kind}]: DEAD — operating it (${desc}) moved neither widget nor panel`);
+          // No widget delta and not the role-retarget → DEAD even if the panel
+          // reflowed. A neighbour's conditional row appearing must NOT excuse a
+          // value control that doesn't reach the rendered widget (honesty-check
+          // 2026-06-09: the old name-based panel-only pass was foolable).
+          const tail = panelMoved ? " — panel moved but widget did NOT (no free pass)" : "";
+          failures.push(`${label} · "${c.name}" [${c.kind}]: DEAD — operating it (${desc}) did not change the widget${tail}`);
           // Diagnostic screenshot — BOUNDED: captureScreenshot is a known
           // headless flake that otherwise hangs to the 120s protocolTimeout
           // (this was the real cause of the harness's earlier "hangs" — a
@@ -564,13 +575,21 @@ async function run(): Promise<void> {
     console.log(`\n── skipped (${skipped.length}, no actionable target) ──`);
     for (const s of skipped) console.log(`  · ${s}`);
   }
+  // Honest headline split (honesty-check 2026-06-09): a "widget repaint"
+  // is the strong proof; exempt/retarget/present-only are weaker no-op
+  // verifications. Don't fold them into one impressive number.
+  const repaints = live.filter((l) => l.includes("widget repaint")).length;
+  const noops = live.length - repaints;
   if (failures.length) {
     console.error(`\n✗ ${failures.length} liveness failure(s):`);
     for (const f of failures) console.error(`  ✗ ${f}`);
     console.error("\n(dead-control screenshots in /tmp/liveness-dead-*.png)");
     process.exit(1);
   }
-  console.log(`\nAll panel controls are live. (${live.length} verified)`);
+  console.log(
+    `\nAll panel controls are live. ${repaints} verified by WIDGET REPAINT; ` +
+    `${noops} present+enabled no-ops (allow-listed actions / a11y-exempt / role-retarget).`,
+  );
 }
 
 run().catch((e) => { console.error(e); process.exit(1); });

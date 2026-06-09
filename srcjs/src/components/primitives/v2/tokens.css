@@ -47,6 +47,14 @@
   --v2-hot:          #b53a1f;   /* override, active dot */
   --v2-hot-soft:     #d8a89a;   /* override soft glow */
 
+  /* ── Kicker (editorial eyebrow) ──────────────────────────────────
+     The mono-uppercase masthead kicker ("TIER 1 · ANCHORS"). Cool and
+     RECESSIVE — an institutional department tag, NOT the hot accent
+     (using --v2-hot here made the kicker read as an alert and fought
+     the override count-dot's red; honesty-check 2026-06-09). A muted
+     slate-blue derived from the host ink, falling back to a cool slate. */
+  --v2-kicker:       color-mix(in srgb, var(--tv-text, #15140e) 52%, #3a5a7a);
+
   /* ── State (interactive) ─────────────────────────────────────── */
   --v2-hover-tint:   color-mix(in srgb, var(--tv-text, #15140e) 5%, transparent);
   --v2-focus-ring:   var(--tv-text, #15140e);
@@ -66,7 +74,7 @@
   --v2-text-body:    11.5px;  /* default field label/value */
   --v2-text-strong:  13px;    /* section titles */
   --v2-text-large:   16px;    /* popover heading */
-  --v2-text-display: 18px;    /* editorial masthead title (Section kicker mode) */
+  --v2-text-display: 21px;    /* editorial masthead title (Section kicker mode) */
 
   --v2-track-tight:  -0.005em;
   --v2-track-flat:    0em;
