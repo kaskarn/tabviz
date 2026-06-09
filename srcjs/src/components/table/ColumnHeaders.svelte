@@ -199,7 +199,7 @@
           class="tabviz-col header-cell group-header group-row"
           style:grid-column="{getGridColumnStart(col)} / span {getColspan(col)}"
         >
-          {col.header}
+          <span class="group-header-label">{col.header}</span>
         </div>
       {:else}
         <div
@@ -325,6 +325,17 @@
     font-weight: var(--tv-text-column-group-weight, 700);
     padding-left: var(--tv-spacing-column-group-padding, 8px);
     padding-right: var(--tv-spacing-column-group-padding, 8px);
+  }
+  /* Spanner rule (rgc table-craft): a hairline under the column-group label,
+     spanning exactly that group's columns — the "Endpoint score, mean (SD)"
+     underline that visually binds a group's columns together. Inset a little
+     from the cell edges so it reads as a spanner underline, not a full
+     divider, and sits just inside the group-header padding. */
+  .group-header-label {
+    display: inline-block;
+    padding-bottom: 3px;
+    border-bottom: var(--tv-border-width-hair, 1px) solid
+      var(--tv-border-minor-color, var(--tv-border, #d6d0c1));
   }
 
   .tabviz-label-col {
