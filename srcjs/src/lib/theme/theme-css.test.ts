@@ -5,11 +5,11 @@
 import { describe, it, expect } from "bun:test";
 import { buildThemeCSS } from "./theme-css";
 import { buildTheme } from "./theme-adapter";
-import { COCHRANE } from "./theme-presets-inputs";
+import { NEJM } from "./theme-presets-inputs";
 
 describe("buildThemeCSS", () => {
   it("emits v4 manifest var names", () => {
-    const css = buildThemeCSS(buildTheme(COCHRANE, "nejm"));
+    const css = buildThemeCSS(buildTheme(NEJM, "nejm"));
     // v4 names — bg/fg/border/row-base/etc. live entirely in the v4 manifest.
     expect(css).toContain("--tv-surface-bg:");
     expect(css).toContain("--tv-text:");
@@ -18,7 +18,7 @@ describe("buildThemeCSS", () => {
   });
 
   it("appends v4 cssVars from theme.authoringInputs", () => {
-    const css = buildThemeCSS(buildTheme(COCHRANE, "nejm"));
+    const css = buildThemeCSS(buildTheme(NEJM, "nejm"));
     // v4 substrate var names from the manifest:
     expect(css).toContain("--tv-row-base-bg:");
     expect(css).toContain("--tv-row-alt-bg:");
@@ -27,7 +27,7 @@ describe("buildThemeCSS", () => {
   });
 
   it("skips placeholder values (<TBD …, <input:…) when emitting v4", () => {
-    const css = buildThemeCSS(buildTheme(COCHRANE, "nejm"));
+    const css = buildThemeCSS(buildTheme(NEJM, "nejm"));
     // No placeholder leakage into the stylesheet.
     expect(css).not.toContain(": <TBD");
     expect(css).not.toContain(": <input:");

@@ -3,11 +3,11 @@
 import { describe, it, expect } from "bun:test";
 import { getCssVars, readVar, readVarPx } from "./consumer-bridge";
 import { buildTheme } from "./theme-adapter";
-import { COCHRANE } from "./theme-presets-inputs";
+import { NEJM } from "./theme-presets-inputs";
 
 describe("getCssVars", () => {
   it("returns the cssVars map when theme has authoringInputs", () => {
-    const theme = buildTheme(COCHRANE, "nejm");
+    const theme = buildTheme(NEJM, "nejm");
     const cssVars = getCssVars(theme);
     expect(Object.keys(cssVars).length).toBeGreaterThan(0);
     expect(cssVars["--tv-row-base-bg"]).toMatch(/^#[0-9A-Fa-f]{6}$/);
@@ -19,7 +19,7 @@ describe("getCssVars", () => {
   });
 
   it("returns empty map when authoringInputs is missing", () => {
-    const theme = buildTheme(COCHRANE, "nejm");
+    const theme = buildTheme(NEJM, "nejm");
     delete (theme as { authoringInputs?: unknown }).authoringInputs;
     expect(getCssVars(theme)).toEqual({});
   });
@@ -83,23 +83,23 @@ describe("readVarPx", () => {
 
 describe("getCssVars — density + pin behavior", () => {
   it("returns density-correct spacing for each preset", () => {
-    const compact = buildTheme({ ...COCHRANE, density: "compact" }, "t");
-    const comfy = buildTheme({ ...COCHRANE, density: "comfortable" }, "t");
-    const spacious = buildTheme({ ...COCHRANE, density: "spacious" }, "t");
+    const compact = buildTheme({ ...NEJM, density: "compact" }, "t");
+    const comfy = buildTheme({ ...NEJM, density: "comfortable" }, "t");
+    const spacious = buildTheme({ ...NEJM, density: "spacious" }, "t");
     expect(getCssVars(compact)["--tv-spacing-row-height"]).toBe("20px");
     expect(getCssVars(comfy)["--tv-spacing-row-height"]).toBe("24px");
     expect(getCssVars(spacious)["--tv-spacing-row-height"]).toBe("30px");
   });
 
   it("honors mutated theme.spacing.X as a v3-compat pin", () => {
-    const theme = buildTheme({ ...COCHRANE, density: "comfortable" }, "t");
+    const theme = buildTheme({ ...NEJM, density: "comfortable" }, "t");
     // v3-era mutation pattern: callers set spec.theme.spacing.X directly.
     theme.spacing.rowGroupPadding = 40;
     expect(getCssVars(theme)["--tv-spacing-row-group-padding"]).toBe("40px");
   });
 
   it("applies density_factor scaling", () => {
-    const theme = buildTheme({ ...COCHRANE, density: "comfortable", density_factor: 1.5 }, "t");
+    const theme = buildTheme({ ...NEJM, density: "comfortable", density_factor: 1.5 }, "t");
     // comfortable rowHeight 24 × 1.5 = 36
     expect(getCssVars(theme)["--tv-spacing-row-height"]).toBe("36px");
   });
