@@ -162,11 +162,11 @@ anchor's L. \code{accent} defaults to \code{brand} when unset. Status anchors
 }
 \examples{
 # The usual on-ramp: start from a preset, swap the brand (C56).
-th <- set_brand(web_theme_cochrane(), "#006266")
+th <- set_brand(web_theme_nejm(), "#006266")
 
 # Rubrication (significance stars, caption chips) follows `accent` by
 # default; pin --tv-ink2 to make it differ from the interaction hue:
-th <- set_pin(web_theme_cochrane(), "--tv-ink2", "#D42320")
+th <- set_pin(web_theme_nejm(), "--tv-ink2", "#D42320")
 
 # Monochrome (B8): one toggle for phosphor/sepia/cyanotype themes.
 th <- web_theme(brand = "#20C45F", polarity = "dark", monochrome = TRUE)

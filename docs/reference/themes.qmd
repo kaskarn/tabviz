@@ -28,52 +28,64 @@ blog posts / themed reports).
 
 | Theme | Source | Purpose | Notable defaults |
 |---|---|---|---|
-| [`web_theme_cochrane()`](#web_theme_cochrane) | `R/themes.R` | The package default | Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density |
-| [`web_theme_lancet()`](#web_theme_lancet)     | `R/themes.R` | Lancet-style editorial | Navy + refined old-gold + warm cream, Georgia serif |
-| [`web_theme_jama()`](#web_theme_jama)         | `R/themes.R` | JAMA / print journals | Pure black-and-white, ultra-compact, strong dividers, Arial |
-| [`web_theme_dark()`](#web_theme_dark)         | `R/themes.R` | Dark-mode viewing | Catppuccin Mocha-inspired canvas, pastel markers |
+| [`web_theme_nejm()`](#web_theme_cochrane) | `R/themes.R` | The package default | Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density |
+| [`web_theme_nejm()`](#web_theme_lancet)     | `R/themes.R` | Lancet-style editorial | Navy + refined old-gold + warm cream, Georgia serif |
+| [`web_theme_nejm()`](#web_theme_jama)         | `R/themes.R` | JAMA / print journals | Pure black-and-white, ultra-compact, strong dividers, Arial |
+| [`web_theme_aurora()`](#web_theme_dark)         | `R/themes.R` | Dark-mode viewing | Catppuccin Mocha-inspired canvas, pastel markers |
 | [`web_theme_dwarven()`](#web_theme_dwarven)   | `R/themes-lotr.R` | Talks, themed reports | Stone neutrals, forge-glow accent, broad serif display |
-| [`web_theme_elvish()`](#web_theme_elvish)     | `R/themes-lotr.R` | Talks, themed reports | Twilight surface, mithril silvers, calligraphic serif |
-| [`web_theme_hobbit()`](#web_theme_hobbit)     | `R/themes-lotr.R` | Talks, themed reports | Parchment + green, hand-set body face, hearth accent |
+| [`web_theme_dwarven()`](#web_theme_elvish)     | `R/themes-lotr.R` | Talks, themed reports | Twilight surface, mithril silvers, calligraphic serif |
+| [`web_theme_dwarven()`](#web_theme_hobbit)     | `R/themes-lotr.R` | Talks, themed reports | Parchment + green, hand-set body face, hearth accent |
 
 ```r
 tabviz(data, label = "study",
        columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
-       theme = web_theme_lancet())
+       theme = web_theme_nejm())
 ```
 
-### `web_theme_cochrane()` {#web_theme_cochrane}
-### `web_theme_lancet()` {#web_theme_lancet}
-### `web_theme_jama()` {#web_theme_jama}
-### `web_theme_dark()` {#web_theme_dark}
+The 9 committed identities — each owns one expressive axis:
+
+### `web_theme_nejm()` {#web_theme_nejm}
+### `web_theme_ledger()` {#web_theme_ledger}
+### `web_theme_brutalist()` {#web_theme_brutalist}
+### `web_theme_aurora()` {#web_theme_aurora}
+### `web_theme_terminal()` {#web_theme_terminal}
+### `web_theme_newsprint()` {#web_theme_newsprint}
+### `web_theme_blueprint()` {#web_theme_blueprint}
+### `web_theme_synthwave()` {#web_theme_synthwave}
 ### `web_theme_dwarven()` {#web_theme_dwarven}
-### `web_theme_elvish()` {#web_theme_elvish}
-### `web_theme_hobbit()` {#web_theme_hobbit}
 
 All preset builders take no arguments and return a fully resolved `WebTheme`.
+`nejm` is the default. (A previous 27-preset roster was culled to these 9; a
+deleted look's brand is a [`set_brand()`](#set_brand) recolor away, its full
+personality a `web_theme(base = "nejm", …)` away.)
 
 ---
 
 ## `package_themes()` {#package_themes}
 
-Returns a 2-level named list of every theme distributed with the package
-(`journals` and `lotr`) — handy for the `enable_themes` argument of
+Returns a 2-level named list of every theme distributed with the package,
+grouped by register (`clinical` / `editorial` / `design` / `expressive`) —
+handy for the `enable_themes` argument of
 [`web_interaction()`](interaction.qmd) or for iterating in tests. The
 nested shape is preserved by the in-widget switcher when you pass it
 through, producing a tabbed picker (one tab per category).
 
 ```r
 package_themes() |> str(max.level = 2)
-# List of 2
-#  $ journals:List of 4
-#   ..$ cochrane: <WebTheme>
-#   ..$ lancet  : <WebTheme>
-#   ..$ jama    : <WebTheme>
-#   ..$ dark    : <WebTheme>
-#  $ lotr    :List of 3
-#   ..$ dwarven: <WebTheme>
-#   ..$ elvish : <WebTheme>
-#   ..$ hobbit : <WebTheme>
+# List of 4
+#  $ clinical  :List of 1
+#   ..$ nejm     : <WebTheme>
+#  $ editorial :List of 2
+#   ..$ newsprint: <WebTheme>
+#   ..$ dwarven  : <WebTheme>
+#  $ design    :List of 2
+#   ..$ ledger   : <WebTheme>
+#   ..$ brutalist: <WebTheme>
+#  $ expressive:List of 4
+#   ..$ aurora   : <WebTheme>
+#   ..$ terminal : <WebTheme>
+#   ..$ blueprint: <WebTheme>
+#   ..$ synthwave: <WebTheme>
 ```
 
 ---
@@ -124,7 +136,7 @@ web_theme(
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
 
 To start from a preset instead of defaults, chain setters off a `web_theme_*()`
-builder (e.g. `web_theme_lancet() |> set_brand("#1F3A5F")`).
+builder (e.g. `web_theme_nejm() |> set_brand("#1F3A5F")`).
 
 Example — Lancet-inspired theme with bold headers:
 
@@ -276,7 +288,7 @@ series colors but leave `surface.base` pinned.
 
 ```r
 # Apply by name
-plot |> set_theme("jama")
+plot |> set_theme("nejm")
 
 # Apply by object
 custom <- web_theme(brand = "#1F3A5F")
@@ -300,7 +312,7 @@ my_lancet <- web_theme(
 )
 
 # Swap presets, then tweak
-custom <- web_theme_lancet() |>
+custom <- web_theme_nejm() |>
   set_brand("#0066CC") |>
   set_density("compact") |>
   set_theme_field(c("axis", "gridlines"), TRUE)

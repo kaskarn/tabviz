@@ -83,7 +83,7 @@ tabviz(trials, label = "study",
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "Same code, JAMA theme",
   subtitle = "The marker color tracks the active palette"
 )
@@ -156,7 +156,7 @@ tabviz(trials, label = "study",
 )
 ```
 
-The cascade is themable — the same code under `web_theme_jama()` uses JAMA's accent color instead.
+The cascade is themable — the same code under `web_theme_nejm()` uses JAMA's accent color instead.
 
 ### Multi-effect: outline augment
 

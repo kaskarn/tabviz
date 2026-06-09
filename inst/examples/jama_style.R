@@ -45,7 +45,7 @@ forest_plot(
   ),
   row_type = "row_type",
   row_bold = "row_bold",
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   scale = "log",
   null_value = 1,
   axis_label = "Relative Risk (95% CI)",

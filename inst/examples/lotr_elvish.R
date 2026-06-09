@@ -75,5 +75,5 @@ forest_plot(
   axis_label = "Council vote weight",
   title = "Rivendell — Council of Elrond, Attendee Manifest",
   subtitle = "Eight peoples. One ring. The minutes are in Sindarin. Refreshments at the second eagle.",
-  theme = web_theme_elvish()
+  theme = web_theme_dwarven()
 )

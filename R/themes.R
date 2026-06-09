@@ -59,76 +59,6 @@ derive_preset_anchors <- function(brand_hex,
     accent = accent_t
   )
 }
-
-#' Cochrane theme - cyan brand, orange accent.
-#'
-#' Vanilla baseline. Ease curve on neutrals for smooth gradation.
-#' @return A [WebTheme].
-#' @export
-web_theme_cochrane <- function() {
-  a <- derive_preset_anchors("#0099CC", "#C8553D")
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    fonts_body = "'Source Sans 3', -apple-system, system-ui, sans-serif",
-    web_fonts = list(
-      web_font("Source Sans 3", FONT_URLS$source_sans_3)
-    ),
-    # Elegance pass (user feedback 2026-06-08): default leads with the clean
-    # journal frame, not bare hairlines.
-    border_preset = "frame",
-    curves = list(neutral = "ease"),
-    name = "cochrane"
-  )
-}
-
-#' Lancet theme - navy + gold editorial gravitas.
-#'
-#' Raised shell evokes the cover feel; serif typography with elevated
-#' scale ratio gives long-form journal rhythm.
-#' @return A [WebTheme].
-#' @export
-web_theme_lancet <- function() {
-  a <- derive_preset_anchors("#00407A", "#A6792A")
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    shell_mode = "raised",
-    type_scale_ratio = 1.25,
-    fonts_body = "'Source Serif 4', Georgia, serif",
-    fonts_display = "'Source Serif 4', Georgia, serif",
-    web_fonts = list(
-      web_font("Source Serif 4", FONT_URLS$source_serif_4)
-    ),
-    curves = list(neutral = "smooth"),
-    name = "lancet"
-  )
-}
-
-#' JAMA theme - black ink, mono palette, compact density.
-#'
-#' Tight type scale (1.15) + smaller base size (13) for the dense
-#' scientific-table look. Achromatic neutrals.
-#' @return A [WebTheme].
-#' @export
-web_theme_jama <- function() {
-  a <- derive_preset_anchors("#0F171F", "#0F171F",
-                             neutral_hue_from = NA_character_)
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "brand_mono",
-    border_preset = "frame",
-    density = "compact",
-    type_base_size = 13,
-    type_scale_ratio = 1.15,
-    fonts_body = "'Spline Sans', -apple-system, system-ui, sans-serif",
-    web_fonts = list(
-      web_font("Spline Sans", FONT_URLS$spline_sans)
-    ),
-    name = "jama"
-  )
-}
-
 #' NEJM theme - crimson brand + slate accent, classic medical serif.
 #' @return A [WebTheme].
 #' @export
@@ -148,50 +78,6 @@ web_theme_nejm <- function() {
     name = "nejm"
   )
 }
-
-#' Nature theme - teal brand + amber accent, raised shell + ruled texture.
-#'
-#' Subtle brand-tinted neutrals via paperC/inkC bumps give the page a soft
-#' teal cast (the glossy-spread metaphor).
-#' @return A [WebTheme].
-#' @export
-web_theme_nature <- function() {
-  a <- derive_preset_anchors("#005A6C", "#E8A427",
-                             paper_C = 0.008, ink_C = 0.012)
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    # Elegance pass (user feedback 2026-06-08): a serious medical journal's
-    # tables are FLAT + hairline-FRAMED, not ruled-paper scans. Texture out,
-    # frame in; flush; confident title scale.
-    shell_mode = "flush",
-    border_preset = "frame",
-    type_scale_ratio = 1.333,
-    curves = list(brand = "smooth"),
-    name = "nature"
-  )
-}
-
-#' BMJ theme - clean clinical blue + red accent.
-#' @return A [WebTheme].
-#' @export
-web_theme_bmj <- function() {
-  a <- derive_preset_anchors("#2A6EBB", "#E33B3B")
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    border_preset = "frame",
-    fonts_body = "'IBM Plex Sans', -apple-system, system-ui, sans-serif",
-    fonts_display = "'IBM Plex Serif', Georgia, serif",
-    web_fonts = list(
-      web_font("IBM Plex Sans", FONT_URLS$ibm_plex_sans),
-      web_font("IBM Plex Serif", FONT_URLS$ibm_plex_serif)
-    ),
-    curves = list(neutral = "ease"),
-    name = "bmj"
-  )
-}
-
 #' Available theme presets, organized by category.
 #'
 #' @return A nested list: category -> list of resolved [WebTheme] objects.

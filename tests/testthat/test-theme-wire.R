@@ -7,7 +7,7 @@
 # theme_from_wire re-hydration, and the border_preset Tier-1 expansion.
 
 test_that("set_role pins a Tier-2 role and the cssVars reflect it", {
-  t0 <- web_theme_cochrane()
+  t0 <- web_theme_nejm()
   t1 <- suppressWarnings(set_role(t0, "text-muted", "brand", 8))
   v0 <- theme_css_vars(t0)
   v1 <- suppressWarnings(theme_css_vars(t1))
@@ -17,7 +17,7 @@ test_that("set_role pins a Tier-2 role and the cssVars reflect it", {
 })
 
 test_that("role pins survive other set_*() re-resolves (DT pin round-trip)", {
-  t <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t <- suppressWarnings(set_role(web_theme_nejm(), "text-muted", "brand", 8))
   t <- suppressWarnings(set_brand(t, "#7a1f3d"))
   t <- suppressWarnings(set_density(t, density = "spacious"))
   t <- suppressWarnings(set_header_style(t, "bold"))
@@ -26,13 +26,13 @@ test_that("role pins survive other set_*() re-resolves (DT pin round-trip)", {
 })
 
 test_that("clear_role releases the pin", {
-  t <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t <- suppressWarnings(set_role(web_theme_nejm(), "text-muted", "brand", 8))
   t <- clear_role(t, "text-muted")
   expect_length(t@role_overrides, 0L)
 })
 
 test_that("serialize_theme carries roleOverrides on the wire (DT-9)", {
-  t <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t <- suppressWarnings(set_role(web_theme_nejm(), "text-muted", "brand", 8))
   blob <- suppressWarnings(tabviz:::serialize_theme(t))
   expect_false(is.null(blob$roleOverrides))
   expect_equal(as.numeric(blob$roleOverrides[["text-muted"]]$grade), 8)
@@ -42,7 +42,7 @@ test_that("serialize_theme carries roleOverrides on the wire (DT-9)", {
 })
 
 test_that("theme_from_wire re-hydrates the studio envelope (DT-9/DT-10)", {
-  t1 <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t1 <- suppressWarnings(set_role(web_theme_nejm(), "text-muted", "brand", 8))
   env <- list(
     "$schema" = "tabviz-theme/v4",
     name = "cochrane",
@@ -58,7 +58,7 @@ test_that("theme_from_wire re-hydrates the studio envelope (DT-9/DT-10)", {
 })
 
 test_that("theme_inputs_from_wire is a fixpoint of theme_inputs_to_json", {
-  for (nm in c("cochrane", "nejm", "synthwave", "dark", "ledger")) {
+  for (nm in c("nejm", "synthwave", "ledger", "aurora", "terminal")) {
     th <- get(paste0("web_theme_", nm))()
     w <- tabviz:::theme_inputs_to_json(th@inputs)
     back <- tabviz:::theme_inputs_from_wire(w)
@@ -70,20 +70,20 @@ test_that("theme_inputs_from_wire is a fixpoint of theme_inputs_to_json", {
 test_that("set_border_preset expands into five distinct clusters", {
   presets <- c("none", "hairline", "ruled", "frame", "boxed")
   sigs <- vapply(presets, function(p) {
-    b <- set_border_preset(web_theme_cochrane(), p)@borders
+    b <- set_border_preset(web_theme_nejm(), p)@borders
     paste(b@layout, b@major@thickness, b@minor@thickness, b@table@thickness)
   }, "")
   expect_length(unique(sigs), 5L)
   # hairline is the named default — unset themes must not shift.
-  d <- web_theme_cochrane()@borders
-  h <- set_border_preset(web_theme_cochrane(), "hairline")@borders
+  d <- web_theme_nejm()@borders
+  h <- set_border_preset(web_theme_nejm(), "hairline")@borders
   expect_identical(d@layout, h@layout)
   expect_equal(d@major@thickness, h@major@thickness)
   expect_equal(d@table@thickness, h@table@thickness)
 })
 
 test_that("border_preset survives the inputs wire", {
-  t <- set_border_preset(web_theme_cochrane(), "boxed")
+  t <- set_border_preset(web_theme_nejm(), "boxed")
   w <- tabviz:::theme_inputs_to_json(t@inputs)
   expect_identical(w$border_preset, "boxed")
   back <- tabviz:::theme_inputs_from_wire(w)
@@ -91,16 +91,16 @@ test_that("border_preset survives the inputs wire", {
 })
 
 test_that("set_role validates ramp and grade", {
-  expect_error(set_role(web_theme_cochrane(), "text-muted", "rainbow", 3))
-  expect_error(set_role(web_theme_cochrane(), "text-muted", "brand", 0))
-  expect_error(set_role(web_theme_cochrane(), "text-muted", "brand", 12))
+  expect_error(set_role(web_theme_nejm(), "text-muted", "rainbow", 3))
+  expect_error(set_role(web_theme_nejm(), "text-muted", "brand", 0))
+  expect_error(set_role(web_theme_nejm(), "text-muted", "brand", 12))
 })
 
 test_that("role pins reach tabviz_theme_css (the widget paint path)", {
   # P0 review #1: theme_css_vars honored pins while tabviz_theme_css
   # (getThemeCSS -> _emitV4CssVarsBody) dropped them — two R entry
   # points disagreed and the live widget diverged from SVG export.
-  t0 <- web_theme_cochrane()
+  t0 <- web_theme_nejm()
   t1 <- suppressWarnings(set_role(t0, "text-muted", "brand", 8))
   css0 <- tabviz_theme_css(t0)
   css1 <- suppressWarnings(tabviz_theme_css(t1))
@@ -110,13 +110,13 @@ test_that("role pins reach tabviz_theme_css (the widget paint path)", {
 })
 
 test_that("set_theme_field on inputs preserves role pins", {
-  t <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t <- suppressWarnings(set_role(web_theme_nejm(), "text-muted", "brand", 8))
   t2 <- suppressWarnings(set_theme_field(t, c("inputs", "density"), "spacious"))
   expect_length(t2@role_overrides, 1L)
 })
 
 test_that("read_theme routes wire-envelope files through theme_from_wire", {
-  t1 <- suppressWarnings(set_role(web_theme_cochrane(), "text-muted", "brand", 8))
+  t1 <- suppressWarnings(set_role(web_theme_nejm(), "text-muted", "brand", 8))
   env <- list(
     "$schema" = "tabviz-theme/v4",
     name = "envtest",
@@ -131,7 +131,7 @@ test_that("read_theme routes wire-envelope files through theme_from_wire", {
 })
 
 test_that("set_pin overrides a token through the full chain (P3)", {
-  t0 <- web_theme_cochrane()
+  t0 <- web_theme_nejm()
   t1 <- suppressWarnings(set_pin(t0, "text-footnote-size", "0.7rem"))  # last-resort lint (Wave 1)
   expect_identical(t1@pins[["--tv-text-footnote-size"]], "0.7rem")
   v <- theme_css_vars(t1)
@@ -150,7 +150,7 @@ test_that("set_pin overrides a token through the full chain (P3)", {
 })
 
 test_that("pins ride the wire envelope round-trip (P3)", {
-  t1 <- suppressWarnings(set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem"))
+  t1 <- suppressWarnings(set_pin(web_theme_nejm(), "text-footnote-size", "0.7rem"))
   env <- list(
     "$schema" = "tabviz-theme/v4",
     name = "cochrane",
@@ -166,7 +166,7 @@ test_that("pins ride the wire envelope round-trip (P3)", {
 })
 
 test_that("set_pin rejects hostile values (round-2 robustness P0)", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   expect_error(
     set_pin(th, "--tv-surface-bg", '#fff"/><script>alert(1)</script>'),
     "angle brackets|double quotes|Invalid"
@@ -180,7 +180,7 @@ test_that("set_pin rejects hostile values (round-2 robustness P0)", {
 test_that("theme_from_wire rejects a hostile pin value in an imported envelope", {
   env <- list(
     "$schema" = "tabviz-theme/v4", name = "evil",
-    inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs),
+    inputs = tabviz:::theme_inputs_to_json(web_theme_nejm()@inputs),
     pins = list("--tv-surface-bg" = '#fff"/><script>x</script>')
   )
   expect_error(
@@ -190,14 +190,14 @@ test_that("theme_from_wire rejects a hostile pin value in an imported envelope",
 })
 
 test_that("set_role rejects an unknown bindable role (flow F3 gate)", {
-  expect_error(set_role(web_theme_cochrane(), "not-a-role", "brand", 8), "bindable")
+  expect_error(set_role(web_theme_nejm(), "not-a-role", "brand", 8), "bindable")
   # A valid role still works.
-  ok <- set_role(web_theme_cochrane(), "text-muted", "brand", 8)
+  ok <- set_role(web_theme_nejm(), "text-muted", "brand", 8)
   expect_identical(ok@role_overrides[["text-muted"]]$ramp, "brand")
 })
 
 test_that("write_theme rejects path-traversal names (round-2 robustness P1)", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   expect_error(write_theme(th, "../evil"), "bare theme name")
   expect_error(write_theme(th, "a/b"), "bare theme name")
 })
@@ -221,7 +221,7 @@ test_that("write_theme/read_theme round-trip is lossless (round-2 user-review bl
 })
 
 test_that("write_theme emits the wire envelope, not a resolved blob (flow F2)", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   f <- withr::local_tempfile(fileext = ".json")
   write_theme(th, file = f)
   on_disk <- jsonlite::fromJSON(f, simplifyVector = FALSE)
@@ -231,7 +231,7 @@ test_that("write_theme emits the wire envelope, not a resolved blob (flow F2)", 
 })
 
 test_that("write_theme requires exactly one destination", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   expect_error(write_theme(th), "destination")
   expect_error(write_theme(th, name = "x", file = "y.json"), "only one")
 })
@@ -249,7 +249,7 @@ test_that("read_theme restores inputs from a legacy resolved blob (back-compat)"
 
 test_that("studio_save_as persists the wire envelope verbatim (flow F2)", {
   withr::local_options(tabviz.theme_dir = withr::local_tempdir())
-  t1 <- suppressWarnings(set_pin(web_theme_cochrane(), "text-footnote-size", "0.7rem"))
+  t1 <- suppressWarnings(set_pin(web_theme_nejm(), "text-footnote-size", "0.7rem"))
   wire <- list(
     "$schema" = "tabviz-theme/v4", name = "verbatim-test",
     inputs = tabviz:::theme_inputs_to_json(t1@inputs),
@@ -271,7 +271,7 @@ test_that("pins-are-last-resort lints fire (theme-rework Wave 1)", {
   # (cascade-bypassing). The un-throttled import lint, gated here.
   env <- list(
     "$schema" = "tabviz-theme/v4", name = "pinned",
-    inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs),
+    inputs = tabviz:::theme_inputs_to_json(web_theme_nejm()@inputs),
     pins = list("--tv-text-footnote-size" = "0.7rem")
   )
   expect_warning(
@@ -281,7 +281,7 @@ test_that("pins-are-last-resort lints fire (theme-rework Wave 1)", {
   # An envelope with NO pins imports silently.
   clean <- list(
     "$schema" = "tabviz-theme/v4", name = "clean",
-    inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs)
+    inputs = tabviz:::theme_inputs_to_json(web_theme_nejm()@inputs)
   )
   expect_no_warning(theme_from_wire(jsonlite::toJSON(clean, auto_unbox = TRUE)))
 })
@@ -289,7 +289,7 @@ test_that("pins-are-last-resort lints fire (theme-rework Wave 1)", {
 test_that("read_theme accepts an inline wire JSON string (Wave 1 handoff)", {
   # The viewer's "Edit in studio" handoff copies the portable wire to the
   # clipboard; a pasted string IS a valid theme source.
-  th <- set_role(web_theme_cochrane(), "text-muted", "brand", 8)
+  th <- set_role(web_theme_nejm(), "text-muted", "brand", 8)
   json <- as.character(jsonlite::toJSON(theme_to_wire(th), auto_unbox = TRUE, digits = NA))
   back <- read_theme(json)
   expect_s7_class(back, tabviz::WebTheme)
@@ -318,14 +318,14 @@ test_that("R .TYPE_ROLE_NAMES mirror matches the TS roster (Wave 3 drift gate)",
 })
 
 test_that("set_role redirects non-color (scale) roles to their setters (Wave 3)", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   expect_error(set_role(th, "footnote", "brand", 8), "TYPE role")
   expect_error(set_role(th, "corners", "neutral", 5), "GEOMETRY role")
   expect_error(set_role(th, "density", "neutral", 5), "spacing role")
 })
 
 test_that("set_corners / set_rules expand geometry slots from the TS tables (Wave 3)", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   round <- set_corners(th, "round")
   expect_identical(round@inputs@geometry_radius_md, 12)   # CORNER_SLOTS.round.md
   sharp <- set_corners(th, "sharp")
@@ -342,7 +342,7 @@ test_that("set_corners / set_rules expand geometry slots from the TS tables (Wav
 test_that("studio_save_as rejects path-traversal names (round-2 robustness P1)", {
   withr::local_options(tabviz.theme_dir = withr::local_tempdir())
   wire <- list("$schema" = "tabviz-theme/v4", name = "x",
-               inputs = tabviz:::theme_inputs_to_json(web_theme_cochrane()@inputs))
+               inputs = tabviz:::theme_inputs_to_json(web_theme_nejm()@inputs))
   payload <- jsonlite::toJSON(list(name = "../evil", wire = wire), auto_unbox = TRUE)
   expect_warning(p <- tabviz:::.studio_save_as_payload(payload), "invalid theme name")
   expect_null(p)

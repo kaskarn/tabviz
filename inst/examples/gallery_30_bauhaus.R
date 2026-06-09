@@ -20,7 +20,7 @@ tabviz(
   bauhaus_data,
   label = "metric",
   label_header = "Metric",
-  theme = web_theme_bauhaus(),
+  theme = web_theme_brutalist(),
   columns = list(
     col_numeric("baseline", header = "Baseline", decimals = 2),
     col_numeric("treatment", header = "Treatment", decimals = 2),

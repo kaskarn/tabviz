@@ -45,7 +45,7 @@ forest_plot(
   ),
   row_bold = "row_bold",
   row_badge = "row_badge",
-  theme = web_theme_dark(),
+  theme = web_theme_aurora(),
   scale = "log",
   null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",

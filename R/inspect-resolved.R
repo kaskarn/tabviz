@@ -208,7 +208,7 @@ RESOLVED_LEAVES <- list(
 #' @export
 #' @examples
 #' \dontrun{
-#' t <- web_theme_cochrane()
+#' t <- web_theme_nejm()
 #' inspect_resolved(t, "header.bold.bg")
 #' inspect_resolved(t, "divider.strong")
 #' }

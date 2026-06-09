@@ -44,7 +44,7 @@ forest_plot(
     effect_forest("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
   ),
   row_badge = "badge",
-  theme = web_theme_dark(),
+  theme = web_theme_aurora(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
   title = "Clinical Trial Program",

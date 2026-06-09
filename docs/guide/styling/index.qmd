@@ -56,7 +56,7 @@ tabviz(sample_data, label = "study",
                scale = "log", null_value = 1, width = 160),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -73,7 +73,7 @@ tabviz(sample_data, label = "study",
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   row_bold = ~ upper < 1,
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -91,7 +91,7 @@ tabviz(sample_data, label = "study",
                 bold = ~ .x < 1,
                 color = ~ ifelse(.x < 1, "#16a34a", "#64748b"))
   ),
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -109,7 +109,7 @@ tabviz(sample_data, label = "study",
   ),
   marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b"),
   marker_shape = ~ ifelse(upper < 1, "diamond", "square"),
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 

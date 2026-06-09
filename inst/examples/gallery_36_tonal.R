@@ -2,7 +2,7 @@
 # Material You-style tonal-palette-from-seed: a single seed (primary
 # purple) generates surfaces via the OKLCH chrome cascade. Demonstrates
 # the cascade's tonal-palette generation — no custom logic, the resolver
-# already does it. Pairs with web_theme_tonal_dark().
+# already does it. Pairs with web_theme_aurora().
 
 library(tabviz)
 
@@ -19,7 +19,7 @@ tabviz(
   tonal_data,
   label = "feature",
   label_header = "Feature",
-  theme = web_theme_tonal(),
+  theme = web_theme_ledger(),
   columns = list(
     col_text("owner_team", header = "Owner"),
     col_text("priority", header = "Pri"),

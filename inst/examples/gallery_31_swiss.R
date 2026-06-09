@@ -23,7 +23,7 @@ forest_plot(
     col_numeric("n", "N", decimals = 0, thousands_sep = ","),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_swiss(),
+  theme = web_theme_brutalist(),
   scale = "log", null_value = 1,
   axis_label = "Hazard ratio",
   title = "Meta-analysis — typographic grid",

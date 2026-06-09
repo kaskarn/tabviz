@@ -30,7 +30,7 @@ p <- glp1_trials |>
                  scale = "log", null_value = 1, width = 180),
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
-    theme = web_theme_jama(),
+    theme = web_theme_nejm(),
     title = "GLP-1 Agonist Cardiovascular Outcomes"
   )
 
@@ -91,7 +91,7 @@ p_bar <- tabviz(bar_data, label = "department",
             header = "Enrollment", width = 180, axis_range = c(0, 350)),
     col_numeric("enrollment", "N")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Trial Enrollment by Department"
 )
 
@@ -115,7 +115,7 @@ p_jama <- glp1_trials |>
                  scale = "log", null_value = 1, width = 160),
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
-    theme = web_theme_jama(),
+    theme = web_theme_nejm(),
     title = "Figure 1. Primary Endpoint"
   )
 
@@ -135,7 +135,7 @@ p_dark <- glp1_trials |>
                  scale = "log", null_value = 1, width = 160),
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
-    theme = web_theme_dark(),
+    theme = web_theme_aurora(),
     title = "Dark Theme Export"
   )
 
@@ -184,7 +184,7 @@ p_long <- big |>
                  scale = "log", null_value = 1, width = 180),
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
-    theme = web_theme_jama(),
+    theme = web_theme_nejm(),
     title = "Long meta-analysis (paginated)",
     paginate = paginate_letter()
   )

@@ -18,7 +18,7 @@ The modified input
 Set the plot title
 }
 \examples{
-web_theme_cochrane() |>
+web_theme_nejm() |>
   (\(t) tabviz(
     data.frame(study = letters[1:3], or = 1:3),
     label = "study", theme = t

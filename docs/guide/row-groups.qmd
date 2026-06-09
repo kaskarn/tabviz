@@ -86,7 +86,7 @@ tabviz(hierarchical_data,
     viz_forest(point = "or", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_cochrane()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -104,7 +104,7 @@ Control the visual styling of group headers at each level using theme modifiers:
 
 ```{r}
 #| eval: false
-custom_theme <- web_theme_cochrane() |>
+custom_theme <- web_theme_nejm() |>
   set_theme_field(c("row_group", "L1", "bg"),            "#E0F2FE") |>
   set_theme_field(c("row_group", "L1", "text", "size"),  "1.1rem") |>
   set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>

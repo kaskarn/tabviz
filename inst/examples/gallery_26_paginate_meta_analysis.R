@@ -47,7 +47,7 @@ tabviz(
                axis_label = "Hazard ratio"),
     col_interval("hr", "lower", "upper", header = "HR")
   ),
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "GLP-1 receptor agonists — pooled cardiovascular meta-analysis",
   subtitle = "72 studies across three cohorts; paginate at 30 rows per page",
   caption = "Use the prev/next controls below the plot to walk through pages, or switch to continuous mode to scroll.",

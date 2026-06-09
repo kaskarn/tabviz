@@ -53,7 +53,7 @@ tabviz(
       width = 220
     )
   ),
-  theme    = web_theme_cochrane(),
+  theme    = web_theme_nejm(),
   title    = "Semantic cascade on distribution viz",
   subtitle = "Flagship sites pop in accent; pilot site is muted. Same row_* args work for box/violin.",
   caption  = "Box and violin glyphs already have strokes; the cascade re-colors them."

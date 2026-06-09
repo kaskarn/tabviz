@@ -2171,11 +2171,11 @@ col_group <- function(header, ...) {
 #'   - `NULL`: hide the theme switcher entirely.
 #'   - A flat list of `WebTheme` objects: show exactly those themes (no tabs).
 #'     Named list entries override each theme's display name
-#'     (e.g. `list(Classical = web_theme_jama())`).
+#'     (e.g. `list(Classical = web_theme_nejm())`).
 #'   - A 2-level named list of named lists of `WebTheme`: show those themes
 #'     grouped under category tabs. The keys of the outer list become tab
-#'     labels (e.g. `list(Editorial = list(Cochrane = web_theme_cochrane(),
-#'     Lancet = web_theme_lancet()), Other = list(Dark = web_theme_dark()))`).
+#'     labels (e.g. `list(Editorial = list(Cochrane = web_theme_nejm(),
+#'     Lancet = web_theme_nejm()), Other = list(Dark = web_theme_aurora()))`).
 #'   In all list forms the spec's active `theme` is auto-included so users
 #'   can always revert.
 #'
@@ -2250,7 +2250,7 @@ finalize_enable_themes <- function(value, theme) {
   active <- theme@name
 
   # Helper: rewrite @name from named-list keys; named entries override the
-  # theme's display name in the switcher (e.g. list(Classical = web_theme_jama())).
+  # theme's display name in the switcher (e.g. list(Classical = web_theme_nejm())).
   apply_name_overrides <- function(themes) {
     nms <- names(themes)
     if (!is.null(nms)) {

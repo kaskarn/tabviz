@@ -35,7 +35,7 @@ A one-page lookup card for tabviz. Pair this with the [Reference](reference/inde
 | `label` | `NULL` | Column with row labels |
 | `group` | `NULL` | Column(s) for collapsible row groups |
 | `columns` | required | List of `col_*()` / `viz_*()` specs |
-| `theme` | `web_theme_cochrane()` | Visual theme |
+| `theme` | `web_theme_nejm()` | Visual theme |
 | `interaction` | `web_interaction()` | Interactivity preset |
 | `title`, `subtitle`, `caption`, `footnote` | `NULL` | Header / footer text |
 | `marker_size` | `NULL` | Constant or column for marker scaling (e.g. `"weight"`) |
@@ -52,7 +52,7 @@ tabviz(
     col_interval("hr", "lo", "hi", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -145,19 +145,19 @@ Four journal presets and three illustrative LOTR presets. `set_theme(spec, "<nam
 
 | Theme | Style |
 |---|---|
-| `web_theme_cochrane()` | Package default. Cochrane teal + warm-coral accent, Inter, comfortable |
-| `web_theme_lancet()`   | Lancet navy + refined old-gold, Georgia serif, comfortable |
-| `web_theme_jama()`     | JAMA all-B&W, ultra-compact, Arial |
-| `web_theme_dark()`     | Catppuccin Mocha-inspired dark canvas |
+| `web_theme_nejm()` | Package default. Cochrane teal + warm-coral accent, Inter, comfortable |
+| `web_theme_nejm()`   | Lancet navy + refined old-gold, Georgia serif, comfortable |
+| `web_theme_nejm()`     | JAMA all-B&W, ultra-compact, Arial |
+| `web_theme_aurora()`     | Catppuccin Mocha-inspired dark canvas |
 | `web_theme_dwarven()`  | Stone neutrals, forge-glow accent, broad serif display |
-| `web_theme_elvish()`   | Twilight surface, mithril silvers, calligraphic serif |
-| `web_theme_hobbit()`   | Parchment + green, hand-set body face, hearth accent |
+| `web_theme_dwarven()`   | Twilight surface, mithril silvers, calligraphic serif |
+| `web_theme_dwarven()`   | Parchment + green, hand-set body face, hearth accent |
 
 ## Theme modifiers (fluent)
 
 ```r
 tabviz(...,
-  theme = web_theme_cochrane() |>
+  theme = web_theme_nejm() |>
     set_inputs(
       brand          = "#2563EB",
       accent         = "#1E40AF",
@@ -202,7 +202,7 @@ tabviz(data, label = "study", columns = list(viz_forest(...))) |>
   set_row_style(bold = ~ pvalue < 0.05, emphasis = "is_primary") |>
   set_marker_style(color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")) |>
   set_column_style("hr", bold = ~ .x < 1, color = ~ ifelse(.x < 1, "green", "red")) |>
-  set_theme("jama") |>
+  set_theme("nejm") |>
   set_zoom(zoom = 1, auto_fit = TRUE, max_width = 1200, show_controls = TRUE)
 ```
 

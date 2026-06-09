@@ -61,7 +61,7 @@ tabviz(
   kpi,
   label = "region",
   label_header = "Region",
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   columns = list(
     col_currency("revenue", header = "Revenue", symbol = "$", decimals = 0,
                  thousands_sep = ",", abbreviate = TRUE),
@@ -181,4 +181,4 @@ createTabviz(document.querySelector("#plot")!, spec);
 
 ## What's the same, what's different?
 
-Same as the [genetic-association page](genetic-association.qmd) — argument names + defaults map snake_case ↔ camelCase, positional R args become named TS args, and `theme = web_theme_cochrane()` becomes `theme: "cochrane"`. The visual column family (bars, sparklines, badges, rings, stars) has the same mechanical translation as the forest-plot family.
+Same as the [genetic-association page](genetic-association.qmd) — argument names + defaults map snake_case ↔ camelCase, positional R args become named TS args, and `theme = web_theme_nejm()` becomes `theme: "cochrane"`. The visual column family (bars, sparklines, badges, rings, stars) has the same mechanical translation as the forest-plot family.

@@ -294,7 +294,7 @@ The cascade is fully introspectable from R:
 
 ```{r}
 #| eval: false
-inspect_resolved(web_theme_cochrane(), "header.bold.bg")
+inspect_resolved(web_theme_nejm(), "header.bold.bg")
 #> $path: "header.bold.bg"
 #> $value: "#006B9C"
 #> $cascade: c("inputs$primary_deep", "inputs$primary")
@@ -562,13 +562,13 @@ worked examples of the manifesto's principles in non-journal contexts.
 
 | Preset | Source | Aesthetic discipline |
 |---|---|---|
-| `web_theme_cochrane()` | `R/themes.R` | Package default; teal + warm coral, comfortable density |
-| `web_theme_lancet()` | `R/themes.R` | Lancet navy + old-gold, Georgia serif |
-| `web_theme_jama()` | `R/themes.R` | Black-and-white, ultra-compact, strong dividers |
-| `web_theme_dark()` | `R/themes.R` | Catppuccin Mocha-inspired |
+| `web_theme_nejm()` | `R/themes.R` | Package default; teal + warm coral, comfortable density |
+| `web_theme_nejm()` | `R/themes.R` | Lancet navy + old-gold, Georgia serif |
+| `web_theme_nejm()` | `R/themes.R` | Black-and-white, ultra-compact, strong dividers |
+| `web_theme_aurora()` | `R/themes.R` | Catppuccin Mocha-inspired |
 | `web_theme_dwarven()` | `R/themes-lotr.R` | Stone neutrals, forge-glow accent, broad serif display |
-| `web_theme_elvish()` | `R/themes-lotr.R` | Twilight surface, mithril silvers, calligraphic serif |
-| `web_theme_hobbit()` | `R/themes-lotr.R` | Parchment + green, hand-set body face, hearth accent |
+| `web_theme_dwarven()` | `R/themes-lotr.R` | Twilight surface, mithril silvers, calligraphic serif |
+| `web_theme_dwarven()` | `R/themes-lotr.R` | Parchment + green, hand-set body face, hearth accent |
 
 `package_themes()` returns these as a 2-level named list (`journals` /
 `lotr`); `set_theme(spec, "<name>")` switches by string name.

@@ -112,82 +112,6 @@ web_theme_brutalist <- function() {
     name = "brutalist"
   )
 }
-
-#' Atelier theme - artist's studio: warm parchment, ink, ruled lines.
-#'
-#' Compact density x 0.92 + decorative hue (#A88B5C) routed through the
-#' neutrals at high paperC/inkC give the warm parchment paper feel.
-#' Italianno display for the calligraphic flourish; EB Garamond body
-#' for the inked text. Subtle warm glow on the rust accent + soft
-#' paper-shadow elevation give the page-on-desk feel without breaking
-#' the editorial restraint.
-#' @return A [WebTheme].
-#' @export
-web_theme_atelier <- function() {
-  a <- derive_preset_anchors("#392A1E", "#8B3A3A",
-                             neutral_hue_from = "#A88B5C",
-                             paper_C = 0.024, ink_C = 0.024)
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    density = "compact",
-    density_factor = 0.92,
-    shell_texture = "ruled",
-    type_base_size = 13.5,
-    type_scale_ratio = 1.333,
-    fonts_body = "'EB Garamond', Georgia, serif",
-    fonts_display = "'Italianno', 'EB Garamond', cursive, serif",
-    web_fonts = list(
-      web_font("EB Garamond", FONT_URLS$eb_garamond),
-      web_font("Italianno", FONT_URLS$italianno)
-    ),
-    curves = list(neutral = "log"),
-    effects = list(
-      glow_intensity = "subtle",
-      glow_anchor = "accent",
-      elevation = "low"
-    ),
-    name = "atelier"
-  )
-}
-
-#' Executive theme - slate + soft gold, raised shell, serif display.
-#'
-#' Material card meets boardroom: Inter body, Cormorant Garamond
-#' display (the "executive summary" serif-title-on-sans-body feel).
-#' Type scale 1.333 + smooth brand curve for the crisp rhythm. Float
-#' elevation lifts the card off the page; subtle gradient on the shell
-#' gives the premium material-card sheen without becoming decorative.
-#' @return A [WebTheme].
-#' @export
-web_theme_executive <- function() {
-  a <- derive_preset_anchors("#1E3A5F", "#C9A961")
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "wong",
-    # C65: premium card — md-leaning radius + airy density.
-    geometry = list(radius = list(sm = 3, md = 8, lg = 12, pill = 999)),
-    density_factor = 1.08,
-    shell_mode = "raised",
-    type_base_size = 14,
-    type_scale_ratio = 1.333,
-    type_weights = list(regular = 400, medium = 500, semibold = 600, bold = 700),
-    fonts_body = "'Mulish', -apple-system, system-ui, sans-serif",
-    fonts_display = "'Fraunces', Georgia, serif",
-    web_fonts = list(
-      web_font("Mulish", FONT_URLS$mulish),
-      web_font("Fraunces", FONT_URLS$fraunces)
-    ),
-    curves = list(neutral = "ease", brand = "smooth"),
-    effects = list(
-      gradient_shell_intensity = "subtle",
-      gradient_shell_angle = 145,
-      elevation = "high"
-    ),
-    name = "executive"
-  )
-}
-
 #' Ledger theme - accountant's ruled book (rgc_v4 lab port).
 #'
 #' Teal-ink brand (H200), oxblood rubrication accent (H28), warm cream
@@ -323,32 +247,5 @@ web_theme_blueprint <- function() {
     effects = list(title_style = "underline"),
     curves = list(neutral = "smooth"),
     name = "blueprint"
-  )
-}
-
-#' Sunprint theme - sun-bleached field notes (rgc_v4 lab port).
-#'
-#' Terracotta brand (H40), olive rubrication accent (H130), warm bleached
-#' paper, ruled texture, generous reading rhythm, gradient caption stripe.
-#' @return A [WebTheme].
-#' @export
-web_theme_sunprint <- function() {
-  a <- derive_preset_anchors("#CB6440",
-                             paper_C = 0.018, ink_C = 0.022)
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand,
-    accent = "#5E7D3B",
-    categorical = "set2",
-    density_factor = 1.02,
-    shell_mode = "raised",
-    shell_texture = "ruled",
-    fonts_body = "'Karla', -apple-system, system-ui, sans-serif",
-    fonts_display = "'Karla', -apple-system, system-ui, sans-serif",
-    web_fonts = list(
-      web_font("Karla", FONT_URLS$karla)
-    ),
-    effects = list(caption_style = "stripe"),
-    curves = list(neutral = "ease"),
-    name = "sunprint"
   )
 }

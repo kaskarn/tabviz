@@ -328,7 +328,7 @@ tabviz(feedback, label = "segment",
   ),
   row_fill   = "is_top",
   row_accent = "is_concern",
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title    = "Customer feedback — pictograms + rings end-to-end",
   subtitle = "Education leads (row_fill); Self-serve flagged for response-rate concern (row_accent)."
 )

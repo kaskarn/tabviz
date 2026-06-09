@@ -43,5 +43,5 @@ forest_plot(
   axis_label = "Cost index (vs. studio baseline 1.0)",
   title = "Studio Inventory, Anno Domini 1623",
   subtitle = "From the workshop ledger of Maestro Bellini -- atelier theme showcase",
-  theme = web_theme_atelier()
+  theme = web_theme_newsprint()
 )

@@ -45,7 +45,7 @@ tabviz(data,
                             scale = "log", null_value = 1)),
   row_bold = ~ pval < 0.05,
   marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b"),
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -59,7 +59,7 @@ tabviz(data,
 ) |>
   set_row_style(bold = ~ pval < 0.05) |>
   set_marker_style(color = ~ ifelse(upper < 1, "#16a34a", "#64748b")) |>
-  set_theme("jama")
+  set_theme("nejm")
 ```
 
 Both produce the same widget. Pick whichever reads better at the call site.

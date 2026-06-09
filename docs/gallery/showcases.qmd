@@ -57,7 +57,7 @@ tabviz(project_data, label = "task",
     col_icon("flag", "Flag",
       mapping = list(ok = "\u2714", done = "\u2605", blocked = "\u2716", paused = "\u23f8"))
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Rich Column Types Showcase"
 )
 ```
@@ -100,7 +100,7 @@ tabviz(reg_data,
     conf.low > 0 ~ "#16a34a",
     TRUE ~ "#64748b"
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Linear Regression Coefficients",
   subtitle = "lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)",
   footnote = "Red = negative effect, green = positive effect, gray = not significant at alpha = 0.05."
@@ -159,7 +159,7 @@ tabviz(clinical_dashboard, label = "site",
       show_quartiles = TRUE
     )
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Clinical Site Performance Dashboard"
 )
 ```
@@ -199,7 +199,7 @@ tabviz(regional_data, label = "study",
   ),
   split_by = "region",
   shared_axis = TRUE,
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "Treatment Effect by Region"
 )
 ```
@@ -243,7 +243,7 @@ tabviz(
                axis_label = "Hazard ratio"),
     col_interval("hr", "lower", "upper", header = "HR")
   ),
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "GLP-1 receptor agonists — pooled cardiovascular meta-analysis",
   subtitle = "72 studies across three cohorts; paginate at 30 rows per page",
   caption = "Use the prev/next controls below the plot to walk through pages, or switch to continuous mode to scroll.",
@@ -284,7 +284,7 @@ tabviz(
                axis_label = "Risk ratio"),
     col_interval("rr", "lower", "upper", header = "RR")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Multi-region efficacy",
   subtitle = "Each region paginates independently at 10 rows per page",
   paginate = paginate_spec(rows = 10)
@@ -318,16 +318,16 @@ make_plot <- function(theme_fn, name) {
   )
 }
 
-# Journal presets
-make_plot(web_theme_cochrane, "Cochrane")
-make_plot(web_theme_lancet,   "Lancet")
-make_plot(web_theme_jama,     "JAMA")
-make_plot(web_theme_dark,     "Dark")
-
-# LOTR presets
-make_plot(web_theme_dwarven,  "Dwarven")
-make_plot(web_theme_elvish,   "Elvish")
-make_plot(web_theme_hobbit,   "Hobbit")
+# The 9 committed identities — each owns a distinct expressive axis.
+make_plot(web_theme_nejm,      "NEJM · Clinical")
+make_plot(web_theme_ledger,    "Ledger · Color")
+make_plot(web_theme_brutalist, "Brutalist · Geometry")
+make_plot(web_theme_newsprint, "Newsprint · Texture")
+make_plot(web_theme_blueprint, "Blueprint · Draft")
+make_plot(web_theme_dwarven,   "Dwarven · Fantasy")
+make_plot(web_theme_aurora,    "Aurora · Effects")
+make_plot(web_theme_terminal,  "Terminal · Aliasing")
+make_plot(web_theme_synthwave, "Synthwave · Neon")
 ```
 
 ---
@@ -384,7 +384,7 @@ tabviz(styling_data,
   ),
   marker_opacity = "quality",
   marker_size = ~ ifelse(design == "RCT", 1.2, 1),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Conditional Styling Showcase",
   subtitle = "Row, cell, and marker styling with formulas"
 )
@@ -453,7 +453,7 @@ See [Fluent API](../guide/fluent-api.qmd) and [Themes](../guide/themes.qmd).
 
 ## Publication Templates
 
-A single drop-in journal-style template demonstrating a row-grouped, column-grouped efficacy figure for a Lancet-style submission. To produce a JAMA / Cochrane / dark / LOTR variant, swap the `theme = web_theme_lancet()` line — every other element survives unchanged.
+A single drop-in journal-style template demonstrating a row-grouped, column-grouped efficacy figure for a Lancet-style submission. To produce a JAMA / Cochrane / dark / LOTR variant, swap the `theme = web_theme_nejm()` line — every other element survives unchanged.
 
 ```{r}
 lancet_data <- tibble(
@@ -492,7 +492,7 @@ tabviz(
                axis_label = "Hazard Ratio (95% CI)"),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   title    = "Figure 3: Efficacy Outcomes",
   subtitle = "Row groups by endpoint type + column groups by treatment arm",
   caption  = "HR<1 favours treatment.",
@@ -524,7 +524,7 @@ tabviz(
                axis_label = "Hazard Ratio"),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Hierarchical Subgroup Analysis",
   subtitle = "Outcome > Treatment navigation tree",
   caption = "Expand tree nodes to drill into subgroups"
@@ -569,7 +569,7 @@ full_monty <- tibble(
 )
 
 # Custom theme
-monty_theme <- web_theme_dark() |>
+monty_theme <- web_theme_aurora() |>
   set_inputs(brand = "#f59e0b") |>
   set_spacing(row_height = 38) |>
   set_theme_field(c("axis", "gridlines"), TRUE) |>

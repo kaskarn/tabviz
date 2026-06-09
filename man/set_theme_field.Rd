@@ -27,7 +27,7 @@ an input); any other path is a post-resolution pin applied directly.
 }
 \examples{
 \dontrun{
-  web_theme_cochrane() |> set_theme_field(c("row_group", "L1", "bg"), "#EEE")
-  web_theme_cochrane() |> set_theme_field(c("series", 1L, "fill"), "#FF0000")
+  web_theme_nejm() |> set_theme_field(c("row_group", "L1", "bg"), "#EEE")
+  web_theme_nejm() |> set_theme_field(c("series", 1L, "fill"), "#FF0000")
 }
 }

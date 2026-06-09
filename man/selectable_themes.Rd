@@ -15,7 +15,7 @@ selectable_themes(x, themes)
 \item \code{"default"}: show all \code{\link[=package_themes]{package_themes()}}.
 \item A list of \code{WebTheme} objects: show exactly those. Named list entries
 override each theme's displayed name
-(e.g. \code{list(Classical = web_theme_jama(), Modern = web_theme_modern())}).
+(e.g. \code{list(Classical = web_theme_nejm(), Modern = web_theme_modern())}).
 }}
 }
 \value{
@@ -32,7 +32,7 @@ always included automatically, so the user can always revert.
 tabviz(data, label = "study") |>
   set_theme("jama") |>
   selectable_themes(list(
-    Classical = web_theme_jama(),
+    Classical = web_theme_nejm(),
     Modern = web_theme_modern()
   ))
 }

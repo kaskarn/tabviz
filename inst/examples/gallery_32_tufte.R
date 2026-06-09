@@ -16,7 +16,7 @@ tabviz(
   tufte_data,
   label = "region",
   label_header = "Region",
-  theme = web_theme_tufte(),
+  theme = web_theme_newsprint(),
   columns = list(
     col_numeric("pop_2020", header = "Pop (M)", decimals = 1),
     col_numeric("density", header = "Density/mi²", decimals = 0, thousands_sep = ","),

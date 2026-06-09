@@ -30,7 +30,7 @@ flowchart LR
     style C fill:#93c5fd
 ```
 
-* **Step 1** — `theme = web_theme_lancet()`. Done. Twenty-seven presets cover the common publication, dashboard, and illustrative surfaces.
+* **Step 1** — `theme = web_theme_nejm()`. Done. Twenty-seven presets cover the common publication, dashboard, and illustrative surfaces.
 * **Step 2** — Swap a primary color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
 * **Step 3** — Reach into a specific component (e.g. the L1 row-group bar background) for surgical control. Rare; the preset cascade handles 95% of cases.
 
@@ -44,7 +44,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_lancet()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -52,19 +52,19 @@ Twenty-seven presets ship in the package across five families — **journals** (
 
 | Preset | Style | Designed for |
 |--------|-------|--------------|
-| `web_theme_cochrane()` | The package default. Cochrane teal + warm coral, Inter sans-serif, comfortable density | General purpose, systematic reviews |
-| `web_theme_lancet()`   | Lancet navy + refined old-gold + warm cream, Georgia serif, comfortable | Lancet-style editorial layouts |
-| `web_theme_jama()`     | Pure black-and-white, ultra-compact, strong dividers throughout, Arial | JAMA / print journal submissions |
-| `web_theme_dark()`     | Catppuccin Mocha-inspired dark canvas with pastel marker palette | Dark-mode viewing |
+| `web_theme_nejm()` | The package default. Cochrane teal + warm coral, Inter sans-serif, comfortable density | General purpose, systematic reviews |
+| `web_theme_nejm()`   | Lancet navy + refined old-gold + warm cream, Georgia serif, comfortable | Lancet-style editorial layouts |
+| `web_theme_nejm()`     | Pure black-and-white, ultra-compact, strong dividers throughout, Arial | JAMA / print journal submissions |
+| `web_theme_aurora()`     | Catppuccin Mocha-inspired dark canvas with pastel marker palette | Dark-mode viewing |
 | `web_theme_dwarven()`  | Stone neutrals, forge-glow accent, broad serif display | Talks, blog posts, themed reports |
-| `web_theme_elvish()`   | Twilight surface, mithril silvers, calligraphic serif | Talks, blog posts, themed reports |
-| `web_theme_hobbit()`   | Parchment + green, hand-set body face, hearth accent | Talks, blog posts, themed reports |
+| `web_theme_dwarven()`   | Twilight surface, mithril silvers, calligraphic serif | Talks, blog posts, themed reports |
+| `web_theme_dwarven()`   | Parchment + green, hand-set body face, hearth accent | Talks, blog posts, themed reports |
 
 Switch presets at any point with `set_theme()`:
 
 ```{r}
 #| eval: false
-my_table |> set_theme("jama")
+my_table |> set_theme("nejm")
 ```
 
 The full registry is in `package_themes()` (a named list keyed `journals` / `modes` / `design` / `lotr` / `showcase`).
@@ -80,18 +80,18 @@ theme; pass `enable_themes = list(...)` to `web_interaction()` or
 #| eval: false
 # Flat list — no tabs, just a single column of choices.
 selectable_themes(my_table, list(
-  Cochrane = web_theme_cochrane(),
-  Lancet   = web_theme_lancet()
+  Cochrane = web_theme_nejm(),
+  Lancet   = web_theme_nejm()
 ))
 
 # 2-level named list — each top-level key becomes a tab in the dropdown.
 selectable_themes(my_table, list(
   Editorial = list(
-    Cochrane = web_theme_cochrane(),
-    Lancet   = web_theme_lancet(),
-    JAMA     = web_theme_jama()
+    Cochrane = web_theme_nejm(),
+    Lancet   = web_theme_nejm(),
+    JAMA     = web_theme_nejm()
   ),
-  Other = list(Dark = web_theme_dark())
+  Other = list(Dark = web_theme_aurora())
 ))
 ```
 
@@ -307,7 +307,7 @@ If you want to inspect a resolved theme:
 
 ```{r}
 #| eval: false
-t <- web_theme_lancet()
+t <- web_theme_nejm()
 # Resolved --tv-* tokens (the canonical inspection path):
 theme_css_vars(t)[["--tv-surface-bg"]]  # paper / surface background
 theme_css_vars(t)[["--tv-text"]]        # primary ink
@@ -324,7 +324,7 @@ Three pipe-friendly modifiers cover the common edits:
 
 ```{r}
 #| eval: false
-custom <- web_theme_jama() |>
+custom <- web_theme_nejm() |>
   set_brand("#1F3A5F") |>
   set_accent("#B08938") |>
   set_density("comfortable") |>
@@ -348,7 +348,7 @@ For surgical overrides anywhere in the theme tree, use `set_theme_field()` with 
 
 ```{r}
 #| eval: false
-custom <- web_theme_cochrane() |>
+custom <- web_theme_nejm() |>
   set_theme_field(c("row_group", "L1", "bg"), "#EEEEEE") |>
   set_theme_field(c("series", 1L, "fill"), "#FF0000") |>
   set_theme_field(c("plot", "gridline"), "#003300") |>
@@ -364,11 +364,11 @@ Because the cascades share only Tier 1, you can override a Tier 2 chrome role wi
 ```{r}
 #| eval: false
 # Pin the surface to a specific cream, regardless of what neutrals say
-web_theme_cochrane() |>
+web_theme_nejm() |>
   set_theme_field(c("surface", "base"), "#FDFCFB")
 
 # Adjust series 2's stroke without affecting any other slot or chrome
-web_theme_cochrane() |>
+web_theme_nejm() |>
   set_theme_field(c("series", 2L, "stroke"), "#444444")
 ```
 
@@ -424,7 +424,7 @@ Edit individual fields with `set_theme_field()`:
 
 ```{r}
 #| eval: false
-web_theme_cochrane() |>
+web_theme_nejm() |>
   set_theme_field(c("text", "title", "weight"), 700) |>
   set_theme_field(c("text", "title", "italic"), TRUE)
 ```

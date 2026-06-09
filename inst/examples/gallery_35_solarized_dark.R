@@ -1,7 +1,7 @@
 # Gallery Example 35: Solarized Dark
 # Solarized in dark variant — base03 deep-teal surfaces, base0 slate text,
 # same yellow primary + magenta accent as the light pair. Sibling of
-# web_theme_solarized() via the light_dark_pair field.
+# web_theme_ledger() via the light_dark_pair field.
 
 library(tabviz)
 
@@ -17,7 +17,7 @@ tabviz(
   solarized_data,
   label = "language",
   label_header = "Language",
-  theme = web_theme_solarized_dark(),
+  theme = web_theme_aurora(),
   columns = list(
     col_numeric("stars_k", header = "★ (k)", decimals = 0),
     col_numeric("contribs", header = "Contributors", decimals = 0, thousands_sep = ","),
@@ -25,5 +25,5 @@ tabviz(
     col_badge("health", header = "Health")
   ),
   title = "Open-source language ecosystems",
-  caption = "Theme: Solarized Dark — pairs with web_theme_solarized()."
+  caption = "Theme: Solarized Dark — pairs with web_theme_ledger()."
 )

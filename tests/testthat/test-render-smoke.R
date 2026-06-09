@@ -22,7 +22,7 @@ test_that("each v2 preset renders to PNG via the dispatch path", {
   dir.create(tmpdir)
   on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
 
-  presets <- c("cochrane", "lancet", "jama", "dark")
+  presets <- c("nejm", "ledger", "brutalist", "aurora")
 
   for (preset in presets) {
     ctor <- get(paste0("web_theme_", preset))
@@ -64,7 +64,7 @@ test_that("V3 fallback path in readVar is dead — every render hits only v4 css
   dir.create(tmpdir)
   on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
 
-  for (preset in c("cochrane", "dark", "synthwave", "executive")) {
+  for (preset in c("nejm", "aurora", "synthwave", "newsprint")) {
     ctor <- get(paste0("web_theme_", preset))
     spec <- tabviz(
       df, label = "Site",

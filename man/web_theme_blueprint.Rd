@@ -2,7 +2,7 @@
 % Please edit documentation in R/themes-showcase.R
 \name{web_theme_blueprint}
 \alias{web_theme_blueprint}
-\title{Blueprint theme - drafting-table cyanotype (rgc_v4 lab port).}
+\title{Blueprint theme - architectural drafting sheet (rgc_v4 lab port).}
 \usage{
 web_theme_blueprint()
 }
@@ -10,7 +10,7 @@ web_theme_blueprint()
 A \link{WebTheme}.
 }
 \description{
-Deep cyan-navy paper (dark polarity with brand-hued neutrals), amber
-rubrication accent for callouts, grid texture as the drafting sheet,
-monospace annotations, radius 0.
+LIGHT cyanotype: pale-blue paper with navy ink lines (the architect's
+table, not the dark negative), amber rubrication accent for callouts, grid
+texture as the drafting sheet, Archivo drafting-label sans, radius 0.
 }

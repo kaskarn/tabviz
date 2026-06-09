@@ -40,7 +40,7 @@ forest_plot(
     col_text("events", "Events"),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   scale = "log",
   null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",

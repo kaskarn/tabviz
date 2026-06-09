@@ -26,7 +26,7 @@ test_that("theme_to_dtcg / theme_from_dtcg round-trip is lossless (Wave 4)", {
 })
 
 test_that("theme_to_dtcg writes a file; theme_from_dtcg reads it back", {
-  th <- web_theme_cochrane()
+  th <- web_theme_nejm()
   f <- withr::local_tempfile(fileext = ".json")
   theme_to_dtcg(th, file = f)
   expect_true(file.exists(f))

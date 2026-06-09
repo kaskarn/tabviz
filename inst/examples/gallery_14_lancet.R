@@ -35,7 +35,7 @@ forest_plot(
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",
   title = "Figure 3: Efficacy Outcomes",

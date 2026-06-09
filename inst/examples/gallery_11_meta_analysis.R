@@ -43,7 +43,7 @@ tabviz(
     )
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   title = "Publication Meta-Analysis",
   subtitle = "Weight column + reference line + custom axis",
   caption = "Pooled estimate shown as reference line; I2 = 32%",

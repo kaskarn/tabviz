@@ -7,11 +7,9 @@
 # that the output retains its load-bearing tokens. If R later grows a
 # parallel CSS-emit path, expand this into a byte-equality parity test.
 
-THEMES <- c(
-  "cochrane", "lancet", "jama", "nejm", "nature", "bmj", "dark",
-  "bauhaus", "swiss", "tufte", "newsprint",
-  "solarized", "solarized_dark", "tonal", "tonal_dark",
-  "dwarven", "elvish", "hobbit"
+THEMES <- c(  # the 9 committed identities (27→9 cull, 2026-06-09)
+  "nejm", "ledger", "brutalist", "aurora", "terminal",
+  "newsprint", "blueprint", "synthwave", "dwarven"
 )
 
 # A handful of `--tv-*` tokens the runtime always emits — sanity-checks the
@@ -60,7 +58,7 @@ test_that("tabviz_theme_css(): accepts a WebSpec (extracts its theme)", {
       lower = c(0.3, 0.5),
       upper = c(0.7, 0.9)
     ),
-    theme = web_theme_cochrane(),
+    theme = web_theme_nejm(),
     .spec_only = TRUE
   )
   expect_s7_class(spec, WebSpec)
@@ -79,7 +77,7 @@ test_that("tabviz_theme_css(): identical theme inputs produce identical output",
   # The TS-side `buildThemeCSS` is cached by theme reference identity. Two
   # independent constructions of the same preset don't share identity but
   # MUST produce byte-identical output (deterministic emit).
-  css1 <- tabviz_theme_css(web_theme_cochrane())
-  css2 <- tabviz_theme_css(web_theme_cochrane())
+  css1 <- tabviz_theme_css(web_theme_nejm())
+  css2 <- tabviz_theme_css(web_theme_nejm())
   expect_identical(css1, css2)
 })

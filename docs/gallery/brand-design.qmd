@@ -54,13 +54,13 @@ render_acme <- function(theme, title = NULL, subtitle = NULL) {
 }
 ```
 
-## Step 0 — start from `web_theme_cochrane()`
+## Step 0 — start from `web_theme_nejm()`
 
 The package default is the cleanest, broadest-use preset; everything that follows is a delta from this baseline.
 
 ```{r}
 render_acme(
-  theme    = web_theme_cochrane(),
+  theme    = web_theme_nejm(),
   subtitle = "Step 0 — package default"
 )
 ```

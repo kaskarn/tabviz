@@ -28,7 +28,7 @@ the studio\'s "Copy R code" emits for rebinds.
 }
 \examples{
 \dontrun{
-web_theme_cochrane() |>
+web_theme_nejm() |>
   set_role("text-muted", "brand", 8) |>
   set_role("row-alt-bg", "neutral", 2)
 }

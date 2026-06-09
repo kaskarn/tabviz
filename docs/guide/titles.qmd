@@ -67,7 +67,7 @@ nba_efficiency |>
         `All-NBA 2nd` = "warning"
       ))
     ),
-    theme = web_theme_cochrane()
+    theme = web_theme_nejm()
   )
 ```
 
@@ -87,7 +87,7 @@ tabviz(demo_data,
   subtitle = "Larger fonts for slides",
   caption = "Source: Example data",
   columns = list(col_numeric("value", "Value", decimals = 2)),
-  theme = web_theme_cochrane() |> set_density("spacious")
+  theme = web_theme_nejm() |> set_density("spacious")
 )
 ```
 

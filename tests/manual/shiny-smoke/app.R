@@ -29,13 +29,13 @@ server <- function(input, output, session) {
         col_interval("hr", "lo", "hi", header = "HR (95% CI)")
       ),
       interaction = web_interaction_full(),
-      theme = web_theme_cochrane(),
+      theme = web_theme_nejm(),
       title = "Shiny smoke"
     )
   )
 
   observeEvent(input$go_dark, {
-    tabviz_proxy("tv") |> set_theme("dark")
+    tabviz_proxy("tv") |> set_theme("aurora")
   })
 
   output$echo_edits <- renderPrint({

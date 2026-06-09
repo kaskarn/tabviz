@@ -1,7 +1,7 @@
 # Gallery Example 34: Solarized (light)
 # Ethan Schoonover's Solarized palette in light variant — base3 cream
 # surfaces, base02 slate text, yellow primary, magenta accent.
-# Pairs with web_theme_solarized_dark() via the light_dark_pair field.
+# Pairs with web_theme_aurora() via the light_dark_pair field.
 
 library(tabviz)
 
@@ -17,7 +17,7 @@ tabviz(
   solarized_data,
   label = "language",
   label_header = "Language",
-  theme = web_theme_solarized(),
+  theme = web_theme_ledger(),
   columns = list(
     col_numeric("stars_k", header = "★ (k)", decimals = 0),
     col_numeric("contribs", header = "Contributors", decimals = 0, thousands_sep = ","),

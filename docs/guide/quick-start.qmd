@@ -105,7 +105,7 @@ tabviz(meta_data[1:3, ],
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_jama(), title = "JAMA"
+  theme = web_theme_nejm(), title = "JAMA"
 )
 
 tabviz(meta_data[1:3, ],
@@ -114,12 +114,12 @@ tabviz(meta_data[1:3, ],
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_lancet(), title = "Lancet"
+  theme = web_theme_nejm(), title = "Lancet"
 )
 ```
 
-**Journal presets**: `web_theme_cochrane()` (default), `web_theme_lancet()`, `web_theme_jama()`, `web_theme_dark()`.
-**LOTR presets**: `web_theme_dwarven()`, `web_theme_elvish()`, `web_theme_hobbit()`.
+**Journal presets**: `web_theme_nejm()` (default), `web_theme_nejm()`, `web_theme_nejm()`, `web_theme_aurora()`.
+**LOTR presets**: `web_theme_dwarven()`, `web_theme_dwarven()`, `web_theme_dwarven()`.
 
 See [Themes](themes.qmd) for customization, the `set_*()` modifier family, and how to register your own preset.
 

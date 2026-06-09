@@ -167,25 +167,23 @@ test_that("GroupSummary creates valid object", {
 })
 
 # Theme preset tests
-test_that("web_theme_jama creates valid theme", {
-  theme <- web_theme_jama()
-  expect_true(inherits(theme, "tabviz::WebTheme"))
-  expect_equal(theme@name, "jama")
-  expect_match(unname(theme_css_vars(theme)["--tv-text"]), "^#[0-9A-Fa-f]{6}$")
-  # V4 (wire-audit C39a): jama brand is ink-blue-black — near-black but
-  # NOT pure #000, so it no longer byte-collides with brutalist's anchors.
-  expect_lt(theme@inputs@anchors_brand_L, 0.25)
-  expect_gt(theme@inputs@anchors_brand_L, 0.10)
-  expect_gt(theme@inputs@anchors_brand_C, 0.005)
-})
-
-test_that("web_theme_lancet creates valid theme", {
-  theme <- web_theme_lancet()
-  expect_true(inherits(theme, "tabviz::WebTheme"))
-  expect_equal(theme@name, "lancet")
-  # V4: lancet brand is navy — chromatic, mid-low L.
-  expect_lt(theme@inputs@anchors_brand_L, 0.5)
-  expect_gt(theme@inputs@anchors_brand_C, 0.05)
+test_that("every committed preset constructor creates a valid theme", {
+  # 27→9 cull (2026-06-09): one validity check across the 9 survivors,
+  # replacing the per-deleted-preset tests (jama/lancet/cochrane are gone).
+  builders <- list(
+    nejm = web_theme_nejm, ledger = web_theme_ledger,
+    brutalist = web_theme_brutalist, aurora = web_theme_aurora,
+    terminal = web_theme_terminal, newsprint = web_theme_newsprint,
+    blueprint = web_theme_blueprint, synthwave = web_theme_synthwave,
+    dwarven = web_theme_dwarven
+  )
+  for (nm in names(builders)) {
+    theme <- builders[[nm]]()
+    expect_true(inherits(theme, "tabviz::WebTheme"), info = nm)
+    expect_equal(theme@name, nm)
+    expect_match(unname(theme_css_vars(theme)["--tv-text"]), "^#[0-9A-Fa-f]{6}$", info = nm)
+    expect_true(is.numeric(theme@inputs@anchors_brand_L), info = nm)
+  }
 })
 
 # Column helper tests
@@ -211,16 +209,6 @@ test_that("col_sparkline creates column with options", {
 })
 
 # New v0.1.0 feature tests
-
-test_that("web_theme_cochrane creates valid theme", {
-  theme <- web_theme_cochrane()
-  expect_true(inherits(theme, "tabviz::WebTheme"))
-  expect_equal(theme@name, "cochrane")
-  # V4: cochrane brand seeds from #0099CC — cyan hue (~230°), mid L, high C.
-  expect_gt(theme@inputs@anchors_brand_C, 0.10)
-  expect_true(theme@inputs@anchors_brand_H > 200 && theme@inputs@anchors_brand_H < 260)
-  expect_false(theme@layout@container_border)
-})
 
 test_that("col_numeric supports decimals parameter", {
   col <- col_numeric("value", decimals = 3)

@@ -1,5 +1,5 @@
 # Gallery Example 37: Tonal Dark
-# Dark counterpart to web_theme_tonal() — same purple seed at a higher
+# Dark counterpart to web_theme_ledger() — same purple seed at a higher
 # tone, dark canvas tinted toward primary at low chroma.
 
 library(tabviz)
@@ -17,7 +17,7 @@ tabviz(
   tonal_data,
   label = "feature",
   label_header = "Feature",
-  theme = web_theme_tonal_dark(),
+  theme = web_theme_aurora(),
   columns = list(
     col_text("owner_team", header = "Owner"),
     col_text("priority", header = "Pri"),
@@ -25,5 +25,5 @@ tabviz(
     col_icon("shipped", header = "Shipped")
   ),
   title = "Roadmap status — tonal dark mode",
-  caption = "Theme: Tonal Dark — pairs with web_theme_tonal()."
+  caption = "Theme: Tonal Dark — pairs with web_theme_ledger()."
 )

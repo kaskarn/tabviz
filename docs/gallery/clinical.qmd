@@ -39,7 +39,7 @@ tabviz(
   ),
   row_type = "row_type",
   row_bold = "row_bold",
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Major adverse cardiovascular events (MACE)"
 )
@@ -47,7 +47,7 @@ tabviz(
 
 ::: {.callout-tip}
 ## Theme variations
-The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_jama()`, or `web_theme_dark()` for different journal styles, or one of the LOTR presets (`web_theme_dwarven()` / `web_theme_elvish()` / `web_theme_hobbit()`) for non-journal contexts. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all seven built-in themes.
+The same data structure works with any theme. Try `web_theme_nejm()`, `web_theme_nejm()`, or `web_theme_aurora()` for different journal styles, or one of the LOTR presets (`web_theme_dwarven()` / `web_theme_dwarven()` / `web_theme_dwarven()`) for non-journal contexts. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all seven built-in themes.
 :::
 
 ---
@@ -92,7 +92,7 @@ tabviz(dose_response, label = "endpoint",
       col_interval("high_hr", "high_lo", "high_hi", header = "HR (95% CI)")
     )
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Dose-Response Analysis",
   subtitle = "Three-arm randomized trial across key endpoints"
 )
@@ -139,7 +139,7 @@ tabviz(annotated_data,
   marker_color = "sig_color",
   marker_shape = "sig_shape",
   row_bold = ~ pvalue < 0.05,
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Cardiovascular Outcomes with Annotations",
   subtitle = "Direction-coded markers: green = significant benefit, gray = non-significant"
 )
@@ -197,7 +197,7 @@ tabviz(large_meta,
     lower > 1 ~ "#dc2626",
     TRUE ~ "#64748b"
   ),
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "Large-Scale Regional Meta-Analysis",
   subtitle = "150 synthetic studies across 4 regions, shared axis for cross-panel comparison",
   footnote = "Use the sidebar tree to navigate regions. Pooled estimate shown as blue dashed reference line."
@@ -243,7 +243,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Nested Hierarchical Groups",
   subtitle = "Region > Country > Site (3 levels)",
   caption = "Click any group header to collapse that branch and all children"

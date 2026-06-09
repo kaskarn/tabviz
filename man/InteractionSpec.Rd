@@ -69,10 +69,10 @@ header label (e.g. "Main Trials (12)"). Default \code{FALSE}.}
 \item \code{NULL}: hide the theme switcher entirely.
 \item A flat list of \code{WebTheme} objects: show exactly those themes (no tabs).
 Named list entries override each theme's display name
-(e.g. \code{list(Classical = web_theme_jama())}).
+(e.g. \code{list(Classical = web_theme_nejm())}).
 \item A 2-level named list of named lists of \code{WebTheme}: show those themes
 grouped under category tabs. The keys of the outer list become tab
-labels (e.g. \code{list(Editorial = list(Cochrane = web_theme_cochrane(), Lancet = web_theme_lancet()), Other = list(Dark = web_theme_dark()))}).
+labels (e.g. \code{list(Editorial = list(Cochrane = web_theme_nejm(), Lancet = web_theme_nejm()), Other = list(Dark = web_theme_aurora()))}).
 In all list forms the spec's active \code{theme} is auto-included so users
 can always revert.
 }

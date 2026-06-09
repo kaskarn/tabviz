@@ -73,7 +73,7 @@ tabviz(nba_dash,
   ),
   row_accent = "all_star",       # bold + theme accent on All-Stars
   row_fill   = "is_mvp",         # strong fill on MVP row
-  theme = web_theme_cochrane() |>
+  theme = web_theme_nejm() |>
     set_inputs(brand = "#1d428a", accent = "#c8102e"),  # NBA blue + red
   title    = "NBA Player Efficiency Dashboard",
   subtitle = "PER = 15 is league average. Rings show shooting efficiency by typical-range thresholds.",
@@ -137,7 +137,7 @@ tabviz(survey,
   ),
   row_fill   = "is_top",
   row_accent = "is_concern",
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title    = "Customer satisfaction by segment",
   subtitle = "CSAT and CES bands set per the program's typical-range thresholds; trend on the right.",
   caption  = "SMB self-serve flagged for response-rate concern; Education leads on every metric."
@@ -208,7 +208,7 @@ tabviz(portfolio,
   row_type   = "row_type",
   row_accent = "beats_bench",     # bold + accent on outperformers
   row_fill   = "is_total",        # strong fill on overall portfolio row
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   title    = "Portfolio performance — trailing twelve months",
   subtitle = "Allocation share, position count, return CI, and Sharpe ratio per holding category.",
   caption  = "Outperforming holdings highlighted with the accent token; overall portfolio row uses the fill token."
@@ -252,7 +252,7 @@ tabviz(product_metrics, label = "product",
     col_stars("satisfaction", "Rating", max_stars = 5)
   ),
   row_color = ~ ifelse(growth < 0, "#dc2626", "#64748b"),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Product Performance Dashboard"
 )
 ```
@@ -301,7 +301,7 @@ tabviz(ab_test_results, label = "variant",
   row_bold = "row_bold",
   marker_color = ~ ifelse(is.na(lower), "#64748b",
                           ifelse(lower > 0, "#16a34a", "#64748b")),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Homepage Redesign A/B Test"
 )
 ```
@@ -332,7 +332,7 @@ tabviz(airline_summary, label = "carrier",
     col_numeric("delay_vs_avg", "Delay vs Avg", decimals = 1),
     col_sparkline("trend", "12-Month Trend")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Airline Performance — April"
 )
 ```
@@ -358,7 +358,7 @@ tabviz(climate_temps,
   ),
   marker_shape = ~ ifelse(certainty == "High", "circle", "square"),
   marker_color = ~ ifelse(anomaly > 1.5, "#dc2626", ifelse(anomaly > 1.0, "#f59e0b", "#3b82f6")),
-  theme = web_theme_cochrane() |>
+  theme = web_theme_nejm() |>
     set_theme_field(c("axis", "gridlines"), TRUE),
   title    = "Regional Temperature Anomalies",
   subtitle = "Grouped by geographic category, shaped by confidence level",

@@ -30,7 +30,7 @@ forest_plot(
     col_currency("cost_yr", header = "Annual cost", symbol = "$",
                  decimals = 0, abbreviate = TRUE)
   ),
-  theme = web_theme_bmj(),
+  theme = web_theme_nejm(),
   scale = "log", null_value = 1,
   axis_label = "Hazard ratio (95% CI)",
   title = "Comparative effectiveness of lipid-lowering therapies",

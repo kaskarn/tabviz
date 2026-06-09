@@ -24,7 +24,7 @@ tabviz(
   nature_data,
   label = "finding",
   label_header = "Headline finding",
-  theme = web_theme_nature(),
+  theme = web_theme_nejm(),
   columns = list(
     col_text("field", header = "Field"),
     col_numeric("citations", header = "Citations", decimals = 0, thousands_sep = ","),

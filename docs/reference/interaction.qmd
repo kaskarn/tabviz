@@ -75,29 +75,29 @@ Curates the in-widget theme switcher. Four shapes are accepted; the runtime dete
 |---|---|
 | `"default"` | Show every theme returned by `package_themes()` (a tabbed picker — Journals + LOTR — since `package_themes()` is itself 2-level). |
 | `NULL` | Hide the switcher entirely. |
-| `list(WebTheme, ...)` (flat) | Show exactly those themes as a single column of choices. **Named** entries override the displayed name (e.g. `list(Classical = web_theme_jama())`). The spec's active theme is auto-included so users can always revert. |
+| `list(WebTheme, ...)` (flat) | Show exactly those themes as a single column of choices. **Named** entries override the displayed name (e.g. `list(Classical = web_theme_nejm())`). The spec's active theme is auto-included so users can always revert. |
 | `list(<category> = list(WebTheme, ...), ...)` (2-level) | A categorized switcher: each top-level key becomes a tab, each second-level entry is a choice within that tab. If the active theme isn't in any category, a `Current` tab is prepended automatically. |
 
 ```r
 # Flat — two-theme curated menu, custom display names
 web_interaction(enable_themes = list(
-  Classical = web_theme_jama(),
-  Modern    = web_theme_cochrane()
+  Classical = web_theme_nejm(),
+  Modern    = web_theme_nejm()
 ))
 
 # Categorized — three tabs, themes nested under each
 web_interaction(enable_themes = list(
   Editorial = list(
-    Cochrane = web_theme_cochrane(),
-    Lancet   = web_theme_lancet(),
-    JAMA     = web_theme_jama()
+    Cochrane = web_theme_nejm(),
+    Lancet   = web_theme_nejm(),
+    JAMA     = web_theme_nejm()
   ),
   LOTR = list(
     Dwarven = web_theme_dwarven(),
-    Elvish  = web_theme_elvish(),
-    Hobbit  = web_theme_hobbit()
+    Elvish  = web_theme_dwarven(),
+    Hobbit  = web_theme_dwarven()
   ),
-  Other = list(Dark = web_theme_dark())
+  Other = list(Dark = web_theme_aurora())
 ))
 ```
 
@@ -194,7 +194,7 @@ tabviz(data, label = "study",
 # Curated theme menu via the constructor
 tabviz(data, label = "study",
   interaction = web_interaction(enable_themes = list(
-    web_theme_jama(), web_theme_lancet()
+    web_theme_nejm(), web_theme_nejm()
   )),
   columns = list(...))
 ```

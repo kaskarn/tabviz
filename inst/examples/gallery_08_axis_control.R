@@ -54,7 +54,7 @@ with_gridlines <- effect_sizes |>
     scale = "log", null_value = 1,
     axis_ticks = c(0.1, 0.25, 0.5, 1, 2, 4),
     theme = local({
-      t <- web_theme_cochrane()
+      t <- web_theme_nejm()
       t@axis@gridlines <- TRUE
       t@axis@gridline_style <- "dotted"
       t
@@ -74,7 +74,7 @@ aggressive_clip <- effect_sizes |>
     columns = list(col_interval("hr", "lower", "upper", header = "HR (95% CI)")),
     scale = "log", null_value = 1,
     theme = local({
-      t <- web_theme_cochrane()
+      t <- web_theme_nejm()
       t@axis@ci_clip_factor <- 1.0  # More aggressive clipping
       t
     }),

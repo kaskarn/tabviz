@@ -47,5 +47,5 @@ forest_plot(
   axis_label = "YoY growth multiplier",
   title = "Q3 Performance by Division",
   subtitle = "Board summary -- 2026-Q3 -- stage 4 executive theme showcase",
-  theme = web_theme_executive()
+  theme = web_theme_newsprint()
 )

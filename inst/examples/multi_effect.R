@@ -58,7 +58,7 @@ forest_plot(
                label = "As-Treated",
                color = "#dc2626")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   scale = "log",
   null_value = 1,
   axis_label = "Odds Ratio (95% CI)",

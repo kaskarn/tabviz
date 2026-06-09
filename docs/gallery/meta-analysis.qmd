@@ -102,7 +102,7 @@ tabviz(
   row_type   = "row_type",
   row_accent = "is_significant",      # bold + theme accent on significant rows
   row_fill   = "is_overall",          # strong fill on the overall pooled row
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title    = "GLP-1 receptor agonists — pooled cardiovascular meta-analysis",
   subtitle = "70 studies across three cohorts, with cohort-level and overall pooled estimates",
   caption  = "Significant studies (CI strictly below 1) are highlighted with the accent token.",

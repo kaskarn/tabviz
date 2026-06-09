@@ -185,7 +185,7 @@ forest_plot(your_data, ...,
 
 # Or use theme settings
 forest_plot(your_data, ...,
-  theme = web_theme_cochrane() |>
+  theme = web_theme_nejm() |>
     set_theme_field(c("axis", "tick_count"), 5) |>
     set_theme_field(c("axis", "gridlines"), TRUE)
 )
@@ -271,7 +271,7 @@ system.file("js/svg-generator.js", package = "tabviz")
 ```{r}
 #| eval: false
 # Use the same theme for display and export
-my_theme <- web_theme_lancet()
+my_theme <- web_theme_nejm()
 
 # Interactive
 forest_plot(data, ..., theme = my_theme)
@@ -376,7 +376,7 @@ data <- data |>
 ```{r}
 #| eval: false
 # Use web-safe fallback fonts
-web_theme_cochrane() |>
+web_theme_nejm() |>
   set_inputs(fonts_body = "Georgia, 'Times New Roman', serif")
 
 # For exports, fonts must be installed on the rendering system

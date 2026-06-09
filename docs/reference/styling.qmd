@@ -186,7 +186,7 @@ set_theme(x, theme)
 ```r
 tabviz(data, label = "study",
        columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))) |>
-  set_theme("jama")
+  set_theme("nejm")
 ```
 
 ---
@@ -206,10 +206,10 @@ selectable_themes(x, themes)
 
 ```r
 tabviz(data, label = "study") |>
-  set_theme("jama") |>
+  set_theme("nejm") |>
   selectable_themes(list(
-    Classical = web_theme_jama(),
-    Modern    = web_theme_cochrane()
+    Classical = web_theme_nejm(),
+    Modern    = web_theme_nejm()
   ))
 ```
 

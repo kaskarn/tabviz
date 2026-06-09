@@ -188,7 +188,7 @@ Theme modification uses pipe-friendly functions that return re-resolved
 copies:
 
 ```r
-web_theme_jama() |>
+web_theme_nejm() |>
   set_inputs(brand = "#0066cc") |>
   set_density("comfortable") |>
   set_spacing(row_height = 24) |>

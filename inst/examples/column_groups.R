@@ -61,7 +61,7 @@ forest_plot(
       col_pvalue("hfhosp_p", "P")
     )
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   scale = "log",
   null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",

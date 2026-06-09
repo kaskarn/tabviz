@@ -40,7 +40,7 @@ tabviz(
                axis_label = "Risk ratio"),
     col_interval("rr", "lower", "upper", header = "RR")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Multi-region efficacy",
   subtitle = "Each region paginates independently at 10 rows per page",
   caption = "Use the sidebar to walk between regions; the page controls appear below each subview.",

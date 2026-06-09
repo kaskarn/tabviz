@@ -44,7 +44,7 @@ forest_plot(
     effect_forest("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#d97706"),
     effect_forest("tip_or", "tip_lo", "tip_hi", label = "Tipping Point", color = "#dc2626")
   ),
-  theme = web_theme_cochrane() |> set_density("spacious"),
+  theme = web_theme_nejm() |> set_density("spacious"),
   scale = "log", null_value = 1,
   axis_label = "Odds Ratio (95% CI)",
   title = "Multiple Effects Per Row",

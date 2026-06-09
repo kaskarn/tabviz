@@ -10,7 +10,7 @@ library(tabviz)
 ::: {.callout-note}
 ## Pre-release easter egg
 
-The themes and examples on this page (`web_theme_dwarven()`, `web_theme_elvish()`, `web_theme_hobbit()`, plus a set of bespoke pictogram glyphs — used below: `gem`, `ale_mug`, `pickaxe`, `sword`, `jar`, `pie`, `mushroom`, plus more in `glyph_registry_names()`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
+The themes and examples on this page (`web_theme_dwarven()`, `web_theme_dwarven()`, `web_theme_dwarven()`, plus a set of bespoke pictogram glyphs — used below: `gem`, `ale_mug`, `pickaxe`, `sword`, `jar`, `pie`, `mushroom`, plus more in `glyph_registry_names()`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
 
 These three tables exercise: the new `col_pictogram()` and `col_ring()` columns, threshold-driven `col_badge()` shapes, theme-declared web fonts (`Cinzel`, `EB Garamond`, `Cormorant Garamond`, `IM Fell English`, `UnifrakturMaguntia`), and bespoke SVG glyphs designed to read at 14 px.
 :::
@@ -154,7 +154,7 @@ tabviz(
   ),
   title = "Rivendell — Council of Elrond, Attendee Manifest",
   subtitle = "Eight peoples. One ring. The minutes are in Sindarin.",
-  theme = web_theme_elvish()
+  theme = web_theme_dwarven()
 )
 ```
 
@@ -227,7 +227,7 @@ tabviz(
   ),
   title = "Hobbiton — Pantry & Meal Audit, Halimath 1418",
   subtitle = "A respectable hobbit's larder is never half-full.",
-  theme = web_theme_hobbit()
+  theme = web_theme_dwarven()
 )
 ```
 

@@ -259,11 +259,11 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'
 #' @examples
 #' # The usual on-ramp: start from a preset, swap the brand (C56).
-#' th <- set_brand(web_theme_cochrane(), "#006266")
+#' th <- set_brand(web_theme_nejm(), "#006266")
 #'
 #' # Rubrication (significance stars, caption chips) follows `accent` by
 #' # default; pin --tv-ink2 to make it differ from the interaction hue:
-#' th <- set_pin(web_theme_cochrane(), "--tv-ink2", "#D42320")
+#' th <- set_pin(web_theme_nejm(), "--tv-ink2", "#D42320")
 #'
 #' # Monochrome (B8): one toggle for phosphor/sepia/cyanotype themes.
 #' th <- web_theme(brand = "#20C45F", polarity = "dark", monochrome = TRUE)
@@ -1032,7 +1032,7 @@ set_border_preset <- function(theme, border_preset) {
 #' @return The [WebTheme] re-resolved with the role pinned.
 #' @examples
 #' \dontrun{
-#' web_theme_cochrane() |>
+#' web_theme_nejm() |>
 #'   set_role("text-muted", "brand", 8) |>
 #'   set_role("row-alt-bg", "neutral", 2)
 #' }
@@ -1400,8 +1400,8 @@ set_spacing <- function(theme, ...) {
 #'   an input).
 #' @examples
 #' \dontrun{
-#'   web_theme_cochrane() |> set_theme_field(c("row_group", "L1", "bg"), "#EEE")
-#'   web_theme_cochrane() |> set_theme_field(c("series", 1L, "fill"), "#FF0000")
+#'   web_theme_nejm() |> set_theme_field(c("row_group", "L1", "bg"), "#EEE")
+#'   web_theme_nejm() |> set_theme_field(c("series", 1L, "fill"), "#FF0000")
 #' }
 #' @export
 set_theme_field <- function(theme, path, value) {

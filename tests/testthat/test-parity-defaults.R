@@ -16,7 +16,7 @@
 test_that("THEME_DEFAULTS$paper_L mirrors TS DEFAULT_PAPER_L (via cochrane preset)", {
   # Cochrane is a clean baseline — uses the defaults verbatim (no
   # neutralHueFrom override, no paper_C / ink_C tweaks).
-  t <- web_theme_cochrane()
+  t <- web_theme_nejm()
   expect_equal(t@inputs@anchors_paper_L, THEME_DEFAULTS$paper_L)
   expect_equal(t@inputs@anchors_paper_C, THEME_DEFAULTS$paper_C)
   expect_equal(t@inputs@anchors_ink_L,   THEME_DEFAULTS$ink_L)

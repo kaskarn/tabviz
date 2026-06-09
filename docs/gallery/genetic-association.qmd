@@ -68,7 +68,7 @@ tabviz(
   snps,
   label = "snp",
   label_header = "SNP",
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   columns = list(
     col_text("gene", header = "Gene"),
     col_numeric("maf", header = "MAF", decimals = 2),
@@ -209,6 +209,6 @@ The argument names, defaults, and shape of the returned spec are identical:
 
 - R: `col_interval("effect", "lower", "upper")` ↔ TS: `colInterval({ point: "effect", lower: "lower", upper: "upper" })`
 - R: snake_case kwargs ↔ TS: camelCase keys
-- R: `theme = web_theme_lancet()` ↔ TS: `theme: "lancet"` (or `theme: themeLancet()`)
+- R: `theme = web_theme_nejm()` ↔ TS: `theme: "lancet"` (or `theme: themeLancet()`)
 
 R is positional-friendly (`col_*` helpers take `field` as the first positional arg); TS is purely named-argument because it's a single object literal. Beyond that, the helpers are mechanical 1:1 translations — change one to fit the other by remembering snake-case ↔ camelCase and keyword-vs-positional.

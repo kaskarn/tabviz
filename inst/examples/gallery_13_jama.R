@@ -37,7 +37,7 @@ forest_plot(
     col_pvalue("p_int", "P Interaction")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",
   title = "Figure 2. Subgroup Analyses",

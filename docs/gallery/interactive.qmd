@@ -47,7 +47,7 @@ tabviz(
   row_type = "row_type",
   row_bold = "row_bold",
   interaction = web_interaction_full(),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "All interactivity on — try everything"
 )
@@ -98,7 +98,7 @@ tabviz(airline_delays, label = "carrier",
     col_sparkline("trend", "12-month trend")
   ),
   interaction = web_interaction_full(),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Airline Performance by Month",
   subtitle = "Try filtering by carrier_type or on_time_pct; export matches the view"
 )
@@ -147,7 +147,7 @@ tabviz(trial_data, label = "study",
     col_interval("hr", "lo", "hi", header = "HR (95% CI)")
   ),
   interaction = web_interaction_full(),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   title = "Reorder within column groups",
   subtitle = "Try dragging columns inside \"Baseline\" — they stay inside"
 )
@@ -184,7 +184,7 @@ tabviz(effects, label = "metric",
     col_pvalue("pvalue", "P", stars = TRUE)
   ),
   interaction = web_interaction_full(),
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   title = "Double-click a forest marker to edit",
   subtitle = "Estimate / Lower / Upper popover; export reflects edits"
 )

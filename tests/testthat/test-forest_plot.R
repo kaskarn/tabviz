@@ -95,7 +95,7 @@ test_that("forest_plot accepts theme", {
     point = "point",
     lower = "lower",
     upper = "upper",
-    theme = web_theme_dark()
+    theme = web_theme_aurora()
   )
 
   expect_s3_class(widget, "htmlwidget")

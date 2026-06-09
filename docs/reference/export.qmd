@@ -65,5 +65,5 @@ For `SplitForest` outputs, pagination cascades into every subview — `save_plot
 
 - [`save_plot()`](save_plot.qmd) — the single-plot exporter and `save_split_table()` for split views
 - [`split_table()`](split_table.qmd) — produce the `SplitForest` accepted by `save_split_table()`
-- [Themes](themes.qmd) — theme presets aimed at print (`web_theme_jama()`, `web_theme_lancet()`, `web_theme_cochrane()`)
+- [Themes](themes.qmd) — theme presets aimed at print (`web_theme_nejm()`, `web_theme_nejm()`, `web_theme_nejm()`)
 - [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) — quiet, print-clean interaction preset

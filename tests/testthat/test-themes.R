@@ -2,14 +2,11 @@ expect_s7 <- function(x, class_name) {
   testthat::expect_true(inherits(x, paste0("tabviz::", class_name)))
 }
 
+# The 9 committed identities (27→9 cull, 2026-06-09).
 ALL_PRESET_FNS <- list(
-  web_theme_cochrane, web_theme_lancet, web_theme_jama,
-  web_theme_nejm, web_theme_nature, web_theme_bmj, web_theme_dark,
-  web_theme_bauhaus, web_theme_swiss, web_theme_tufte, web_theme_newsprint,
-  web_theme_solarized, web_theme_solarized_dark,
-  web_theme_tonal, web_theme_tonal_dark,
-  web_theme_dwarven, web_theme_elvish, web_theme_hobbit,
-  web_theme_synthwave, web_theme_brutalist, web_theme_atelier, web_theme_executive
+  web_theme_nejm, web_theme_ledger, web_theme_brutalist,
+  web_theme_aurora, web_theme_terminal, web_theme_newsprint,
+  web_theme_blueprint, web_theme_synthwave, web_theme_dwarven
 )
 
 test_that("every preset constructs a valid WebTheme", {
@@ -27,36 +24,36 @@ test_that("every preset constructs a valid WebTheme", {
 })
 
 test_that("preset names match their constructor names", {
-  expect_equal(web_theme_cochrane()@name, "cochrane")
-  expect_equal(web_theme_lancet()@name, "lancet")
-  expect_equal(web_theme_dark()@name, "dark")
+  expect_equal(web_theme_nejm()@name, "nejm")
+  expect_equal(web_theme_ledger()@name, "ledger")
+  expect_equal(web_theme_blueprint()@name, "blueprint")
 })
 
-test_that("Lancet preset has a distinct accent anchor", {
-  # V4: decorative is dropped; the v3 lancet decorative (gold) folded
-  # into the accent anchor. Lancet's accent should differ from its brand.
-  t <- web_theme_lancet()
+test_that("a two-color preset has a distinct accent anchor", {
+  # V4: decorative is dropped; a two-color theme's 2nd hue folds into the
+  # accent anchor. Ledger (teal brand + oxblood accent) must keep them apart.
+  t <- web_theme_ledger()
   expect_true(is.finite(t@inputs@anchors_accent_L))
   expect_false(isTRUE(all.equal(t@inputs@anchors_accent_H,
                                  t@inputs@anchors_brand_H)))
 })
 
-test_that("Cochrane preset's anchors all carry the brand hue", {
-  # V4: cochrane uses brand-hued neutrals (the default
-  # `neutral_hue_from = "brand"` derivation in derive_preset_anchors).
-  t <- web_theme_cochrane()
+test_that("NEJM preset's neutral anchors carry the brand hue", {
+  # V4: brand-hued neutrals (the default `neutral_hue_from = "brand"`
+  # derivation in derive_preset_anchors).
+  t <- web_theme_nejm()
   expect_equal(t@inputs@anchors_paper_H, t@inputs@anchors_brand_H)
   expect_equal(t@inputs@anchors_ink_H,   t@inputs@anchors_brand_H)
 })
 
-test_that("Dark preset has polarity = dark", {
-  expect_equal(web_theme_dark()@inputs@polarity, "dark")
-  expect_equal(web_theme_solarized_dark()@inputs@polarity, "dark")
-  expect_equal(web_theme_tonal_dark()@inputs@polarity, "dark")
+test_that("dark-polarity survivors carry polarity = dark", {
+  expect_equal(web_theme_aurora()@inputs@polarity, "dark")
+  expect_equal(web_theme_terminal()@inputs@polarity, "dark")
+  expect_equal(web_theme_synthwave()@inputs@polarity, "dark")
 })
 
-test_that("JAMA preset uses brand_mono categorical", {
-  expect_equal(web_theme_jama()@inputs@categorical, "brand_mono")
+test_that("Terminal preset is monochrome (single-hue surface)", {
+  expect_true(isTRUE(web_theme_terminal()@inputs@monochrome))
 })
 
 test_that("package_themes() registry exposes all categories", {

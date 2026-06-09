@@ -40,7 +40,7 @@ tabviz(
   weight = NULL,
   details = NULL,
   details_expanded = FALSE,
-  theme = web_theme_bmj(),
+  theme = web_theme_nejm(),
   interaction = NULL,
   initial_sort = NULL,
   initial_filters = NULL,

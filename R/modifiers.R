@@ -375,7 +375,7 @@ set_theme <- function(x, theme) {
 #'   - `"default"`: show all [`package_themes()`].
 #'   - A list of `WebTheme` objects: show exactly those. Named list entries
 #'     override each theme's displayed name
-#'     (e.g. `list(Classical = web_theme_jama(), Modern = web_theme_modern())`).
+#'     (e.g. `list(Classical = web_theme_nejm(), Modern = web_theme_modern())`).
 #'
 #' @return The modified WebSpec or htmlwidget.
 #'
@@ -384,7 +384,7 @@ set_theme <- function(x, theme) {
 #' tabviz(data, label = "study") |>
 #'   set_theme("jama") |>
 #'   selectable_themes(list(
-#'     Classical = web_theme_jama(),
+#'     Classical = web_theme_nejm(),
 #'     Modern = web_theme_modern()
 #'   ))
 #' }
@@ -1095,7 +1095,7 @@ set_label_slot <- function(x, slot, text) {
 #' @return The modified input
 #' @export
 #' @examples
-#' web_theme_cochrane() |>
+#' web_theme_nejm() |>
 #'   (\(t) tabviz(
 #'     data.frame(study = letters[1:3], or = 1:3),
 #'     label = "study", theme = t

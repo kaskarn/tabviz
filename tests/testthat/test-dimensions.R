@@ -12,7 +12,7 @@ test_that("tabviz_natural_dimensions returns width / height / aspect for a WebSp
                  scale = "log", null_value = 1),
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
-    theme = web_theme_jama(),
+    theme = web_theme_nejm(),
     .spec_only = TRUE
   )
 

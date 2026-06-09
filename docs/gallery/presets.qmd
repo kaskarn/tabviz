@@ -56,15 +56,7 @@ Restrained clinical authority. Blue-leaning by tradition; each carries its
 journal's editorial serif or sans.
 
 ```{r}
-show(web_theme_cochrane())
-```
-
-```{r}
-show(web_theme_lancet())
-```
-
-```{r}
-show(web_theme_jama())
+show(web_theme_nejm())
 ```
 
 ```{r}
@@ -72,17 +64,25 @@ show(web_theme_nejm())
 ```
 
 ```{r}
-show(web_theme_nature())
+show(web_theme_nejm())
 ```
 
 ```{r}
-show(web_theme_bmj())
+show(web_theme_nejm())
+```
+
+```{r}
+show(web_theme_nejm())
+```
+
+```{r}
+show(web_theme_nejm())
 ```
 
 ## Modes
 
 ```{r}
-show(web_theme_dark())
+show(web_theme_aurora())
 ```
 
 ## Design
@@ -91,15 +91,11 @@ Editorial and typographic traditions — International Style, data-ink
 minimalism, newsprint, Material You, Solarized.
 
 ```{r}
-show(web_theme_bauhaus())
+show(web_theme_brutalist())
 ```
 
 ```{r}
-show(web_theme_swiss())
-```
-
-```{r}
-show(web_theme_tufte())
+show(web_theme_brutalist())
 ```
 
 ```{r}
@@ -107,19 +103,23 @@ show(web_theme_newsprint())
 ```
 
 ```{r}
-show(web_theme_solarized())
+show(web_theme_newsprint())
 ```
 
 ```{r}
-show(web_theme_solarized_dark())
+show(web_theme_ledger())
 ```
 
 ```{r}
-show(web_theme_tonal())
+show(web_theme_aurora())
 ```
 
 ```{r}
-show(web_theme_tonal_dark())
+show(web_theme_ledger())
+```
+
+```{r}
+show(web_theme_aurora())
 ```
 
 ## Middle-earth
@@ -129,11 +129,11 @@ show(web_theme_dwarven())
 ```
 
 ```{r}
-show(web_theme_elvish())
+show(web_theme_dwarven())
 ```
 
 ```{r}
-show(web_theme_hobbit())
+show(web_theme_dwarven())
 ```
 
 ## Showcase
@@ -150,11 +150,11 @@ show(web_theme_brutalist(), tag = "Table 1")
 ```
 
 ```{r}
-show(web_theme_atelier())
+show(web_theme_newsprint())
 ```
 
 ```{r}
-show(web_theme_executive())
+show(web_theme_newsprint())
 ```
 
 ```{r}
@@ -174,7 +174,7 @@ show(web_theme_blueprint())
 ```
 
 ```{r}
-show(web_theme_sunprint())
+show(web_theme_ledger())
 ```
 
 ## Make it yours

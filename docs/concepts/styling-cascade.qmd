@@ -132,7 +132,7 @@ This means the cascade is debuggable. Inspect any resolved field directly via S7
 
 ```{r}
 #| eval: false
-t <- web_theme_lancet()
+t <- web_theme_nejm()
 t@inputs@primary       # "#00407A"        (Tier 1)
 t@accent@tint_subtle   # derived blend    (Tier 2)
 t@row_group@L1@bg      # secondary-tinted (Tier 3)
@@ -179,7 +179,7 @@ It's worth saying what the model deliberately does not do:
 
 * **No global "muted" or "primary" color.** v1 had a single `colors$muted` that meant both "subdued text" and "deemphasized data." v2 splits these: `content.muted` for text, `slot.fill_muted` for data marks. They share Tier 1 (the primary/secondary/accent inputs) but never share a Tier 2 role.
 * **No third identity tier.** Identity is two tiers — `primary` plus optional `secondary` (mirrors primary when NA), with orthogonal `accent` for engagement. A `tertiary` knob was added on 2026-04-28 and removed on 2026-04-29 — see the [Theming Manifesto](theming-manifesto.qmd#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29) for the postmortem.
-* **No mode-pair within one theme.** A theme is single-mode (typically light). Dark themes are paired *presets* (`web_theme_dark()`), not a `theme.dark` slot.
+* **No mode-pair within one theme.** A theme is single-mode (typically light). Dark themes are paired *presets* (`web_theme_aurora()`), not a `theme.dark` slot.
 * **No variant baked into the inputs.** Density, header style, first-column style are orthogonal axes. The same primary can ship as comfortable-light-default OR compact-bold-default OR any other combination.
 * **No customer-tunable tints.** `accent.tint_subtle` is derived; it's not in the input list. If you need a specific tint, override the Tier 2 field directly with `set_theme_field()`. Don't add it as a Tier 1 knob.
 * **No accent on default ornament.** Accent owns engagement (hover, selected, callouts). Glyph col defaults (badges, pictograms, rings, stars) read `secondary`, not `accent` — so a hovered row never reads the same color as a regular badge two rows down.
@@ -215,7 +215,7 @@ The theme establishes the baseline appearance for all elements:
 tabviz(data,
   columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                            scale = "log", null_value = 1)),
-  theme = web_theme_jama()
+  theme = web_theme_nejm()
 )
 ```
 
@@ -230,7 +230,7 @@ Modify any of them with the v2 modifiers:
 
 ```{r}
 #| eval: false
-web_theme_jama() |>
+web_theme_nejm() |>
   set_inputs(
     brand          = "#2563EB",
   ) |>
@@ -414,12 +414,12 @@ tabviz(meta_data,
                scale = "log", null_value = 1)
   ),
   row_emphasis = ~ pval < 0.001,    # row layer
-  theme = web_theme_jama()          # theme layer (chrome + data)
+  theme = web_theme_nejm()          # theme layer (chrome + data)
 )
 ```
 
 In this example:
-1. `web_theme_jama()` sets all theme defaults (Tier 1 + Tier 2 + Tier 3 internally).
+1. `web_theme_nejm()` sets all theme defaults (Tier 1 + Tier 2 + Tier 3 internally).
 2. `row_emphasis = ~ pval < 0.001` reads `theme@row@emphasis` for matching rows.
 3. `col_pvalue(..., bold = ~ .x < 0.05)` overrides text weight on specific cells.
 4. `col_pvalue(..., color = ~ ...)` overrides cell color where the formula returns non-NA.
@@ -431,7 +431,7 @@ If something doesn't look right, walk the cascade in reverse:
 ```{r}
 #| eval: false
 # Inspect the resolved theme
-t <- web_theme_jama()
+t <- web_theme_nejm()
 t@row@emphasis@marker_fill   # what semantic emphasis evaluates to
 t@series[[1]]@fill           # default marker fill
 t@cell@fg                    # default cell color

@@ -40,7 +40,7 @@ forest_plot(
     col_bar("weight", "Weight"),
     col_pvalue("pvalue", "P")
   ),
-  theme = web_theme_jama(),
+  theme = web_theme_nejm(),
   axis_label = "Standardized Effect (95% CI)",
   title = "Meta-analysis of Fuel Efficiency",
   subtitle = "Effect sizes grouped by cylinder count",

@@ -42,7 +42,7 @@ glp1_trials |>
                  scale = "log", null_value = 1, width = 160),
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
-    theme = web_theme_jama(),
+    theme = web_theme_nejm(),
     footnote = "Try: click headers to sort, hover over rows, drag column borders"
   )
 ```
@@ -93,7 +93,7 @@ glp1_trials |>
       enable_sort = FALSE,
       enable_select = FALSE
     ),
-    theme = web_theme_jama()
+    theme = web_theme_nejm()
   )
 ```
 
@@ -115,7 +115,7 @@ glp1_trials |>
     interaction = web_interaction(
       tooltip_fields = c("drug", "n", "events", "pvalue")
     ),
-    theme = web_theme_jama(),
+    theme = web_theme_nejm(),
     footnote = "Hover over markers to see details"
   )
 ```
@@ -147,7 +147,7 @@ glp1_trials |>
                  scale = "log", null_value = 1, width = 160)
     ),
     interaction = web_interaction_minimal(),
-    theme = web_theme_jama()
+    theme = web_theme_nejm()
   )
 ```
 
@@ -181,9 +181,9 @@ tabviz(data, interaction = web_interaction(enable_themes = NULL), ...)
 # Curate a specific shortlist
 tabviz(data, interaction = web_interaction(
   enable_themes = list(
-    web_theme_jama(),
-    web_theme_cochrane(),
-    web_theme_cochrane()
+    web_theme_nejm(),
+    web_theme_nejm(),
+    web_theme_nejm()
   )
 ), ...)
 ```
@@ -193,10 +193,10 @@ tabviz(data, interaction = web_interaction(
 ```{r}
 #| eval: false
 tabviz(data, label = "study") |>
-  set_theme("jama") |>
+  set_theme("nejm") |>
   selectable_themes(list(
-    Classical = web_theme_jama(),
-    Modern    = web_theme_cochrane()
+    Classical = web_theme_nejm(),
+    Modern    = web_theme_nejm()
   ))
 ```
 
@@ -250,7 +250,7 @@ tabviz(sample_data, label = "item",
     col_numeric("value", "Value"),
     col_percent("change", "Change")
   ),
-  theme = web_theme_cochrane(),
+  theme = web_theme_nejm(),
   footnote = "Click rows to select (indicated by left border)"
 )
 ```
@@ -339,7 +339,7 @@ showing the current widget as fluent R code:
 - **Combined** — both, stitched together:
 
 ```r
-mytheme <- web_theme_cochrane() |>
+mytheme <- web_theme_nejm() |>
   set_inputs(brand = "#0891b2")
 
 tbl <- tabviz(dt, label = "study", columns = list(...), theme = mytheme) |>

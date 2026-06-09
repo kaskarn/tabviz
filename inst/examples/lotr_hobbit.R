@@ -69,5 +69,5 @@ forest_plot(
   axis_label = "Satiation index (vs. respectable baseline)",
   title = "Hobbiton — Pantry & Meal Audit, Halimath 1418",
   subtitle = "A respectable hobbit's larder is never half-full; it is half-empty only between meals (of which there are seven).",
-  theme = web_theme_hobbit()
+  theme = web_theme_dwarven()
 )

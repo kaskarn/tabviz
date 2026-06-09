@@ -10,10 +10,9 @@ set_theme(x, theme)
 \item{x}{A WebSpec object, htmlwidget, or tabviz_proxy}
 
 \item{theme}{Either a WebTheme object or a string naming a built-in
-preset: one of "default", "cochrane", "lancet", "jama", "nejm",
-"nature", "bmj", "dark", "bauhaus", "swiss", "tufte", "newsprint",
-"solarized", "solarized_dark", "tonal", "tonal_dark", "dwarven",
-"elvish", "hobbit". (Unknown names error with the full list.)}
+preset (the 9 committed identities): one of "default", "nejm", "ledger",
+"brutalist", "aurora", "terminal", "newsprint", "blueprint", "synthwave",
+"dwarven". (Unknown names error with the full list.)}
 }
 \value{
 The modified WebSpec, htmlwidget, or proxy (invisibly)
