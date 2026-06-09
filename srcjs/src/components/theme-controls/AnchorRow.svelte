@@ -112,6 +112,11 @@
   function fmt(axis: "L" | "C" | "H", v: number): string {
     return axis === "H" ? `${Math.round(v)}°` : axis === "L" ? v.toFixed(2) : v.toFixed(3);
   }
+
+  // The live OKLCH triple as rgc-style mono coordinates ("0.49 0.09 195°").
+  // The cascade is OKLCH-native; surfacing the coordinate is the rgc
+  // "instrument panel" texture (UX redesign A2).
+  const coords = $derived(`${triple.L.toFixed(3)} ${triple.C.toFixed(3)} ${Math.round(triple.H)}°`);
 </script>
 
 <div class="anchor-row" class:mirrored class:roomy={layout === "roomy"}>
@@ -122,6 +127,7 @@
         class="chip"
         style:background={hex}
         aria-label="{label} color {hex}"
+        title={`${label} — oklch(${coords})`}
         onclick={() => layout === "compact" && onexpand?.(!expanded)}
       ></button>
       {#key hexKey}
@@ -152,6 +158,7 @@
 
   {#if open}
     <div class="lch" class:dim={mirrored}>
+      <div class="coords" aria-hidden="true">oklch <b>{coords}</b></div>
       {#each [
         { axis: "L", min: 0, max: 1, step: 0.005, track: trackL },
         { axis: "C", min: 0, max: 0.4, step: 0.002, track: trackC },
@@ -257,6 +264,15 @@
     padding: 2px 0 4px 16px;
   }
   .lch.dim { opacity: 0.55; }
+  .coords {
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-small, 10px);
+    letter-spacing: 0.02em;
+    color: var(--v2-ink-3, #8a8478);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .coords b { color: var(--v2-ink-2, #4a463c); font-weight: 600; }
   .lch-row {
     display: grid;
     grid-template-columns: 14px 1fr;
