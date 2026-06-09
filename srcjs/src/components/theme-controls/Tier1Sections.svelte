@@ -162,24 +162,12 @@
   const TEXTURE = ["none", "ruled", "grid", "dotted", "grain"] as const;
 
   // ── Disclosure summaries (collapsed ≠ blind) ────────────────────────
-  // Roomy host (studio rail) starts with disclosures open. `layout`
-  // never changes within a host instance, so capturing the initial
-  // value is the intent — untrack() tells the compiler so.
-  import { untrack } from "svelte";
-  const startOpen = untrack(() => layout === "roomy");
-  let colorSystemOpen = $state(startOpen);
-  let effectsOpen = $state(startOpen);
-  let geometryOpen = $state(startOpen);
-
-  // ── Lean core / advanced split (theme-rework Wave 2, fork-1) ─────────
-  // The viewer (compact) leads with IDENTITY — the high-frequency "make it
-  // mine" task — and tucks the engine-vocab rungs (surface / type / color
-  // system / effects / geometry) behind one opt-in toggle. The studio rail
-  // (roomy) is the power surface: everything stays flat + open, no toggle.
-  // NOT a disclosure wrapping disclosures — that would break the depth≤1
-  // law; it's a plain toggle gating sections that remain top-level.
-  let advancedOpen = $state(false);
-  const showAdvanced = $derived(roomy || advancedOpen);
+  // Disclosures now live INSIDE the axis-tabs (UX redesign A3), so they
+  // default OPEN — the tab IS the grouping; the collapse is just optional
+  // tidying within a tab.
+  let colorSystemOpen = $state(true);
+  let effectsOpen = $state(true);
+  let geometryOpen = $state(true);
 
   const fx = $derived(inputs?.effects ?? {});
   const effectsSummary = $derived.by(() => {
@@ -284,6 +272,19 @@
     { value: "", label: "default (brand interleave)" },
     ...Object.keys(CATEGORICAL_SCHEMES).map((k) => ({ value: k, label: k })),
   ]);
+
+  // ── Tabbed IA (UX redesign A3) — four axis-tabs replace the long scroll +
+  // the "Advanced controls" junk-drawer. Each tab maps to a cascade input
+  // family; the colored dot is the rgc axis-identity cue. IDENTITY is the
+  // landing tab (the high-frequency "make it mine" anchors).
+  type PanelTab = "identity" | "color" | "form" | "effects";
+  let activeTab = $state<PanelTab>("identity");
+  const TABS: ReadonlyArray<{ id: PanelTab; label: string; dot: string }> = [
+    { id: "identity", label: "Identity", dot: "var(--v2-ink, #15140e)" },
+    { id: "color",    label: "Color",    dot: "var(--tv-status-positive, #2f9e6b)" },
+    { id: "form",     label: "Form",     dot: "var(--tv-accent, #2563eb)" },
+    { id: "effects",  label: "Effects",  dot: "#7c3aed" },
+  ];
 </script>
 
 {#if showMatchBrand}
@@ -294,6 +295,19 @@
     </button>
   </div>
 {/if}
+
+<div class="tab-bar" role="tablist" aria-label="Theme controls">
+  {#each TABS as t (t.id)}
+    <button type="button" role="tab" class="tab" class:active={activeTab === t.id}
+            aria-selected={activeTab === t.id} tabindex={activeTab === t.id ? 0 : -1}
+            onclick={() => (activeTab = t.id)}>
+      <span class="tab-dot" style:background={t.dot} aria-hidden="true"></span>{t.label}
+    </button>
+  {/each}
+</div>
+
+<div class="tab-panel">
+{#if activeTab === "identity"}
 <Section title="identity" glyph="section.style"
            hint="The theme's color anchors. Everything downstream derives from these through the cascade.">
     {#each ANCHOR_ROWS as row (row.key)}
@@ -326,22 +340,9 @@
       {/each}
     </DisclosureField>
   </Section>
+{/if}
 
-  {#if !roomy}
-    <button
-      type="button"
-      class="advanced-toggle"
-      class:open={advancedOpen}
-      aria-expanded={advancedOpen}
-      onclick={() => (advancedOpen = !advancedOpen)}
-    >
-      <span class="chev" aria-hidden="true">{advancedOpen ? "▾" : "▸"}</span>
-      Advanced controls
-      <span class="advanced-hint">surface · type · color · effects · geometry</span>
-    </button>
-  {/if}
-
-  {#if showAdvanced}
+{#if activeTab === "form"}
   <Section title="surface" glyph="section.layout"
            hint="Structural variants — shell, header band, series marks, borders, texture. Each re-resolves the cascade.">
     <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
@@ -408,8 +409,9 @@
               onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
     </Field>
   </Section>
+{/if}
 
-  <div class="disclosures">
+{#if activeTab === "color"}
     <DisclosureField label="Color system" summary={colorSystemSummary} bind:open={colorSystemOpen}>
       <EnumRow label="Mode"
                value={inputs.mode ?? "standard"}
@@ -426,7 +428,9 @@
                 options={schemeOptions} />
       </Field>
     </DisclosureField>
+{/if}
 
+{#if activeTab === "effects"}
     <DisclosureField label="Effects" summary={effectsSummary} bind:open={effectsOpen}>
       <EnumRow label="Title" value={fx.title_style ?? "normal"}
                segments={["normal", "bar", "underline"].map((v) => ({ value: v, label: v }))}
@@ -465,7 +469,9 @@
                segments={["none", "frosted", "aurora"].map((v) => ({ value: v, label: v }))}
                onchange={(v) => patchEffects("glass", v)} />
     </DisclosureField>
+{/if}
 
+{#if activeTab === "form"}
     <DisclosureField label="Geometry" summary={geometrySummary} bind:open={geometryOpen}>
       <!-- Named SLOTS (Wave 3 geometry roles) — coarse rebinds above the
            fine stops. "custom" shows when the sliders diverge from a preset. -->
@@ -484,14 +490,17 @@
       <Field label="Rule thin"><Slider value={inputs.geometry?.border_width?.thin ?? 1} min={0} max={4} step={0.25} suffix="px" ariaLabel="Border width thin" oncommit={(v) => patchGeometry("border_width", "thin", v)} /></Field>
       <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? 2.5} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" oncommit={(v) => patchGeometry("border_width", "thick", v)} /></Field>
     </DisclosureField>
-  </div>
+{/if}
+
+{#if activeTab === "color"}
   {#if advancedExtra}
     <Section title="role tones" glyph="section.style"
              hint="Curated Tier-2 role nudges — cascade-safe, survives polarity & contrast. The full role spine lives in the studio.">
       {@render advancedExtra()}
     </Section>
   {/if}
-  {/if}
+{/if}
+</div>
 
 {#if !roomy}
   {#if onOpenStudio}
@@ -526,46 +535,49 @@
     background: var(--v2-hover-tint, rgba(21,20,14,0.05));
     color: var(--v2-ink, #15140e);
   }
-  .advanced-toggle {
+  /* ── Axis-tab bar (UX redesign A3) — replaces the long scroll + the
+     "Advanced controls" junk-drawer with four orienting tabs. ── */
+  .tab-bar {
     display: flex;
-    align-items: baseline;
-    gap: 6px;
-    width: 100%;
-    margin: 4px 0 2px;
-    padding: 6px 0;
+    gap: 2px;
+    margin: 2px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
+  }
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    justify-content: center;
+    padding: 5px 4px;
     border: 0;
-    border-top: 1px solid var(--v2-rule-soft, #e6e0d1);
+    border-radius: var(--v2-r-soft, 3px);
     background: transparent;
-    color: var(--v2-ink-2, #4a463c);
-    font-size: var(--v2-text-body, 11.5px);
-    font-weight: 600;
-    cursor: pointer;
-    text-align: left;
-  }
-  .advanced-toggle:hover { color: var(--v2-ink, #15140e); }
-  .advanced-toggle .chev {
-    font-size: 9px;
     color: var(--v2-ink-3, #8a8478);
-  }
-  .advanced-toggle .advanced-hint {
-    margin-left: auto;
-    font-weight: 400;
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
     font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 80ms ease, background 80ms ease;
   }
-  .disclosures {
-    display: flex;
-    flex-direction: column;
-    gap: var(--v2-gap-hair, 2px);
-    /* Horizontal inset comes from the HOST band on both sides (visual
-       review: the old half-here/half-host split put the THEME rows 12px
-       off the QuickStrip/FigureBand spine). */
-    padding: 4px 0 8px;
+  .tab:hover { color: var(--v2-ink-2, #4a463c); background: var(--v2-hover-tint, rgba(21,20,14,0.04)); }
+  .tab.active {
+    color: var(--v2-ink, #15140e);
+    background: var(--v2-paper-2, #f3efe5);
   }
+  .tab:focus-visible { outline: 1.5px solid var(--v2-rule-strong, #15140e); outline-offset: 1px; }
+  .tab-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex: none;
+    opacity: 0.45;
+    transition: opacity 80ms ease;
+  }
+  .tab.active .tab-dot { opacity: 1; }
+  .tab-panel { display: flex; flex-direction: column; }
   .studio-pointer {
     margin: 0;
     padding: 8px 0 12px;

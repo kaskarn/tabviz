@@ -297,6 +297,8 @@ export interface PvalueBucketOptions {
   format?: "auto" | "decimal" | "scientific" | null;
   /** Density — Cell padding — theme decides exact values */
   paddingClass?: undefined;
+  /** Significant — Paint a soft positive pill on significant values (p < first threshold). */
+  significantStyle?: "none" | "pill" | null;
   /** Stars — Show significance stars */
   stars?: boolean;
   /** Stars color — Color channel for significance stars */

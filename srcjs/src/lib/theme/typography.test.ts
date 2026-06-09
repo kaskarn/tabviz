@@ -109,7 +109,7 @@ describe("DEFAULT_TYPE_ROLES coverage", () => {
   it("each role references a valid family + scale step + weight", () => {
     const resolved = resolveTypographyInputs(inputsFromHex({ brand: "#000" }));
     for (const [name, role] of Object.entries(DEFAULT_TYPE_ROLES)) {
-      expect(["display", "body", "mono"]).toContain(role.family);
+      expect(["display", "body", "mono", "numeric"]).toContain(role.family);
       expect(["label", "foot", "body", "head", "subtitle", "title", "display"]).toContain(role.size);
       expect(["regular", "medium", "semibold", "bold"]).toContain(role.weight);
       // resolveTypeRole should not throw on the role.

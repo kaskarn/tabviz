@@ -82,9 +82,13 @@ describe("border_preset → borders cluster expansion", () => {
     expect(new Set(sigs).size).toBe(5);
   });
 
-  it("unset ≡ hairline (no existing theme shifts)", () => {
-    const unset = buildTheme(inputs, "u").borders;
-    const hair = buildTheme({ ...inputs, border_preset: "hairline" }, "h").borders;
+  it("unset ≡ hairline (the resolver default)", () => {
+    // Strip border_preset from the fixture — cochrane now ships "frame"
+    // (2026-06-08 elegance pass), so the UNSET default must be tested on a
+    // border_preset-free input.
+    const bare = { ...inputs, border_preset: undefined };
+    const unset = buildTheme(bare, "u").borders;
+    const hair = buildTheme({ ...bare, border_preset: "hairline" }, "h").borders;
     expect(unset).toEqual(hair);
   });
 });
