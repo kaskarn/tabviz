@@ -167,6 +167,29 @@ rgc grounding) before moving on.
    ④ live DTCG-export panel + AMBIENT a11y/contrast badge (validateVerdicts is
    already computed). Ship ①+③ first; stage ②+④.
 
+## Progress log (2026-06-08/09)
+
+SHIPPED (each commit verified — svelte-check, DT-11/control-contract, snapshots,
+R parity/render-smoke):
+- **A0 ✓** studio `--studio-*` editorial token layer (StudioShell + OklchPicker
+  + StudioChart) — one design language, no cold-slate.
+- **A1 ✓** `Dropdown.svelte` (keyboard-accessible custom listbox + aria-
+  activedescendant) replaces native `<select>` in the panel.
+- **A3 ✓** the 4-axis TAB IA (IDENTITY/COLOR/FORM/EFFECTS, colored dots) replaces
+  the long-scroll + "Advanced controls" junk-drawer. Both viewer + studio rail.
+- **A2 (partial)** inline OKLCH coordinate readout on AnchorRow (rgc instrument
+  texture). REMAINING: the Kicker/serif Section voice; coords on more controls.
+- **B (started)** `web_theme(border_preset=)` unlocked; journal family
+  (cochrane/nejm/jama/bmj/nature) → `border_preset:"frame"` (texture out).
+  `fonts.numeric` figure-font slot + reachable "Numbers" picker. REMAINING: the
+  27→8 ΔE-vetted cull + committed identities; the rest of the table-craft.
+- **B-craft** the rgc green p-value PILL (`significant_style:"pill"`).
+- **D1 ✓** CI column-width variant-aware measurement + parity gate.
+
+NEXT (priority for the panel-polish + theme-elegance maintainer): finish A2
+voice · A4 zero-dead-buttons gate · B 27→8 cull + table-craft · C bold internals
+(in-widget trace + permalink).
+
 ## Guardrails to keep green throughout
 DT-11 (`settings-band-contract`), control-contract, resolver-dispatch snapshot
 (regen+review), preset-distinctness (rewrite for 8), R↔TS parity, serialize-
