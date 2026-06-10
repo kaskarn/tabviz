@@ -13,7 +13,7 @@ Status anchors carry the same OKLCH-triple shape for coherence.
 \details{
 S7 doesn't compose well with nested objects, so each triple is unrolled
 into three flat numeric slots (\code{anchors_paper_L}, \code{anchors_paper_C},
-\code{anchors_paper_H}, ...). \code{\link[=theme_inputs_to_json]{theme_inputs_to_json()}} re-nests them on the
+\code{anchors_paper_H}, ...). \code{theme_inputs_to_json()} re-nests them on the
 wire so the TS resolver sees the canonical \verb{anchors: \{ paper: \{L,C,H\}, ... \}} shape.
 }
 \section{Fields}{

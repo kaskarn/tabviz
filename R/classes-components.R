@@ -627,8 +627,8 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
 #' @param stars Show significance stars (default FALSE)
 #' @param stars_color Color channel for the stars — only applies when
 #'   `stars = TRUE`. One of `"accent"` (default; rides the theme's
-#'   accent/rubrication ramp, so an [set_ink2()] pin colors the stars),
-#'   `"ink2"` (the raw rubrication anchor chain), `"negative"` (explicit
+#'   accent/rubrication ramp, so pinning the `--tv-ink2` token colors the
+#'   stars), `"ink2"` (the raw rubrication anchor chain), `"negative"` (explicit
 #'   bad-news semantics via the status palette — note significance is not
 #'   inherently bad, so this is opt-in), or `"none"` (inherit cell color).
 #' @param significant_style Styling for significant values (p below the first
@@ -2326,6 +2326,9 @@ finalize_enable_themes <- function(value, theme) {
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells
 #'   plus a popover editor for forest-cell numerics.
+#' @param enable_theme_edit Enable the in-widget theme settings cog (Tier-1 theme
+#'   edits + per-figure controls). `FALSE` removes the cog for an author-frozen
+#'   figure.
 #' @param show_group_counts Show `(n)` after each row-group label. Default `FALSE`.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
 #' @param enable_themes Control theme selection menu:

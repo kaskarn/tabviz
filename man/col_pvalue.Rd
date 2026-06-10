@@ -31,8 +31,8 @@ col_pvalue(
 
 \item{stars_color}{Color channel for the stars — only applies when
 \code{stars = TRUE}. One of \code{"accent"} (default; rides the theme's
-accent/rubrication ramp, so an \code{\link[=set_ink2]{set_ink2()}} pin colors the stars),
-\code{"ink2"} (the raw rubrication anchor chain), \code{"negative"} (explicit
+accent/rubrication ramp, so pinning the \code{--tv-ink2} token colors the
+stars), \code{"ink2"} (the raw rubrication anchor chain), \code{"negative"} (explicit
 bad-news semantics via the status palette — note significance is not
 inherently bad, so this is opt-in), or \code{"none"} (inherit cell color).}
 

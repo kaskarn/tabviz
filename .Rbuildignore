@@ -24,3 +24,4 @@
 ^dev$
 ^forclaude\.md$
 ^node_modules$
+^handoff\.md$

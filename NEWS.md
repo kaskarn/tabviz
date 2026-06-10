@@ -174,7 +174,7 @@ distinctness, and the resolver dispatch is a declarative table.
   RStudio viewer); studio forge now registers cell renderers (interval
   column was blank).
 
-# tabviz (development)
+# tabviz 0.36.0.9000 (V3 theme arc, superseded by V4)
 
 ## Theme rationalization arc — V3 system (PRs A-I)
 

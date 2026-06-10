@@ -18,5 +18,6 @@ The \link{WebTheme} re-resolved with the preset applied.
 \description{
 \code{border_preset} is a Tier-1 structural enum (settings-overhaul P0) that
 the resolver expands into the full border cluster — the \code{\link[=set_header_style]{set_header_style()}}
-precedent. For per-edge fine-tuning use \code{\link[=set_borders]{set_borders()}} (raw cluster pins).
+precedent. For per-edge fine-tuning, pin the \verb{--tv-border-*} tokens directly
+with \code{\link[=set_pin]{set_pin()}}.
 }

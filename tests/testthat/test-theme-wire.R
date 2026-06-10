@@ -74,12 +74,15 @@ test_that("set_border_preset expands into five distinct clusters", {
     paste(b@layout, b@major@thickness, b@minor@thickness, b@table@thickness)
   }, "")
   expect_length(unique(sigs), 5L)
-  # hairline is the named default — unset themes must not shift.
+  # Re-applying a theme's OWN declared preset must be a no-op. nejm ships
+  # "frame" (the journal frame), so its resolved default IS the frame cluster
+  # — applying "frame" again must not shift it.
+  expect_identical(web_theme_nejm()@inputs@border_preset, "frame")
   d <- web_theme_nejm()@borders
-  h <- set_border_preset(web_theme_nejm(), "hairline")@borders
-  expect_identical(d@layout, h@layout)
-  expect_equal(d@major@thickness, h@major@thickness)
-  expect_equal(d@table@thickness, h@table@thickness)
+  f <- set_border_preset(web_theme_nejm(), "frame")@borders
+  expect_identical(d@layout, f@layout)
+  expect_equal(d@major@thickness, f@major@thickness)
+  expect_equal(d@table@thickness, f@table@thickness)
 })
 
 test_that("border_preset survives the inputs wire", {

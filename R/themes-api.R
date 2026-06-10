@@ -1016,7 +1016,8 @@ set_header_style <- function(theme, header_style) {
 #'
 #' `border_preset` is a Tier-1 structural enum (settings-overhaul P0) that
 #' the resolver expands into the full border cluster — the [set_header_style()]
-#' precedent. For per-edge fine-tuning use [set_borders()] (raw cluster pins).
+#' precedent. For per-edge fine-tuning, pin the `--tv-border-*` tokens directly
+#' with [set_pin()].
 #'
 #' @param theme A [WebTheme].
 #' @param border_preset One of `"none"`, `"hairline"`, `"ruled"`, `"frame"`,
@@ -1185,6 +1186,7 @@ set_type_role <- function(theme, role, family = NULL, size = NULL, weight = NULL
 #' @seealso [web_theme()], [set_type_role()]; [list_column_types()] and
 #'   [column_schema()] to discover which options a type exposes and which are
 #'   theme-defaultable (`themeable == TRUE`).
+#' @importFrom utils modifyList
 #' @export
 set_column_default <- function(theme, type, ...) {
   if (!inherits(theme, "tabviz::WebTheme")) {

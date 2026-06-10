@@ -58,6 +58,10 @@ column group) and column-groups (among top-level siblings).}
 \item{enable_edit}{Enable double-click inline editing for text/numeric/label cells
 plus a popover editor for forest-cell numerics.}
 
+\item{enable_theme_edit}{Enable the in-widget theme settings cog (Tier-1 theme
+edits + per-figure controls). \code{FALSE} removes the cog for an author-frozen
+figure.}
+
 \item{show_group_counts}{Show \code{(n)} after each row-group label. Default \code{FALSE}.}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}

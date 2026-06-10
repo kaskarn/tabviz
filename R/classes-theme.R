@@ -64,7 +64,7 @@ validate_oklch_triple <- function(self, prefix, required = TRUE) {
 #'
 #' S7 doesn't compose well with nested objects, so each triple is unrolled
 #' into three flat numeric slots (`anchors_paper_L`, `anchors_paper_C`,
-#' `anchors_paper_H`, ...). [theme_inputs_to_json()] re-nests them on the
+#' `anchors_paper_H`, ...). `theme_inputs_to_json()` re-nests them on the
 #' wire so the TS resolver sees the canonical `anchors: { paper: {L,C,H},
 #' ... }` shape.
 #'
