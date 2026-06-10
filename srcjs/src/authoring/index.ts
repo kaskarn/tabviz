@@ -100,6 +100,11 @@ export function geometrySlotTables(): {
 } {
   return { corners: _CORNER_SLOTS, rules: _RULE_SLOTS };
 }
+
+// Column-schema introspection — the machine-readable column contract,
+// reachable over the V8 bridge for R `list_column_types()` / `column_schema()`.
+export { listColumnTypes, columnSchema } from "./schema-introspect";
+export type { ColumnTypeInfo, ColumnOptionInfo } from "./schema-introspect";
 export interface RoleRosterEntry {
   role: string;
   /** Which generated scale the role indexes. `color` roles bind a ramp+grade;
