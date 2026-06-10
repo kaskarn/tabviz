@@ -403,3 +403,44 @@ test_that("studio_save_as rejects path-traversal names (round-2 robustness P1)",
   expect_warning(p <- tabviz:::.studio_save_as_payload(payload), "invalid theme name")
   expect_null(p)
 })
+
+test_that("interaction_defaults ride the inputs wire + survive untrusted import", {
+  # Interactivity-UX arc P1: a theme can carry opinionated interaction
+  # defaults (sparse flag map). Unknown flags and non-logical values are
+  # dropped at the untrusted wire ingress.
+  th <- web_theme(interaction_defaults = list(enable_axis_zoom = TRUE,
+                                              enable_edit = FALSE))
+  json <- tabviz:::theme_inputs_to_json(th@inputs)
+  expect_true(json$interaction_defaults$enable_axis_zoom)
+  expect_false(json$interaction_defaults$enable_edit)
+
+  # Round-trip through the wire envelope + untrusted import.
+  wire <- theme_to_wire(th)
+  th2 <- theme_from_wire(wire)
+  expect_true(th2@inputs@interaction_defaults$enable_axis_zoom)
+
+  # Hostile wire: unknown flags / garbage values are dropped.
+  wire$inputs$interaction_defaults <- list(
+    enable_axis_zoom = TRUE, evil_flag = TRUE, enable_edit = "yes"
+  )
+  th3 <- theme_from_wire(wire)
+  expect_identical(names(th3@inputs@interaction_defaults), "enable_axis_zoom")
+
+  # Malformed list errors at S7 construction (R author surface).
+  expect_error(web_theme(interaction_defaults = list(enable_edit = NA)),
+               "TRUE/FALSE")
+})
+
+test_that("global interaction tier serializes from the option (wire 1.4)", {
+  withr::local_options(tabviz.interaction_defaults = list(
+    enable_edit = TRUE, bad = "x"
+  ))
+  df <- data.frame(study = "A", hr = 1)
+  wire <- serialize_spec(tabviz(df, label = "study", .spec_only = TRUE))
+  expect_true(wire$interactionDefaults$enable_edit)
+  expect_false("bad" %in% names(wire$interactionDefaults))
+
+  withr::local_options(tabviz.interaction_defaults = NULL)
+  wire2 <- serialize_spec(tabviz(df, label = "study", .spec_only = TRUE))
+  expect_null(wire2$interactionDefaults)
+})

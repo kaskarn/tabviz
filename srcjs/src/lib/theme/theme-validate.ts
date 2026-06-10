@@ -19,6 +19,7 @@
  */
 
 import { contrastRatio } from "../oklch";
+import { INTERACTION_FLAG_KEYS } from "../interaction-resolve";
 import type { WebTheme } from "../../types/theme-resolved";
 import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
 import { getCssVars, readVar, readSurfaceBg, readContentPrimary } from "./consumer-bridge";
@@ -328,6 +329,28 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
       checkEnum(rec.family, TYPE_FAMILY_VALUES, `type_roles.${role}.family`, p);
       checkEnum(rec.size, TYPE_SIZE_VALUES, `type_roles.${role}.size`, p);
       checkEnum(rec.weight, TYPE_WEIGHT_VALUES, `type_roles.${role}.weight`, p);
+    }
+  }
+
+  // Theme-opinionated interaction defaults (interactivity-UX arc P1):
+  // sparse map of known boolean capability flags. Unknown keys / non-boolean
+  // values are flagged here at the validating ingress; the resolver
+  // (lib/interaction-resolve.ts sanitize) ALSO drops them defensively, but a
+  // shareable theme artifact shouldn't carry garbage silently.
+  if (inputs.interaction_defaults !== undefined) {
+    if (inputs.interaction_defaults === null || typeof inputs.interaction_defaults !== "object" || Array.isArray(inputs.interaction_defaults)) {
+      p.push({ path: "interaction_defaults", code: "shape", message: "interaction_defaults must be a map of capability flags to booleans" });
+    } else {
+      for (const [key, value] of Object.entries(inputs.interaction_defaults)) {
+        const camel = key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+        if (!(INTERACTION_FLAG_KEYS as readonly string[]).includes(camel)) {
+          p.push({ path: `interaction_defaults.${key}`, code: "unknown", message: `interaction_defaults: '${key}' is not a capability flag (one of [${INTERACTION_FLAG_KEYS.join(", ")}])` });
+          continue;
+        }
+        if (typeof value !== "boolean") {
+          p.push({ path: `interaction_defaults.${key}`, code: "shape", message: `interaction_defaults.${key} must be a boolean` });
+        }
+      }
     }
   }
 

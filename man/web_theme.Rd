@@ -36,6 +36,7 @@ web_theme(
   marks = NULL,
   row_kinds = NULL,
   column_defaults = NULL,
+  interaction_defaults = NULL,
   header_style = NULL,
   border_preset = NULL,
   first_column_style = "default",
@@ -142,6 +143,14 @@ explicit choice always wins, and only presentational (\code{styling}/\code{edito
 options are accepted — a theme can never change what the data means
 (precision, thresholds). NULL = no house-style defaults. See
 \code{\link[=set_column_default]{set_column_default()}}.}
+
+\item{interaction_defaults}{Theme-opinionated interaction defaults.
+Named list of capability flags to logicals (snake_case names matching
+\code{\link[=web_interaction]{web_interaction()}} arguments), e.g. \code{list(enable_axis_zoom = TRUE)}.
+Sits between the global tier (\code{options(tabviz.interaction_defaults=)})
+and the author's explicit \code{web_interaction()} settings: an explicit
+author setting always wins; the theme opinion fills unset flags. NULL =
+no opinions.}
 
 \item{header_style}{Header chrome treatment (a structural variant
 input): \code{"light"}, \code{"tint"}, or

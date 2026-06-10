@@ -121,6 +121,12 @@ theme_inputs_to_json <- function(inputs) {
   column_defaults_out <-
     if (length(inputs@column_defaults) > 0L) inputs@column_defaults else NULL
 
+  # Theme-opinionated interaction defaults (interactivity-UX arc P1).
+  # Sparse named list of flag → logical; emit verbatim (omit when empty).
+  # Resolution (explicit > theme > global > baked) runs TS-side.
+  interaction_defaults_out <-
+    if (length(inputs@interaction_defaults) > 0L) inputs@interaction_defaults else NULL
+
   marks_out <- drop_null(list(
     point_shape     = na_to_null(inputs@marks_point_shape),
     interval_weight = na_to_null(inputs@marks_interval_weight)
@@ -178,7 +184,8 @@ theme_inputs_to_json <- function(inputs) {
     marks                 = if (length(marks_out)    > 0L) marks_out    else NULL,
     monochrome            = monochrome_out,
     row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL,
-    column_defaults       = column_defaults_out
+    column_defaults       = column_defaults_out,
+    interaction_defaults  = interaction_defaults_out
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -352,6 +359,13 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   options are accepted — a theme can never change what the data means
 #'   (precision, thresholds). NULL = no house-style defaults. See
 #'   [set_column_default()].
+#' @param interaction_defaults Theme-opinionated interaction defaults.
+#'   Named list of capability flags to logicals (snake_case names matching
+#'   [web_interaction()] arguments), e.g. `list(enable_axis_zoom = TRUE)`.
+#'   Sits between the global tier (`options(tabviz.interaction_defaults=)`)
+#'   and the author's explicit `web_interaction()` settings: an explicit
+#'   author setting always wins; the theme opinion fills unset flags. NULL =
+#'   no opinions.
 #' @param header_style Header chrome treatment (a structural variant
 #'   input): `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
@@ -397,6 +411,7 @@ web_theme <- function(
     marks = NULL,
     row_kinds = NULL,
     column_defaults = NULL,
+    interaction_defaults = NULL,
     header_style = NULL,
     border_preset = NULL,
     first_column_style = "default",
@@ -422,6 +437,7 @@ web_theme <- function(
   checkmate::assert_list(marks, null.ok = TRUE)
   checkmate::assert_list(row_kinds, null.ok = TRUE)
   checkmate::assert_list(column_defaults, null.ok = TRUE, names = "named")
+  checkmate::assert_list(interaction_defaults, null.ok = TRUE, names = "named")
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
   ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
@@ -501,7 +517,8 @@ web_theme <- function(
     row_kinds_summary_height_ratio      = row_kinds$summary$heightRatio      %||% NA_real_,
     row_kinds_header_height_ratio       = row_kinds$header$heightRatio       %||% NA_real_,
     row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_,
-    column_defaults                     = column_defaults %||% list()
+    column_defaults                     = column_defaults %||% list(),
+    interaction_defaults                = interaction_defaults %||% list()
   )
   theme <- resolve_from_inputs(inputs, name = name)
   theme@header_style <- header_style %||% "light"

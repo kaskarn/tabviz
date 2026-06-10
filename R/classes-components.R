@@ -2185,32 +2185,37 @@ col_group <- function(header, ...) {
 #'   [`selectable_themes()`] for a fluent modifier.
 #'
 #' @export
+# SPARSE explicit-author tier of the interaction-defaults chain
+# (interactivity-UX arc P1). Every flag defaults to NA = "author did not
+# say"; only non-NA flags reach the wire. The effective surface resolves
+# TS-side in lib/interaction-resolve.ts:
+#   baked defaults < options(tabviz.interaction_defaults=) (global tier)
+#   < theme@inputs interaction_defaults (theme opinion) < these explicit
+#   flags. Baked defaults are CONSERVATIVE-EVERYWHERE: reader-safe
+# capabilities (sort, collapse, hover, select, filters, export, column
+# resize, the settings cog) ON; author-grade affordances that mutate what
+# the figure shows (inline edit, row/column reorder, axis domain zoom) OFF.
 InteractionSpec <- new_class(
   "InteractionSpec",
   properties = list(
-    show_filters = new_property(class_logical, default = FALSE),
-    show_legend = new_property(class_logical, default = TRUE),
-    enable_sort = new_property(class_logical, default = TRUE),
-    enable_collapse = new_property(class_logical, default = TRUE),
-    enable_select = new_property(class_logical, default = TRUE),
-    enable_hover = new_property(class_logical, default = TRUE),
-    enable_resize = new_property(class_logical, default = TRUE),
-    enable_export = new_property(class_logical, default = TRUE),
+    show_filters = new_property(class_logical, default = NA),
+    show_legend = new_property(class_logical, default = NA),
+    enable_sort = new_property(class_logical, default = NA),
+    enable_collapse = new_property(class_logical, default = NA),
+    enable_select = new_property(class_logical, default = NA),
+    enable_hover = new_property(class_logical, default = NA),
+    enable_resize = new_property(class_logical, default = NA),
+    enable_export = new_property(class_logical, default = NA),
     # Author freeze (settings-overhaul P4): FALSE removes the settings cog
     # so a published dashboard's viewers can't restyle the figure live.
-    # The inverse knob ("widen the panel") is obsolete — settings now
-    # carries the full Tier-1 surface by default.
-    enable_theme_edit = new_property(class_logical, default = TRUE),
-    enable_filters = new_property(class_logical, default = TRUE),
-    enable_reorder_rows = new_property(class_logical, default = TRUE),
-    enable_reorder_columns = new_property(class_logical, default = TRUE),
-    enable_edit = new_property(class_logical, default = TRUE),
-    # Forest/viz x-axis domain zoom (Ctrl/Cmd+wheel, drag pan, dblclick
-    # reset). Default FALSE (conservative-everywhere, interactivity-UX arc):
-    # domain zoom is an analysis affordance with no discoverable cue for
-    # document readers — authors opt in.
-    enable_axis_zoom = new_property(class_logical, default = FALSE),
-    show_group_counts = new_property(class_logical, default = FALSE),
+    enable_theme_edit = new_property(class_logical, default = NA),
+    enable_filters = new_property(class_logical, default = NA),
+    enable_reorder_rows = new_property(class_logical, default = NA),
+    enable_reorder_columns = new_property(class_logical, default = NA),
+    enable_edit = new_property(class_logical, default = NA),
+    # Forest/viz x-axis domain zoom (Ctrl/Cmd+wheel, drag pan, dblclick reset).
+    enable_axis_zoom = new_property(class_logical, default = NA),
+    show_group_counts = new_property(class_logical, default = NA),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
   ),
@@ -2316,6 +2321,17 @@ finalize_enable_themes <- function(value, theme) {
 #' Use this distinction when adding new arguments: render-or-not is `show_`,
 #' can-the-user-do-it is `enable_`.
 #'
+#' Every flag defaults to `NA` = "not specified". Unspecified flags resolve
+#' through a defaults chain (explicit setting > theme opinion
+#' (`web_theme(interaction_defaults=)`) > global default
+#' (`options(tabviz.interaction_defaults=)`) > baked defaults). The baked
+#' defaults are conservative: reader-safe capabilities (sorting, collapsing,
+#' hover, selection, filters, export, column resize, the settings cog) are
+#' ON; author-grade affordances that change what the figure shows (inline
+#' editing, row/column reorder, axis domain zoom) are OFF. Pass explicit
+#' `TRUE`/`FALSE` to override any tier; [web_interaction_full()] switches
+#' everything on explicitly.
+#'
 #' @param show_filters `r lifecycle::badge("deprecated")` Use `enable_filters` instead.
 #' @param show_legend Show legend
 #' @param enable_sort Enable column sorting
@@ -2347,20 +2363,20 @@ finalize_enable_themes <- function(value, theme) {
 #' @return An InteractionSpec object
 #' @export
 web_interaction <- function(
-    show_legend = TRUE,
-    enable_sort = TRUE,
-    enable_collapse = TRUE,
-    enable_select = TRUE,
-    enable_hover = TRUE,
-    enable_resize = TRUE,
-    enable_export = TRUE,
-    enable_filters = TRUE,
-    enable_reorder_rows = TRUE,
-    enable_reorder_columns = TRUE,
-    enable_edit = TRUE,
-    enable_theme_edit = TRUE,
-    enable_axis_zoom = FALSE,
-    show_group_counts = FALSE,
+    show_legend = NA,
+    enable_sort = NA,
+    enable_collapse = NA,
+    enable_select = NA,
+    enable_hover = NA,
+    enable_resize = NA,
+    enable_export = NA,
+    enable_filters = NA,
+    enable_reorder_rows = NA,
+    enable_reorder_columns = NA,
+    enable_edit = NA,
+    enable_theme_edit = NA,
+    enable_axis_zoom = NA,
+    show_group_counts = NA,
     tooltip_fields = NULL,
     enable_themes = getOption("tabviz.enable_themes", "default"),
     show_filters = lifecycle::deprecated()) {
@@ -2368,7 +2384,7 @@ web_interaction <- function(
     lifecycle::deprecate_warn("0.9.0", "web_interaction(show_filters)", "web_interaction(enable_filters)")
     if (isTRUE(show_filters)) enable_filters <- TRUE
   } else {
-    show_filters <- FALSE
+    show_filters <- NA
   }
   InteractionSpec(
     show_filters = show_filters,
@@ -2427,26 +2443,28 @@ web_interaction_publication <- function() {
   )
 }
 
-#' Choose a sensible default `InteractionSpec` based on the theme
+#' Choose the default `InteractionSpec` for a spec
 #'
-#' Every shipped theme — dashboard or publication — defaults to
-#' `web_interaction_full()` so users get a consistent, interactive widget
-#' out of the box. Users who want the quiet, print-ready preset can pass
-#' `interaction = web_interaction_publication()` (or `web_interaction_minimal()`)
-#' explicitly.
+#' Returns the SPARSE interaction spec (every flag `NA` = unspecified), so
+#' the widget resolves capabilities through the defaults chain: theme
+#' opinion (`web_theme(interaction_defaults=)`) > global default
+#' (`options(tabviz.interaction_defaults=)`) > conservative baked defaults
+#' (interactivity-UX arc P1). Users who want everything on regardless of
+#' theme/global opinions pass `interaction = web_interaction_full()`.
 #'
 #' @param theme A `WebTheme` object (unused; retained for API stability).
-#' @return An `InteractionSpec` with full interactivity.
+#' @return A sparse `InteractionSpec`.
 #' @keywords internal
 #' @export
 default_interaction_for_theme <- function(theme) {
-  web_interaction_full()
+  web_interaction()
 }
 
 #' @rdname web_interaction
 #' @export
 web_interaction_full <- function() {
-  # All interactivity on — drag rows/columns, sort, filter, edit cells, WYSIWYG export.
+  # All interactivity on EXPLICITLY — drag rows/columns, sort, filter, edit
+  # cells, axis domain zoom, WYSIWYG export. Overrides every defaults tier.
   web_interaction(
     show_legend = TRUE,
     enable_sort = TRUE,
@@ -2458,7 +2476,9 @@ web_interaction_full <- function() {
     enable_filters = TRUE,
     enable_reorder_rows = TRUE,
     enable_reorder_columns = TRUE,
-    enable_edit = TRUE
+    enable_edit = TRUE,
+    enable_theme_edit = TRUE,
+    enable_axis_zoom = TRUE
   )
 }
 

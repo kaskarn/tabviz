@@ -47,7 +47,8 @@ test_that("tabviz_state covers every documented dimension", {
   expected <- c(
     "sort", "filters", "row_styles", "cell_styles", "paint_tool",
     "selected", "hover", "collapsed_groups", "expanded_rows", "hidden_columns",
-    "column_order", "column_widths", "cell_edits", "label_edits", "zoom",
+    "column_order", "column_widths", "row_kind_heights", "cell_edits",
+    "label_edits", "zoom",
     "axis_zooms", "banding", "plot_width",
     "visible_rows"
   )

@@ -31,7 +31,10 @@ export type SupportedMajor = (typeof SUPPORTED_MAJORS)[number];
  * when shipping additive minor changes; bump major + add migration when
  * shipping breaking changes.
  */
-export const CURRENT_VERSION = "1.3" as const;
+// 1.4 (additive): spec.figureLayout figure-state block (column width pins,
+// column reorder, row-kind height pins) + interaction.enableAxisZoom +
+// the row_kind_heights Shiny event field (interactivity-UX arc P0/P1).
+export const CURRENT_VERSION = "1.4" as const;
 export type SpecVersion = typeof CURRENT_VERSION;
 
 /**

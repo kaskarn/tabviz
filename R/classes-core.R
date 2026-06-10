@@ -357,7 +357,16 @@ WebSpec <- new_class(
     # and evaluated at spec construction; renderers read these via
     # ctx.banks.conditions to apply per-row styleMapping overrides
     # referenced by cond("name"). Empty list = no conditions.
-    conditions = new_property(class_list, default = list())
+    conditions = new_property(class_list, default = list()),
+    # Figure-layout state block (interactivity-UX arc P1; wire 1.4):
+    # interactive layout pins that travel WITH the figure — column width
+    # pins (`column_widths`: named list id → px), column reorder
+    # (`column_order`: list(top_level=, by_group=)), and per-row-kind
+    # height pins (`row_kind_heights`: named list kind → px). Typically
+    # captured from a live widget (Shiny `input$<id>_column_widths` /
+    # `_row_kind_heights`) and re-attached via `set_figure_layout()` so a
+    # data refresh doesn't lose the user's layout. NULL = no block.
+    figure_layout = new_property(class_any, default = NULL)
   ),
   validator = function(self) {
     # Validate optional columns if specified

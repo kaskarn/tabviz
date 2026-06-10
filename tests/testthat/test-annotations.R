@@ -53,19 +53,27 @@ test_that("forest_annotation validates shape and position", {
   expect_error(forest_annotation("row_1", position = "invalid"), "arg.*should be one of")
 })
 
-test_that("web_interaction creates default InteractionSpec", {
+test_that("web_interaction creates a SPARSE default InteractionSpec", {
+  # Interactivity-UX arc P1: every flag defaults to NA ("author did not
+  # say"); only explicitly-set flags reach the wire, and the effective
+  # surface resolves TS-side through the defaults chain.
   inter <- web_interaction()
   expect_true(inherits(inter, "tabviz::InteractionSpec"))
-  expect_false(inter@show_filters)
-  expect_true(inter@show_legend)
-  expect_true(inter@enable_sort)
-  expect_true(inter@enable_collapse)
-  expect_true(inter@enable_select)
-  expect_true(inter@enable_hover)
-  expect_true(inter@enable_resize)
-  expect_true(inter@enable_export)
+  for (slot in c("show_filters", "show_legend", "enable_sort",
+                 "enable_collapse", "enable_select", "enable_hover",
+                 "enable_resize", "enable_export", "enable_edit",
+                 "enable_axis_zoom")) {
+    expect_true(is.na(S7::prop(inter, slot)), label = paste0(slot, " is NA"))
+  }
   expect_null(inter@tooltip_fields)
   expect_equal(inter@enable_themes, "default")
+})
+
+test_that("sparse interaction serializes only explicit flags", {
+  wire <- serialize_interaction(web_interaction(enable_sort = FALSE))
+  expect_false(wire$enableSort)
+  expect_false("enableEdit" %in% names(wire))
+  expect_false("enableHover" %in% names(wire))
 })
 
 test_that("web_interaction accepts custom params", {
@@ -103,7 +111,6 @@ test_that("web_interaction_minimal returns minimal interaction", {
 
 test_that("web_interaction_publication returns publication interaction", {
   inter <- web_interaction_publication()
-  expect_false(inter@show_filters)
   expect_false(inter@show_legend)
   expect_false(inter@enable_sort)
   expect_false(inter@enable_collapse)

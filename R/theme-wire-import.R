@@ -194,6 +194,32 @@ theme_inputs_from_wire <- function(wire_inputs) {
     if (length(clean_cd) > 0L) v$column_defaults <- clean_cd
   }
 
+  # Theme-opinionated interaction defaults (interactivity-UX arc P1).
+  # UNTRUSTED wire: keep only known capability flags (snake or camelCase)
+  # whose value is a single non-NA logical; drop the rest. Mirrors
+  # sanitizeInteractionOverrides in lib/interaction-resolve.ts.
+  idf <- w[["interaction_defaults"]] %||% list()
+  if (length(idf) > 0L && !is.null(names(idf))) {
+    flag_ok <- c(
+      "show_filters", "show_legend", "enable_sort", "enable_collapse",
+      "enable_select", "enable_hover", "enable_resize", "enable_export",
+      "enable_theme_edit", "enable_filters", "enable_reorder_rows",
+      "enable_reorder_columns", "enable_edit", "enable_axis_zoom",
+      "show_group_counts"
+    )
+    to_snake <- function(x) tolower(gsub("([A-Z])", "_\\1", x))
+    clean_idf <- list()
+    for (flag in names(idf)) {
+      if (!nzchar(flag)) next
+      key <- to_snake(flag)
+      if (!key %in% flag_ok) next
+      val <- idf[[flag]]
+      if (!is.logical(val) || length(val) != 1L || is.na(val)) next
+      clean_idf[[key]] <- val
+    }
+    if (length(clean_idf) > 0L) v$interaction_defaults <- clean_idf
+  }
+
   # Curves.
   cv <- w[["curves"]] %||% list()
   v$curves_neutral <- .wire_chr(cv[["neutral"]])

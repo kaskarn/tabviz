@@ -2,6 +2,8 @@ import { expect, test, describe } from "bun:test";
 import { tabviz } from "./tabviz";
 import { colText, colNumeric, colInterval } from "./columns";
 import { vizForest } from "./viz";
+import { CURRENT_VERSION } from "../spec";
+import { resolveInteraction } from "../lib/interaction-resolve";
 
 const SAMPLE_DATA = [
   { study: "A", hr: 0.85, lcl: 0.72, ucl: 0.99, n: 1200 },
@@ -16,7 +18,7 @@ describe("tabviz top-level constructor", () => {
       label: "study",
       columns: [colNumeric({ field: "hr" })],
     });
-    expect(spec.version).toBe("1.3");
+    expect(spec.version).toBe(CURRENT_VERSION);
     expect(spec.theme.name).toBe("nejm");
     expect(spec.data.rows.length).toBe(3);
     expect(spec.data.rows[0].label).toBe("A");
@@ -82,16 +84,33 @@ describe("tabviz top-level constructor", () => {
     expect(spec.data.groups[1].id).toBe("US");
   });
 
-  test("interaction defaults: all enabled", () => {
+  test("interaction tier is SPARSE; resolution supplies conservative defaults", () => {
     const spec = tabviz({
       data: SAMPLE_DATA, label: "study",
       columns: [colText({ field: "study" })],
     });
-    expect(spec.interaction.showLegend).toBe(true);
-    expect(spec.interaction.enableSort).toBe(true);
-    expect(spec.interaction.enableExport).toBe(true);
-    // Domain zoom is the deliberate exception — conservative default OFF
-    // (it changes what the figure shows; interactivity-UX arc P0).
-    expect(spec.interaction.enableAxisZoom).toBe(false);
+    // The explicit tier carries ONLY what the author passed — nothing here.
+    expect(Object.keys(spec.interaction)).toEqual([]);
+    // The resolved surface: reader-safe ON, author-grade OFF
+    // (conservative-everywhere; interactivity-UX arc P1).
+    const r = resolveInteraction(spec);
+    expect(r.showLegend).toBe(true);
+    expect(r.enableSort).toBe(true);
+    expect(r.enableExport).toBe(true);
+    expect(r.enableEdit).toBe(false);
+    expect(r.enableAxisZoom).toBe(false);
+  });
+
+  test("explicitly passed interaction flags reach the sparse tier", () => {
+    const spec = tabviz({
+      data: SAMPLE_DATA, label: "study",
+      columns: [colText({ field: "study" })],
+      enableEdit: true,
+      enableSort: false,
+    });
+    expect(spec.interaction).toEqual({ enableSort: false, enableEdit: true });
+    const r = resolveInteraction(spec);
+    expect(r.enableEdit).toBe(true);
+    expect(r.enableSort).toBe(false);
   });
 });

@@ -31,6 +31,9 @@
   const { store, containerRef }: Props = $props();
 
   const spec = $derived(store.spec);
+  // Resolved interaction surface (4-tier defaults chain) — never read
+  // spec.interaction directly; it is the sparse explicit tier only.
+  const interaction = $derived(store.interaction);
   const theme = $derived(spec?.theme);
   const tooltipRow = $derived(store.tooltipRow);
   const tooltipPosition = $derived(store.tooltipPosition);
@@ -50,7 +53,7 @@
    * the parent's table-body column-header click handlers via bind:this.
    */
   export function openHeaderContextMenu(column: ColumnSpec, e: MouseEvent): void {
-    if (!spec?.interaction.enableEdit) return;
+    if (!interaction.enableEdit) return;
     e.preventDefault();
     columnEditorTarget = null;
     const def = getVisualTypeDef(column.type);
@@ -202,7 +205,7 @@
 </script>
 
 <!-- Tooltip -->
-<Tooltip row={tooltipRow} position={tooltipPosition} fields={spec?.interaction?.tooltipFields} {theme} />
+<Tooltip row={tooltipRow} position={tooltipPosition} fields={interaction.tooltipFields} {theme} />
 
 <!-- Drop indicator (fixed-positioned at root) -->
 {#if store.dragState?.active && store.dragState.indicatorIndex != null}

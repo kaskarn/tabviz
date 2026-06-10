@@ -884,12 +884,45 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     }
     // Auto-measured widths are NOT carried over — the caller re-runs
     // measureAutoColumns() against the new spec's content.
+    //
+    // The incoming spec's figureLayout block (P1 wire tier) hydrates UNDER
+    // surviving session state: a width the user just dragged wins over the
+    // block's pin for the same column; block pins fill the rest. Block
+    // widths count as user-resized — they're deliberate pins and must
+    // survive re-measure/theme/density like any interactive resize.
+    const block = next?.figureLayout;
+    if (block?.columnWidths) {
+      for (const [id, px] of Object.entries(block.columnWidths)) {
+        if (!validIds.has(id) || keptResized.has(id)) continue;
+        if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
+        keptWidths[id] = Math.max(40, Math.round(px));
+        keptResized.add(id);
+      }
+    }
     columnWidths = keptWidths;
     userResizedIds = keptResized;
     hiddenColumnIds = new Set([...hiddenColumnIds].filter((id) => validIds.has(id)));
     // Reorder overrides carry over wholesale: applyColumnOrder is tolerant
     // at apply time (unknown ids dropped, new columns appended in spec
-    // order), so stale entries are inert rather than harmful.
+    // order), so stale entries are inert rather than harmful. The block's
+    // order applies only when the session has no reorder of its own.
+    if (block?.columnOrder) {
+      const noSessionOrder =
+        columnOrderOverrides.topLevel == null &&
+        Object.keys(columnOrderOverrides.byGroup).length === 0;
+      if (noSessionOrder) {
+        columnOrderOverrides = {
+          topLevel: Array.isArray(block.columnOrder.topLevel)
+            ? block.columnOrder.topLevel.filter((id) => typeof id === "string")
+            : null,
+          byGroup: Object.fromEntries(
+            Object.entries(block.columnOrder.byGroup ?? {}).filter(([, v]) =>
+              Array.isArray(v),
+            ),
+          ),
+        };
+      }
+    }
     userInsertedColumns = [];
     columnSpecOverrides = {};
   }

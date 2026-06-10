@@ -202,6 +202,9 @@ export interface LayoutZoomSlice {
   setRowKindHeight: (kind: RowKind, height: number | null) => void;
   /** Clear all per-row-kind height pins. */
   resetRowKindHeights: () => void;
+  /** Called by setSpec: merge the incoming spec's figureLayout row-kind
+   *  pins UNDER surviving session pins. */
+  hydrateForSpec: (spec: WebSpec | null) => void;
   setZoom: (value: number) => void;
   resetZoom: () => void;
   zoomIn: () => void;
@@ -698,6 +701,24 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     deps.markSource("row_kind_heights");
   }
 
+  // Called by `setSpec`: hydrate the incoming spec's figureLayout block
+  // (P1 figure-state wire tier) UNDER surviving session pins — a kind the
+  // user pinned live this session keeps its value; block pins fill the
+  // rest. Session pins deliberately survive setSpec (they're figure state,
+  // not spec-derived), so this is a merge, never a replace.
+  function hydrateForSpec(spec: WebSpec | null): void {
+    const block = spec?.figureLayout?.rowKindHeights;
+    if (!block) return;
+    let next: Partial<Record<RowKind, number>> | null = null;
+    for (const [kind, px] of Object.entries(block) as Array<[RowKind, number]>) {
+      if (rowKindHeights[kind] !== undefined) continue;
+      if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
+      next ??= { ...rowKindHeights };
+      next[kind] = Math.max(1, Math.round(px));
+    }
+    if (next) rowKindHeights = next;
+  }
+
   function setZoom(value: number) {
     zoom = Math.max(0.5, Math.min(2.0, value));
     persistZoomState();
@@ -834,7 +855,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     setContainerElementId,
     setPlotWidth, getPlotWidth,
     setMeasuredRowHeights,
-    setRowKindHeight, resetRowKindHeights,
+    setRowKindHeight, resetRowKindHeights, hydrateForSpec,
     setZoom, resetZoom, zoomIn, zoomOut, setAutoFit, setContrastOverride, fitToWidth,
     setMaxWidth, setMaxHeight, setShowZoomControls,
     reset,

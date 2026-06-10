@@ -2,7 +2,7 @@
 % Please edit documentation in R/classes-components.R
 \name{default_interaction_for_theme}
 \alias{default_interaction_for_theme}
-\title{Choose a sensible default \code{InteractionSpec} based on the theme}
+\title{Choose the default \code{InteractionSpec} for a spec}
 \usage{
 default_interaction_for_theme(theme)
 }
@@ -10,13 +10,14 @@ default_interaction_for_theme(theme)
 \item{theme}{A \code{WebTheme} object (unused; retained for API stability).}
 }
 \value{
-An \code{InteractionSpec} with full interactivity.
+A sparse \code{InteractionSpec}.
 }
 \description{
-Every shipped theme — dashboard or publication — defaults to
-\code{web_interaction_full()} so users get a consistent, interactive widget
-out of the box. Users who want the quiet, print-ready preset can pass
-\code{interaction = web_interaction_publication()} (or \code{web_interaction_minimal()})
-explicitly.
+Returns the SPARSE interaction spec (every flag \code{NA} = unspecified), so
+the widget resolves capabilities through the defaults chain: theme
+opinion (\code{web_theme(interaction_defaults=)}) > global default
+(\code{options(tabviz.interaction_defaults=)}) > conservative baked defaults
+(interactivity-UX arc P1). Users who want everything on regardless of
+theme/global opinions pass \code{interaction = web_interaction_full()}.
 }
 \keyword{internal}

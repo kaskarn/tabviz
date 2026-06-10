@@ -69,7 +69,7 @@
   {#if enableExport}
     <DownloadButton {store} />
   {/if}
-  {#if store.spec?.interaction?.enableThemeEdit !== false}
+  {#if store.interaction.enableThemeEdit}
     <SettingsButton {store} />
   {:else}
     <!-- Cog frozen: the settings-panel Contrast control is gone, so surface

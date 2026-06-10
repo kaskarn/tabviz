@@ -775,14 +775,22 @@ export type { WebTheme };
 // Interaction Types
 // ============================================================================
 
+/**
+ * SPARSE explicit-author tier of the interaction chain (interactivity-UX
+ * arc P1). Wrappers emit ONLY the flags the author explicitly set; absent
+ * flags resolve through theme opinion → global tier → baked defaults in
+ * `lib/interaction-resolve.ts::resolveInteraction`. Consumers must read the
+ * RESOLVED surface (store `interaction` getter / `resolveInteraction(spec)`),
+ * never these raw fields.
+ */
 export interface InteractionSpec {
-  showFilters: boolean;
-  showLegend: boolean;
-  enableSort: boolean;
-  enableCollapse: boolean;
-  enableSelect: boolean;
-  enableHover: boolean;
-  enableResize: boolean;
+  showFilters?: boolean;
+  showLegend?: boolean;
+  enableSort?: boolean;
+  enableCollapse?: boolean;
+  enableSelect?: boolean;
+  enableHover?: boolean;
+  enableResize?: boolean;
   enableExport?: boolean;
   enableReorderRows?: boolean;      // Drag rows within a group; drag row-groups among siblings
   enableReorderColumns?: boolean;   // Drag columns within a column-group; drag column-groups among siblings
@@ -862,6 +870,36 @@ export interface NoteSpec {
   after: string;
   /** Markdown content. */
   content: string;
+}
+
+/**
+ * Interactive figure-layout state — the FIGURE-STATE persistence tier
+ * (interactivity-UX arc P1; docs/dev/interactivity-ux-plan.md).
+ *
+ * Carries the layout adjustments a user found interactively (column width
+ * pins, column reorder, row-kind height pins) as part of the spec wire, so
+ * they round-trip: Shiny apps can re-attach them across data refreshes and
+ * any wrapper language can persist them. The store hydrates this block
+ * UNDER surviving session state (a live user edit always wins over an
+ * incoming block) and the same shapes are emitted back out through the
+ * Shiny event fields (`column_widths`, `column_order`, `row_kind_heights`).
+ *
+ * Hidden columns are deliberately NOT here — they already ride the wire on
+ * `initialState.hiddenColumns` and the `hidden_columns` event field.
+ */
+export interface FigureLayoutState {
+  /** Column width pins (column id → px). Treated as user-resized: they
+   *  survive re-measure, theme and density changes. */
+  columnWidths?: Record<string, number>;
+  /** Column reorder overrides — same shape the store keeps. Unknown ids
+   *  are inert (dropped at apply time; new columns append in spec order). */
+  columnOrder?: { topLevel?: string[] | null; byGroup?: Record<string, string[]> };
+  /** Per-row-kind absolute height pins in px — layer 5 of the row-kind
+   *  height cascade (overrides density/theme/constructor ratios). */
+  rowKindHeights?: Partial<Record<
+    "data" | "group_header" | "spacer" | "summary" | "header" | "panel",
+    number
+  >>;
 }
 
 export interface WebSpec {
@@ -957,6 +995,16 @@ export interface WebSpec {
    *  R-side. Shown as the baseline line in the "View source" panel above
    *  the recorded fluent operations. Undefined for fluent-api-only specs. */
   originalCall?: string;
+  /** Interactive figure-layout state (column width pins / reorder /
+   *  row-kind height pins) — see {@link FigureLayoutState}. Hydrated
+   *  UNDER surviving session state on every setSpec. */
+  figureLayout?: FigureLayoutState;
+  /** GLOBAL tier of the interaction-defaults chain (interactivity-UX arc
+   *  P1): wrapper-environment defaults (e.g. R
+   *  `options(tabviz.interaction_defaults=)`) serialized as a sparse flag
+   *  map. Sits UNDER theme opinions and explicit `interaction` settings —
+   *  see `lib/interaction-resolve.ts`. Keys snake_case or camelCase. */
+  interactionDefaults?: Partial<Record<string, boolean>>;
 }
 
 // ============================================================================

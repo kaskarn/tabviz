@@ -119,6 +119,9 @@
 
   // Reactive derivations from store
   const spec = $derived(store.spec);
+  // Resolved interaction surface (4-tier defaults chain) — never read
+  // spec.interaction directly; it is the sparse explicit tier only.
+  const interaction = $derived(store.interaction);
   const visibleIndices = $derived(store.visibleIndices);
   const displayRows = $derived(store.displayRows);
 
@@ -351,7 +354,7 @@
   // empty header slot for an "Add title…" affordance broke intentional
   // spacing between the table and whichever labels WERE set (e.g. title
   // present, subtitle absent). Labels are added via Basics settings tab.
-  const labelsEditable = $derived(!!spec?.interaction?.enableEdit);
+  const labelsEditable = $derived(!!interaction.enableEdit);
   const hasPlotHeader = $derived(!!labelTitle || !!labelSubtitle);
 
   // Check if we have column groups (need two-row header)
@@ -593,13 +596,13 @@
   });
 
   // Check if export is enabled (default true)
-  const enableExport = $derived(spec?.interaction?.enableExport !== false);
+  const enableExport = $derived(interaction.enableExport);
   // Forest/viz domain zoom — conservative default OFF (interactivity-UX
   // arc P0): an author opts in via interaction.enableAxisZoom.
-  const enableAxisZoom = $derived(spec?.interaction?.enableAxisZoom === true);
+  const enableAxisZoom = $derived(interaction.enableAxisZoom);
 
   // Get available themes for theme switcher (null = disabled, object = custom themes)
-  const enableThemes = $derived(spec?.interaction?.enableThemes);
+  const enableThemes = $derived(interaction.enableThemes);
 
   // Keyboard shortcuts for zoom control
   function handleKeydown(event: KeyboardEvent) {
@@ -955,7 +958,7 @@
     scopeKey: string,
   ) {
     if (e.button !== 0) return;
-    if (!spec?.interaction.enableReorderRows) return;
+    if (!interaction.enableReorderRows) return;
     // Don't hijack pointerdowns that originated on a nested control (e.g. a
     // dblclick target, badge link, etc.).
     const target = e.target as HTMLElement;
@@ -1234,7 +1237,7 @@
   let plotStartWidth = 0;
 
   function startPlotResize(e: PointerEvent) {
-    if (!spec?.interaction.enableResize) return;
+    if (!interaction.enableResize) return;
     e.preventDefault();
     e.stopPropagation();
     resizingPlot = true;
@@ -1263,7 +1266,7 @@
   let columnStartWidth = 0;
 
   function startColumnResize(e: PointerEvent, columnId: string, currentWidth: number) {
-    if (!spec?.interaction.enableResize) return;
+    if (!interaction.enableResize) return;
     e.preventDefault();
     e.stopPropagation();
     resizingColumn = columnId;
@@ -1653,23 +1656,23 @@
             <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
             <div
               class="grid-cell header-cell column-group-header"
-              class:editable={spec?.interaction.enableEdit}
-              role={spec?.interaction.enableEdit ? "button" : undefined}
-              tabindex={spec?.interaction.enableEdit ? 0 : undefined}
+              class:editable={interaction.enableEdit}
+              role={interaction.enableEdit ? "button" : undefined}
+              tabindex={interaction.enableEdit ? 0 : undefined}
               data-header-id={cell.col.id}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
-              ondblclick={spec?.interaction.enableEdit
+              ondblclick={interaction.enableEdit
                 ? () => store.startEdit({ rowId: "", field: "", groupId: cell.col.id })
                 : undefined}
-              onkeydown={spec?.interaction.enableEdit ? (e) => {
+              onkeydown={interaction.enableEdit ? (e) => {
                 if (e.key === "Enter" || e.key === "F2") {
                   e.preventDefault();
                   store.startEdit({ rowId: "", field: "", groupId: cell.col.id });
                 }
               } : undefined}
             >
-              {#if spec?.interaction.enableReorderColumns}
+              {#if interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column_group" id={cell.col.id} root={containerRef} />
               {/if}
               <span class="header-text">{store.cellEdits.groups[cell.col.id] ?? cell.col.header}</span>
@@ -1680,7 +1683,7 @@
             {@const vizDefaultWidth = column.type === "forest"
               ? (column.options?.forest?.width ?? layout.flexWidths?.[column.id] ?? 200)
               : (typeof column.width === "number" ? column.width : (layout.flexWidths?.[column.id] ?? 200))}
-            {@const canSortViz = !!spec?.interaction.enableSort && column.sortable !== false}
+            {@const canSortViz = !!interaction.enableSort && column.sortable !== false}
             {@const vizSortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -1699,7 +1702,7 @@
                 store.toggleSort(column.field);
               } : undefined}
             >
-              {#if spec?.interaction.enableReorderColumns}
+              {#if interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
               {#if resolveShowHeader(column.showHeader, column.header)}
@@ -1708,7 +1711,7 @@
               {#if canSortViz && vizSortDir !== "none"}
                 <SortIndicator direction={vizSortDir} />
               {/if}
-              {#if spec?.interaction.enableResize}
+              {#if interaction.enableResize}
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
@@ -1719,7 +1722,7 @@
           {:else}
             <!-- Leaf column header -->
             {@const column = cell.col as ColumnSpec}
-            {@const canSort = !!spec?.interaction.enableSort && column.sortable}
+            {@const canSort = !!interaction.enableSort && column.sortable}
             {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             {@const isPrimaryHeader = column.id === primaryColumnId}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -1741,7 +1744,7 @@
                 store.toggleSort(column.field);
               } : undefined}
             >
-              {#if spec?.interaction.enableReorderColumns}
+              {#if interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
               {#if resolveShowHeader(column.showHeader, column.header)}
@@ -1750,10 +1753,10 @@
               {#if canSort && sortDir !== "none"}
                 <SortIndicator direction={sortDir} />
               {/if}
-              {#if (spec?.interaction.enableFilters || spec?.interaction.showFilters) && !vizColumnTypes.includes(column.type)}
+              {#if interaction.enableFilters && !vizColumnTypes.includes(column.type)}
                 <ColumnFilterButton {store} field={column.field} header={column.header} />
               {/if}
-              {#if spec?.interaction.enableResize}
+              {#if interaction.enableResize}
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
@@ -1879,7 +1882,7 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:spacer-row={isSpacerRow}
-                class:reorderable={spec?.interaction.enableReorderRows}
+                class:reorderable={interaction.enableReorderRows}
                 class:drag-source={isDragSource}
                 class:just-dropped={justDropped}
                 class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
@@ -1908,12 +1911,12 @@
                 aria-label={!isGroupHeader && row && store.paintTool
                   ? `Paint row ${row.label ?? row.id} with ${store.paintTool.token}`
                   : undefined}
-                onpointerdown={spec?.interaction.enableReorderRows ? (e) => {
+                onpointerdown={interaction.enableReorderRows ? (e) => {
                   if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
                   else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
                 } : undefined}
                 onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => handleCellClick(row, column.field) : undefined}
-                ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
+                ondblclick={!isGroupHeader && row && interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
                 onkeydown={isGroupHeader
                   ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id)
                   : row
@@ -1935,7 +1938,7 @@
                 {#if isGroupHeader}
                   <GroupHeader
                     group={displayRow.group}
-                    rowCount={spec?.interaction.showGroupCounts ? displayRow.rowCount : undefined}
+                    rowCount={interaction.showGroupCounts ? displayRow.rowCount : undefined}
                     level={displayRow.depth + 1}
                     {theme}
                   />
@@ -1982,7 +1985,7 @@
                    this cell is presentational. dblclick-to-edit has no
                    keyboard parity — the edit flow is also exposed via the
                    context menu on the primary cell. -->
-              {@const editableHere = !!(row && spec?.interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
+              {@const editableHere = !!(row && interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
               {@const cellBg = row ? (getCellStyle(row, column)?.bg ?? null) : null}
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->

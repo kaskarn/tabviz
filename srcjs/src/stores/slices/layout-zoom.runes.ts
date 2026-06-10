@@ -270,6 +270,32 @@ describe("layout-zoom slice — rowKindRoster (figure-band row heights)", () => 
   });
 });
 
+describe("layout-zoom slice — figureLayout hydration (P1 wire tier)", () => {
+  test("spec block pins merge UNDER surviving session pins", () => {
+    const h = buildLayoutZoomHarness();
+    h.slice.setRowKindHeight("data", 44); // live session pin — must win
+    h.slice.hydrateForSpec({
+      figureLayout: { rowKindHeights: { data: 30, spacer: 12 } },
+    } as never);
+    expect(h.slice.rowKindHeights).toEqual({ data: 44, spacer: 12 });
+  });
+
+  test("garbage block values are dropped", () => {
+    const h = buildLayoutZoomHarness();
+    h.slice.hydrateForSpec({
+      figureLayout: { rowKindHeights: { data: -5, spacer: Number.NaN, summary: 28.6 } },
+    } as never);
+    expect(h.slice.rowKindHeights).toEqual({ summary: 29 });
+  });
+
+  test("no block → no change", () => {
+    const h = buildLayoutZoomHarness();
+    h.slice.setRowKindHeight("data", 40);
+    h.slice.hydrateForSpec(null);
+    expect(h.slice.rowKindHeights).toEqual({ data: 40 });
+  });
+});
+
 describe("layout-zoom slice — reset", () => {
   test("reset restores zoom/autoFit/maxes/plotWidth defaults", () => {
     const h = buildLayoutZoomHarness();

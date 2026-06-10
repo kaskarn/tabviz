@@ -54,6 +54,9 @@ export type TabvizEvents = {
   hiddenColumns: string[];
   columnOrder: string[];
   columnWidths: Record<string, number>;
+  /** Per-row-kind height pins (px) — layer 5 of the height cascade.
+   *  Round-trips through `spec.figureLayout.rowKindHeights` (P1). */
+  rowKindHeights: Record<string, number>;
   cellEdits: CellEdits;
   labelEdits: Record<string, string | null | undefined>;
   zoom: ZoomState;
@@ -93,6 +96,7 @@ export const EVENT_TO_SHINY_FIELD: Record<Exclude<EventName, "change">, string> 
   hiddenColumns: "hidden_columns",
   columnOrder: "column_order",
   columnWidths: "column_widths",
+  rowKindHeights: "row_kind_heights",
   cellEdits: "cell_edits",
   labelEdits: "label_edits",
   zoom: "zoom",
@@ -115,7 +119,8 @@ export const SHINY_EVENT_FIELDS = [
   // Tier 1
   "sort", "filters", "row_styles", "cell_styles", "paint_tool",
   "selected", "hover", "collapsed_groups", "expanded_rows", "hidden_columns",
-  "column_order", "column_widths", "cell_edits", "label_edits", "zoom",
+  "column_order", "column_widths", "row_kind_heights", "cell_edits",
+  "label_edits", "zoom",
   // Tier 2
   "axis_zooms", "banding", "plot_width",
   // Derived

@@ -262,6 +262,7 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
   store.on("hiddenColumns", (value) => emit(EVENT_TO_SHINY_FIELD.hiddenColumns, value));
   store.on("columnOrder", (value) => emit(EVENT_TO_SHINY_FIELD.columnOrder, value));
   store.on("columnWidths", (value) => emit(EVENT_TO_SHINY_FIELD.columnWidths, value));
+  store.on("rowKindHeights", (value) => emit(EVENT_TO_SHINY_FIELD.rowKindHeights, value));
   store.on("cellEdits", (value) => emit(EVENT_TO_SHINY_FIELD.cellEdits, value));
   store.on("labelEdits", (value) => emit(EVENT_TO_SHINY_FIELD.labelEdits, value));
   store.on("zoom", (value) => emit(EVENT_TO_SHINY_FIELD.zoom, value));
@@ -292,6 +293,7 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
         hidden_columns: Array.from(store.hiddenColumnIds),
         column_order: store.allColumns.map((c) => c.id),
         column_widths: { ...store.columnWidths },
+        row_kind_heights: { ...store.rowKindHeights },
         cell_edits: store.cellEdits,
         label_edits: store.labelEdits,
         zoom: {

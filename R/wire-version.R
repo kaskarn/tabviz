@@ -28,4 +28,9 @@
 # (radius + border-width scales) and `effects` (glow + gradient-shell +
 # elevation) optional input blocks. Mode-aware (HC drops effects; RT
 # flattens gradient). Additive at the inputs layer; presets opt in.
-WIRE_FORMAT_VERSION <- "1.3"
+#
+# v1.4 (2026-06-10): additive interactivity-UX arc P0/P1 —
+# `spec.figureLayout` figure-state block (column width pins, column
+# reorder, row-kind height pins), `interaction.enableAxisZoom`, and the
+# `row_kind_heights` Shiny event field.
+WIRE_FORMAT_VERSION <- "1.4"

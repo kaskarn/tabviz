@@ -1297,6 +1297,63 @@ set_aspect_ratio <- function(x, ratio, anchor = c("width", "height", "auto")) {
 }
 
 # ----------------------------------------------------------------------------
+# Figure-layout state — re-attach interactive layout pins (wire 1.4)
+# ----------------------------------------------------------------------------
+
+#' Attach interactive figure-layout state to a spec
+#'
+#' The figure-layout block carries the layout adjustments a user found
+#' interactively — column width pins, column reorder, and per-row-kind
+#' height pins — as part of the spec wire
+#' (interactivity-UX arc P1; `docs/dev/interactivity-ux-plan.md`). The
+#' canonical use is a Shiny round-trip: read the widget's emitted state and
+#' re-attach it when re-rendering, so a data refresh keeps the user's
+#' layout.
+#'
+#' The widget hydrates this block UNDER live session state — an adjustment
+#' the user makes after render always wins over the block's value for the
+#' same column/kind.
+#'
+#' @param x A `WebSpec` object or htmlwidget.
+#' @param column_widths Named list/vector of column width pins
+#'   (column id → px), e.g. `input$<id>_column_widths`. Widths pin like a
+#'   user drag: they survive re-measure, theme and density changes.
+#' @param row_kind_heights Named list/vector of row-kind height pins
+#'   (kind → px), e.g. `input$<id>_row_kind_heights`. Kinds: `"data"`,
+#'   `"group_header"`, `"spacer"`, `"summary"`, `"header"`, `"panel"`.
+#' @param column_order Optional reorder block:
+#'   `list(top_level = c("id1", ...), by_group = list(<group id> = c(...)))`.
+#'   Unknown ids are inert (dropped at apply time).
+#'
+#' @return The modified WebSpec or htmlwidget (invisibly).
+#'
+#' @examples
+#' \dontrun{
+#' # Shiny: persist the user's layout across a data refresh
+#' output$plot <- render_tabviz({
+#'   tabviz(filtered_data(), label = "study", columns = cols) |>
+#'     set_figure_layout(
+#'       column_widths = isolate(input$plot_column_widths),
+#'       row_kind_heights = isolate(input$plot_row_kind_heights)
+#'     )
+#' })
+#' }
+#'
+#' @export
+set_figure_layout <- function(x, column_widths = NULL, row_kind_heights = NULL,
+                              column_order = NULL) {
+  spec <- extract_spec(x)
+  block <- list(
+    column_widths = column_widths,
+    row_kind_heights = row_kind_heights,
+    column_order = column_order
+  )
+  block <- Filter(Negate(is.null), block)
+  spec@figure_layout <- if (length(block) == 0L) NULL else block
+  repack(x, spec)
+}
+
+# ----------------------------------------------------------------------------
 # SplitForest — toggle shared column widths at construction time
 # ----------------------------------------------------------------------------
 

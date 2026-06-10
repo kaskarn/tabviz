@@ -48,8 +48,64 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     # Cross-cutting widget state (Phase 5+). Conditions are the only
     # bank kind currently populated from R; footnotes / axes / legends
     # come from schema-side contributeBanks behaviors (TS-side).
-    banks = if (length(spec@conditions) > 0L) list(conditions = spec@conditions) else NULL
+    banks = if (length(spec@conditions) > 0L) list(conditions = spec@conditions) else NULL,
+    # Figure-layout state block (interactivity-UX arc P1; wire 1.4).
+    figureLayout = serialize_figure_layout(spec@figure_layout),
+    # GLOBAL tier of the interaction-defaults chain (wire 1.4): the author
+    # environment's options(tabviz.interaction_defaults=), resolved TS-side
+    # UNDER theme opinions and explicit interaction flags.
+    interactionDefaults = serialize_interaction_defaults()
   )
+}
+
+#' Serialize the figure-layout state block (wire 1.4)
+#'
+#' Converts the R-side `figure_layout` list (snake_case keys, as captured
+#' from Shiny inputs or set via [set_figure_layout()]) to the camelCase
+#' `spec.figureLayout` wire shape. Drops malformed entries instead of
+#' erroring — the block typically round-trips through Shiny input values,
+#' so be liberal in what we accept. Returns NULL when nothing survives.
+#' @keywords internal
+serialize_figure_layout <- function(fl) {
+  if (is.null(fl) || !is.list(fl)) return(NULL)
+
+  # Named numeric list/vector → named list of positive numbers, else NULL.
+  clean_px_map <- function(x) {
+    if (is.null(x) || length(x) == 0L || is.null(names(x))) return(NULL)
+    x <- as.list(x)
+    keep <- vapply(x, function(v) {
+      is.numeric(v) && length(v) == 1L && is.finite(v) && v > 0
+    }, logical(1)) & nzchar(names(x))
+    if (!any(keep)) return(NULL)
+    lapply(x[keep], as.numeric)
+  }
+
+  # NOTE: the package %||% treats empty strings as NULL-ish and errors on
+  # length > 1 vectors — use an explicit NULL-only pick here, these values
+  # are vectors by design.
+  pick <- function(a, b) if (is.null(a)) b else a
+
+  widths <- clean_px_map(pick(fl$column_widths, fl$columnWidths))
+  pins <- clean_px_map(pick(fl$row_kind_heights, fl$rowKindHeights))
+
+  order_in <- pick(fl$column_order, fl$columnOrder)
+  order <- NULL
+  if (is.list(order_in)) {
+    top <- pick(order_in$top_level, order_in$topLevel)
+    by_group <- pick(order_in$by_group, order_in$byGroup)
+    top <- if (is.character(top) && length(top) > 0L) as.list(top) else NULL
+    by_group <- if (is.list(by_group) && length(by_group) > 0L && !is.null(names(by_group))) {
+      kept <- Filter(function(v) is.character(v) && length(v) > 0L, by_group)
+      if (length(kept) > 0L) lapply(kept, as.list) else NULL
+    } else NULL
+    if (!is.null(top) || !is.null(by_group)) {
+      order <- list(topLevel = top, byGroup = by_group)
+    }
+  }
+
+  out <- list(columnWidths = widths, columnOrder = order, rowKindHeights = pins)
+  out <- Filter(Negate(is.null), out)
+  if (length(out) == 0L) NULL else out
 }
 
 #' Serialize a PaginateSpec + computed breakpoints
@@ -606,25 +662,56 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     themes_config <- serialize_themes_arg(package_themes())
   }
 
-  list(
-    showFilters = interaction@show_filters,
-    showLegend = interaction@show_legend,
-    enableSort = interaction@enable_sort,
-    enableCollapse = interaction@enable_collapse,
-    enableSelect = interaction@enable_select,
-    enableHover = interaction@enable_hover,
-    enableResize = interaction@enable_resize,
-    enableExport = interaction@enable_export,
-    enableThemeEdit = interaction@enable_theme_edit,
-    enableFilters = interaction@enable_filters || interaction@show_filters,
-    enableReorderRows = interaction@enable_reorder_rows,
-    enableReorderColumns = interaction@enable_reorder_columns,
-    enableEdit = interaction@enable_edit,
-    enableAxisZoom = interaction@enable_axis_zoom,
-    showGroupCounts = interaction@show_group_counts,
+  # SPARSE wire (interactivity-UX arc P1): emit ONLY explicitly-set flags
+  # (non-NA). Unset flags resolve TS-side through the defaults chain
+  # (explicit > theme opinion > global tier > baked) — eagerly emitting a
+  # value here would shadow every other tier. See lib/interaction-resolve.ts.
+  na_drop <- function(v) if (is.na(v)) NULL else v
+  out <- list(
+    showFilters = na_drop(interaction@show_filters),
+    showLegend = na_drop(interaction@show_legend),
+    enableSort = na_drop(interaction@enable_sort),
+    enableCollapse = na_drop(interaction@enable_collapse),
+    enableSelect = na_drop(interaction@enable_select),
+    enableHover = na_drop(interaction@enable_hover),
+    enableResize = na_drop(interaction@enable_resize),
+    enableExport = na_drop(interaction@enable_export),
+    enableThemeEdit = na_drop(interaction@enable_theme_edit),
+    # Legacy alias fold: an explicit show_filters=TRUE implies the filter
+    # capability even if enable_filters was left unset.
+    enableFilters = if (isTRUE(interaction@show_filters) && is.na(interaction@enable_filters)) {
+      TRUE
+    } else {
+      na_drop(interaction@enable_filters)
+    },
+    enableReorderRows = na_drop(interaction@enable_reorder_rows),
+    enableReorderColumns = na_drop(interaction@enable_reorder_columns),
+    enableEdit = na_drop(interaction@enable_edit),
+    enableAxisZoom = na_drop(interaction@enable_axis_zoom),
+    showGroupCounts = na_drop(interaction@show_group_counts),
     tooltipFields = interaction@tooltip_fields,
     enableThemes = themes_config
   )
+  out[!vapply(out, is.null, logical(1))]
+}
+
+#' Serialize the GLOBAL tier of the interaction-defaults chain (wire 1.4)
+#'
+#' Reads `options(tabviz.interaction_defaults = list(enable_edit = TRUE, ...))`
+#' at wire time and emits a sparse flag map onto `spec.interactionDefaults`.
+#' Keys are web_interaction() argument names (snake_case; TS normalizes).
+#' Only single non-NA logicals survive. Returns NULL when the option is
+#' unset/empty — the common case.
+#' @keywords internal
+serialize_interaction_defaults <- function(opt = getOption("tabviz.interaction_defaults", NULL)) {
+  if (is.null(opt) || !is.list(opt) || length(opt) == 0L || is.null(names(opt))) {
+    return(NULL)
+  }
+  keep <- vapply(opt, function(v) {
+    is.logical(v) && length(v) == 1L && !is.na(v)
+  }, logical(1)) & nzchar(names(opt))
+  if (!any(keep)) return(NULL)
+  opt[keep]
 }
 
 #' Serialize PlotLabels

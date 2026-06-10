@@ -175,24 +175,30 @@ export function tabviz(args: TabvizArgs): WebSpec {
     weightCol: null,
   };
 
-  const interaction: InteractionSpec = {
-    showFilters: args.showFilters ?? true,
-    showLegend: args.showLegend ?? true,
-    enableSort: args.enableSort ?? true,
-    enableCollapse: args.enableCollapse ?? true,
-    enableSelect: args.enableSelect ?? true,
-    enableHover: args.enableHover ?? true,
-    enableResize: args.enableResize ?? true,
-    enableExport: args.enableExport ?? true,
-    enableReorderRows: args.enableReorderRows ?? true,
-    enableReorderColumns: args.enableReorderColumns ?? true,
-    enableEdit: args.enableEdit ?? true,
-    ...(args.enableThemeEdit !== undefined ? { enableThemeEdit: args.enableThemeEdit } : {}),
-    enableAxisZoom: args.enableAxisZoom ?? false,
-    enableFilters: args.enableFilters ?? true,
-    showGroupCounts: args.showGroupCounts ?? false,
-    tooltipFields: args.tooltipFields ?? null,
+  // SPARSE interaction tier (interactivity-UX arc P1): emit only the flags
+  // the author explicitly passed. Unset flags resolve through theme opinion
+  // → global tier → baked defaults in lib/interaction-resolve.ts — eagerly
+  // filling defaults here would shadow every other tier.
+  const interaction: InteractionSpec = {};
+  const setFlag = <K extends keyof InteractionSpec>(key: K, value: InteractionSpec[K]) => {
+    if (value !== undefined) interaction[key] = value;
   };
+  setFlag("showFilters", args.showFilters);
+  setFlag("showLegend", args.showLegend);
+  setFlag("enableSort", args.enableSort);
+  setFlag("enableCollapse", args.enableCollapse);
+  setFlag("enableSelect", args.enableSelect);
+  setFlag("enableHover", args.enableHover);
+  setFlag("enableResize", args.enableResize);
+  setFlag("enableExport", args.enableExport);
+  setFlag("enableReorderRows", args.enableReorderRows);
+  setFlag("enableReorderColumns", args.enableReorderColumns);
+  setFlag("enableEdit", args.enableEdit);
+  setFlag("enableThemeEdit", args.enableThemeEdit);
+  setFlag("enableAxisZoom", args.enableAxisZoom);
+  setFlag("enableFilters", args.enableFilters);
+  setFlag("showGroupCounts", args.showGroupCounts);
+  setFlag("tooltipFields", args.tooltipFields ?? undefined);
 
   const layout: LayoutSpec = {
     plotWidth: args.plotWidth ?? "auto",

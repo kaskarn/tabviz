@@ -227,6 +227,40 @@ describe("columns slice — lifecycle", () => {
     expect(h.slice.hiddenColumnIds.has("b")).toBe(true);
   });
 
+  test("hydrateForSpec seeds spec.figureLayout widths under session state", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
+    h.slice.setColumnWidth("a", 150); // live session pin — must win
+    h.setSpec({
+      ...buildHarnessSpec([textCol("a"), textCol("b")]),
+      figureLayout: {
+        columnWidths: { a: 99, b: 120, ghost: 80 }, // ghost id → dropped
+      },
+    });
+    h.slice.hydrateForSpec();
+    expect(h.slice.columnWidths).toEqual({ a: 150, b: 120 });
+    expect(h.slice.userResizedIds.has("b")).toBe(true); // block widths pin
+    expect("ghost" in h.slice.columnWidths).toBe(false);
+  });
+
+  test("hydrateForSpec applies figureLayout column order only when session has none", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b"), textCol("c")] });
+    h.setSpec({
+      ...buildHarnessSpec([textCol("a"), textCol("b"), textCol("c")]),
+      figureLayout: { columnOrder: { topLevel: ["c", "a", "b"] } },
+    });
+    h.slice.hydrateForSpec();
+    expect(h.slice.allColumns.map((col) => col.id)).toEqual(["c", "a", "b"]);
+
+    // Session reorder survives a second hydrate even when the block differs.
+    h.slice.moveColumnItem("b", 0);
+    h.setSpec({
+      ...buildHarnessSpec([textCol("a"), textCol("b"), textCol("c")]),
+      figureLayout: { columnOrder: { topLevel: ["a", "b", "c"] } },
+    });
+    h.slice.hydrateForSpec();
+    expect(h.slice.allColumns.map((col) => col.id)[0]).toBe("b");
+  });
+
   test("hydrateForSpec still resets column edits (inserts + overrides)", () => {
     const h = buildColumnsHarness({ columns: [textCol("a")] });
     h.slice.insertColumn(textCol("z"), "a");

@@ -8,20 +8,20 @@
 \title{Create interaction specification}
 \usage{
 web_interaction(
-  show_legend = TRUE,
-  enable_sort = TRUE,
-  enable_collapse = TRUE,
-  enable_select = TRUE,
-  enable_hover = TRUE,
-  enable_resize = TRUE,
-  enable_export = TRUE,
-  enable_filters = TRUE,
-  enable_reorder_rows = TRUE,
-  enable_reorder_columns = TRUE,
-  enable_edit = TRUE,
-  enable_theme_edit = TRUE,
-  enable_axis_zoom = FALSE,
-  show_group_counts = FALSE,
+  show_legend = NA,
+  enable_sort = NA,
+  enable_collapse = NA,
+  enable_select = NA,
+  enable_hover = NA,
+  enable_resize = NA,
+  enable_export = NA,
+  enable_filters = NA,
+  enable_reorder_rows = NA,
+  enable_reorder_columns = NA,
+  enable_edit = NA,
+  enable_theme_edit = NA,
+  enable_axis_zoom = NA,
+  show_group_counts = NA,
   tooltip_fields = NULL,
   enable_themes = getOption("tabviz.enable_themes", "default"),
   show_filters = lifecycle::deprecated()
@@ -98,4 +98,15 @@ when off.
 \details{
 Use this distinction when adding new arguments: render-or-not is \code{show_},
 can-the-user-do-it is \code{enable_}.
+
+Every flag defaults to \code{NA} = "not specified". Unspecified flags resolve
+through a defaults chain (explicit setting > theme opinion
+(\code{web_theme(interaction_defaults=)}) > global default
+(\code{options(tabviz.interaction_defaults=)}) > baked defaults). The baked
+defaults are conservative: reader-safe capabilities (sorting, collapsing,
+hover, selection, filters, export, column resize, the settings cog) are
+ON; author-grade affordances that change what the figure shows (inline
+editing, row/column reorder, axis domain zoom) are OFF. Pass explicit
+\code{TRUE}/\code{FALSE} to override any tier; \code{\link[=web_interaction_full]{web_interaction_full()}} switches
+everything on explicitly.
 }

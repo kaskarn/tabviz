@@ -49,6 +49,7 @@ import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
 import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
+import { resolveInteraction } from "$lib/interaction-resolve";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/layout/row-kind";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, panelContentKey, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
 import { markdownToPlainText } from "$lib/markdown";
@@ -621,7 +622,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   // See GROUP_HEADER constants in rendering-constants.ts
   // This must match the web view measurement in tabvizStore.svelte.ts
   // ========================================================================
-  const showGroupCounts = !!spec.interaction?.showGroupCounts;
+  const showGroupCounts = resolveInteraction(spec).showGroupCounts;
   for (const group of groups) {
     if (group.label) {
       const indentWidth = group.depth * indentPx;
@@ -4804,7 +4805,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // so renderGroupHeader's `if (rowCount > 0)` gate skips the "(n)" text.
       // When this header is part of a band (bandIndexes[i] != null), skip the
       // primary-tint bg so the band color reads as continuous with its rows.
-      const showCounts = !!spec.interaction?.showGroupCounts;
+      const showCounts = resolveInteraction(spec).showGroupCounts;
       const renderBg = bandIndexes[i] == null;
       parts.push(renderGroupHeader(
         displayRow.label,

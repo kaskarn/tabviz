@@ -235,6 +235,17 @@ export interface ThemeInputs {
    *  the data MEANS. See lib/theme/column-defaults.ts. */
   column_defaults?: Partial<Record<string, Record<string, unknown>>>;
 
+  /** Theme-opinionated interaction defaults (interactivity-UX arc P1).
+   *  Sparse map of boolean capability flags (snake_case or camelCase keys;
+   *  e.g. `{ enable_axis_zoom: true }`) sitting BETWEEN the global tier and
+   *  the author's explicit `interaction` settings in the resolution chain
+   *  (`lib/interaction-resolve.ts`): a presentation theme can switch zoom
+   *  affordances on; an editorial theme keeps chrome quiet; an explicit
+   *  author setting always wins. UNTRUSTED ingress — unknown keys and
+   *  non-boolean values are dropped at resolve time AND validated at both
+   *  wire ingresses (TS `validateThemeInputs`, R `theme_inputs_from_wire`). */
+  interaction_defaults?: Partial<Record<string, boolean>>;
+
   /** Phase D — GEOMETRY cascade axis.
    *
    *  Numeric scale tokens that drive corner softness + line weight across

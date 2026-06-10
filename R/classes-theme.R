@@ -251,7 +251,17 @@ ThemeInputs <- new_class(
     # precedence) runs TS-side in applyThemeColumnDefaultsToSpec — the schema
     # is the single source of truth, so R replicates none of it. Empty = no
     # house-style defaults. Set via set_column_default().
-    column_defaults = new_property(class_list, default = quote(list()))
+    column_defaults = new_property(class_list, default = quote(list())),
+
+    # Theme-opinionated interaction defaults (interactivity-UX arc P1).
+    # Sparse named list of capability flags → logical scalars, e.g.
+    # `list(enable_axis_zoom = TRUE)`. Sits BETWEEN the global tier
+    # (options(tabviz.interaction_defaults=)) and the author's explicit
+    # web_interaction() settings — resolution runs TS-side in
+    # lib/interaction-resolve.ts (explicit > theme > global > baked).
+    # Serializes onto the inputs wire as `interaction_defaults`. Empty =
+    # no opinions.
+    interaction_defaults = new_property(class_list, default = quote(list()))
   ),
   validator = function(self) {
     for (anchor in c("anchors_paper", "anchors_ink", "anchors_brand")) {
@@ -374,6 +384,23 @@ ThemeInputs <- new_class(
             return(paste0("column_defaults$", type, "$", opt,
                           " must be a single scalar value"))
           }
+        }
+      }
+    }
+    # interaction_defaults — named list of logical scalars. Flag-name
+    # validity is checked TS-side at the validating ingress (unknown flags
+    # are dropped); structure is enforced here so an R author gets an
+    # immediate error on a malformed list.
+    idf <- self@interaction_defaults
+    if (length(idf) > 0L) {
+      if (is.null(names(idf)) || any(!nzchar(names(idf)))) {
+        return("interaction_defaults must be a named list of capability flags")
+      }
+      for (flag in names(idf)) {
+        v <- idf[[flag]]
+        if (!is.logical(v) || length(v) != 1L || is.na(v)) {
+          return(paste0("interaction_defaults$", flag,
+                        " must be a single TRUE/FALSE"))
         }
       }
     }

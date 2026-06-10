@@ -4,6 +4,7 @@ import type {
   Row,
 } from "$types";
 import { computeBandIndexes } from "$lib/banding";
+import { resolveInteraction } from "$lib/interaction-resolve";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
 import { resolveRowKind } from "$lib/layout/row-kind";
 import { type OpRecord } from "$lib/op-recorder";
@@ -410,12 +411,16 @@ export function createTabvizStore() {
     for (const g of newSpec.data.groups) {
       if (g.collapsed) rowsGroups.toggleGroup(g.id, true);
     }
-    // A fresh spec supersedes any prior interactive column edits. The
-    // columns slice owns the full per-column-id state surface (widths,
-    // user-resized flags, hides, inserts, configures, reorder); hydrate
-    // wipes all of them in one call. axisZooms is owned by the axis slice
-    // and reset separately.
+    // The columns slice owns the full per-column-id state surface (widths,
+    // user-resized flags, hides, inserts, configures, reorder). hydrate
+    // reconciles figure-layout state by id (survives data updates), seeds
+    // the incoming spec's figureLayout block under it, and resets column
+    // EDITS (inserts/configures). axisZooms is owned by the axis slice and
+    // reset separately.
     columns.hydrateForSpec();
+    // Row-kind height pins: merge the spec's figureLayout block under
+    // surviving session pins (P1 figure-state tier).
+    layoutZoom.hydrateForSpec(spec);
     axis.reset();
     // Cell + label edits + editingTarget + wrapLineCounts all reset
     // via the cells slice.
@@ -771,6 +776,7 @@ export function createTabvizStore() {
     $effect(() => { events.emit("hiddenColumns", Array.from(hiddenColumnIds)); });
     $effect(() => { events.emit("columnOrder", allColumns.map((c) => c.id)); });
     $effect(() => { events.emit("columnWidths", { ...columnWidths }); });
+    $effect(() => { events.emit("rowKindHeights", { ...layoutZoom.rowKindHeights }); });
     $effect(() => { events.emit("cellEdits", cells.cellEdits); });
     $effect(() => { events.emit("labelEdits", cells.labelEdits); });
     $effect(() => {
@@ -816,6 +822,7 @@ export function createTabvizStore() {
       void hiddenColumnIds;
       void allColumns;
       void columnWidths;
+      void layoutZoom.rowKindHeights;
       void cells.cellEdits;
       void cells.labelEdits;
       void zoom;
@@ -831,10 +838,20 @@ export function createTabvizStore() {
     });
   });
 
+  // Effective interaction surface — the four-tier defaults chain resolved
+  // (baked ← global ← theme opinion ← explicit). ALL interaction-flag
+  // consumers read this, never spec.interaction directly (the spec tier is
+  // sparse by design; see lib/interaction-resolve.ts).
+  const interaction = $derived(resolveInteraction(spec));
+
   return {
     // Getters (reactive)
     get spec() {
       return spec;
+    },
+    /** Resolved interaction capability surface (interactivity-UX arc P1). */
+    get interaction() {
+      return interaction;
     },
     get width() {
       return effectiveWidth;
@@ -1340,6 +1357,30 @@ export function createTabvizStore() {
     get targetAspect() { return targetAspect; },
     get targetAspectAnchor() { return spec?.targetAspectAnchor ?? "width"; },
     get userResizedIds() { return userResizedIds; },
+    /** Current figure-layout state assembled into the wire-block shape
+     *  (`spec.figureLayout`, P1 figure-state tier) — only deliberate pins
+     *  (user-resized widths, reorder overrides, row-kind height pins),
+     *  never auto-measured values. `null` when nothing is pinned. */
+    get figureLayout(): import("$types").FigureLayoutState | null {
+      const widths: Record<string, number> = {};
+      for (const id of userResizedIds) {
+        const w = columnWidths[id];
+        if (w != null) widths[id] = w;
+      }
+      const order = columns.columnOrderOverrides;
+      const hasOrder =
+        order.topLevel != null || Object.keys(order.byGroup).length > 0;
+      const pins = layoutZoom.rowKindHeights;
+      const hasPins = Object.keys(pins).length > 0;
+      if (Object.keys(widths).length === 0 && !hasOrder && !hasPins) return null;
+      return {
+        ...(Object.keys(widths).length > 0 ? { columnWidths: widths } : {}),
+        ...(hasOrder
+          ? { columnOrder: { topLevel: order.topLevel, byGroup: { ...order.byGroup } } }
+          : {}),
+        ...(hasPins ? { rowKindHeights: { ...pins } } : {}),
+      };
+    },
     // Aspect-ladder diagnostic: surface zoom-related state so the
     // puppeteer probe can see what auto-fit is doing.
     get _aspectDiag() {
