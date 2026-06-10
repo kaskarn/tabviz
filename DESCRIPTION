@@ -46,6 +46,8 @@ Collate:
     'typography-api.R'
     'shell-paper-api.R'
     'v4-inspect.R'
+    'column-schema.R'
+    'dtcg.R'
     'studio.R'
     'utils-serialize-resolved.R'
     'conditions.R'
