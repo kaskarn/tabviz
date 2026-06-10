@@ -15,6 +15,21 @@
 //      precision that changes the number shown) are dropped. An option with no
 //      declared kind is treated as "core" (the conservative default), so a
 //      theme can't reach an un-annotated option.
+//   3. XSS GRAMMAR GATE — column_defaults can ride an UNTRUSTED, shareable
+//      theme wire, and several styling options are colors emitted RAW into SVG
+//      attributes (bar-renderer `fill="${color}"`). A string value failing the
+//      shared pin grammar (isValidPinValue) is dropped at the merge below.
+//
+// KNOWN LIMITATION (theme-switch stickiness): the merge bakes the themed value
+// INTO spec.columns, and the theme-edit path (writeThemePath → setSpec) re-runs
+// the merge on those already-merged columns. To the second merge, the prior
+// theme's bake is indistinguishable from an author choice (it's no longer at
+// the schema default), so switching themes does NOT cleanly re-base a column
+// default — the old theme's house style persists. Harmless today (no shipped
+// preset declares column_defaults), but a clean fix needs provenance (mark
+// which option values were theme-applied so they can be re-based). Filed under
+// #65. Interactive `configure` is unaffected: it overlays columnSpecOverrides
+// as a derived replacement and never re-triggers the merge.
 
 import { getSchema } from "../../schema/extend";
 import { isValidPinValue } from "./consumer-bridge";
