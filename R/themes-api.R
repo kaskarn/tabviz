@@ -1182,7 +1182,9 @@ set_type_role <- function(theme, role, family = NULL, size = NULL, weight = NULL
 #' web_theme_nejm() |>
 #'   set_column_default("pvalue", stars = TRUE, significantStyle = "pill")
 #' }
-#' @seealso [web_theme()], [set_type_role()]
+#' @seealso [web_theme()], [set_type_role()]; [list_column_types()] and
+#'   [column_schema()] to discover which options a type exposes and which are
+#'   theme-defaultable (`themeable == TRUE`).
 #' @export
 set_column_default <- function(theme, type, ...) {
   if (!inherits(theme, "tabviz::WebTheme")) {

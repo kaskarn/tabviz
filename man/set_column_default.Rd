@@ -43,5 +43,7 @@ web_theme_nejm() |>
 }
 }
 \seealso{
-\code{\link[=web_theme]{web_theme()}}, \code{\link[=set_type_role]{set_type_role()}}
+\code{\link[=web_theme]{web_theme()}}, \code{\link[=set_type_role]{set_type_role()}}; \code{\link[=list_column_types]{list_column_types()}} and
+\code{\link[=column_schema]{column_schema()}} to discover which options a type exposes and which are
+theme-defaultable (\code{themeable == TRUE}).
 }
