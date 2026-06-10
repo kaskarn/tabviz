@@ -39,6 +39,8 @@ import type {
   WebSpec,
 } from "$types";
 import { getColumnDisplayText } from "$lib/formatters";
+import { applyColumnOrder } from "$lib/column-order";
+import { resolveInteraction } from "$lib/interaction-resolve";
 import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
 import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
 import {
@@ -129,6 +131,8 @@ export interface ColumnsSlice {
   setColumnWidth: (columnId: string, width: number) => void;
   previewColumnWidth: (columnId: string, width: number) => void;
   getColumnWidth: (columnId: string) => number | undefined;
+  /** Cancel a width-preview gesture: restore pre-drag width + pin state. */
+  cancelPreviewColumnWidth: (columnId: string, startWidth: number, wasUserResized: boolean) => void;
   /** Reset one column to auto width (drop pin + re-measure). */
   resetColumnWidth: (columnId: string) => void;
 
@@ -178,23 +182,9 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     return result;
   }
 
-  // Apply `columnOrderOverrides` to a ColumnDef[] (top-level or a group's
-  // children). New/missing ids are tolerated: unknown ids in the override
-  // are dropped; previously-unknown columns are appended in their
-  // original order.
-  function applyColumnOrder(defs: ColumnDef[], order: string[] | null | undefined): ColumnDef[] {
-    if (!order || order.length === 0) return defs;
-    const byId = new Map<string, ColumnDef>();
-    for (const d of defs) byId.set(d.id, d);
-    const result: ColumnDef[] = [];
-    const seen = new Set<string>();
-    for (const id of order) {
-      const d = byId.get(id);
-      if (d) { result.push(d); seen.add(id); }
-    }
-    for (const d of defs) if (!seen.has(d.id)) result.push(d);
-    return result;
-  }
+  // applyColumnOrder lives in $lib/column-order — ONE implementation
+  // shared with the SVG export path (which applies figureLayout.columnOrder
+  // at spec ingest). Tolerance contract documented there.
 
   // Apply the user's runtime column edits to a ColumnDef list:
   //   1. replace specs the user Configure'd
@@ -470,6 +460,26 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
 
   function getColumnWidth(columnId: string): number | undefined {
     return columnWidths[columnId];
+  }
+
+  /**
+   * Cancel a width-preview gesture (Escape mid-drag): restore the pre-drag
+   * width and, when the column was NOT user-pinned before the drag, drop
+   * the pin flag `previewColumnWidth` side-effected on — a cancelled
+   * gesture must leave zero trace (no phantom permanent pin that would
+   * freeze the column against flex/measure forever).
+   */
+  function cancelPreviewColumnWidth(
+    columnId: string,
+    startWidth: number,
+    wasUserResized: boolean,
+  ) {
+    columnWidths[columnId] = Math.max(40, startWidth);
+    if (!wasUserResized && userResizedIds.has(columnId)) {
+      const next = new Set(userResizedIds);
+      next.delete(columnId);
+      userResizedIds = next;
+    }
   }
 
   /**
@@ -776,7 +786,10 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         return count;
       }
 
-      const showGroupCounts = !!spec.interaction.showGroupCounts;
+      // RESOLVED surface, never raw spec.interaction (sparse tier): a count
+      // enabled via theme opinion / global tier must be width-budgeted here
+      // exactly as the renderer + SVG export will draw it.
+      const showGroupCounts = resolveInteraction(spec).showGroupCounts;
       const countFontSize = baseFontSize * 0.75;
       // Group-header labels are typically a handful per spec; rather than
       // rank+top-K, just exact-measure all of them. Cost is small in
@@ -892,6 +905,11 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const validIds = new Set<string>(
       next ? flattenAllColumns(next.columns).map((c) => c.id) : [],
     );
+    // The label (primary) column rides spec.labelColumn, NOT spec.columns —
+    // it gets a resize handle like any other column, so its figure-layout
+    // state must survive the reconcile too (review pass: it was silently
+    // dropped, re-destroying label-column resizes on every data update).
+    if (next?.labelColumn?.id) validIds.add(next.labelColumn.id);
 
     const keptResized = new Set<string>();
     const keptWidths: Record<string, number> = {};
@@ -910,12 +928,14 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     // block's pin for the same column; block pins fill the rest. Block
     // widths count as user-resized — they're deliberate pins and must
     // survive re-measure/theme/density like any interactive resize.
+    // The wire is UNTRUSTED: clamp magnitudes (a 1e9 pin is an immovable
+    // explicitWidth in the flex distribution → degenerate SVG widths).
     const block = next?.figureLayout;
     if (block?.columnWidths) {
       for (const [id, px] of Object.entries(block.columnWidths)) {
         if (!validIds.has(id) || keptResized.has(id)) continue;
         if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
-        keptWidths[id] = Math.max(40, Math.round(px));
+        keptWidths[id] = Math.min(10000, Math.max(40, Math.round(px)));
         keptResized.add(id);
       }
     }
@@ -936,9 +956,9 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
             ? block.columnOrder.topLevel.filter((id) => typeof id === "string")
             : null,
           byGroup: Object.fromEntries(
-            Object.entries(block.columnOrder.byGroup ?? {}).filter(([, v]) =>
-              Array.isArray(v),
-            ),
+            Object.entries(block.columnOrder.byGroup ?? {})
+              .filter(([, v]) => Array.isArray(v))
+              .map(([k, v]) => [k, (v as unknown[]).filter((id) => typeof id === "string")]),
           ),
         };
       }
@@ -983,6 +1003,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     setColumnWidth,
     previewColumnWidth,
     getColumnWidth,
+    cancelPreviewColumnWidth,
     resetColumnWidth,
 
     findColumnScope,

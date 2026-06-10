@@ -2139,6 +2139,19 @@ col_group <- function(header, ...) {
 # ============================================================================
 # Interaction specification
 # ============================================================================
+# The boolean capability-flag roster (snake_case) — ONE R-side source,
+# mirroring TS `INTERACTION_FLAG_KEYS` in lib/interaction-resolve.ts
+# (sync gate: test-interaction-roster-sync.R). Used by the ThemeInputs
+# validator (web_theme(interaction_defaults=)) and the untrusted theme
+# wire import.
+TABVIZ_INTERACTION_FLAGS <- c(
+  "show_filters", "show_legend", "enable_sort", "enable_collapse",
+  "enable_select", "enable_hover", "enable_resize", "enable_export",
+  "enable_theme_edit", "enable_filters", "enable_reorder_rows",
+  "enable_reorder_columns", "enable_edit", "enable_axis_zoom",
+  "enable_arrange", "show_group_counts"
+)
+
 
 #' InteractionSpec: Interaction settings
 #'
@@ -2419,6 +2432,9 @@ web_interaction <- function(
 #' @rdname web_interaction
 #' @export
 web_interaction_minimal <- function() {
+  # A named preset is a COMPLETE statement (review pass): every flag is
+  # explicit so theme opinions / global defaults can't flip capabilities
+  # underneath it. Hover stays on (reading aid); everything else off.
   web_interaction(
     show_legend = TRUE,
     enable_sort = FALSE,
@@ -2430,13 +2446,20 @@ web_interaction_minimal <- function() {
     enable_filters = FALSE,
     enable_reorder_rows = FALSE,
     enable_reorder_columns = FALSE,
-    enable_edit = FALSE
+    enable_edit = FALSE,
+    enable_theme_edit = FALSE,
+    enable_axis_zoom = FALSE,
+    enable_arrange = FALSE,
+    show_group_counts = FALSE
   )
 }
 
 #' @rdname web_interaction
 #' @export
 web_interaction_publication <- function() {
+  # Fully static (review pass: COMPLETE statement — every flag explicit,
+  # including the settings cog and theme switcher, so no defaults tier can
+  # re-introduce chrome under a preset that promises none).
   web_interaction(
     show_legend = FALSE,
     enable_sort = FALSE,
@@ -2448,7 +2471,12 @@ web_interaction_publication <- function() {
     enable_filters = FALSE,
     enable_reorder_rows = FALSE,
     enable_reorder_columns = FALSE,
-    enable_edit = FALSE
+    enable_edit = FALSE,
+    enable_theme_edit = FALSE,
+    enable_axis_zoom = FALSE,
+    enable_arrange = FALSE,
+    show_group_counts = FALSE,
+    enable_themes = NULL
   )
 }
 

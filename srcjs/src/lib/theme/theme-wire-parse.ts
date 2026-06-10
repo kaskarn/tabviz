@@ -59,7 +59,10 @@ export function parseThemeWire(json: string): PinnedThemeWire {
       `tabviz: unknown theme wire schema "${wire.$schema}" (expected "tabviz-theme/v4"); importing anyway.`,
     );
   }
-  // Tier-1 inputs: the same wall R authors hit via the S7 validator.
+  // Tier-1 inputs: the strict ingress wall. The R S7 validator now
+  // mirrors the checks that matter for cross-side artifacts (e.g.
+  // interaction_defaults flag NAMES — review pass: an R-accepted typo
+  // used to make the exported envelope un-importable here).
   validateThemeInputs(wire.inputs);
 
   const problems: ThemeIssue[] = [];

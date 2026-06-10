@@ -15,16 +15,20 @@ set_figure_layout(
 \item{x}{A \code{WebSpec} object or htmlwidget.}
 
 \item{column_widths}{Named list/vector of column width pins
-(column id → px), e.g. \verb{input$<id>_column_widths}. Widths pin like a
-user drag: they survive re-measure, theme and density changes.}
+(column id → px). Accepts the raw Shiny input
+(\verb{input$<id>_column_widths} — the envelope is unwrapped automatically).
+Widths pin like a user drag: they survive re-measure, theme and
+density changes.}
 
 \item{row_kind_heights}{Named list/vector of row-kind height pins
-(kind → px), e.g. \verb{input$<id>_row_kind_heights}. Kinds: \code{"data"},
-\code{"group_header"}, \code{"spacer"}, \code{"summary"}, \code{"header"}, \code{"panel"}.}
+(kind → px). Accepts the raw Shiny input
+(\verb{input$<id>_row_kind_heights}). Kinds: \code{"data"}, \code{"group_header"},
+\code{"spacer"}, \code{"summary"}, \code{"header"}.}
 
-\item{column_order}{Optional reorder block:
-\verb{list(top_level = c("id1", ...), by_group = list(<group id> = c(...)))}.
-Unknown ids are inert (dropped at apply time).}
+\item{column_order}{Reorder: either a flat character vector of column
+ids (the shape \verb{input$<id>_column_order} emits — applied at top
+level), or \verb{list(top_level = c("id1", ...), by_group = list(<group id> = c(...)))}. Unknown ids are inert
+(dropped at apply time).}
 }
 \value{
 The modified WebSpec or htmlwidget (invisibly).

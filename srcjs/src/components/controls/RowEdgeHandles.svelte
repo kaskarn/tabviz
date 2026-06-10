@@ -20,20 +20,31 @@
   //   readout      → live "<kind> · NNpx" label while dragging/focused
   //   keyboard     → ArrowUp/Down ±1px (Shift ±10px) on focused handles
 
+  import { onDestroy } from "svelte";
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { RowKind } from "$lib/layout/row-kind";
   import { resolveRowKind } from "$lib/layout/row-kind";
+  import { elementScale } from "$lib/scale-factor";
   import type { DisplayRow } from "$types";
 
   interface Props {
     store: TabvizStore;
     /** Per-row Y positions (top of each row), in rows-region coordinates. */
     rowPositions: readonly number[];
-    /** Per-row heights. */
+    /** Per-row heights — grid TRACK heights, which INCLUDE any trailing
+     *  rowGroupPadding on group-boundary rows. */
     rowHeights: readonly number[];
     /** Per-row data — used to resolve each row's kind. Length must match
      *  rowPositions / rowHeights. */
     displayRows: readonly DisplayRow[];
+    /** Per-row trailing rowGroupPadding (px; 0 for most rows). Handles sit
+     *  on the row's VISIBLE bottom (track bottom − pad), which (a) puts the
+     *  handle where the row visually ends, (b) keeps it clear of the
+     *  group-gap EdgeResize seam at the track bottom (review pass: the two
+     *  affordances previously occupied the exact same 10px band, with the
+     *  row handle winning every hit), and (c) keeps the trailing pad OUT of
+     *  the height that gets pinned for the whole kind. */
+    trailingPads?: readonly number[];
     /** Y offset of the rows region inside the overlay's parent (the
      *  header band height — same offset the spacing seams apply). */
     topOffset?: number;
@@ -48,6 +59,7 @@
     rowPositions,
     rowHeights,
     displayRows,
+    trailingPads,
     topOffset = 0,
     enabled = true,
   }: Props = $props();
@@ -59,6 +71,7 @@
   let dragValue = $state(0);
   let startY = 0;
   let startHeight = 0;
+  let dragScale = 1;
   let startPin: number | undefined; // pin value at drag start (undefined = unpinned)
 
   const ghostKind = $derived(dragKind ?? hoverKind);
@@ -72,6 +85,12 @@
     return kindOf(rowIdx) !== "panel";
   }
 
+  /** The row's VISIBLE height: grid track minus trailing group padding —
+   *  the value a per-kind pin should be derived from. */
+  function visibleHeight(rowIdx: number): number {
+    return (rowHeights[rowIdx] ?? 0) - (trailingPads?.[rowIdx] ?? 0);
+  }
+
   function startResize(e: PointerEvent, rowIdx: number): void {
     if (!store || !enabled || e.button !== 0) return;
     e.preventDefault();
@@ -80,7 +99,9 @@
     dragKind = kind;
     dragIndex = rowIdx;
     startY = e.clientY;
-    startHeight = rowHeights[rowIdx] ?? 0;
+    startHeight = visibleHeight(rowIdx);
+    // Client→layout px: the overlay lives inside the CSS-scaled subtree.
+    dragScale = elementScale(e.currentTarget as HTMLElement);
     startPin = store.rowKindHeights[kind];
     dragValue = Math.round(startHeight);
     attachDragListeners();
@@ -88,7 +109,7 @@
 
   function onResize(e: PointerEvent): void {
     if (dragKind === null || dragIndex === null || !store) return;
-    const proposed = startHeight + (e.clientY - startY);
+    const proposed = startHeight + (e.clientY - startY) / dragScale;
     const newHeight = Math.max(MIN_HEIGHT_PX, Math.round(proposed));
     if (newHeight !== dragValue) {
       dragValue = newHeight;
@@ -118,7 +139,10 @@
     e.preventDefault();
     e.stopPropagation();
     const kind = kindOf(rowIdx);
-    const current = Math.round(rowHeights[rowIdx] ?? 0);
+    // Nudge from the existing pin when set (else the row's visible height):
+    // nudging from a content-grown row's rendered height would JUMP the
+    // whole kind to the inflated value on the first keypress.
+    const current = Math.round(store.rowKindHeights[kind] ?? visibleHeight(rowIdx));
     const step = (e.shiftKey ? 10 : 1) * (e.key === "ArrowDown" ? 1 : -1);
     store.setRowKindHeight(kind, Math.max(MIN_HEIGHT_PX, current + step));
   }
@@ -147,6 +171,14 @@
     window.removeEventListener("keydown", onWindowKey, true);
   }
 
+  // Destroy mid-drag (e.g. a Shiny push drops enableArrange and the
+  // arrange block unmounts): CANCEL the gesture — restoring the pin the
+  // server-revoked mode started from — and tear the document listeners
+  // down (they'd otherwise keep writing through the closure forever).
+  onDestroy(() => {
+    if (dragKind !== null) stopResize(false);
+  });
+
   function handleLabel(rowIdx: number): string {
     const kind = kindOf(rowIdx).replace("_", " ");
     return `Resize all ${kind} rows`;
@@ -162,7 +194,7 @@
         {#if kindOf(i) === ghostKind}
           <div
             class="row-kind-ghost"
-            style="top: {topOffset + top}px; height: {rowHeights[i] ?? 0}px;"
+            style="top: {topOffset + top}px; height: {visibleHeight(i)}px;"
             aria-hidden="true"
           ></div>
         {/if}
@@ -170,11 +202,10 @@
     {/if}
     {#each rowPositions as top, i (i)}
       {#if resizable(i)}
-        {@const height = rowHeights[i] ?? 0}
         <button
           type="button"
           class="row-edge-handle"
-          style="top: {topOffset + top + height}px;"
+          style="top: {topOffset + top + visibleHeight(i)}px;"
           data-active={dragIndex === i}
           onpointerdown={(e) => startResize(e, i)}
           ondblclick={() => releasePin(i)}

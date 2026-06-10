@@ -387,16 +387,24 @@ ThemeInputs <- new_class(
         }
       }
     }
-    # interaction_defaults — named list of logical scalars. Flag-name
-    # validity is checked TS-side at the validating ingress (unknown flags
-    # are dropped); structure is enforced here so an R author gets an
-    # immediate error on a malformed list.
+    # interaction_defaults — named list of logical scalars over the known
+    # capability-flag roster. Flag NAMES are validated HERE (review pass):
+    # the R resolve path (resolve_from_inputs -> buildTheme) never crosses
+    # the TS validateThemeInputs ingress, and that ingress THROWS rather
+    # than drops — so a typo'd flag accepted here would both silently
+    # never apply AND make the exported wire envelope un-importable by
+    # studio/settings/parseThemeWire.
     idf <- self@interaction_defaults
     if (length(idf) > 0L) {
       if (is.null(names(idf)) || any(!nzchar(names(idf)))) {
         return("interaction_defaults must be a named list of capability flags")
       }
       for (flag in names(idf)) {
+        if (!flag %in% TABVIZ_INTERACTION_FLAGS) {
+          return(paste0("interaction_defaults: unknown capability flag '",
+                        flag, "' (valid: ",
+                        paste(TABVIZ_INTERACTION_FLAGS, collapse = ", "), ")"))
+        }
         v <- idf[[flag]]
         if (!is.logical(v) || length(v) != 1L || is.na(v)) {
           return(paste0("interaction_defaults$", flag,

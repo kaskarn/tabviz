@@ -4,6 +4,8 @@
 // the axis is log-scaled. The action does not itself talk to the store — the
 // caller decides how the new domain is applied.
 
+import { elementScale } from "./scale-factor";
+
 // Pixel anchor → domain value, honoring linear vs log space.
 function pixelToDomain(
   px: number,
@@ -103,8 +105,17 @@ export function zoomable(node: HTMLElement | SVGElement, initial: ZoomableParams
   let dragPointerId: number | null = null;
   let dragMoved = false;
 
+  // Client→layout px factor: the overlay lives inside the CSS-scaled
+  // `.tabviz-scalable`, but getPixelRange is in LAYOUT px. Without the
+  // division, the wheel anchor lands at the wrong domain value (zooming
+  // around the midpoint instead of the cursor at 50% auto-fit) and pan
+  // lags the cursor by the scale factor.
+  function nodeScale(): number {
+    return elementScale(node);
+  }
+
   function nodeLocalX(clientX: number): number {
-    return clientX - node.getBoundingClientRect().left;
+    return (clientX - node.getBoundingClientRect().left) / nodeScale();
   }
 
   // Click-vs-drag passthrough: when pointerup fires with no meaningful
@@ -167,7 +178,7 @@ export function zoomable(node: HTMLElement | SVGElement, initial: ZoomableParams
 
   function onPointerMove(e: PointerEvent) {
     if (dragStartDomain == null || dragPointerId !== e.pointerId) return;
-    const dx = e.clientX - dragStartClientX;
+    const dx = (e.clientX - dragStartClientX) / nodeScale();
     const dy = e.clientY - dragStartClientY;
     if (!dragMoved && Math.hypot(dx, dy) > CLICK_DRAG_THRESHOLD_PX) {
       dragMoved = true;

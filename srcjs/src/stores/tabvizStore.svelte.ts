@@ -623,6 +623,33 @@ export function createTabvizStore() {
   // tooltipRow lives on the rows-groups slice (Phase 0c-C1 PR5).
   const tooltipRow = $derived(rowsGroups.tooltipRow);
 
+  // Derived: the current figure-layout state in the wire-block shape
+  // (`spec.figureLayout`, P1 figure-state tier) — only deliberate pins
+  // (user-resized widths, reorder overrides, row-kind height pins), never
+  // auto-measured values. `null` when nothing is pinned. Consumed by the
+  // public getter AND attached to exportSpec so static/browser exports
+  // honor the pins the widget shows (review pass).
+  const figureLayoutState = $derived.by((): import("$types").FigureLayoutState | null => {
+    const widths: Record<string, number> = {};
+    for (const id of userResizedIds) {
+      const w = columnWidths[id];
+      if (w != null) widths[id] = w;
+    }
+    const order = columns.columnOrderOverrides;
+    const hasOrder =
+      order.topLevel != null || Object.keys(order.byGroup).length > 0;
+    const pins = layoutZoom.rowKindHeights;
+    const hasPins = Object.keys(pins).length > 0;
+    if (Object.keys(widths).length === 0 && !hasOrder && !hasPins) return null;
+    return {
+      ...(Object.keys(widths).length > 0 ? { columnWidths: widths } : {}),
+      ...(hasOrder
+        ? { columnOrder: { topLevel: order.topLevel, byGroup: { ...order.byGroup } } }
+        : {}),
+      ...(hasPins ? { rowKindHeights: { ...pins } } : {}),
+    };
+  });
+
   // Derived: exportSpec — WYSIWYG spec reflecting the user's current view state.
   // Both the interactive renderer and the SVG/PNG export consume this (via different paths),
   // keeping them in lock-step by construction. See the interactivity plan for details.
@@ -745,6 +772,11 @@ export function createTabvizStore() {
       },
       labels: mergedLabels,
       theme: themeForExport,
+      // Figure-layout pins ride the exported spec: column order/widths are
+      // already baked above (effectiveColumnDefs / options.columnWidths),
+      // but the ROW-KIND height pins only reach the static renderer via
+      // this block (svg-generator reads spec.figureLayout.rowKindHeights).
+      ...(figureLayoutState ? { figureLayout: figureLayoutState } : {}),
     };
   });
 
@@ -819,6 +851,9 @@ export function createTabvizStore() {
       void semantics.styleEdits;
       void semantics.paintTool;
       void rowsGroups.collapsedGroups;
+      // expanded_rows ships in the _state bundle — it must be tracked here
+      // or details-panel toggles leave the bundle stale (review pass).
+      void rowsGroups.expandedRows;
       void hiddenColumnIds;
       void allColumns;
       void columnWidths;
@@ -1344,6 +1379,7 @@ export function createTabvizStore() {
     setTooltip: rowsGroups.setTooltip,
     setColumnWidth: columns.setColumnWidth,
     previewColumnWidth: columns.previewColumnWidth,
+    cancelPreviewColumnWidth: columns.cancelPreviewColumnWidth,
     resetColumnWidth: columns.resetColumnWidth,
     setPlotWidth: layoutZoom.setPlotWidth,
     setMeasuredRowHeights: layoutZoom.setMeasuredRowHeights,
@@ -1365,24 +1401,7 @@ export function createTabvizStore() {
      *  (user-resized widths, reorder overrides, row-kind height pins),
      *  never auto-measured values. `null` when nothing is pinned. */
     get figureLayout(): import("$types").FigureLayoutState | null {
-      const widths: Record<string, number> = {};
-      for (const id of userResizedIds) {
-        const w = columnWidths[id];
-        if (w != null) widths[id] = w;
-      }
-      const order = columns.columnOrderOverrides;
-      const hasOrder =
-        order.topLevel != null || Object.keys(order.byGroup).length > 0;
-      const pins = layoutZoom.rowKindHeights;
-      const hasPins = Object.keys(pins).length > 0;
-      if (Object.keys(widths).length === 0 && !hasOrder && !hasPins) return null;
-      return {
-        ...(Object.keys(widths).length > 0 ? { columnWidths: widths } : {}),
-        ...(hasOrder
-          ? { columnOrder: { topLevel: order.topLevel, byGroup: { ...order.byGroup } } }
-          : {}),
-        ...(hasPins ? { rowKindHeights: { ...pins } } : {}),
-      };
+      return figureLayoutState;
     },
     // Aspect-ladder diagnostic: surface zoom-related state so the
     // puppeteer probe can see what auto-fit is doing.

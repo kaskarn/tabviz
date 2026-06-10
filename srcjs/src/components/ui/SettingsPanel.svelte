@@ -50,6 +50,11 @@
   function handleKeydown(e: KeyboardEvent) {
     if (!open) return;
     if (e.key === "Escape") {
+      // preventDefault marks the Escape as CONSUMED for sibling window
+      // listeners (ArrangeButton checks e.defaultPrevented) — plain
+      // stopPropagation cannot suppress same-node listeners, so without
+      // this one Escape closed the panel AND silently disarmed arrange.
+      e.preventDefault();
       e.stopPropagation();
       store.closeSettings();
       return;

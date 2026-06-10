@@ -13,4 +13,10 @@ from Shiny inputs or set via \code{\link[=set_figure_layout]{set_figure_layout()
 erroring — the block typically round-trips through Shiny input values,
 so be liberal in what we accept. Returns NULL when nothing survives.
 }
+\details{
+Exact \verb{[[ ]]} access throughout (house rule for wire importers — \code{$}
+partial matching silently mis-binds prefix-sharing keys).
+
+[ ]: R:\%20
+}
 \keyword{internal}

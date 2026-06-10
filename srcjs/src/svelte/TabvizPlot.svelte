@@ -49,6 +49,7 @@
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
   import PlotHeader from "$components/forest/PlotHeader.svelte";
   import EdgeResize from "$components/ui/EdgeResize.svelte";
+  import { elementScale } from "$lib/scale-factor";
   import PlotFooter from "$components/forest/PlotFooter.svelte";
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
@@ -607,12 +608,24 @@
   // Get available themes for theme switcher (null = disabled, object = custom themes)
   const enableThemes = $derived(interaction.enableThemes);
 
-  // Keyboard shortcuts for zoom control
+  // Keyboard shortcuts for zoom control.
+  //
+  // CONTAINMENT (review pass): this is a window-level listener, so without
+  // a gate every widget on a multi-widget page (Quarto!) would zoom in
+  // lockstep AND the preventDefaults would hijack the browser's page-zoom
+  // (Cmd+/-) and tab-switch (Cmd+1) shortcuts page-wide. Only act when the
+  // pointer is over this widget or focus is inside it — the same scoping
+  // the wheel gesture gets for free by living on the container.
   function handleKeydown(event: KeyboardEvent) {
     // Only handle if modifier key is pressed
     if (!event.metaKey && !event.ctrlKey) return;
-    // Don't interfere with input fields
-    if ((event.target as HTMLElement)?.tagName === 'INPUT') return;
+    // Don't interfere with editable fields
+    const target = event.target as HTMLElement | null;
+    const tag = target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable) return;
+    if (!containerRef) return;
+    const engaged = containerRef.matches(":hover") || containerRef.contains(document.activeElement);
+    if (!engaged) return;
 
     switch (event.key) {
       case '=':
@@ -646,6 +659,10 @@
   function handleContainerWheel(event: WheelEvent) {
     if (!store.showZoomControls) return;
     if (!event.metaKey && !event.ctrlKey) return;
+    // Pinch/Ctrl+wheel over chrome surfaces (settings panel, toolbar) must
+    // not rescale the table behind them mid-edit.
+    const t = event.target as HTMLElement | null;
+    if (t?.closest(".settings-panel, .control-toolbar, .zoom-dropdown")) return;
     event.preventDefault();
     store.setZoom(store.zoom * Math.exp(-event.deltaY * WIDGET_WHEEL_FACTOR));
   }
@@ -1271,27 +1288,28 @@
   let columnStartX = 0;
   let columnStartWidth = 0;
   let columnLastWidth = 0;
+  let columnResizeScale = 1;
   let columnReadout = $state<{ x: number; y: number; text: string } | null>(null);
   // Track whether a drag actually moved — a plain click on the handle (no
   // movement) must not commit a width pin.
   let columnDragMoved = false;
+  // Pin state BEFORE the drag: Escape-cancel must restore it exactly
+  // (previewColumnWidth marks the column user-resized as a side effect;
+  // a cancelled gesture must not leave that phantom permanent pin).
+  let columnWasUserResized = false;
+
   function startColumnResize(e: PointerEvent, columnId: string, currentWidth: number) {
     if (!interaction.enableResize) return;
     e.preventDefault();
     e.stopPropagation();
-    // Double-press = autosize back to content width (spreadsheet idiom).
-    // Detected via e.detail on pointerdown: preventDefault above (needed to
-    // stop text-selection during the drag) suppresses the browser's
-    // synthesized dblclick event, but the press counter still increments.
-    if (e.detail >= 2) {
-      store.resetColumnWidth(columnId);
-      return;
-    }
     resizingColumn = columnId;
     columnStartX = e.clientX;
     columnStartWidth = currentWidth;
     columnLastWidth = currentWidth;
     columnDragMoved = false;
+    columnWasUserResized = store.userResizedIds.has(columnId);
+    // Client→layout px: the header lives inside the CSS-scaled subtree.
+    columnResizeScale = elementScale(e.currentTarget as HTMLElement);
     document.addEventListener("pointermove", onColumnResize);
     document.addEventListener("pointerup", stopColumnResize);
     window.addEventListener("keydown", onColumnResizeKey, true);
@@ -1300,7 +1318,7 @@
 
   function onColumnResize(e: PointerEvent) {
     if (!resizingColumn) return;
-    const delta = e.clientX - columnStartX;
+    const delta = (e.clientX - columnStartX) / columnResizeScale;
     if (!columnDragMoved && Math.abs(delta) < 2) return;
     columnDragMoved = true;
     const newWidth = Math.max(40, columnStartWidth + delta); // Min width 40px
@@ -1336,8 +1354,11 @@
     if (e.key !== "Escape" || !resizingColumn) return;
     e.preventDefault();
     e.stopPropagation();
-    // Cancel: restore the drag-start width; no commit, no op-log entry.
-    if (columnDragMoved) store.previewColumnWidth(resizingColumn, columnStartWidth);
+    // Cancel: restore the drag-start width AND the drag-start pin state —
+    // no commit, no op-log entry, no phantom user-resize pin.
+    if (columnDragMoved) {
+      store.cancelPreviewColumnWidth(resizingColumn, columnStartWidth, columnWasUserResized);
+    }
     teardownColumnResize();
   }
 
@@ -1513,7 +1534,9 @@
              .shell-strip                    ← caption↔data gradient seam
              .tv-paper                       ← data card (table + pager)
              PlotFooter                      ← figure annotation below card
-         TabvizOverlays / RowEdgeHandles     ← stay at root level
+         TabvizOverlays                      ← stays at root level
+     (RowEdgeHandles moved INSIDE the rows region in the interactivity
+     arc — that relocation was the coordinate-space fix.)
      Toolbar/panels/overlays are positioned chrome anchored to the root; they
      never move into the shell. Every height contributor except the shell's
      own padding is inside the measured subtree (kills the old shellExtrasPad
@@ -2571,15 +2594,18 @@
               />
             {/if}
           {/each}
-          <!-- Per-row-kind height handles: bottom edge of every row.
+          <!-- Per-row-kind height handles: VISIBLE bottom edge of every row.
                Mounted HERE — the same coordinate space as the spacing
                seams (rows-region positions + header offset), which is
-               what the old root-level mount never had. -->
+               what the old root-level mount never had. trailingPads keeps
+               handles off the group-gap seam at track bottoms (and the
+               trailing pad out of the pinned kind height). -->
           <RowEdgeHandles
             {store}
             rowPositions={layout.rowPositions ?? []}
             rowHeights={layout.rowHeights ?? []}
             {displayRows}
+            trailingPads={displayRows.map((_, i) => (rowPaddedAfter[i] ? rowGroupPadding : 0))}
             topOffset={layout.headerHeight}
             enabled={arrangeArmed}
           />
@@ -3110,10 +3136,12 @@
     text-overflow: ellipsis;
   }
 
-  /* Column resize handle: a 14px hit zone at the column boundary (P2 —
-     the old 6px target was sub-pointer-size and unusable on touch), with
-     a thin 2px visual line at the edge so the affordance doesn't read as
-     chrome. The zone sits fully INSIDE the cell: `.grid-cell` clips
+  /* Column resize handle: a 10px hit zone at the column boundary (P2 —
+     the old 6px target was sub-pointer-size; the review pass trimmed the
+     first cut's 14px so it clears the ColumnDragHandle grip at right:10px
+     with zero hit-zone overlap), with a thin 2px visual edge line so the
+     affordance doesn't read as chrome. The zone sits fully INSIDE the
+     cell: `.grid-cell` clips
      (overflow: hidden for text ellipsis), so a straddling overhang would
      be clipped out of hit-testing. */
   .resize-handle {
@@ -3121,7 +3149,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    width: 14px;
+    width: 10px;
     cursor: col-resize;
     background: transparent;
     touch-action: none;

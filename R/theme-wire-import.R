@@ -200,13 +200,7 @@ theme_inputs_from_wire <- function(wire_inputs) {
   # sanitizeInteractionOverrides in lib/interaction-resolve.ts.
   idf <- w[["interaction_defaults"]] %||% list()
   if (length(idf) > 0L && !is.null(names(idf))) {
-    flag_ok <- c(
-      "show_filters", "show_legend", "enable_sort", "enable_collapse",
-      "enable_select", "enable_hover", "enable_resize", "enable_export",
-      "enable_theme_edit", "enable_filters", "enable_reorder_rows",
-      "enable_reorder_columns", "enable_edit", "enable_axis_zoom",
-      "enable_arrange", "show_group_counts"
-    )
+    flag_ok <- TABVIZ_INTERACTION_FLAGS
     to_snake <- function(x) tolower(gsub("([A-Z])", "_\\1", x))
     clean_idf <- list()
     for (flag in names(idf)) {

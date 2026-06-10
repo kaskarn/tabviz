@@ -52,6 +52,8 @@ import { computeBandIndexes } from "$lib/banding";
 import { resolveInteraction } from "$lib/interaction-resolve";
 import { resolveRowKind, rowKindProps, type RowKind } from "$lib/layout/row-kind";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, panelContentKey, DEFAULT_AXIS_GAP, LINE_HEIGHT } from "$lib/layout/table-metrics";
+import { sanitizeRowKindPins } from "$lib/layout/row-kind-heights";
+import { applyFigureLayoutColumnOrder } from "$lib/column-order";
 import { markdownToPlainText } from "$lib/markdown";
 import { computeAspectLadder, minRowHeightFor } from "$lib/layout/aspect-ladder";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
@@ -769,12 +771,31 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // allColumns includes both legacy positioned columns and unified columns
   const allColumns = [...leftColumns, ...rightColumns, ...unifiedColumns];
 
+  // figureLayout width pins (P1 figure-state tier): deliberate user/author
+  // pins riding the spec wire. They sit UNDER web-view-provided widths
+  // (the live widget already resolved its layout, pins included) and are
+  // clamped like the store hydration clamps them. The merged map is the
+  // single "provided width" source for every lookup below, so save_plot /
+  // V8 export honors pins the widget shows (WYSIWYG; review pass).
+  const pinnedWidths: Record<string, number> = {};
+  if (spec.figureLayout?.columnWidths) {
+    for (const [id, px] of Object.entries(spec.figureLayout.columnWidths)) {
+      if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
+      pinnedWidths[id] = Math.min(10000, Math.max(40, Math.round(px)));
+    }
+  }
+  const providedWidths: Record<string, number> | null =
+    options.columnWidths || Object.keys(pinnedWidths).length > 0
+      ? { ...pinnedWidths, ...options.columnWidths }
+      : null;
+
   // Use pre-computed widths from web view if provided, otherwise calculate
   let autoWidths: Map<string, number>;
   let labelWidth: number;
 
   if (options.columnWidths) {
-    // Use pre-computed widths from web view
+    // Use pre-computed widths from web view (pins already reflected there,
+    // and merged above for the lookups below)
     autoWidths = new Map<string, number>();
     const primaryId = primaryCol?.id;
     for (const [id, width] of Object.entries(options.columnWidths)) {
@@ -785,9 +806,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     labelWidth = (primaryId ? options.columnWidths[primaryId] : undefined)
       ?? calculateSvgLabelWidth(spec, primaryHeader);
   } else {
-    // Calculate widths from scratch (R-side export path)
+    // Calculate widths from scratch (R-side export path). A figureLayout
+    // pin on the primary column overrides the calculated label width.
     autoWidths = calculateSvgAutoWidths(spec, allColumns);
-    labelWidth = calculateSvgLabelWidth(spec, primaryHeader);
+    labelWidth = (primaryCol?.id ? pinnedWidths[primaryCol.id] : undefined)
+      ?? calculateSvgLabelWidth(spec, primaryHeader);
   }
 
   // Wrap line counts: per-row max number of lines across wrap-enabled
@@ -856,9 +879,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Per-row vertical layout via the shared (DOM/SVG) metrics helper.
   // Phase 5 row-kind height cascade:
   //   layer 4 (constructorRowHeights) — from spec.rowHeights (v4 field; ratios).
-  //   layers 3 + 5 not plumbed through the SVG path yet (browser-side pins
-  //   live in the layout-zoom slice; SVG export doesn't currently consume
-  //   them — that's a step 6 concern).
+  //   layer 5 (interactive per-kind pins) — from spec.figureLayout
+  //     .rowKindHeights (P1 figure-state tier), sanitized through the SAME
+  //     gate the store hydration uses so widget and export accept
+  //     identical pins (WYSIWYG; review pass).
   const { rowHeights, rowPositions, rowMarkerCenters, rowPaddedAfter, rowsHeight } =
     computeRowLayout({
       displayRows,
@@ -867,6 +891,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
       rowGroupPadding,
       dataLineHeightPx,
       contentHeights,
+      rowKindHeights: sanitizeRowKindPins(spec.figureLayout?.rowKindHeights),
       constructorRowHeights: spec.rowHeights,
     });
   // plotHeight includes overall summary area (for total height calculations)
@@ -881,7 +906,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const hasFlexColumns = allColumns.some(isFlexColumn);
 
   const colNaturalWidth = (c: ColumnSpec): number => {
-    const provided = options.columnWidths?.[c.id];
+    const provided = providedWidths?.[c.id];
     const explicit =
       typeof provided === "number" ? provided : typeof c.width === "number" ? c.width : null;
     return explicit ?? autoWidths.get(c.id) ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
@@ -908,7 +933,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // renders them faithfully) and authored numeric widths. A plot column is
     // pinned the same way as any other — via its column `width`. Only the
     // R-from-scratch path (no provided widths) actually flexes.
-    const provided = options.columnWidths?.[c.id];
+    const provided = providedWidths?.[c.id];
     const explicit =
       typeof provided === "number" ? provided : typeof c.width === "number" ? c.width : null;
     const measured = autoWidths.get(c.id);
@@ -4181,6 +4206,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // static/PDF exports honor theme.column_defaults like the live widget.
   spec = applyThemeColumnDefaultsToSpec(spec);
   spec = compileVariants(spec);
+  // figureLayout (P1 figure-state tier): apply the column-order block at
+  // spec ingest so the static export renders the user's reorder. Widths +
+  // row-kind pins from the same block are consumed inside computeLayout.
+  // Idempotent when the live widget already baked the order into columns.
+  spec = applyFigureLayoutColumnOrder(spec);
   // Validate input
   validateSpec(spec);
 

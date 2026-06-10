@@ -29,6 +29,32 @@
     suppressClick = false;
     document.addEventListener("pointermove", onPointerMove);
     document.addEventListener("pointerup", onPointerUp);
+    // Seam-grammar parity (review pass): Escape cancels the reorder, and a
+    // pointercancel / window blur mid-drag must not strand the drag state +
+    // document listeners until some future pointerup.
+    document.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("keydown", onDragKey, true);
+    window.addEventListener("blur", onPointerCancel);
+  }
+
+  function teardown() {
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerUp);
+    document.removeEventListener("pointercancel", onPointerCancel);
+    window.removeEventListener("keydown", onDragKey, true);
+    window.removeEventListener("blur", onPointerCancel);
+  }
+
+  function onPointerCancel() {
+    teardown();
+    store.cancelDrag();
+  }
+
+  function onDragKey(e: KeyboardEvent) {
+    if (e.key !== "Escape") return;
+    e.preventDefault();
+    e.stopPropagation();
+    onPointerCancel();
   }
 
   function getSiblingEl(siblingId: string): HTMLElement | null {
@@ -47,8 +73,7 @@
   }
 
   function onPointerUp() {
-    document.removeEventListener("pointermove", onPointerMove);
-    document.removeEventListener("pointerup", onPointerUp);
+    teardown();
     store.endDrag((state) => {
       if (state.indicatorIndex == null) return;
       store.moveColumnItem(state.id, state.indicatorIndex);
@@ -89,7 +114,10 @@
   .column-drag-handle {
     position: absolute;
     top: 50%;
-    right: 8px;
+    /* right:10px ends exactly where the 10px resize hit zone begins —
+       zero overlap (review pass; the resize zone used to eat 40% of this
+       grip's hit area). */
+    right: 10px;
     transform: translateY(-50%);
     display: inline-flex;
     align-items: center;

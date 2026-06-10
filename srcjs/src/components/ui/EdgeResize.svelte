@@ -69,11 +69,15 @@
     armed = false,
   }: Props = $props();
 
+  import { elementScale } from "$lib/scale-factor";
+
   let dragging = $state(false);
   let focused = $state(false);
+  let moved = false;
   let startY = 0;
   let startValue = 0;
   let lastValue = $state(0);
+  let scale = 1;
   let activePointerId: number | null = null;
   let activeEl: HTMLElement | null = null;
 
@@ -98,11 +102,12 @@
     }
     activeEl = null;
     activePointerId = null;
+    if (!moved) return; // zero-movement click: no commit, no theme pin
     if (commit) {
       oncommit(lastValue);
     } else {
-      // Escape = cancel: restore the drag-start value, no commit (and no
-      // op-log entry — the gesture never happened).
+      // Escape / pointercancel = cancel: restore the drag-start value, no
+      // commit (and no op-log entry — the gesture never happened).
       lastValue = startValue;
       onpreview(startValue);
     }
@@ -111,9 +116,13 @@
   function handlePointerDown(e: PointerEvent) {
     if (e.button !== 0) return;
     dragging = true;
+    moved = false;
     startY = e.clientY;
     startValue = value;
     lastValue = value;
+    // Client→layout px factor: the seam lives inside the CSS-scaled
+    // subtree, so raw client deltas under/overshoot at zoom != 100%.
+    scale = elementScale(e.currentTarget as HTMLElement);
     activeEl = e.currentTarget as HTMLElement;
     activePointerId = e.pointerId;
     activeEl.setPointerCapture(e.pointerId);
@@ -123,7 +132,9 @@
 
   function handlePointerMove(e: PointerEvent) {
     if (!dragging) return;
-    const dy = e.clientY - startY;
+    const dy = (e.clientY - startY) / scale;
+    if (!moved && Math.abs(dy) < 2) return;
+    moved = true;
     const next = clamp(startValue + dy * direction, min, max);
     if (next !== lastValue) {
       lastValue = next;
@@ -132,7 +143,9 @@
   }
 
   function handlePointerUp(_e: PointerEvent) { endDrag(true); }
-  function handlePointerCancel(_e: PointerEvent) { endDrag(true); }
+  // Touch interruption / stylus lift: treat like Escape (restore), not
+  // commit — the user didn't finish the gesture.
+  function handlePointerCancel(_e: PointerEvent) { endDrag(false); }
   function handleDblClick(e: MouseEvent) {
     if (!onreset) return;
     e.preventDefault();

@@ -264,8 +264,13 @@ export function createSplitTabvizStore() {
     }
 
     // Re-apply the active spec so the activeStore picks up new widths and
-    // rerenders. setSpec clears its column-width cache internally (including
-    // its opLog), so push the split-level op record AFTER the reset.
+    // rerenders. NOTE (interactivity arc P0): setSpec now RECONCILES
+    // user-resized column widths across spec swaps instead of wiping them,
+    // and split subsets share column ids — so toggling shared widths does
+    // NOT override columns the user resized by hand (their pin beats the
+    // stamped width in the flex distribution). That's the figure-state
+    // contract working as designed; the opLog still resets, so push the
+    // split-level op record AFTER the reset.
     if (activeKey) {
       const spec = payload.specs[activeKey];
       if (spec) activeStore.setSpec(spec);

@@ -69,3 +69,51 @@ test_that("serialize_figure_layout accepts Shiny-shaped camelCase input too", {
   expect_equal(out$columnWidths$a, 80)
   expect_equal(out$rowKindHeights$spacer, 10)
 })
+
+test_that("set_figure_layout unwraps Shiny envelopes and never ships ts pins", {
+  # The documented round-trip passes input$<id>_row_kind_heights verbatim —
+  # which is the envelope list(value=, source=, ts=). Review pass: the
+  # envelope used to serialize as rowKindHeights = { ts: 1.77e12 } while
+  # the real pins vanished.
+  df <- data.frame(study = c("A", "B"), hr = c(1, 2))
+  envelope <- list(value = list(data = 36), source = "user", ts = 1.77e12)
+  spec <- tabviz(df, label = "study", .spec_only = TRUE) |>
+    set_figure_layout(row_kind_heights = envelope)
+  wire <- serialize_spec(spec)
+  expect_equal(wire$figureLayout$rowKindHeights$data, 36)
+  expect_false("ts" %in% names(wire$figureLayout$rowKindHeights))
+})
+
+test_that("set_figure_layout warns on unknown row kinds and drops them", {
+  df <- data.frame(study = "A", hr = 1)
+  expect_warning(
+    spec <- tabviz(df, label = "study", .spec_only = TRUE) |>
+      set_figure_layout(row_kind_heights = list(dta = 60, data = 30)),
+    "Dropping unknown row kind"
+  )
+  expect_equal(names(spec@figure_layout$row_kind_heights), "data")
+})
+
+test_that("flat character vector accepted as top-level column order", {
+  df <- data.frame(study = "A", hr = 1)
+  spec <- tabviz(df, label = "study", .spec_only = TRUE) |>
+    set_figure_layout(column_order = c("hr", "label"))
+  wire <- serialize_spec(spec)
+  expect_equal(unlist(wire$figureLayout$columnOrder$topLevel), c("hr", "label"))
+})
+
+test_that("set_figure_layout rejects garbage argument types", {
+  df <- data.frame(study = "A", hr = 1)
+  spec <- tabviz(df, label = "study", .spec_only = TRUE)
+  expect_error(set_figure_layout(spec, column_widths = "oops"))
+})
+
+test_that("interaction_defaults rejects unknown flag names at construction", {
+  # Review pass: the R resolve path never crosses the TS validating
+  # ingress, and that ingress THROWS — so a typo accepted here would
+  # silently never apply AND make the exported envelope un-importable.
+  expect_error(
+    web_theme(interaction_defaults = list(enable_zoom = TRUE)),
+    "unknown capability flag"
+  )
+})

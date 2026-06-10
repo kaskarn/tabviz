@@ -59,7 +59,10 @@ import {
   getCssVars, readVarPx, readBodySize, readLabelSize,
 } from "$lib/theme/consumer-bridge";
 import { resolveRowKind, type RowKind } from "$lib/layout/row-kind";
-import { resolveRowKindHeight } from "$lib/layout/row-kind-heights";
+import {
+  resolveRowKindHeight, sanitizeRowKindPins, INTRINSIC_KIND_RATIOS,
+} from "$lib/layout/row-kind-heights";
+import { resolveInteraction } from "$lib/interaction-resolve";
 
 /**
  * Merge measured row heights (real DOM offsetHeight per row) over predicted
@@ -581,7 +584,9 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     const base = layout.rowHeight;
     const seen = new Set<RowKind>();
     const out: Array<{ kind: RowKind; px: number; pinned: boolean }> = [];
+    const KIND_COUNT = Object.keys(INTRINSIC_KIND_RATIOS).length;
     for (const dr of deps.getDisplayRows()) {
+      if (seen.size >= KIND_COUNT - 1) break; // all pinnable kinds found (panel excluded)
       const kind = resolveRowKind(dr);
       if (kind === "panel" || seen.has(kind)) continue;
       seen.add(kind);
@@ -714,17 +719,30 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   // user pinned live this session keeps its value; block pins fill the
   // rest. Session pins deliberately survive setSpec (they're figure state,
   // not spec-derived), so this is a merge, never a replace.
+  //
+  // The wire is UNTRUSTED (review pass): keys are gated against the real
+  // RowKind vocabulary (a garbage kind would become an immortal pin that
+  // never renders but dirties hasFigureEdits and rides every Shiny event
+  // forever) and magnitudes are clamped (a 1e9 pin produced a ~1e13px
+  // plotHeight). `panel` is excluded — panel height is content-driven.
   function hydrateForSpec(spec: WebSpec | null): void {
-    const block = spec?.figureLayout?.rowKindHeights;
-    if (!block) return;
-    let next: Partial<Record<RowKind, number>> | null = null;
-    for (const [kind, px] of Object.entries(block) as Array<[RowKind, number]>) {
-      if (rowKindHeights[kind] !== undefined) continue;
-      if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
-      next ??= { ...rowKindHeights };
-      next[kind] = Math.max(1, Math.round(px));
+    const clean = sanitizeRowKindPins(spec?.figureLayout?.rowKindHeights);
+    if (clean) {
+      let next: Partial<Record<RowKind, number>> | null = null;
+      for (const [kind, px] of Object.entries(clean) as Array<[RowKind, number]>) {
+        if (rowKindHeights[kind] !== undefined) continue;
+        next ??= { ...rowKindHeights };
+        next[kind] = px;
+      }
+      if (next) rowKindHeights = next;
     }
-    if (next) rowKindHeights = next;
+    // Arrange is a session UI mode gated by the resolved enableArrange
+    // capability — a spec push that revokes the flag must actually disarm
+    // (pre-fix the mode latched ON invisibly and re-armed if the flag came
+    // back later).
+    if (arrangeMode && !resolveInteraction(spec).enableArrange) {
+      arrangeMode = false;
+    }
   }
 
   function setArrangeMode(on: boolean): void {
@@ -811,11 +829,17 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       if (stored) {
         const state = JSON.parse(stored) as ZoomState;
         if (state.version === 2) {
-          zoom = state.zoom ?? 1.0;
-          autoFit = state.autoFit ?? true;
-          maxWidth = state.maxWidth ?? null;
-          maxHeight = state.maxHeight ?? null;
-          contrastOverride = state.contrastOverride ?? "auto";
+          // Field-level validation (review pass): localStorage is writable
+          // by anything same-origin and shapes drift across versions — a
+          // non-finite zoom NaN-poisons actualScale and the poison
+          // RE-PERSISTS on the next setZoom (sticky across reloads).
+          const finite = (v: unknown): v is number =>
+            typeof v === "number" && Number.isFinite(v);
+          zoom = finite(state.zoom) ? Math.max(0.5, Math.min(2.0, state.zoom)) : 1.0;
+          autoFit = typeof state.autoFit === "boolean" ? state.autoFit : true;
+          maxWidth = finite(state.maxWidth) && state.maxWidth > 0 ? state.maxWidth : null;
+          maxHeight = finite(state.maxHeight) && state.maxHeight > 0 ? state.maxHeight : null;
+          contrastOverride = state.contrastOverride === "more" ? "more" : "auto";
         }
         // Version 1 (old format) is silently ignored — users get defaults.
       }

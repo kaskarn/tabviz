@@ -21,8 +21,13 @@
   }
   function onWindowKey(e: KeyboardEvent): void {
     if (!active || e.key !== "Escape") return;
-    // Seam drags consume their own Escape (cancel) with stopPropagation
-    // in capture phase, so reaching here means no drag is in flight.
+    // Seam drags consume their own Escape (cancel) via capture-phase
+    // window listeners, so they never reach this bubble listener. Other
+    // window-level consumers (settings panel, token-picker menu) are
+    // SIBLING listeners on the same node — stopPropagation can't order
+    // those, so they mark consumption with preventDefault and we honor it
+    // here (layered dismissal: innermost surface first).
+    if (e.defaultPrevented) return;
     store.setArrangeMode(false);
   }
 </script>

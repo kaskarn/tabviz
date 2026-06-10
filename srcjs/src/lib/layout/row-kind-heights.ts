@@ -140,6 +140,28 @@ export function resolveRowKindRatio(
   return INTRINSIC_KIND_RATIOS[kind];
 }
 
+/**
+ * Sanitize an UNTRUSTED `figureLayout.rowKindHeights` wire block down to
+ * valid layer-5 pins: keys gated against the real RowKind vocabulary
+ * (`panel` excluded — content-driven), values finite positive numbers
+ * clamped to [8, 2000]. Shared by the store hydration AND the SVG export
+ * path so both runtimes accept exactly the same pins (interactivity
+ * review pass). Returns undefined when nothing survives.
+ */
+export function sanitizeRowKindPins(
+  block: unknown,
+): Partial<Record<RowKind, number>> | undefined {
+  if (block == null || typeof block !== "object" || Array.isArray(block)) return undefined;
+  let out: Partial<Record<RowKind, number>> | undefined;
+  for (const [kind, px] of Object.entries(block as Record<string, unknown>)) {
+    if (!(kind in INTRINSIC_KIND_RATIOS) || kind === "panel") continue;
+    if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
+    out ??= {};
+    out[kind as RowKind] = Math.min(2000, Math.max(8, Math.round(px)));
+  }
+  return out;
+}
+
 /** Compute the resolved per-kind base height in px.
  *
  *  Returns the layer-5 pin if set; otherwise computes

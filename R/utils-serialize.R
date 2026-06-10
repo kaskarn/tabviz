@@ -58,6 +58,14 @@ serialize_spec <- function(spec, include_forest = TRUE) {
   )
 }
 
+#' The row kinds a figure-layout height pin may target. Mirrors the TS
+#' `RowKind` union minus `panel` (content-driven). Kept here so the wire
+#' serializer and `set_figure_layout()` validate against one roster.
+#' @keywords internal
+FIGURE_LAYOUT_ROW_KINDS <- c(
+  "data", "group_header", "spacer", "summary", "header"
+)
+
 #' Serialize the figure-layout state block (wire 1.4)
 #'
 #' Converts the R-side `figure_layout` list (snake_case keys, as captured
@@ -65,17 +73,26 @@ serialize_spec <- function(spec, include_forest = TRUE) {
 #' `spec.figureLayout` wire shape. Drops malformed entries instead of
 #' erroring — the block typically round-trips through Shiny input values,
 #' so be liberal in what we accept. Returns NULL when nothing survives.
+#'
+#' Exact `[[ ]]` access throughout (house rule for wire importers — `$`
+#' partial matching silently mis-binds prefix-sharing keys).
 #' @keywords internal
 serialize_figure_layout <- function(fl) {
   if (is.null(fl) || !is.list(fl)) return(NULL)
 
-  # Named numeric list/vector → named list of positive numbers, else NULL.
-  clean_px_map <- function(x) {
+  # Named numeric list/vector → named list of positive finite numbers.
+  # Drops NA names (nzchar(NA) is TRUE — keepNA trap) and the Shiny
+  # envelope's bookkeeping keys (`source`/`ts`) so a not-quite-unwrapped
+  # envelope can't ship a garbage `ts = 1.77e12` pin. `kinds` restricts
+  # keys to a roster (row-kind pins).
+  clean_px_map <- function(x, kinds = NULL) {
     if (is.null(x) || length(x) == 0L || is.null(names(x))) return(NULL)
     x <- as.list(x)
+    nm <- names(x)
     keep <- vapply(x, function(v) {
       is.numeric(v) && length(v) == 1L && is.finite(v) && v > 0
-    }, logical(1)) & nzchar(names(x))
+    }, logical(1)) & !is.na(nm) & nzchar(nm) & !nm %in% c("source", "ts")
+    if (!is.null(kinds)) keep <- keep & nm %in% kinds
     if (!any(keep)) return(NULL)
     lapply(x[keep], as.numeric)
   }
@@ -85,14 +102,20 @@ serialize_figure_layout <- function(fl) {
   # are vectors by design.
   pick <- function(a, b) if (is.null(a)) b else a
 
-  widths <- clean_px_map(pick(fl$column_widths, fl$columnWidths))
-  pins <- clean_px_map(pick(fl$row_kind_heights, fl$rowKindHeights))
+  widths <- clean_px_map(pick(fl[["column_widths"]], fl[["columnWidths"]]))
+  pins <- clean_px_map(pick(fl[["row_kind_heights"]], fl[["rowKindHeights"]]),
+                       kinds = FIGURE_LAYOUT_ROW_KINDS)
 
-  order_in <- pick(fl$column_order, fl$columnOrder)
+  order_in <- pick(fl[["column_order"]], fl[["columnOrder"]])
+  # Shorthand: a plain character vector (the widget's `column_order` event
+  # emits a flat id array) is accepted as the top-level order.
+  if (is.character(order_in) && length(order_in) > 0L) {
+    order_in <- list(top_level = order_in)
+  }
   order <- NULL
   if (is.list(order_in)) {
-    top <- pick(order_in$top_level, order_in$topLevel)
-    by_group <- pick(order_in$by_group, order_in$byGroup)
+    top <- pick(order_in[["top_level"]], order_in[["topLevel"]])
+    by_group <- pick(order_in[["by_group"]], order_in[["byGroup"]])
     top <- if (is.character(top) && length(top) > 0L) as.list(top) else NULL
     by_group <- if (is.list(by_group) && length(by_group) > 0L && !is.null(names(by_group))) {
       kept <- Filter(function(v) is.character(v) && length(v) > 0L, by_group)
@@ -690,7 +713,10 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     enableAxisZoom = na_drop(interaction@enable_axis_zoom),
     enableArrange = na_drop(interaction@enable_arrange),
     showGroupCounts = na_drop(interaction@show_group_counts),
-    tooltipFields = interaction@tooltip_fields,
+    # I() keeps a length-1 tooltip field a JSON ARRAY — auto_unbox would
+    # collapse it to a scalar and the widget's fields.includes() degrades
+    # to substring matching (review drive-by).
+    tooltipFields = if (is.null(interaction@tooltip_fields)) NULL else I(interaction@tooltip_fields),
     enableThemes = themes_config
   )
   out[!vapply(out, is.null, logical(1))]
@@ -1115,6 +1141,9 @@ serialize_split_table <- function(split_table, include_forest = TRUE) {
     availableFields = serialize_available_fields(base_spec),
     theme           = serialize_theme(theme),
     interaction     = serialize_interaction(base_spec@interaction, theme),
+    # GLOBAL interaction tier (review pass: options(tabviz.interaction_defaults=)
+    # applied to tabviz() widgets but was silently inert on split widgets).
+    interactionDefaults = serialize_interaction_defaults(),
     initialState    = serialize_initial_state(base_spec@initial_state),
     watermark        = if (is.na(base_spec@watermark)) NULL else base_spec@watermark,
     watermarkColor   = if (is.na(base_spec@watermark_color)) NULL else base_spec@watermark_color,

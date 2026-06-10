@@ -1316,14 +1316,19 @@ set_aspect_ratio <- function(x, ratio, anchor = c("width", "height", "auto")) {
 #'
 #' @param x A `WebSpec` object or htmlwidget.
 #' @param column_widths Named list/vector of column width pins
-#'   (column id → px), e.g. `input$<id>_column_widths`. Widths pin like a
-#'   user drag: they survive re-measure, theme and density changes.
+#'   (column id → px). Accepts the raw Shiny input
+#'   (`input$<id>_column_widths` — the envelope is unwrapped automatically).
+#'   Widths pin like a user drag: they survive re-measure, theme and
+#'   density changes.
 #' @param row_kind_heights Named list/vector of row-kind height pins
-#'   (kind → px), e.g. `input$<id>_row_kind_heights`. Kinds: `"data"`,
-#'   `"group_header"`, `"spacer"`, `"summary"`, `"header"`, `"panel"`.
-#' @param column_order Optional reorder block:
-#'   `list(top_level = c("id1", ...), by_group = list(<group id> = c(...)))`.
-#'   Unknown ids are inert (dropped at apply time).
+#'   (kind → px). Accepts the raw Shiny input
+#'   (`input$<id>_row_kind_heights`). Kinds: `"data"`, `"group_header"`,
+#'   `"spacer"`, `"summary"`, `"header"`.
+#' @param column_order Reorder: either a flat character vector of column
+#'   ids (the shape `input$<id>_column_order` emits — applied at top
+#'   level), or `list(top_level = c("id1", ...),
+#'   by_group = list(<group id> = c(...)))`. Unknown ids are inert
+#'   (dropped at apply time).
 #'
 #' @return The modified WebSpec or htmlwidget (invisibly).
 #'
@@ -1343,6 +1348,49 @@ set_aspect_ratio <- function(x, ratio, anchor = c("width", "height", "auto")) {
 set_figure_layout <- function(x, column_widths = NULL, row_kind_heights = NULL,
                               column_order = NULL) {
   spec <- extract_spec(x)
+
+  # Shiny inputs arrive as ENVELOPES: list(value =, source =, ts =). Accept
+  # them directly (the documented round-trip passes input$<id>_column_widths
+  # verbatim) by unwrapping to $value — without this the envelope's `ts`
+  # used to survive as a garbage pin while the real pins vanished.
+  unwrap <- function(v) {
+    if (is.list(v) && !is.null(names(v)) &&
+        all(c("value", "source") %in% names(v))) {
+      return(v[["value"]])
+    }
+    v
+  }
+  column_widths <- unwrap(column_widths)
+  row_kind_heights <- unwrap(row_kind_heights)
+  column_order <- unwrap(column_order)
+
+  if (!is.null(column_widths)) {
+    checkmate::assert(
+      checkmate::check_list(column_widths, names = "named"),
+      checkmate::check_numeric(column_widths, names = "named")
+    )
+  }
+  if (!is.null(row_kind_heights)) {
+    checkmate::assert(
+      checkmate::check_list(row_kind_heights, names = "named"),
+      checkmate::check_numeric(row_kind_heights, names = "named")
+    )
+    bad_kinds <- setdiff(names(row_kind_heights), FIGURE_LAYOUT_ROW_KINDS)
+    if (length(bad_kinds) > 0L) {
+      cli::cli_warn(c(
+        "Dropping unknown row kind{?s} {.val {bad_kinds}} from {.arg row_kind_heights}.",
+        i = "Valid kinds: {.val {FIGURE_LAYOUT_ROW_KINDS}}."
+      ))
+      row_kind_heights <- row_kind_heights[
+        names(row_kind_heights) %in% FIGURE_LAYOUT_ROW_KINDS
+      ]
+      if (length(row_kind_heights) == 0L) row_kind_heights <- NULL
+    }
+  }
+  if (!is.null(column_order) && !is.character(column_order)) {
+    checkmate::assert_list(column_order, names = "named")
+  }
+
   block <- list(
     column_widths = column_widths,
     row_kind_heights = row_kind_heights,

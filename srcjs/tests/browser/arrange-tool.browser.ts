@@ -272,6 +272,27 @@ async function run() {
   if (!(w2! < w1! - 30)) fail(`double-click did not autosize back (got ${w1} → ${w2}; element at point: ${atPoint})`);
   ok(`double-click autosized label ${w1} → ${w2}`);
 
+  // ── 7b. Group-gap seam is reachable + drags (review pass: it used to be
+  //        100% occluded by the row handle sharing the same 10px band) ────
+  const gapSeam = await page.$('.edge-resize.armed[aria-label="Row group padding"]');
+  if (!gapSeam) fail("no armed group-gap seam on a grouped fixture");
+  const gapBox = (await gapSeam.boundingBox())!;
+  const gapBefore = await gapSeam.evaluate((el) => Number(el.getAttribute("aria-valuenow")));
+  await page.mouse.move(gapBox.x + 150, gapBox.y + gapBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(gapBox.x + 150, gapBox.y + gapBox.height / 2 + 8, { steps: 4 });
+  await new Promise((r) => setTimeout(r, 150));
+  await page.mouse.up();
+  await new Promise((r) => setTimeout(r, 250));
+  const gapAfter = await page.$eval(
+    '.edge-resize.armed[aria-label="Row group padding"]',
+    (el) => Number(el.getAttribute("aria-valuenow")),
+  );
+  if (!(gapAfter > gapBefore + 4)) {
+    fail(`group-gap seam drag did not grow the gap (${gapBefore} → ${gapAfter}) — is it occluded by a row handle again?`);
+  }
+  ok(`group-gap seam draggable: ${gapBefore}px → ${gapAfter}px`);
+
   // ── 8. Disarm via toolbar; seams disappear ──────────────────────────────
   await page.$eval(".arrange-btn", (el) => (el as HTMLElement).click());
   await new Promise((r) => setTimeout(r, 200));
