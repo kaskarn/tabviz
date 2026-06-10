@@ -2215,6 +2215,9 @@ InteractionSpec <- new_class(
     enable_edit = new_property(class_logical, default = NA),
     # Forest/viz x-axis domain zoom (Ctrl/Cmd+wheel, drag pan, dblclick reset).
     enable_axis_zoom = new_property(class_logical, default = NA),
+    # Arrange tool: toolbar mode revealing every resize seam (row-kind
+    # edges + spacing gaps) with visible handles + px readouts.
+    enable_arrange = new_property(class_logical, default = NA),
     show_group_counts = new_property(class_logical, default = NA),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
@@ -2350,6 +2353,10 @@ finalize_enable_themes <- function(value, theme) {
 #' @param enable_axis_zoom Enable x-axis domain zoom on forest/viz columns
 #'   (Ctrl/Cmd+wheel to zoom, drag to pan, double-click to reset). Default
 #'   `FALSE`: domain zoom changes what the figure shows, so it is opt-in.
+#' @param enable_arrange Enable the arrange tool — a toolbar mode that
+#'   reveals every resize seam (row heights, header height, group gaps,
+#'   footer gap) with visible drag handles and live px readouts. Default
+#'   `FALSE` (author-grade; opt in per spec, per theme, or globally).
 #' @param enable_theme_edit Enable the in-widget theme settings cog (Tier-1 theme
 #'   edits + per-figure controls). `FALSE` removes the cog for an author-frozen
 #'   figure.
@@ -2376,6 +2383,7 @@ web_interaction <- function(
     enable_edit = NA,
     enable_theme_edit = NA,
     enable_axis_zoom = NA,
+    enable_arrange = NA,
     show_group_counts = NA,
     tooltip_fields = NULL,
     enable_themes = getOption("tabviz.enable_themes", "default"),
@@ -2401,6 +2409,7 @@ web_interaction <- function(
     enable_edit = enable_edit,
     enable_theme_edit = enable_theme_edit,
     enable_axis_zoom = enable_axis_zoom,
+    enable_arrange = enable_arrange,
     show_group_counts = show_group_counts,
     tooltip_fields = tooltip_fields,
     enable_themes = enable_themes
@@ -2478,7 +2487,8 @@ web_interaction_full <- function() {
     enable_reorder_columns = TRUE,
     enable_edit = TRUE,
     enable_theme_edit = TRUE,
-    enable_axis_zoom = TRUE
+    enable_axis_zoom = TRUE,
+    enable_arrange = TRUE
   )
 }
 

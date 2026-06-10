@@ -802,6 +802,10 @@ export interface InteractionSpec {
   // zoom is an analysis affordance, and even modifier-gated it has no
   // affordance a document reader can discover — authors opt in.
   enableAxisZoom?: boolean;
+  // The arrange tool (P2): a toolbar mode that reveals every resize seam
+  // (row-kind edges + spacing gaps) with visible handles + px readouts.
+  // Default FALSE (conservative-everywhere) — authors opt in.
+  enableArrange?: boolean;
   showGroupCounts?: boolean;        // Show "(n)" next to row-group labels (default: false)
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
   // Available themes for switching. Two shapes accepted:

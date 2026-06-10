@@ -600,6 +600,9 @@
   // Forest/viz domain zoom — conservative default OFF (interactivity-UX
   // arc P0): an author opts in via interaction.enableAxisZoom.
   const enableAxisZoom = $derived(interaction.enableAxisZoom);
+  // Arrange tool armed (P2): the session mode AND the capability gate —
+  // a Shiny-pushed spec that drops enableArrange disarms a live mode.
+  const arrangeArmed = $derived(store.arrangeMode && interaction.enableArrange);
 
   // Get available themes for theme switcher (null = disabled, object = custom themes)
   const enableThemes = $derived(interaction.enableThemes);
@@ -1260,43 +1263,82 @@
     document.removeEventListener("pointerup", stopPlotResize);
   }
 
-  // Column resize state and handlers
+  // Column resize state and handlers — the seam grammar (P2): preview per
+  // move, ONE commit on release, Escape cancels (restores the start width,
+  // no op-log entry), double-click autosizes back to content width, a live
+  // px readout follows the drag.
   let resizingColumn = $state<string | null>(null);
   let columnStartX = 0;
   let columnStartWidth = 0;
-
+  let columnLastWidth = 0;
+  let columnReadout = $state<{ x: number; y: number; text: string } | null>(null);
+  // Track whether a drag actually moved — a plain click on the handle (no
+  // movement) must not commit a width pin.
+  let columnDragMoved = false;
   function startColumnResize(e: PointerEvent, columnId: string, currentWidth: number) {
     if (!interaction.enableResize) return;
     e.preventDefault();
     e.stopPropagation();
+    // Double-press = autosize back to content width (spreadsheet idiom).
+    // Detected via e.detail on pointerdown: preventDefault above (needed to
+    // stop text-selection during the drag) suppresses the browser's
+    // synthesized dblclick event, but the press counter still increments.
+    if (e.detail >= 2) {
+      store.resetColumnWidth(columnId);
+      return;
+    }
     resizingColumn = columnId;
     columnStartX = e.clientX;
     columnStartWidth = currentWidth;
+    columnLastWidth = currentWidth;
+    columnDragMoved = false;
     document.addEventListener("pointermove", onColumnResize);
     document.addEventListener("pointerup", stopColumnResize);
+    window.addEventListener("keydown", onColumnResizeKey, true);
+    window.addEventListener("blur", commitColumnResize);
   }
 
   function onColumnResize(e: PointerEvent) {
     if (!resizingColumn) return;
     const delta = e.clientX - columnStartX;
+    if (!columnDragMoved && Math.abs(delta) < 2) return;
+    columnDragMoved = true;
     const newWidth = Math.max(40, columnStartWidth + delta); // Min width 40px
+    columnLastWidth = newWidth;
     // Live preview during drag — no op-log emission. Commit on pointerup.
-    // Previously every pointermove recorded `resize_column(...)` which
-    // spammed the recorder with dozens of entries for a single drag.
     store.previewColumnWidth(resizingColumn, newWidth);
+    columnReadout = { x: e.clientX, y: e.clientY, text: `${Math.round(newWidth)}px` };
   }
 
-  function stopColumnResize(e: PointerEvent) {
-    if (resizingColumn) {
-      const delta = e.clientX - columnStartX;
-      const newWidth = Math.max(40, columnStartWidth + delta);
-      // One recorded `resize_column()` per drag gesture — the settled
-      // width on release rather than every intermediate pixel.
-      store.setColumnWidth(resizingColumn, newWidth);
-    }
+  function teardownColumnResize() {
     resizingColumn = null;
+    columnReadout = null;
     document.removeEventListener("pointermove", onColumnResize);
     document.removeEventListener("pointerup", stopColumnResize);
+    window.removeEventListener("keydown", onColumnResizeKey, true);
+    window.removeEventListener("blur", commitColumnResize);
+  }
+
+  function stopColumnResize(_e: PointerEvent) {
+    commitColumnResize();
+  }
+
+  function commitColumnResize() {
+    if (resizingColumn && columnDragMoved) {
+      // One recorded `resize_column()` per drag gesture — the settled
+      // width on release rather than every intermediate pixel.
+      store.setColumnWidth(resizingColumn, columnLastWidth);
+    }
+    teardownColumnResize();
+  }
+
+  function onColumnResizeKey(e: KeyboardEvent) {
+    if (e.key !== "Escape" || !resizingColumn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // Cancel: restore the drag-start width; no commit, no op-log entry.
+    if (columnDragMoved) store.previewColumnWidth(resizingColumn, columnStartWidth);
+    teardownColumnResize();
   }
 
   // Row hover handler - sets both hover state and tooltip position
@@ -1566,6 +1608,7 @@
               titleSubtitleGap={theme?.spacing.titleSubtitleGap ?? 13}
               onpreviewgap={(v) => store.previewThemeField("spacing", "titleSubtitleGap", v)}
               oncommitgap={(v) => store.setThemeField("spacing", "titleSubtitleGap", v)}
+              {arrangeArmed}
             />
           {/if}
         </div>
@@ -1715,7 +1758,9 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
+                  title="Drag to resize · double-click to autosize"
                   onpointerdown={(e) => startColumnResize(e, column.id, effectiveColumnWidth(column))}
+                  ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); store.resetColumnWidth(column.id); }}
                 ></div>
               {/if}
             </div>
@@ -1760,7 +1805,9 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
+                  title="Drag to resize · double-click to autosize"
                   onpointerdown={(e) => startColumnResize(e, column.id, effectiveColumnWidth(column))}
+                  ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); store.resetColumnWidth(column.id); }}
                 ></div>
               {/if}
             </div>
@@ -2482,12 +2529,17 @@
           {/if}
         {/each}
 
-        <!-- Spacing drag handles. v0.24+: thin strips on key seams that
-             let the user drag to resize themed gaps without opening the
-             settings panel. Cursor turns to ns-resize on hover, a faint
-             primary-color bar fades in. Hot zones are 6 px tall and only
-             render when interaction.enableEdit is on. -->
-        {#if labelsEditable && theme}
+        <!-- ARRANGE MODE seams (interactivity-UX arc P2). All layout
+             gestures live behind the arrange tool: arming it reveals
+             every seam with a visible handle + px readout. Two gesture
+             families share the seam grammar but write different tiers:
+               · structural spacing (header height, group gaps) → THEME
+                 spacing (travels with the theme)
+               · row body heights → per-KIND figure pins (RowEdgeHandles
+                 below; figure state, rides spec.figureLayout)
+             The old per-row `spacing.rowHeight` seam is gone — overall
+             row height is density's job; per-kind pins own row seams. -->
+        {#if arrangeArmed && theme}
           {@const headerHeightPx = layout.headerHeight}
           {@const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0}
           <!-- Header height: bottom edge of the column-header band -->
@@ -2495,45 +2547,42 @@
             value={theme.spacing.headerHeight}
             min={0}
             max={120}
+            armed
             onpreview={(v) => store.previewThemeField("spacing", "headerHeight", v)}
             oncommit={(v) => store.setThemeField("spacing", "headerHeight", v)}
             label="Header height"
             top={`${headerHeightPx}px`}
           />
-          <!-- Row height: bottom edge of the *visible* data band (excludes
-               the trailing rowGroupPadding when the row is padded-after,
-               so the rowHeight handle and rowGroupPadding handle land on
-               distinct seams). -->
           {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
-            {#if displayRow.type === "data" && displayRow.row.style?.type !== "spacer"}
-              {@const trailingPad = rowPaddedAfter[i] ? rowGroupPadding : 0}
-              {@const rowVisibleBottom = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i] - trailingPad}
+            {#if displayRow.type === "data" && displayRow.row.style?.type !== "spacer" && rowPaddedAfter[i]}
+              <!-- Row group padding handle: top edge of the following
+                   group_header (= bottom of the empty separator strip).
+                   Drag to grow / shrink the gap. -->
+              {@const groupTop = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i]}
               <EdgeResize
-                value={theme.spacing.rowHeight}
-                min={16}
-                max={120}
-                onpreview={(v) => store.previewThemeField("spacing", "rowHeight", v)}
-                oncommit={(v) => store.setThemeField("spacing", "rowHeight", v)}
-                label="Row height"
-                top={`${rowVisibleBottom}px`}
+                value={rowGroupPadding}
+                min={0}
+                max={60}
+                armed
+                onpreview={(v) => store.previewThemeField("spacing", "rowGroupPadding", v)}
+                oncommit={(v) => store.setThemeField("spacing", "rowGroupPadding", v)}
+                label="Row group padding"
+                top={`${groupTop}px`}
               />
-              {#if rowPaddedAfter[i]}
-                <!-- Row group padding handle: top edge of the following
-                     group_header (= bottom of the empty separator strip).
-                     Drag to grow / shrink the gap. -->
-                {@const groupTop = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i]}
-                <EdgeResize
-                  value={rowGroupPadding}
-                  min={0}
-                  max={60}
-                  onpreview={(v) => store.previewThemeField("spacing", "rowGroupPadding", v)}
-                  oncommit={(v) => store.setThemeField("spacing", "rowGroupPadding", v)}
-                  label="Row group padding"
-                  top={`${groupTop}px`}
-                />
-              {/if}
             {/if}
           {/each}
+          <!-- Per-row-kind height handles: bottom edge of every row.
+               Mounted HERE — the same coordinate space as the spacing
+               seams (rows-region positions + header offset), which is
+               what the old root-level mount never had. -->
+          <RowEdgeHandles
+            {store}
+            rowPositions={layout.rowPositions ?? []}
+            rowHeights={layout.rowHeights ?? []}
+            {displayRows}
+            topOffset={layout.headerHeight}
+            enabled={arrangeArmed}
+          />
         {/if}
       </div>
 
@@ -2624,30 +2673,27 @@
         footerGap={theme?.spacing.footerGap ?? 8}
         onpreviewfootergap={(v) => store.previewThemeField("spacing", "footerGap", v)}
         oncommitfootergap={(v) => store.setThemeField("spacing", "footerGap", v)}
+        {arrangeArmed}
       />
     </div><!-- /.tabviz-scalable -->
     </div><!-- /.tv-shell -->
+
+    <!-- Live px readout riding the column-resize drag (seam grammar P2).
+         position: fixed in viewport coords — the root container carries no
+         transform (only .tabviz-scalable does), so fixed works here. -->
+    {#if columnReadout}
+      <div
+        class="column-resize-readout"
+        style="left: {columnReadout.x + 12}px; top: {columnReadout.y - 28}px;"
+        aria-hidden="true"
+      >{columnReadout.text}</div>
+    {/if}
 
     <!-- Tooltip + DropIndicator + EditableCell + ColumnFilterPopover +
          HeaderContextMenu + ColumnTypeMenu + ColumnEditorPopover. All
          encapsulated by TabvizOverlays as of Phase 0c-C2. -->
     <TabvizOverlays bind:this={overlays} {store} {containerRef} />
 
-    <!-- Phase 5: per-row-kind drag-handle overlay. Mounted next to the
-         existing overlays; positioned absolutely within whatever its
-         parent is. enabled=false today: the rowPositions coordinates
-         from computeRowLayout are relative to the rows region's origin,
-         but this mount point's geometry doesn't yet align — verifying
-         the parent container's coordinate space (and adding an offset if
-         needed) is integration work for a follow-up. Once aligned, flip
-         enabled=true to make the handles user-interactable. -->
-    <RowEdgeHandles
-      {store}
-      rowPositions={layout.rowPositions ?? []}
-      rowHeights={layout.rowHeights ?? []}
-      {displayRows}
-      enabled={false}
-    />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}
@@ -3064,21 +3110,54 @@
     text-overflow: ellipsis;
   }
 
-  /* Resize handle on right edge of header cells */
+  /* Column resize handle: a 14px hit zone at the column boundary (P2 —
+     the old 6px target was sub-pointer-size and unusable on touch), with
+     a thin 2px visual line at the edge so the affordance doesn't read as
+     chrome. The zone sits fully INSIDE the cell: `.grid-cell` clips
+     (overflow: hidden for text ellipsis), so a straddling overhang would
+     be clipped out of hit-testing. */
   .resize-handle {
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
-    width: 6px;
+    width: 14px;
     cursor: col-resize;
     background: transparent;
+    touch-action: none;
     z-index: 10;
   }
 
-  .resize-handle:hover,
-  .resize-handle:active {
+  .resize-handle::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
     background: var(--tv-accent, #2563eb);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    pointer-events: none;
+  }
+
+  .resize-handle:hover::after,
+  .resize-handle:active::after {
+    opacity: 0.7;
+  }
+
+  .column-resize-readout {
+    position: fixed;
+    padding: 1px 6px;
+    font-family: var(--tv-text-body-family, system-ui);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--tv-surface-bg, #fff);
+    background: var(--tv-accent, #2563eb);
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 10005;
   }
 
   /* Data cells */

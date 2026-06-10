@@ -31,7 +31,7 @@ export const INTERACTION_FLAG_KEYS = [
   "showFilters", "showLegend", "enableSort", "enableCollapse", "enableSelect",
   "enableHover", "enableResize", "enableExport", "enableThemeEdit",
   "enableFilters", "enableReorderRows", "enableReorderColumns", "enableEdit",
-  "enableAxisZoom", "showGroupCounts",
+  "enableAxisZoom", "enableArrange", "showGroupCounts",
 ] as const;
 export type InteractionFlag = (typeof INTERACTION_FLAG_KEYS)[number];
 export type InteractionFlagOverrides = Partial<Record<InteractionFlag, boolean>>;
@@ -63,6 +63,10 @@ export const BAKED_INTERACTION_DEFAULTS: Readonly<Record<InteractionFlag, boolea
   enableReorderColumns: false,
   enableEdit: false,
   enableAxisZoom: false,
+  // The arrange tool (P2): a toolbar mode that lights up every resize seam
+  // (row-kind edges, header/gap/footer spacing). Author-grade — OFF; flip
+  // on per spec, per theme, or globally.
+  enableArrange: false,
 };
 
 /** The fully-resolved interaction surface consumers read. Boolean flags are

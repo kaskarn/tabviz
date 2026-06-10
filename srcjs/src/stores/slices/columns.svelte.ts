@@ -129,6 +129,8 @@ export interface ColumnsSlice {
   setColumnWidth: (columnId: string, width: number) => void;
   previewColumnWidth: (columnId: string, width: number) => void;
   getColumnWidth: (columnId: string) => number | undefined;
+  /** Reset one column to auto width (drop pin + re-measure). */
+  resetColumnWidth: (columnId: string) => void;
 
   findColumnScope: (id: string) => string | null;
   siblingsForColumnScope: (scopeKey: string) => ColumnDef[];
@@ -468,6 +470,24 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
 
   function getColumnWidth(columnId: string): number | undefined {
     return columnWidths[columnId];
+  }
+
+  /**
+   * Reset one column to auto width (the spreadsheet double-click idiom,
+   * interactivity-UX arc P2): drop its user-resize pin + cached width and
+   * re-run measurement so the column re-derives from content.
+   */
+  function resetColumnWidth(columnId: string) {
+    const nextWidths = { ...columnWidths };
+    delete nextWidths[columnId];
+    columnWidths = nextWidths;
+    if (userResizedIds.has(columnId)) {
+      const next = new Set(userResizedIds);
+      next.delete(columnId);
+      userResizedIds = next;
+    }
+    measureAutoColumns();
+    deps.markSource("column_widths");
   }
 
   /**
@@ -963,6 +983,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     setColumnWidth,
     previewColumnWidth,
     getColumnWidth,
+    resetColumnWidth,
 
     findColumnScope,
     siblingsForColumnScope,

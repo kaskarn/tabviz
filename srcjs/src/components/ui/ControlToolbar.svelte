@@ -10,6 +10,7 @@
   import SettingsButton from "./SettingsButton.svelte";
   import ContrastButton from "./ContrastButton.svelte";
   import TokenPicker from "./TokenPicker.svelte";
+  import ArrangeButton from "./ArrangeButton.svelte";
   import SourceButton from "./SourceButton.svelte";
   import FullscreenButton from "./FullscreenButton.svelte";
 
@@ -59,6 +60,9 @@
   {#if enablePaint}
     <TokenPicker {store} />
   {/if}
+  {#if store.interaction.enableArrange}
+    <ArrangeButton {store} />
+  {/if}
   <SourceButton {store} />
   {#if enableReset}
     <ResetButton {store} />
@@ -95,6 +99,11 @@
     right: 4px;
     z-index: 100;
     opacity: 0;
+    /* Invisible must mean non-interactive: the faded-out toolbar was still
+       intercepting clicks over the top-right header region (sort clicks +
+       the last column's resize handle landed on invisible buttons). The
+       hover/focus rules below restore pointer-events with the opacity. */
+    pointer-events: none;
     padding: 1px 2px;
     border-radius: 8px;
     /* Solid tinted bg + border — NO transform, filter, backdrop-filter, or
@@ -114,6 +123,7 @@
   :global(.tabviz-container:hover > .control-toolbar),
   :global(.tabviz-container:focus-within > .control-toolbar) {
     opacity: 1;
+    pointer-events: auto;
   }
 
   /* Keep the toolbar visible whenever a dropdown is open under it — otherwise
@@ -121,6 +131,7 @@
      fade the toolbar out mid-interaction. */
   :global(.tabviz-container > .control-toolbar:has(button[aria-expanded="true"])) {
     opacity: 1;
+    pointer-events: auto;
   }
 
   /* ------------------------------------------------------------------ */

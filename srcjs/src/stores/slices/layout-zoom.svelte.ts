@@ -205,6 +205,9 @@ export interface LayoutZoomSlice {
   /** Called by setSpec: merge the incoming spec's figureLayout row-kind
    *  pins UNDER surviving session pins. */
   hydrateForSpec: (spec: WebSpec | null) => void;
+  /** Arrange tool armed? (P2 — reveals every resize seam.) */
+  readonly arrangeMode: boolean;
+  setArrangeMode: (on: boolean) => void;
   setZoom: (value: number) => void;
   resetZoom: () => void;
   zoomIn: () => void;
@@ -241,6 +244,11 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
   let zoom = $state<number>(1.0);
   let autoFit = $state<boolean>(true);
+  // Arrange tool (interactivity-UX arc P2): when armed, every resize seam
+  // renders visibly (row-kind edges, header height, group gaps, footer gap)
+  // with px readouts + keyboard focus. Session-only UI mode — never
+  // persisted, never on the wire. Gated by interaction.enableArrange.
+  let arrangeMode = $state<boolean>(false);
   // Viewer accessibility override (round-2 a11y B2): "auto" honors the
   // OS prefers-contrast/forced-colors signal; "more" forces high-contrast.
   // A VIEWER preference — overlays mode=high-contrast at paint time without
@@ -719,6 +727,10 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     if (next) rowKindHeights = next;
   }
 
+  function setArrangeMode(on: boolean): void {
+    arrangeMode = on;
+  }
+
   function setZoom(value: number) {
     zoom = Math.max(0.5, Math.min(2.0, value));
     persistZoomState();
@@ -818,6 +830,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     plotWidthOverride = null;
     measuredRowHeights = null;
     rowKindHeights = {};
+    arrangeMode = false;
     zoom = 1.0;
     autoFit = true;
     maxWidth = null;
@@ -856,6 +869,8 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     setPlotWidth, getPlotWidth,
     setMeasuredRowHeights,
     setRowKindHeight, resetRowKindHeights, hydrateForSpec,
+    get arrangeMode()           { return arrangeMode; },
+    setArrangeMode,
     setZoom, resetZoom, zoomIn, zoomOut, setAutoFit, setContrastOverride, fitToWidth,
     setMaxWidth, setMaxHeight, setShowZoomControls,
     reset,

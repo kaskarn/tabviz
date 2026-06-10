@@ -83,6 +83,7 @@ function overridesKey(ro: WebTheme["roleOverrides"], pins?: WebTheme["pins"]): s
  *  the round-2 robustness review demanded: a pin value containing
  *  `"/><script>` reached exported SVG fill attributes verbatim (stored
  *  XSS in a SHARED artifact — the wire envelope spreads pins). */
+// eslint-disable-next-line no-control-regex -- control chars are the POINT: this is the XSS ingress gate
 const PIN_VALUE_FORBIDDEN = /[<>{};"\u0000-\u001f]/;
 const PIN_VALUE_MAX_LEN = 512;
 

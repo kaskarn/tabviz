@@ -98,3 +98,20 @@ remaining scenarios as timeouts too. This is intentional — chasing
 protocol-timeout configuration further would burn more time than the
 results warrant. If you need to push past 60s, raise the budget or
 restructure to launch a fresh page per scenario.
+
+## arrange-tool.browser.ts (interactivity-UX arc P2)
+
+Correctness gate for the arrange tool + seam grammar. Mounts a grouped
+fixture with `interaction.enableArrange`, arms the toolbar mode with real
+mouse input, and asserts: conservative default (no button without the
+flag), row-kind handles + armed spacing seams appear, hover ghost-
+highlights every row of the kind, dragging pins ALL rows of the kind with
+a live px readout, Escape mid-drag cancels, double-click releases the pin,
+column drag pins width + double-click autosizes, disarm removes all seams.
+
+    cd srcjs && npm run build && bun run tests/browser/arrange-tool.browser.ts
+
+Exits non-zero on failure. NOTE: drive drags with real `page.mouse` moves
+(pointer capture) and detect double-press via `e.detail`/dblclick — the
+toolbar overlaps the top-right header region when visible, so target the
+FIRST column's boundary in fixtures.

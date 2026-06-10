@@ -1,25 +1,24 @@
 <script lang="ts">
-  // Drag-handle overlay layer for per-row-kind height resize (Phase 5).
+  // Per-row-kind height drag handles (interactivity-UX arc P2; was Phase 5,
+  // shipped disabled — the old mount sat at widget-root level where
+  // computeRowLayout's rowPositions never aligned. The overlay now mounts
+  // INSIDE the rows region — the same coordinate space the spacing
+  // EdgeResize seams already use — offset by `topOffset` (the header
+  // band height), so positions line up by construction and the whole
+  // overlay scales WYSIWYG with zoom.)
   //
-  // Per Stage 1 §34b + Q-P5.4 closure (separate component, mounted as
-  // sibling overlay over the plot). Mirrors the ColumnHeaders.svelte
-  // startResize pattern.
+  // THE MODEL IS PER-KIND: a pin applies to every row of the dragged row's
+  // kind (data / summary / spacer / group_header). That MUST be visible
+  // during the gesture or "I dragged one row and twelve moved" reads as a
+  // bug — so hovering or dragging a handle ghost-highlights every affected
+  // row.
   //
-  // Mechanics:
-  //   - Renders one absolutely-positioned handle per row boundary at
-  //     `top: rowPositions[i] + rowHeights[i] - HANDLE_THICKNESS/2`.
-  //   - pointerdown captures + starts a drag, recording the row's resolved
-  //     RowKind and the starting height.
-  //   - pointermove computes newHeight = startHeight + (clientY - startY),
-  //     clamped at the per-row content minimum, and calls
-  //     store.setRowKindHeight(kind, newHeight). This commits per-move so
-  //     re-layouts happen live.
-  //   - pointerup detaches the drag listeners.
-  //
-  // Fallback paths (per startResize precedent):
-  //   - window blur → stopResize (covers focus loss)
-  //   - Escape key → stopResize (cancels)
-  //   - pointercancel → stopResize (browser-quirk safety net)
+  // Seam grammar (shared with EdgeResize):
+  //   drag         → live per-kind pin updates (slice state; no op-log)
+  //   Escape       → cancel: restore the drag-start pin (or release)
+  //   double-click → release the pin (back to the cascade default)
+  //   readout      → live "<kind> · NNpx" label while dragging/focused
+  //   keyboard     → ArrowUp/Down ±1px (Shift ±10px) on focused handles
 
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { RowKind } from "$lib/layout/row-kind";
@@ -28,152 +27,246 @@
 
   interface Props {
     store: TabvizStore;
-    /** Per-row Y positions (top of each row). */
+    /** Per-row Y positions (top of each row), in rows-region coordinates. */
     rowPositions: readonly number[];
     /** Per-row heights. */
     rowHeights: readonly number[];
     /** Per-row data — used to resolve each row's kind. Length must match
      *  rowPositions / rowHeights. */
     displayRows: readonly DisplayRow[];
-    /** Optional: per-row content minimum heights (px). When the user drags
-     *  below content[i], the height clamps. Default 4px per row when not
-     *  given. */
-    contentMinHeights?: readonly number[];
-    /** Whether the handles render at all. Hide via opacity until hover/drag. */
+    /** Y offset of the rows region inside the overlay's parent (the
+     *  header band height — same offset the spacing seams apply). */
+    topOffset?: number;
+    /** Render + interact? (the arrange tool's armed state). */
     enabled?: boolean;
   }
 
-  const HANDLE_THICKNESS = 6; // px — the hover/grab target thickness
-  const MIN_HEIGHT_PX = 4;     // absolute floor regardless of content
+  const MIN_HEIGHT_PX = 8; // absolute floor — content grows rows back anyway
 
   const {
     store,
     rowPositions,
     rowHeights,
     displayRows,
-    contentMinHeights,
+    topOffset = 0,
     enabled = true,
   }: Props = $props();
 
-  // Drag state — captured on pointerdown, used by pointermove/pointerup.
+  // Drag state — captured on pointerdown.
   let dragKind = $state.raw<RowKind | null>(null);
+  let hoverKind = $state.raw<RowKind | null>(null);
   let dragIndex = $state.raw<number | null>(null);
+  let dragValue = $state(0);
   let startY = 0;
   let startHeight = 0;
+  let startPin: number | undefined; // pin value at drag start (undefined = unpinned)
+
+  const ghostKind = $derived(dragKind ?? hoverKind);
 
   function kindOf(rowIdx: number): RowKind {
-    const dr = displayRows[rowIdx];
-    return resolveRowKind(dr);
+    return resolveRowKind(displayRows[rowIdx]);
+  }
+
+  /** Panel rows are content-driven (markdown measure) — no handle. */
+  function resizable(rowIdx: number): boolean {
+    return kindOf(rowIdx) !== "panel";
   }
 
   function startResize(e: PointerEvent, rowIdx: number): void {
-    if (!store || !enabled) return;
+    if (!store || !enabled || e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-    dragKind = kindOf(rowIdx);
+    const kind = kindOf(rowIdx);
+    dragKind = kind;
     dragIndex = rowIdx;
     startY = e.clientY;
     startHeight = rowHeights[rowIdx] ?? 0;
+    startPin = store.rowKindHeights[kind];
+    dragValue = Math.round(startHeight);
     attachDragListeners();
   }
 
   function onResize(e: PointerEvent): void {
     if (dragKind === null || dragIndex === null || !store) return;
-    const delta = e.clientY - startY;
-    const proposed = startHeight + delta;
-    // Clamp at content minimum (or MIN_HEIGHT_PX if no content minimum).
-    const floor = Math.max(
-      MIN_HEIGHT_PX,
-      contentMinHeights?.[dragIndex] ?? MIN_HEIGHT_PX,
-    );
-    const newHeight = Math.max(floor, Math.round(proposed));
-    store.setRowKindHeight(dragKind, newHeight);
+    const proposed = startHeight + (e.clientY - startY);
+    const newHeight = Math.max(MIN_HEIGHT_PX, Math.round(proposed));
+    if (newHeight !== dragValue) {
+      dragValue = newHeight;
+      // Live preview: per-kind pins are slice state (no op-log), so the
+      // pin update IS the preview — every row of the kind tracks the drag.
+      store.setRowKindHeight(dragKind, newHeight);
+    }
   }
 
-  function stopResize(): void {
+  function stopResize(commit: boolean): void {
+    if (dragKind !== null && !commit) {
+      // Escape = cancel: restore the drag-start pin (undefined = release).
+      store.setRowKindHeight(dragKind, startPin ?? null);
+    }
     dragKind = null;
     dragIndex = null;
     detachDragListeners();
   }
 
-  function onWindowBlur(): void { stopResize(); }
+  function releasePin(rowIdx: number): void {
+    // Double-click: back to the cascade-resolved default for this kind.
+    store.setRowKindHeight(kindOf(rowIdx), null);
+  }
+
+  function handleKeydown(e: KeyboardEvent, rowIdx: number): void {
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+    e.preventDefault();
+    e.stopPropagation();
+    const kind = kindOf(rowIdx);
+    const current = Math.round(rowHeights[rowIdx] ?? 0);
+    const step = (e.shiftKey ? 10 : 1) * (e.key === "ArrowDown" ? 1 : -1);
+    store.setRowKindHeight(kind, Math.max(MIN_HEIGHT_PX, current + step));
+  }
+
+  function onWindowPointerUp(): void { stopResize(true); }
+  function onWindowBlur(): void { stopResize(true); }
   function onWindowKey(e: KeyboardEvent): void {
-    if (e.key === "Escape") stopResize();
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      stopResize(false);
+    }
   }
   function attachDragListeners(): void {
     document.addEventListener("pointermove", onResize);
-    document.addEventListener("pointerup", stopResize);
-    document.addEventListener("pointercancel", stopResize);
+    document.addEventListener("pointerup", onWindowPointerUp);
+    document.addEventListener("pointercancel", onWindowPointerUp);
     window.addEventListener("blur", onWindowBlur);
-    window.addEventListener("keydown", onWindowKey);
+    window.addEventListener("keydown", onWindowKey, true);
   }
   function detachDragListeners(): void {
     document.removeEventListener("pointermove", onResize);
-    document.removeEventListener("pointerup", stopResize);
-    document.removeEventListener("pointercancel", stopResize);
+    document.removeEventListener("pointerup", onWindowPointerUp);
+    document.removeEventListener("pointercancel", onWindowPointerUp);
     window.removeEventListener("blur", onWindowBlur);
-    window.removeEventListener("keydown", onWindowKey);
+    window.removeEventListener("keydown", onWindowKey, true);
   }
 
-  // For accessibility: each handle gets an aria-label naming its row.
   function handleLabel(rowIdx: number): string {
-    const kind = kindOf(rowIdx);
-    return `Resize ${kind.replace("_", " ")} rows (row ${rowIdx + 1})`;
+    const kind = kindOf(rowIdx).replace("_", " ");
+    return `Resize all ${kind} rows`;
   }
 </script>
 
-<div class="row-edge-overlay" aria-hidden={!enabled} data-dragging={dragKind !== null}>
-  {#each rowPositions as top, i (i)}
-    {@const height = rowHeights[i] ?? 0}
-    {@const handleTop = top + height - HANDLE_THICKNESS / 2}
-    <button
-      type="button"
-      class="row-edge-handle"
-      style="top: {handleTop}px;"
-      data-active={dragIndex === i}
-      onpointerdown={(e) => startResize(e, i)}
-      aria-label={handleLabel(i)}
-      tabindex="-1"
-    ></button>
-  {/each}
-</div>
+{#if enabled}
+  <div class="row-edge-overlay" data-dragging={dragKind !== null}>
+    <!-- Ghost highlight: every row of the hovered/dragged KIND, so the
+         per-kind model is visible before and during the gesture. -->
+    {#if ghostKind !== null}
+      {#each rowPositions as top, i (i)}
+        {#if kindOf(i) === ghostKind}
+          <div
+            class="row-kind-ghost"
+            style="top: {topOffset + top}px; height: {rowHeights[i] ?? 0}px;"
+            aria-hidden="true"
+          ></div>
+        {/if}
+      {/each}
+    {/if}
+    {#each rowPositions as top, i (i)}
+      {#if resizable(i)}
+        {@const height = rowHeights[i] ?? 0}
+        <button
+          type="button"
+          class="row-edge-handle"
+          style="top: {topOffset + top + height}px;"
+          data-active={dragIndex === i}
+          onpointerdown={(e) => startResize(e, i)}
+          ondblclick={() => releasePin(i)}
+          onkeydown={(e) => handleKeydown(e, i)}
+          onpointerenter={() => { if (dragKind === null) hoverKind = kindOf(i); }}
+          onpointerleave={() => { hoverKind = null; }}
+          onfocus={() => { hoverKind = kindOf(i); }}
+          onblur={() => { hoverKind = null; }}
+          aria-label={handleLabel(i)}
+        >
+          {#if dragIndex === i}
+            <span class="row-edge-readout" aria-hidden="true">
+              {kindOf(i).replace("_", " ")} · {dragValue}px
+            </span>
+          {/if}
+        </button>
+      {/if}
+    {/each}
+  </div>
+{/if}
 
 <style>
   .row-edge-overlay {
     position: absolute;
     inset: 0;
     pointer-events: none;
+    z-index: 5;
   }
   .row-edge-overlay[data-dragging="true"] {
-    /* While dragging, allow the document-level listeners to handle move/up
-       events without the overlay's child elements blocking them. */
     cursor: row-resize;
+  }
+  .row-kind-ghost {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: color-mix(in srgb, var(--tv-accent, #3366cc) 9%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--tv-accent, #3366cc) 25%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--tv-accent, #3366cc) 25%, transparent);
+    pointer-events: none;
   }
   .row-edge-handle {
     position: absolute;
     left: 0;
     right: 0;
-    height: 6px;
+    height: 10px;
+    transform: translateY(-50%);
     margin: 0;
     padding: 0;
     border: 0;
     background: transparent;
     cursor: row-resize;
     pointer-events: auto;
-    opacity: 0;
-    transition: opacity 120ms ease, background-color 120ms ease;
-    z-index: 5;
+    touch-action: none;
+    z-index: 6;
   }
-  /* Reveal on hover (or while dragging — the [data-active] selector
-     keeps the dragged handle visible even after pointer drifts off). */
-  .row-edge-handle:hover,
-  .row-edge-handle[data-active="true"] {
-    opacity: 1;
-    background: color-mix(in srgb, var(--tv-accent, #3366cc) 35%, transparent);
+  /* Armed visibility: a faint center bar, brighter on hover/drag/focus —
+     the same visual language as EdgeResize seams. */
+  .row-edge-handle::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 50%;
+    height: 2px;
+    transform: translateY(-50%);
+    border-radius: 1px;
+    background: var(--tv-accent, #3366cc);
+    opacity: 0.18;
+    transition: opacity 120ms ease;
+    pointer-events: none;
+  }
+  .row-edge-handle:hover::before,
+  .row-edge-handle[data-active="true"]::before,
+  .row-edge-handle:focus-visible::before {
+    opacity: 0.6;
   }
   .row-edge-handle:focus-visible {
-    opacity: 1;
-    outline: 2px solid var(--tv-focus, var(--tv-accent, #3366cc));
-    outline-offset: -2px;
+    outline: none; /* the ::before bar carries focus visibility */
+  }
+  .row-edge-readout {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(calc(-50% - 12px));
+    padding: 1px 6px;
+    font-family: var(--tv-text-body-family, system-ui);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--tv-surface-bg, #fff);
+    background: var(--tv-accent, #2563eb);
+    border-radius: 3px;
+    pointer-events: none;
   }
 </style>

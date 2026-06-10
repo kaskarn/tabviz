@@ -32,7 +32,7 @@ import puppeteer, { type Page } from "puppeteer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
-import { COCHRANE } from "../../src/lib/theme/theme-presets-inputs";
+import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_HTML = path.join(__dirname, "fixtures.html");
@@ -56,7 +56,7 @@ const LONG =
   "column is narrow enough to force multiple lines of text in the cell.";
 
 function buildSpec(): unknown {
-  const THEME = buildTheme(COCHRANE, "cochrane");
+  const THEME = buildTheme(NEJM, "nejm");
   const rows = [
     { id: "r0", label: "Short A", metadata: { notes: "brief" }, style: {} },
     { id: "r1", label: "Long",    metadata: { notes: LONG },    style: {} },
@@ -125,7 +125,7 @@ function fail(msg: string): never {
  *  whose scrollHeight echo caused the ratchet). No wrap columns: every
  *  cell's content FITS, so pre-fix every measurement was a track echo. */
 function buildGroupedSpec(): unknown {
-  const THEME = buildTheme(COCHRANE, "cochrane");
+  const THEME = buildTheme(NEJM, "nejm");
   const mk = (id: string, label: string, groupId: string) =>
     ({ id, label, groupId, metadata: { notes: "ok" }, style: {} });
   return {

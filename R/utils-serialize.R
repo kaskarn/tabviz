@@ -688,6 +688,7 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     enableReorderColumns = na_drop(interaction@enable_reorder_columns),
     enableEdit = na_drop(interaction@enable_edit),
     enableAxisZoom = na_drop(interaction@enable_axis_zoom),
+    enableArrange = na_drop(interaction@enable_arrange),
     showGroupCounts = na_drop(interaction@show_group_counts),
     tooltipFields = interaction@tooltip_fields,
     enableThemes = themes_config

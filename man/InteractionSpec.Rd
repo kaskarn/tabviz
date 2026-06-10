@@ -19,6 +19,7 @@ InteractionSpec(
   enable_reorder_columns = NA,
   enable_edit = NA,
   enable_axis_zoom = NA,
+  enable_arrange = NA,
   show_group_counts = NA,
   tooltip_fields = NULL,
   enable_themes = "default"

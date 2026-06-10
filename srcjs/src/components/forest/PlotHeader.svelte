@@ -23,6 +23,9 @@
     titleSubtitleGap?: number;
     onpreviewgap?: (value: number) => void;
     oncommitgap?: (value: number) => void;
+    /** Arrange tool armed — gates the gap seam (P2: layout gestures live
+     *  behind arrange, not behind content-edit). */
+    arrangeArmed?: boolean;
   }
 
   const {
@@ -34,10 +37,11 @@
     titleSubtitleGap,
     onpreviewgap,
     oncommitgap,
+    arrangeArmed = false,
   }: Props = $props();
 
   const showHandle = $derived(
-    enableEdit &&
+    arrangeArmed &&
     !!title && !!subtitle &&
     typeof titleSubtitleGap === "number" &&
     !!onpreviewgap && !!oncommitgap,
@@ -101,6 +105,7 @@
               value={titleSubtitleGap!}
               min={0}
               max={60}
+              armed
               onpreview={(v) => onpreviewgap!(v)}
               oncommit={(v) => oncommitgap!(v)}
               label="Title-subtitle gap"

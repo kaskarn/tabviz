@@ -21,6 +21,7 @@ web_interaction(
   enable_edit = NA,
   enable_theme_edit = NA,
   enable_axis_zoom = NA,
+  enable_arrange = NA,
   show_group_counts = NA,
   tooltip_fields = NULL,
   enable_themes = getOption("tabviz.enable_themes", "default"),
@@ -66,6 +67,11 @@ figure.}
 \item{enable_axis_zoom}{Enable x-axis domain zoom on forest/viz columns
 (Ctrl/Cmd+wheel to zoom, drag to pan, double-click to reset). Default
 \code{FALSE}: domain zoom changes what the figure shows, so it is opt-in.}
+
+\item{enable_arrange}{Enable the arrange tool — a toolbar mode that
+reveals every resize seam (row heights, header height, group gaps,
+footer gap) with visible drag handles and live px readouts. Default
+\code{FALSE} (author-grade; opt in per spec, per theme, or globally).}
 
 \item{show_group_counts}{Show \code{(n)} after each row-group label. Default \code{FALSE}.}
 

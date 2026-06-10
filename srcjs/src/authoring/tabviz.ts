@@ -92,6 +92,9 @@ export interface TabvizArgs {
    *  reset). Default FALSE — domain zoom changes what the figure shows,
    *  so it is opt-in (matches R `web_interaction()`). */
   enableAxisZoom?: boolean;
+  /** Arrange tool: toolbar mode revealing every resize seam. Default
+   *  FALSE (conservative-everywhere). */
+  enableArrange?: boolean;
   showGroupCounts?: boolean;
   tooltipFields?: string[];
   // Layout
@@ -196,6 +199,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
   setFlag("enableEdit", args.enableEdit);
   setFlag("enableThemeEdit", args.enableThemeEdit);
   setFlag("enableAxisZoom", args.enableAxisZoom);
+  setFlag("enableArrange", args.enableArrange);
   setFlag("enableFilters", args.enableFilters);
   setFlag("showGroupCounts", args.showGroupCounts);
   setFlag("tooltipFields", args.tooltipFields ?? undefined);

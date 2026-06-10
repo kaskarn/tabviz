@@ -20,6 +20,9 @@
     onpreviewfootergap?: (value: number) => void;
     /** Commit on pointerup (records + re-measures). */
     oncommitfootergap?: (value: number) => void;
+    /** Arrange tool armed — gates the gap seam (P2: layout gestures live
+     *  behind arrange, not behind content-edit). */
+    arrangeArmed?: boolean;
   }
 
   const {
@@ -30,10 +33,11 @@
     footerGap,
     onpreviewfootergap,
     oncommitfootergap,
+    arrangeArmed = false,
   }: Props = $props();
 
   const showHandle = $derived(
-    enableEdit &&
+    arrangeArmed &&
     typeof footerGap === "number" &&
     !!onpreviewfootergap &&
     !!oncommitfootergap,
@@ -67,6 +71,7 @@
         value={footerGap!}
         min={0}
         max={80}
+        armed
         onpreview={(v) => onpreviewfootergap!(v)}
         oncommit={(v) => oncommitfootergap!(v)}
         label="Footer gap"
