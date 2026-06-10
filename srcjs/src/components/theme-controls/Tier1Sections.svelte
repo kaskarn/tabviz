@@ -395,19 +395,23 @@
       <Dropdown value={typeRoleSel} ariaLabel="Type role to rebind"
               onchange={(v) => (typeRoleSel = v as TypeRoleName)} options={TYPE_ROLE_OPTS} />
     </Field>
-    <Field label="· family">
-      <Dropdown value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
-              onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
-    </Field>
-    <Field label="· size">
-      <Dropdown value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
-              onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
-    </Field>
-    <Field label="· weight"
-           onreset={typeRoleOverridden ? resetTypeRole : undefined}>
-      <Dropdown value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
-              onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
-    </Field>
+    <!-- Family/size/weight are sub-fields OF the selected role — a left-ruled
+         indent reads as the hierarchy the old "· family" leading-dot only hinted at. -->
+    <div class="sub-group">
+      <Field label="Family">
+        <Dropdown value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
+                onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
+      </Field>
+      <Field label="Size">
+        <Dropdown value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
+                onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
+      </Field>
+      <Field label="Weight"
+             onreset={typeRoleOverridden ? resetTypeRole : undefined}>
+        <Dropdown value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
+                onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
+      </Field>
+    </div>
   </Section>
 {/if}
 
@@ -440,6 +444,7 @@
                value={fx.caption_style ?? "none"}
                segments={["none", "chip", "stripe", "both"].map((v) => ({ value: v, label: v }))}
                onchange={(v) => patchEffects("caption_style", v)} />
+      <div class="fx-flag">Surface finish</div>
       <EnumRow label="Glow" value={fx.glow_intensity ?? "none"}
                segments={["none", "subtle", "neon"].map((v) => ({ value: v, label: v }))}
                onchange={(v) => patchEffects("glow_intensity", v)} />
@@ -518,6 +523,29 @@
 {/if}
 
 <style>
+  /* Micro-cap divider inside a disclosure body — tracked uppercase eyebrow
+     that groups related controls (e.g. "Surface finish" effects). */
+  .fx-flag {
+    margin: 6px 0 0;
+    padding-top: 6px;
+    border-top: 1px solid var(--v2-rule-soft, #e6e0d1);
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-micro, 9.5px);
+    font-weight: 600;
+    letter-spacing: var(--v2-track-flag, 0.14em);
+    text-transform: uppercase;
+    color: var(--v2-ink-3, #8a8478);
+  }
+  /* Indented sub-group: child fields of a selected parent (e.g. the type
+     role's family/size/weight). A left rule carries the hierarchy. */
+  .sub-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--v2-gap-tight, 4px);
+    margin-left: 4px;
+    padding-left: 8px;
+    border-left: 1px solid var(--v2-rule-soft, #e6e0d1);
+  }
   .match-brand { padding: 8px 0 0; }
   .match-brand button {
     font-size: var(--v2-text-body, 11.5px);

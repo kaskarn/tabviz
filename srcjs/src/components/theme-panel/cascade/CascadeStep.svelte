@@ -113,8 +113,11 @@
   .chip-dot { opacity: 0.35; }
   h3 {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 17px;
+    /* Route through the v2 sans + size scale so cascade titles share the
+       studio chrome's typeface — was a third heading font (-apple-system
+       17px) competing in one viewport. */
+    font-family: var(--v2-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    font-size: var(--v2-text-large, 16px);
     font-weight: 600;
     line-height: 1.2;
     color: var(--tp-fg, #1c1a17);

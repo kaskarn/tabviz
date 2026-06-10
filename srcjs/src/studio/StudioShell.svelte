@@ -182,7 +182,7 @@
   );
 </script>
 
-<div class="studio">
+<div class="studio" data-tv-v2>
   <PresetHeader
     baseName={studioStore.baseName}
     dirty={studioStore.dirty}
@@ -314,20 +314,22 @@
   .studio {
     /* Editorial studio token layer (UX redesign A0). The studio rail lives
        OUTSIDE the widget DOM and can't inherit --tv-*, so the studio chrome
-       defines its OWN warm-editorial palette instead of cold slate literals
-       — the "two design systems in one viewport" fix. Mirrors the v2 control
-       language so rail + shell are ONE surface. */
-    --studio-bg: #fbf9f3;          /* warm paper chrome */
-    --studio-surface: #ffffff;     /* chart / card surface */
-    --studio-paper-2: #f3efe5;     /* recessed bands */
-    --studio-fg: #15140e;          /* warm ink */
-    --studio-fg-2: #4a463c;        /* secondary ink */
-    --studio-fg-3: #8a8478;        /* muted */
-    --studio-rule: #ddd7c9;        /* hairline */
-    --studio-rule-soft: #ece7da;
-    --studio-rule-strong: #15140e;
+       reads the v2 control palette (the .studio root carries [data-tv-v2], so
+       --v2-* resolve here to their warm-cream fallbacks). Single-sourced onto
+       --v2-* — no more parallel near-duplicate literals (#ddd7c9 vs #d6d0c1).
+       The verdict colors (good/warn/bad/pins) have no v2 twin, so they stay
+       literal. Fallbacks preserve the original skin if v2 ever fails to load. */
+    --studio-bg: var(--v2-paper, #fbf9f3);              /* warm paper chrome */
+    --studio-surface: var(--v2-paper-edge, #ffffff);    /* chart / card surface */
+    --studio-paper-2: var(--v2-paper-2, #f3efe5);       /* recessed bands */
+    --studio-fg: var(--v2-ink, #15140e);                /* warm ink */
+    --studio-fg-2: var(--v2-ink-2, #4a463c);            /* secondary ink */
+    --studio-fg-3: var(--v2-ink-3, #8a8478);            /* muted */
+    --studio-rule: var(--v2-rule, #ddd7c9);             /* hairline */
+    --studio-rule-soft: var(--v2-rule-soft, #ece7da);
+    --studio-rule-strong: var(--v2-rule-strong, #15140e);
     --studio-accent: var(--tv-accent, #2563eb);
-    --studio-font: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --studio-font: var(--v2-font-sans, "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
     --studio-good: #2f7d4f;
     --studio-warn: #b07314;        /* amber ink (verdict / contrast) */
     --studio-warn-tint: #f6ecd6;

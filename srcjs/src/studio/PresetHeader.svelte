@@ -9,6 +9,7 @@
 -->
 <script lang="ts">
   import ConfirmDialog from "$components/ui/ConfirmDialog.svelte";
+  import Dropdown from "$components/primitives/v2/Dropdown.svelte";
   import { studioStore } from "./studio-store.svelte";
   import { PRESETS } from "$lib/theme/theme-presets-inputs";
 
@@ -51,6 +52,14 @@
   // and relaunching from R. The select loads any shipped preset as the
   // new base (with a dirty-confirm so edits aren't silently dropped).
   const presetNames = Object.keys(PRESETS);
+  // When the base is a custom (non-preset) theme, surface it as the first
+  // option so the Dropdown can show + keep it selected.
+  const presetOptions = $derived(
+    (presetNames.includes(baseName)
+      ? presetNames
+      : [baseName, ...presetNames]
+    ).map((n) => ({ value: n, label: n })),
+  );
   let pendingPreset = $state<string | null>(null);
 
   function requestPreset(name: string): void {
@@ -140,21 +149,17 @@
   <div class="title">
     <strong>tabviz studio</strong>
     <span class="separator">·</span>
-    <label class="base">
+    <span class="base">
       based on
-      <select
-        value={presetNames.includes(baseName) ? baseName : ""}
-        onchange={(e) => requestPreset((e.currentTarget as HTMLSelectElement).value)}
-        aria-label="Switch base preset"
-      >
-        {#if !presetNames.includes(baseName)}
-          <option value="">{baseName}</option>
-        {/if}
-        {#each presetNames as name (name)}
-          <option value={name}>{name}</option>
-        {/each}
-      </select>
-    </label>
+      <span class="base-picker">
+        <Dropdown
+          value={baseName}
+          options={presetOptions}
+          onchange={requestPreset}
+          ariaLabel="Switch base preset"
+        />
+      </span>
+    </span>
     {#if dirty}
       <span class="dirty" title="Unsaved changes since {baseName} was loaded">●</span>
     {/if}
@@ -255,14 +260,11 @@
     align-items: center;
     gap: 5px;
   }
-  .base select {
-    font-size: 12px;
-    padding: 2px 4px;
-    border: 1px solid var(--v2-rule, #d6d0c1);
-    border-radius: var(--v2-r-soft, 3px);
-    background: var(--v2-paper-edge, #fff);
-    color: var(--v2-ink, #15140e);
-    cursor: pointer;
+  /* Constrain the drop-in Dropdown (its root is flex:1) to a compact width
+     so it reads as an inline picker, not a full-width control. */
+  .base-picker {
+    display: inline-flex;
+    width: 150px;
   }
   .dirty {
     color: #f59e0b;
@@ -284,14 +286,17 @@
     gap: 4px;
     align-items: center;
   }
+  /* Recessive chrome grammar, matching SettingsPanel's .bar-btn: transparent
+     fill + hairline rule + muted ink; hover reveals full ink + tint. The
+     buttons recede so the one inverted CTA (.done / .primary) carries the eye. */
   button {
     padding: 4px 10px;
     border: 1px solid var(--v2-rule, #d6d0c1);
-    background: var(--v2-paper-edge, #fff);
+    background: transparent;
     border-radius: var(--v2-r-soft, 3px);
     cursor: pointer;
     font-size: 12px;
-    color: var(--v2-ink, #15140e);
+    color: var(--v2-ink-2, #4a463c);
   }
   button:disabled {
     opacity: 0.5;
@@ -299,6 +304,7 @@
   }
   button:not(:disabled):hover {
     background: var(--v2-hover-tint, rgba(21,20,14,0.05));
+    color: var(--v2-ink, #15140e);
   }
   /* Primary CTA = ink inversion, the v2 active grammar (not blue —
      accent is reserved for ACTIVE state, never chrome decoration). */
