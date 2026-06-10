@@ -62,6 +62,22 @@ function optionMetaFor(type: string): Map<string, OptionMeta> {
   return meta;
 }
 
+/** True when EVERY string leaf of a value (a primitive, or an array/object of
+ *  them — e.g. badge.colors is a Record<string,string>) passes the shared pin
+ *  grammar. A column_defaults value can ride an UNTRUSTED theme wire and some
+ *  styling options reach SVG attributes raw (`fill="${color}"`), so a single
+ *  hostile string ANYWHERE in the value must reject the whole value. Non-string
+ *  leaves (number/bool/null) can't carry markup; functions/symbols reject. */
+function valueLeavesSafe(v: unknown): boolean {
+  if (typeof v === "string") return isValidPinValue(v);
+  if (v === null || v === undefined || typeof v === "number" || typeof v === "boolean") {
+    return true;
+  }
+  if (Array.isArray(v)) return v.every(valueLeavesSafe);
+  if (typeof v === "object") return Object.values(v).every(valueLeavesSafe);
+  return false;
+}
+
 /** Shallow structural equality good enough for option values (primitives +
  *  small arrays of primitives). */
 function sameValue(a: unknown, b: unknown): boolean {
@@ -100,12 +116,14 @@ export function applyThemeColumnDefaults(
       if (!m || m.kind === "core") continue;     // rule 2: never set unknown/core options
       // Rule 3 (XSS chokepoint): column_defaults can ride an UNTRUSTED theme
       // wire, and several styling options are colors that reach SVG attributes
-      // raw (e.g. bar-renderer `fill="${color}"`). Drop any string value that
-      // fails the shared pin-value grammar (bans <>{};" + control chars), so a
-      // hostile theme can't inject an attribute/handler into a SHARED exported
-      // artifact. Non-string values (bool/number) can't carry markup. This is
-      // the one merge chokepoint every runtime + both languages pass through.
-      if (typeof v === "string" && !isValidPinValue(v)) continue;
+      // raw (e.g. bar-renderer `fill="${color}"`; badge.colors is a
+      // Record<string,string> whose leaves reach fill=/stroke=). Drop the value
+      // unless EVERY string leaf passes the shared pin grammar (bans <>{};" +
+      // control chars), so a hostile theme can't inject an attribute/handler
+      // into a SHARED exported artifact — including via a nested object/array
+      // value. This is the one merge chokepoint every runtime + both languages
+      // pass through.
+      if (!valueLeavesSafe(v)) continue;
       const current = mergedNs[k];
       // Rule 1 (author wins): apply the theme default only when the column is
       // still at the SCHEMA default — i.e. the author hasn't deviated. The
@@ -132,8 +150,10 @@ export function applyThemeColumnDefaults(
  * the wire, an R-authored spec (which never runs the TS `tabviz()` builder)
  * gets the same house-style merge as a TS-authored one, with NO schema/kind
  * logic replicated R-side: R declares `column_defaults`, the TS engine applies
- * it. Pure + idempotent (re-applying is a no-op — the merged value is no
- * longer at the schema default), so it is safe on every ingest.
+ * it. Pure, and stable under re-applying the SAME theme (the merged value is
+ * no longer at the schema default, so a second pass is a no-op), so it is safe
+ * on every ingest. NOTE: not stable across a theme SWITCH — see the
+ * theme-switch stickiness limitation in the file header.
  */
 export function applyThemeColumnDefaultsToSpec(spec: WebSpec): WebSpec {
   const cd = spec.theme?.authoringInputs?.column_defaults;

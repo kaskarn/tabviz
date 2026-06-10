@@ -148,15 +148,19 @@ function buildBadgeMarkup(
 ): string {
   const cssVars = getCssVars(theme);
   const { width, height, radius, fontSize } = geom;
+  // Escape color into the attribute: badge.colors is a user/theme-supplied map
+  // reaching fill=/stroke= raw. `text` was already escaped; `color` is its
+  // egress twin (defense in depth — the column_defaults ingress also gates it).
+  const safeColor = escapeXml(color);
   const shapeAttrs = outline
-    ? `fill="none" stroke="${color}" stroke-width="1.5"`
-    : `fill="${color}" opacity="0.15"`;
+    ? `fill="none" stroke="${safeColor}" stroke-width="1.5"`
+    : `fill="${safeColor}" opacity="0.15"`;
   const rect = `<rect x="0" y="0" width="${width}" height="${height}" rx="${radius}" ${shapeAttrs}/>`;
   const label =
     `<text class="cell-text" dominant-baseline="central" ` +
     `x="${width / 2}" y="${height / 2}" text-anchor="middle" ` +
     `font-family="${readBodyFamily(cssVars)}" font-size="${fontSize}px" ` +
-    `font-weight="600" fill="${color}">${escapeXml(text)}</text>`;
+    `font-weight="600" fill="${safeColor}">${escapeXml(text)}</text>`;
   return rect + label;
 }
 

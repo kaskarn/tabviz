@@ -52,6 +52,21 @@ describe("applyThemeColumnDefaults", () => {
     expect((ok[0] as unknown as { options: { bar: Record<string, unknown> } }).options.bar.color).toBe("#3366cc");
   });
 
+  it("drops a hostile leaf inside an OBJECT-valued styling option (badge.colors)", () => {
+    // badge.colors is a Record<string,string> reaching fill="${color}" raw —
+    // a single poisoned leaf must reject the whole value (recursive gate).
+    const gcol = (opts: Record<string, unknown> = {}): ColumnDef =>
+      ({ id: "g", field: "g", type: "badge", header: "G", options: { badge: opts } }) as unknown as ColumnDef;
+    const evil = applyThemeColumnDefaults([gcol({})], {
+      badge: { colors: { yes: "#0a0", no: 'red" onload="alert(1)' } },
+    });
+    expect((evil[0] as unknown as { options: { badge: Record<string, unknown> } }).options.badge.colors).toBeUndefined();
+    // An all-clean color map applies.
+    const clean = applyThemeColumnDefaults([gcol({})], { badge: { colors: { yes: "#0a0", no: "#a00" } } });
+    expect((clean[0] as unknown as { options: { badge: { colors: Record<string, string> } } }).options.badge.colors)
+      .toEqual({ yes: "#0a0", no: "#a00" });
+  });
+
   it("UNKNOWN option keys are dropped (treated as core)", () => {
     const out = applyThemeColumnDefaults([pcol({})], { pvalue: { notARealOption: 1 } });
     expect(optsOf(out[0]!).notARealOption).toBeUndefined();
