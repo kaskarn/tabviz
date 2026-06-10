@@ -17,6 +17,7 @@
 //      theme can't reach an un-annotated option.
 
 import { getSchema } from "../../schema/extend";
+import { isValidPinValue } from "./consumer-bridge";
 import type { OptionKind } from "../../schema/types";
 import type { ColumnDef, WebSpec } from "../../types";
 
@@ -82,6 +83,14 @@ export function applyThemeColumnDefaults(
     for (const [k, v] of Object.entries(defs)) {
       const m = meta.get(k);
       if (!m || m.kind === "core") continue;     // rule 2: never set unknown/core options
+      // Rule 3 (XSS chokepoint): column_defaults can ride an UNTRUSTED theme
+      // wire, and several styling options are colors that reach SVG attributes
+      // raw (e.g. bar-renderer `fill="${color}"`). Drop any string value that
+      // fails the shared pin-value grammar (bans <>{};" + control chars), so a
+      // hostile theme can't inject an attribute/handler into a SHARED exported
+      // artifact. Non-string values (bool/number) can't carry markup. This is
+      // the one merge chokepoint every runtime + both languages pass through.
+      if (typeof v === "string" && !isValidPinValue(v)) continue;
       const current = mergedNs[k];
       // Rule 1 (author wins): apply the theme default only when the column is
       // still at the SCHEMA default — i.e. the author hasn't deviated. The

@@ -38,6 +38,20 @@ describe("applyThemeColumnDefaults", () => {
     expect(optsOf(out[0]!).significantStyle).toBe("pill"); // styling still applies
   });
 
+  it("drops a hostile string value (XSS gate — untrusted theme wire → SVG attr)", () => {
+    // bar.color is a styling option that reaches `fill="${color}"` raw in the
+    // SVG renderer. A value carrying attribute-breaking chars must be dropped.
+    const bcol = (opts: Record<string, unknown> = {}): ColumnDef =>
+      ({ id: "b", field: "b", type: "bar", header: "B", options: { bar: opts } }) as unknown as ColumnDef;
+    const evil = 'red" onmouseover="alert(1)';
+    const out = applyThemeColumnDefaults([bcol({})], { bar: { color: evil } });
+    const got = (out[0] as unknown as { options: { bar: Record<string, unknown> } }).options.bar.color;
+    expect(got).toBeUndefined(); // hostile value never applied
+    // A clean color string still applies.
+    const ok = applyThemeColumnDefaults([bcol({})], { bar: { color: "#3366cc" } });
+    expect((ok[0] as unknown as { options: { bar: Record<string, unknown> } }).options.bar.color).toBe("#3366cc");
+  });
+
   it("UNKNOWN option keys are dropped (treated as core)", () => {
     const out = applyThemeColumnDefaults([pcol({})], { pvalue: { notARealOption: 1 } });
     expect(optsOf(out[0]!).notARealOption).toBeUndefined();

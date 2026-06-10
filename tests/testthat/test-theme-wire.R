@@ -345,8 +345,9 @@ test_that("web_theme(column_defaults=) seeds the slot + the wire-import drops ju
   # Untrusted wire-import keeps only scalar leaves under named types. The
   # empty-name entry is built via setNames (a literal "" = is a parse error).
   cd_junk <- c(
-    list(pvalue = list(stars = TRUE, bad = list(1, 2))),  # non-scalar leaf dropped
-    setNames(list(list(x = 1)), "")                       # empty type key dropped
+    list(pvalue = list(stars = TRUE, bad = list(1, 2))),       # non-scalar leaf dropped
+    list(bar = list(color = 'red" onmouseover="x', ok = "#0a0")), # XSS value dropped
+    setNames(list(list(x = 1)), "")                           # empty type key dropped
   )
   wire <- list(
     name = "junk", schemaVersion = 4,
@@ -359,6 +360,9 @@ test_that("web_theme(column_defaults=) seeds the slot + the wire-import drops ju
   expect_true(back@inputs@column_defaults$pvalue$stars)
   expect_null(back@inputs@column_defaults$pvalue$bad)
   expect_false("" %in% names(back@inputs@column_defaults))
+  # XSS grammar gate: a hostile color string is dropped, a clean one kept.
+  expect_null(back@inputs@column_defaults$bar$color)
+  expect_identical(back@inputs@column_defaults$bar$ok, "#0a0")
 })
 
 test_that("R .TYPE_ROLE_NAMES mirror matches the TS roster (Wave 3 drift gate)", {

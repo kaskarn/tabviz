@@ -179,7 +179,15 @@ theme_inputs_from_wire <- function(wire_inputs) {
       for (opt in names(entry)) {
         if (!nzchar(opt)) next
         val <- entry[[opt]]
-        if (length(val) == 1L && is.atomic(val) && !is.na(val)) kept[[opt]] <- val
+        if (length(val) != 1L || !is.atomic(val) || is.na(val)) next
+        # XSS grammar gate (defense-in-depth; the TS merge chokepoint also
+        # gates): several styling options are colors that reach SVG `fill=`
+        # attributes raw. Drop a string value carrying attribute-breaking
+        # chars (<>{};" or control chars, >512) so a hostile shared theme
+        # can't inject markup. Mirrors isValidPinValue in consumer-bridge.ts.
+        if (is.character(val) &&
+            (nchar(val) > 512L || grepl('[<>{};"]|[[:cntrl:]]', val))) next
+        kept[[opt]] <- val
       }
       if (length(kept) > 0L) clean_cd[[type]] <- kept
     }
