@@ -594,6 +594,9 @@
 
   // Check if export is enabled (default true)
   const enableExport = $derived(spec?.interaction?.enableExport !== false);
+  // Forest/viz domain zoom — conservative default OFF (interactivity-UX
+  // arc P0): an author opts in via interaction.enableAxisZoom.
+  const enableAxisZoom = $derived(spec?.interaction?.enableAxisZoom === true);
 
   // Get available themes for theme switcher (null = disabled, object = custom themes)
   const enableThemes = $derived(spec?.interaction?.enableThemes);
@@ -624,6 +627,21 @@
         store.fitToWidth();
         break;
     }
+  }
+
+  // Cmd/Ctrl+wheel over the widget adjusts WIDGET zoom (the standard
+  // zoomable-canvas idiom; interactivity-UX arc P0). Plain wheel always
+  // scrolls the page. Forest-overlay domain zoom (when enabled) consumes
+  // its modifier-wheel before this sees it via stopPropagation. Gated on
+  // showZoomControls so an author who hides zoom UI disables the gesture
+  // too. preventDefault stops the browser's page-zoom while over the
+  // widget — same trade every map widget makes.
+  const WIDGET_WHEEL_FACTOR = 1 / 300;
+  function handleContainerWheel(event: WheelEvent) {
+    if (!store.showZoomControls) return;
+    if (!event.metaKey && !event.ctrlKey) return;
+    event.preventDefault();
+    store.setZoom(store.zoom * Math.exp(-event.deltaY * WIDGET_WHEEL_FACTOR));
   }
 
   // Check if the data has any groups
@@ -1479,6 +1497,7 @@
   data-title-style={scopeTitleStyle}
   data-shell-surface={scopeGlass === "none" ? "opaque" : "glass"}
   style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 0) + 2 * shellPad + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
+  onwheel={handleContainerWheel}
 >
   {#if spec}
     <!-- Control toolbar (always outside scalable so it doesn't scale with zoom) -->
@@ -2036,7 +2055,7 @@
               getPixelRange: () => forestScaleRange(forestWidth),
               onChange: (d) => store.setAxisZoom(fc.column.id, d),
               onReset: () => store.resetAxisZoom(fc.column.id),
-              enabled: true,
+              enabled: enableAxisZoom,
             }}
           >
             <defs>
@@ -2220,7 +2239,7 @@
                 getPixelRange: () => forestScaleRange(vizWidth),
                 onChange: (d) => store.setAxisZoom(vc.column.id, d),
                 onReset: () => store.resetAxisZoom(vc.column.id),
-                enabled: !!sharedScale,
+                enabled: enableAxisZoom && !!sharedScale,
               }}
             >
               <defs>
@@ -2308,7 +2327,7 @@
                 getPixelRange: () => forestScaleRange(vizWidth),
                 onChange: (d) => store.setAxisZoom(vc.column.id, d),
                 onReset: () => store.resetAxisZoom(vc.column.id),
-                enabled: !!sharedScale,
+                enabled: enableAxisZoom && !!sharedScale,
               }}
             >
               <defs>
@@ -2396,7 +2415,7 @@
                 getPixelRange: () => forestScaleRange(vizWidth),
                 onChange: (d) => store.setAxisZoom(vc.column.id, d),
                 onReset: () => store.resetAxisZoom(vc.column.id),
-                enabled: !!sharedScale,
+                enabled: enableAxisZoom && !!sharedScale,
               }}
             >
               <defs>

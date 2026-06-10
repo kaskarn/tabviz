@@ -20,6 +20,7 @@ web_interaction(
   enable_reorder_columns = TRUE,
   enable_edit = TRUE,
   enable_theme_edit = TRUE,
+  enable_axis_zoom = FALSE,
   show_group_counts = FALSE,
   tooltip_fields = NULL,
   enable_themes = getOption("tabviz.enable_themes", "default"),
@@ -61,6 +62,10 @@ plus a popover editor for forest-cell numerics.}
 \item{enable_theme_edit}{Enable the in-widget theme settings cog (Tier-1 theme
 edits + per-figure controls). \code{FALSE} removes the cog for an author-frozen
 figure.}
+
+\item{enable_axis_zoom}{Enable x-axis domain zoom on forest/viz columns
+(Ctrl/Cmd+wheel to zoom, drag to pan, double-click to reset). Default
+\code{FALSE}: domain zoom changes what the figure shows, so it is opt-in.}
 
 \item{show_group_counts}{Show \code{(n)} after each row-group label. Default \code{FALSE}.}
 

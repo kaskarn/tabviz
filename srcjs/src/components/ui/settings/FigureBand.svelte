@@ -11,7 +11,6 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import type { RowKind } from "$lib/layout/row-kind";
   import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
@@ -58,9 +57,14 @@
   const wmSummary = $derived(wmText ? `"${wmText}"` : "off");
 
   // ── Row-height pins ─────────────────────────────────────────────────
+  // The roster lists every pinnable kind in the figure (not just pinned
+  // ones), so the panel can CREATE a first pin — pre-arc the section only
+  // appeared once a pin already existed, and nothing else in the widget
+  // could make one (interactivity-UX arc P0).
   let pinsOpen = $state(false);
-  const pins = $derived(Object.entries(store.rowKindHeights) as Array<[RowKind, number]>);
-  const pinsSummary = $derived(pins.length ? `${pins.length} pinned` : "none");
+  const rowKinds = $derived(store.rowKindRoster);
+  const pinnedCount = $derived(rowKinds.filter((r) => r.pinned).length);
+  const pinsSummary = $derived(pinnedCount ? `${pinnedCount} pinned` : "default");
 
   const figureDirty = $derived(store.hasFigureEdits);
 
@@ -150,16 +154,21 @@
     {/if}
   </DisclosureField>
 
-  {#if pins.length > 0}
-    <DisclosureField label="Row pins" summary={pinsSummary} bind:open={pinsOpen}>
-      {#each pins as [kind, px] (kind)}
+  {#if rowKinds.length > 0}
+    <DisclosureField label="Row heights" summary={pinsSummary} bind:open={pinsOpen}>
+      {#each rowKinds as { kind, px, pinned } (kind)}
         <Field label={kind.replace("_", " ")}>
           <span class="pin-row">
             <Slider value={px} min={12} max={120} step={1} suffix="px"
                     ariaLabel="{kind} row height"
                     oncommit={(v) => store.setRowKindHeight(kind, v)} />
-            <button type="button" class="pin-clear" title="Release pin"
-                    onclick={() => store.setRowKindHeight(kind, null)}>↻</button>
+            {#if pinned}
+              <button type="button" class="pin-clear" title="Release pin"
+                      onclick={() => store.setRowKindHeight(kind, null)}>↻</button>
+            {:else}
+              <!-- keep the slider track width stable between states -->
+              <span class="pin-clear-spacer" aria-hidden="true"></span>
+            {/if}
           </span>
         </Field>
       {/each}
@@ -226,6 +235,11 @@
     padding: 0;
   }
   .pin-clear:hover { color: var(--v2-ink, #15140e); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
+  .pin-clear-spacer {
+    flex: none;
+    width: 24px;
+    height: var(--v2-control-h, 22px);
+  }
   .figure-foot {
     display: flex;
     justify-content: flex-end;

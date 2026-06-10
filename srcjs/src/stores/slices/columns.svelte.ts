@@ -858,15 +858,40 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
   // ── Lifecycle ──────────────────────────────────────────────────────────
 
   function hydrateForSpec() {
-    // Spec swap → drop stale interactive overrides. Mirrors the pre-slice
-    // setSpec contract: a fresh spec means a fresh column session, with
-    // measurement re-run by the caller.
-    columnOrderOverrides = { topLevel: null, byGroup: {} };
+    // Spec swap → reconcile figure-layout state by column id instead of
+    // wiping it (interactivity-UX arc P0; docs/dev/interactivity-ux-plan.md).
+    // A Shiny `update_data` round-trip lands here, and the old full wipe
+    // meant every server data refresh destroyed the user's column resizes,
+    // hides, and reorder. Layout state survives for columns that still
+    // exist in the incoming spec; entries anchored to disappeared ids drop.
+    //
+    // Column EDITS (configure overrides, runtime-inserted columns) still
+    // reset: the incoming spec owns its column *definitions*, and a stale
+    // spec override would silently mask server-sent column changes.
+    const next = deps.getSpec();
+    const validIds = new Set<string>(
+      next ? flattenAllColumns(next.columns).map((c) => c.id) : [],
+    );
+
+    const keptResized = new Set<string>();
+    const keptWidths: Record<string, number> = {};
+    for (const id of userResizedIds) {
+      const w = columnWidths[id];
+      if (validIds.has(id) && w != null) {
+        keptResized.add(id);
+        keptWidths[id] = w;
+      }
+    }
+    // Auto-measured widths are NOT carried over — the caller re-runs
+    // measureAutoColumns() against the new spec's content.
+    columnWidths = keptWidths;
+    userResizedIds = keptResized;
+    hiddenColumnIds = new Set([...hiddenColumnIds].filter((id) => validIds.has(id)));
+    // Reorder overrides carry over wholesale: applyColumnOrder is tolerant
+    // at apply time (unknown ids dropped, new columns appended in spec
+    // order), so stale entries are inert rather than harmful.
     userInsertedColumns = [];
-    hiddenColumnIds = new Set();
     columnSpecOverrides = {};
-    columnWidths = {};
-    userResizedIds = new Set();
   }
 
   function reset() {

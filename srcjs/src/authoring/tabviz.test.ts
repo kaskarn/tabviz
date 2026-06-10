@@ -90,5 +90,8 @@ describe("tabviz top-level constructor", () => {
     expect(spec.interaction.showLegend).toBe(true);
     expect(spec.interaction.enableSort).toBe(true);
     expect(spec.interaction.enableExport).toBe(true);
+    // Domain zoom is the deliberate exception — conservative default OFF
+    // (it changes what the figure shows; interactivity-UX arc P0).
+    expect(spec.interaction.enableAxisZoom).toBe(false);
   });
 });

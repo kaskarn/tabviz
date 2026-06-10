@@ -2205,6 +2205,11 @@ InteractionSpec <- new_class(
     enable_reorder_rows = new_property(class_logical, default = TRUE),
     enable_reorder_columns = new_property(class_logical, default = TRUE),
     enable_edit = new_property(class_logical, default = TRUE),
+    # Forest/viz x-axis domain zoom (Ctrl/Cmd+wheel, drag pan, dblclick
+    # reset). Default FALSE (conservative-everywhere, interactivity-UX arc):
+    # domain zoom is an analysis affordance with no discoverable cue for
+    # document readers — authors opt in.
+    enable_axis_zoom = new_property(class_logical, default = FALSE),
     show_group_counts = new_property(class_logical, default = FALSE),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
@@ -2326,6 +2331,9 @@ finalize_enable_themes <- function(value, theme) {
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells
 #'   plus a popover editor for forest-cell numerics.
+#' @param enable_axis_zoom Enable x-axis domain zoom on forest/viz columns
+#'   (Ctrl/Cmd+wheel to zoom, drag to pan, double-click to reset). Default
+#'   `FALSE`: domain zoom changes what the figure shows, so it is opt-in.
 #' @param enable_theme_edit Enable the in-widget theme settings cog (Tier-1 theme
 #'   edits + per-figure controls). `FALSE` removes the cog for an author-frozen
 #'   figure.
@@ -2351,6 +2359,7 @@ web_interaction <- function(
     enable_reorder_columns = TRUE,
     enable_edit = TRUE,
     enable_theme_edit = TRUE,
+    enable_axis_zoom = FALSE,
     show_group_counts = FALSE,
     tooltip_fields = NULL,
     enable_themes = getOption("tabviz.enable_themes", "default"),
@@ -2375,6 +2384,7 @@ web_interaction <- function(
     enable_reorder_columns = enable_reorder_columns,
     enable_edit = enable_edit,
     enable_theme_edit = enable_theme_edit,
+    enable_axis_zoom = enable_axis_zoom,
     show_group_counts = show_group_counts,
     tooltip_fields = tooltip_fields,
     enable_themes = enable_themes

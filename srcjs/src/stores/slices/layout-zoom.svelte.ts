@@ -58,7 +58,8 @@ import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-
 import {
   getCssVars, readVarPx, readBodySize, readLabelSize,
 } from "$lib/theme/consumer-bridge";
-import type { RowKind } from "$lib/layout/row-kind";
+import { resolveRowKind, type RowKind } from "$lib/layout/row-kind";
+import { resolveRowKindHeight } from "$lib/layout/row-kind-heights";
 
 /**
  * Merge measured row heights (real DOM offsetHeight per row) over predicted
@@ -105,6 +106,20 @@ export function growMergeHeights(
     }
   }
   return changed ? merged : prev;
+}
+
+/**
+ * localStorage key for per-figure view state (zoom/fit/contrast). Scoped by
+ * document path AND element id: htmlwidget element ids are auto-generated
+ * and repeat across documents (every Quarto page's first widget can get the
+ * same id), so an id-only key leaked one report's zoom into another
+ * (interactivity-UX arc P0). `location` is absent under V8/static export —
+ * persistence is browser-only, so the empty-scope fallback only ever serves
+ * non-persisting environments. PURE + exported for the unit test.
+ */
+export function zoomStorageKey(elementId: string): string {
+  const docScope = typeof location !== "undefined" ? location.pathname : "";
+  return `tabviz_zoom_${docScope}::${elementId}`;
 }
 
 /** Shallow value-equality for measured-height maps (within 0.5px), so the
@@ -177,6 +192,12 @@ export interface LayoutZoomSlice {
   setMeasuredRowHeights: (heights: Record<string, number> | null) => void;
   /** Per-row-kind height overrides (the pin layer). */
   readonly rowKindHeights: Partial<Record<RowKind, number>>;
+  /** Every pinnable row kind present in the current figure with its
+   *  effective base height — pin when set, cascade-resolved otherwise.
+   *  Drives the settings panel's "Row heights" control, which can CREATE
+   *  a first pin (interactivity-UX arc P0; the pre-arc panel could only
+   *  edit kinds that were already pinned). */
+  readonly rowKindRoster: ReadonlyArray<{ kind: RowKind; px: number; pinned: boolean }>;
   /** Pin a row kind's base height (`null` clears it back to the density default). */
   setRowKindHeight: (kind: RowKind, height: number | null) => void;
   /** Clear all per-row-kind height pins. */
@@ -535,6 +556,34 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     };
   });
 
+  // ── Row-kind roster (settings panel "Row heights" control) ─────────────
+
+  // Every pinnable kind present in the figure with its effective base
+  // height. `panel` is excluded: panel height is content-driven (markdown
+  // measure), so a px pin would fight the measure loop. Sampling the
+  // cascade (not layout.rowHeights) keeps the value a BASE height — content
+  // growth and group padding don't leak into the slider position.
+  const rowKindRoster = $derived.by((): Array<{ kind: RowKind; px: number; pinned: boolean }> => {
+    const spec = deps.getSpec();
+    if (!spec) return [];
+    const ctx = { constructorOverride: spec.rowHeights };
+    const base = layout.rowHeight;
+    const seen = new Set<RowKind>();
+    const out: Array<{ kind: RowKind; px: number; pinned: boolean }> = [];
+    for (const dr of deps.getDisplayRows()) {
+      const kind = resolveRowKind(dr);
+      if (kind === "panel" || seen.has(kind)) continue;
+      seen.add(kind);
+      const pin = rowKindHeights[kind];
+      out.push({
+        kind,
+        px: Math.round(resolveRowKindHeight(kind, base, pin, ctx)),
+        pinned: pin !== undefined,
+      });
+    }
+    return out;
+  });
+
   // ── Natural content width (column-width aggregate for fit math) ────────
 
   const naturalContentWidth = $derived.by((): number => {
@@ -705,7 +754,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
 
   function getStorageKey(): string | null {
     if (!containerElementId) return null;
-    return `tabviz_zoom_${containerElementId}`;
+    return zoomStorageKey(containerElementId);
   }
 
   function persistZoomState() {
@@ -779,6 +828,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     get actualScale()           { return actualScale; },
     get isClamped()             { return isClamped; },
     get rowKindHeights()        { return rowKindHeights; },
+    get rowKindRoster()         { return rowKindRoster; },
 
     setDimensions, setContainerDimensions, setScalableNaturalDimensions,
     setContainerElementId,

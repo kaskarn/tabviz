@@ -88,6 +88,10 @@ export interface TabvizArgs {
   /** Author freeze: FALSE removes the settings cog so viewers of a
    *  published dashboard can't restyle the figure live. Default TRUE. */
   enableThemeEdit?: boolean;
+  /** Forest/viz x-axis domain zoom (Ctrl/Cmd+wheel, drag pan, dblclick
+   *  reset). Default FALSE — domain zoom changes what the figure shows,
+   *  so it is opt-in (matches R `web_interaction()`). */
+  enableAxisZoom?: boolean;
   showGroupCounts?: boolean;
   tooltipFields?: string[];
   // Layout
@@ -184,6 +188,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
     enableReorderColumns: args.enableReorderColumns ?? true,
     enableEdit: args.enableEdit ?? true,
     ...(args.enableThemeEdit !== undefined ? { enableThemeEdit: args.enableThemeEdit } : {}),
+    enableAxisZoom: args.enableAxisZoom ?? false,
     enableFilters: args.enableFilters ?? true,
     showGroupCounts: args.showGroupCounts ?? false,
     tooltipFields: args.tooltipFields ?? null,

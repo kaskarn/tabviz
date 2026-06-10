@@ -12,6 +12,7 @@
 
 import { describe, expect, test, beforeEach } from "vitest";
 import { buildLayoutZoomHarness } from "./layout-zoom.test-harness.svelte";
+import { zoomStorageKey } from "./layout-zoom.svelte";
 
 // vitest's jsdom env doesn't supply a working Storage prototype. Hand-roll
 // a Map-backed mock and mount it on both `globalThis` and `window` so the
@@ -183,9 +184,15 @@ describe("layout-zoom slice — fit/scale derived", () => {
 });
 
 describe("layout-zoom slice — localStorage persistence", () => {
+  test("storage key is scoped by document path (cross-document collision)", () => {
+    // jsdom's default URL has pathname "/" — the key must embed it so the
+    // same element id on a different page resolves to a different key.
+    expect(zoomStorageKey("pin0")).toBe("tabviz_zoom_/::pin0");
+  });
+
   test("setContainerElementId loads persisted state", () => {
     // Seed localStorage manually
-    window.localStorage.setItem("tabviz_zoom_pin1", JSON.stringify({
+    window.localStorage.setItem(zoomStorageKey("pin1"), JSON.stringify({
       zoom: 1.7, autoFit: false, maxWidth: 800, maxHeight: null, version: 2,
     }));
     const h = buildLayoutZoomHarness();
@@ -199,12 +206,12 @@ describe("layout-zoom slice — localStorage persistence", () => {
     const h = buildLayoutZoomHarness();
     h.slice.setContainerElementId("pin2");
     h.slice.setZoom(1.4);
-    const stored = JSON.parse(window.localStorage.getItem("tabviz_zoom_pin2")!);
+    const stored = JSON.parse(window.localStorage.getItem(zoomStorageKey("pin2"))!);
     expect(stored).toMatchObject({ zoom: 1.4, version: 2 });
   });
 
   test("old version 1 entries are ignored (defaults stay)", () => {
-    window.localStorage.setItem("tabviz_zoom_pin3", JSON.stringify({
+    window.localStorage.setItem(zoomStorageKey("pin3"), JSON.stringify({
       zoom: 1.5, version: 1,
     }));
     const h = buildLayoutZoomHarness();
@@ -213,7 +220,7 @@ describe("layout-zoom slice — localStorage persistence", () => {
   });
 
   test("malformed JSON is silently tolerated", () => {
-    window.localStorage.setItem("tabviz_zoom_pin4", "{not-json");
+    window.localStorage.setItem(zoomStorageKey("pin4"), "{not-json");
     const h = buildLayoutZoomHarness();
     expect(() => h.slice.setContainerElementId("pin4")).not.toThrow();
     expect(h.slice.zoom).toBe(1.0);
@@ -231,6 +238,35 @@ describe("layout-zoom slice — empty-spec layout fallback", () => {
     expect(l.rowHeight).toBe(28);
     expect(l.rowPositions).toEqual([]);
     expect(l.rowHeights).toEqual([]);
+  });
+});
+
+describe("layout-zoom slice — rowKindRoster (figure-band row heights)", () => {
+  const dataRow = (id: string, styleType?: string) =>
+    ({
+      type: "data",
+      row: { id, style: styleType ? { type: styleType } : null },
+    }) as unknown as import("$types").DisplayRow;
+
+  test("lists each kind once with cascade-resolved base heights", () => {
+    const h = buildLayoutZoomHarness({
+      displayRows: [dataRow("a"), dataRow("b"), dataRow("s", "spacer")],
+    });
+    const roster = h.slice.rowKindRoster;
+    expect(roster.map((r) => r.kind)).toEqual(["data", "spacer"]);
+    expect(roster[0].pinned).toBe(false);
+    // spacer's intrinsic ratio is 0.5× the data base height
+    expect(roster[1].px).toBe(Math.round(roster[0].px / 2));
+  });
+
+  test("a pin overrides the resolved height and flips pinned", () => {
+    const h = buildLayoutZoomHarness({ displayRows: [dataRow("a")] });
+    h.slice.setRowKindHeight("data", 44);
+    const r = h.slice.rowKindRoster.find((x) => x.kind === "data")!;
+    expect(r.px).toBe(44);
+    expect(r.pinned).toBe(true);
+    h.slice.setRowKindHeight("data", null);
+    expect(h.slice.rowKindRoster[0].pinned).toBe(false);
   });
 });
 

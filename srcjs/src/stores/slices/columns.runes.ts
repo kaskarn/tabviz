@@ -7,7 +7,7 @@
 
 import { describe, expect, test } from "vitest";
 import {
-  buildColumnsHarness, colGroup, textCol,
+  buildColumnsHarness, buildHarnessSpec, colGroup, textCol,
 } from "./columns.test-harness.svelte";
 import { mintUniqueId, RESERVED_COLUMN_IDS } from "./columns.svelte";
 
@@ -200,15 +200,40 @@ describe("columns slice — reorder", () => {
 });
 
 describe("columns slice — lifecycle", () => {
-  test("hydrateForSpec wipes every per-column-id map", () => {
+  // Interactivity-UX arc P0: hydrateForSpec reconciles figure-layout state
+  // (widths/resize pins/hides/reorder) by column id instead of wiping —
+  // a Shiny update_data must not destroy the user's layout. Column EDITS
+  // (inserts, configure overrides) still reset with the spec.
+  test("hydrateForSpec keeps layout state for columns that still exist", () => {
     const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
     h.slice.setColumnWidth("a", 120);
     h.slice.hideColumn("b");
     h.slice.hydrateForSpec();
-    expect(h.slice.columnWidths).toEqual({});
-    expect(h.slice.userResizedIds.size).toBe(0);
-    expect(h.slice.hiddenColumnIds.size).toBe(0);
+    expect(h.slice.columnWidths).toEqual({ a: 120 });
+    expect(h.slice.userResizedIds.has("a")).toBe(true);
+    expect(h.slice.hiddenColumnIds.has("b")).toBe(true);
+  });
+
+  test("hydrateForSpec drops layout state anchored to disappeared ids", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
+    h.slice.setColumnWidth("a", 120);
+    h.slice.setColumnWidth("b", 90);
+    h.slice.hideColumn("b");
+    // New spec keeps only "b" → "a"'s width pin drops, "b"'s survive.
+    h.setSpec(buildHarnessSpec([textCol("b"), textCol("c")]));
+    h.slice.hydrateForSpec();
+    expect(h.slice.columnWidths).toEqual({ b: 90 });
+    expect(h.slice.userResizedIds.has("a")).toBe(false);
+    expect(h.slice.hiddenColumnIds.has("b")).toBe(true);
+  });
+
+  test("hydrateForSpec still resets column edits (inserts + overrides)", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a")] });
+    h.slice.insertColumn(textCol("z"), "a");
+    h.slice.updateColumn("a", { ...textCol("a"), header: "AA" });
+    h.slice.hydrateForSpec();
     expect(h.slice.userInsertedColumns).toHaveLength(0);
+    expect(h.slice.allColumns.find((c) => c.id === "a")?.header).not.toBe("AA");
   });
 
   test("reset wipes everything (used by resetState)", () => {

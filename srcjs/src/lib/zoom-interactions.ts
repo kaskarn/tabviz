@@ -124,10 +124,16 @@ export function zoomable(node: HTMLElement | SVGElement, initial: ZoomableParams
 
   function onWheel(e: WheelEvent) {
     if (!params.enabled) return;
-    // Avoid hijacking vertical page scroll unless the user is inside the viz
-    // area and the gesture is mostly vertical wheel input. Always prevent
-    // default so wheel-zoom doesn't double as a scroll.
+    // MODIFIER-GATED (interactivity-UX arc P0): plain wheel must always
+    // scroll the page — a reader scrolling a document *through* a forest
+    // plot was silently re-domaining the axis. Ctrl/Cmd+wheel zooms; note
+    // trackpad pinch arrives as wheel with ctrlKey=true, so pinch-to-zoom
+    // works for free. preventDefault only fires on the gated path.
+    if (!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
+    // Consume the gesture so the container's Cmd/Ctrl+wheel WIDGET zoom
+    // doesn't also fire — over a viz column the domain zoom wins.
+    e.stopPropagation();
     const [rangeStart, rangeEnd] = params.getPixelRange();
     const domain = params.getDomain();
     const anchor = pixelToDomain(nodeLocalX(e.clientX), rangeStart, rangeEnd, domain, params.isLog);
@@ -198,6 +204,16 @@ export function zoomable(node: HTMLElement | SVGElement, initial: ZoomableParams
     params.onReset();
   }
 
+  // When the action is disabled the overlay must not intercept ANY pointer
+  // input: a plain click has to reach the `.plot-cell` beneath it natively
+  // (the always-on painter), which the click-forwarding shim only handles
+  // for the enabled path. Children that opt in via CSS `pointer-events:
+  // auto` (`.plot-overlay :global(.interactive)`) still receive events.
+  function applyEnabledState() {
+    target.style.pointerEvents = params.enabled ? "" : "none";
+  }
+  applyEnabledState();
+
   target.addEventListener("wheel", onWheel, { passive: false });
   target.addEventListener("pointerdown", onPointerDown);
   target.addEventListener("pointermove", onPointerMove);
@@ -208,6 +224,7 @@ export function zoomable(node: HTMLElement | SVGElement, initial: ZoomableParams
   return {
     update(next: ZoomableParams) {
       params = next;
+      applyEnabledState();
     },
     destroy() {
       target.removeEventListener("wheel", onWheel);

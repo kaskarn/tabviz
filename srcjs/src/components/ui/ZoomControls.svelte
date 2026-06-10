@@ -16,10 +16,20 @@
   const autoFit = $derived(store.autoFit);
   const actualScale = $derived(store.actualScale);
   const isClamped = $derived(store.isClamped);
+  const fitScale = $derived(store.fitScale);
 
-  // Display percentages
+  // ONE honest readout (interactivity-UX arc P0): the % everywhere is the
+  // EFFECTIVE on-screen scale (zoom × fit clamp). Pre-arc the trigger
+  // showed actualScale while the slider showed the zoom factor with the
+  // auto-fit relation unexplained — two numbers, no bridge. The status
+  // line now always names the mode, and when fit and zoom are both in
+  // play the factor math is spelled out underneath.
   const displayPercent = $derived(Math.round(actualScale * 100));
   const zoomPercent = $derived(Math.round(zoom * 100));
+  const fitPercent = $derived(Math.round(fitScale * 100));
+  const statusMode = $derived(
+    autoFit ? (isClamped ? "auto-fit" : "natural") : "manual zoom",
+  );
 
   // ── Aspect-ratio slider (Phase 4.6) ─────────────────────────────────────
   // Sizes the layout's *shape*, distinct from zoom (scale of the render)
@@ -145,6 +155,16 @@
   {#if dropdownOpen}
     <Portal>
       <div class="zoom-dropdown" use:autoPosition={{ triggerEl }}>
+        <!-- Effective-scale readout: the same number the trigger shows. -->
+        <div class="zoom-status">
+          <span class="zoom-status-pct">{displayPercent}%</span>
+          <span class="zoom-status-mode">{statusMode}</span>
+        </div>
+        {#if isClamped && zoom !== 1.0}
+          <div class="zoom-status-sub">fit {fitPercent}% × zoom {zoomPercent}%</div>
+        {/if}
+
+        <div class="section-label">Zoom</div>
         <!-- Zoom slider row -->
       <div class="zoom-row">
         <button
@@ -184,13 +204,6 @@
 
         <span class="zoom-value">{zoomPercent}%</span>
       </div>
-
-      <!-- Clamped indicator -->
-      {#if isClamped}
-        <div class="clamped-note">
-          Showing {displayPercent}% (auto-fit)
-        </div>
-      {/if}
 
       <!-- Reset button -->
       {#if zoom !== 1.0}
@@ -482,13 +495,27 @@
     text-align: right;
   }
 
-  .clamped-note {
-    padding: 4px 8px;
-    margin: 4px 0;
+  .zoom-status {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 2px 8px 0;
+  }
+  .zoom-status-pct {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--tv-text, #1a1a1a);
+  }
+  .zoom-status-mode {
     font-size: 10px;
-    color: var(--tv-accent, #2563eb);
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 10%, transparent);
-    border-radius: 4px;
+    color: var(--tv-text-subtle, #94a3b8);
+  }
+  .zoom-status-sub {
+    padding: 0 8px 2px;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--tv-text-subtle, #94a3b8);
   }
 
   .action-btn {

@@ -981,6 +981,9 @@ export function createTabvizStore() {
     get actualScale() {
       return actualScale;
     },
+    get fitScale() {
+      return layoutZoom.fitScale;
+    },
     get isClamped() {
       return isClamped;
     },
@@ -1329,6 +1332,7 @@ export function createTabvizStore() {
     setRowKindHeight: layoutZoom.setRowKindHeight,
     resetRowKindHeights: layoutZoom.resetRowKindHeights,
     get rowKindHeights() { return layoutZoom.rowKindHeights; },
+    get rowKindRoster() { return layoutZoom.rowKindRoster; },
     // Aspect ratio — data slice passthrough.
     setTargetAspect: data.setTargetAspect,
     setTargetAspectAnchor: data.setTargetAspectAnchor,

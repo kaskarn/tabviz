@@ -7,7 +7,7 @@ import { createColumnsSlice, type ColumnsSlice } from "./columns.svelte";
 import type { ColumnDef, ColumnSpec, Row, WebSpec } from "$types";
 import type { OpRecord } from "$lib/op-recorder";
 
-function buildSpec(
+export function buildHarnessSpec(
   columns: ColumnDef[] = [],
   rows: Row[] = [],
 ): WebSpec {
@@ -41,7 +41,7 @@ export function buildColumnsHarness(
   initial?: { columns?: ColumnDef[]; rows?: Row[]; axisZooms?: Record<string, { domain: [number, number] }> },
 ): ColumnsHarness {
   let spec = $state<WebSpec | null>(
-    buildSpec(initial?.columns ?? [], initial?.rows ?? []),
+    buildHarnessSpec(initial?.columns ?? [], initial?.rows ?? []),
   );
   let wrapLineCounts = $state<Record<string, number>>({});
   const axisZooms = initial?.axisZooms ?? {};

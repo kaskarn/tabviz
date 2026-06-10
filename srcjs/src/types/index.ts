@@ -789,6 +789,11 @@ export interface InteractionSpec {
   enableEdit?: boolean;             // Double-click to edit cells / labels / forest numerics
   enableThemeEdit?: boolean;        // Settings cog + panel (author freeze: FALSE hides the cog on published dashboards)
   enableFilters?: boolean;          // Render per-column filter popovers (supersedes showFilters)
+  // Forest/viz x-axis domain zoom (Ctrl/Cmd+wheel, drag pan, dblclick reset).
+  // Default FALSE (interactivity-UX arc P0, conservative-everywhere): domain
+  // zoom is an analysis affordance, and even modifier-gated it has no
+  // affordance a document reader can discover — authors opt in.
+  enableAxisZoom?: boolean;
   showGroupCounts?: boolean;        // Show "(n)" next to row-group labels (default: false)
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
   // Available themes for switching. Two shapes accepted:

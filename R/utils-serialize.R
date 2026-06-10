@@ -620,6 +620,7 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     enableReorderRows = interaction@enable_reorder_rows,
     enableReorderColumns = interaction@enable_reorder_columns,
     enableEdit = interaction@enable_edit,
+    enableAxisZoom = interaction@enable_axis_zoom,
     showGroupCounts = interaction@show_group_counts,
     tooltipFields = interaction@tooltip_fields,
     enableThemes = themes_config
