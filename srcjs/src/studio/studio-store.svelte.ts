@@ -283,16 +283,6 @@ class StudioStore {
     }
   }
 
-  /** Reset everything (used on close). */
-  reset(): void {
-    this.base = null;
-    this.baseName = "(default)";
-    this.inputs = null;
-    this.roleOverrides = {};
-    this.pins = {};
-    this.history = [];
-    this.cursor = -1;
-  }
 }
 
 /** Cheap deep equality for ThemeInputs. */

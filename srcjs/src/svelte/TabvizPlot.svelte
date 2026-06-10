@@ -1980,7 +1980,6 @@
                 role="presentation"
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
-                data-tv-token="cell-fg"
                 style:grid-row={gridRow}
                 style:background-color={cellBg ?? cellSemBg ?? effectiveBg}
                 style:text-align={column.align}

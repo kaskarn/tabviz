@@ -122,8 +122,6 @@ function showFatal(err: unknown): void {
 window.addEventListener("error", (ev) => showFatal(ev.error ?? ev.message));
 window.addEventListener("unhandledrejection", (ev) => showFatal(ev.reason));
 
-console.log("[tabviz_studio] entry loaded; document.readyState =", document.readyState);
-
 try {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bootstrap);

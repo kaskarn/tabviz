@@ -121,25 +121,42 @@ export function buildRegionTree(input: RegionTreeInput): RegionNode[] {
   }
 
   // 3. Child groups of a parent (header-bearing only), with reorder override.
-  const childGroups = (parentId: string | null): Group[] => {
-    const matches = groups.filter(
-      (g) => (g.parentId ?? null) === parentId && groupsWithHeaders.has(g.id),
-    );
+  //    Built ONCE in a single pass + sorted once per parent — childGroups was
+  //    previously an O(G) filter+sort re-run on every call, and it's called
+  //    from both buildLevel and the recursive countDescendantRows (→ O(G²)).
+  const childrenByParent = new Map<string | null, Group[]>();
+  for (const g of groups) {
+    if (!groupsWithHeaders.has(g.id)) continue;
+    const parentId = g.parentId ?? null;
+    let bucket = childrenByParent.get(parentId);
+    if (!bucket) childrenByParent.set(parentId, (bucket = []));
+    bucket.push(g);
+  }
+  for (const [parentId, bucket] of childrenByParent) {
     const order = rowOrder.groupOrderByParent[parentId ?? ROOT_SCOPE_KEY];
-    if (!order) return matches;
+    if (!order) continue;
     const idx: Record<string, number> = {};
     order.forEach((id, i) => (idx[id] = i));
-    return [...matches].sort(
+    bucket.sort(
       (a, b) =>
         (idx[a.id] ?? Number.POSITIVE_INFINITY) -
         (idx[b.id] ?? Number.POSITIVE_INFINITY),
     );
-  };
+  }
+  const EMPTY_GROUPS: Group[] = [];
+  const childGroups = (parentId: string | null): Group[] =>
+    childrenByParent.get(parentId) ?? EMPTY_GROUPS;
 
-  // 3b. Direct + descendant row count for a group header's "(N)".
+  // 3b. Direct + descendant row count for a group header's "(N)". Memoized —
+  //     buildLevel asks for every group's count while also recursing, so the
+  //     naive recompute re-walked each subtree once per ancestor.
+  const descendantCountCache = new Map<string, number>();
   const countDescendantRows = (groupId: string): number => {
+    const memo = descendantCountCache.get(groupId);
+    if (memo !== undefined) return memo;
     let count = rowsByGroup.get(groupId)?.length ?? 0;
     for (const child of childGroups(groupId)) count += countDescendantRows(child.id);
+    descendantCountCache.set(groupId, count);
     return count;
   };
 

@@ -38,10 +38,17 @@ import type { ColumnDef, WebSpec } from "../../types";
 
 interface OptionMeta { kind: OptionKind; default: unknown }
 
+/** Memo of resolved option-meta per column type. SCHEMA_REGISTRY is static, so
+ *  the walk below is pure in `type` — cache it (a spec with N same-type columns
+ *  otherwise rebuilt the inheritance-DAG meta N times per ingest). */
+const optionMetaCache = new Map<string, Map<string, OptionMeta>>();
+
 /** Resolve every option's `kind` + schema `default` for a column type, walking
  *  the schema's inheritance chain (`inherits`). Unknown/undeclared kind →
  *  "core" (not theme-defaultable). */
 function optionMetaFor(type: string): Map<string, OptionMeta> {
+  const cached = optionMetaCache.get(type);
+  if (cached) return cached;
   const meta = new Map<string, OptionMeta>();
   const seen = new Set<string>();
   // `inherits` can be a string OR string[] (multi-parent DAG), so walk a stack.
@@ -59,6 +66,7 @@ function optionMetaFor(type: string): Map<string, OptionMeta> {
     if (typeof inh === "string") stack.push(inh);
     else if (Array.isArray(inh)) stack.push(...inh);
   }
+  optionMetaCache.set(type, meta);
   return meta;
 }
 

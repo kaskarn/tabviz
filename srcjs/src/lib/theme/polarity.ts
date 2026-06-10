@@ -55,7 +55,8 @@ export function reflectHex(hex: string): string {
  *  `"light"` when paper.L >= 0.5; `"dark"` otherwise. */
 export type Polarity = "light" | "dark";
 
-/** Resolve a hex color's polarity based on its lightness. */
+/** Resolve a hex color's polarity based on its lightness. Used by the
+ *  polarity-reflection tests as an assertion helper. */
 export function polarityOf(hex: string): Polarity {
   const lch = hexToOklch(hex);
   return lch.L >= 0.5 ? "light" : "dark";

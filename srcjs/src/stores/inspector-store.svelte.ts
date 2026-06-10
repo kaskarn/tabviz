@@ -15,10 +15,6 @@ export interface InspectorState {
   open: boolean;
   cssVar: string | null;
   trace: TokenInspection | null;
-  /** When set, "learning mode" highlights the consumer element being
-   *  traced via a pulsing outline. Off by default; surfaced as a
-   *  toggle in the inspector panel. */
-  learningMode: boolean;
 }
 
 class InspectorStore {
@@ -26,7 +22,6 @@ class InspectorStore {
     open: false,
     cssVar: null,
     trace: null,
-    learningMode: false,
   });
 
   /** Open the inspector and trace a cssVar against the resolved theme. */
@@ -48,32 +43,8 @@ class InspectorStore {
     this.state.cssVar = null;
     this.state.trace = null;
   }
-
-  /** Toggle learning mode (consumer-element pulse on trace). */
-  toggleLearningMode(): void {
-    this.state.learningMode = !this.state.learningMode;
-  }
 }
 
-/** Singleton inspector store; the inspector panel + click-handler both
+/** Singleton inspector store; the inspector panel + studio trace both
  *  consume this single instance. */
 export const inspectorStore = new InspectorStore();
-
-/** Click handler suitable for installing at the widget root: walks up
- *  from event.target looking for a `data-tv-token` attribute, then
- *  traces the corresponding cssVar via inspectorStore.trace().
- *
- *  Returns true when a trace was initiated, false otherwise. Caller
- *  decides whether to stopPropagation; the handler itself doesn't. */
-export function tryTraceFromEvent(event: Event, resolved: ResolvedTheme): boolean {
-  let el = event.target as Element | null;
-  while (el && el !== document.documentElement) {
-    const tok = el.getAttribute?.("data-tv-token");
-    if (tok) {
-      inspectorStore.trace(`--tv-${tok}`, resolved);
-      return true;
-    }
-    el = el.parentElement;
-  }
-  return false;
-}

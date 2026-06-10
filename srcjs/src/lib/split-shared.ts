@@ -290,6 +290,12 @@ export function computeSharedWidths(args: SharedWidthsArgs): SharedWidthsResult 
   const result: Record<string, number> = {};
   const baseColumns = subsets[0].columns;
 
+  // Per-subset id→column index, built once. The inner pool loop previously did
+  // an O(columns) `.find` per (column, subset) pair → O(M²·K) overall.
+  const colByIdPerSubset = subsets.map(
+    (s) => new Map(s.columns.map((c) => [c.id, c])),
+  );
+
   for (const col of baseColumns) {
     // Skip explicit numeric width (hard pin).
     if (typeof col.width === "number" && Number.isFinite(col.width)) continue;
@@ -302,8 +308,9 @@ export function computeSharedWidths(args: SharedWidthsArgs): SharedWidthsResult 
     // rowStyleTypes array.
     const candidates: string[] = [];
     if (col.header) candidates.push(col.header);
-    for (const s of subsets) {
-      const sameCol = s.columns.find((c) => c.id === col.id);
+    for (let k = 0; k < subsets.length; k++) {
+      const s = subsets[k];
+      const sameCol = colByIdPerSubset[k].get(col.id);
       if (!sameCol || !sameCol.field) continue;
       const vec = s.data.columns[sameCol.field];
       if (!vec) continue;

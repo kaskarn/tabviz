@@ -15,10 +15,6 @@
     inspectorStore.close();
   }
 
-  function toggleLearning(): void {
-    inspectorStore.toggleLearningMode();
-  }
-
   function stepBadge(step: TraceStep): string {
     return step.tier.toUpperCase();
   }
@@ -41,11 +37,6 @@
       <button type="button" class="close" onclick={close} aria-label="Close inspector">×</button>
     </header>
 
-    <label class="learning-toggle">
-      <input type="checkbox" checked={state.learningMode} onchange={toggleLearning} />
-      Learning mode (pulse traced element)
-    </label>
-
     {#if state.cssVar}
       <div class="active-token">
         <code>{state.cssVar}</code>
@@ -67,7 +58,7 @@
         <pre>{formatTrace(state.trace)}</pre>
       </details>
     {:else}
-      <p class="empty">Click any element in the widget to trace its token.</p>
+      <p class="empty">Click a token in the cascade view to trace it.</p>
     {/if}
   </aside>
 {/if}
@@ -110,15 +101,6 @@
     line-height: 1;
     padding: 0 4px;
     color: inherit;
-  }
-
-  .learning-toggle {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
-    color: var(--tv-text-muted, #64748b);
-    margin-bottom: 8px;
   }
 
   .active-token code {

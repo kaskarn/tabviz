@@ -516,8 +516,23 @@ save_plot <- function(x, file,
   # output width comes back in CSS pixel units, matching what the live
   # widget's Canvas measureText would return. `weight = "bold"` is the
   # current spelling — `bold = TRUE` is deprecated upstream.
+  # Reduce a cell vector to the few widest candidates BEFORE shaping. The TS
+  # width path (width-measure.ts) ranks by estimator + exact-measures only the
+  # top-K; this mirrors the contract so PDF/PNG export doesn't run
+  # systemfonts::shape_string over every row (O(rows) → O(K) per column).
+  # nchar is an imperfect proxy for a proportional font, so dedup first and
+  # keep a generous K — the widest-rendered string is reliably among the
+  # longest handful by character count.
+  TOP_K <- 16L
+  top_candidates <- function(vals) {
+    u <- unique(vals)
+    if (length(u) <= TOP_K) return(u)
+    u[order(nchar(u), decreasing = TRUE)[seq_len(TOP_K)]]
+  }
+
   shape_max <- function(vals, bold, sz) {
     if (length(vals) == 0L) return(NA_real_)
+    vals <- top_candidates(vals)
     widths <- tryCatch(
       systemfonts::shape_string(
         vals,

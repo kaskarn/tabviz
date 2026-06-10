@@ -267,6 +267,14 @@ serialize_data <- function(spec, include_forest = TRUE) {
     out
   }
 
+  # Hoist grouping S7 props out of the per-row loop (Phase 4.1 pattern): the
+  # group_id block below otherwise re-reads spec@group_col / spec@group_cols
+  # (2-3 S7 `@` accesses) on every row × N rows.
+  group_col       <- spec@group_col
+  group_cols      <- spec@group_cols
+  is_hierarchical <- length(group_cols) > 1
+  has_grouping    <- !is.na(group_col)
+
   # Build rows - data now lives entirely in metadata
   rows <- lapply(seq_len(n), function(i) {
     row <- get_row_list(i)
@@ -279,17 +287,17 @@ serialize_data <- function(spec, include_forest = TRUE) {
     }
 
     # Get group ID - use composite ID for hierarchical groups
-    group_id <- if (!is.na(spec@group_col)) {
-      if (length(spec@group_cols) > 1) {
+    group_id <- if (has_grouping) {
+      if (is_hierarchical) {
         # Hierarchical grouping - build composite ID from all parent levels
         # e.g., "program_a__Phase_II" for row with program=program_a, phase=Phase_II
-        parts <- vapply(spec@group_cols, function(col) {
+        parts <- vapply(group_cols, function(col) {
           as.character(row[[col]])
         }, character(1))
         paste(parts, collapse = "__")
       } else {
         # Simple grouping - just use the group column value
-        as.character(row[[spec@group_col]])
+        as.character(row[[group_col]])
       }
     } else {
       NULL

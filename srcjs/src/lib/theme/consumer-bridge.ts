@@ -150,25 +150,40 @@ export function getCssVarsRaw(theme: WebTheme): Record<string, string> {
   return base;
 }
 
+/** Cache of the base+v3-bridge overlay, keyed on the (immutable) theme
+ *  object identity. The overlay is a pure function of the theme — the
+ *  raw cascade (already cached in getCssVarsRaw) plus computeV3BridgeVars,
+ *  which reads only theme config that changes with theme identity. Spacing
+ *  pins are deliberately NOT baked in here: they're per-figure and applied
+ *  fresh on every call (see applySpacingPins). We still spread a fresh copy
+ *  per call because callers mutate the returned map. */
+const cssVarsBridgeCache = new WeakMap<WebTheme, Record<string, string>>();
+
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
   if (!theme?.authoringInputs) return {};
-  let base: Record<string, string>;
-  try {
-    base = getCssVarsRaw(theme);
-  } catch {
-    // Resolver errors during the sprint are tolerated; consumers fall
-    // back to v3 reads. Drift gates + visual regression catch silent
-    // mismatches.
-    base = {};
+  let withBridge = cssVarsBridgeCache.get(theme);
+  if (!withBridge) {
+    let base: Record<string, string>;
+    try {
+      base = getCssVarsRaw(theme);
+    } catch {
+      // Resolver errors during the sprint are tolerated; consumers fall
+      // back to v3 reads. Drift gates + visual regression catch silent
+      // mismatches.
+      base = {};
+    }
+    // Overlay the v3 user-config bridge values over their "<v3-bridge>"
+    // sentinels so every consumer of getCssVars (TS readers, R's
+    // theme_css_vars/diff_themes/inspect_token via V8, the studio) sees
+    // the SAME values the painted CSS uses. Before this, 16 tokens
+    // round-tripped as the literal sentinel and --tv-text-title-fg
+    // diverged between studio preview and R render (R3 studio F3/F4).
+    withBridge = Object.assign({ ...base }, computeV3BridgeVars(theme, base));
+    cssVarsBridgeCache.set(theme, withBridge);
   }
-  // Overlay the v3 user-config bridge values over their "<v3-bridge>"
-  // sentinels so every consumer of getCssVars (TS readers, R's
-  // theme_css_vars/diff_themes/inspect_token via V8, the studio) sees
-  // the SAME values the painted CSS uses. Before this, 16 tokens
-  // round-tripped as the literal sentinel and --tv-text-title-fg
-  // diverged between studio preview and R render (R3 studio F3/F4).
-  const withBridge = Object.assign({ ...base }, computeV3BridgeVars(theme, base));
-  return applySpacingPins(withBridge, theme);
+  // Fresh copy per call: callers mutate the result, and applySpacingPins
+  // writes in place — never let either touch the cached overlay.
+  return applySpacingPins({ ...withBridge }, theme);
 }
 
 /** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override
@@ -418,13 +433,4 @@ export function readSeriesAnchors(theme: WebTheme | null | undefined): string[] 
     rampStep(ramps.accent, 7),
     rampStep(ramps.brand, 5),
   ];
-}
-
-/** Read the series viz mark style. Replaces v3 `theme.inputs.slotStyle`.
- *  Sourced from `authoringInputs.slot_style`; falls back to the
- *  fill_with_darker_stroke default that matches v3 ResolvedInputs.slotStyle. */
-export function readSlotStyle(
-  theme: WebTheme | null | undefined,
-): "fill_with_darker_stroke" | "flat_fill" | "outlined" {
-  return theme?.authoringInputs?.slot_style ?? "fill_with_darker_stroke";
 }
