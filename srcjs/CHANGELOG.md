@@ -4,6 +4,40 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.6.0 — 2026-06-10
+
+### Added — the declarative theme contract surface
+
+`@tabviz/core` now publishes the machine-drivable theme contract (the
+"any language — or LLM — can drive it" surface):
+
+* `parseThemeWire` / `buildThemeWire` — validated round-trip of the
+  portable theme wire envelope, with a structured `ThemeIssue{path, code,
+  message}` error list instead of opaque throws.
+* `toDtcg` / `fromDtcg` — lossless interop with the Design Tokens
+  Community Group format (reference / semantic / component groups;
+  provenance preserved in `$extensions["com.tabviz.theme"]`).
+* `suggestTheme(brandHex, …)` — derive a complete, contrast-checked theme
+  from a single brand color, riding the cascade's own legibility
+  guarantees.
+* `listRoles` / `listComponentTokens` — the queryable role + `--tv-*`
+  token roster (names are stable DTCG token names).
+
+Role bindings now serialize as stable NAME aliases (e.g. `"neutral.5"`)
+rather than internal `{ramp, grade}` coordinates, so a later ramp re-tune
+doesn't silently re-target a saved theme.
+
+### Changed — performance + internal cleanup
+
+* `getCssVars` caches its base + v3-bridge overlay per theme identity
+  (spacing pins still applied fresh per call); `region-tree` group walk is
+  now O(G) (was O(G²)); shared-axis column widths are O(M·K) (was O(M²·K)).
+* Removed dead internal modules (the unwired token-attribution + SVG-CSS
+  extraction paths) and a no-op inspector toggle.
+
+(0.5.0 was published without a changelog entry; this entry also covers the
+contract surface, which predates the 0.5.0 tag but was never published.)
+
 ## 0.4.0 — 2026-05-21
 
 ### Changed — TS authoring surface now mirrors R defaults across the board
