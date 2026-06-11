@@ -65,10 +65,15 @@ export type WireAt = "bucket" | "top" | "fixed";
  *   defaults. The editor groups these separately (own sub-section
  *   per layer, or a dedicated "Styling" panel) so authors can edit
  *   appearance without scrolling through formatting knobs.
- * - `"editor"`: UI-only knob. Showing/hiding axis ticks, picker
- *   affordances, segmented-control choices that don't change the
- *   rendered cell behavior. Themes may set defaults (e.g.
- *   "compact theme defaults to abbreviate numbers").
+ * - `"editor"`: presentation knob — changes how the cell LOOKS or
+ *   which affordances render (axis ticks, label visibility, glyph
+ *   size/shape, image height), never what the data MEANS. Themes may
+ *   set defaults (e.g. "compact theme defaults to abbreviate
+ *   numbers"). (Ontology review F1, 2026-06-11: the old prose claimed
+ *   editor knobs "don't change the rendered cell" — contradicted by
+ *   its own example and most assignments; the real boundary is
+ *   data-meaning vs presentation, and `column_defaults` gating relies
+ *   on exactly that boundary.)
  *
  * Sprint 1 PR 4 promoted this from advisory to enforced: every
  * concrete `OptionSpec` must carry an explicit `kind`. The drift

@@ -61,6 +61,19 @@ base ── categorical ── ordinal
   (4×, all linear/log segmented), thresholds (3×, custom), separator
   (3×, text), showLabel (3×, toggle/editor). Good baseline.
 
+## Resolved
+
+- **F1** — prose corrected in `schema/types.ts` (2026-06-11): editor =
+  presentation knob (never data meaning); assignments stand. The
+  `"editor"` → `"presentation"` RENAME stays a W2 candidate (cheap,
+  internal) — decide at review close.
+- **F4** — verified INTENTIONAL, rationale already written in the schema
+  files: date skips text's wrap/maxChars (date strings short/fixed);
+  pvalue holds off numeric inheritance until its renderer honors
+  decimals/thousandsSep/abbreviate (task #151 — otherwise the editor
+  would show visually dead options, the exact dead-menu bug class).
+  No change.
+
 ## W2 candidates (wire-change list — feeds the freeze inventory)
 
 | Candidate | From finding | Lean |
@@ -71,12 +84,11 @@ base ── categorical ── ordinal
 
 ## Remaining review passes (next sessions)
 
-1. F1 prose fix + F4 verification (small commits).
-2. **D11 arc**: annotate the 82 grandfathered options with `consumedBy`
+1. **D11 arc**: annotate the 82 grandfathered options with `consumedBy`
    (one dedicated arc; the drift gate's KNOWN_UNCONSUMED-style list
    then shrinks to justified rows only).
-3. Vocabulary doc: the per-type option tables in `docs/guide/columns.qmd`
+2. Vocabulary doc: the per-type option tables in `docs/guide/columns.qmd`
    regenerate from the registry (kill hand-maintained drift — the D2
    deletions found two stale doc rows).
-4. `column_defaults`-in-presets design work (the area-C creative half:
+3. `column_defaults`-in-presets design work (the area-C creative half:
    ≥4 shipped presets using theme-level column styling deliberately).
