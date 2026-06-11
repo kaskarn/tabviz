@@ -17,7 +17,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
 | D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due) | keep / adjust per flag | keep current split | M3 |
-| D15 | Export title-block arithmetic vs DOM caption block: ≤8px density-correlated offset on display-type themes (headerBand.top — wysiwyg gate, 2026-06-10) | (a) mirror the DOM caption-block layout exactly in computeLayout (title pad 0.15rem, subtitle border+padding chain, measured line boxes); (b) accept ≤8px as a budgeted exception | (b) budgeted at 8px (encoded in GATE_EXCEPTIONS with this ID); fix via (a) when area G lands | M2 (WYSIWYG, area G) |
+| D15 | Export title-block arithmetic vs DOM caption block (headerBand.top, ≤8px budgeted) | (a) mirror DOM exactly; (b) keep budgeted | (b) STANDS, with a 2026-06-11 investigation note: the DOM chain decomposes as 12 top-pad + title×1.3 + 0.15rem title pad + (border1+pad12 \| 4px margin) + sub×1.4 + headerGap. Naively ADDING the two "missing" terms to the export OVERSHOOTS (one case hit Δ−10 — the live deltas are NOT a simple missing-term sum; a counter-offset exists, likely browser line-box vs ceil(size×lh) rounding). Reverted; a proper fix instruments per-case line-box measurements in the wysiwyg harness FIRST. Budget 8 remains the contract. | M2 (area G) |
 
 
 ## Decided
