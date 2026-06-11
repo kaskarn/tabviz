@@ -27,6 +27,7 @@ import { createWire } from "./theme-wire";
 import { computeV3BridgeVars } from "./v3-bridge-vars";
 import { resolveTheme } from "./resolve-theme";
 import { TOKENS_BY_VAR } from "./component-tokens";
+import { componentBindingsKey } from "./component-bindings";
 
 /** Build the v4 cssVars map for a given v3 WebTheme.
  *
@@ -56,8 +57,12 @@ import { TOKENS_BY_VAR } from "./component-tokens";
 // overrides, so studio spine rebinds never affected widget rendering.
 const cascadeCache = new WeakMap<object, Map<string, Record<string, string>>>();
 
-/** Canonical, order-independent key for roleOverrides + pins. */
-function overridesKey(ro: WebTheme["roleOverrides"], pins?: WebTheme["pins"]): string {
+/** Canonical, order-independent key for roleOverrides + components + pins. */
+function overridesKey(
+  ro: WebTheme["roleOverrides"],
+  pins?: WebTheme["pins"],
+  components?: WebTheme["components"],
+): string {
   const roPart = !ro ? "" : Object.entries(ro)
     .filter(([, b]) => b != null)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
@@ -67,7 +72,7 @@ function overridesKey(ro: WebTheme["roleOverrides"], pins?: WebTheme["pins"]): s
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([k, v]) => `${k}=${v}`)
     .join("|");
-  return `${roPart}//${pinPart}`;
+  return `${roPart}//${pinPart}//${componentBindingsKey(components)}`;
 }
 
 /** Overlay Tier-2/3 token pins onto a resolved cssVars map. Applied at
@@ -134,12 +139,13 @@ export function getCssVarsRaw(theme: WebTheme): Record<string, string> {
     byOverrides = new Map();
     cascadeCache.set(theme.authoringInputs!, byOverrides);
   }
-  const key = overridesKey(theme.roleOverrides, theme.pins);
+  const key = overridesKey(theme.roleOverrides, theme.pins, theme.components);
   let base = byOverrides.get(key);
   if (!base) {
     const wire = {
       ...createWire(theme.authoringInputs!, theme.name ?? "custom"),
       roleOverrides: theme.roleOverrides ?? {},
+      components: theme.components,
     };
     base = applyTokenPins(
       { ...(resolveTheme(wire).cssVars as Record<string, string>) },

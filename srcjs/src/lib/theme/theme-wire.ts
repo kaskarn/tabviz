@@ -32,6 +32,7 @@
  */
 
 import type { ThemeInputs, ThemeStructure } from "../../types/theme-inputs";
+import type { ComponentBindings } from "./component-bindings";
 import type { RoleName, RampName } from "../../types/theme-roles";
 import { OFF_RAMP_ROLES } from "../../types/theme-roles";
 import { buildThemeStructure } from "./theme-resolve";
@@ -65,6 +66,10 @@ export interface ThemeWire {
   readonly name: string;
   readonly inputs: ThemeInputs;
   readonly roleOverrides: RoleOverrides;
+  /** Component-model channel re-routes (W6, sparse, optional):
+   *  component → state → channel → role/slot value. Validated at every
+   *  ingress by sanitizeComponentBindings (component-bindings.ts). */
+  readonly components?: ComponentBindings;
 }
 
 /** Provenance of a role's current binding — whether the user pinned it or
@@ -130,6 +135,7 @@ export type ThemeWireEnvelope = {
   name: string;
   inputs: ThemeInputs;
   roleOverrides: Record<string, string>;
+  components?: ComponentBindings;
   pins?: Record<string, string>;
 };
 
@@ -144,11 +150,13 @@ export function buildThemeWire(
   name: string,
   roleOverrides: RoleOverrides = {},
   pins: Record<string, string> = {},
+  components: ComponentBindings = {},
 ): ThemeWireEnvelope {
   const wire: ThemeWireEnvelope = {
     $schema: WIRE_SCHEMA, name, inputs,
     roleOverrides: roleOverridesToAliases(roleOverrides),
   };
+  if (Object.keys(components).length > 0) wire.components = components;
   return Object.keys(pins).length > 0 ? { ...wire, pins } : wire;
 }
 

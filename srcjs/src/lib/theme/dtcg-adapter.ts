@@ -22,6 +22,7 @@
 // of truth.
 
 import type { ThemeInputs } from "../../types/theme-inputs";
+import type { ComponentBindings } from "./component-bindings";
 import {
   createWire,
   buildThemeWire,
@@ -45,7 +46,7 @@ export interface DtcgDocument {
     semantic: Record<string, DtcgColorToken>;
     component: Record<string, { $value: string; $extensions?: Record<string, unknown> }>;
   };
-  $extensions: Record<string, { name: string; inputs: ThemeInputs; roleOverrides?: RoleOverrides; pins?: Record<string, string> }>;
+  $extensions: Record<string, { name: string; inputs: ThemeInputs; roleOverrides?: RoleOverrides; components?: ComponentBindings; pins?: Record<string, string> }>;
 }
 
 /** `--tv-row-base-bg` → `row.base.bg` (the DTCG path under component.). */
@@ -64,8 +65,9 @@ export function toDtcg(
   name = "tabviz-theme",
   roleOverrides: RoleOverrides = {},
   pins: Record<string, string> = {},
+  components: ComponentBindings = {},
 ): DtcgDocument {
-  const resolved = resolveTheme({ ...createWire(inputs, name), roleOverrides });
+  const resolved = resolveTheme({ ...createWire(inputs, name), roleOverrides, components });
 
   // reference — anchors + ramps.
   const reference: Record<string, unknown> = {};
@@ -111,7 +113,7 @@ export function toDtcg(
     $description: `tabviz theme "${name}" exported as DTCG tokens. The authoritative tabviz inputs ride $extensions.${DTCG_EXTENSION_KEY} for a lossless round-trip.`,
     tabviz: { reference, semantic, component },
     $extensions: {
-      [DTCG_EXTENSION_KEY]: { name, inputs, ...(Object.keys(roleOverrides).length ? { roleOverrides } : {}), ...(Object.keys(pins).length ? { pins } : {}) },
+      [DTCG_EXTENSION_KEY]: { name, inputs, ...(Object.keys(roleOverrides).length ? { roleOverrides } : {}), ...(Object.keys(components).length ? { components } : {}), ...(Object.keys(pins).length ? { pins } : {}) },
     },
   };
 }
@@ -124,8 +126,10 @@ export function dtcgFromTheme(bag: {
   name?: string;
   roleOverrides?: RoleOverrides;
   pins?: Record<string, string>;
+  components?: ComponentBindings;
 }): DtcgDocument {
-  return toDtcg(bag.inputs, bag.name ?? "tabviz-theme", bag.roleOverrides ?? {}, bag.pins ?? {});
+  return toDtcg(bag.inputs, bag.name ?? "tabviz-theme", bag.roleOverrides ?? {},
+    bag.pins ?? {}, bag.components ?? {});
 }
 
 /** Reverse a DTCG document to a tabviz wire envelope. Reads the
@@ -141,5 +145,6 @@ export function fromDtcg(doc: unknown): ThemeWireEnvelope {
       `Only DTCG files exported by tabviz round-trip; a foreign token file needs a manual mapping.`,
     );
   }
-  return buildThemeWire(ext.inputs, ext.name ?? "imported", ext.roleOverrides ?? {}, ext.pins ?? {});
+  return buildThemeWire(ext.inputs, ext.name ?? "imported", ext.roleOverrides ?? {},
+    ext.pins ?? {}, ext.components ?? {});
 }

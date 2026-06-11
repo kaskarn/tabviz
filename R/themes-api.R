@@ -196,17 +196,19 @@ theme_inputs_to_json <- function(inputs) {
 # the v4 resolve reflects spine rebinds; stored back on the S7 theme so the
 # artifact round-trips.
 resolve_from_inputs <- function(inputs, name = "custom", role_overrides = list(),
-                                pins = list()) {
+                                pins = list(), components = list()) {
   inputs_json <- theme_inputs_to_json(inputs)
   opts <- list(name = name)
   if (length(role_overrides) > 0L) opts$roleOverrides <- role_overrides
   if (length(pins) > 0L) opts$pins <- pins
+  if (length(components) > 0L) opts$components <- components
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- name
   theme <- deserialize_resolved_theme(blob)
   theme@inputs <- inputs
   theme@role_overrides <- role_overrides
   theme@pins <- pins
+  theme@components <- components
   theme@name <- name
   theme
 }
@@ -219,9 +221,11 @@ resolve_from_inputs <- function(inputs, name = "custom", role_overrides = list()
 # the final review caught on the TS side).
 re_resolve <- function(theme, inputs = theme@inputs,
                        role_overrides = theme@role_overrides,
-                       pins = theme@pins) {
+                       pins = theme@pins,
+                       components = theme@components) {
   resolve_from_inputs(inputs, name = theme@name,
-                      role_overrides = role_overrides, pins = pins)
+                      role_overrides = role_overrides, pins = pins,
+                      components = components)
 }
 
 # Internal: cached bindable-role roster, fetched once from the TS bundle.
@@ -1136,7 +1140,7 @@ set_role <- function(theme, role, ramp, grade) {
 #'
 #' @param theme A [WebTheme].
 #' @param role A type role name.
-#' @param family Font slot: `"display"`, `"body"`, or `"mono"`.
+#' @param family Font slot: `"display"`, `"body"`, `"mono"`, or `"numeric"`.
 #' @param size Size step: one of `"label"`, `"foot"`, `"body"`, `"head"`,
 #'   `"subtitle"`, `"title"`, `"display"`.
 #' @param weight Weight name: `"regular"`, `"medium"`, `"semibold"`, `"bold"`.
@@ -1154,7 +1158,7 @@ set_type_role <- function(theme, role, family = NULL, size = NULL, weight = NULL
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   checkmate::assert_choice(role, .TYPE_ROLE_NAMES)
-  checkmate::assert_choice(family, c("display", "body", "mono"), null.ok = TRUE)
+  checkmate::assert_choice(family, c("display", "body", "mono", "numeric"), null.ok = TRUE)
   checkmate::assert_choice(size,
     c("label", "foot", "body", "head", "subtitle", "title", "display"), null.ok = TRUE)
   checkmate::assert_choice(weight,
@@ -1387,6 +1391,166 @@ clear_role <- function(theme, role) {
   overrides <- theme@role_overrides
   overrides[[role]] <- NULL
   re_resolve(theme, role_overrides = overrides)
+}
+
+# Internal: cached component roster, fetched once from the TS bundle
+# (the .bindable_roles pattern — the R surface can never drift from the
+# manifest's binding annotations).
+.component_roster <- function() {
+  if (is.null(.tabviz_role_roster$components)) {
+    .tabviz_role_roster$components <- ts_call("componentRoster", list())
+  }
+  .tabviz_role_roster$components
+}
+
+# Internal: ONE validation source across runtimes — delegates to the TS
+# sanitizeComponentBindings (the same rules parseThemeWire enforces) and
+# aborts with the structured issue messages on any rejection.
+.assert_component_bindings <- function(components, call = rlang::caller_env()) {
+  if (length(components) == 0L) return(invisible(components))
+  issues <- ts_call("validateComponentBindings", components)
+  if (length(issues) > 0L) {
+    msgs <- vapply(issues, function(i) i[["message"]], character(1))
+    # Escape cli/glue braces — the TS messages quote user values verbatim
+    # (a hostile value like "{x}" must not be glue-interpolated).
+    msgs <- gsub("}", "}}", gsub("{", "{{", msgs, fixed = TRUE), fixed = TRUE)
+    cli::cli_abort(
+      c("Invalid component bindings.",
+        stats::setNames(msgs, rep("x", length(msgs)))),
+      call = call
+    )
+  }
+  invisible(components)
+}
+
+#' Re-route a component channel to a different role (the middle verb)
+#'
+#' The component model's editing grammar has three verbs
+#' (`docs/dev/component-model.md`):
+#' \enumerate{
+#'   \item \strong{Re-tune a role} — [set_role()] / [set_type_role()]:
+#'     global; everything bound to the role follows.
+#'   \item \strong{Re-route a component channel} — `set_component()`:
+#'     local to one component, but cascade-coherent — the re-routed role
+#'     still re-resolves under polarity flips, anchor edits, and
+#'     high-contrast mode (unlike a raw pin).
+#'   \item \strong{Pin} — [set_pin()]: token to raw value; last resort.
+#' }
+#'
+#' Components are curated, named table parts organized by region (see
+#' [list_components()]): `"title"`, `"row"`, `"header-cell"`,
+#' `"axis-label"`, …. Each exposes typed channels: color channels
+#' (`col`, `bg`, `bar`, `rule`) take a Tier-2 color role name; type
+#' channels (`family`, `size`, `weight`) take the typography slot
+#' vocabulary. States are sparse (`base` implied; rows add
+#' `alt`/`hover`/`selected`/`emphasis`; the header's three style variants
+#' are states `light`/`tint`/`fill`).
+#'
+#' @param theme A [WebTheme].
+#' @param component Component name — see [list_components()].
+#' @param ... Named channel values, e.g. `col = "accent-text"`,
+#'   `family = "mono"`, `weight = "semibold"`.
+#' @param state Component state the bindings apply to (default `"base"`).
+#' @return The [WebTheme] re-resolved with the channels re-routed.
+#' @examples
+#' \dontrun{
+#' web_theme_nejm() |>
+#'   set_component("title", col = "accent-text") |>
+#'   set_component("cell", family = "mono") |>
+#'   set_component("row", state = "emphasis", bar = "accent-solid")
+#' }
+#' @seealso [clear_component()], [list_components()], [set_role()],
+#'   [set_pin()]
+#' @export
+set_component <- function(theme, component, ..., state = "base") {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(component, min.chars = 1)
+  checkmate::assert_string(state, min.chars = 1)
+  edits <- list(...)
+  if (length(edits) == 0L || is.null(names(edits)) || any(!nzchar(names(edits)))) {
+    cli::cli_abort(c(
+      "Provide at least one named channel value.",
+      "i" = 'e.g. {.code set_component(theme, "title", col = "accent-text")}'
+    ))
+  }
+  for (ch in names(edits)) {
+    checkmate::assert_string(edits[[ch]], min.chars = 1, .var.name = ch)
+  }
+  components <- theme@components
+  rec <- components[[component]] %||% list()
+  st <- rec[[state]] %||% list()
+  st[names(edits)] <- edits
+  rec[[state]] <- st
+  components[[component]] <- rec
+  # ONE validation source (TS sanitizeComponentBindings via V8): unknown
+  # components/states/channels and out-of-vocab values abort here with the
+  # same structured messages parseThemeWire reports.
+  .assert_component_bindings(components)
+  re_resolve(theme, components = components)
+}
+
+#' Release component channel re-routes back to their manifest defaults.
+#'
+#' @param theme A [WebTheme].
+#' @param component Component name previously edited via [set_component()].
+#' @param state Optional state to clear. `NULL` (default) clears every
+#'   state of the component.
+#' @return The [WebTheme] re-resolved with the re-routes removed.
+#' @export
+clear_component <- function(theme, component, state = NULL) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
+  }
+  checkmate::assert_string(component, min.chars = 1)
+  checkmate::assert_string(state, min.chars = 1, null.ok = TRUE)
+  components <- theme@components
+  if (is.null(state)) {
+    components[[component]] <- NULL
+  } else if (!is.null(components[[component]])) {
+    rec <- components[[component]]
+    rec[[state]] <- NULL
+    components[[component]] <- if (length(rec) > 0L) rec else NULL
+  }
+  re_resolve(theme, components = components)
+}
+
+#' List the component-model roster
+#'
+#' The discoverable companion to [set_component()]: every curated
+#' component with its table region, states, channels, and the manifest
+#' token each channel backs. One row per (component, state, channel).
+#'
+#' @return A data frame with columns `component`, `region`, `state`,
+#'   `channel`, `css_var`.
+#' @examples
+#' \dontrun{
+#' list_components()
+#' subset(list_components(), region == "captions")
+#' }
+#' @seealso [set_component()], [list_roles()], [list_component_tokens()]
+#' @export
+list_components <- function() {
+  roster <- .component_roster()
+  rows <- list()
+  for (comp in names(roster)) {
+    entry <- roster[[comp]]
+    for (st in names(entry$states)) {
+      channels <- entry$states[[st]]
+      rows[[length(rows) + 1L]] <- data.frame(
+        component = comp,
+        region = entry$region,
+        state = st,
+        channel = names(channels),
+        css_var = unlist(channels, use.names = FALSE),
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  out <- do.call(rbind, rows)
+  rownames(out) <- NULL
+  out[order(out$region, out$component, out$state, out$channel), , drop = FALSE]
 }
 
 #' Set the first (label) column variant.

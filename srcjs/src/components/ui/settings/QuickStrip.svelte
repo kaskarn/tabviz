@@ -45,6 +45,7 @@
     // ONE envelope builder for every egress (quality review).
     const wire = buildThemeWire(
       inputs, store.baseThemeName, theme?.roleOverrides ?? {}, theme?.pins ?? {},
+      theme?.components ?? {},
     );
     const blob = new Blob([JSON.stringify(wire, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -73,6 +74,7 @@
           name: wire.name,
           roleOverrides: wire.roleOverrides,
           pins: wire.pins ?? {},
+          components: wire.components ?? {},
         });
         store.setThemeObject(built);
       } catch (e) {

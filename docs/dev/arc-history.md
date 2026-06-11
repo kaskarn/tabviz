@@ -11,6 +11,47 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## Component-model Stage 1 (W6) — SHIPPED 2026-06-11 (wire 1.5)
+
+Design: `docs/dev/component-model.md` (locked same day, two user rounds).
+One commit `[component-model S1]`. The substrate for roadmap area E — the
+THREE-VERB grammar's missing middle verb (re-route a component channel)
+now works end-to-end. WHAT FUTURE AGENTS MUST KNOW:
+
+- **The roster is honesty-filtered**: `COMPONENT_ROSTER` derives from
+  manifest `binding` annotations but SKIPS tokens in KNOWN_UNCONSUMED —
+  an editable channel must paint. Dropped today: row.selected.bg,
+  header-cell.light.rule, cell.family/weight, numeric-cell.size/weight,
+  caption/subtitle/footnote.family, axis-tick-label.size. They join
+  AUTOMATICALLY when their tokens gain consumers (Stage 3) — wire DOM +
+  export TOGETHER or you create a WYSIWYG divergence (the deleted dead
+  `cellFamily` read in svg-generator is the cautionary example: wiring
+  export-only would have diverged from the DOM's body-font inheritance).
+- **v3-bridge interaction**: `computeV3BridgeVars` deletes its stamp for
+  any token with an ACTIVE re-route — without this, re-routes on
+  bridge-owned tokens (--tv-text-title-fg was the live case) were
+  silently inert. The bridge fully retires at W4.
+- **Precedence**: HC/RT mode ratchet > re-route > role-level type_roles
+  rebind > manifest default. Pins still overlay last (and the ratchet
+  beats pins too).
+- **One validation source**: TS `sanitizeComponentBindings`; R calls it
+  via `ts_call("validateComponentBindings")` in `set_component()` AND
+  `theme_from_wire()` (strict — abort, never half-apply).
+- **Cache**: getCssVarsRaw's key now includes `componentBindingsKey` —
+  same inputs identity with different re-routes must not share entries.
+- **Threading**: `re_resolve()` defaults `components = theme@components`;
+  any future hand-rolled buildTheme opts bag (serialize_theme,
+  theme_css_vars, theme_to_dtcg were the three) must include it — grep
+  `opts$roleOverrides` when adding a fourth.
+- Studio: components are a PASSTHROUGH (seeded at init, resolved in
+  preview, re-emitted on export; NOT in history until Stage 2 makes them
+  editable).
+- Side-fix: R type-role `family` vocab now accepts `"numeric"` (TS
+  already did; R silently dropped it at wire ingress + set_type_role).
+- Gates: `component-bindings.test.ts` (21 — roster/sanitize/lockstep/
+  ratchet/cache/wire + 2 honesty gates), `test-theme-components.R` (31 —
+  verb/round-trip/strict-ingress/R↔TS parity).
+
 ## Interactivity-UX arc — SHIPPED 2026-06-10 (P0/P1/P2; wire 1.4)
 
 Plan + decision record: `docs/dev/interactivity-ux-plan.md` (decisions locked

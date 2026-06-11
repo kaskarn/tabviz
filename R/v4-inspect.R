@@ -120,6 +120,7 @@ theme_css_vars <- function(theme) {
   opts <- list(name = theme@name)
   if (length(theme@role_overrides) > 0L) opts$roleOverrides <- theme@role_overrides
   if (length(theme@pins) > 0L) opts$pins <- theme@pins
+  if (length(theme@components) > 0L) opts$components <- theme@components
   opts_json <- jsonlite::toJSON(opts, auto_unbox = TRUE, null = "null", na = "null")
   ctx <- tabviz_v8()
   webtheme_json <- ctx$call("callBuilder", "buildTheme", as.character(inputs_json),

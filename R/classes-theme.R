@@ -1064,6 +1064,12 @@ WebTheme <- new_class(
     # channel (settings-overhaul P3). Applied as a cssVars overlay after
     # resolve, before contrast validation. Rides the wire as `pins`.
     pins = new_property(class_list, default = list()),
+    # Component-model channel re-routes (W6) — sparse named list:
+    # component -> state -> channel -> role/slot value. The middle verb
+    # between set_role() (re-tune) and set_pin() (raw value); edited via
+    # set_component(). Part of the portable artifact; rides the wire as
+    # `components` and feeds the TS v4 resolve. docs/dev/component-model.md.
+    components = new_property(class_list, default = list()),
 
     # Tier 2 (derived; NA until the TS cascade runs)
     # Note: surface/content/divider chrome slots were dropped in the

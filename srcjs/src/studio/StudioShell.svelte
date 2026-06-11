@@ -49,6 +49,7 @@
       studioStore.init(inputs, baseName, {
         roleOverrides: theme?.roleOverrides ?? {},
         pins: theme?.pins ?? {},
+        components: theme?.components ?? {},
       });
     }
     // Wire keyboard shortcuts (Cmd/Ctrl-Z undo, Shift redo).

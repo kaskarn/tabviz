@@ -76,6 +76,22 @@ export function listBindableRoles(): string[] {
   return _ALL_ROLES.filter((r) => !_OFF_RAMP_ROLES.has(r));
 }
 
+// Component-model roster (W6) — component → region + state → channel →
+// backing cssVar, derived from the manifest's `binding` annotations.
+// R's set_component() validates against this via ts_call (the
+// listBindableRoles pattern: the R assert can never drift from TS).
+export { componentRoster } from "../lib/theme/component-bindings";
+
+// One validation source for the `components` block across runtimes: R's
+// set_component()/theme_from_wire() call this via ts_call and abort on a
+// non-empty issue list — byte-identical rules to parseThemeWire's ingress.
+import { sanitizeComponentBindings as _sanitizeCB } from "../lib/theme/component-bindings";
+export function validateComponentBindings(
+  bindings: unknown,
+): { path: string; code: string; message: string }[] {
+  return _sanitizeCB(bindings).issues;
+}
+
 // Domain-aware role roster — the discoverable companion to set_role()
 // (round-3 API review: valid roles were only knowable by erroring). The
 // `domain` facet ships now (all current roles are "color") so the Wave-3

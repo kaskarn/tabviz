@@ -146,7 +146,7 @@ theme_inputs_from_wire <- function(wire_inputs) {
     role_ok <- c("title", "subtitle", "body", "numeric", "label",
                  "caption", "footnote", "cell", "tick")
     vocab <- list(
-      family = c("display", "body", "mono"),
+      family = c("display", "body", "mono", "numeric"),
       size   = c("label", "foot", "body", "head", "subtitle", "title", "display"),
       weight = c("regular", "medium", "semibold", "bold")
     )
@@ -268,8 +268,9 @@ theme_inputs_from_wire <- function(wire_inputs) {
 #' Re-hydrate a WebTheme from a theme wire envelope
 #'
 #' Accepts the canonical portable artifact
-#' `{ $schema, name, inputs, roleOverrides }` (the shape every studio
-#' export emits) and resolves it into a full [WebTheme] via the TS cascade.
+#' `{ $schema, name, inputs, roleOverrides?, components?, pins? }` (the
+#' shape every studio export emits) and resolves it into a full [WebTheme]
+#' via the TS cascade.
 #'
 #' @param wire A named list (parsed JSON envelope) or a JSON string.
 #' @return A [WebTheme].
@@ -288,6 +289,12 @@ theme_from_wire <- function(wire) {
   name <- wire[["name"]] %||% "imported"
   # Accept name-alias OR legacy coordinate form (Wave 0 migration).
   overrides <- .normalize_role_overrides(wire[["roleOverrides"]])
+  # Component-model re-routes (W6) — UNTRUSTED: validated against the TS
+  # roster + channel vocabularies (the same rules parseThemeWire enforces;
+  # one validation source via V8). An envelope that SAYS it re-routes a
+  # channel must either apply or explain — abort, never half-apply.
+  components <- wire[["components"]] %||% list()
+  .assert_component_bindings(components)
   pins <- wire[["pins"]] %||% list()
   # Pin value grammar gate (round-2 robustness P0): a wire envelope is
   # UNTRUSTED input — a colleague-shared file with a hostile pin value
@@ -312,5 +319,6 @@ theme_from_wire <- function(wire) {
       "i" = "Pinned tokens bypass the cascade and may not respond to polarity/high-contrast."
     ))
   }
-  resolve_from_inputs(inputs, name = name, role_overrides = overrides, pins = pins)
+  resolve_from_inputs(inputs, name = name, role_overrides = overrides,
+                      pins = pins, components = components)
 }

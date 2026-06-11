@@ -297,11 +297,11 @@ read_theme <- function(x) {
 #' Build the portable wire envelope from a resolved theme.
 #'
 #' The R twin of the studio's export: returns the canonical, self-contained
-#' artifact `{$schema, name, inputs, roleOverrides?, pins?}` — the same
-#' shape `read_theme()` / [theme_from_wire()] consume and the studio
-#' emits. This is what [write_theme()] persists. `roleOverrides` / `pins`
-#' are omitted when empty so the JSON stays a clean object (and survives
-#' the JS-side `parseThemeWire` shape check).
+#' artifact `{$schema, name, inputs, roleOverrides?, components?, pins?}`
+#' — the same shape `read_theme()` / [theme_from_wire()] consume and the
+#' studio emits. This is what [write_theme()] persists. `roleOverrides` /
+#' `components` / `pins` are omitted when empty so the JSON stays a clean
+#' object (and survives the JS-side `parseThemeWire` shape check).
 #'
 #' @param theme A [WebTheme].
 #' @return A named list ready for `jsonlite::toJSON(auto_unbox = TRUE)`.
@@ -321,6 +321,7 @@ theme_to_wire <- function(theme) {
   if (length(theme@role_overrides) > 0L) {
     wire$roleOverrides <- .role_overrides_to_aliases(theme@role_overrides)
   }
+  if (length(theme@components) > 0L) wire$components <- theme@components
   if (length(theme@pins) > 0L) wire$pins <- theme@pins
   wire
 }
@@ -328,7 +329,7 @@ theme_to_wire <- function(theme) {
 #' Write a theme to the user theme directory or to a file.
 #'
 #' Persists the portable **wire envelope** (`{$schema, name, inputs,
-#' roleOverrides?, pins?}`) — the same self-contained artifact the studio
+#' roleOverrides?, components?, pins?}`) — the same self-contained artifact the studio
 #' exports and [read_theme()] / [theme_from_wire()] consume. (It used to
 #' write a resolved blob, which [read_theme()] could not faithfully
 #' restore — round-2 review blocker.)

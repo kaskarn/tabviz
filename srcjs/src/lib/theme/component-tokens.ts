@@ -99,6 +99,44 @@ export type ModeBehavior = {
   rt?: "drop" | { swap: RoleName };
 };
 
+// ── Component model (W6 substrate — docs/dev/component-model.md) ───────────
+
+/** Table region a component belongs to. Drives the components-page
+ *  grouping (Stage 2) and introspection. `frame` components join when the
+ *  v3 theme-css bridges retire (W4) — their tokens are bridge-realized
+ *  today and a re-route would silently not paint. */
+export type ComponentRegion = "header" | "rows" | "plot" | "frame" | "captions";
+
+/** Component states. `base` is the implied default; rows add interaction/
+ *  paint states; the header's three style variants are modeled as states
+ *  (the active one follows `header_style`). Sparse — most components
+ *  define only `base`. */
+export type ComponentStateName =
+  | "base" | "alt" | "hover" | "selected" | "emphasis"
+  | "light" | "tint" | "fill";
+
+/** Typed channels. Color channels (`col` text/fg, `bg` fill, `bar` marker,
+ *  `rule` stroke) take a Tier-2 color role name; type channels take the
+ *  typography slot vocabulary (family/size/weight). Border `width`/`style`
+ *  and decorative channels land with their resolvers (Stages 3–4 + W4). */
+export type ComponentChannelName =
+  | "col" | "bg" | "bar" | "rule"
+  | "family" | "size" | "weight";
+
+/** A manifest token's place in the component model: this token IS
+ *  component X's channel Y in state Z. The `components` wire block
+ *  re-routes by addressing this triple; `COMPONENT_ROSTER`
+ *  (component-bindings.ts) derives from these annotations. Only annotate
+ *  tokens whose resolver honors a re-route (role + typography groups) —
+ *  the honesty rule: never an editable channel nothing reads. */
+export interface ComponentTokenBinding {
+  readonly region: ComponentRegion;
+  readonly component: string;
+  readonly channel: ComponentChannelName;
+  /** Defaults to "base". */
+  readonly state?: ComponentStateName;
+}
+
 /** Prefix marking a manifest entry as a v3-bridge token — declared for
  *  drift-gate ownership + Inspector visibility, but realized by
  *  theme-css.ts's user-config-bridge tail rather than the v4 resolver.
@@ -134,6 +172,9 @@ export interface ComponentToken {
   readonly consumedBy: readonly string[];
   /** Optional: per-mode behavior. */
   readonly modes?: ModeBehavior;
+  /** Optional: this token's (component, state, channel) address in the
+   *  component model (W6). See ComponentTokenBinding. */
+  readonly binding?: ComponentTokenBinding;
   /** Optional: short human-readable description for the Inspector. */
   readonly description?: string;
   // DEFERRED (theme-rework): `dtcgPath` (DTCG token path) and `pinnable`
@@ -162,6 +203,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "surface" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "row", channel: "bg" },
     description: "Default row background fill",
   },
   {
@@ -170,6 +212,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "row", channel: "col" },
     description: "Default row foreground (text) color",
   },
   {
@@ -179,6 +222,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     source: { tier: "role", role: "surface-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     modes: { hc: "drop" },
+    binding: { region: "rows", component: "row", channel: "bg", state: "alt" },
     description: "Alternating (zebra) row background fill",
   },
   {
@@ -187,6 +231,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "fill-hover" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "row", channel: "bg", state: "hover" },
     description: "Row background on pointer hover (browser only)",
   },
   {
@@ -195,6 +240,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "fill-active" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "row", channel: "bg", state: "selected" },
     description: "Row background when row is selected",
   },
   {
@@ -204,6 +250,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     source: { tier: "role", role: "highlight-bg" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte", "lib/semantic-styling.ts"],
     modes: { hc: "drop", rt: { swap: "fill-hover" } },
+    binding: { region: "rows", component: "row", channel: "bg", state: "emphasis" },
     description: "Highlighted row background (paint-tool emphasis token)",
   },
   {
@@ -212,6 +259,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "highlight-bar" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "row", channel: "bar", state: "emphasis" },
     description: "Vertical bar marker on highlighted rows (visible in HC even when wash drops)",
   },
   {
@@ -220,6 +268,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "row", channel: "col", state: "emphasis" },
     description: "Highlighted row foreground (text) color",
   },
 
@@ -230,6 +279,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "cell", channel: "col" },
     description: "Cell text foreground color",
   },
   {
@@ -238,6 +288,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-stroke",
     source: { tier: "role", role: "border-subtle" },
     consumedBy: ["export/svg-generator.ts"],
+    binding: { region: "rows", component: "cell", channel: "rule" },
     description: "Cell horizontal divider color",
   },
 
@@ -248,6 +299,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "surface" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "bg", state: "light" },
     description: "Column header background under data-head-style=\"light\"",
   },
   {
@@ -256,6 +308,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "col", state: "light" },
     description: "Column header text under data-head-style=\"light\"",
   },
   {
@@ -264,6 +317,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-stroke",
     source: { tier: "role", role: "border-strong" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "rule", state: "light" },
     description: "Bottom rule under column headers under data-head-style=\"light\"",
   },
   {
@@ -272,6 +326,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "fill" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "bg", state: "tint" },
     description: "Column header background under data-head-style=\"tint\"",
   },
   {
@@ -280,6 +335,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "col", state: "tint" },
     description: "Column header text under data-head-style=\"tint\"",
   },
   {
@@ -288,6 +344,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-fill",
     source: { tier: "role", role: "brand-solid" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "bg", state: "fill" },
     description: "Column header background under data-head-style=\"fill\"",
   },
   {
@@ -296,6 +353,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text-onsolid" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "col", state: "fill" },
     description: "Column header text under data-head-style=\"fill\" (computed contrast pick on brand)",
   },
 
@@ -306,6 +364,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-stroke",
     source: { tier: "role", role: "border-strong" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte", "stores/slices/axis.svelte.ts"],
+    binding: { region: "plot", component: "axis-line", channel: "col" },
     description: "Plot axis line color",
   },
   {
@@ -314,6 +373,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-stroke",
     source: { tier: "role", role: "border-strong" },
     consumedBy: ["export/svg-generator.ts", "components/forest/EffectAxis.svelte"],
+    binding: { region: "plot", component: "axis-tick", channel: "col" },
     description: "Plot tick mark color",
   },
   {
@@ -490,6 +550,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "brand-text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
+    binding: { region: "captions", component: "title", channel: "col" },
     description: "Plot title text color",
   },
   {
@@ -498,6 +559,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "role", role: "text-subtle" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
+    binding: { region: "captions", component: "footnote", channel: "col" },
     description: "Footnote text color",
   },
 
@@ -795,6 +857,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "role",
     source: { tier: "role", role: "accent-solid" },
     consumedBy: ["lib/theme/theme-runtime.css"],
+    binding: { region: "captions", component: "caption-chip", channel: "bg" },
     description:
       "Caption chip (TABLE-N stamp) background — rubrication channel " +
       "(accent-solid; pin --tv-ink2 to override rubrication). B17/C62.",
@@ -805,6 +868,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "role",
     source: { tier: "role", role: "text-onsolid" },
     consumedBy: ["lib/theme/theme-runtime.css"],
+    binding: { region: "captions", component: "caption-chip", channel: "col" },
     description: "Caption chip label color (APCA-picked against the chip bg).",
   },
   {
@@ -1259,16 +1323,35 @@ function buildTypographyManifestEntries(): ComponentToken[] {
     "title", "subtitle", "body", "numeric",
     "label", "caption", "footnote", "cell", "tick",
   ] as const;
+  // Component-model addresses for the type-role tokens (W6). Each maps a
+  // type role onto the table component its text actually paints; `body`
+  // stays unmapped — it's the base everything inherits from (re-tune it
+  // via type_roles), not a region component.
+  const TYPE_ROLE_COMPONENT: Partial<Record<(typeof ROLES)[number],
+    { region: ComponentRegion; component: string }>> = {
+    title:    { region: "captions", component: "title" },
+    subtitle: { region: "captions", component: "subtitle" },
+    caption:  { region: "captions", component: "caption" },
+    footnote: { region: "captions", component: "footnote" },
+    label:    { region: "plot",     component: "axis-label" },
+    tick:     { region: "plot",     component: "axis-tick-label" },
+    cell:     { region: "rows",     component: "cell" },
+    numeric:  { region: "rows",     component: "numeric-cell" },
+  };
   const entries: ComponentToken[] = [];
   for (const role of ROLES) {
     const base = `--tv-text-${role}` as const;
     const consumedBy = ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"];
+    const comp = TYPE_ROLE_COMPONENT[role];
+    const bindingFor = (channel: "family" | "size" | "weight") =>
+      comp ? { binding: { ...comp, channel } } : {};
     entries.push({
       cssVar: `${base}-family`,
       kind: "font-family",
       resolverGroup: "typography",
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
+      ...bindingFor("family"),
       description: `${role} font family stack`,
     });
     entries.push({
@@ -1277,6 +1360,7 @@ function buildTypographyManifestEntries(): ComponentToken[] {
       resolverGroup: "typography",
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
+      ...bindingFor("size"),
       description: `${role} font size (px)`,
     });
     entries.push({
@@ -1285,6 +1369,7 @@ function buildTypographyManifestEntries(): ComponentToken[] {
       resolverGroup: "typography",
       source: { tier: "computed", note: `typography role:${role}` },
       consumedBy,
+      ...bindingFor("weight"),
       description: `${role} font weight`,
     });
   }

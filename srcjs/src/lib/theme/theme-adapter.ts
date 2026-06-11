@@ -144,6 +144,8 @@ export interface BuildThemeOpts {
   roleOverrides?: NonNullable<WebTheme["roleOverrides"]>;
   /** Tier-2/3 token pins (cssVar → value) — see WebTheme.pins. */
   pins?: NonNullable<WebTheme["pins"]>;
+  /** Component-model channel re-routes (W6) — see WebTheme.components. */
+  components?: NonNullable<WebTheme["components"]>;
   /** Skip the dev-mode contrast validation pass. Set ONLY by drag-time
    *  preview paths (perf review: the validator re-derives contrast for
    *  every role — a second half-cascade per slider tick that the commit
@@ -160,6 +162,7 @@ export function buildTheme(
   const name = opts.name ?? "custom";
   const roleOverrides = opts.roleOverrides ?? {};
   const pins = opts.pins ?? {};
+  const components = opts.components ?? {};
   const reflected = applyPolarityToInputs(inputs);
   const v3 = buildThemeStructure(inputs, name);
   const t = v3.tokens;
@@ -426,6 +429,7 @@ export function buildTheme(
     authoringInputs: inputs,
     roleOverrides,
     pins,
+    ...(Object.keys(components).length > 0 ? { components } : {}),
     axis,
     layout,
     borders,

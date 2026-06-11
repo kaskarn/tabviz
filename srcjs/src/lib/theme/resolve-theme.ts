@@ -33,6 +33,11 @@
 import type { ThemeInputs, OklchTriple, TokenRamps } from "../../types/theme-inputs";
 import type { RoleName } from "../../types/theme-roles";
 import type { ThemeWire } from "./theme-wire";
+import {
+  componentRoleOverride,
+  componentChannelOverride,
+  type ComponentBindings,
+} from "./component-bindings";
 import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
@@ -357,6 +362,10 @@ export interface ResolveCtx {
   roles: Record<RoleName, string>;
   ramps: TokenRamps;
   inputs: ThemeInputs;
+  /** Component-model channel re-routes (W6). Consulted by the role +
+   *  typography resolvers AFTER the HC/RT mode ratchet (ratchet beats
+   *  re-route, same as it beats pins). */
+  components?: ComponentBindings;
 }
 
 type ResolverFn = (token: ComponentToken, ctx: ResolveCtx) => string;
@@ -501,7 +510,10 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
   ["effects", (t, ctx) =>
     requireMatch(resolveEffectsComputed(t.cssVar, ctx), t, "effects")],
   ["typography", (t, ctx) =>
-    requireMatch(resolveTypographyComputed(t.cssVar, ctx.inputs), t, "typography")],
+    requireMatch(
+      resolveTypographyComputed(t.cssVar, ctx.inputs,
+        componentChannelOverride(t, ctx.components)),
+      t, "typography")],
   ["shell-paper", (t, ctx) =>
     requireMatch(resolveShellPaperComputed(t.cssVar, ctx), t, "shell-paper")],
   ["elevation", (t, ctx) =>
@@ -517,7 +529,12 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
       return tokenResolveBug(t.cssVar, t.source.tier,
         "resolverGroup=role but source.tier is not role");
     }
-    return ctx.roles[t.source.role];
+    // Component-model re-route (W6): a `components` override on this
+    // token's (component, state, channel) redirects which Tier-2 role
+    // the token reads — local to the component, cascade-coherent (the
+    // role re-resolves under polarity / anchors / HC like any other).
+    const reroute = componentRoleOverride(t, ctx.components);
+    return ctx.roles[reroute ?? t.source.role];
   }],
   ["anchor", resolveAnchorGroup],
   ["const", (t) => {
@@ -657,7 +674,11 @@ function resolveShellPaperComputed(
   return sp[key];
 }
 
-function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string | null {
+function resolveTypographyComputed(
+  cssVar: string,
+  inputs: ThemeInputs,
+  channelOverride?: string | null,
+): string | null {
   // Pattern: --tv-text-{role}-{prop}
   const m = cssVar.match(/^--tv-text-([a-z]+)-([a-z]+)$/);
   if (!m) return null;
@@ -669,7 +690,15 @@ function resolveTypographyComputed(cssVar: string, inputs: ThemeInputs): string 
   // Tier-2 type-role overlay (Wave 3): inputs.type_roles rebinds any subset
   // of a role's {family,size,weight} recipe. No overrides → DEFAULT_TYPE_ROLES
   // (resolution byte-identical, so the resolver-dispatch snapshot is stable).
-  const r = resolveTypeRole(role, typo, effectiveTypeRoles(inputs));
+  let table = effectiveTypeRoles(inputs);
+  // Component-model re-route (W6): a `components` override on this token's
+  // channel replaces that ONE slot of the recipe — token-local, so it wins
+  // over the role-level type_roles rebind (verb hierarchy: re-route is the
+  // more specific edit).
+  if (channelOverride) {
+    table = { ...table, [role]: { ...table[role], [prop]: channelOverride } };
+  }
+  const r = resolveTypeRole(role, typo, table);
   switch (prop) {
     case "family": return r.family;
     case "size":   return `${r.size}px`;
@@ -1031,6 +1060,7 @@ export function resolveTheme(wire: ThemeWire): ResolvedTheme {
       roles,
       ramps: ramps12,
       inputs: reflected,
+      components: wire.components,
     });
   }
 

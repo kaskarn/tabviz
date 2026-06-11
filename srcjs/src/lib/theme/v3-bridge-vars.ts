@@ -16,6 +16,8 @@
 
 import type { WebTheme } from "../../types";
 import { activeHeaderVariant } from "../header-variant";
+import { componentChannelOverride } from "./component-bindings";
+import { TOKENS_BY_VAR } from "./component-tokens";
 
 /** Compute the v3 bridge token values for a theme.
  *
@@ -96,5 +98,17 @@ export function computeV3BridgeVars(
   // "don't override .grid-cell's border"). Emitting it always also
   // clears the manifest's <v3-bridge> sentinel for this token.
   out["--tv-first-col-rule"] = firstColVariant?.rule ?? "transparent";
+  // Component-model guard (W6): a bridged token with an ACTIVE re-route
+  // must keep its v4-resolved value — the bridge would otherwise stamp the
+  // v3 config back over the user's `components` edit and the re-route
+  // would be silently inert on exactly the tokens v3 still owns
+  // (--tv-text-title-fg was the live case). The bridge itself retires
+  // with W4; this keeps the verb honest until then.
+  for (const k of Object.keys(out)) {
+    const tok = TOKENS_BY_VAR.get(k);
+    if (tok && componentChannelOverride(tok, theme.components) !== null) {
+      delete out[k];
+    }
+  }
   return out;
 }

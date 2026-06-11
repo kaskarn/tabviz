@@ -17,6 +17,7 @@ import {
   type ThemeWireEnvelope,
   type RoleOverrides,
 } from "../lib/theme/theme-wire";
+import type { ComponentBindings } from "../lib/theme/component-bindings";
 import { TOKENS_BY_VAR } from "../lib/theme/component-tokens";
 import { applyTokenPins, isValidPinValue } from "../lib/theme/consumer-bridge";
 
@@ -55,6 +56,13 @@ class StudioStore {
    *  pinned values (the no-reapplyEdits-clone condition). */
   pins = $state.raw<Record<string, string>>({});
 
+  /** Component-model channel re-routes (W6) — PASSTHROUGH in Stage 1:
+   *  seeded at init from a handed-off theme, reflected in the preview
+   *  resolve, and re-emitted on every export so round-trips stay
+   *  lossless. No studio editor yet (Stage 2); session-constant, so it
+   *  deliberately does NOT ride history steps until it becomes editable. */
+  components = $state.raw<ComponentBindings>({});
+
   /** History stack: undo pops from end; redo follows the cursor. */
   history = $state<HistoryStep[]>([]);
   /** Index of the current state in history (-1 = no history). */
@@ -78,6 +86,7 @@ class StudioStore {
       const resolved = resolveTheme({
         ...createWire(this.inputs, this.baseName),
         roleOverrides: this.roleOverrides,
+        components: this.components,
       });
       // Pins overlay BEFORE anything reads cssVars — contrastWarnings
       // below must judge the pinned values, not the pre-pin resolve.
@@ -131,7 +140,11 @@ class StudioStore {
   init(
     base: ThemeInputs,
     baseName: string,
-    seed?: { roleOverrides?: RoleOverrides; pins?: Record<string, string> },
+    seed?: {
+      roleOverrides?: RoleOverrides;
+      pins?: Record<string, string>;
+      components?: ComponentBindings;
+    },
   ): void {
     this.base = base;
     this.baseName = baseName;
@@ -145,6 +158,7 @@ class StudioStore {
     const pins = seed?.pins ?? {};
     this.roleOverrides = roleOverrides;
     this.pins = pins;
+    this.components = seed?.components ?? {};
     this.history = [{ inputs: base, roleOverrides, pins, label: "Loaded" }];
     this.cursor = 0;
   }
@@ -171,7 +185,8 @@ class StudioStore {
    *  rebinds (the studio exported less than its own UI edited). */
   exportWire(): ThemeWireEnvelope | null {
     if (!this.inputs) return null;
-    return buildThemeWire(this.inputs, this.baseName, this.roleOverrides, this.pins);
+    return buildThemeWire(this.inputs, this.baseName, this.roleOverrides,
+      this.pins, this.components);
   }
 
   /** Pin a manifest token to a direct value (TOTAL control, P3).

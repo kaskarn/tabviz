@@ -33,4 +33,10 @@
 # `spec.figureLayout` figure-state block (column width pins, column
 # reorder, row-kind height pins), `interaction.enableAxisZoom`, and the
 # `row_kind_heights` Shiny event field.
-WIRE_FORMAT_VERSION <- "1.4"
+#
+# v1.5 (2026-06-11): additive component-model Stage 1 (W6) — the optional
+# `components` block (component -> state -> channel -> role/slot value)
+# on the theme: rides the resolved-theme blob in `spec.theme` and the
+# portable theme envelope beside `roleOverrides`/`pins`. See
+# docs/dev/component-model.md.
+WIRE_FORMAT_VERSION <- "1.5"

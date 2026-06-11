@@ -30,6 +30,7 @@ serialize_theme <- function(theme) {
   opts <- list(name = theme@name)
   if (length(theme@role_overrides) > 0L) opts$roleOverrides <- theme@role_overrides
   if (length(theme@pins) > 0L) opts$pins <- theme@pins
+  if (length(theme@components) > 0L) opts$components <- theme@components
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- theme@name
   if (!is.na(theme@light_dark_pair)) blob$lightDarkPair <- theme@light_dark_pair

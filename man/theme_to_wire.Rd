@@ -14,11 +14,11 @@ A named list ready for \code{jsonlite::toJSON(auto_unbox = TRUE)}.
 }
 \description{
 The R twin of the studio's export: returns the canonical, self-contained
-artifact \verb{\{$schema, name, inputs, roleOverrides?, pins?\}} — the same
-shape \code{read_theme()} / \code{\link[=theme_from_wire]{theme_from_wire()}} consume and the studio
-emits. This is what \code{\link[=write_theme]{write_theme()}} persists. \code{roleOverrides} / \code{pins}
-are omitted when empty so the JSON stays a clean object (and survives
-the JS-side \code{parseThemeWire} shape check).
+artifact \verb{\{$schema, name, inputs, roleOverrides?, components?, pins?\}}
+— the same shape \code{read_theme()} / \code{\link[=theme_from_wire]{theme_from_wire()}} consume and the
+studio emits. This is what \code{\link[=write_theme]{write_theme()}} persists. \code{roleOverrides} /
+\code{components} / \code{pins} are omitted when empty so the JSON stays a clean
+object (and survives the JS-side \code{parseThemeWire} shape check).
 }
 \seealso{
 \code{\link[=write_theme]{write_theme()}}, \code{\link[=theme_from_wire]{theme_from_wire()}}, \code{\link[=read_theme]{read_theme()}}

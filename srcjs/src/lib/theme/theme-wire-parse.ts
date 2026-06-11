@@ -13,6 +13,7 @@ import type { PinnedThemeWire, RoleOverrides } from "./theme-wire";
 import { normalizeBinding, type RoleOverrideWire } from "./alias";
 import { validateThemeInputs, type ThemeIssue } from "./theme-validate";
 import { isValidPinValue } from "./consumer-bridge";
+import { sanitizeComponentBindings, type ComponentBindings } from "./component-bindings";
 
 export class ThemeWireParseError extends Error {
   /** Structured issues — the machine contract (Wave 4). */
@@ -37,6 +38,7 @@ export function parseThemeWire(json: string): PinnedThemeWire {
     name?: unknown;
     inputs?: ThemeInputs;
     roleOverrides?: unknown;
+    components?: unknown;
     pins?: unknown;
   };
   try {
@@ -87,6 +89,16 @@ export function parseThemeWire(json: string): PinnedThemeWire {
     }
   }
 
+  // Component-model re-routes (W6): validated against the curated roster +
+  // per-channel value vocabularies. Strict here — an envelope that SAYS it
+  // re-routes a channel must either apply or explain (same policy as pins).
+  let components: ComponentBindings = {};
+  if (wire.components !== undefined) {
+    const sanitized = sanitizeComponentBindings(wire.components);
+    components = sanitized.bindings;
+    problems.push(...sanitized.issues);
+  }
+
   const pins: Record<string, string> = {};
   if (wire.pins !== undefined) {
     if (typeof wire.pins !== "object" || wire.pins === null || Array.isArray(wire.pins)) {
@@ -125,6 +137,7 @@ export function parseThemeWire(json: string): PinnedThemeWire {
     name: typeof wire.name === "string" && wire.name.length > 0 ? wire.name : "imported",
     inputs: wire.inputs,
     roleOverrides,
+    ...(Object.keys(components).length > 0 ? { components } : {}),
     ...(Object.keys(pins).length > 0 ? { pins } : {}),
   };
 }

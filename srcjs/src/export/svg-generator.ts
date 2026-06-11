@@ -3168,7 +3168,11 @@ function renderUnifiedTableRow(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(readTypeSize(cssVars, "cell", readBodySize(cssVars)));
-  const cellFamily = readTypeFamily(cssVars, "cell", readBodyFamily(cssVars));
+  // NOTE: cell text deliberately uses the BODY family below (a dead
+  // `cellFamily` read was deleted here) — --tv-text-cell-family is
+  // KNOWN_UNCONSUMED headroom, and consuming it export-side only would
+  // diverge from the DOM (which inherits body). Wire BOTH sides together
+  // (component-model Stage 3) and burn the headroom row when you do.
   const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;

@@ -11,7 +11,7 @@ set_type_role(theme, role, family = NULL, size = NULL, weight = NULL)
 
 \item{role}{A type role name.}
 
-\item{family}{Font slot: \code{"display"}, \code{"body"}, or \code{"mono"}.}
+\item{family}{Font slot: \code{"display"}, \code{"body"}, \code{"mono"}, or \code{"numeric"}.}
 
 \item{size}{Size step: one of \code{"label"}, \code{"foot"}, \code{"body"}, \code{"head"},
 \code{"subtitle"}, \code{"title"}, \code{"display"}.}

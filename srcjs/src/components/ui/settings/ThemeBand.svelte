@@ -51,6 +51,7 @@
       t?.name ?? "(theme)",
       t?.roleOverrides ?? {},
       t?.pins ?? {},
+      t?.components ?? {},
     );
     const json = JSON.stringify(wire);
     const win = window as unknown as {

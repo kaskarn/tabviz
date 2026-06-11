@@ -19,7 +19,7 @@ theme that travels with a project). Mutually exclusive with \code{name}.}
 Invisibly, the path written.
 }
 \description{
-Persists the portable \strong{wire envelope} (\verb{\{$schema, name, inputs, roleOverrides?, pins?\}}) — the same self-contained artifact the studio
+Persists the portable \strong{wire envelope} (\verb{\{$schema, name, inputs, roleOverrides?, components?, pins?\}}) — the same self-contained artifact the studio
 exports and \code{\link[=read_theme]{read_theme()}} / \code{\link[=theme_from_wire]{theme_from_wire()}} consume. (It used to
 write a resolved blob, which \code{\link[=read_theme]{read_theme()}} could not faithfully
 restore — round-2 review blocker.)

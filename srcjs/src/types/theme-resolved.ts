@@ -420,6 +420,15 @@ export interface WebTheme {
    * portable artifact; rides the wire next to roleOverrides.
    */
   pins?: Record<string, string>;
+  /**
+   * Component-model channel re-routes (W6, sparse): component → state →
+   * channel → role/slot value. Part of the portable artifact; rides the
+   * wire beside roleOverrides/pins and feeds the v4 resolve through
+   * getCssVarsRaw. Shape mirrors `component-bindings.ts::ComponentBindings`,
+   * declared loose here to keep types/ free of lib/ imports; every ingress
+   * validates via sanitizeComponentBindings. docs/dev/component-model.md.
+   */
+  components?: Record<string, Record<string, Record<string, string>>>;
   axis: AxisConfig;
   layout: Layout;
   borders: ThemeBorders;

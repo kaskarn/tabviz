@@ -110,9 +110,12 @@ editable channel→role records organized by table region. This is also
 the retirement path for the v3 theme-css bridges (W4) and the wire work
 is W6 (pre-freeze).
 **Exit criteria:**
-- [ ] Stage 1 substrate + wire: manifest `region`/`component` fields;
-      the `components` wire block validated at every ingress; both
-      resolve paths in lockstep; R verb; parity gates. (PRE-FREEZE.)
+- [x] Stage 1 substrate + wire: manifest `binding` annotations (47
+      tokens / 13 components); the `components` wire block validated at
+      every ingress (TS + R via ONE V8-shared validator); both resolve
+      paths in lockstep (structural — shared getCssVarsRaw + cache key);
+      `set_component()`/`clear_component()`/`list_components()`; gates
+      both sides; wire 1.4→1.5. (2026-06-11)
 - [ ] Stage 2 color channel: role chip-grid picker (swatch squares,
       hover names); components page (region accordions, spec-line rows);
       "set table borders → border-muted" and "title → accent-text" work
@@ -220,6 +223,13 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-11 — Area E STAGE 1 LANDED (W6): component-model substrate +
+  wire. The middle verb (re-route) works end-to-end R→wire→both resolve
+  paths; v3-bridge stamps are suppressed for re-routed tokens (full
+  retirement stays W4). Honesty gate added: annotations only on
+  resolverGroups that honor re-routes. Side-fix: R type-role family vocab
+  accepts "numeric" (R↔TS wire-drop asymmetry). Stage 2 (chip-grid +
+  components page UI) is next in area E.
 - 2026-06-10 — Document stood up. Decision register populated (14
   entries). Same day: D1 decided (HC vertical killed, code deleted) and
   D14 decided (theme_blend + split static-knit cut from 1.0).

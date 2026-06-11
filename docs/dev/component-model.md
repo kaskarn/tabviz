@@ -1,9 +1,48 @@
 # The component model — roles + routable components
 
-Status: **design locked in discussion 2026-06-11** (user + Claude, two
-design rounds). This is the centerpiece of roadmap area E (ontology
+Status: **design locked 2026-06-11; Stage 1 (substrate + wire, W6)
+LANDED 2026-06-11.** This is the centerpiece of roadmap area E (ontology
 engagement) and the retirement path for the last v3 theme remnants (W4).
-Wire work is W6 in `wire-freeze-inventory.md` — must land pre-freeze.
+
+## Stage 1 implementation map (landed)
+
+- `srcjs/src/lib/theme/component-bindings.ts` — channel typing,
+  `COMPONENT_ROSTER` (derived from manifest `binding` annotations),
+  `sanitizeComponentBindings` (THE ingress validator, structured
+  ThemeIssues), `componentChannelOverride` (resolve-time lookup),
+  `componentBindingsKey` (cache key fragment).
+- Manifest: `ComponentToken.binding = {region, component, channel,
+  state?}` — 47 annotated tokens / 13 components / 4 live regions
+  (rows, header, plot, captions; frame joins at W4). Typography tokens
+  annotate via `TYPE_ROLE_COMPONENT` in the generator. The honesty gate
+  (`component-bindings.test.ts`) enforces: only role/typography
+  resolverGroups may carry annotations (those resolvers honor re-routes).
+- Resolution: role resolver redirects `ctx.roles[reroute ?? source.role]`;
+  typography resolver overrides the ONE recipe slot (so a re-route beats
+  a role-level `type_roles` rebind — more-specific wins). HC/RT mode
+  ratchet beats re-routes (same precedence as pins). Both paint paths
+  share `getCssVarsRaw`, so lockstep is structural; cache key includes
+  components.
+- **v3-bridge guard**: a bridged token (e.g. `--tv-text-title-fg`) with an
+  ACTIVE re-route keeps its v4-resolved value — `computeV3BridgeVars`
+  deletes its stamp for that token. Without this the bridge silently
+  overwrote re-routes on exactly the tokens v3 still owns. Bridge retires
+  fully at W4.
+- Wire: `components` rides `ThemeWire`/envelope/`WebTheme`/`BuildThemeOpts`;
+  every egress emits it (settings export, studio export + handoff seed,
+  DTCG extension); every ingress validates (parseThemeWire strict,
+  `theme_from_wire` strict via the SAME TS validator over V8). WebSpec
+  wire bumped 1.4 → 1.5 (additive).
+- R: `WebTheme@components`; `set_component()` / `clear_component()` /
+  `list_components()`; threaded through `re_resolve`, `serialize_theme`,
+  `theme_css_vars`, `theme_to_dtcg`. Validation single-sourced via
+  `ts_call("validateComponentBindings")`. Side-fix: R's type-role family
+  vocab now accepts `"numeric"` (TS already did — wire-drop asymmetry).
+- Gates: `component-bindings.test.ts` (20 tests — roster, sanitize,
+  lockstep, ratchet, cache, wire) + `tests/testthat/test-theme-components.R`
+  (verb, round-trip, strict ingress, R↔TS roster parity).
+
+Wire work was W6 in `wire-freeze-inventory.md` — now landed pre-freeze.
 
 ## Thesis
 

@@ -63,6 +63,7 @@ theme_to_dtcg <- function(theme, file = NULL) {
   )
   if (length(theme@role_overrides) > 0L) bag$roleOverrides <- theme@role_overrides
   if (length(theme@pins) > 0L) bag$pins <- theme@pins
+  if (length(theme@components) > 0L) bag$components <- theme@components
   doc <- ts_call("dtcgFromTheme", bag)
   if (is.null(file)) return(doc)
   checkmate::assert_string(file, min.chars = 1)

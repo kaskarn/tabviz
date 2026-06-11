@@ -14,6 +14,7 @@ A \link{WebTheme}.
 }
 \description{
 Accepts the canonical portable artifact
-\verb{\{ $schema, name, inputs, roleOverrides \}} (the shape every studio
-export emits) and resolves it into a full \link{WebTheme} via the TS cascade.
+\verb{\{ $schema, name, inputs, roleOverrides?, components?, pins? \}} (the
+shape every studio export emits) and resolves it into a full \link{WebTheme}
+via the TS cascade.
 }
