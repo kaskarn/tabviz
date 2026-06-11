@@ -150,6 +150,11 @@ const CASES: MatrixCase[] = [
   { id: "terminal-raised",  preset: "terminal", patch: { shell_mode: "raised" } },
   // newsprint: grain texture, density_factor 0.95
   { id: "newsprint",        preset: "newsprint" },
+  // Full 9-preset coverage (area G battery, 2026-06-11): the three
+  // presets the matrix lacked.
+  { id: "ledger",           preset: "ledger" },
+  { id: "aurora",           preset: "aurora" },
+  { id: "dwarven",          preset: "dwarven" },
 ];
 
 // ── Fixture spec (authoring path, canonical theme resolution) ───────────────

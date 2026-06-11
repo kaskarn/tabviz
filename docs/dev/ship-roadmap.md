@@ -195,8 +195,8 @@ is a liveness audit across ALL surfaces.
       effects, whole-table pagination semantics (D7), raw-spec
       estimator boundary (D8). save_plot's roxygen carries the D7
       sentence.
-- [ ] wysiwyg-diff budgets green across the full theme/density/shell
-      matrix (CI, area A).
+- [x] wysiwyg-diff budgets green across the FULL matrix in CI (area A
+      wired it 2026-06-10; 9-preset coverage 2026-06-11).
 - [ ] The remaining known divergences either fixed or moved to the
       exception list via register decisions: estimator column widths
       (D8), group-header banding scope + chevron indent (D10),
@@ -205,8 +205,12 @@ is a liveness audit across ALL surfaces.
       VERIFIED ALIGNED by a new permanent groupLabel.x matrix metric
       (measurement preempted implementation); D15 carries its
       instrumented-fix prescription.
-- [ ] `save_plot()` PDF/PNG spot-checked against the widget for the 9
-      presets (extend visual battery with DOM-vs-export pairs).
+- [x] Battery complete (2026-06-11): the WYSIWYG matrix now covers ALL
+      9 presets (15 cases) — every case produces a DOM-vs-export PNG
+      pair (/tmp/wysiwyg) and passes the budgeted gate immediately at
+      existing budgets. Aurora (the exception-list stressor) eyeballed:
+      divergence is EXACTLY the declared list (chip, gradient strip,
+      glow — browser-side decoratives; chevrons are affordances).
 
 ### H. Studio: good enough
 Deliberately scoped down — correct and unsurprising, not flagship.
