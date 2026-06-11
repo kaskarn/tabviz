@@ -244,8 +244,10 @@ Clinical/regulatory audience makes this table stakes.
       2026-06-11): 200 rows/group-break auto-default, FALSE opt-out,
       once-per-session hint, test-default-paginate.R locks all four
       behaviors.
-- [ ] Documented row-count envelope: what's smooth, what degrades, what's
-      unsupported; arrange-mode degradation noted.
+- [x] Row-count envelope documented (2026-06-11): the interactivity
+      guide's "How many rows?" section — smooth ≤200, auto-paginate
+      default, 1k–5k degradation (bench-cited; arrange mode degrades
+      first), 10k+ unsupported interactively (export/split/aggregate).
 - [x] Windowed-flatten design note exists (2026-06-11):
       docs/dev/windowed-flatten-note.md — the flatten-projection seam,
       deterministic per-kind heights as the scroll-height model, the

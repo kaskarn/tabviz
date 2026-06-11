@@ -355,6 +355,28 @@ dedupe or optimize — the raw sequence is the history.
 The corresponding fluent R functions are all exported from the
 package, so the emitted chain pastes into R as-is.
 
+## How many rows? The scale envelope {#scale}
+
+tabviz is built for publication figures, not data grids. The honest
+envelope, measured (the perf baselines ship in the repo):
+
+* **Up to ~200 rows** — everything is smooth: render, sort, paint,
+  inline edit, arrange mode, export.
+* **200+ rows** — tables auto-paginate by default (200 rows/page,
+  breaking on group boundaries; opt out with `paginate = FALSE`).
+  Pagination is the designed scale story: one page mounts at a time, so
+  every interaction stays in the smooth zone while exports still render
+  the whole table.
+* **~1,000–5,000 rows unpaginated** (opted out) — the algorithms hold
+  (width measurement: ~2.5 ms at 1k, ~12 ms at 5k) but the DOM mount and
+  style recalculation dominate: initial render and theme switches turn
+  sluggish, and **arrange mode degrades first** — its per-row-kind ghost
+  highlights and live seam readouts touch every mounted row.
+* **10,000+ rows unpaginated** — unsupported as an interactive surface.
+  Render it paginated, split it (`split_table()`), or aggregate first.
+  (Static SVG/PDF export of large tables is fine — export cost scales
+  with the algorithms, not the DOM.)
+
 ## See Also
 
 - [Reference: Interaction Settings](../reference/interaction.qmd) — Full API reference
