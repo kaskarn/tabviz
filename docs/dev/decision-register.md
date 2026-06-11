@@ -17,7 +17,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
 | D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due) | keep / adjust per flag | keep current split | M3 |
-| D15 | Export title-block arithmetic (headerBand.top ≤8px budgeted) | — | DATA-DRIVEN as of 2026-06-11: (1) title term FIXED — exact line heights replace ceil() (headerBand max\|Δ\| 7.6→7; the nejm family's rounding gone); (2) the remaining divergence ATTRIBUTED by the per-term metrics — it lands exactly on the title_style-decorated presets, whose caption chrome (stripe/chip) alters the subtitle chain the export models as plain. NEXT: a per-title_style chain table in the export's caption block; the instrumentation metrics will verify and the budgets tighten. | M2 (area G) |
+| D15 | Export title-block arithmetic (headerBand.top ≤8px budgeted) | — | TRUTH-TO-TRUTH instrumented (2026-06-11, after two probe artifacts taught the lesson): metrics.captionBlock exposes the export's ACTUAL reserved terms; the harness diffs them against MEASURED DOM boxes. Solid findings: (1) titleBox +2.4 UNIVERSAL (the 0.15rem pad — now safe to add since the offsetting term is identified) +3.6 more under title_style=underline (6px pad + 3px border); (2) the subtitle GAP VALUE matches on both sides (gapVar metric silent) but the RENDERED chain is smaller by 6.5–14.5 on brutalist/synthwave/terminal — an overriding CSS rule shrinks their separator; find it with devtools, then model both terms together (projected: all cases land ≈ +1.5–2 residual). | M2 (area G) |
 
 
 ## Decided

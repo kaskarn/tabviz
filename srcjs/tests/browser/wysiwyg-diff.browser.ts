@@ -104,7 +104,9 @@ const GATE_EXCEPTIONS: Array<{ pattern: RegExp; maxAbs: number; why: string }> =
   // caption chrome (stripe/chip) alters the border/padding chain above
   // the subtitle; the export models the PLAIN chain only. The fix is a
   // per-title_style chain table in the export's caption block.
-  { pattern: /^geometry :: captionTerm\.subtitleChain/, maxAbs: 16, why: "D15 instrumentation (title_style chrome not modeled in export)" },
+  { pattern: /^geometry :: captionTerm\.subtitleChain/, maxAbs: 16, why: "D15 instrumentation (gap-value divergence — see gapVar)" },
+  { pattern: /^geometry :: captionTerm\.gapVar/, maxAbs: 16, why: "D15 instrumentation (which gap each side reads)" },
+  { pattern: /^geometry :: captionTerm\.titleBox/, maxAbs: 7, why: "D15 instrumentation (universal +2.4 pad + title_style chrome)" },
   { pattern: /^geometry :: row\[/, maxAbs: 4, why: "measure-loop growth residual (per-row)" },
   { pattern: /^geometry :: rowPitch/, maxAbs: 4, why: "measure-loop growth residual" },
 ];
@@ -617,26 +619,38 @@ async function runCase(browser: Browser, opts: ReturnType<typeof parseArgs>, c: 
   }
   // D15 decomposition: title/subtitle line boxes vs the export's
   // ceil(size × lh) model — the term-by-term view the register asked for.
-  if (dom.captionTerms) {
-    const px = (v: string | undefined): number => parseFloat(v || "0") || 0;
-    const titleSize = px(dom.cssVars["--tv-text-title-size"]);
-    const subSize = px(dom.cssVars["--tv-text-subtitle-size"]);
-    const TITLE_PAD = 2.4; // .plot-title padding-bottom 0.15rem
-    if (dom.captionTerms.titleH != null && titleSize > 0) {
-      cmpNum(findings, caseId, "geometry", "captionTerm.titleLineBox",
-        dom.captionTerms.titleH - TITLE_PAD, titleSize * 1.3, 0.75,
-        "DOM .plot-title line box (minus its 2.4px pad) vs export size×1.3 (exact since the ceil fix)");
+  if (dom.captionTerms && metrics.captionBlock) {
+    // TRUTH-TO-TRUTH (two probe artifacts taught the lesson): the DOM
+    // side is MEASURED element boxes; the export side is the layout's
+    // ACTUAL reserved terms — no var re-derivation on either side.
+    const mb = metrics.captionBlock;
+    if (dom.captionTerms.titleH != null && mb.titleHeight > 0) {
+      // DOM .plot-title box = line box + its bottom pad/border chrome
+      // (0.15rem plain; title_style=underline swaps in 6px+3px border).
+      cmpNum(findings, caseId, "geometry", "captionTerm.titleBox",
+        dom.captionTerms.titleH, mb.titleHeight, 0.75,
+        "DOM .plot-title border box vs the export's reserved title term (chrome incl.)");
     }
-    if (dom.captionTerms.subtitleH != null && subSize > 0) {
+    if (dom.captionTerms.subtitleH != null && mb.subtitleHeight > 0) {
       const chain = dom.captionTerms.subtitleChain ?? 0;
       cmpNum(findings, caseId, "geometry", "captionTerm.subtitleLineBox",
-        dom.captionTerms.subtitleH - chain, subSize * 1.4, 0.75,
-        "DOM .plot-subtitle line box (minus its MEASURED chain) vs export size×1.4");
-      // And the chain itself vs what the export reserves for it.
-      const exportGap = px(dom.cssVars["--tv-spacing-title-subtitle-gap"]) || 13;
+        dom.captionTerms.subtitleH - chain, mb.subtitleHeight, 0.75,
+        "DOM .plot-subtitle line box (minus its MEASURED chain) vs the export's subtitle term");
       cmpNum(findings, caseId, "geometry", "captionTerm.subtitleChain",
-        chain, exportGap, 0.75,
+        chain, mb.titleSubtitleGap, 0.75,
         "DOM measured border+padding+margin above the subtitle vs the export's gap term");
+      // The next question the chain divergence poses: do the two sides
+      // even READ the same gap value? DOM-effective var vs export term.
+      const domGapVar = parseFloat(dom.cssVars["--tv-spacing-title-subtitle-gap"] || "");
+      if (Number.isFinite(domGapVar)) {
+        cmpNum(findings, caseId, "geometry", "captionTerm.gapVar",
+          domGapVar, mb.titleSubtitleGap, 0.75,
+          "the --tv-spacing-title-subtitle-gap value the DOM container exposes vs the export's reserved gap");
+      } else {
+        findings.push({ caseId, category: "geometry", property: "captionTerm.gapVar",
+          dom: null, svg: mb.titleSubtitleGap, delta: null,
+          note: "DOM container does NOT expose the gap var (computed style empty) — the DOM falls back to the CSS literal while the export reads the token map" });
+      }
     }
   }
 

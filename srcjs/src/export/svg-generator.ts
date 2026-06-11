@@ -674,6 +674,10 @@ interface InternalLayout extends ComputedLayout {
   titleY: number;
   subtitleY: number;
   mainY: number;
+  /** D15: the export's actual reserved caption terms (title/subtitle
+   *  line heights, gap, top pad) for truth-to-truth harness diffs. */
+  captionBlock: { titleHeight: number; subtitleHeight: number;
+                  titleSubtitleGap: number; topPad: number };
   footerY: number;
   axisGap: number;                  // Gap between plot rows and axis
   rowsHeight: number;               // Height of display rows only (excludes overall summary)
@@ -1063,6 +1067,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     summaryYPosition: plotHeight - rowHeight,
     showOverallSummary: hasOverall,
     headerTextHeight,
+    // D15 instrumentation: the EXPORT's actual reserved caption terms, so
+    // the wysiwyg harness compares DOM truth vs export truth directly
+    // (re-deriving them harness-side from probed vars produced two probe
+    // artifacts in a row).
+    captionBlock: { titleHeight, subtitleHeight, titleSubtitleGap, topPad: (hasTitle || hasSubtitle) ? PLOT_HEADER_TOP_PAD : 0 },
     footerTextHeight,
     // Title baseline = top of region + (titleHeight × 0.8) to drop under the
     // ascender. Replaces the old `+ TITLE_HEIGHT - 4` magic that assumed
@@ -3815,6 +3824,10 @@ export interface LayoutMetrics {
    *  The data-rows area starts at mainY + headerHeight; a row's content-
    *  space top is mainY + headerHeight + row.top. */
   mainY: number;
+  /** D15: the export's actual reserved caption terms (truth-to-truth
+   *  diffs in the wysiwyg harness — no var re-derivation). */
+  captionBlock: { titleHeight: number; subtitleHeight: number;
+                  titleSubtitleGap: number; topPad: number };
   /** Shell band padding per side (0 = no band; content coords == canvas). */
   shellPad: number;
   /** Paper inner mat per side (already folded into mainY / totalHeight). */
@@ -3904,6 +3917,7 @@ export function computeLayoutMetrics(
     plotHeight: layout.plotHeight,
     rowsHeight: layout.rowsHeight,
     mainY: layout.mainY,
+    captionBlock: layout.captionBlock,
     shellPad: layout.shellPad,
     paperPad: layout.paperPad,
     spacing: {
