@@ -88,13 +88,15 @@ base ── categorical ── ordinal
   (renderer computes maxWidth locally as violinHeight/2). DELETED
   (2026-06-11) under D2's decided rationale.
 
-## W2 candidates (wire-change list — feeds the freeze inventory)
+## W2 — DECIDED 2026-06-11 (the review's wire-change list, closed)
 
-| Candidate | From finding | Lean |
-|---|---|---|
-| percent `symbol` → `showSymbol` | F2 | weigh; R arg churn vs clarity |
-| `kind: "editor"` → `"presentation"` | F1 | internal-only; cheap if done with F1 prose fix |
-| `inherits` rewires (date→text?) | F4 | verify first; additive if pure gain |
+| Candidate | Decision |
+|---|---|
+| percent `symbol` → `showSymbol` | **KEEP.** The toggle control makes the semantics clear; a rename buys marginal clarity for real wire + R-arg churn. |
+| `kind: "editor"` → `"presentation"` | **RENAME** (execute as one mechanical commit, next session). Internal metadata, not wire — but the name actively confuses: the SAME files use `consumedBy: ["editor"]` to mean "the editor UI reads this" while `kind: "editor"` means "presentation knob, theme-defaultable" (F1's confusion was exactly this). After the rename, "editor" has ONE meaning. |
+| `inherits` rewires (date→text?) | **NONE** — F4 verified both irregularities intentional. |
+
+Net W2 wire impact: ZERO (the rename is schema metadata, not wire shape).
 
 ## Remaining review passes (next sessions)
 
