@@ -40,6 +40,21 @@ components go live), user config moves to theme INPUTS (or pins), the
 bridge rows delete, and the honesty-filtered roster channels appear
 automatically.
 
+**Equivalence sweep (2026-06-11, 9 presets × 10 candidate pairs):**
+only `summary-fill ≡ series-1-fill` matches everywhere. Every other
+bridge value (summary-border, axis-label/tick fg, the six semantic-*
+rows, the header trio) is a DISTINCT v3 derivation — different mix
+math, not a role mirror. Consequence (framework decision, delegated
+authority): these clusters migrate by PORTING the v3 recipe into named
+v4 resolver groups (the elevation/knockout precedent — computed
+resolvers reading ctx.roles/ramps), NOT by re-binding to nearest roles
+(which would be nine D18-scale visual decisions at once). Pixel-
+faithful, kills the blob reads, and each recipe becomes inspectable +
+eventually input-driven. Note while porting: the semantic-emphasis
+CELL-scope pair needs a DOM↔export consistency look (v3 emits
+transparent bg while v4 row-scope uses the highlight wash — possible
+existing divergence).
+
 Order of attack (smallest blast radius first):
 1. `--tv-row-group-rule` + semantic-* emphasis pair (row cluster reads).
 2. firstColumn cluster (4 tokens) → `first_column_style` becomes a
