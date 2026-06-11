@@ -27,6 +27,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       kind: "styling",
       customComponent: "PalettePicker",
       hint: "2+ hex stops; interpolated by value",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "minValue",
@@ -35,6 +36,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       default: null,
       kind: "core",
       hint: "Color-scale floor; auto from data when null",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "maxValue",
@@ -43,6 +45,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       default: null,
       kind: "core",
       hint: "Color-scale ceiling; auto from data when null",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "showValue",
@@ -51,6 +54,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       default: true,
       kind: "editor",
       hint: "Numeric label over the color cell",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "scale",
@@ -63,6 +67,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
         { value: "log",    label: "Log" },
         { value: "sqrt",   label: "Sqrt" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

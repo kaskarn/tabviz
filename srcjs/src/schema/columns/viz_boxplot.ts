@@ -25,6 +25,7 @@ export const VIZ_BOXPLOT_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "EffectBoxplotList",
       hint: "Raw arrays or quantile fields",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "showOutliers",
@@ -32,6 +33,7 @@ export const VIZ_BOXPLOT_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: true,
       kind: "editor",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

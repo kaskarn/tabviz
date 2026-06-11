@@ -26,6 +26,7 @@ export const VIZ_BAR_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "EffectBarList",
       hint: "One or more value series",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
   ],
 };

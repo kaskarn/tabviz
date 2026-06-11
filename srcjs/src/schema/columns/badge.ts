@@ -54,6 +54,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "BadgeVariantMap",
       hint: 'e.g. {published: "success", draft: "warning"}',
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "colors",
@@ -63,6 +64,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       customComponent: "BadgeColorMap",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "thresholds",
@@ -72,6 +74,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "ThresholdList",
       hint: "Bin numeric values into colored badges",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "size",
@@ -83,6 +86,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "shape",
@@ -95,6 +99,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
         { value: "circle", label: "Circle" },
         { value: "square", label: "Square" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "outline",
@@ -103,6 +108,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       default: false,
       kind: "editor",
       hint: "Transparent fill, colored border",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

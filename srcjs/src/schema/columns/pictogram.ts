@@ -45,6 +45,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       default: "person",
       kind: "core",
       hint: "Registry key (person, leaf, star, …)",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "glyphField",
@@ -54,6 +55,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       kind: "core",
       accepts: ["string"],
       hint: "Per-row glyph selection",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "maxGlyphs",
@@ -64,6 +66,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       min: 1,
       max: 50,
       hint: "Rating-mode cap; null = use raw value as count",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "halfGlyphs",
@@ -71,6 +74,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: false,
       kind: "core",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "domain",
@@ -80,6 +84,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "MinMaxPair",
       hint: "Remap [min, max] → [0, maxGlyphs]",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "color",
@@ -88,6 +93,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme accent by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "emptyColor",
@@ -96,6 +102,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme muted by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "size",
@@ -108,6 +115,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
         { value: "base", label: "Base" },
         { value: "lg",   label: "Large" },
       ],
+      consumedBy: ["renderCell", "naturalHeight", "emitSource", "editor"],
     },
     {
       key: "layout",
@@ -119,6 +127,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
         { value: "row",   label: "Row" },
         { value: "stack", label: "Stack" },
       ],
+      consumedBy: ["renderCell", "naturalHeight", "emitSource", "editor"],
     },
     {
       key: "valueLabel",
@@ -132,6 +141,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
         { value: "leading",   label: "Leading" },
         { value: "trailing",  label: "Trailing" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "labelFormat",
@@ -144,6 +154,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
         { value: "decimal", label: "Decimal" },
       ],
       visibleWhen: (s) => s.valueLabel !== false,
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "labelDecimals",
@@ -154,6 +165,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       min: 0,
       max: 10,
       visibleWhen: (s) => s.valueLabel !== false,
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

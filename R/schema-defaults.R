@@ -25,9 +25,7 @@ schema_defaults <- list(
     wrap = FALSE,
     decimals = 2,
     thousands_sep = ",",
-    abbreviate = FALSE,
-    symbol = "$",
-    position = "prefix"
+    abbreviate = FALSE
   ),
   date = list(
     align = "left",

@@ -26,6 +26,7 @@ export const ICON_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "IconMap",
       hint: 'e.g. {pass: "✓", fail: "✗"}',
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "size",
@@ -39,6 +40,7 @@ export const ICON_SCHEMA: ColumnSchema = {
         { value: "lg",   label: "Large" },
         { value: "xl",   label: "XL" },
       ],
+      consumedBy: ["renderCell", "naturalHeight", "emitSource", "editor"],
     },
     {
       key: "color",
@@ -47,6 +49,7 @@ export const ICON_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme content by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

@@ -87,8 +87,10 @@ objects rather than palettes — and it exercises the machine contract.
       `kind` taxonomy (core/styling/editor) complete, the 6 dead options
       ~~decided~~ DECIDED+DELETED (D2, 2026-06-11), inheritance DAG
       documented.
-- [ ] All ~125 grandfathered options carry `consumedBy` annotations; the
-      grandfather list is ≤ a handful of justified rows.
+- [x] All grandfathered options carry `consumedBy` annotations; the
+      grandfather list is EMPTY (119 → 0, 2026-06-11; the sweep also
+      killed 3 more dead options — currency editor menus + violin
+      maxWidth).
 - [ ] ≥ 4 shipped presets use `column_defaults` to visible, deliberate
       effect (e.g. clinical theme styles p-value columns; editorial theme
       styles badges/bars distinctly) — reviewed as *design*, not plumbing.
@@ -227,6 +229,11 @@ Clinical/regulatory audience makes this table stakes.
 ---
 
 ## Status log
+
+- 2026-06-11 (later) — D11 EXECUTED: consumedBy sweep complete, drift-gate
+  grandfather list 119 → 0. Found + fixed a live area-F instance
+  (currency symbol/position dead editor menus) and a 7th D2-class dead
+  option (viz_violin maxWidth). New behavior vocab entry: naturalHeight.
 
 - 2026-06-11 — Area C opened: D2 executed (6 dead column options deleted
   both sides + docs; W1 done). Same day, area A COMPLETED (perf gate; the

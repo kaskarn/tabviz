@@ -28,6 +28,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
         { value: "linear", label: "Linear" },
         { value: "log",    label: "Log" },
       ],
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "nullValue",
@@ -36,6 +37,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       default: null,
       kind: "core",
       hint: "Reference line; 0 for linear, 1 for log default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "axisLabel",
@@ -44,6 +46,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       default: null,
       kind: "editor",
       hint: "Shown below the axis",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "axisRange",
@@ -54,6 +57,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "MinMaxPair",
       hint: "Auto from data when null",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "axisTicks",
@@ -64,6 +68,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       kind: "editor",
       customComponent: "TickList",
       hint: "Auto-computed when null",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "axisGridlines",
@@ -71,6 +76,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: false,
       kind: "editor",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "showAxis",
@@ -78,6 +84,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: true,
       kind: "editor",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "annotations",
@@ -87,6 +94,7 @@ export const VIZ_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "AnnotationList",
       hint: "Reference lines, callouts",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "sharedAxis",
@@ -95,6 +103,8 @@ export const VIZ_SCHEMA: ColumnSchema = {
       default: false,
       kind: "core",
       hint: "Across split-view columns",
+      // Cross-runtime consumer: R split_table() reads the column-level override (test-parity-split-shared.R)
+      consumedBy: ["emitSource", "editor"],
     },
   ],
 };

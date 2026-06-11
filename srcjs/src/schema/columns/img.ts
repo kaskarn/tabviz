@@ -29,6 +29,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       min: 8,
       max: 200,
       hint: "Pixels; auto from row height when null",
+      consumedBy: ["renderCell", "naturalHeight", "emitSource", "editor"],
     },
     {
       key: "maxWidth",
@@ -39,6 +40,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       min: 8,
       max: 400,
       hint: "Pixels; auto when null",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "fallback",
@@ -47,6 +49,7 @@ export const IMG_SCHEMA: ColumnSchema = {
       default: "[img]",
       kind: "core",
       hint: "Shown when the URL fails to load",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "shape",
@@ -59,6 +62,7 @@ export const IMG_SCHEMA: ColumnSchema = {
         { value: "rounded", label: "Rounded" },
         { value: "circle",  label: "Circle" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

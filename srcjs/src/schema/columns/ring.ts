@@ -26,6 +26,7 @@ export const RING_SCHEMA: ColumnSchema = {
       control: "number",
       default: 0,
       kind: "core",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "maxValue",
@@ -33,6 +34,7 @@ export const RING_SCHEMA: ColumnSchema = {
       control: "number",
       default: 1,
       kind: "core",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "color",
@@ -41,6 +43,7 @@ export const RING_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme accent by default; thresholds switch color",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "thresholds",
@@ -50,6 +53,7 @@ export const RING_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "ThresholdList",
       hint: "Breakpoints where the arc color shifts",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "trackColor",
@@ -58,6 +62,7 @@ export const RING_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme muted by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "size",
@@ -70,6 +75,7 @@ export const RING_SCHEMA: ColumnSchema = {
         { value: "base", label: "Base" },
         { value: "lg",   label: "Large" },
       ],
+      consumedBy: ["renderCell", "naturalHeight", "emitSource", "editor"],
     },
     {
       key: "showLabel",
@@ -77,6 +83,7 @@ export const RING_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: true,
       kind: "editor",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "labelFormat",
@@ -90,6 +97,7 @@ export const RING_SCHEMA: ColumnSchema = {
         { value: "integer", label: "Integer" },
       ],
       visibleWhen: (s) => s.showLabel !== false,
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "labelDecimals",
@@ -100,6 +108,7 @@ export const RING_SCHEMA: ColumnSchema = {
       min: 0,
       max: 10,
       visibleWhen: (s) => s.showLabel !== false,
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

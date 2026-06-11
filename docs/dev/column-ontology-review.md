@@ -10,8 +10,11 @@ is the review's working record AND the source of the W2 wire-change list
 - 25 concrete schemas / 23 buckets; **108 options** total
   (`bun -e` over `SCHEMA_REGISTRY`; D2 deleted 6 the same day).
 - Kind split: 60 core / 32 editor / 16 styling.
-- `consumedBy` annotation state: 26/108 annotated (base 9, text 3,
-  numeric 6, pvalue 8); **82 grandfathered** → the D11 arc.
+- `consumedBy` annotation state: **COMPLETE 2026-06-11 (D11 arc)** —
+  every option annotated; the drift gate's GRANDFATHER list is EMPTY
+  (was 119 rows). New vocabulary entry: `"naturalHeight"`
+  (height-behaviors.ts reads pictogram size/layout, ring/icon size,
+  sparkline/img height).
 
 ### Inheritance DAG (`inherits` chains)
 
@@ -74,6 +77,17 @@ base ── categorical ── ordinal
   would show visually dead options, the exact dead-menu bug class).
   No change.
 
+- **F7 — currency `symbol`/`position` were DEAD EDITOR MENUS** (the
+  area-F symptom, found by D11): the schema re-advertised authoring
+  sugar that `col_currency()` resolves into numeric prefix/suffix
+  pre-wire, and the editor's generic `options[bucket][key]` write put
+  them at `numeric.symbol`/`numeric.position` — keys nothing reads.
+  DELETED from the schema (2026-06-11); the editor now surfaces
+  numeric's live prefix/suffix. Authoring args unchanged.
+- **F8 — `viz_violin:maxWidth` was a 7th D2-class dead option**
+  (renderer computes maxWidth locally as violinHeight/2). DELETED
+  (2026-06-11) under D2's decided rationale.
+
 ## W2 candidates (wire-change list — feeds the freeze inventory)
 
 | Candidate | From finding | Lean |
@@ -84,9 +98,7 @@ base ── categorical ── ordinal
 
 ## Remaining review passes (next sessions)
 
-1. **D11 arc**: annotate the 82 grandfathered options with `consumedBy`
-   (one dedicated arc; the drift gate's KNOWN_UNCONSUMED-style list
-   then shrinks to justified rows only).
+1. ~~D11 arc~~ DONE 2026-06-11 (see inventory above).
 2. Vocabulary doc: the per-type option tables in `docs/guide/columns.qmd`
    regenerate from the registry (kill hand-maintained drift — the D2
    deletions found two stale doc rows).

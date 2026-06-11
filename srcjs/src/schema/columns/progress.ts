@@ -26,6 +26,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       default: 100,
       kind: "core",
       hint: "Track 100% reference",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "scale",
@@ -38,6 +39,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
         { value: "log",    label: "Log" },
         { value: "sqrt",   label: "Sqrt" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "showLabel",
@@ -45,6 +47,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: true,
       kind: "editor",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "color",
@@ -53,6 +56,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme primary by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

@@ -87,6 +87,7 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
       default: " ",
       kind: "core",
       hint: "Between point and bracket",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
     },
     {
       key: "impreciseThreshold",
@@ -95,6 +96,7 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
       default: null,
       kind: "core",
       hint: 'Show "—" when upper/lower > threshold',
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
     },
   ],
 };

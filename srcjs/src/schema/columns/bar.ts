@@ -26,6 +26,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       default: null,
       kind: "core",
       hint: "Bar 100% reference; auto from data when null",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "scale",
@@ -38,6 +39,7 @@ export const BAR_SCHEMA: ColumnSchema = {
         { value: "log",    label: "Log" },
         { value: "sqrt",   label: "Sqrt" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "showLabel",
@@ -46,6 +48,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       default: true,
       kind: "editor",
       hint: "Numeric label alongside the bar",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "color",
@@ -54,6 +57,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme primary by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

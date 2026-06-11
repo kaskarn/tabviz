@@ -26,6 +26,7 @@ export const DATE_SCHEMA: ColumnSchema = {
       default: "%Y-%m-%d",
       kind: "core",
       hint: "strftime-style format string",
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
   ],
 };

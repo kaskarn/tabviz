@@ -31,6 +31,7 @@ export const PERCENT_SCHEMA: ColumnSchema = {
       default: true,
       kind: "core",
       hint: "Off if the source field is already a percentage",
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "symbol",
@@ -38,6 +39,7 @@ export const PERCENT_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: true,
       kind: "core",
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
   ],
 };

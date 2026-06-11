@@ -199,14 +199,10 @@ export interface NumericBucketOptions {
   maxChars?: number | null;
   /** Density — Cell padding — theme decides exact values */
   paddingClass?: undefined;
-  /** Position */
-  position?: "prefix" | "suffix" | null;
   /** Prefix — Prepended literal (e.g. "$") */
   prefix?: string | null;
   /** Suffix — Appended literal (e.g. "%") */
   suffix?: string | null;
-  /** Symbol — Currency symbol */
-  symbol?: string | null;
   /** Thousands sep */
   thousandsSep?: string | false;
   /** Token — Semantic role — theme decides colors/weights */
@@ -500,8 +496,6 @@ export interface VizViolinBucketOptions {
   bandwidth?: number | "auto" | null;
   /** Effects — One or more array-valued series */
   effects?: unknown;
-  /** Max width */
-  maxWidth?: number | null;
   /** Null value — Reference line; 0 for linear, 1 for log default */
   nullValue?: number | "auto" | null;
   /** Density — Cell padding — theme decides exact values */

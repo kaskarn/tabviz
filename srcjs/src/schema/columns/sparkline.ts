@@ -41,6 +41,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
         { value: "bar",  label: "Bar" },
         { value: "area", label: "Area" },
       ],
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "height",
@@ -51,6 +52,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
       min: 8,
       max: 80,
       step: 1,
+      consumedBy: ["renderCell", "naturalHeight", "emitSource", "editor"],
     },
     {
       key: "color",
@@ -59,6 +61,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
       default: null,
       kind: "styling",
       hint: "Theme primary by default",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

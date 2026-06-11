@@ -451,7 +451,6 @@ export interface VizViolinColumnOptions extends VizColumnOptionsBase {
   bandwidth?: number | null;  // KDE bandwidth (null = Silverman's rule)
   showMedian?: boolean;       // Show median line
   showQuartiles?: boolean;    // Show Q1/Q3 lines
-  maxWidth?: number;          // Max width of violin in pixels
 }
 
 /** Computed boxplot statistics */

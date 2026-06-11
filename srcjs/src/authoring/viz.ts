@@ -321,14 +321,13 @@ export interface VizViolinArgs extends VizColumnCommon {
   bandwidth?: number | null;
   showMedian?: boolean;
   showQuartiles?: boolean;
-  maxWidth?: number;
 }
 
 export function vizViolin({
   effects,
   scale = "linear", nullValue, axisRange = null, axisTicks = null,
   axisGridlines = false, axisLabel = "Value", showAxis = true, annotations,
-  bandwidth = null, showMedian = true, showQuartiles = false, maxWidth,
+  bandwidth = null, showMedian = true, showQuartiles = false,
   headerAlign = "center", sortable = false,
   ...rest
 }: VizViolinArgs): ColumnSpec {
@@ -338,7 +337,7 @@ export function vizViolin({
     effects,
     scale, nullValue, axisRange, axisTicks, axisGridlines, axisLabel, showAxis,
     annotations: prependNullRefline(annotations, nullValue),
-    bandwidth, showMedian, showQuartiles, maxWidth,
+    bandwidth, showMedian, showQuartiles,
   };
   const first = effects[0];
   const field = `_viz_violin_${first.data ?? "x"}`;

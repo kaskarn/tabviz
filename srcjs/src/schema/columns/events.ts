@@ -37,6 +37,7 @@ export const EVENTS_SCHEMA: ColumnSchema = {
       control: "text",
       default: "/",
       kind: "core",
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "showPct",
@@ -45,6 +46,7 @@ export const EVENTS_SCHEMA: ColumnSchema = {
       default: false,
       kind: "core",
       hint: 'Append "(37.5%)" after the ratio',
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
   ],
 };

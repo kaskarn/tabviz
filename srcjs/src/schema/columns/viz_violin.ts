@@ -25,6 +25,7 @@ export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "EffectViolinList",
       hint: "One or more array-valued series",
+      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
     },
     {
       key: "bandwidth",
@@ -33,6 +34,7 @@ export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
       default: null,
       kind: "core",
       hint: "KDE bandwidth; Silverman default when null",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "showMedian",
@@ -40,6 +42,7 @@ export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: true,
       kind: "editor",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "showQuartiles",
@@ -47,14 +50,7 @@ export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: false,
       kind: "editor",
-    },
-    {
-      key: "maxWidth",
-      label: "Max width",
-      control: "integer",
-      default: null,
-      kind: "editor",
-      min: 1,
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };

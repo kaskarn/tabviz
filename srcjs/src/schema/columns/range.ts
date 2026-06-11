@@ -30,6 +30,7 @@ export const RANGE_SCHEMA: ColumnSchema = {
       control: "text",
       default: " - ",
       kind: "core",
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
   ],
 };

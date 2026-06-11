@@ -30,6 +30,7 @@ export const REFERENCE_SCHEMA: ColumnSchema = {
       kind: "core",
       accepts: ["string"],
       hint: "Optional column with URLs to link",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
       key: "showIcon",
@@ -39,6 +40,7 @@ export const REFERENCE_SCHEMA: ColumnSchema = {
       kind: "editor",
       hint: "External-link indicator when URL is present",
       visibleWhen: (s) => s.hrefField != null && s.hrefField !== "",
+      consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],
 };
