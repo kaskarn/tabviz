@@ -3,6 +3,12 @@
 exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
 {
   "axisHeight": 29,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -98,6 +104,12 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
 exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -193,6 +205,12 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
 exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
 {
   "axisHeight": 37,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -288,6 +306,12 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
 exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = `
 {
   "axisHeight": 29,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -374,6 +398,12 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
 exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -460,6 +490,12 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
 exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] = `
 {
   "axisHeight": 37,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -546,6 +582,12 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
 exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
 {
   "axisHeight": 29,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -620,6 +662,12 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
 exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -694,6 +742,12 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
 exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
 {
   "axisHeight": 37,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -768,6 +822,12 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
 exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -845,6 +905,12 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
 exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -922,6 +988,12 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
 exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
 {
   "axisHeight": 29,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -1017,6 +1089,12 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
 exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -1112,6 +1190,12 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
 exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
 {
   "axisHeight": 37,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -1207,6 +1291,12 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
 exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
 {
   "axisHeight": 33,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -1311,6 +1401,12 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
 exports[`layout metrics (sizing harness) metrics: pure-table-no-axis 1`] = `
 {
   "axisHeight": 0,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
@@ -1388,6 +1484,12 @@ exports[`layout metrics (sizing harness) metrics: pure-table-no-axis 1`] = `
 exports[`layout metrics (sizing harness) metrics: content-height-pictogram 1`] = `
 {
   "axisHeight": 0,
+  "captionBlock": {
+    "subtitleHeight": 0,
+    "titleHeight": 0,
+    "titleSubtitleGap": 0,
+    "topPad": 0,
+  },
   "columns": [
     {
       "id": "label",
