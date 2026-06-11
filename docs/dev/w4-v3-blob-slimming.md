@@ -67,8 +67,17 @@ Order of attack (smallest blast radius first):
   `inspect-resolved.R`'s v3 cascade-table rows for column_group/
   semantic (that table documents deleted clusters; rows go with them).
   Wire bump 1.6 → 1.7 (removal, pre-release).
-- Arc 2: text-cluster consumer migration (~27 reads → typography
-  tokens), then delete `theme.text`.
+- Arc 2: text-cluster consumer migration → typography tokens, then
+  delete `theme.text`. STARTED 2026-06-11: the three trivial reads
+  migrated (EffectAxis label.size → readLabelSize; Watermark
+  body.family → readBodyFamily; TabvizPlot's measure-loop dep →
+  --tv-text-body-size). REMAINING (the careful bite): the header
+  fontSize trio in svg-generator + the v3-bridge --tv-text-header-*
+  rows — make header typography REAL manifest tokens (the ×1.05
+  derivation moves into the typography resolver; the WYSIWYG gate's
+  header.fontSize budget watches this exact path), the tick-italic
+  read, the validation check at svg-generator:3673, then the R S7
+  text slot + TextRoles type.
 - Arc 3+: bridge clusters in the order above; finish with
   accent/status passthrough migration.
 - DONE when: `computeV3BridgeVars` is deleted, `v3-bridge` resolverGroup

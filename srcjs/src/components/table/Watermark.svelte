@@ -7,7 +7,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { WebTheme } from "../../types/index.js";
-  import { getCssVars, readContentPrimary } from "../../lib/theme/consumer-bridge";
+  import { getCssVars, readContentPrimary, readBodyFamily } from "../../lib/theme/consumer-bridge";
 
   const {
     text,
@@ -79,7 +79,7 @@
         transform="rotate({angleDeg.toFixed(2)} {cx} {cy})"
         text-anchor="middle"
         dominant-baseline="middle"
-        font-family={theme.text.body.family}
+        font-family={readBodyFamily(getCssVars(theme))}
         font-size={fontSize.toFixed(1)}
         font-weight="700"
         fill={fillColor}

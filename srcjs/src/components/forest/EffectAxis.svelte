@@ -2,6 +2,7 @@
   import type { WebTheme, ComputedLayout } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeAxisLayout } from "$lib/typography-layout";
+  import { getCssVars, readLabelSize } from "../../lib/theme/consumer-bridge";
   
   interface Props {
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
@@ -135,7 +136,9 @@
   // `$lib/typography-layout.computeAxisLayout`.
   const axisGeom = $derived(theme
     ? computeAxisLayout(
-        { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
+        // v4 read (W4 arc 2): --tv-text-label-size, falling back through
+        // readLabelSize's body-derived default — replaces theme.text.label.
+        { fontSizeSm: readLabelSize(getCssVars(theme)), lineHeight: 1.5 },
         !!axisLabel,
         theme.plot.tickMarkLength,
       )

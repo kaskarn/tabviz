@@ -554,7 +554,9 @@
     // Re-measure when the things that change rendered height change.
     void displayRows.length;
     void layout.rowHeights.length;
-    void spec.theme.text.body.size;
+    // Body size affects measured heights; depend on the v4 token (the
+    // v3 theme.text path is retiring — W4 arc 2). getCssVars is cached.
+    void getCssVars(spec.theme)["--tv-text-body-size"];
     void store.columnWidths;
     void store.expandedRows; // panels opening/closing change rendered heights
 
