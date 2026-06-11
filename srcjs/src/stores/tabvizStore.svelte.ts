@@ -1297,6 +1297,8 @@ export function createTabvizStore() {
     setBandingStartsWithBand: data.setBandingStartsWithBand,
     // Theme methods passthrough — own state lives on the theme slice.
     setThemeField: theme.setThemeField,
+    setComponentChannel: theme.setComponentChannel,
+    clearComponentChannel: theme.clearComponentChannel,
     setThemeFieldDerived: theme.setThemeFieldDerived,
     isOverridden: theme.isOverridden,
     clearOverride: theme.clearOverride,

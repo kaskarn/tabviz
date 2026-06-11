@@ -91,7 +91,7 @@
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme/theme-css";
-  import { getCssVars, readSurfaceBg, readAccentDefault, readVarPx } from "$lib/theme/consumer-bridge";
+  import { getCssVars, readSurfaceBg, readAccentDefault, readVarPx, readLabelSize } from "$lib/theme/consumer-bridge";
   import { resolveForestLegend, legendGlyphSvg } from "$lib/legend";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
@@ -2168,16 +2168,17 @@
                 />
                 {#if annotation.label}
                   {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
-                  {@const annoTypo = { fontSizeSm: theme!.text.label.size, lineHeight: 1.5 }}
+                  {@const annoLabelSize = readLabelSize(getCssVars(theme))}
+                  {@const annoTypo = { fontSizeSm: annoLabelSize, lineHeight: 1.5 }}
                   {@const annoAxisGeom = computeAxisLayout(annoTypo, !!forestOpts?.axisLabel, theme!.plot.tickMarkLength)}
-                  {@const annoLabelBaseline = annoAxisGeom.axisRegionHeight + textRegionHeight(theme!.text.label.size, 1.5) - 4}
+                  {@const annoLabelBaseline = annoAxisGeom.axisRegionHeight + textRegionHeight(annoLabelSize, 1.5) - 4}
                   <text
                     x={colScale(annotation.x)}
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
-                    fill={annotation.color ?? theme?.text?.label?.fg ?? "var(--tv-text-muted)"}
-                    font-size={theme?.text?.label?.size ?? "var(--tv-text-label-size)"}
-                    font-weight={theme?.text?.label?.weight ?? 500}
+                    fill={annotation.color ?? "var(--tv-axis-label-fg, var(--tv-text-muted))"}
+                    font-size={annoLabelSize}
+                    font-weight="var(--tv-text-label-weight, 500)"
                   >
                     {annotation.label}
                   </text>

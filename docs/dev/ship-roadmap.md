@@ -123,10 +123,16 @@ is W6 (pre-freeze).
       paths in lockstep (structural — shared getCssVarsRaw + cache key);
       `set_component()`/`clear_component()`/`list_components()`; gates
       both sides; wire 1.4→1.5. (2026-06-11)
-- [ ] Stage 2 color channel: role chip-grid picker (swatch squares,
-      hover names); components page (region accordions, spec-line rows);
-      "set table borders → border-muted" and "title → accent-text" work
-      end-to-end in settings-advanced + studio.
+- [~] Stage 2 color channel — SETTINGS HALF LANDED 2026-06-11:
+      RoleChipGrid (grouped swatches, hover names, aria) +
+      ComponentsBand (region accordions, live spec-line rows, per-channel
+      chip popover, release-to-default) mounted in the panel's theme
+      band; store verbs setComponentChannel/clearComponentChannel
+      (immutable, $state.raw-safe); hasThemeEdits counts re-routes.
+      BOTH acceptance examples verified end-to-end ("table-frame →
+      border-subtle", "title → accent-text"); liveness gate green.
+      REMAINING: the studio's roomy form + extending the liveness walk
+      to the new band's accordion/picker controls.
 - [ ] Stage 3 text/border channels: family/size/weight/figures pickers
       folding type_roles into the same surface; icon/indicator records.
 - [ ] Stage 4 states + decorative: hover/selected/paint-state records;

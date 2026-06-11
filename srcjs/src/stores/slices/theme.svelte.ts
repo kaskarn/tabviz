@@ -131,6 +131,9 @@ export interface ThemeSlice {
   setAuthoringInputs: (partial: Partial<ThemeInputs>) => void;
   previewAuthoringInputs: (partial: Partial<ThemeInputs>) => void;
   previewThemeField: (section: string, field: string, value: unknown) => void;
+  /** Component-model re-route verb (E Stage 2). */
+  setComponentChannel: (component: string, state: string, channel: string, role: string) => void;
+  clearComponentChannel: (component: string, state: string, channel: string) => void;
   setThemeField: (...args: unknown[]) => void;
   setThemeFieldDerived: (path: (string | number)[], value: unknown) => void;
   isOverridden: (path: (string | number)[]) => boolean;
@@ -402,6 +405,41 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     writeThemePath([section, field], value);
   }
 
+  /** Component-model re-route (the middle verb, E Stage 2): bind one
+   *  channel of a component(+state) to a role. Sparse-writes
+   *  `theme.components` immutably (the spec is $state.raw — every write
+   *  goes through writeThemePath/setSpec). Validity is enforced by the
+   *  resolver's defense-in-depth (isValidChannelValue) and the ingress
+   *  sanitizers; the UI only offers roster values. */
+  function setComponentChannel(
+    component: string, state: string, channel: string, role: string,
+  ): void {
+    const spec = deps.getSpec();
+    const components = { ...((spec?.theme as { components?: Record<string, Record<string, Record<string, string>>> })?.components ?? {}) };
+    const states = { ...(components[component] ?? {}) };
+    const channels = { ...(states[state] ?? {}) };
+    channels[channel] = role;
+    states[state] = channels;
+    components[component] = states;
+    writeThemePath(["components"], components);
+  }
+
+  /** Release a component channel back to its manifest default. */
+  function clearComponentChannel(component: string, state: string, channel: string): void {
+    const spec = deps.getSpec();
+    const prev = (spec?.theme as { components?: Record<string, Record<string, Record<string, string>>> })?.components;
+    if (!prev?.[component]?.[state]?.[channel]) return;
+    const components = { ...prev };
+    const states = { ...components[component] };
+    const channels = { ...states[state] };
+    delete channels[channel];
+    if (Object.keys(channels).length > 0) states[state] = channels;
+    else delete states[state];
+    if (Object.keys(states).length > 0) components[component] = states;
+    else delete components[component];
+    writeThemePath(["components"], components);
+  }
+
   function setThemeField(...args: unknown[]): void {
     const spec = deps.getSpec();
     if (!spec || !spec.theme) return;
@@ -587,6 +625,9 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
         { roleOverrides?: Record<string, unknown>; pins?: Record<string, string> } | null;
       if (recordsDiffer(live?.pins, init?.pins)) return true;
       if (recordsDiffer(live?.roleOverrides, init?.roleOverrides)) return true;
+      const liveC = (spec?.theme as { components?: Record<string, unknown> } | undefined)?.components;
+      const initC = (initialTheme as { components?: Record<string, unknown> } | null)?.components;
+      if (JSON.stringify(liveC ?? {}) !== JSON.stringify(initC ?? {})) return true;
       return false;
     },
     get hasFigureEdits() {
@@ -607,6 +648,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
 
     captureInitial, clearInitial,
     cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewAuthoringInputs, previewThemeField,
+    setComponentChannel, clearComponentChannel,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
     clearThemePin, setThemeRoleOverride, clearThemeRoleOverride,
     resetThemeEdits, resetWatermark, captureThemeSnapshot, applyThemeSnapshot,

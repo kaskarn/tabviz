@@ -21,6 +21,7 @@
   import QuickStrip from "./settings/QuickStrip.svelte";
   import ThemeBand from "./settings/ThemeBand.svelte";
   import FigureBand from "./settings/FigureBand.svelte";
+  import ComponentsBand from "./settings/ComponentsBand.svelte";
   // v2 design tokens — the primitives cascade off [data-tv-v2].
   import "$components/primitives/v2/tokens.css";
 
@@ -145,6 +146,7 @@
     <div class="panel-body">
       <div class="theme-band">
         <ThemeBand {store} />
+        <ComponentsBand {store} />
       </div>
       <FigureBand {store} />
     </div>

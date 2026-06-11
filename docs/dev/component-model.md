@@ -1,7 +1,9 @@
 # The component model — roles + routable components
 
 Status: **design locked 2026-06-11; Stage 1 (substrate + wire, W6)
-LANDED 2026-06-11.** This is the centerpiece of roadmap area E (ontology
+LANDED 2026-06-11; Stage 2 settings half LANDED same day**
+(RoleChipGrid + ComponentsBand in the settings panel; studio's roomy
+form pending). This is the centerpiece of roadmap area E (ontology
 engagement) and the retirement path for the last v3 theme remnants (W4).
 
 ## Stage 1 implementation map (landed)

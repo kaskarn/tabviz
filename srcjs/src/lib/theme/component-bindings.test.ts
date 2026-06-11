@@ -75,7 +75,7 @@ describe("COMPONENT_ROSTER (manifest binding annotations)", () => {
     for (const t of COMPONENT_TOKENS) {
       if (!t.binding) continue;
       expect(
-        ["role", "typography", "anchor", "ramp-direct", "header-active", "first-col"].includes(t.resolverGroup),
+        ["role", "typography", "anchor", "ramp-direct", "header-active", "first-col", "borders"].includes(t.resolverGroup),
         `${t.cssVar} is annotated (${t.binding.component}.${t.binding.channel}) ` +
         `but its resolverGroup "${t.resolverGroup}" does not honor re-routes`,
       ).toBe(true);

@@ -1362,6 +1362,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Minor (row) border color.",
+    binding: { region: "frame", component: "cell-grid", channel: "col" },
   },
   {
     cssVar: "--tv-border-table-color",
@@ -1370,6 +1371,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Outer table-frame border color.",
+    binding: { region: "frame", component: "table-frame", channel: "col" },
   },
   {
     cssVar: "--tv-row-border-width",
