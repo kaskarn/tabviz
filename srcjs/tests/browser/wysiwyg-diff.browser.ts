@@ -259,6 +259,7 @@ interface DomProbe {
   paperPadding: { top: number; left: number };
   captionBlockH: number; // .tv-caption height (title+subtitle block on shell)
   headerBand: { topInScalable: number; topInMain: number; h: number } | null;
+  groupLabelX: number | null;
   // primary-cell data rows in document order: top relative to main, height
   dataRows: Array<{ id: string; top: number; h: number }>;
   groupRows: Array<{ top: number; h: number }>;
@@ -291,6 +292,10 @@ const DOM_PROBE_FN = `(() => {
   // Header cells by data-header-id.
   const columns = {};
   let headerBand = null;
+  // D10 probe (2026-06-11): the group-header LABEL x within the main
+  // grid — the DOM shifts it right of the cell start by the chevron
+  // (12px + 6px gap); the export draws at cellPad + indent only.
+  let groupLabelX = null;
   for (const el of document.querySelectorAll(".header-cell[data-header-id]")) {
     const id = el.getAttribute("data-header-id");
     const b = R(el);
@@ -307,6 +312,10 @@ const DOM_PROBE_FN = `(() => {
     dataRows.push({ id: el.getAttribute("data-row-id"), top: b.top - mr.top, h: b.height });
   }
   dataRows.sort((a, b) => a.top - b.top);
+  {
+    const gl = document.querySelector(".primary-cell.group-row .group-label");
+    if (gl) groupLabelX = R(gl).left - mr.left;
+  }
   const groupRows = [];
   for (const el of document.querySelectorAll(".grid-cell.primary-cell.group-row")) {
     const b = R(el);
@@ -355,6 +364,7 @@ const DOM_PROBE_FN = `(() => {
     paperPadding: { top: parseFloat(pCs.paddingTop), left: parseFloat(pCs.paddingLeft) },
     captionBlockH: caption ? R(caption).height : 0,
     headerBand,
+    groupLabelX,
     dataRows,
     groupRows,
     columns,
@@ -559,6 +569,15 @@ async function runCase(browser: Browser, opts: ReturnType<typeof parseArgs>, c: 
     cmpNum(findings, caseId, "geometry", "row[0].height", dom.dataRows[0]!.h, mData[0]!.height, GEOM_TOL);
     cmpNum(findings, caseId, "geometry", "row.pitch (row1.top - row0.top)",
       dom.dataRows[1]!.top - dom.dataRows[0]!.top, mData[1]!.top - mData[0]!.top, GEOM_TOL);
+  }
+  // D10: group-label x — DOM (post-chevron) vs SVG text x.
+  {
+    const svgGroup = svg.texts.find((t) => (t.text || "").startsWith("Cohort"));
+    if (dom.groupLabelX != null && svgGroup && typeof svgGroup.x === "number") {
+      cmpNum(findings, caseId, "geometry", "groupLabel.x (chevron offset — D10)",
+        dom.groupLabelX, svgGroup.x, GEOM_TOL,
+        "group-header label x within the grid (DOM includes the 18px chevron+gap)");
+    }
   }
   if (dom.groupRows.length >= 1 && mGroup.length >= 1) {
     cmpNum(findings, caseId, "geometry", "groupHeaderRow.height", dom.groupRows[0]!.h, mGroup[0]!.height, GEOM_TOL);

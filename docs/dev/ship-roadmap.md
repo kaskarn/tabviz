@@ -193,6 +193,10 @@ is a liveness audit across ALL surfaces.
       exception list via register decisions: estimator column widths
       (D8), group-header banding scope + chevron indent (D10),
       shell-strip/chip/elevation in export, pagination contract (D7).
+      PROGRESS 2026-06-11: D7 documented; D8 accepted+documented; D10
+      VERIFIED ALIGNED by a new permanent groupLabel.x matrix metric
+      (measurement preempted implementation); D15 carries its
+      instrumented-fix prescription.
 - [ ] `save_plot()` PDF/PNG spot-checked against the widget for the 9
       presets (extend visual battery with DOM-vs-export pairs).
 
