@@ -10,11 +10,15 @@
 #   `tests/testthat/test-wire-version.R` enforces this — it reads the TS
 #   file and asserts the version strings match.
 #
-# Versioning policy (full statement in spec §3.4):
-#   - Pre-release: evolve freely; policy informal until external consumers ship
-#   - Steady-state major bumps:  breaking; require migration handler JS-side
-#   - Steady-state minor bumps:  strictly additive; older readers ignore unknown
-#   - Steady-state patch bumps:  documentation/internal; no wire change
+# Versioning policy — FROZEN at 1.10 (2026-06-11, roadmap area M):
+#   every pre-freeze item in docs/dev/wire-freeze-inventory.md landed
+#   (W1–W6); the published JSON Schema (npm dist) describes this shape.
+#   FROM HERE ON:
+#   - minor bumps:  STRICTLY ADDITIVE — older readers ignore unknown fields
+#   - major bumps:  breaking; REQUIRE a JS-side migration handler + a new
+#                   spec/vN.0.json + schema regeneration
+#   - patch bumps:  documentation/internal; no wire change
+#   The pre-release "clean breaks allowed" era ENDED at 1.10.
 #
 # Bump procedure (steady-state):
 #   1. Update WIRE_FORMAT_VERSION below.

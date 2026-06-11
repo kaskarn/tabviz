@@ -34,6 +34,9 @@ export type SupportedMajor = (typeof SUPPORTED_MAJORS)[number];
 // 1.4 (additive): spec.figureLayout figure-state block (column width pins,
 // column reorder, row-kind height pins) + interaction.enableAxisZoom +
 // the row_kind_heights Shiny event field (interactivity-UX arc P0/P1).
+// WIRE FROZEN at 1.10 (2026-06-11, roadmap area M): minors are strictly
+// additive from here; breaking changes need a major + migration handler
+// + a regenerated published schema. Mirror statement: R/wire-version.R.
 export const CURRENT_VERSION = "1.10" as const;
 export type SpecVersion = typeof CURRENT_VERSION;
 

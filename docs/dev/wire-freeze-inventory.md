@@ -37,9 +37,16 @@ Sync points when touching the wire: `R/wire-version.R` ↔
 - Per-row height pins (D5 default: per-kind only).
 - `theme_blend()` / split static-knit (D14: cut from 1.0).
 
-## Freeze checklist (executes in M3, roadmap area M)
+## Freeze checklist — EXECUTED 2026-06-11 (the wire is FROZEN at 1.10)
 
-1. ~~W1–W6~~ **ALL PRE-FREEZE WIRE WORK COMPLETE** (W1–W6 ✓, 2026-06-11, wire 1.10); parity + roster-sync + wire-version gates green.
-2. Bump to the freeze version; flip the policy text in BOTH version files.
-3. Publish the JSON Schema for the frozen shape (A1 if not already done).
-4. From then on: minors additive-only; majors need migration handlers.
+1. [x] W1–W6 complete; parity + roster-sync + wire-version gates green.
+2. [x] Freeze version = 1.10; policy text flipped in BOTH version files.
+3. [x] JSON Schema published for the frozen shape (npm dist
+       tabviz-spec.schema.json, generated from SCHEMA_REGISTRY, gated).
+4. [x] Policy live: minors additive-only; majors need migration handlers
+       + vN.0.json + schema regeneration.
+
+Decision provenance: executed under delegated authority (2026-06-11),
+flagged for review — nothing on the remaining roadmap (F/G/H/I/J/K
+tails) needs a breaking wire change; auto-columns (I) and any future
+additions are additive by construction.

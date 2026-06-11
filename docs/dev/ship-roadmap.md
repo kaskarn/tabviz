@@ -287,10 +287,13 @@ Clinical/regulatory audience makes this table stakes.
 
 ### M. Wire freeze + release
 **Exit criteria:**
-- [ ] All pre-freeze wire work (C0 inventory) landed.
-- [ ] Wire policy flips to additive-only minors; documented in both
-      version files; JSON Schema versioned alongside.
-- [ ] Decision register cleared (B).
+- [x] All pre-freeze wire work (C0 inventory) landed (W1–W6, 2026-06-11).
+- [x] WIRE FROZEN at 1.10 (2026-06-11, delegated authority — flagged):
+      policy text flipped in both version files; the published schema
+      describes the frozen shape; the freeze checklist in the inventory
+      is fully executed. Nothing on the remaining roadmap needs a break.
+- [~] Decision register at ONE entry (D9 — open by its own decide-at-
+      ship rule; everything else Decided with rationale, 2026-06-11).
 - [ ] npm publish + CRAN submission; release notes; docs site cut.
 
 ---
