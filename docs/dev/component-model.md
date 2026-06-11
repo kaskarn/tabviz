@@ -170,6 +170,30 @@ One sparse block on the theme envelope beside `roleOverrides`/`pins`:
 4. **States + decorative**: hover/selected/paint-state records; chip /
    gradient-strip / watermark records; HC-as-state-overlay exploration.
 
+## HC-as-state-overlay — exploration note (Stage 4, 2026-06-11)
+
+Today HC/RT behavior lives in `token.modes` (drop/swap per token) plus
+scattered resolver branches (status-palette strip, grade pushes,
+contrast walks). The component model suggests a cleaner home: a THEME-
+LEVEL state overlay — `components` records under a reserved state key
+(`"hc"`), applied between the mode ratchet and user re-routes.
+
+What the exploration found:
+- **Fits**: per-token drop/swap IS a sparse channel record ("row.alt.bg
+  under hc → transparent"). Migrating `token.modes` into reserved-state
+  records would let THEMES customize HC behavior (a high-contrast-first
+  theme could keep its zebra) instead of hardcoding it.
+- **Doesn't fit**: the cascade-level HC moves (status strip, contrast
+  grade-walks) act on ROLES before tokens exist — they are re-TUNES,
+  not re-routes, and should stay in the cascade.
+- **Precedence question**: today the ratchet BEATS user re-routes
+  (accessibility wins). A theme-authored hc-state record must slot
+  BELOW the baked ratchet or themes could undo accessibility — i.e.
+  baked ratchet > theme hc-records > user re-routes > defaults.
+- **Verdict**: worth doing, NOT 1.0-blocking. The wire shape is already
+  additive (a new state key). Post-1.0 backlog; revisit if a shipped
+  theme needs custom HC behavior sooner.
+
 ## Open questions (register)
 
 - D17 — naming review: legibility names (`text-main`, `wgt-normal`

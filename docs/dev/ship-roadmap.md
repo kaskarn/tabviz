@@ -145,7 +145,9 @@ is W6 (pre-freeze).
       (figures + the unconsumed-token channels join when their consumers
       land — they are SUBSTRATE-ready, the resolver honors them).
       Icon/indicator records remain design work (no manifest tokens yet).
-- [~] Stage 4 states + decorative: paint/interaction STATES are LIVE
+- [~] Stage 4 (HC exploration DONE 2026-06-11 — component-model.md
+      "HC-as-state-overlay" note: fits as a reserved-state record BELOW
+      the baked ratchet; additive wire; post-1.0 verdict). States LIVE
       already (Stage-2 editor renders state·channel rows — row alt/hover/
       emphasis, cell paint states, header variants all editable);
       caption-chip records live. REMAINING: gradient-strip + watermark
@@ -241,7 +243,11 @@ Clinical/regulatory audience makes this table stakes.
 - [ ] Default-paginate threshold decided (register D12) + implemented.
 - [ ] Documented row-count envelope: what's smooth, what degrades, what's
       unsupported; arrange-mode degradation noted.
-- [ ] Windowed-flatten design note exists for post-1.0 virtualization.
+- [x] Windowed-flatten design note exists (2026-06-11):
+      docs/dev/windowed-flatten-note.md — the flatten-projection seam,
+      deterministic per-kind heights as the scroll-height model, the
+      measure-loop/arrange/export interactions, and the do-nothing-for-1.0
+      posture (pagination is the scale story).
 
 ### M. Wire freeze + release
 **Exit criteria:**
