@@ -171,20 +171,6 @@ deserialize_resolved_theme <- function(x) {
   series_raw <- x$series %||% list()
   series <- lapply(series_raw, deserialize_slot_role)
 
-  # ---- Tier 2: text roles ----
-  t <- x$text %||% list()
-  text <- TextRoles(
-    title    = deserialize_text_role(t$title),
-    subtitle = deserialize_text_role(t$subtitle),
-    body     = deserialize_text_role(t$body),
-    cell     = deserialize_text_role(t$cell),
-    label    = deserialize_text_role(t$label),
-    tick     = deserialize_text_role(t$tick),
-    footnote = deserialize_text_role(t$footnote),
-    caption  = deserialize_text_role(t$caption),
-    numeric  = deserialize_text_role(t$numeric)
-  )
-
   # ---- Tier 2: spacing ----
   sp <- x$spacing %||% list()
   spacing <- SpacingTokens(
@@ -306,7 +292,6 @@ deserialize_resolved_theme <- function(x) {
     accent          = accent,
     status          = status,
     series          = series,
-    text            = text,
     spacing         = spacing,
     header          = header,
     row_group       = row_group,

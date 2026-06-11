@@ -135,14 +135,14 @@ RESOLVED_LEAVES <- list(
 
   # -- Text roles ---------------------------------------------------
   "text.title.fg" = list(
-    cascade    = c("inputs$primary_deep"),
-    derivation = "inputs$primary_deep -- identity hero",
-    value_getter = function(t) t@text@title@fg
+    cascade    = c("roles$text", "--tv-text-title-fg"),
+    derivation = "Tier-2 text role (D18: title binds to text; re-route via set_component)",
+    value_getter = function(t) unname(theme_css_vars(t)["--tv-text-title-fg"])
   ),
   "text.tick.fg" = list(
-    cascade    = c("content$muted", "inputs$secondary_deep"),
-    derivation = "10% oklch_mix(content.muted, secondary_deep)",
-    value_getter = function(t) t@text@tick@fg
+    cascade    = c("plot$tick_label"),
+    derivation = "plot scaffold tick-label fg (the live v3 source until the plot cluster migrates)",
+    value_getter = function(t) t@plot@tick_label@fg
   ),
 
   # -- Plot scaffold ------------------------------------------------

@@ -545,29 +545,6 @@ TextRole <- new_class(
   }
 )
 
-#' TextRoles: collection of named TextRole bundles.
-#' @usage NULL
-#' @export
-TextRoles <- new_class(
-  "TextRoles",
-  properties = list(
-    title    = new_property(TextRole, default = quote(TextRole())),
-    subtitle = new_property(TextRole, default = quote(TextRole())),
-    body     = new_property(TextRole, default = quote(TextRole())),
-    cell     = new_property(TextRole, default = quote(TextRole())),
-    label    = new_property(TextRole, default = quote(TextRole())),
-    tick     = new_property(TextRole, default = quote(TextRole())),
-    footnote = new_property(TextRole, default = quote(TextRole())),
-    caption  = new_property(TextRole, default = quote(TextRole())),
-    # Phase 12: optional numeric-flavored role. NA-default; resolver
-    # fills it from `body` so the wire always carries a complete TextRole.
-    # Renderers consult it via `pickTextRole(col, theme)` for
-    # numeric-category columns (numeric / percent / currency / pvalue /
-    # interval / events / badge).
-    numeric  = new_property(TextRole, default = quote(TextRole()))
-  )
-)
-
 
 # -- Tier 2: spacing (density-derived numerics) -------------------------
 
@@ -975,7 +952,6 @@ WebTheme <- new_class(
     accent  = new_property(AccentRoles,   default = quote(AccentRoles())),
     status   = new_property(StatusColors, default = quote(StatusColors())),
     series  = new_property(class_list,    default = list()),
-    text    = new_property(TextRoles,     default = quote(TextRoles())),
     spacing = new_property(SpacingTokens, default = quote(SpacingTokens())),
 
     # Tier 3 (component bindings)

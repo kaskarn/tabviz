@@ -3656,8 +3656,8 @@ function validateSpec(spec: unknown): asserts spec is WebSpec {
   }
 
   const theme = s.theme as Record<string, unknown>;
-  if (!theme.text || typeof theme.text !== "object") {
-    throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.text'");
+  if (!theme.authoringInputs || typeof theme.authoringInputs !== "object") {
+    throw new SVGGeneratorError("Invalid spec: theme is missing 'authoringInputs' (required for the v4 resolve)");
   }
   if (!theme.spacing || typeof theme.spacing !== "object") {
     throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.spacing'");

@@ -400,7 +400,6 @@ export function buildTheme(
     accent: accentRoles,
     status,
     series,
-    text,
     spacing,
     header,
     rowGroup,

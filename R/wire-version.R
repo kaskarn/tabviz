@@ -49,4 +49,10 @@
 # resolved-theme blob: marks, cell, annotation, semantic, columnGroup,
 # lightDarkPair (zero readers; docs/dev/w4-v3-blob-slimming.md records
 # the verdicts). Pre-release clean break.
-WIRE_FORMAT_VERSION <- "1.7"
+#
+# v1.8 (2026-06-11): W4 arc 2 complete — the v3 `text` cluster REMOVED
+# from the resolved-theme blob (consumers read --tv-text-{role}-{prop}
+# manifest tokens; surviving clusters keep their embedded TextRole
+# fields). D18 executed: title-fg binds to role `text`. Bridge rows for
+# title-fg / numeric-figures / header trio all retired.
+WIRE_FORMAT_VERSION <- "1.8"

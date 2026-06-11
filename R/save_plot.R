@@ -485,8 +485,11 @@ save_plot <- function(x, file,
   if (!requireNamespace("systemfonts", quietly = TRUE)) return(spec)
   if (is.null(spec@theme)) return(spec)
 
-  family_raw <- tryCatch(spec@theme@text@body@family, error = function(e) NULL)
-  size_raw   <- tryCatch(spec@theme@text@body@size,   error = function(e) NULL)
+  # v4 reads (W4): the body family/size tokens — the same values the
+  # renderer consumes (the v3 @text blob slot is gone).
+  cv <- tryCatch(theme_css_vars(spec@theme), error = function(e) NULL)
+  family_raw <- if (is.null(cv)) NULL else unname(cv[["--tv-text-body-family"]])
+  size_raw   <- if (is.null(cv)) NULL else unname(cv[["--tv-text-body-size"]])
   family <- .first_font_family(family_raw)
   size_px <- .font_size_px(size_raw)
   if (is.null(family)) return(spec)

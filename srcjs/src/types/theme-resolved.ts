@@ -396,8 +396,10 @@ export interface WebTheme {
   status: StatusColors;
   // Tier 2 — data
   series: SlotRole[];
-  // Tier 2 — typography + spacing
-  text: TextRoles;
+  // Tier 2 — typography + spacing. (`text` DELETED from the blob — W4,
+  // 2026-06-11: consumers read the --tv-text-{role}-{prop} manifest
+  // tokens; the adapter still composes TextRole objects INTO the
+  // surviving clusters' text fields.)
   spacing: SpacingTokens;
   // Tier 3 — component clusters. (W4 arc 1, 2026-06-11: the DEAD
   // clusters — semantic, annotation, columnGroup, cell, marks — were

@@ -24,7 +24,7 @@ means touching blob + TS type + S7 class + (de)serializers together.
 | `columnGroup` | 1 — the bridge emits `--tv-text-column-group-weight` from it, and THAT var has ZERO consumers | **DELETE** (cluster + bridge row + the var's KNOWN_UNCONSUMED entry, together) |
 | `variants` | 6 | shrinking: headerStyle retired (W3); `firstColumnStyle` remains until the firstColumn bridge migrates; `density` mirrors the input — check readers |
 | `accent`, `status` | ~14 each | real readers remain — migrate consumers to `--tv-accent` / `--tv-status-*` tokens (already in manifest), then delete |
-| `text` | ~27 | the big one: migrate to `--tv-text-{role}-*` reads (typography tokens). Title/footnote fg done earlier; rest per-cluster |
+| `text` | 0 | **DELETED 2026-06-11** (wire 1.8) — all reads migrated to typography tokens |
 | `series` | ~20 | KEEP — series slots are deliberately separate (component-model ruling); the slot system rides the blob |
 | `spacing` | ~41 | KEEP for now — spacing pins are the live per-figure channel (`applySpacingPins`); retiring needs the spacing-system rework, NOT W4 |
 | `header`, `rowGroup`, `row`, `firstColumn`, `borders`, `layout` | live | the BRIDGE clusters (#72–74) — see below |
@@ -81,9 +81,13 @@ Order of attack (smallest blast radius first):
   (title → role `text`; bridge row gone). numeric-figures promoted to a
   real typography emission (truthful constant "tnum" — NO authoring
   surface exists; Stage-3 figures channel makes it recipe-driven);
-  bridge row gone. REMAINING for text-cluster deletion: the export
-  validation check at svg-generator, then the R S7 text slot +
-  TextRoles type + adapter text construction.
+  bridge row gone. TEXT CLUSTER DELETION COMPLETE
+  (wire 1.8, same day): blob `text` field gone both sides; TextRoles
+  class deleted (TextRole survives inside the remaining clusters);
+  save_plot's systemfonts injection + the R inspector read cssVars;
+  the export's validation check repoints to authoringInputs; the dead
+  S7 @text mutation test rewritten against the real authoring surface
+  (fonts_numeric input).
 - Arc 3+: bridge clusters in the order above; finish with
   accent/status passthrough migration.
 - DONE when: `computeV3BridgeVars` is deleted, `v3-bridge` resolverGroup
