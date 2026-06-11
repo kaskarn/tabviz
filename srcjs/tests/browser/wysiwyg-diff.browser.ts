@@ -62,15 +62,52 @@ const FONT_TOL = 0.1; // px (font sizes compared near-exactly)
 // ── CLI ─────────────────────────────────────────────────────────────────────
 function parseArgs() {
   const args = process.argv.slice(2);
-  const o = { bundle: DEFAULT_BUNDLE, css: DEFAULT_CSS, headed: false, only: null as string | null };
+  const o = { bundle: DEFAULT_BUNDLE, css: DEFAULT_CSS, headed: false, only: null as string | null, gate: false };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === "--bundle") o.bundle = path.resolve(args[++i]!);
     else if (a === "--css") o.css = path.resolve(args[++i]!);
     else if (a === "--headed") o.headed = true;
     else if (a === "--case") o.only = args[++i]!;
+    else if (a === "--gate") o.gate = true;
   }
   return o;
+}
+
+// ── Gate mode (roadmap M0-A: the budgeted WYSIWYG CI gate) ─────────────────
+// WYSIWYG is a CONTRACT: only the divergences declared here may exist, each
+// with a budget and a pointer to why (decision-register IDs or the declared
+// browser-only effects boundary). Anything else — any new finding, or a
+// declared one beyond its budget — fails the gate. Tighten budgets as the
+// underlying items are fixed; NEVER widen one to make CI pass without a
+// register decision.
+const GATE_EXCEPTIONS: Array<{ pattern: RegExp; maxAbs: number; why: string }> = [
+  // D8 — estimator-vs-canvas text measurement on raw generateSVG (real
+  // flows are protected by systemfonts injection / live widths).
+  { pattern: /^geometry :: column\[/, maxAbs: 65, why: "D8 estimator column widths" },
+  { pattern: /^geometry :: content\.width/, maxAbs: 65, why: "D8 estimator widths (sum)" },
+  { pattern: /^chrome :: artifact\.width/, maxAbs: 10, why: "D8 flow-through + scalable rounding" },
+  // Vertical residuals: DOM measure-then-commit grows wrapped/edge rows the
+  // estimator can't see; bounded small.
+  { pattern: /^(geometry :: figure\.height|chrome :: artifact\.height)/, maxAbs: 10, why: "measure-loop growth residual" },
+  { pattern: /^geometry :: headerBand\.top/, maxAbs: 8, why: "D15 title-block vs caption-block arithmetic (register; fix in area G)" },
+  { pattern: /^geometry :: row\[/, maxAbs: 4, why: "measure-loop growth residual (per-row)" },
+  { pattern: /^geometry :: rowPitch/, maxAbs: 4, why: "measure-loop growth residual" },
+];
+
+function gateVerdict(findings: Finding[]): { breaches: Finding[]; excepted: number } {
+  const breaches: Finding[] = [];
+  let excepted = 0;
+  for (const f of findings) {
+    const key = `${f.category} :: ${f.property}`;
+    const exc = GATE_EXCEPTIONS.find((e) => e.pattern.test(key));
+    if (exc && f.delta != null && Math.abs(f.delta) <= exc.maxAbs) {
+      excepted++;
+      continue;
+    }
+    breaches.push(f);
+  }
+  return { breaches, excepted };
 }
 
 // ── Matrix ──────────────────────────────────────────────────────────────────
@@ -624,6 +661,20 @@ async function main() {
   for (const [key, a] of sorted) {
     console.log(`\n${key}  — ${a.cases.length} case(s), max|Δ|=${a.maxAbs}`);
     console.log(`   ${a.cases.join(", ")}`);
+  }
+
+  if (opts.gate) {
+    const { breaches, excepted } = gateVerdict(allFindings);
+    console.log(`\n════ GATE: ${breaches.length} breach(es); ${excepted} finding(s) within declared budgets ════`);
+    for (const f of breaches) {
+      console.log(`  ✗ [${f.caseId}] ${f.category} :: ${f.property}  DOM=${f.dom} SVG=${f.svg}` +
+        (f.delta != null ? ` Δ=${f.delta}` : " (MISSING/unmeasurable)"));
+    }
+    if (breaches.length > 0) {
+      console.error("\nWYSIWYG gate FAILED — fix the divergence or take it through the decision register (never silently widen a budget).");
+      process.exit(1);
+    }
+    console.log("WYSIWYG gate PASSED.");
   }
 }
 

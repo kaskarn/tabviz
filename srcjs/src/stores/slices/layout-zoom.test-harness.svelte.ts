@@ -62,7 +62,13 @@ export function buildLayoutZoomHarness(initial?: {
   targetAspect?: number | null;
   wrapLineCounts?: Record<string, number>;
 }): LayoutZoomHarness {
-  let spec = $state<WebSpec | null>(initial?.spec ?? buildSpec());
+  // `in`-check, not `??`: an EXPLICIT `spec: null` must reach the slice
+  // (the null-spec fallback test exercises that branch; `??` swallowed the
+  // null and computed a real layout instead — the long-standing "jsdom
+  // canvas" failure was actually this harness bug).
+  let spec = $state<WebSpec | null>(
+    initial && "spec" in initial ? initial.spec ?? null : buildSpec(),
+  );
   let allColumns = $state<ColumnSpec[]>(initial?.allColumns ?? []);
   let columnWidths = $state<Record<string, number>>(initial?.columnWidths ?? {});
   let userResizedIds = $state<Set<string>>(initial?.userResizedIds ?? new Set());

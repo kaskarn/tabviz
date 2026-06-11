@@ -111,6 +111,15 @@ column drag pins width + double-click autosizes, disarm removes all seams.
 
     cd srcjs && npm run build && bun run tests/browser/arrange-tool.browser.ts
 
+## wysiwyg-diff gate mode (CI)
+
+`bun run tests/browser/wysiwyg-diff.browser.ts --gate` applies the
+budgeted-exception verdict: every finding must fall inside a
+`GATE_EXCEPTIONS` budget (each annotated with its decision-register ID —
+D8 estimator widths, D15 title-block arithmetic, measure-loop residuals);
+anything NEW or over-budget exits non-zero. Never widen a budget without
+a register decision. Runs in .github/workflows/js-ci.yaml.
+
 Exits non-zero on failure. NOTE: drive drags with real `page.mouse` moves
 (pointer capture) and detect double-press via `e.detail`/dblclick — the
 toolbar overlaps the top-right header region when visible, so target the

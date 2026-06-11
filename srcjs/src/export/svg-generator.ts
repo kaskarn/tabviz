@@ -346,14 +346,16 @@ function calculateSvgAutoWidths(
   // Header cells: use the explicit theme.header.text.size when it's been
   // pinned distinct from body.size; otherwise apply the historical 5%
   // scale-up (matches the .header-cell CSS calc-fallback in TabvizPlot).
-  // Compare PARSED px, not strings (WYSIWYG review pass): the v3 header
-  // string ("0.875rem") never string-equals the v4 body token ("14px"),
-  // so the scale-up branch was unreachable — headers exported at 14px
-  // while the DOM rendered calc(body × 1.05) = 14.7px.
+  // MIRROR THE V3 BRIDGE EXACTLY (v3-bridge-vars.ts --tv-text-header-size):
+  // compare the v3 header string against the v3 BODY string, and the
+  // scale branch multiplies the v3 body size — the DOM's calc() does the
+  // same. (A parsed-px comparison against the v4 body token was tried and
+  // diverged on themes whose v4 body ≠ the v3 "0.875rem" default: DOM
+  // rendered 14.7 while the export drew 14 — wysiwyg gate catch.)
   const headerExplicit = spec.theme.header?.text?.size;
-  const headerFontSize = (headerExplicit && Math.abs(parseFontSize(headerExplicit) - parseFontSize(bodySizeStr)) > 0.01)
+  const headerFontSize = (headerExplicit && headerExplicit !== spec.theme.text?.body?.size)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
-    : Math.round(fontSize * 1.05 * 100) / 100;
+    : Math.round(parseFontSize(spec.theme.text?.body?.size ?? bodySizeStr) * 1.05 * 100) / 100;
   // Header font weight is theme-controlled via theme.header.text.weight
   // (defaults to 600). Passed through to estimateTextWidth() so the
   // width estimate reflects the actual weight that will render.
@@ -569,9 +571,9 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   // a long primary header doesn't squeeze the label column and trigger
   // ellipsis in the live header.
   const headerExplicit = spec.theme.header?.text?.size;
-  const headerFontSize = (headerExplicit && Math.abs(parseFontSize(headerExplicit) - parseFontSize(bodySizeStr)) > 0.01)
+  const headerFontSize = (headerExplicit && headerExplicit !== spec.theme.text?.body?.size)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
-    : Math.round(fontSize * 1.05 * 100) / 100;
+    : Math.round(parseFontSize(spec.theme.text?.body?.size ?? bodySizeStr) * 1.05 * 100) / 100;
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   // Use theme-based padding (not hardcoded magic numbers)
   const cssVars = getCssVars(spec.theme);
@@ -3003,9 +3005,9 @@ function renderUnifiedColumnHeaders(
   // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
   const headerExplicit = theme.header?.text?.size;
   const bodySizeStr = readBodySize(cssVars);
-  const fontSize = (headerExplicit && Math.abs(parseFontSize(headerExplicit) - parseFontSize(bodySizeStr)) > 0.01)
+  const fontSize = (headerExplicit && headerExplicit !== theme.text?.body?.size)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
-    : Math.round(baseFontSize * 1.05 * 100) / 100;
+    : Math.round(parseFontSize(theme.text?.body?.size ?? bodySizeStr) * 1.05 * 100) / 100;
   const fontFamily = theme.header?.text?.family ?? readBodyFamily(cssVars);
   // All header cells use bold weight to match web view CSS.
   const fontWeight = theme.header?.text?.weight ?? 600;

@@ -29,21 +29,26 @@ The flagship browser gates were silently broken for weeks because nothing
 executed them (the preset cull broke their imports; discovered 2026-06-10).
 Every other area on this roadmap decays invisibly without this one.
 **Exit criteria:**
-- [ ] CI runs on every push: bun + vitest suites, svelte-check, eslint
-      (errors), bundle budget, lockfile parity, R CMD check (or
-      devtools::test at minimum), the component-token + column-option
-      drift gates.
-- [ ] CI runs the browser harnesses headless: `arrange-tool`,
-      `forest-marks`, `measure-rows`, `details-panel`, `panel-liveness`,
-      `interaction-qa`.
-- [ ] `wysiwyg-diff.browser.ts` runs as a **budgeted gate**: per-case
-      numeric budgets (geometry ≤ small px tolerance; typography exact),
-      with the declared-exception list (see area E) encoded, not implied.
+- [x] CI runs on every push: js-ci.yaml `ts-suite` job (bun + vitest,
+      svelte-check, eslint errors, build, bundle budget, lockfile parity;
+      the drift gates run inside the suites). R side: the existing
+      R-CMD-check.yaml 5-platform matrix. (2026-06-10 — verify green on
+      the first real push.)
+- [x] CI runs the browser harnesses headless: js-ci.yaml `browser-gates`
+      job (`arrange-tool`, `forest-marks`, `measure-rows`,
+      `details-panel`, `panel-liveness`, `interaction-qa`) — all verified
+      passing locally first (2026-06-10).
+- [x] `wysiwyg-diff.browser.ts --gate`: budgeted CI gate; every budget
+      annotated with its decision-register ID (D8/D15/residuals); new or
+      over-budget findings fail. 0 breaches at stand-up; the gate's first
+      catch (header.fontSize v3-bridge mismatch) was fixed, not budgeted
+      (2026-06-10).
 - [ ] Perf benches run with regression thresholds against checked-in
       baselines (bun bench at minimum; browser bench at least weekly).
-- [ ] A gate failure blocks merge. No "known failure" lives longer than
-      one documented entry with an issue link (current allowance: the
-      layout-zoom.runes jsdom canvas test).
+- [ ] A gate failure blocks merge (configure branch protection once CI is
+      green on main). Known-failure allowance: NONE — the long-standing
+      vitest "jsdom canvas" failure was a test-harness bug (`?? null`
+      swallow), fixed 2026-06-10; all suites fully green.
 
 ### B. Decision infrastructure
 **Exit criteria:**
@@ -60,9 +65,10 @@ Every other area on this roadmap decays invisibly without this one.
 Pre-release "clean breaks allowed" is why recent arcs were cheap. The
 remaining wire-shape work must be scheduled BEFORE the freeze.
 **Exit criteria:**
-- [ ] Inventory of remaining wire-shape changes (column ontology work,
-      figureLayout refinements, theme inputs additions) exists with each
-      item scheduled pre-freeze or explicitly deemed additive.
+- [x] `docs/dev/wire-freeze-inventory.md` (2026-06-10): W1–W5 breaking
+      items scheduled (D2 option deletions, column-ontology fallout,
+      variants.headerStyle retirement, v3-blob slimming, hiddenColumns
+      home), additive list, freeze checklist.
 
 ---
 
@@ -201,7 +207,13 @@ Clinical/regulatory audience makes this table stakes.
 
 - 2026-06-10 — Document stood up. Decision register populated (14
   entries). Same day: D1 decided (HC vertical killed, code deleted) and
-  D14 decided (theme_blend + split static-knit cut from 1.0). Recent context: interactivity-UX arc (P0–P2) shipped; WYSIWYG
+  D14 decided (theme_blend + split static-knit cut from 1.0).
+- 2026-06-10 — M0 substantially landed: js-ci.yaml (ts-suite +
+  browser-gates jobs); wysiwyg gate mode (0 breaches, budgets
+  register-annotated, D15 filed); all suites fully green (the "jsdom
+  canvas" known failure was a harness bug); wire-freeze inventory stood
+  up. Open in M0: perf thresholds, branch protection, first-push
+  verification. Recent context: interactivity-UX arc (P0–P2) shipped; WYSIWYG
   fidelity pass shipped (shell/paper export parity, typography role
   alignment); search-and-destroy cleanup shipped (−3.9k lines, gates
   repaired, KNOWN_UNCONSUMED 120→49).

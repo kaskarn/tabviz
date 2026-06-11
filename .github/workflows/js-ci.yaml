@@ -1,0 +1,137 @@
+# JS engine CI — roadmap M0-A ("gates that cannot rot").
+#
+# Two jobs:
+#   ts-suite       — unit suites + static gates on every push/PR (~2 min)
+#   browser-gates  — the puppeteer correctness harnesses + the budgeted
+#                    WYSIWYG gate (~10-15 min). These rotted silently once
+#                    (the preset cull broke their imports for weeks because
+#                    nothing executed them); this job is why that can't
+#                    happen again.
+#
+# R-side coverage lives in R-CMD-check.yaml (5-platform matrix; runs the
+# full testthat suite incl. parity + render-smoke via R CMD check).
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: js-ci
+
+concurrency:
+  group: js-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ts-suite:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: srcjs
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: srcjs/package-lock.json
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit suites (bun + vitest)
+        run: npm test
+
+      - name: Type check (svelte-check)
+        run: npm run check
+
+      - name: Lint (errors fail; warnings are tracked debt)
+        run: npm run lint
+
+      - name: Build all bundles
+        run: npm run build
+
+      - name: Bundle-size budget
+        run: npm run check:size
+
+      - name: Lockfile parity
+        run: npm run check:lockfiles
+
+      # The browser job needs the freshly built bundles (harnesses load
+      # inst/htmlwidgets/tabviz.js).
+      - name: Upload built bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: inst-bundles
+          path: |
+            inst/htmlwidgets
+            inst/js
+            inst/studio
+          if-no-files-found: error
+
+  browser-gates:
+    runs-on: ubuntu-latest
+    needs: ts-suite
+    defaults:
+      run:
+        working-directory: srcjs
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: srcjs/package-lock.json
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install (downloads puppeteer's chrome)
+        run: npm ci
+
+      - name: Install chrome-headless-shell
+        run: npx puppeteer browsers install chrome-headless-shell
+
+      - name: Download built bundles
+        uses: actions/download-artifact@v4
+        with:
+          name: inst-bundles
+          path: inst
+
+      # Correctness harnesses — each exits non-zero on failure.
+      - name: 'Gate: forest marks (DOM↔export mark positions)'
+        run: bun run tests/browser/forest-marks.browser.ts
+
+      - name: 'Gate: measure-then-commit row heights'
+        run: bun run tests/browser/measure-rows.browser.ts
+
+      - name: 'Gate: details panels'
+        run: bun run tests/browser/details-panel.browser.ts
+
+      - name: 'Gate: arrange tool + seam grammar'
+        run: bun run tests/browser/arrange-tool.browser.ts
+
+      - name: 'Gate: WYSIWYG budgets (DOM vs SVG export)'
+        run: bun run tests/browser/wysiwyg-diff.browser.ts --gate
+
+      - name: 'Gate: settings-panel liveness (zero dead buttons)'
+        run: bun run tests/browser/panel-liveness.browser.ts
+
+      - name: 'Gate: interaction QA (sort/collapse/paint/edit/zoom)'
+        run: bun run tests/browser/interaction-qa.browser.ts
+
+      - name: Upload WYSIWYG artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wysiwyg-report
+          path: /tmp/wysiwyg
+          if-no-files-found: ignore
