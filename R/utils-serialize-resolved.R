@@ -5,6 +5,31 @@
 # this directly. PR 6 only defines the wire shape and tests it; tabviz()
 # dispatch and frontend reader land in PR 8.
 
+#' Serialize a theme as a SLIM switcher envelope (D13, 2026-06-11).
+#'
+#' The in-widget theme-switcher roster used to carry FULL resolved blobs
+#' (~4.9kB each; the 9-preset default roster weighed 43.9kB = 88.8% of a
+#' small widget's payload). The switcher only needs what `buildTheme`
+#' needs: the authoring inputs + artifact channels — previews resolve via
+#' getCssVars(authoringInputs) and the PICK expands in-widget via
+#' buildTheme. The active `spec@theme` stays full (renderers read its
+#' cluster fields).
+#'
+#' @keywords internal
+serialize_theme_slim <- function(theme) {
+  out <- list(
+    name = theme@name,
+    authoringInputs = theme_inputs_to_json(theme@inputs)
+  )
+  if (length(theme@role_overrides) > 0L) out$roleOverrides <- theme@role_overrides
+  if (length(theme@components) > 0L) out$components <- theme@components
+  if (length(theme@pins) > 0L) out$pins <- theme@pins
+  if (length(theme@web_fonts) > 0L) {
+    out$webFonts <- lapply(theme@web_fonts, function(wf) list(family = wf$family, url = wf$url))
+  }
+  out
+}
+
 #' Serialize a v2 theme to a JSON-ready list.
 #'
 #' Emits the full tier 2 / tier 3 resolved shape under camelCase field

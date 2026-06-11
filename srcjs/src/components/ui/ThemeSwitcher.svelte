@@ -4,6 +4,7 @@
   import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
+  import { buildTheme } from "$lib/theme/theme-adapter";
   import ConfirmDialog from "./ConfirmDialog.svelte";
   import {
     getCssVars,
@@ -176,11 +177,27 @@
   let pendingTheme = $state<string | null>(null);
 
   function applyTheme(themeName: string) {
-    // Prefer the v2 wire-shape theme from availableThemes when present.
-    // This works in both single and split mode (each store's setThemeObject
-    // accepts a v2 WebTheme). The `onThemeChange` notification still fires
-    // so split-mode parents can persist the choice across leaves.
-    const theme = lookupTheme(themeName);
+    // Prefer the wire-shape theme from availableThemes when present.
+    // Since D13 (2026-06-11) the roster carries SLIM envelopes ({name,
+    // authoringInputs, roleOverrides?, components?, pins?, webFonts?} —
+    // 10x lighter on the wire); expand to a full WebTheme in-widget
+    // before the swap, because renderers read spec.theme's cluster
+    // fields. Full blobs (older wires, JS-authored rosters) pass
+    // through unchanged.
+    let theme = lookupTheme(themeName);
+    if (theme && !(theme as { row?: unknown }).row && theme.authoringInputs) {
+      const slim = theme as WebTheme & { webFonts?: { family: string; url: string }[] };
+      const built = buildTheme(slim.authoringInputs!, {
+        name: slim.name ?? themeName,
+        roleOverrides: slim.roleOverrides ?? {},
+        pins: slim.pins ?? {},
+        components: slim.components ?? {},
+      });
+      if (Array.isArray(slim.webFonts) && slim.webFonts.length > 0) {
+        (built as { webFonts?: unknown }).webFonts = slim.webFonts;
+      }
+      theme = built;
+    }
     if (theme && store.spec) {
       store.setThemeObject(theme);
       onThemeChange?.(themeName as ThemeName, theme);

@@ -669,10 +669,13 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     # Accept either a flat named list of WebTheme OR a 2-level
     # categorized list. Detect at runtime so package_themes() (now
     # categorized) and user-supplied flat lists both work transparently.
+    # SLIM envelopes since D13 (2026-06-11): the full-blob roster weighed
+    # 43.9kB on every widget; the switcher expands picks in-widget via
+    # buildTheme. serialize_theme_slim is the emitter.
     if (is_categorized_themes(x)) {
-      lapply(x, function(cat) lapply(cat, function(t) serialize_theme(t)))
+      lapply(x, function(cat) lapply(cat, function(t) serialize_theme_slim(t)))
     } else {
-      lapply(x, function(t) serialize_theme(t))
+      lapply(x, function(t) serialize_theme_slim(t))
     }
   }
   if (is.null(enable_themes)) {
