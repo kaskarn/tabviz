@@ -1,3 +1,82 @@
+# tabviz 0.38.0 (dev, wire 1.10 FROZEN) — the ship-readiness sweep
+
+The pre-1.0 hardening arc: the wire format is **frozen at 1.10**
+(additive minors only from here), every ship-roadmap area closed, and a
+season of latent cross-runtime bugs flushed out by new gates.
+
+## Breaking (pre-release clean breaks — last of them)
+
+* **`viz_forest()` is now data-first**: `viz_forest(point, lower, upper,
+  header, width, effects, ...)`. The old signature led with `header`,
+  which silently broke the documented positional idiom
+  `viz_forest("hr", "lo", "hi")` — that idiom now works as written.
+  Named calls are unaffected.
+* **`SlotBundle` removed** — it was a deprecated alias; use `SlotRole`.
+
+## Zero-config first run
+
+* `tabviz(df)` with no `columns` now **infers them from the data**:
+  counts get zero decimals, p-value-named columns in range get p-value
+  formatting, 0–1 proportions with telling names become percents, dates
+  become date columns, names become Title-Case headers. Internal fields
+  (`__row_number__`, dot-prefixed) are excluded. Explicit `columns`
+  always wins; a once-per-session note says inference happened.
+* Tables past **200 rows auto-paginate** (200/page, group-aware breaks);
+  `paginate = FALSE` opts out; explicit `paginate` specs are untouched.
+
+## Themes as house styles (column_defaults)
+
+* Five presets now style their column types as deliberate design:
+  **nejm** (significance stars + pill on p-values, outlined badges),
+  **terminal** (mono numerals, square boxed badges), **brutalist**
+  (square badges, display numerals), **newsprint** (muted ink stars,
+  small circle badges), **synthwave** (oversized glyph columns, pill
+  significance). Author your own with
+  `web_theme(column_defaults = list(pvalue = list(stars = TRUE), ...))`
+  or `set_column_default()` — see the themes guide's "Column house
+  styles" section for the three safety rules.
+* **Theme switches re-base cleanly**: the outgoing theme's house style
+  no longer sticks to the spec when you switch (#65).
+* Authorship contract (D18): themes are the *delegated* half of
+  authoring — a theme default fills any option still at its schema
+  default; your explicit non-default value always wins.
+
+## Headless export fidelity
+
+* **Six column types now render properly in `save_plot()` output**:
+  p-value (stars/pill), bar, heatmap, reference, range, and img cells
+  silently exported as plain text before — the V8 renderer boot never
+  registered them. Bars draw, stars star, heatmaps paint.
+* The significance pill no longer grows compact rows (its decoration
+  box is now layout-neutral), keeping DOM and export heights aligned.
+
+## Accessibility floor
+
+* The widget is now a **real ARIA table**: `role="table"` with
+  row/columnheader/cell structure, `aria-expanded` tracking group
+  collapse, `aria-sort` + keyboard sort on every sortable header
+  (including forest headers), drawing layers hidden from the tree.
+* Focus-visible rings, a global `prefers-reduced-motion` kill-switch,
+  and an Escape path for the zoom dropdown round out the floor.
+* The header context menu no longer offers "Hide column" on the last
+  visible column (no more hiding your way into a blank widget).
+
+## Spec-first contract (for JS/LLM drivers)
+
+* The published **JSON Schema** (`@tabviz/core` →
+  `dist/tabviz-spec.schema.json`) describes the frozen wire.
+* Structured spec diagnostics: `validateSpec` returns
+  `{path, code, message, severity}` issues; invalid specs fail at the
+  widget mount with the issues attached.
+* A dependency-free **MCP server** ships in the npm package
+  (`scripts/mcp-server.mjs`): column introspection, theme roster, spec
+  validation, headless SVG rendering over stdio.
+
+## Smaller widgets
+
+* `enable_themes` rosters now travel as theme *inputs* expanded in the
+  widget — a 9-preset switcher payload dropped from 49.4 kB to 14.2 kB.
+
 # tabviz 0.37.2 (dev) — the settings overhaul
 
 The settings ⇄ studio boundary is now **tier-gated writes,

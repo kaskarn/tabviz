@@ -4,6 +4,61 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## Unreleased (0.7.0) — the ship-readiness sweep
+
+### Wire FROZEN at 1.10
+
+Additive minors only from here; majors need a migration handler. The
+published JSON Schema (`dist/tabviz-spec.schema.json`, 2020-12 dialect)
+describes the frozen shape: hand-written top-level + per-column-type
+option definitions generated from the schema registry. Unknown column
+types stay valid (additive-minor contract); known types must satisfy
+their definitions.
+
+### Added
+
+* **Structured spec diagnostics** on the `/spec` subpath: `validateSpec`
+  collects `{path, code, message, severity}` issues (version, WebData
+  shape, row/column id uniqueness, field references incl. forest
+  options); `assertValidSpec` is the ingress wall in `createTabviz`
+  (errors throw `SpecValidationError`; warnings surface).
+* **MCP server** (`scripts/mcp-server.mjs`): dependency-free stdio
+  JSON-RPC exposing `list_column_types` / `get_column_schema` /
+  `list_themes` / `get_spec_schema` / `validate_spec` / `render_svg` —
+  the LLM-driver path, importing only from `dist/`. Smoke:
+  `npm run mcp:smoke`.
+* **Theme house styles**: five presets ship `column_defaults` (nejm,
+  terminal, brutalist, newsprint, synthwave); theme switches re-base the
+  outgoing theme's bake (`rebaseThemeColumnDefaults`). Authorship
+  contract: themes are the delegated half of authoring (D18) — author
+  non-default values always win.
+* **Consumer fixture** (`scripts/consumer-fixture.mjs`): author →
+  shipped-schema validate → headless SVG, importing only `dist/` — runs
+  in `build:npm`.
+
+### Fixed
+
+* **Six column types silently exported as plain text** in headless
+  (V8) rendering — pvalue (stars/pill), bar, heatmap, reference, range,
+  img: their SVG renderers were registered only by the DOM boot. Split
+  into V8-safe modules registered from both boots; gated by
+  `schema/boot-coverage.test.ts` and the dual-target render sweep
+  (`schema/render-coverage.runes.ts`).
+* The significance pill inflated compact rows by 2px (DOM-only growth
+  the export can't see) — its decoration box is now layout-neutral.
+* The zoom dropdown had no Escape path (outside-click was the only
+  dismissal).
+* ARIA table semantics: the CSS grid now exposes a real
+  table/row/columnheader/cell tree; `aria-sort` + keyboard sort on all
+  sortable headers; `aria-expanded` tracks group collapse.
+
+### Changed
+
+* `enableThemes` rosters travel as slim inputs-form envelopes expanded
+  in-widget (9-preset payload 43.9 kB → 8.4 kB).
+* README rewritten as verified JS-author docs (every snippet ran
+  against `dist/` first); MCP + schema sections added.
+
 ## 0.6.0 — 2026-06-10
 
 ### Added — the declarative theme contract surface
