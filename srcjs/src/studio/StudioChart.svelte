@@ -50,14 +50,18 @@
     const baseName = studioStore.baseName;
     const roleOverrides = studioStore.roleOverrides;
     const pins = studioStore.pins;
+    const components = studioStore.components;
     untrack(() => {
       const currentSpec = store.spec;
       if (!currentSpec) return;
       try {
-        // roleOverrides ride the built theme so the chart preview (and
-        // anything reading getCssVars off it) reflects spine rebinds —
-        // they are part of the artifact, not studio-side state (P0).
-        const newTheme = buildTheme(inputs, { name: baseName, roleOverrides, pins }) as unknown as WebSpec["theme"];
+        // roleOverrides + components ride the built theme so the chart
+        // preview (and anything reading getCssVars off it) reflects spine
+        // rebinds AND component re-routes — all artifact channels, not
+        // studio-side state. (components was MISSING here until the
+        // area-H studio walk caught the dead preview, 2026-06-11 — the
+        // hand-rolled-opts-bag bug class the W6 arc warned about.)
+        const newTheme = buildTheme(inputs, { name: baseName, roleOverrides, pins, components }) as unknown as WebSpec["theme"];
         store.setSpec({ ...currentSpec, theme: newTheme });
       } catch (e) {
         console.warn("[StudioChart] buildTheme failed:", e);

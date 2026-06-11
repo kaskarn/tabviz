@@ -211,10 +211,16 @@ is a liveness audit across ALL surfaces.
 ### H. Studio: good enough
 Deliberately scoped down — correct and unsurprising, not flagship.
 **Exit criteria:**
-- [ ] No dead controls (liveness walk over the studio rail/tabs).
+- [~] Studio walk LANDED 2026-06-11 (studio-shot.mjs extended): rail
+      tabs switch content; the components editor's 51 channel rows live;
+      a component re-route repaints the chart; undo restores it; zero
+      console/page errors across the walk. FIRST-RUN CATCH: the chart
+      preview rebuilt its theme WITHOUT components (the hand-rolled
+      opts-bag class) — fixed. Remaining for [x]: walking the rail's
+      VALUE controls (the panel-liveness depth) + PinsPanel.
 - [ ] Round-trips lossless: handoff in, envelope out, undo/redo sane.
-- [ ] Validate ▦ and contrast banners accurate; no console errors in a
-      full session walk.
+- [~] No console errors in the full session walk [x] (2026-06-11);
+      validate ▦ / contrast-banner accuracy checks remain.
 - [ ] Anything beyond this explicitly deferred post-1.0.
 
 ### I. Zero-config first run
