@@ -1,0 +1,82 @@
+# Column-ontology review (roadmap area C, M1)
+
+Status: **opened 2026-06-11** — inventory + first findings. This document
+is the review's working record AND the source of the W2 wire-change list
+(`wire-freeze-inventory.md`). Update findings in place; move items to
+"Resolved" with the fixing commit.
+
+## Inventory (post-D2, 2026-06-11)
+
+- 25 concrete schemas / 23 buckets; **108 options** total
+  (`bun -e` over `SCHEMA_REGISTRY`; D2 deleted 6 the same day).
+- Kind split: 60 core / 32 editor / 16 styling.
+- `consumedBy` annotation state: 26/108 annotated (base 9, text 3,
+  numeric 6, pvalue 8); **82 grandfathered** → the D11 arc.
+
+### Inheritance DAG (`inherits` chains)
+
+```
+base ── categorical ── ordinal
+  ├─ text ── reference
+  ├─ date                     ← inherits BASE, not text (F4)
+  ├─ numeric ── n · currency · percent · interval · range · events · heatmap
+  ├─ pvalue                   ← inherits BASE, not numeric (F4)
+  ├─ bar · progress · sparkline        (visual)
+  ├─ pictogram ── stars · ring · badge · icon · img   (glyph)
+  └─ viz ── viz_forest · viz_bar · viz_boxplot · viz_violin
+```
+
+## Findings
+
+- **F1 — `kind: "editor"` definition contradicts its assignments.**
+  `schema/types.ts` says editor = "UI-only knob … don't change the
+  rendered cell behavior", but its own example (theme defaults
+  `abbreviate`) and most assignments (axisLabel, showAxis, showLabel,
+  height, shape, size — all paint) DO change rendering. The WORKING
+  distinction is: core = data semantics (author-only) / styling =
+  per-row visual override (MappedValue) / editor = presentation knob
+  (theme-defaultable, never data meaning). Fix the PROSE to say that;
+  assignments are mostly right under the corrected definition.
+  Renaming the value `"editor"` → `"presentation"` is a W2 candidate
+  (internal metadata, not wire) — decide cheap/skip at review close.
+- **F2 — `symbol` name collision with different types**: currency
+  (`text`, "$") vs percent (`toggle`, show-%). Schema comments mark it
+  deliberate (different buckets, matches R arg names). VERDICT: keep,
+  but percent's would read better as `showSymbol` — W2 candidate, weigh
+  against R `col_percent(symbol=)` churn.
+- **F3 — `format` is contextually typed**: date (strptime text) vs
+  pvalue (enum auto/scientific/decimal). Same key, different vocab —
+  acceptable (format is inherently type-local), document in the
+  authoring docs rather than rename.
+- **F4 — inheritance irregularities**: `date` inherits base (not text —
+  misses wrap/truncate options); `pvalue` inherits base (not numeric —
+  misses thousands/abbreviate, deliberately? p-values never abbreviate).
+  ACTION: verify each is intentional, write the rationale into the
+  schema files, or rewire `inherits`.
+- **F5 — `maxValue` defaults vary by domain**: bar/heatmap null (auto),
+  progress 100, ring 1. Semantically coherent (natural domains); needs
+  a doc line, not a change.
+- **F6 — repeated keys are otherwise coherent**: color (6×, all
+  styling/color-control), size (4×, all segmented sm/base/…), scale
+  (4×, all linear/log segmented), thresholds (3×, custom), separator
+  (3×, text), showLabel (3×, toggle/editor). Good baseline.
+
+## W2 candidates (wire-change list — feeds the freeze inventory)
+
+| Candidate | From finding | Lean |
+|---|---|---|
+| percent `symbol` → `showSymbol` | F2 | weigh; R arg churn vs clarity |
+| `kind: "editor"` → `"presentation"` | F1 | internal-only; cheap if done with F1 prose fix |
+| `inherits` rewires (date→text?) | F4 | verify first; additive if pure gain |
+
+## Remaining review passes (next sessions)
+
+1. F1 prose fix + F4 verification (small commits).
+2. **D11 arc**: annotate the 82 grandfathered options with `consumedBy`
+   (one dedicated arc; the drift gate's KNOWN_UNCONSUMED-style list
+   then shrinks to justified rows only).
+3. Vocabulary doc: the per-type option tables in `docs/guide/columns.qmd`
+   regenerate from the registry (kill hand-maintained drift — the D2
+   deletions found two stale doc rows).
+4. `column_defaults`-in-presets design work (the area-C creative half:
+   ≥4 shipped presets using theme-level column styling deliberately).
