@@ -19,6 +19,11 @@ on:
 
 name: js-ci
 
+# GitHub forces JS actions onto Node 24 on 2026-06-16; opt in early so
+# the cutover is verified green rather than discovered broken.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 concurrency:
   group: js-ci-${{ github.ref }}
   cancel-in-progress: true

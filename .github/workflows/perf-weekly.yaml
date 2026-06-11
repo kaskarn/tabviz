@@ -13,6 +13,11 @@ on:
 
 name: perf-weekly
 
+# GitHub forces JS actions onto Node 24 on 2026-06-16; opt in early so
+# the cutover is verified green rather than discovered broken.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   browser-bench:
     runs-on: ubuntu-latest
