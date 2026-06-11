@@ -409,12 +409,24 @@ Clinical/regulatory audience makes this table stakes.
 - [~] Release notes DONE (NEWS 0.38.0 + CHANGELOG 0.7.0-unreleased,
       2026-06-11); docs site CUT fresh same day (freeze cleared; 60
       sources → 102 pages, zero errors, against the current install).
-      REMAINING — user's call: npm publish + CRAN submission
-      (credentials/timing) and the D9 joint review at ship.
+      REMAINING — user's call: npm publish (0.7.0 staged, gate green)
+      and the D9 joint review.
+      **CRAN: MOVED TO DISTANT FUTURE** (maintainer, 2026-06-11 —
+      "lots of work to do still"). The package keeps its CRAN
+      discipline (clean checks stay a gate; the 5-platform matrix runs
+      on every push) but submission is no longer a near-term milestone;
+      the strict --as-cran TinyTeX run moves to whenever submission
+      re-enters the horizon.
 
 ---
 
 ## Status log
+
+- 2026-06-11 (late) — CRAN submission moved to DISTANT FUTURE by
+  maintainer ("lots of work to do still"); check discipline unchanged.
+  CI fully green on the sizing-arc commits (js-ci + 5-platform R
+  matrix); Node-24 forced-cutover opt-in pushed ahead of the
+  2026-06-16 deadline.
 
 - 2026-06-11 (SESSION SWEEP — areas C, D, F, G, H, J closed; I at
   pre-ship scope). The day's arcs: 9-preset WYSIWYG battery + matrix
