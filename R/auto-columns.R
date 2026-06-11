@@ -48,6 +48,9 @@
 #' @noRd
 infer_columns <- function(data, exclude = character(0)) {
   fields <- setdiff(names(data), exclude)
+  # Internal/bookkeeping fields never become columns: dunder-wrapped
+  # names (__row_number__) and dot-prefixed names (.hidden).
+  fields <- fields[!grepl("^__.*__$|^\\.", fields)]
   cols <- lapply(fields, function(f) .infer_column(data[[f]], f))
   cli::cli_inform(
     c("i" = "No {.arg columns} given: inferred {length(cols)} column{?s} from the data ({.fn col_text}/{.fn col_numeric}/{.fn col_percent}/{.fn col_pvalue}/{.fn col_date} by type and name).",

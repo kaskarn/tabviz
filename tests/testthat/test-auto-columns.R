@@ -44,6 +44,12 @@ test_that("explicit columns are never overridden", {
   expect_identical(.buckets(s), "text")
 })
 
+test_that("internal fields (__dunder__, .dot) are never inferred", {
+  s <- .spec(data.frame(x = "a", v = 1, `__row_number__` = 2L, .internal = 3,
+                        check.names = FALSE), label = "x")
+  expect_identical(vapply(s@columns, function(c) c@field, ""), "v")
+})
+
 test_that("group fields are excluded from inference", {
   s <- .spec(data.frame(x = "a", g = "G1", v = 1), label = "x", group = "g")
   expect_identical(vapply(s@columns, function(c) c@field, ""), "v")

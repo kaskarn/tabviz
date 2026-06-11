@@ -24,6 +24,12 @@
 #'   - List of `web_group()` objects for explicit control over labels and structure
 #' @param columns List of column specifications (use `col_*()` helpers).
 #'   Include `viz_forest()` to add a forest plot column.
+#'   When `NULL` (the default), columns are INFERRED from the data:
+#'   numbers become [col_numeric()] (counts get zero decimals), 0–1
+#'   proportions with telling names become [col_percent()], p-value-named
+#'   columns in range become [col_pvalue()], dates become [col_date()],
+#'   and everything else renders as text. A once-per-session note says
+#'   so; pass `columns` to take control.
 #' @param extra_columns List of column specifications that are hidden by default but
 #'   available in the interactive column picker. Pre-configured formatting for optional
 #'   columns; users can surface them at runtime.
@@ -190,12 +196,6 @@
 #' }
 #'
 #' @export
-#'   When `NULL` (the default), columns are INFERRED from the data:
-#'   numbers become [col_numeric()] (counts get zero decimals), 0–1
-#'   proportions with telling names become [col_percent()], p-value-named
-#'   columns in range become [col_pvalue()], dates become [col_date()],
-#'   and everything else renders as text. A once-per-session note says
-#'   so; pass `columns` to take control.
 tabviz <- function(
     data,
     label = NULL,

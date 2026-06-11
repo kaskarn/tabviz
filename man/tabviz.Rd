@@ -86,7 +86,13 @@ to innermost, e.g., \code{c("region", "country")} creates region > country
 }}
 
 \item{columns}{List of column specifications (use \verb{col_*()} helpers).
-Include \code{viz_forest()} to add a forest plot column.}
+Include \code{viz_forest()} to add a forest plot column.
+When \code{NULL} (the default), columns are INFERRED from the data:
+numbers become \code{\link[=col_numeric]{col_numeric()}} (counts get zero decimals), 0–1
+proportions with telling names become \code{\link[=col_percent]{col_percent()}}, p-value-named
+columns in range become \code{\link[=col_pvalue]{col_pvalue()}}, dates become \code{\link[=col_date]{col_date()}},
+and everything else renders as text. A once-per-session note says
+so; pass \code{columns} to take control.}
 
 \item{extra_columns}{List of column specifications that are hidden by default but
 available in the interactive column picker. Pre-configured formatting for optional
