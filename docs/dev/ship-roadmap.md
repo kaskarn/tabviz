@@ -117,8 +117,16 @@ objects rather than palettes — and it exercises the machine contract.
       real external-consumer gate: author → shipped-schema validate →
       headless SVG, imports ONLY dist/; runs in build:npm after
       dist-smoke.
-- [ ] MCP server exposing schema introspection + spec validation +
-      render-to-SVG (the LLM-driver path) — minimal but real.
+- [x] MCP server LANDED 2026-06-11 (scripts/mcp-server.mjs):
+      dependency-free stdio JSON-RPC exposing six tools —
+      list_column_types / get_column_schema / list_themes /
+      get_spec_schema / validate_spec (structured diagnostics, typo
+      roster from the schema's own wire-type defs) / render_svg
+      (headless, preset-name themes resolved server-side). Imports ONLY
+      dist/. Gate: scripts/mcp-smoke.mjs (npm run mcp:smoke) drives the
+      full journey over REAL stdio — 10 checks. First run caught a real
+      seam: listColumnTypes returns AUTHORING keys while the wire wants
+      WIRE types (viz_forest vs forest). AREA D COMPLETE.
 - [x] Structured spec errors LANDED 2026-06-11: src/spec/validate.ts —
       `validateSpec` collects `{path, code, message, severity}` issues
       (version, WebData shape, row-id presence/uniqueness, column

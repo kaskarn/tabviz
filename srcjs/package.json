@@ -75,6 +75,8 @@
     "build:npm": "vite build --config vite.config.npm.ts && tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs && cp src/spec/generated/tabviz-spec.schema.json dist/tabviz-spec.schema.json && node scripts/dist-smoke.mjs && node scripts/consumer-fixture.mjs",
     "build:npm:types": "tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs",
     "check:size": "node scripts/bundle-size-gate.mjs",
+    "mcp": "node scripts/mcp-server.mjs",
+    "mcp:smoke": "node scripts/mcp-smoke.mjs",
     "check:lockfiles": "npm install --package-lock-only --no-audit --no-fund --dry-run && bun install --frozen-lockfile --dry-run",
     "check:wiring": "node scripts/check-primitive-wiring.mjs",
     "check": "svelte-check --tsconfig ./tsconfig.json && node scripts/check-primitive-wiring.mjs",

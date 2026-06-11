@@ -137,6 +137,21 @@ Spec shape is defined in `@tabviz/core/spec`; validate payloads against
 the shipped `dist/tabviz-spec.schema.json` (see "Validating specs"
 above).
 
+## MCP server (the LLM-driver path)
+
+`scripts/mcp-server.mjs` is a dependency-free MCP server over stdio
+exposing the spec-first contract to LLM agents: column-type
+introspection (`list_column_types`, `get_column_schema`), the published
+JSON Schema (`get_spec_schema`), theme roster (`list_themes`),
+structured validation (`validate_spec` → `{path, code, message,
+severity}` diagnostics), and headless rendering (`render_svg`). It
+imports only from `dist/` — build with `npm run build:npm` first.
+
+```sh
+claude mcp add tabviz -- node <repo>/srcjs/scripts/mcp-server.mjs
+npm run mcp:smoke   # drives the full journey over real stdio
+```
+
 ## Wire-format versioning
 
 Every `WebSpec` carries an explicit `version` field. The runtime
