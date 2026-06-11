@@ -500,6 +500,29 @@ save_plot <- function(x, file,
   size_px <- .font_size_px(size_raw)
   if (is.null(family)) return(spec)
 
+  # METRIC-CLASS GUARD (2026-06-11, the terminal-overlap catch): when a
+  # MONOSPACE theme family is not installed, systemfonts silently shapes
+  # with the OS default (a PROPORTIONAL face — Helvetica on macOS) while
+  # the rasterizer falls back to a real mono (Courier) — the injected
+  # widths under-budget the rendered glyphs and columns collide
+  # ("Beta replication870"). Probe the resolved metrics: in a true mono,
+  # "iiii" and "MMMM" shape to the SAME width. If the theme asks for
+  # mono but the resolver gives proportional metrics, skip injection and
+  # let the TS estimator (mono-aware since today) budget the widths.
+  # Proportional-onto-proportional fallback (Lora→Helvetica) keeps the
+  # long-standing inject path — that mismatch is mild and budgeted (D8).
+  if (grepl("mono|courier|consolas|menlo", tolower(family))) {
+    probe <- tryCatch(
+      systemfonts::shape_string(c("iiiiiiiiii", "MMMMMMMMMM"),
+        family = family, size = 13, res = 96)$metrics$width,
+      error = function(e) NULL
+    )
+    if (is.null(probe) || length(probe) != 2L ||
+        abs(probe[1] - probe[2]) > 0.05 * max(probe)) {
+      return(spec)
+    }
+  }
+
   cell_padding_x <- tryCatch({
     v <- spec@theme@spacing@cell_padding_x
     if (length(v) == 0L || is.na(v)) 10 else v

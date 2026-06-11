@@ -61,11 +61,29 @@ import { dispatchForColumn } from "../schema/dispatch";
  * Per-CSS-weight examples:
  *   400 → ×1.000, 500 → ×1.035, 600 → ×1.070, 700 → ×1.105, 800 → ×1.140.
  */
+/** Monospace detection on a resolved font-family string. The estimator's
+ *  character-class model is tuned for PROPORTIONAL faces; mono faces
+ *  (terminal/synthwave themes) under-measured ~12% — enough to eat the
+ *  first column's padding and render labels flush against the next
+ *  column (maintainer catch, 2026-06-11). */
+export function isMonospaceFamily(family: string | undefined | null): boolean {
+  return !!family && /mono|courier|consolas|menlo/i.test(family);
+}
+
+/** Fixed advance for mono faces, as a fraction of fontSize. Space Mono /
+ *  Courier-class faces sit at ~0.60em; 0.62 carries a small safety pad. */
+const MONO_ADVANCE = 0.62;
+
 export function estimateTextWidth(
   text: string,
   fontSize: number,
   weight: number = 400,
+  family?: string,
 ): number {
+  if (isMonospaceFamily(family)) {
+    const weightMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.035;
+    return [...text].length * fontSize * MONO_ADVANCE * weightMultiplier;
+  }
   // Character width categories (proportions of fontSize):
   // Very narrow: superscript/subscript characters (0.15) - rendered at ~50% size and narrower
   // Narrow: i, l, I, 1, punctuation, space (0.35)
@@ -119,7 +137,7 @@ export function measureTextWidth(
 ): number {
   const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily, fontWeight);
   if (canvasWidth !== null) return canvasWidth;
-  return estimateTextWidth(text, fontSize, fontWeight);
+  return estimateTextWidth(text, fontSize, fontWeight, fontFamily);
 }
 
 /**

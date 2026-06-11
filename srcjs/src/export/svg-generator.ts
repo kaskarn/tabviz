@@ -338,7 +338,8 @@ export interface ExportOptions {
  */
 function calculateSvgAutoWidths(
   spec: WebSpec,
-  columns: ColumnSpec[]
+  columns: ColumnSpec[],
+  primaryCol?: ColumnSpec | null,
 ): Map<string, number> {
   const widths = new Map<string, number>();
   const cssVarsLocal = getCssVars(spec.theme);
@@ -352,6 +353,10 @@ function calculateSvgAutoWidths(
   const headerFontSize = parseFontSize(readTypeSize(cssVarsLocal, "header",
     `${Math.round(parseFontSize(bodySizeStr) * 1.05 * 100) / 100}px`));
   const headerWeight = readTypeWeight(cssVarsLocal, "header", 600);
+  // Mono-aware estimation (maintainer catch 2026-06-11): mono themes
+  // under-measured ~12% with the proportional character-class model,
+  // rendering first columns flush against their neighbors.
+  const bodyFamily = readBodyFamily(cssVarsLocal);
   const rows = spec.data.rows;
 
   // Padding values from theme (not hardcoded magic numbers). v4 cssVars when
@@ -360,10 +365,60 @@ function calculateSvgAutoWidths(
   const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
   const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", 8) * 2;
 
+  // ── Primary (label) column — measured HERE, same function, same
+  // padding + clamp rules (maintainer ruling 2026-06-11: the label
+  // column had its own parallel width path — "artifactual and
+  // nonsensical"; it is a column like any other whose CONTENT happens
+  // to be row labels + indent + badge + group-header chrome). Only the
+  // content hook differs; everything else is shared.
+  if (primaryCol && (primaryCol.width === "auto" || primaryCol.width == null)) {
+    const indentPx = readVarPx(cssVars, "--tv-spacing-indent-per-level", SPACING.INDENT_PER_LEVEL);
+    const groups = Array.isArray(spec.data.groups) ? spec.data.groups : [];
+    const groupDepths = new Map<string, number>();
+    for (const group of groups) groupDepths.set(group.id, group.depth);
+    let maxWidth = 0;
+    const primaryHeader = primaryCol.header;
+    if (primaryHeader) {
+      maxWidth = Math.max(maxWidth, estimateTextWidth(primaryHeader, headerFontSize, headerWeight, bodyFamily));
+    }
+    for (const row of rows) {
+      if (!row.label) continue;
+      const depth = row.groupId != null ? (groupDepths.get(row.groupId) ?? 0) + 1 : 0;
+      const totalIndent = depth + (row.style?.indent ?? 0);
+      let rowWidth = estimateTextWidth(row.label, fontSize, 400, bodyFamily) + totalIndent * indentPx;
+      if (row.style?.badge) {
+        const badgeText = String(row.style.badge);
+        const badgeTextWidth = estimateTextWidth(badgeText, fontSize * BADGE.FONT_SCALE, 400, bodyFamily);
+        rowWidth += BADGE.GAP + badgeTextWidth + BADGE.PADDING * 2;
+      }
+      maxWidth = Math.max(maxWidth, rowWidth);
+    }
+    // Group headers render in the primary column:
+    // [indent][chevron][gap][label][gap][count][safety]
+    const showGroupCounts = resolveInteraction(spec).showGroupCounts;
+    for (const group of groups) {
+      if (!group.label) continue;
+      let countWidth = 0;
+      if (showGroupCounts) {
+        const rowCount = countGroupDescendantRows(group.id, groups, rows);
+        countWidth = estimateTextWidth(`(${rowCount})`, fontSize * 0.75, 400, bodyFamily) + GROUP_HEADER.GAP;
+      }
+      maxWidth = Math.max(maxWidth,
+        group.depth * indentPx + GROUP_HEADER.CHEVRON_WIDTH + GROUP_HEADER.GAP +
+        estimateTextWidth(group.label, fontSize, 400, bodyFamily) + countWidth + GROUP_HEADER.SAFETY_MARGIN);
+    }
+    const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
+    widths.set(primaryCol.id, Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth)));
+  }
+
   // ========================================================================
   // PHASE 1: Measure leaf column content
   // ========================================================================
   for (const col of columns) {
+    // The primary column was measured above with its content hook
+    // (labels/indent/badges/group chrome); the generic metadata-text
+    // scan would see an empty field and clobber it down to MIN.
+    if (primaryCol && col.id === primaryCol.id) continue;
     // Plot columns (forest, viz_bar, viz_boxplot, viz_violin) with width="auto"
     // are intentionally omitted here so the downstream renderer falls through
     // to their multi-flex distributed width (`layout.flexWidths`, the
@@ -400,7 +455,7 @@ function calculateSvgAutoWidths(
     if (col.header) {
       maxWidth = Math.max(
         maxWidth,
-        estimateTextWidth(col.header, headerFontSize, headerWeight),
+        estimateTextWidth(col.header, headerFontSize, headerWeight, bodyFamily),
       );
     }
 
@@ -411,7 +466,7 @@ function calculateSvgAutoWidths(
       }
       const text = getColumnDisplayText(row, col);
       if (text) {
-        maxWidth = Math.max(maxWidth, estimateTextWidth(text, fontSize));
+        maxWidth = Math.max(maxWidth, estimateTextWidth(text, fontSize, 400, bodyFamily));
       }
     }
 
@@ -546,109 +601,6 @@ function countGroupDescendantRows(
   return count;
 }
 
-/**
- * Calculate primary (leftmost) column width based on actual label content.
- */
-function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
-  const cssVarsLocal = getCssVars(spec.theme);
-  const bodySizeStr = readBodySize(cssVarsLocal);
-  const fontSize = parseFontSize(readTypeSize(cssVarsLocal, "body", bodySizeStr));
-  // Canonical indent token: the renderer indents by
-  // theme.rowGroup.indentPerLevel, NOT the legacy SPACING.INDENT_PER_LEVEL (12).
-  // Budget label width with the same value so it doesn't under-size at depth.
-  // v4 reads --tv-spacing-indent-per-level (kept in sync with rowGroup.indentPerLevel).
-  const indentPx = readVarPx(cssVarsLocal, "--tv-spacing-indent-per-level", SPACING.INDENT_PER_LEVEL);
-  // Header in the primary (label) column is rendered bold at the same scaled
-  // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
-  // a long primary header doesn't squeeze the label column and trigger
-  // ellipsis in the live header.
-  const headerFontSize = parseFontSize(readTypeSize(cssVarsLocal, "header",
-    `${Math.round(parseFontSize(bodySizeStr) * 1.05 * 100) / 100}px`));
-  const headerWeight = readTypeWeight(cssVarsLocal, "header", 600);
-  // Use theme-based padding (not hardcoded magic numbers)
-  const cssVars = getCssVars(spec.theme);
-  const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
-  let maxWidth = 0;
-
-  // Build group depth map for calculating row indentation
-  const groupDepths = new Map<string, number>();
-  const groups = Array.isArray(spec.data.groups) ? spec.data.groups : [];
-  for (const group of groups) {
-    groupDepths.set(group.id, group.depth);
-  }
-
-  // Helper to get row depth (group depth + 1 for data rows)
-  const getRowDepth = (groupId: string | null | undefined): number => {
-    if (!groupId) return 0;
-    const groupDepth = groupDepths.get(groupId) ?? 0;
-    return groupDepth + 1;
-  };
-
-  // Measure primary column header at scaled header fontSize+weight
-  if (primaryHeader) {
-    maxWidth = Math.max(maxWidth, estimateTextWidth(primaryHeader, headerFontSize, headerWeight));
-  }
-
-  // Measure all labels (including group depth, row indent, and badges)
-  for (const row of spec.data.rows) {
-    if (row.label) {
-      // Total indent = group-based depth + row-level indent
-      const depth = getRowDepth(row.groupId);
-      const rowIndent = row.style?.indent ?? 0;
-      const totalIndent = depth + rowIndent;
-      const indentWidth = totalIndent * indentPx;
-      let rowWidth = estimateTextWidth(row.label, fontSize) + indentWidth;
-
-      // Account for badge width if present
-      if (row.style?.badge) {
-        const badgeText = String(row.style.badge);
-        const badgeFontSize = fontSize * BADGE.FONT_SCALE;
-        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-        const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
-        rowWidth += BADGE.GAP + badgeWidth;
-      }
-
-      maxWidth = Math.max(maxWidth, rowWidth);
-    }
-  }
-
-  // ========================================================================
-  // MEASURE ROW GROUP HEADERS
-  // ========================================================================
-  // Group headers in the label column include multiple elements:
-  // [indent][chevron][gap][label][gap][count][internal-padding]
-  // See GROUP_HEADER constants in rendering-constants.ts
-  // This must match the web view measurement in tabvizStore.svelte.ts
-  // ========================================================================
-  const showGroupCounts = resolveInteraction(spec).showGroupCounts;
-  for (const group of groups) {
-    if (group.label) {
-      const indentWidth = group.depth * indentPx;
-      const labelWidth = estimateTextWidth(group.label, fontSize);
-
-      // Count "(N)" suffix is optional — budget 0 when hidden.
-      let countWidth = 0;
-      if (showGroupCounts) {
-        const rowCount = countGroupDescendantRows(group.id, groups, spec.data.rows);
-        const countText = `(${rowCount})`;
-        const countFontSize = fontSize * 0.75; // matches readLabelSize(cssVars)
-        countWidth = estimateTextWidth(countText, countFontSize) + GROUP_HEADER.GAP;
-      }
-
-      const totalWidth = indentWidth
-        + GROUP_HEADER.CHEVRON_WIDTH
-        + GROUP_HEADER.GAP
-        + labelWidth
-        + countWidth
-        + GROUP_HEADER.SAFETY_MARGIN;
-
-      maxWidth = Math.max(maxWidth, totalWidth);
-    }
-  }
-
-  const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
-  return Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
-}
 
 /**
  * Get effective column width, using calculated auto-width if available.
@@ -863,13 +815,17 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
       }
     }
     labelWidth = (primaryId ? options.columnWidths[primaryId] : undefined)
-      ?? calculateSvgLabelWidth(spec, primaryHeader);
+      ?? (primaryCol ? calculateSvgAutoWidths(spec, [], primaryCol).get(primaryCol.id) : undefined)
+      ?? AUTO_WIDTH.MIN;
   } else {
     // Calculate widths from scratch (R-side export path). A figureLayout
     // pin on the primary column overrides the calculated label width.
-    autoWidths = calculateSvgAutoWidths(spec, allColumns);
+    // The primary column is measured by the SAME function as every
+    // other column (D20 — the parallel label-width path is gone).
+    autoWidths = calculateSvgAutoWidths(spec, allColumns, primaryCol);
     labelWidth = (primaryCol?.id ? pinnedWidths[primaryCol.id] : undefined)
-      ?? calculateSvgLabelWidth(spec, primaryHeader);
+      ?? (primaryCol?.id ? autoWidths.get(primaryCol.id) : undefined)
+      ?? AUTO_WIDTH.MIN;
   }
 
   // Wrap line counts: per-row max number of lines across wrap-enabled
