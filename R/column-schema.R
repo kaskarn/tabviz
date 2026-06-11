@@ -55,13 +55,13 @@ list_column_types <- function() {
 #' contract behind `col_<type>()`: use it to discover option names/values, or
 #' to see exactly which options a theme's `column_defaults` (via
 #' [set_column_default()]) is allowed to touch (`themeable == TRUE`, i.e.
-#' `kind` is `"styling"` or `"editor"`; `"core"` options change what the data
+#' `kind` is `"styling"` or `"presentation"`; `"core"` options change what the data
 #' means and are never theme-defaultable).
 #'
 #' @param type A column type string, e.g. `"pvalue"`, `"numeric"`, `"bar"`.
 #'   One of [list_column_types()]`$type`.
 #' @return A data frame with one row per option: `option`, `kind`
-#'   (`core`/`styling`/`editor`), `themeable` (logical), `control`, `default`,
+#'   (`core`/`styling`/`presentation`), `themeable` (logical), `control`, `default`,
 #'   `choices` (comma-separated valid values, or `NA`), `hint`, and
 #'   `inherited_from` (the schema in the chain that declares it).
 #' @examples

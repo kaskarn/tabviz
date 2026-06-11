@@ -230,7 +230,7 @@ export interface ThemeInputs {
    *  object (e.g. `{ pvalue: { stars: true, significantStyle: "pill" } }`).
    *  Applied at spec construction UNDER each matching column's own options
    *  (author always wins — `default` mode), and KIND-GATED: only options whose
-   *  schema `kind` is "styling" or "editor" are accepted; "core" (data/
+   *  schema `kind` is "styling" or "presentation" are accepted; "core" (data/
    *  behavior) options are dropped, so a theme can never silently change what
    *  the data MEANS. See lib/theme/column-defaults.ts. */
   column_defaults?: Partial<Record<string, Record<string, unknown>>>;

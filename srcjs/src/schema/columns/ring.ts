@@ -69,7 +69,7 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Ring size",
       control: "segmented",
       default: "base",
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -82,7 +82,7 @@ export const RING_SCHEMA: ColumnSchema = {
       label: "Show label",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {

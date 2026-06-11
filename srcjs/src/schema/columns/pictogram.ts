@@ -109,7 +109,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Glyph size",
       control: "segmented",
       default: "base",
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -122,7 +122,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Layout",
       control: "segmented",
       default: "row",
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: "row",   label: "Row" },
         { value: "stack", label: "Stack" },
@@ -134,7 +134,7 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
       label: "Value label",
       control: "segmented",
       default: false,
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: false,       label: "Off" },
         { value: true,        label: "Inline" },

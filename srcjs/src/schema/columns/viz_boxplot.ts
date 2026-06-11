@@ -32,7 +32,7 @@ export const VIZ_BOXPLOT_SCHEMA: ColumnSchema = {
       label: "Show outliers",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],

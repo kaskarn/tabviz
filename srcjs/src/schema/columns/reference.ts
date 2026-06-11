@@ -37,7 +37,7 @@ export const REFERENCE_SCHEMA: ColumnSchema = {
       label: "Link icon",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       hint: "External-link indicator when URL is present",
       visibleWhen: (s) => s.hrefField != null && s.hrefField !== "",
       consumedBy: ["renderCell", "emitSource", "editor"],

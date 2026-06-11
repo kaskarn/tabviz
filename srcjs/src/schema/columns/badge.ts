@@ -81,7 +81,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Size",
       control: "segmented",
       default: "base",
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },
@@ -93,7 +93,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Shape",
       control: "segmented",
       default: "pill",
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: "pill",   label: "Pill" },
         { value: "circle", label: "Circle" },
@@ -106,7 +106,7 @@ export const BADGE_SCHEMA: ColumnSchema = {
       label: "Outline",
       control: "toggle",
       default: false,
-      kind: "editor",
+      kind: "presentation",
       hint: "Transparent fill, colored border",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },

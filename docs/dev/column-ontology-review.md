@@ -93,7 +93,7 @@ base ── categorical ── ordinal
 | Candidate | Decision |
 |---|---|
 | percent `symbol` → `showSymbol` | **KEEP.** The toggle control makes the semantics clear; a rename buys marginal clarity for real wire + R-arg churn. |
-| `kind: "editor"` → `"presentation"` | **RENAME** (execute as one mechanical commit, next session). Internal metadata, not wire — but the name actively confuses: the SAME files use `consumedBy: ["editor"]` to mean "the editor UI reads this" while `kind: "editor"` means "presentation knob, theme-defaultable" (F1's confusion was exactly this). After the rename, "editor" has ONE meaning. |
+| `kind: "editor"` → `"presentation"` | **RENAMED — executed 2026-06-11** (31 assignments + type union + introspection + kind-gate comments + R docs; `consumedBy: ["editor"]` unchanged — "editor" now has ONE meaning). |
 | `inherits` rewires (date→text?) | **NONE** — F4 verified both irregularities intentional. |
 
 Net W2 wire impact: ZERO (the rename is schema metadata, not wire shape).

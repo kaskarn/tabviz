@@ -73,7 +73,7 @@ export function listColumnTypes(): ColumnTypeInfo[] {
     const eff = effectiveOptions(key);
     let themeable = 0;
     for (const { opt } of eff.values()) {
-      if (opt.kind === "styling" || opt.kind === "editor") themeable++;
+      if (opt.kind === "styling" || opt.kind === "presentation") themeable++;
     }
     const inherits = Array.isArray(s.inherits) ? s.inherits : s.inherits ? [s.inherits] : [];
     out.push({ type: key, label: s.label, glyph: s.glyph ?? null, inherits, options: eff.size, themeable });

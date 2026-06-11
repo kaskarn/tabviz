@@ -27,7 +27,7 @@ export const TEXT_SCHEMA: ColumnSchema = {
       label: "Wrap",
       control: "toggle",
       default: false,
-      kind: "editor",
+      kind: "presentation",
       hint: "Allow multi-line cells",
       at: "fixed",
       consumedBy: ["renderCell", "estimateWidth", "editor"],

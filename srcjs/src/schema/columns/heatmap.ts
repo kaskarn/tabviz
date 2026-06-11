@@ -52,7 +52,7 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
       label: "Show value",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       hint: "Numeric label over the color cell",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },

@@ -65,15 +65,14 @@ export type WireAt = "bucket" | "top" | "fixed";
  *   defaults. The editor groups these separately (own sub-section
  *   per layer, or a dedicated "Styling" panel) so authors can edit
  *   appearance without scrolling through formatting knobs.
- * - `"editor"`: presentation knob — changes how the cell LOOKS or
+ * - `"presentation"`: changes how the cell LOOKS or
  *   which affordances render (axis ticks, label visibility, glyph
  *   size/shape, image height), never what the data MEANS. Themes may
  *   set defaults (e.g. "compact theme defaults to abbreviate
- *   numbers"). (Ontology review F1, 2026-06-11: the old prose claimed
- *   editor knobs "don't change the rendered cell" — contradicted by
- *   its own example and most assignments; the real boundary is
- *   data-meaning vs presentation, and `column_defaults` gating relies
- *   on exactly that boundary.)
+ *   numbers"). (Ontology review F1 + W2, 2026-06-11: this kind was
+ *   named "editor", which collided with `consumedBy: ["editor"]`
+ *   (= the editor UI reads it) while meaning something else; renamed
+ *   to "presentation" so "editor" has ONE meaning in this file.)
  *
  * Sprint 1 PR 4 promoted this from advisory to enforced: every
  * concrete `OptionSpec` must carry an explicit `kind`. The drift
@@ -84,7 +83,7 @@ export type WireAt = "bucket" | "top" | "fixed";
  * The distinction is presentational AND policy: same OptionSpec
  * shape, same primitives; what differs is who can author the value.
  */
-export type OptionKind = "core" | "styling" | "editor";
+export type OptionKind = "core" | "styling" | "presentation";
 
 /** Generic option metadata; control-specific extras live in optional fields. */
 export interface OptionSpec<T = unknown> {
@@ -98,8 +97,8 @@ export interface OptionSpec<T = unknown> {
   default: T | null;
   /**
    * Option category — `"core"` (data/behavior, author-only),
-   * `"styling"` (visual override, theme-defaultable), `"editor"`
-   * (UI-only knob, theme-defaultable). Required on every concrete
+   * `"styling"` (visual override, theme-defaultable), `"presentation"`
+   * (look/affordance knob, theme-defaultable). Required on every concrete
    * option (drift gate enforces). Optional in the type to keep
    * inherited definitions ergonomic; the drift gate fills the gap.
    */

@@ -41,7 +41,7 @@ export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
       label: "Show median",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
@@ -49,7 +49,7 @@ export const VIZ_VIOLIN_SCHEMA: ColumnSchema = {
       label: "Show quartiles",
       control: "toggle",
       default: false,
-      kind: "editor",
+      kind: "presentation",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
   ],

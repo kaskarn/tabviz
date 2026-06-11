@@ -48,7 +48,7 @@ export const SPARKLINE_SCHEMA: ColumnSchema = {
       label: "Height",
       control: "integer",
       default: 20,
-      kind: "editor",
+      kind: "presentation",
       min: 8,
       max: 80,
       step: 1,

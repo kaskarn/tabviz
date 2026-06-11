@@ -10,7 +10,7 @@
 //   1. DEFAULT MODE — the author always wins. A theme default fills only an
 //      option the column left unset; an explicit `col_*(stars = FALSE)` is
 //      never clobbered.
-//   2. KIND GATE — only options whose schema `kind` is "styling" or "editor"
+//   2. KIND GATE — only options whose schema `kind` is "styling" or "presentation"
 //      are accepted. "core" options (data/behavior — e.g. `field`, `decimals`
 //      precision that changes the number shown) are dropped. An option with no
 //      declared kind is treated as "core" (the conservative default), so a

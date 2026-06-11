@@ -33,7 +33,7 @@ export const ICON_SCHEMA: ColumnSchema = {
       label: "Size",
       control: "segmented",
       default: "base",
-      kind: "editor",
+      kind: "presentation",
       segments: [
         { value: "sm",   label: "Small" },
         { value: "base", label: "Base" },

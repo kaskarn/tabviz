@@ -165,7 +165,7 @@ theme_inputs_from_wire <- function(wire_inputs) {
 
   # Theme house-style per-column-type defaults (2026-06-09). UNTRUSTED wire:
   # keep only the structural shape (named type -> named list of SCALAR option
-  # values); drop non-scalar leaves. The kind-gate (styling/editor only,
+  # values); drop non-scalar leaves. The kind-gate (styling/presentation only,
   # author-wins) is enforced TS-side at spec-ingest, so R does not need the
   # schema here — it only guards structure.
   cd <- w[["column_defaults"]] %||% list()

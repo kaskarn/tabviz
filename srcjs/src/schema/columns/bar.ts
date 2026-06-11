@@ -46,7 +46,7 @@ export const BAR_SCHEMA: ColumnSchema = {
       label: "Show value",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       hint: "Numeric label alongside the bar",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },

@@ -154,7 +154,7 @@ describe("schema drift gate — kind", () => {
       const msg =
         `${missing.length} option(s) missing explicit \`kind\`:\n` +
         lines.join("\n") +
-        `\n\nAdd \`kind: "core" | "styling" | "editor"\` to the OptionSpec. ` +
+        `\n\nAdd \`kind: "core" | "styling" | "presentation"\` to the OptionSpec. ` +
         `See OptionKind docstring in src/schema/types.ts for guidance.`;
       throw new Error(msg);
     }

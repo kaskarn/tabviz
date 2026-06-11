@@ -46,7 +46,7 @@ export const PROGRESS_SCHEMA: ColumnSchema = {
       label: "Show value",
       control: "toggle",
       default: true,
-      kind: "editor",
+      kind: "presentation",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {
