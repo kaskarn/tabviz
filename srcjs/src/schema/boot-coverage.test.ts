@@ -16,25 +16,10 @@ import { bootBuiltinBehaviors } from "./init"; // the V8 boot — NOT init-dom
 import { SCHEMA_REGISTRY } from "./columns/index";
 import { getRenderer } from "./extend";
 import { resolveSchema } from "./resolve";
+import { SVG_TEXT_IS_CORRECT, OVERLAY_RENDERED } from "./coverage-rosters";
 
 bootBuiltinBehaviors();
 
-// Types whose svg output IS plain formatted text by design — the
-// dispatch's text fallback is the correct renderer for them. Adding a
-// type here is a DECISION (it means headless export shows text only);
-// never add one to silence this gate without checking what the DOM does.
-const TEXT_IS_CORRECT = new Set([
-  "text", "numeric", "n", "currency", "percent", "date",
-  "interval",   // interval has a registered text-composition renderer chain
-  "events",     // composed text (n / N (%))
-  "label",      // the label column is text
-  "custom",     // user-registered: their responsibility, both targets
-  // Overlay-rendered: forest/viz columns draw through the dedicated plot
-  // overlay path in BOTH targets (svg-generator's forest/viz sections;
-  // the DOM's <svg class="plot-overlay"> layers) — their grid CELLS are
-  // intentionally empty, so no per-cell svg renderer exists or should.
-  "viz_forest", "viz_bar", "viz_boxplot", "viz_violin",
-]);
 
 function svgRendererFor(key: string): unknown {
   // Walk the inheritance chain the way dispatch.renderCell does.
@@ -53,7 +38,7 @@ describe("V8 boot renderer coverage (boot-split recurrence guard)", () => {
   it("covers every concrete type: svg renderer in the V8 boot, or allowlisted text", () => {
     const uncovered: string[] = [];
     for (const [key] of concrete) {
-      if (TEXT_IS_CORRECT.has(key)) continue;
+      if (SVG_TEXT_IS_CORRECT.has(key) || OVERLAY_RENDERED.has(key)) continue;
       if (!svgRendererFor(key)) uncovered.push(key);
     }
     expect(uncovered, `types with NO svg renderer in the V8 boot (export silently degrades to text): ${uncovered.join(", ")} — register the svg half from init.ts (see visual-svg-renderers.ts) or allowlist with justification`).toEqual([]);

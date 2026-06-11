@@ -49,23 +49,26 @@ machinery actually fired. Read this before starting a cross-cutting arc.
    completeness), but the structural fix is to make a quick install part
    of the pre-commit cadence for R-surface changes.
 
-4. **Author-wins is value-equality, not provenance.** The
-   `column_defaults` merge and the #65 re-base both infer "author
-   didn't choose this" from "value equals schema default" — exact today
-   because col_* builders eager-fill, but every new themed option grows
-   the epsilon (an author explicitly choosing the outgoing theme's
-   default gets re-based). The clean fix is provenance marks on themed
-   options — an additive wire minor, allowed post-freeze. Trigger: when
-   a real author hits the epsilon, not before.
+4. **Author-wins is value-equality, not provenance — RULED SOUND
+   (D18, 2026-06-11).** Maintainer ruling: authorship is divided —
+   theme writers (institutions) are the DELEGATED half of authoring,
+   and themes get broad latitude by default. The epsilon (an author
+   explicitly choosing the outgoing theme's default gets re-based) is
+   the intended contract: fighting the house style means stating a
+   non-default value, which always wins. Provenance marks are a
+   non-goal absent real consumer complaints.
 
-5. **Fixture coverage is the gates' ceiling.** The boot-split bug lived
-   exactly in the WYSIWYG matrix's blind spot (no pvalue/bar columns).
-   Now partially closed (they joined the fixture; first run caught the
-   nejm pill inflating compact rows), but heatmap / sparkline /
-   pictogram / ring / stars are still unexercised by the matrix. There
-   is no completeness link from "types that exist" to "types the matrix
-   renders" — adding one is cheap insurance if export fidelity stays a
-   contract.
+5. **Fixture coverage is the gates' ceiling — FLOORED (2026-06-11).**
+   The completeness link now exists at the unit level:
+   `schema/render-coverage.runes.ts` walks EVERY concrete type through
+   the real dispatch in BOTH targets (no browser, milliseconds) and
+   asserts non-degenerate output against the shared posture rosters
+   (`coverage-rosters.ts` — one declaration, consumed by boot-coverage
+   too). The WYSIWYG matrix remains the GEOMETRY net for the types its
+   fixture carries; the sweep is the existence/degradation floor under
+   everything else. Lightweight-harness principle: prefer dispatch-level
+   sweeps for completeness concerns; reserve browsers for geometry and
+   real input.
 
 6. **The floating toolbar's header overlap.** Every harness that
    right-clicks or hovers the top-right header region pays a tax
@@ -73,18 +76,39 @@ machinery actually fired. Read this before starting a cross-cutting arc.
    trap, but it is also a real UX hazard for load-bearing affordances —
    if a future arc puts controls there, the overlap becomes user-facing.
 
-7. **Intrinsic cell heights are opt-in.** The pill-padding catch shows
-   the class: any DOM cell whose box exceeds the text line-height
-   diverges from the export's row estimator unless it registers a
-   height behavior (`height-behaviors.ts`) or neutralizes its box (the
-   pill's margin-block fix). Nothing forces new cell components through
-   that checklist — the WYSIWYG matrix is the only net, hence flag #5.
+7. **Intrinsic cell heights — NOW DECLARED, not opt-in (2026-06-11).**
+   Every concrete type must either register `naturalHeight`
+   (height-behaviors) or sit on the `SINGLE_LINE_HEIGHT` roster
+   (coverage-rosters.ts), whose membership CLAIMS the cell never grows
+   a row past the text baseline (the nejm-pill lesson: decorations
+   neutralize their own boxes to stay on it). The render sweep enforces
+   the declaration; a new type that does neither fails it.
 
 ## Bottom line
 
 The contract surfaces (wire, themes, rosters) propagate well — the gate
 lattice is doing its job and caught real bugs on first run all session.
 The risk concentrates in the *runtime-split seams* (V8 vs DOM, R vs TS,
-installed vs source) where registration/duplication is manual; flags
-1–3 are now gated reactively, and flags 4, 5, 7 name the cheap
-insurance to add when their areas are next touched.
+installed vs source) where registration/duplication is manual. Status
+after the 2026-06-11 harness-principles pass: flags 1, 3, 5, 7 are
+GATED (boot-coverage, namespace-integrity, the dual-target render
+sweep, the height-posture rule); flag 4 is RULED SOUND (D18, delegated
+authoring); flags 2 and 6 remain open with named fixes (R-preset
+generation; toolbar placement) for when their areas are next touched.
+
+## Harness principles (2026-06-11)
+
+1. **Capability postures live in ONE roster module**
+   (`schema/coverage-rosters.ts`) and every gate derives from it —
+   adding a type forces a posture declaration in one place, with the
+   same vocabulary across gates.
+2. **Completeness concerns get dispatch-level sweeps, not browsers.**
+   `render-coverage.runes.ts` proves every type renders non-degenerately
+   in both targets in milliseconds. Browsers are reserved for what only
+   they can check: geometry, real input, portal/delegation behavior.
+3. **Geometry concerns get the budgeted matrix; budgets never widen
+   silently** (the existing WYSIWYG rule, re-proven by the pill catch).
+4. **Membership claims are behavioral contracts**: SINGLE_LINE_HEIGHT
+   membership *claims* the cell can't grow a row — a decoration must
+   neutralize its own box (margin-block canceling padding) to stay on
+   the roster.

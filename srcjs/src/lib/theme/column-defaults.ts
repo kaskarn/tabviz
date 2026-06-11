@@ -20,6 +20,14 @@
 //      attributes (bar-renderer `fill="${color}"`). A string value failing the
 //      shared pin grammar (isValidPinValue) is dropped at the merge below.
 //
+// AUTHORSHIP MODEL (D18, maintainer ruling 2026-06-11): authorship is
+// DIVIDED — the theme writer (institution) is the DELEGATED half of
+// authoring, the spec author (individual) the other. Themes get broad
+// latitude by default; the value-equality author-wins rule below is the
+// deliberate contract, not an approximation awaiting provenance marks.
+// An author who fights the house style states a non-default value, and
+// non-default values always win.
+//
 // THEME-SWITCH RE-BASE (#65, fixed 2026-06-11): the merge bakes the themed
 // value INTO spec.columns, so to a later merge a prior theme's bake looks
 // like an author choice. `rebaseThemeColumnDefaults` (below) undoes the OLD

@@ -109,3 +109,24 @@ Net W2 wire impact: ZERO (the rename is schema metadata, not wire shape).
    run caught two more stale rows (col_progress min_value/height).
 3. `column_defaults`-in-presets design work (the area-C creative half:
    ≥4 shipped presets using theme-level column styling deliberately).
+
+
+## F4 resolution + hardened inheritance principle (2026-06-11)
+
+Maintainer direction: keep customizability/themability broad, but with a
+cleaner DAG discipline. The principle adopted: **`inherits` expresses
+"shares the option VOCABULARY"**, nothing else. Under that reading the
+F4 irregularities resolve deliberately rather than by rewiring:
+
+- `pvalue` inheriting base (not numeric) is CORRECT — its formatting
+  vocabulary (digits/format/expThreshold/thresholds/stars) is disjoint
+  from numeric's (decimals/abbreviate/fontClass); inheriting numeric
+  would graft conflicting precision knobs onto a type with its own.
+- `date` inheriting base (not text) is ACCEPTED — wrap/truncate on
+  short ISO dates has no real use-case; revisit only if a consumer asks
+  for wrapping date columns.
+
+Completeness no longer leans on the DAG at all: per-type capability
+postures are declared in `schema/coverage-rosters.ts` and enforced by
+the dual-target render sweep + boot-coverage gates, so an irregular
+inheritance edge can no longer hide a missing capability.
