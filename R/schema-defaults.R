@@ -153,8 +153,7 @@ schema_defaults <- list(
     wrap = FALSE,
     thousands_sep = FALSE,
     abbreviate = FALSE,
-    separator = " - ",
-    show_bar = FALSE
+    separator = " - "
   ),
   reference = list(
     header = "Reference",
@@ -209,8 +208,7 @@ schema_defaults <- list(
     axis_gridlines = FALSE,
     show_axis = TRUE,
     shared_axis = FALSE,
-    effects = c(),
-    orientation = "horizontal"
+    effects = c()
   ),
   viz_boxplot = list(
     align = "left",
@@ -221,8 +219,7 @@ schema_defaults <- list(
     show_axis = TRUE,
     shared_axis = FALSE,
     effects = c(),
-    show_outliers = TRUE,
-    whisker_type = "iqr"
+    show_outliers = TRUE
   ),
   viz_forest = list(
     align = "left",

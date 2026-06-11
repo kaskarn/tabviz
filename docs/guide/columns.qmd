@@ -47,7 +47,7 @@ The `col_*()` helpers are thin, opinionated wrappers over [`web_col()`](../refer
 | `col_pvalue(field)` | P-values | `stars`, `thresholds`, `format`, `digits`, `exp_threshold`, `abbrev_threshold` |
 | `col_interval(point, lower, upper)` | Point estimate + CI | `decimals`, `separator`, `imprecise_threshold` |
 | `col_events(events, n)` | Events / N ratio | `separator`, `show_pct`, `thousands_sep`, `abbreviate` |
-| `col_range(low, high)` | Low – High range | `separator`, `decimals`, `show_bar` |
+| `col_range(low, high)` | Low – High range | `separator`, `decimals`, `abbreviate` |
 | `col_date(field)` | Dates | `format` |
 | `col_bar(field)` | Inline magnitude bar (no axis) | `max_value`, `show_label`, `color`, `scale` |
 | `col_sparkline(field)` | Trend charts | `type`, `height`, `color` |
@@ -409,7 +409,7 @@ Low – high range, optionally with an inline bar.
 #| eval: false
 col_range("age_min", "age_max", "Age")
 col_range("ci_lower", "ci_upper", decimals = 1)
-col_range("low_price", "high_price", show_bar = TRUE)
+col_range("low_price", "high_price", digits = 3)
 ```
 
 ### Dates

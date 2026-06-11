@@ -85,7 +85,8 @@ objects rather than palettes — and it exercises the machine contract.
 **Exit criteria:**
 - [ ] Column ontology reviewed: option vocabulary coherent across types,
       `kind` taxonomy (core/styling/editor) complete, the 6 dead options
-      decided (register D2), inheritance DAG documented.
+      ~~decided~~ DECIDED+DELETED (D2, 2026-06-11), inheritance DAG
+      documented.
 - [ ] All ~125 grandfathered options carry `consumedBy` annotations; the
       grandfather list is ≤ a handful of justified rows.
 - [ ] ≥ 4 shipped presets use `column_defaults` to visible, deliberate
@@ -227,6 +228,11 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-11 — Area C opened: D2 executed (6 dead column options deleted
+  both sides + docs; W1 done). Same day, area A COMPLETED (perf gate; the
+  bun bench itself had rotted — repaired + gated). Remaining area-C work:
+  the ontology review proper (vocabulary/kind/DAG → W2 list), D11
+  consumedBy arc, column_defaults-in-presets design work.
 - 2026-06-11 — Area E STAGE 1 LANDED (W6): component-model substrate +
   wire. The middle verb (re-route) works end-to-end R→wire→both resolve
   paths; v3-bridge stamps are suppressed for re-routed tokens (full

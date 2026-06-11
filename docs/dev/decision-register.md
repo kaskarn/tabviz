@@ -16,7 +16,6 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
-| D2 | Six authored-but-ignored column options: `range:showBar`, `viz_bar:{barWidth,barGap,orientation}`, `viz_boxplot:{boxWidth,whiskerType}` — wire or delete (incl. R args + types + emit defaults)? | wire each / delete each | delete all six (unread knobs violate the honesty rule; plausible features can return post-1.0 with readers) | M1 (column ontology, pre-wire-freeze) |
 | D3 | Elevation shadow tokens (`--tv-shadow-raised/overlay-near/-far`): emitted, resolver-wired, zero consumers — does `effects.elevation` actually paint, and through what? | (a) wire DOM+export through the tokens; (b) simplify elevation to the one consumed shadow | investigate first (cheap); then (a) if elevation is a real shipped effect | M2 (WYSIWYG area) |
 | D4 | Portaled popovers (zoom dropdown etc. portaled to document.body) cannot inherit container-scoped `--tv-*` vars → chrome renders fallback-slate on themed pages | (a) copy cssVars onto portal nodes; (b) accept + standardize the neutral chrome palette | (b) accept for 1.0 (consistent neutral chrome is defensible); revisit if dark-theme adoption makes it ugly | M2 (UX area) |
 | D5 | Row-height pins: per-KIND only (current) vs adding per-ROW pins | keep per-kind / add per-row layer | keep per-kind (measure loop covers per-row overflow; decided in interactivity arc — re-confirm at ship) | M3 |
@@ -36,6 +35,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
+| D2 | The 6 authored-but-ignored column options DELETED (`range:showBar`, `viz_bar:{barWidth,barGap,orientation}`, `viz_boxplot:{boxWidth,whiskerType}`) — schema rows, typed fields, authoring args (TS + R), emit defaults, docs, drift-gate grandfather rows | Register default applied at M1: unread knobs violate the honesty rule; renderers compute these locally (VizBar hardcodes its own gap) and never read the options; plausible features can return post-1.0 WITH readers | 2026-06-11 |
 | D1 | HC-fidelity vertical KILLED (rules + `--tv-hc-*` tokens + resolver group + test deleted) | Designed but never wired to any markup; the a11y floor (roadmap J) lands without it — HC mode's live behavior (wash drops, border bump, contrast re-resolve) is untouched | 2026-06-10 |
 | D14 | `theme_blend()` + SplitForest static-knit path CUT from 1.0 scope | Neither is started; neither blocks the 1.0 identity; post-1.0 backlog | 2026-06-10 |
 

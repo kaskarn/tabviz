@@ -15,7 +15,6 @@ viz_boxplot(
   axis_ticks = NULL,
   axis_gridlines = FALSE,
   show_outliers = TRUE,
-  whisker_type = c("iqr", "minmax"),
   axis_label = "Value",
   show_axis = TRUE,
   null_value = NULL,
@@ -50,8 +49,6 @@ ticks are computed automatically.}
 \item{axis_gridlines}{Show gridlines at tick positions (default FALSE)}
 
 \item{show_outliers}{Show outlier points beyond whiskers (default TRUE)}
-
-\item{whisker_type}{Whisker calculation: "iqr" (1.5*IQR, default) or "minmax"}
 
 \item{axis_label}{Label for the x-axis (default "Value")}
 

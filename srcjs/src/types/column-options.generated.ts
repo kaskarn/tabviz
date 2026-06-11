@@ -326,8 +326,6 @@ export interface RangeBucketOptions {
   prefix?: string | null;
   /** Separator */
   separator?: string | null;
-  /** Show bar — Mini horizontal range bar next to the text */
-  showBar?: boolean;
   /** Suffix — Appended literal (e.g. "%") */
   suffix?: string | null;
   /** Thousands sep */
@@ -442,16 +440,10 @@ export interface VizBarBucketOptions {
   axisRange?: unknown;
   /** Axis ticks — Auto-computed when null */
   axisTicks?: unknown;
-  /** Bar gap */
-  barGap?: number | null;
-  /** Bar width */
-  barWidth?: number | null;
   /** Effects — One or more value series */
   effects?: unknown;
   /** Null value — Reference line; 0 for linear, 1 for log default */
   nullValue?: number | "auto" | null;
-  /** Orientation */
-  orientation?: "horizontal" | "vertical" | null;
   /** Density — Cell padding — theme decides exact values */
   paddingClass?: undefined;
   /** Scale */
@@ -475,8 +467,6 @@ export interface VizBoxplotBucketOptions {
   axisRange?: unknown;
   /** Axis ticks — Auto-computed when null */
   axisTicks?: unknown;
-  /** Box width */
-  boxWidth?: number | null;
   /** Effects — Raw arrays or quantile fields */
   effects?: unknown;
   /** Null value — Reference line; 0 for linear, 1 for log default */
@@ -493,8 +483,6 @@ export interface VizBoxplotBucketOptions {
   showOutliers?: boolean;
   /** Token — Semantic role — theme decides colors/weights */
   token?: undefined;
-  /** Whiskers */
-  whiskerType?: "iqr" | "minmax" | null;
 }
 
 export interface VizViolinBucketOptions {

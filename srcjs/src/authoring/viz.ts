@@ -262,16 +262,12 @@ interface VizColumnCommon extends CommonColumnArgs {
 
 export interface VizBarArgs extends VizColumnCommon {
   effects: VizBarEffect[];
-  barWidth?: number;
-  barGap?: number;
-  orientation?: "horizontal" | "vertical";
 }
 
 export function vizBar({
   effects,
   scale = "linear", nullValue, axisRange = null, axisTicks = null,
   axisGridlines = false, axisLabel = "Value", showAxis = true, annotations,
-  barWidth, barGap, orientation = "horizontal",
   headerAlign = "center", sortable = false,
   ...rest
 }: VizBarArgs): ColumnSpec {
@@ -281,7 +277,6 @@ export function vizBar({
     effects,
     scale, nullValue, axisRange, axisTicks, axisGridlines, axisLabel, showAxis,
     annotations: prependNullRefline(annotations, nullValue),
-    barWidth, barGap, orientation,
   };
   const first = effects[0];
   const field = `_viz_bar_${first.value ?? "x"}`;
@@ -294,15 +289,13 @@ export function vizBar({
 export interface VizBoxplotArgs extends VizColumnCommon {
   effects: VizBoxplotEffect[];
   showOutliers?: boolean;
-  whiskerType?: "iqr" | "minmax";
-  boxWidth?: number;
 }
 
 export function vizBoxplot({
   effects,
   scale = "linear", nullValue, axisRange = null, axisTicks = null,
   axisGridlines = false, axisLabel = "Value", showAxis = true, annotations,
-  showOutliers = true, whiskerType = "iqr", boxWidth,
+  showOutliers = true,
   headerAlign = "center", sortable = false,
   ...rest
 }: VizBoxplotArgs): ColumnSpec {
@@ -312,7 +305,7 @@ export function vizBoxplot({
     effects,
     scale, nullValue, axisRange, axisTicks, axisGridlines, axisLabel, showAxis,
     annotations: prependNullRefline(annotations, nullValue),
-    showOutliers, whiskerType, boxWidth,
+    showOutliers,
   };
   const first = effects[0];
   const fieldRoot = first.data ?? first.median ?? "x";

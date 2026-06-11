@@ -27,32 +27,5 @@ export const VIZ_BAR_SCHEMA: ColumnSchema = {
       customComponent: "EffectBarList",
       hint: "One or more value series",
     },
-    {
-      key: "barWidth",
-      label: "Bar width",
-      control: "integer",
-      default: null,
-      kind: "editor",
-      min: 1,
-    },
-    {
-      key: "barGap",
-      label: "Bar gap",
-      control: "integer",
-      default: null,
-      kind: "editor",
-      min: 0,
-    },
-    {
-      key: "orientation",
-      label: "Orientation",
-      control: "segmented",
-      default: "horizontal",
-      kind: "core",
-      segments: [
-        { value: "horizontal", label: "Horizontal" },
-        { value: "vertical",   label: "Vertical" },
-      ],
-    },
   ],
 };

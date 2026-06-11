@@ -33,24 +33,5 @@ export const VIZ_BOXPLOT_SCHEMA: ColumnSchema = {
       default: true,
       kind: "editor",
     },
-    {
-      key: "whiskerType",
-      label: "Whiskers",
-      control: "segmented",
-      default: "iqr",
-      kind: "core",
-      segments: [
-        { value: "iqr",    label: "IQR" },
-        { value: "minmax", label: "Min-max" },
-      ],
-    },
-    {
-      key: "boxWidth",
-      label: "Box width",
-      control: "integer",
-      default: null,
-      kind: "editor",
-      min: 1,
-    },
   ],
 };

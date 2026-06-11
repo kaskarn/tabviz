@@ -14,7 +14,6 @@ col_range(
   digits = NULL,
   thousands_sep = FALSE,
   abbreviate = FALSE,
-  show_bar = FALSE,
   na_text = NULL,
   ...,
   min_field = lifecycle::deprecated(),
@@ -42,8 +41,6 @@ Cannot be used with \code{digits}.}
 
 \item{abbreviate}{Logical. When \code{TRUE}, values >= 1000 are shortened
 (e.g. \code{"1.2K - 3.4M"}). Default \code{FALSE}.}
-
-\item{show_bar}{Show visual bar representation (default FALSE)}
 
 \item{na_text}{Text to display when either bound is NA (default NULL = blank)}
 

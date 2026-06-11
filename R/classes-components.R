@@ -1622,7 +1622,6 @@ col_reference <- function(
 #'   (e.g. `","` or `" "`) or `FALSE` to disable. Default `FALSE`.
 #' @param abbreviate Logical. When `TRUE`, values >= 1000 are shortened
 #'   (e.g. `"1.2K - 3.4M"`). Default `FALSE`.
-#' @param show_bar Show visual bar representation (default FALSE)
 #' @param na_text Text to display when either bound is NA (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
@@ -1662,7 +1661,6 @@ col_range <- function(
     digits = NULL,
     thousands_sep = FALSE,
     abbreviate = FALSE,
-    show_bar = FALSE,
     na_text = NULL,
     ...,
     min_field = lifecycle::deprecated(),
@@ -1677,7 +1675,7 @@ col_range <- function(
   }
   ts_args <- list(
     low = low, high = high, separator = separator,
-    thousandsSep = thousands_sep, abbreviate = abbreviate, showBar = show_bar
+    thousandsSep = thousands_sep, abbreviate = abbreviate
   )
   if (!identical(header, "Range"))                 ts_args$header   <- header
   if (!is.null(width))                             ts_args$width    <- width
@@ -2840,7 +2838,6 @@ viz_bar <- function(
 #'   ticks are computed automatically.
 #' @param axis_gridlines Show gridlines at tick positions (default FALSE)
 #' @param show_outliers Show outlier points beyond whiskers (default TRUE)
-#' @param whisker_type Whisker calculation: "iqr" (1.5*IQR, default) or "minmax"
 #' @param axis_label Label for the x-axis (default "Value")
 #' @param show_axis Show the x-axis (default TRUE)
 #' @param null_value Optional numeric reference value. When non-NULL, a dashed
@@ -2893,13 +2890,11 @@ viz_boxplot <- function(
     axis_ticks = NULL,
     axis_gridlines = FALSE,
     show_outliers = TRUE,
-    whisker_type = c("iqr", "minmax"),
     axis_label = "Value",
     show_axis = TRUE,
     null_value = NULL,
     annotations = NULL) {
   scale <- match.arg(scale)
-  whisker_type <- match.arg(whisker_type)
   parsed <- parse_viz_args(list(...), "viz_boxplot", VizBoxplotEffect, "effect_boxplot")
   ts_effects <- lapply(parsed$effects, function(e) {
     list(
@@ -2921,7 +2916,6 @@ viz_boxplot <- function(
   )
   ts_args$effects     <- ts_effects
   ts_args$showOutliers <- show_outliers
-  ts_args$whiskerType  <- whisker_type
   delegate_to_web_col("vizBoxplot", ts_args, extra_args = parsed$passthrough)
 }
 

@@ -14,7 +14,7 @@ Sync points when touching the wire: `R/wire-version.R` ↔
 
 | Item | What changes | Driver | Scheduled |
 |---|---|---|---|
-| W1 | Delete the 6 dead column options (`range:showBar`, `viz_bar:{barWidth,barGap,orientation}`, `viz_boxplot:{boxWidth,whiskerType}`) — schema rows, typed fields, authoring defaults, R `col_*` args | Register D2 (default: delete) | M1, area C (column ontology review) |
+| W1 | Delete the 6 dead column options (`range:showBar`, `viz_bar:{barWidth,barGap,orientation}`, `viz_boxplot:{boxWidth,whiskerType}`) — schema rows, typed fields, authoring defaults, R `col_*` args | Register D2 (default: delete) | **LANDED 2026-06-11** (D2 decided: deleted; wire stays 1.5 — option removal is reader-tolerant pre-freeze) |
 | W2 | Column-ontology review fallout: any option renames / vocabulary harmonization / `kind` reclassification discovered in the area-C review | Roadmap area C | M1, area C — the review must explicitly emit its wire-change list |
 | W3 | `variants.headerStyle` retirement (superseded by the `header_style` input; still emitted on the wire per the wire-audit backlog) | Wire-audit leftover | M1 (cheap; fold into the next theme-wire touch) |
 | W4 | v3-legacy `WebTheme` blob slimming: `ResolvedInputs` v3 fields emitted with no readers; theme-css user-config bridges (#72–#74 borders/firstColumn/container/header clusters) — decide manifest-migrate vs keep-as-bridge, then delete the dead emissions | v3→v4 cutover backlog | M2 latest (touching it later means a major bump) |

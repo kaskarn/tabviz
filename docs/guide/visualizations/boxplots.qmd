@@ -133,7 +133,6 @@ tabviz(multi_box_data, label = "timepoint",
 | `axis_ticks` | auto | Custom tick positions |
 | `axis_gridlines` | `FALSE` | Show vertical gridlines |
 | `show_outliers` | `TRUE` | Display outlier points |
-| `whisker_type` | `"iqr"` | `"iqr"` (1.5×IQR) or `"minmax"` |
 | `axis_label` | `"Value"` | Label text below the axis |
 | `show_axis` | `TRUE` | Show the axis |
 | `null_value` | `NULL` | Optional reference value — paints a dashed line at this position |

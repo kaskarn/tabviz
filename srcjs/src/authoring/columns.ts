@@ -346,18 +346,17 @@ export interface ColRangeArgs extends CommonColumnArgs {
   digits?: number;
   thousandsSep?: string | false;
   abbreviate?: boolean;
-  showBar?: boolean;
   naText?: string | null;
 }
 
 export function colRange({
   low, high, separator = " - ",
-  decimals = null, digits, thousandsSep = false, abbreviate = false, showBar = false,
+  decimals = null, digits, thousandsSep = false, abbreviate = false,
   naText, ...common
 }: ColRangeArgs): ColumnSpec {
   const range: RangeColumnOptions = {
     minField: low, maxField: high, separator, decimals, digits,
-    thousandsSep, abbreviate, showBar,
+    thousandsSep, abbreviate,
   };
   const options = { range, ...(naText != null ? { naText } : {}) };
   // Synthetic field name `_range_<low>_<high>` mirrors R's `col_range()`

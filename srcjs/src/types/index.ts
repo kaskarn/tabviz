@@ -349,7 +349,6 @@ export interface RangeColumnOptions {
   digits?: number;            // Significant figures
   thousandsSep?: string | false;
   abbreviate?: boolean;
-  showBar?: boolean;
 }
 
 /**
@@ -410,9 +409,6 @@ export interface VizBarColumnOptions extends VizColumnOptionsBase {
   type: "bar";
   effects: VizBarEffect[];
   annotations?: Annotation[] | null;
-  barWidth?: number;          // Width of each bar in pixels
-  barGap?: number;            // Gap between grouped bars
-  orientation?: "horizontal" | "vertical";
 }
 
 /** Effect definition for viz_boxplot - supports both array data and pre-computed stats */
@@ -436,8 +432,6 @@ export interface VizBoxplotColumnOptions extends VizColumnOptionsBase {
   effects: VizBoxplotEffect[];
   annotations?: Annotation[] | null;
   showOutliers?: boolean;
-  whiskerType?: "iqr" | "minmax";  // IQR-based (1.5×IQR) or min/max whiskers
-  boxWidth?: number;          // Width of the box in pixels
 }
 
 /** Effect definition for viz_violin */

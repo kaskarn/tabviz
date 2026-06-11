@@ -226,7 +226,7 @@ registerBehaviors("range", {
     name: "colRange",
     typeArgs: dropDefaults(
       { field: col.field, ...bucket(col, "range") },
-      { separator: "–", decimals: null, thousandsSep: false, abbreviate: false, showBar: false },
+      { separator: "–", decimals: null, thousandsSep: false, abbreviate: false },
     ),
   }),
 });

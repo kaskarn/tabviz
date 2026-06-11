@@ -31,13 +31,5 @@ export const RANGE_SCHEMA: ColumnSchema = {
       default: " - ",
       kind: "core",
     },
-    {
-      key: "showBar",
-      label: "Show bar",
-      control: "toggle",
-      default: false,
-      kind: "editor",
-      hint: "Mini horizontal range bar next to the text",
-    },
   ],
 };
