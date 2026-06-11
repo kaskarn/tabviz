@@ -1,0 +1,48 @@
+# Decision register
+
+Status: **living ledger** (stood up 2026-06-10). The tidy-keeping half of
+`docs/dev/ship-roadmap.md`.
+
+**The rule:** any work that defers a product decision MUST add an entry
+here instead of deferring silently. Every entry carries a
+**default-if-undecided** — what ships if nobody decides — and a
+**decide-by** milestone. At each milestone review, entries due are decided
+(moved to the Decided section with a one-line rationale) or explicitly
+re-dated. The register must be empty of pre-1.0 rows at ship.
+
+Entry format: `ID | question | options | default if undecided | decide by`.
+
+## Open
+
+| ID | Question | Options | Default if undecided | Decide by |
+|----|----------|---------|----------------------|-----------|
+| D1 | HC-fidelity vertical (`.hc-caret`/`.status-tag`/`.pval-chip` rules + `--tv-hc-*` tokens): designed a11y encoding with ZERO producers — wire it or kill it? | (a) wire: render the elements, gate visually; (b) kill: delete rules + tokens + resolver branches | (b) kill — unwired since design; a11y floor (roadmap J) can land without it | M2 (a11y area) |
+| D2 | Six authored-but-ignored column options: `range:showBar`, `viz_bar:{barWidth,barGap,orientation}`, `viz_boxplot:{boxWidth,whiskerType}` — wire or delete (incl. R args + types + emit defaults)? | wire each / delete each | delete all six (unread knobs violate the honesty rule; plausible features can return post-1.0 with readers) | M1 (column ontology, pre-wire-freeze) |
+| D3 | Elevation shadow tokens (`--tv-shadow-raised/overlay-near/-far`): emitted, resolver-wired, zero consumers — does `effects.elevation` actually paint, and through what? | (a) wire DOM+export through the tokens; (b) simplify elevation to the one consumed shadow | investigate first (cheap); then (a) if elevation is a real shipped effect | M2 (WYSIWYG area) |
+| D4 | Portaled popovers (zoom dropdown etc. portaled to document.body) cannot inherit container-scoped `--tv-*` vars → chrome renders fallback-slate on themed pages | (a) copy cssVars onto portal nodes; (b) accept + standardize the neutral chrome palette | (b) accept for 1.0 (consistent neutral chrome is defensible); revisit if dark-theme adoption makes it ugly | M2 (UX area) |
+| D5 | Row-height pins: per-KIND only (current) vs adding per-ROW pins | keep per-kind / add per-row layer | keep per-kind (measure loop covers per-row overflow; decided in interactivity arc — re-confirm at ship) | M3 |
+| D6 | Keyboard column reorder (expensive, rarely exercised) | build / ship without + document gap | ship without, documented | M2 (a11y) |
+| D7 | Pagination-export contract: export renders ALL rows while the widget shows a page | (a) document "export = whole table"; (b) export current page; (c) export option | (a) document — likely the right semantic; needs a sentence in save_plot docs + WYSIWYG exception list | M2 (WYSIWYG) |
+| D8 | Estimator-vs-canvas column widths on raw `generateSVG` (Δ up to ~30px/col; real flows mitigated by systemfonts injection + live widths) | (a) accept + document as boundary; (b) invest in estimator accuracy; (c) ship a font-metrics table for common stacks | (a) accept + document for 1.0 | M2 (WYSIWYG) |
+| D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due) | keep / adjust per flag | keep current split | M3 |
+| D10 | Group-header banding scope + chevron indent: DOM bands group-header rows and aligns data rows WITH the shifted label; export does neither | align export to DOM / align DOM to export / document | align export to DOM (DOM is the designed truth) | M2 (WYSIWYG) |
+| D11 | Column-option `consumedBy` annotation arc (115 grandfathered options) | schedule as one arc / chip per-arc | one dedicated arc inside roadmap area C | M1 |
+| D12 | Default-paginate threshold value (rows) | pick N + breakOn defaults | propose 200 rows, break on group | M3 (scale posture) |
+| D13 | `enable_themes = "default"` ships all 9 resolved presets on EVERY widget wire (weight + chrome) — right default for 1.0? | keep / trim roster on wire / lazy-load presets | keep, but measure wire weight first (serialize-weight gate exists) | M3 |
+| D14 | `theme_blend()` (promised in the 27→9 cull) and the SplitForest static-knit path: in or out of 1.0? | build / cut from 1.0 scope | cut from 1.0; post-1.0 backlog | M1 scope review |
+
+## Decided
+
+| ID | Decision | Rationale | Date |
+|----|----------|-----------|------|
+| — | (move rows here as they're decided; one line of rationale + link to the landing commit/arc) | | |
+
+## Process notes
+
+- The register is for PRODUCT decisions (behavior, scope, defaults), not
+  engineering choices an arc can settle locally.
+- "Default if undecided" is binding: if the decide-by milestone closes
+  without a decision, the default ships. This is what makes deferral safe.
+- Sources feeding the initial population: interactivity-UX arc deferrals,
+  WYSIWYG fidelity pass residuals, 2026-06-10 cleanup audit "kept for
+  decision" items, 1.0 strategy locks.
