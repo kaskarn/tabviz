@@ -28,6 +28,8 @@ export interface HistoryStep {
   readonly roleOverrides: RoleOverrides;
   /** Tier-2/3 token pins (cssVar → value) — see setPin(). */
   readonly pins: Record<string, string>;
+  /** Component-channel re-routes — editable since E Stage 2. */
+  readonly components: ComponentBindings;
   /** Brief description for UI hints (e.g. "Brand color", "Polarity"). */
   readonly label: string;
 }
@@ -56,11 +58,9 @@ class StudioStore {
    *  pinned values (the no-reapplyEdits-clone condition). */
   pins = $state.raw<Record<string, string>>({});
 
-  /** Component-model channel re-routes (W6) — PASSTHROUGH in Stage 1:
-   *  seeded at init from a handed-off theme, reflected in the preview
-   *  resolve, and re-emitted on every export so round-trips stay
-   *  lossless. No studio editor yet (Stage 2); session-constant, so it
-   *  deliberately does NOT ride history steps until it becomes editable. */
+  /** Component-model channel re-routes — EDITABLE since E Stage 2
+   *  (setComponentChannel / clearComponentChannel below); rides history
+   *  steps and every export. */
   components = $state.raw<ComponentBindings>({});
 
   /** History stack: undo pops from end; redo follows the cursor. */
@@ -159,7 +159,8 @@ class StudioStore {
     this.roleOverrides = roleOverrides;
     this.pins = pins;
     this.components = seed?.components ?? {};
-    this.history = [{ inputs: base, roleOverrides, pins, label: "Loaded" }];
+    this.history = [{ inputs: base, roleOverrides, pins,
+      components: seed?.components ?? {}, label: "Loaded" }];
     this.cursor = 0;
   }
 
@@ -253,14 +254,43 @@ class StudioStore {
     }
   }
 
+  /** Re-route one component channel (the middle verb; E Stage 2). */
+  setComponentChannel(component: string, state: string, channel: string, role: string): void {
+    const states = { ...(this.components[component] ?? {}) };
+    const channels = { ...(states[state as keyof typeof states] ?? {}) } as Record<string, string>;
+    channels[channel] = role;
+    (states as Record<string, Record<string, string>>)[state] = channels;
+    this.components = { ...this.components, [component]: states };
+    this.pushHistory(this.inputs!, this.roleOverrides, this.pins,
+      `Re-route ${component}.${channel} → ${role}`, this.components);
+  }
+
+  /** Release a component channel back to its manifest default. */
+  clearComponentChannel(component: string, state: string, channel: string): void {
+    const prev = this.components[component]?.[state as never] as Record<string, string> | undefined;
+    if (!prev?.[channel]) return;
+    const channels = { ...prev };
+    delete channels[channel];
+    const states = { ...this.components[component] } as Record<string, Record<string, string>>;
+    if (Object.keys(channels).length > 0) states[state] = channels;
+    else delete states[state];
+    const components = { ...this.components };
+    if (Object.keys(states).length > 0) components[component] = states;
+    else delete components[component];
+    this.components = components;
+    this.pushHistory(this.inputs!, this.roleOverrides, this.pins,
+      `Release ${component}.${channel}`, this.components);
+  }
+
   private pushHistory(
     inputs: ThemeInputs,
     roleOverrides: RoleOverrides,
     pins: Record<string, string>,
     label: string,
+    components: ComponentBindings = this.components,
   ): void {
     const truncated = this.history.slice(0, this.cursor + 1);
-    truncated.push({ inputs, roleOverrides, pins, label });
+    truncated.push({ inputs, roleOverrides, pins, components, label });
     while (truncated.length > HISTORY_CAP) truncated.shift();
     this.history = truncated;
     this.cursor = truncated.length - 1;
@@ -274,6 +304,7 @@ class StudioStore {
     this.inputs = step.inputs;
     this.roleOverrides = step.roleOverrides;
     this.pins = step.pins;
+    this.components = step.components ?? {};
     return true;
   }
 
@@ -285,6 +316,7 @@ class StudioStore {
     this.inputs = step.inputs;
     this.roleOverrides = step.roleOverrides;
     this.pins = step.pins;
+    this.components = step.components ?? {};
     return true;
   }
 
@@ -294,7 +326,8 @@ class StudioStore {
       this.inputs = this.base;
       this.roleOverrides = {};
       this.pins = {};
-      this.pushHistory(this.base, {}, {}, "Revert to base");
+      this.components = {};
+      this.pushHistory(this.base, {}, {}, "Revert to base", {});
     }
   }
 

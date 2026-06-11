@@ -131,8 +131,13 @@ is W6 (pre-freeze).
       (immutable, $state.raw-safe); hasThemeEdits counts re-routes.
       BOTH acceptance examples verified end-to-end ("table-frame →
       border-subtle", "title → accent-text"); liveness gate green.
-      REMAINING: the studio's roomy form + extending the liveness walk
-      to the new band's accordion/picker controls.
+      STUDIO HALF LANDED same day: ComponentsEditor extracted as the
+      presentational core (compact/roomy layouts); the studio mounts it
+      roomy below PinsPanel; studio store gained
+      setComponentChannel/clearComponentChannel WITH history (components
+      ride HistoryStep — undo/redo/revert restore them; init seeds
+      history[0]). REMAINING for the Stage-2 checkbox: liveness-walk
+      coverage of the new controls (area-F harness work).
 - [ ] Stage 3 text/border channels: family/size/weight/figures pickers
       folding type_roles into the same surface; icon/indicator records.
 - [ ] Stage 4 states + decorative: hover/selected/paint-state records;

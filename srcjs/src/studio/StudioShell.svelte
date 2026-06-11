@@ -15,6 +15,7 @@
   import SnippetStrip from "./SnippetStrip.svelte";
   import StudioRail from "./StudioRail.svelte";
   import PinsPanel from "./PinsPanel.svelte";
+  import ComponentsEditor from "$components/ui/settings/ComponentsEditor.svelte";
   import RoleSpine from "../components/spine/RoleSpine.svelte";
   import CascadeView from "../components/theme-panel/CascadeView.svelte";
   import { buildBaseExpression, buildPinSteps, buildRoleOverrideSteps, buildSnippetSteps, describeInputsEdit, formatSnippet } from "./snippet-generator";
@@ -202,6 +203,18 @@
           onpreview={(next) => studioStore.preview(next)}
         />
         <PinsPanel />
+        {#if studioStore.resolved}
+          <div class="components-host" data-tv-v2>
+            <ComponentsEditor
+              roles={studioStore.resolved.roles}
+              cssVars={studioStore.resolved.cssVars as Record<string, string>}
+              components={studioStore.components}
+              onset={(c, s, ch, r) => studioStore.setComponentChannel(c, s, ch, r)}
+              onclear={(c, s, ch) => studioStore.clearComponentChannel(c, s, ch)}
+              layout="roomy"
+            />
+          </div>
+        {/if}
         {#if studioStore.resolved}
           <!-- Tier-2 role rebind surface (theme-rework Wave 1): the spine
                was fully store-wired but never mounted. It speaks role
