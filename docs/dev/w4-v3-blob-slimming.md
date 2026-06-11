@@ -56,7 +56,14 @@ transparent bg while v4 row-scope uses the highlight wash — possible
 existing divergence).
 
 Order of attack (smallest blast radius first):
-1. `--tv-row-group-rule` + semantic-* emphasis pair (row cluster reads).
+1. ~~semantic-* (6 rows) + axis-label/tick fg (2 rows)~~ **PORTED
+   2026-06-11**: recipes traced to exact reads (muted-fg ≡ role text;
+   accent-fg ≡ accent-solid; axis-label ≡ text; emphasis-fg = ink
+   ANCHOR; tick-fg = UNWALKED neutral[10] — new `ramp-direct` resolver
+   group; three bgs = const transparent). Cell paint states
+   (emphasis/muted/accent) are now component-model channels on `cell`;
+   anchor + ramp-direct resolvers honor re-routes. `--tv-row-group-rule`
+   still pending (rowGroup cluster).
 2. firstColumn cluster (4 tokens) → `first_column_style` becomes a
    theme INPUT (the header_style/W3 precedent, including killing the
    S7 mirror slot).

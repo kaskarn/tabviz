@@ -482,6 +482,10 @@ function resolveAnchorGroup(token: ComponentToken, ctx: ResolveCtx): string {
     return tokenResolveBug(token.cssVar, token.source.tier,
       "resolverGroup=anchor but source.tier is not anchor");
   }
+  // Component-model re-route (W6): redirects an anchor-sourced channel
+  // to a Tier-2 role (e.g. cell emphasis ink → accent-text).
+  const reroute = componentRoleOverride(token, ctx.components);
+  if (reroute) return ctx.roles[reroute];
   const anchorHex = pickAnchorHex(token.source.anchor, ctx.inputs);
   if (anchorHex !== null) return anchorHex;
   // Status anchors are optional inputs. When the theme doesn't set
@@ -537,6 +541,24 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
     return ctx.roles[reroute ?? t.source.role];
   }],
   ["anchor", resolveAnchorGroup],
+  // Direct (UNWALKED) ramp reads — W4 recipe ports. The role layer
+  // contrast-walks text-subtle/muted; these tokens preserve the v3
+  // pixel (e.g. tick labels read neutral grade 10 exactly). Source
+  // note grammar: "ramp:<name>[<grade>]".
+  ["ramp-direct", (t, ctx) => {
+    // Component-model re-route (W6): a col-channel override redirects
+    // the unwalked ramp read to a Tier-2 role.
+    const reroute = componentRoleOverride(t, ctx.components);
+    if (reroute) return ctx.roles[reroute];
+    const m = t.source.tier === "computed"
+      ? /^ramp:(neutral|brand|accent)\[(\d+)\]/.exec(t.source.note) : null;
+    if (!m) {
+      return tokenResolveBug(t.cssVar, t.source.tier,
+        'resolverGroup=ramp-direct needs source note "ramp:<name>[<grade>]"');
+    }
+    const ramp = ctx.ramps[m[1] as "neutral" | "brand" | "accent"];
+    return ramp[Number(m[2]) - 1] ?? ramp[ramp.length - 1]!;
+  }],
   ["const", (t) => {
     if (t.source.tier === "const" && t.source.note?.includes("transparent")) {
       return "transparent";

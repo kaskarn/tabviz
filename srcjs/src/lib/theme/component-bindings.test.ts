@@ -67,14 +67,15 @@ describe("COMPONENT_ROSTER (manifest binding annotations)", () => {
   });
 
   it("HONESTY GATE: every annotated token's resolver honors a re-route", () => {
-    // Only the role + typography resolvers consult componentChannelOverride.
+    // Only resolvers that consult componentChannelOverride may carry
+    // annotations (role/typography/anchor/ramp-direct as of W4 ports).
     // An annotation on any other group would advertise an editable channel
     // nothing reads — the exact bug class the consumedBy drift gate exists
     // for. Extend the resolver FIRST, then annotate.
     for (const t of COMPONENT_TOKENS) {
       if (!t.binding) continue;
       expect(
-        ["role", "typography"].includes(t.resolverGroup),
+        ["role", "typography", "anchor", "ramp-direct"].includes(t.resolverGroup),
         `${t.cssVar} is annotated (${t.binding.component}.${t.binding.channel}) ` +
         `but its resolverGroup "${t.resolverGroup}" does not honor re-routes`,
       ).toBe(true);

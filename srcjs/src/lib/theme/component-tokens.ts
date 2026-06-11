@@ -76,6 +76,7 @@ export type TokenSource =
 export type ResolverGroup =
   | "role"        // read resolved.roles[source.role]
   | "anchor"      // pickAnchorHex + status fallback
+  | "ramp-direct" // unwalked ramp[grade] reads (W4 recipe ports)
   | "density"     // density-table px lookup (spacing-px / border-width)
   | "geometry"    // inputs.geometry radius/border-width projection
   | "effects"     // glow / shell-gradient / emphasis-shadow from ramps
@@ -112,8 +113,9 @@ export type ComponentRegion = "header" | "rows" | "plot" | "frame" | "captions";
  *  (the active one follows `header_style`). Sparse — most components
  *  define only `base`. */
 export type ComponentStateName =
-  | "base" | "alt" | "hover" | "selected" | "emphasis"
-  | "light" | "tint" | "fill";
+  | "base" | "alt" | "hover" | "selected"
+  | "emphasis" | "muted" | "accent" // paint-tool states (rows/cells)
+  | "light" | "tint" | "fill";      // header style variants
 
 /** Typed channels. Color channels (`col` text/fg, `bg` fill, `bar` marker,
  *  `rule` stroke) take a Tier-2 color role name; type channels take the
@@ -957,6 +959,82 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Status: info color",
   },
 
+  // ── Cell-scope semantic paint + axis label/tick fg (W4 recipe ports) ──────
+  // Were v3-bridge rows reading theme.row.* / theme.plot.*; the recipes
+  // traced to exact role/anchor/ramp reads (equivalence-verified across
+  // all 9 presets — w4-v3-blob-slimming.md). Cell-scope paint states are
+  // component-model channels on `cell`; the row-scope siblings live on
+  // `row` above.
+  {
+    cssVar: "--tv-semantic-emphasis-fg",
+    resolverGroup: "anchor",
+    kind: "paint-color",
+    source: { tier: "anchor", anchor: "ink" },
+    consumedBy: ["components/table/CellContent.svelte"],
+    binding: { region: "rows", component: "cell", channel: "col", state: "emphasis" },
+    description: "Cell-scope emphasis text color (ink anchor — the v3 recipe)",
+  },
+  {
+    cssVar: "--tv-semantic-emphasis-bg",
+    resolverGroup: "const",
+    kind: "paint-fill",
+    source: { tier: "const", note: "transparent (cell-scope emphasis is weight+ink, not a wash)" },
+    consumedBy: ["components/table/CellContent.svelte"],
+    description: "Cell-scope emphasis background (transparent)",
+  },
+  {
+    cssVar: "--tv-semantic-muted-fg",
+    resolverGroup: "role",
+    kind: "paint-color",
+    source: { tier: "role", role: "text" },
+    consumedBy: ["components/table/CellContent.svelte"],
+    binding: { region: "rows", component: "cell", channel: "col", state: "muted" },
+    description: "Cell-scope muted text color (text role; the mute reads via opacity/weight)",
+  },
+  {
+    cssVar: "--tv-semantic-muted-bg",
+    resolverGroup: "const",
+    kind: "paint-fill",
+    source: { tier: "const", note: "transparent" },
+    consumedBy: ["components/table/CellContent.svelte"],
+    description: "Cell-scope muted background (transparent)",
+  },
+  {
+    cssVar: "--tv-semantic-accent-fg",
+    resolverGroup: "role",
+    kind: "paint-color",
+    source: { tier: "role", role: "accent-solid" },
+    consumedBy: ["components/table/CellContent.svelte"],
+    binding: { region: "rows", component: "cell", channel: "col", state: "accent" },
+    description: "Cell-scope accent text color (accent-solid role)",
+  },
+  {
+    cssVar: "--tv-semantic-accent-bg",
+    resolverGroup: "const",
+    kind: "paint-fill",
+    source: { tier: "const", note: "transparent" },
+    consumedBy: ["components/table/CellContent.svelte"],
+    description: "Cell-scope accent background (transparent)",
+  },
+  {
+    cssVar: "--tv-axis-label-fg",
+    resolverGroup: "role",
+    kind: "paint-color",
+    source: { tier: "role", role: "text" },
+    consumedBy: ["components/forest/EffectAxis.svelte"],
+    binding: { region: "plot", component: "axis-label", channel: "col" },
+    description: "Axis label text color (text role — the v3 recipe)",
+  },
+  {
+    cssVar: "--tv-axis-tick-fg",
+    resolverGroup: "ramp-direct",
+    kind: "paint-color",
+    source: { tier: "computed", note: "ramp:neutral[10] — UNWALKED (the contrast-walked text-subtle role would shift 8 dark presets; pixel-faithful port)" },
+    consumedBy: ["components/forest/EffectAxis.svelte"],
+    binding: { region: "plot", component: "axis-tick-label", channel: "col" },
+    description: "Axis tick-label text color (neutral grade 10, unwalked)",
+  },
+
   // ── Generic T2 role passthroughs (consumer migration helpers) ─────────────
   // These mirror Tier-2 roles 1:1 with no Tier-3 specialization. Consumers
   // reading e.g. theme.surface.base / theme.content.primary / theme.content.muted
@@ -1537,8 +1615,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // Per Stage 1 §4b: shrink-only; do not add to this block.
   "--tv-actual-scale",
   "--tv-axis-height",
-  "--tv-axis-label-fg",
-  "--tv-axis-tick-fg",
   // --tv-border is now a real manifest entry (see line ~695); removed
   // from the v3-legacy KNOWN_UNCONSUMED list per coherence audit §7.6.
   // The border color/style/width families (major/minor/table colors,
@@ -1557,13 +1633,7 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-max-height",
   "--tv-max-width",
   // --tv-row-group-rule is a manifest entry (#72).
-  "--tv-semantic-accent-bg",
-  "--tv-semantic-accent-fg",
-  "--tv-semantic-emphasis-bg",
-  "--tv-semantic-emphasis-fg",
   "--tv-semantic-fg",
-  "--tv-semantic-muted-bg",
-  "--tv-semantic-muted-fg",
   "--tv-semantic-style",
   "--tv-semantic-weight",
   "--tv-status-",

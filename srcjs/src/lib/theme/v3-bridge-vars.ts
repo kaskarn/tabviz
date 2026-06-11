@@ -45,22 +45,10 @@ export function computeV3BridgeVars(
   const out: Record<string, string> = {
     "--tv-header-rule":        headerVariant.rule ?? v4Border,
     "--tv-row-group-rule":     theme.rowGroup?.L1?.rule ?? v4Border,
-    "--tv-axis-label-fg":      theme.plot?.axisLabel?.fg ?? v4TextSubtle,
-    "--tv-axis-tick-fg":       theme.plot?.tickLabel?.fg ?? v4TextSubtle,
     "--tv-header-bg":          headerVariant.bg ?? "transparent",
     "--tv-header-fg":          headerVariant.fg ?? v4Text,
     "--tv-summary-fill":       theme.series?.[0]?.fill ?? v4Accent,
     "--tv-summary-border":     theme.series?.[0]?.stroke ?? v4Accent,
-    "--tv-semantic-muted-fg":  theme.row.muted?.fg ?? v4TextSubtle,
-    "--tv-semantic-accent-fg": theme.row.accent?.fg ?? v4Accent,
-    "--tv-semantic-muted-bg":  theme.row.muted?.bg ?? "transparent",
-    "--tv-semantic-accent-bg": theme.row.accent?.bg ?? "transparent",
-    // Emphasis pair: CellContent consumes these for cell-scope emphasis
-    // paint; only muted+accent were bridged, so DOM emphasis paint was
-    // visually inert while the SVG export resolved it (DOM↔export
-    // divergence).
-    "--tv-semantic-emphasis-fg": theme.row.emphasis?.fg ?? v4Text,
-    "--tv-semantic-emphasis-bg": theme.row.emphasis?.bg ?? "transparent",
     "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",
     "--tv-first-col-fg":       firstColVariant?.fg ?? "inherit",
     "--tv-first-col-weight":   String(firstColVariant?.weight ?? "inherit"),
