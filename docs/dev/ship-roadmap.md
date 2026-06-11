@@ -98,8 +98,16 @@ objects rather than palettes — and it exercises the machine contract.
 
 ### D. Spec-first contract shipped for real
 **Exit criteria:**
-- [ ] JSON Schema generated from `SCHEMA_REGISTRY` + option metadata,
-      published with the npm package; a hand-written spec validates.
+- [x] JSON Schema generated + published (2026-06-11):
+      scripts/generate-json-schema.ts merges the hand-written top-level
+      shape with per-WIRE-TYPE column defs from SCHEMA_REGISTRY (controls
+      → JSON types, segments → enums, bounds carried; unknown-type
+      fallback keeps additive minors valid while KNOWN types must
+      satisfy their defs). Ships in the npm dist
+      (dist/tabviz-spec.schema.json). Gated: json-schema.test.ts
+      validates a REAL authored spec with Ajv (2020-12), rejects broken
+      ones, and drift-checks def count vs the registry. The schema's
+      first catch was real (toggles carry null on the wire).
 - [ ] npm `@tabviz/core` consumable by a third party: JS-author docs
       (mount a widget, author a spec, themes) exist; dist-smoke extended
       to a real "external consumer" fixture.

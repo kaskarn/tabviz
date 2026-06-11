@@ -1,0 +1,3462 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tabviz.dev/spec/tabviz-spec.schema.json",
+  "title": "tabviz wire-format spec (generated at 1.10)",
+  "description": "GENERATED — do not edit. Top-level shape from src/spec/v1.0.json; per-column-type definitions from SCHEMA_REGISTRY. Regenerate: bun run scripts/generate-json-schema.ts",
+  "$defs": {
+    "specVersion": {
+      "type": "string",
+      "pattern": "^1(?:\\.[0-9]+(?:\\.[0-9]+)?)?$",
+      "description": "Semver-shaped version string. Major must be `1` for this schema; minor is additive (older readers ignore unknown fields)."
+    },
+    "webSpec": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "version",
+        "data",
+        "columns",
+        "theme",
+        "interaction",
+        "layout"
+      ],
+      "properties": {
+        "version": {
+          "$ref": "#/$defs/specVersion"
+        },
+        "data": {
+          "type": "object"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/column_text"
+              },
+              {
+                "$ref": "#/$defs/column_numeric"
+              },
+              {
+                "$ref": "#/$defs/column_pvalue"
+              },
+              {
+                "$ref": "#/$defs/column_interval"
+              },
+              {
+                "$ref": "#/$defs/column_range"
+              },
+              {
+                "$ref": "#/$defs/column_custom"
+              },
+              {
+                "$ref": "#/$defs/column_bar"
+              },
+              {
+                "$ref": "#/$defs/column_progress"
+              },
+              {
+                "$ref": "#/$defs/column_heatmap"
+              },
+              {
+                "$ref": "#/$defs/column_sparkline"
+              },
+              {
+                "$ref": "#/$defs/column_pictogram"
+              },
+              {
+                "$ref": "#/$defs/column_stars"
+              },
+              {
+                "$ref": "#/$defs/column_ring"
+              },
+              {
+                "$ref": "#/$defs/column_badge"
+              },
+              {
+                "$ref": "#/$defs/column_icon"
+              },
+              {
+                "$ref": "#/$defs/column_img"
+              },
+              {
+                "$ref": "#/$defs/column_reference"
+              },
+              {
+                "$ref": "#/$defs/column_forest"
+              },
+              {
+                "$ref": "#/$defs/column_viz_bar"
+              },
+              {
+                "$ref": "#/$defs/column_viz_boxplot"
+              },
+              {
+                "$ref": "#/$defs/column_viz_violin"
+              },
+              {
+                "type": "object",
+                "description": "Forward-compatible fallback: column types UNKNOWN to this schema version remain valid (additive minors). Known types must satisfy their definition.",
+                "properties": {
+                  "type": {
+                    "not": {
+                      "enum": [
+                        "text",
+                        "numeric",
+                        "pvalue",
+                        "interval",
+                        "range",
+                        "custom",
+                        "bar",
+                        "progress",
+                        "heatmap",
+                        "sparkline",
+                        "pictogram",
+                        "stars",
+                        "ring",
+                        "badge",
+                        "icon",
+                        "img",
+                        "reference",
+                        "forest",
+                        "viz_bar",
+                        "viz_boxplot",
+                        "viz_violin"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "extraColumns": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "availableFields": {
+          "type": "array"
+        },
+        "theme": {
+          "type": "object"
+        },
+        "interaction": {
+          "type": "object"
+        },
+        "layout": {
+          "type": "object"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "watermark": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "watermarkColor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "watermarkOpacity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "paginate": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "initialState": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "targetAspect": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "targetAspectAnchor": {
+          "type": "string",
+          "enum": [
+            "width",
+            "height",
+            "auto"
+          ]
+        },
+        "originalCall": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "splitForestPayload": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "version",
+        "type",
+        "splitVars",
+        "navTree",
+        "specs"
+      ],
+      "properties": {
+        "version": {
+          "$ref": "#/$defs/specVersion"
+        },
+        "type": {
+          "type": "string",
+          "description": "Discriminator. R currently emits 'split_table'; the TS type calls it 'split_forest'. This mismatch is on the synchronization-audit list (spec §2.5-G6) and will be reconciled in a future minor."
+        },
+        "splitVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "navTree": {
+          "type": "array"
+        },
+        "base": {
+          "type": "object"
+        },
+        "specs": {
+          "type": "object"
+        },
+        "sharedAxis": {
+          "type": "boolean"
+        },
+        "sharedColumnWidths": {
+          "type": "boolean"
+        },
+        "axisRange": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "min",
+                "max"
+              ],
+              "properties": {
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "column_text": {
+      "type": "object",
+      "description": "Wire type \"text\" (authoring types: text, date). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "text": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {}
+              }
+            },
+            "date": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "format": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_numeric": {
+      "type": "object",
+      "description": "Wire type \"numeric\" (authoring types: numeric, n, currency, percent). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "numeric"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "numeric": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "decimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "thousandsSep": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "abbreviate": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "prefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "percent": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "decimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "thousandsSep": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "abbreviate": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "prefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "multiply": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "symbol": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_pvalue": {
+      "type": "object",
+      "description": "Wire type \"pvalue\" (authoring types: pvalue). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "pvalue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "pvalue": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "stars": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "starsColor": {
+                  "enum": [
+                    "accent",
+                    "ink2",
+                    "negative",
+                    "none",
+                    null
+                  ]
+                },
+                "significantStyle": {
+                  "enum": [
+                    "none",
+                    "pill",
+                    null
+                  ]
+                },
+                "format": {
+                  "enum": [
+                    "auto",
+                    "decimal",
+                    "scientific",
+                    null
+                  ]
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "expThreshold": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "abbrevThreshold": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "thresholds": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_interval": {
+      "type": "object",
+      "description": "Wire type \"interval\" (authoring types: interval). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "interval"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "interval": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "decimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "thousandsSep": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "abbreviate": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "prefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "separator": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "impreciseThreshold": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_range": {
+      "type": "object",
+      "description": "Wire type \"range\" (authoring types: range). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "range"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "range": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "decimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "thousandsSep": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "abbreviate": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "prefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "separator": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_custom": {
+      "type": "object",
+      "description": "Wire type \"custom\" (authoring types: events). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "custom"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "custom": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "decimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "thousandsSep": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "abbreviate": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "prefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "separator": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showPct": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_bar": {
+      "type": "object",
+      "description": "Wire type \"bar\" (authoring types: bar). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "bar"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "bar": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "maxValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    "sqrt",
+                    null
+                  ]
+                },
+                "showLabel": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_progress": {
+      "type": "object",
+      "description": "Wire type \"progress\" (authoring types: progress). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "progress"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "progress": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "maxValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    "sqrt",
+                    null
+                  ]
+                },
+                "showLabel": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_heatmap": {
+      "type": "object",
+      "description": "Wire type \"heatmap\" (authoring types: heatmap). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "heatmap"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "heatmap": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "decimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "digits": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 10
+                },
+                "thousandsSep": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "abbreviate": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "prefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "palette": {},
+                "minValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "maxValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "showValue": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    "sqrt",
+                    null
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_sparkline": {
+      "type": "object",
+      "description": "Wire type \"sparkline\" (authoring types: sparkline). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "sparkline"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "sparkline": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "type": {
+                  "enum": [
+                    "line",
+                    "bar",
+                    "area",
+                    null
+                  ]
+                },
+                "height": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 8,
+                  "maximum": 80
+                },
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_pictogram": {
+      "type": "object",
+      "description": "Wire type \"pictogram\" (authoring types: pictogram). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "pictogram"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "pictogram": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "glyph": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "glyphField": {},
+                "maxGlyphs": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "halfGlyphs": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "domain": {},
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "emptyColor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "size": {
+                  "enum": [
+                    "sm",
+                    "base",
+                    "lg",
+                    null
+                  ]
+                },
+                "layout": {
+                  "enum": [
+                    "row",
+                    "stack",
+                    null
+                  ]
+                },
+                "valueLabel": {
+                  "enum": [
+                    false,
+                    true,
+                    "leading",
+                    "trailing",
+                    null
+                  ]
+                },
+                "labelFormat": {
+                  "enum": [
+                    "integer",
+                    "decimal",
+                    null
+                  ]
+                },
+                "labelDecimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_stars": {
+      "type": "object",
+      "description": "Wire type \"stars\" (authoring types: stars). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "stars"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "stars": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "glyph": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "glyphField": {},
+                "maxGlyphs": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "halfGlyphs": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "domain": {},
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "emptyColor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "size": {
+                  "enum": [
+                    "sm",
+                    "base",
+                    "lg",
+                    null
+                  ]
+                },
+                "layout": {
+                  "enum": [
+                    "row",
+                    "stack",
+                    null
+                  ]
+                },
+                "valueLabel": {
+                  "enum": [
+                    false,
+                    true,
+                    "leading",
+                    "trailing",
+                    null
+                  ]
+                },
+                "labelFormat": {
+                  "enum": [
+                    "integer",
+                    "decimal",
+                    null
+                  ]
+                },
+                "labelDecimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_ring": {
+      "type": "object",
+      "description": "Wire type \"ring\" (authoring types: ring). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "ring"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ring": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "minValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "maxValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "thresholds": {},
+                "trackColor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "size": {
+                  "enum": [
+                    "sm",
+                    "base",
+                    "lg",
+                    null
+                  ]
+                },
+                "showLabel": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "labelFormat": {
+                  "enum": [
+                    "percent",
+                    "decimal",
+                    "integer",
+                    null
+                  ]
+                },
+                "labelDecimals": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 10
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_badge": {
+      "type": "object",
+      "description": "Wire type \"badge\" (authoring types: badge). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "badge"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "badge": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "variants": {},
+                "colors": {},
+                "thresholds": {},
+                "size": {
+                  "enum": [
+                    "sm",
+                    "base",
+                    null
+                  ]
+                },
+                "shape": {
+                  "enum": [
+                    "pill",
+                    "circle",
+                    "square",
+                    null
+                  ]
+                },
+                "outline": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_icon": {
+      "type": "object",
+      "description": "Wire type \"icon\" (authoring types: icon). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "icon"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "icon": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "mapping": {},
+                "size": {
+                  "enum": [
+                    "sm",
+                    "base",
+                    "lg",
+                    "xl",
+                    null
+                  ]
+                },
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_img": {
+      "type": "object",
+      "description": "Wire type \"img\" (authoring types: img). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "img"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "img": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "height": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 8,
+                  "maximum": 200
+                },
+                "maxWidth": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 8,
+                  "maximum": 400
+                },
+                "fallback": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "shape": {
+                  "enum": [
+                    "square",
+                    "rounded",
+                    "circle",
+                    null
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_reference": {
+      "type": "object",
+      "description": "Wire type \"reference\" (authoring types: reference). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "reference"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "reference": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "wrap": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "maxChars": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "fontClass": {},
+                "hrefField": {},
+                "showIcon": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_forest": {
+      "type": "object",
+      "description": "Wire type \"forest\" (authoring types: viz_forest). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "forest"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "forest": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    null
+                  ]
+                },
+                "nullValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "axisLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "axisRange": {},
+                "axisTicks": {},
+                "axisGridlines": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "showAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "annotations": {},
+                "sharedAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "effects": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_viz_bar": {
+      "type": "object",
+      "description": "Wire type \"viz_bar\" (authoring types: viz_bar). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "viz_bar"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "vizBar": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    null
+                  ]
+                },
+                "nullValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "axisLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "axisRange": {},
+                "axisTicks": {},
+                "axisGridlines": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "showAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "annotations": {},
+                "sharedAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "effects": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_viz_boxplot": {
+      "type": "object",
+      "description": "Wire type \"viz_boxplot\" (authoring types: viz_boxplot). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "viz_boxplot"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "vizBoxplot": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    null
+                  ]
+                },
+                "nullValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "axisLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "axisRange": {},
+                "axisTicks": {},
+                "axisGridlines": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "showAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "annotations": {},
+                "sharedAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "effects": {},
+                "showOutliers": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "column_viz_violin": {
+      "type": "object",
+      "description": "Wire type \"viz_violin\" (authoring types: viz_violin). Generated from SCHEMA_REGISTRY.",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "const": "viz_violin"
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "header": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "vizViolin": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "header": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "showHeader": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "align": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "headerAlign": {
+                  "enum": [
+                    "left",
+                    "center",
+                    "right",
+                    null
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sortable": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "naText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "token": {},
+                "paddingClass": {},
+                "scale": {
+                  "enum": [
+                    "linear",
+                    "log",
+                    null
+                  ]
+                },
+                "nullValue": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "axisLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "axisRange": {},
+                "axisTicks": {},
+                "axisGridlines": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "showAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "annotations": {},
+                "sharedAxis": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "effects": {},
+                "bandwidth": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "showMedian": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "showQuartiles": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/webSpec"
+    },
+    {
+      "$ref": "#/$defs/splitForestPayload"
+    }
+  ]
+}
