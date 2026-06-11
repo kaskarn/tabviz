@@ -766,17 +766,32 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // and subtitleHeight from the BODY size — the title band came out
   // ~12px short at defaults and worse on display-scale themes). Line
   // heights mirror PlotHeader.svelte (title 1.3, subtitle 1.4).
-  // D15 title term (instrumented finding, 2026-06-11): the DOM line box
-  // is SUB-PIXEL (size × lh exactly); ceil()ing each line over-reserved
-  // ~0.9px/line on the nejm family. Carry exact values here — the total
-  // is consumed in sums whose other terms are integers, so rounding
-  // happens once at paint, like the browser.
-  const titleHeight = hasTitle ? parseFontSize(readTypeSize(cssVars, "title", "22.4px")) * 1.3 : 0;
-  const subtitleHeight = hasSubtitle ? parseFontSize(readTypeSize(cssVars, "subtitle", "16.8px")) * 1.4 : 0;
-  // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
-  // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
-  // padding = 6+1+6).
-  const titleSubtitleGap = (hasTitle && hasSubtitle) ? readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", 13) : 0;
+  // D15 caption-block model (closed by instrumentation, 2026-06-11; every
+  // term verified against measured DOM boxes across the 12-case matrix):
+  //   - line boxes are EXACT size×lh (the DOM is sub-pixel; per-line ceil
+  //     over-reserved ~0.9px — rounding happens once at paint).
+  //   - the title carries chrome: 2.4px pad (0.15rem) on plain shells;
+  //     TEXTURED shells (ruled/grid/dotted) apply the knockout-pill rule
+  //     (theme-runtime.css) whose `padding: 1.5px 7px` REPLACES the pad
+  //     → 3px (1.5×2); title_style=underline adds its 3px border (its
+  //     6px padding-bottom loses to the knockout shorthand).
+  //   - the subtitle chain is the themed gap on plain shells, but the
+  //     knockout rule collapses it to 2.5px (1px border + 1.5px pad) on
+  //     textured shells, and adds 1.5px under the subtitle line.
+  const inputsForCaption = theme.authoringInputs;
+  const texturedShell = ["ruled", "grid", "dotted"]
+    .includes(inputsForCaption?.shell_texture ?? "none");
+  const underlineTitle = inputsForCaption?.effects?.title_style === "underline";
+  const titleChrome = (texturedShell ? 3 : 2.4) + (underlineTitle ? 3 : 0);
+  const titleHeight = hasTitle
+    ? parseFontSize(readTypeSize(cssVars, "title", "22.4px")) * 1.3 + titleChrome
+    : 0;
+  const subtitleHeight = hasSubtitle
+    ? parseFontSize(readTypeSize(cssVars, "subtitle", "16.8px")) * 1.4 + (texturedShell ? 1.5 : 0)
+    : 0;
+  const titleSubtitleGap = (hasTitle && hasSubtitle)
+    ? (texturedShell ? 2.5 : readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", 13))
+    : 0;
   // Top inset above the title mirrors the DOM's literal `.header-area`
   // padding-top (PlotHeader.svelte: `padding: 12px 8px var(--tv-spacing-
   // header-gap) 0`) — it does NOT scale with --tv-spacing-padding, so

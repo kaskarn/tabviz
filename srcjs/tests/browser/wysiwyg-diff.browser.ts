@@ -89,24 +89,23 @@ const GATE_EXCEPTIONS: Array<{ pattern: RegExp; maxAbs: number; why: string }> =
   { pattern: /^chrome :: artifact\.width/, maxAbs: 10, why: "D8 flow-through + scalable rounding" },
   // Vertical residuals: DOM measure-then-commit grows wrapped/edge rows the
   // estimator can't see; bounded small.
-  { pattern: /^(geometry :: figure\.height|chrome :: artifact\.height)/, maxAbs: 10, why: "measure-loop growth residual" },
-  { pattern: /^geometry :: headerBand\.top/, maxAbs: 8, why: "D15 title-block vs caption-block arithmetic (register; fix in area G)" },
+  { pattern: /^(geometry :: figure\.height|chrome :: artifact\.height)/, maxAbs: 11, why: "measure-loop growth residual (10→11 on 2026-06-11: D15's caption fix UNMASKED ~0.7px previously hidden inside the inflated caption reserve on textured themes — register D15 note; the residual itself is the measure-loop's, tracked there)" },
+  { pattern: /^geometry :: headerBand\.top/, maxAbs: 3, why: "D15 RESOLVED 2026-06-11 (was 8): caption model exact; +2 nejm-family residual remains" },
   // D15 INSTRUMENTATION readings (2026-06-11) — these two metrics exist to
   // decompose headerBand.top per term; budgets = observed max + slack.
   // First findings: title term = pure ceil() vs sub-pixel (−0.9 on the
   // nejm family); +3.4 and the subtitle's −5…−13 spread need per-case
   // attribution (likely probe-side chain assumptions on themes that pin
   // title_subtitle_gap). Tighten as the terms get fixed.
-  { pattern: /^geometry :: captionTerm\.titleLineBox/, maxAbs: 4, why: "D15 instrumentation (title term — synthwave residue)" },
-  { pattern: /^geometry :: captionTerm\.subtitleLineBox/, maxAbs: 2, why: "D15 instrumentation (uniform +1.5 on title_style themes)" },
+  { pattern: /^geometry :: captionTerm\.titleLineBox/, maxAbs: 1, why: "D15 instrumentation (model exact since the texture-knockout fix)" },
+  { pattern: /^geometry :: captionTerm\.subtitleLineBox/, maxAbs: 1, why: "D15 instrumentation (model exact)" },
   // ATTRIBUTED (2026-06-11): the chain divergence lands EXACTLY on the
   // title_style-decorated presets (brutalist/synthwave/terminal) — their
   // caption chrome (stripe/chip) alters the border/padding chain above
   // the subtitle; the export models the PLAIN chain only. The fix is a
   // per-title_style chain table in the export's caption block.
-  { pattern: /^geometry :: captionTerm\.subtitleChain/, maxAbs: 16, why: "D15 instrumentation (gap-value divergence — see gapVar)" },
-  { pattern: /^geometry :: captionTerm\.gapVar/, maxAbs: 16, why: "D15 instrumentation (which gap each side reads)" },
-  { pattern: /^geometry :: captionTerm\.titleBox/, maxAbs: 7, why: "D15 instrumentation (universal +2.4 pad + title_style chrome)" },
+  { pattern: /^geometry :: captionTerm\.subtitleChain/, maxAbs: 1, why: "D15 instrumentation (model exact)" },
+  { pattern: /^geometry :: captionTerm\.titleBox/, maxAbs: 1, why: "D15 instrumentation (model exact)" },
   { pattern: /^geometry :: row\[/, maxAbs: 4, why: "measure-loop growth residual (per-row)" },
   { pattern: /^geometry :: rowPitch/, maxAbs: 4, why: "measure-loop growth residual" },
 ];
@@ -639,18 +638,6 @@ async function runCase(browser: Browser, opts: ReturnType<typeof parseArgs>, c: 
       cmpNum(findings, caseId, "geometry", "captionTerm.subtitleChain",
         chain, mb.titleSubtitleGap, 0.75,
         "DOM measured border+padding+margin above the subtitle vs the export's gap term");
-      // The next question the chain divergence poses: do the two sides
-      // even READ the same gap value? DOM-effective var vs export term.
-      const domGapVar = parseFloat(dom.cssVars["--tv-spacing-title-subtitle-gap"] || "");
-      if (Number.isFinite(domGapVar)) {
-        cmpNum(findings, caseId, "geometry", "captionTerm.gapVar",
-          domGapVar, mb.titleSubtitleGap, 0.75,
-          "the --tv-spacing-title-subtitle-gap value the DOM container exposes vs the export's reserved gap");
-      } else {
-        findings.push({ caseId, category: "geometry", property: "captionTerm.gapVar",
-          dom: null, svg: mb.titleSubtitleGap, delta: null,
-          note: "DOM container does NOT expose the gap var (computed style empty) — the DOM falls back to the CSS literal while the export reads the token map" });
-      }
     }
   }
 
