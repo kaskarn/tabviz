@@ -32,12 +32,17 @@ Every other area on this roadmap decays invisibly without this one.
 - [x] CI runs on every push: js-ci.yaml `ts-suite` job (bun + vitest,
       svelte-check, eslint errors, build, bundle budget, lockfile parity;
       the drift gates run inside the suites). R side: the existing
-      R-CMD-check.yaml 5-platform matrix. (2026-06-10 — verify green on
-      the first real push.)
+      R-CMD-check.yaml 5-platform matrix. VERIFIED GREEN on the first
+      real push (2026-06-11) — and the maiden runs EARNED their keep:
+      caught an unpinned bun runtime, a half-committed lockfile state,
+      and a REAL shared-spacing-object production bug that macOS test
+      order had hidden for months (scaleSpacing identity-path reference
+      share; fixed + regression-locked).
 - [x] CI runs the browser harnesses headless: js-ci.yaml `browser-gates`
       job (`arrange-tool`, `forest-marks`, `measure-rows`,
-      `details-panel`, `panel-liveness`, `interaction-qa`) — all verified
-      passing locally first (2026-06-10).
+      `details-panel`, `panel-liveness`, `interaction-qa`) — verified
+      locally 2026-06-10; GREEN ON CI HARDWARE 2026-06-11 (2m33s,
+      first real push).
 - [x] `wysiwyg-diff.browser.ts --gate`: budgeted CI gate; every budget
       annotated with its decision-register ID (D8/D15/residuals); new or
       over-budget findings fail. 0 breaches at stand-up; the gate's first
