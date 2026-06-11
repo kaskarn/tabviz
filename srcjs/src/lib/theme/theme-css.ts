@@ -19,7 +19,7 @@
  */
 
 import type { WebTheme } from "../../types/theme-resolved";
-import { computeV3BridgeVars } from "./v3-bridge-vars";
+import { computeV3BridgeVars, computeLiveConfigVars } from "./v3-bridge-vars";
 import { getCssVars, getCssVarsRaw, applySpacingPins } from "./consumer-bridge";
 import { VIZ_MARGIN } from "../axis-utils";
 
@@ -142,7 +142,7 @@ function _buildThemeCSSImpl(theme: WebTheme): string {
   // computeV3BridgeVars (v3-bridge-vars.ts) so this emission and
   // getCssVars' overlay agree by construction (R3 studio F3/F4: the
   // inline duplicates here diverged from what consumers read).
-  const bridgeVars = computeV3BridgeVars(theme, cv);
+  const bridgeVars = { ...computeV3BridgeVars(theme, cv), ...computeLiveConfigVars(theme, cv) };
   const bridgeBody = Object.entries(bridgeVars)
     .map(([k, v]) => `      ${k}: ${v};`)
     .join("\n");

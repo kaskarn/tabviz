@@ -1,23 +1,40 @@
-// V3 user-config bridge values, as a MAP.
+// V3 user-config bridge values, as a MAP — the DYING tail (W4).
 //
-// These ~28 tokens have no v4 manifest resolver (they derive from
-// user-pinnable WebTheme config: borders, header variant, first-column
-// variant, title/axis text fg, …). The v4 manifest emits the literal
-// sentinel "<v3-bridge>" for them; the real values were computed inline
-// in theme-css.ts's template string — which meant `getCssVars()` (and
-// therefore R's `theme_css_vars()` / `diff_themes()` / `inspect_token()`
-// and any TS consumer reading via the bridge) returned the SENTINEL
-// while the painted CSS had the real value (R3 studio effectiveness
-// F3/F4: 16 tokens reported "<V3-BRIDGE>" in R, and --tv-text-title-fg
-// diverged between the studio preview and the R render).
+// What remains after the 2026-06-11 porting arcs: the firstColumn
+// variant (4 rows — retires when first_column_style becomes a theme
+// INPUT, the W3 pattern) and the borders cluster (11 rows — retires
+// with the border-input design). Everything else was ported into real
+// v4 resolver groups (header-active, ramp-direct, role/anchor/const
+// entries, the typography header role) or moved to
+// computeLiveConfigVars (rows reading blob fields that deliberately
+// STAY on the wire — series, layout).
 //
-// Single source: theme-css.ts emits from this map; consumer-bridge
-// overlays it onto resolved cssVars. Both surfaces agree by construction.
+// Single source: theme-css.ts emits from these maps; consumer-bridge
+// overlays them onto resolved cssVars. Both surfaces agree by
+// construction. W4 done-condition: computeV3BridgeVars deletes.
 
 import type { WebTheme } from "../../types";
-import { activeHeaderVariant } from "../header-variant";
 import { componentChannelOverride } from "./component-bindings";
 import { TOKENS_BY_VAR } from "./component-tokens";
+
+/** LIVE-CONFIG emissions — NOT v3 debt. These read blob fields the W4
+ *  verdict table deliberately keeps (`series` = the slot system;
+ *  `layout` = spec-side figure config). They ride the same overlay path
+ *  as the bridge but SURVIVE W4. */
+export function computeLiveConfigVars(
+  theme: WebTheme,
+  cv: Record<string, string>,
+): Record<string, string> {
+  const v4Accent = cv["--tv-accent"] ?? "#2563eb";
+  return {
+    // Pooled-summary marker reads slot 0 — the slot system is
+    // deliberately separate from the component model.
+    "--tv-summary-fill":   theme.series?.[0]?.fill ?? v4Accent,
+    "--tv-summary-border": theme.series?.[0]?.stroke ?? v4Accent,
+    "--tv-container-border": theme.layout.containerBorder ? "1px solid var(--tv-border)" : "none",
+    "--tv-container-border-radius": `${theme.layout.containerBorderRadius}px`,
+  };
+}
 
 /** Compute the v3 bridge token values for a theme.
  *
@@ -33,7 +50,6 @@ export function computeV3BridgeVars(
   const v4Border     = cv["--tv-border"] ?? "#e2e8f0";
   const v4Accent     = cv["--tv-accent"] ?? "#2563eb";
 
-  const headerVariant = activeHeaderVariant(theme);
   const firstColBold = theme.variants?.firstColumnStyle === "bold";
   const fc = theme.firstColumn as (typeof theme.firstColumn & { plain?: typeof theme.firstColumn.default }) | undefined;
   const firstColDefault = fc?.default ?? fc?.plain;
@@ -43,8 +59,6 @@ export function computeV3BridgeVars(
     style === "double" ? Math.max(3, thickness * 3) : Math.max(thickness, floor);
 
   const out: Record<string, string> = {
-    "--tv-summary-fill":       theme.series?.[0]?.fill ?? v4Accent,
-    "--tv-summary-border":     theme.series?.[0]?.stroke ?? v4Accent,
     "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",
     "--tv-first-col-fg":       firstColVariant?.fg ?? "inherit",
     "--tv-first-col-weight":   String(firstColVariant?.weight ?? "inherit"),
@@ -65,8 +79,6 @@ export function computeV3BridgeVars(
     "--tv-border-major-style": theme.borders.major.style === "double" ? "double" : "solid",
     "--tv-table-border-width": `${theme.borders.table.style === "double" ? Math.max(3, theme.borders.table.thickness * 3) : theme.borders.table.thickness}px`,
     "--tv-table-border-style": theme.borders.table.thickness > 0 ? (theme.borders.table.style === "double" ? "double" : "solid") : "none",
-    "--tv-container-border":   theme.layout.containerBorder ? "1px solid var(--tv-border)" : "none",
-    "--tv-container-border-radius": `${theme.layout.containerBorderRadius}px`,
   };
   // "transparent" when the variant has no rule — the consumer's
   // documented default (TabvizPlot .primary-cell: transparent means

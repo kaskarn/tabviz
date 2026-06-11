@@ -24,7 +24,7 @@
 
 import type { WebTheme } from "../../types/theme-resolved";
 import { createWire } from "./theme-wire";
-import { computeV3BridgeVars } from "./v3-bridge-vars";
+import { computeV3BridgeVars, computeLiveConfigVars } from "./v3-bridge-vars";
 import { resolveTheme } from "./resolve-theme";
 import { TOKENS_BY_VAR } from "./component-tokens";
 import { componentBindingsKey } from "./component-bindings";
@@ -185,7 +185,8 @@ export function getCssVars(theme: WebTheme | undefined | null): Record<string, s
     // the SAME values the painted CSS uses. Before this, 16 tokens
     // round-tripped as the literal sentinel and --tv-text-title-fg
     // diverged between studio preview and R render (R3 studio F3/F4).
-    withBridge = Object.assign({ ...base }, computeV3BridgeVars(theme, base));
+    withBridge = Object.assign({ ...base },
+      computeV3BridgeVars(theme, base), computeLiveConfigVars(theme, base));
     cssVarsBridgeCache.set(theme, withBridge);
   }
   // Fresh copy per call: callers mutate the result, and applySpacingPins
