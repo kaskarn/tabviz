@@ -138,10 +138,20 @@ is W6 (pre-freeze).
       ride HistoryStep — undo/redo/revert restore them; init seeds
       history[0]). REMAINING for the Stage-2 checkbox: liveness-walk
       coverage of the new controls (area-F harness work).
-- [ ] Stage 3 text/border channels: family/size/weight/figures pickers
-      folding type_roles into the same surface; icon/indicator records.
-- [ ] Stage 4 states + decorative: hover/selected/paint-state records;
-      chip / gradient-strip / watermark; HC-as-state-overlay explored.
+- [x] Stage 3 text channels — LANDED 2026-06-11: family/size/weight
+      slot-chip pickers in ComponentsEditor (both hosts); the design
+      doc's motivating example (axis-label → numeric/regular) verified
+      end-to-end. Honesty filter still governs which channels appear
+      (figures + the unconsumed-token channels join when their consumers
+      land — they are SUBSTRATE-ready, the resolver honors them).
+      Icon/indicator records remain design work (no manifest tokens yet).
+- [~] Stage 4 states + decorative: paint/interaction STATES are LIVE
+      already (Stage-2 editor renders state·channel rows — row alt/hover/
+      emphasis, cell paint states, header variants all editable);
+      caption-chip records live. REMAINING: gradient-strip + watermark
+      decorative records (watermark is currently FIGURE state — moving a
+      theme-level twin needs a design call) + the HC-as-state-overlay
+      exploration note.
 - [ ] v3 theme-css bridges (#72–74 clusters) retired into the component
       table (joint with W4).
 - [ ] Every editing surface names its verb + what the edit travels with

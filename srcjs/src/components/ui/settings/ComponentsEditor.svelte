@@ -31,6 +31,14 @@
   const { roles, cssVars, components, onset, onclear, layout = "compact" }: Props = $props();
 
   const COLOR_CHANNELS = new Set(["col", "bg", "bar", "rule"]);
+  // Stage 3: type channels get slot-chip pickers (tiny enum vocabularies —
+  // mirror typography.ts's TypeRole slots; validated by the same
+  // sanitizer the wire uses).
+  const TYPE_VOCAB: Record<string, string[]> = {
+    family: ["display", "body", "mono", "numeric"],
+    size:   ["label", "foot", "body", "head", "subtitle", "title", "display"],
+    weight: ["regular", "medium", "semibold", "bold"],
+  };
 
   // region → [{component, rows: [{state, channel, token, boundRole, isRerouted}]}]
   const regions = $derived.by(() => {
@@ -44,10 +52,12 @@
                     defaultLabel: string; bound: string | null }[] = [];
       for (const [state, channels] of desc.states) {
         for (const [channel, token] of channels) {
-          if (!COLOR_CHANNELS.has(channel)) continue; // Stage 2: color only
+          if (!COLOR_CHANNELS.has(channel) && !(channel in TYPE_VOCAB)) continue;
           const bound = (components?.[desc.component] as Record<string, Record<string, string>> | undefined)?.[state]?.[channel] ?? null;
           const defaultLabel = token.source.tier === "role"
-            ? token.source.role : "(recipe)";
+            ? token.source.role
+            : token.source.tier === "anchor" ? `${token.source.anchor} anchor`
+            : "(recipe)";
           rows.push({ state, channel, cssVar: token.cssVar, defaultLabel, bound });
         }
       }
@@ -120,7 +130,11 @@
                           title={`${row.cssVar} — ${row.bound ?? row.defaultLabel}${row.bound ? " (re-routed)" : ""}`}
                           onclick={() => (openPicker = openPicker === key ? null : key)}
                         >
-                          <span class="swatch" style:background={swatchFor(row)}></span>
+                          {#if COLOR_CHANNELS.has(row.channel)}
+                            <span class="swatch" style:background={swatchFor(row)}></span>
+                          {:else}
+                            <span class="swatch type-glyph" aria-hidden="true">Aa</span>
+                          {/if}
                           <span class="chan-label">
                             {row.state === "base" ? row.channel : `${row.state}·${row.channel}`}
                           </span>
@@ -136,12 +150,27 @@
                           >×</button>
                         {/if}
                         {#if openPicker === key}
-                          <div class="picker">
-                            <RoleChipGrid
-                              roles={roles}
-                              value={row.bound}
-                              onpick={(r) => reroute(comp.component, row.state, row.channel, r)}
-                            />
+                          <div class="picker" class:slot-picker={row.channel in TYPE_VOCAB}>
+                            {#if row.channel in TYPE_VOCAB}
+                              <div class="slot-chips" role="listbox" aria-label={`${row.channel} slots`}>
+                                {#each TYPE_VOCAB[row.channel] as slot (slot)}
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={row.bound === slot}
+                                    class="slot-chip"
+                                    class:selected={row.bound === slot}
+                                    onclick={() => reroute(comp.component, row.state, row.channel, slot as never)}
+                                  >{slot}</button>
+                                {/each}
+                              </div>
+                            {:else}
+                              <RoleChipGrid
+                                roles={roles}
+                                value={row.bound}
+                                onpick={(r) => reroute(comp.component, row.state, row.channel, r)}
+                              />
+                            {/if}
                           </div>
                         {/if}
                       </div>
@@ -241,6 +270,27 @@
     padding: 0 4px;
   }
   .release:hover { opacity: 1; }
+  .slot-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; }
+  .slot-chip {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: none;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    cursor: pointer;
+  }
+  .slot-chip:hover { background: rgba(0, 0, 0, 0.06); }
+  .slot-chip.selected { outline: 2px solid rgba(80, 130, 220, 0.95); outline-offset: 1px; }
+  .picker.slot-picker { width: auto; min-width: 200px; }
+  .type-glyph {
+    background: none;
+    border: none;
+    font-size: 9px;
+    line-height: 12px;
+    text-align: center;
+    opacity: 0.6;
+  }
   .picker {
     position: absolute;
     top: 100%;
