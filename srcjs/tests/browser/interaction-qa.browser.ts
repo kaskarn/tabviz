@@ -139,6 +139,33 @@ const SCENARIOS: Record<string, Scenario> = {
     return `order ${before.join(",")} → ${after.join(",")}`;
   },
 
+  async keyboardSort(page) {
+    // a11y floor (area J, 2026-06-11): focus the N header with REAL
+    // keystrokes (the portal/delegation trap demands real input) and
+    // toggle sort with Enter; assert order changes AND aria-sort tracks.
+    const before = await readLabels(page);
+    await page.evaluate(() => {
+      const headers = [...document.querySelectorAll<HTMLElement>(".header-cell")];
+      const n = headers.find((h) => h.textContent!.trim() === "N");
+      if (!n) throw new Error("N header not found");
+      n.focus();
+    });
+    await page.keyboard.press("Enter");
+    await new Promise((r) => setTimeout(r, 300));
+    const after = await readLabels(page);
+    if (JSON.stringify(before) === JSON.stringify(after)) {
+      throw new Error(`row order unchanged after Enter on focused header`);
+    }
+    const aria = await page.evaluate(() => {
+      const headers = [...document.querySelectorAll<HTMLElement>(".header-cell")];
+      return headers.find((h) => h.textContent!.trim() === "N")?.getAttribute("aria-sort") ?? "missing";
+    });
+    if (aria !== "ascending" && aria !== "descending") {
+      throw new Error(`aria-sort did not track the keyboard sort (got "${aria}")`);
+    }
+    return `Enter toggled sort; aria-sort=${aria}`;
+  },
+
   async collapse(page) {
     const n0 = (await readLabels(page)).length;
     await page.evaluate(() => {

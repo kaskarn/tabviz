@@ -1796,7 +1796,7 @@
             {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             {@const isPrimaryHeader = column.id === primaryColumnId}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
             <div
               use:primaryHeaderRef={isPrimaryHeader}
               class="grid-cell header-cell"
@@ -1807,10 +1807,22 @@
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
+              role={canSort ? "columnheader" : undefined}
+              aria-sort={canSort ? (sortDir === "asc" ? "ascending" : sortDir === "desc" ? "descending" : "none") : undefined}
+              tabindex={canSort ? 0 : undefined}
+              aria-label={canSort ? `${column.header || column.field} — sortable column` : undefined}
               oncontextmenu={(e) => overlays?.openHeaderContextMenu(column, e)}
               onclick={canSort ? (e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
+                store.toggleSort(column.field);
+              } : undefined}
+              onkeydown={canSort ? (e) => {
+                // Keyboard sort (a11y floor, area J): Enter/Space toggles —
+                // same gesture vocabulary as click, no modifiers.
+                if (e.key !== "Enter" && e.key !== " ") return;
+                if ((e.target as HTMLElement).closest('.resize-handle, .drag-handle, .filter-btn')) return;
+                e.preventDefault();
                 store.toggleSort(column.field);
               } : undefined}
             >

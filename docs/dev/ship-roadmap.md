@@ -218,8 +218,13 @@ Deliberately scoped down — correct and unsurprising, not flagship.
 ### J. Accessibility floor
 Clinical/regulatory audience makes this table stakes.
 **Exit criteria:**
-- [ ] Table semantics + `aria-sort` + keyboard sort (the deferred
-      interactivity Phase 3).
+- [~] `aria-sort` + keyboard sort LANDED 2026-06-11: sortable headers
+      are focusable columnheaders; Enter/Space toggles (same vocabulary
+      as click, guards for resize/drag/filter targets); aria-sort tracks
+      ascending/descending/none. GATED: interaction-qa's keyboardSort
+      leg drives it with REAL keystrokes and asserts aria-sort.
+      Remaining for [x]: the full table-semantics survey (grid/row roles
+      across the region tree).
 - [x] HC-fidelity vertical decided: KILLED (register D1, 2026-06-10).
 - [ ] Focus visibility + reduced-motion verified across chrome.
 - [ ] One a11y review pass (agent or manual) with findings triaged.
