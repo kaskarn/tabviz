@@ -68,28 +68,6 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@header@bold@rule
   ),
 
-  # -- Column group (light / tint / bold) ----------------------------
-  "column_group.bold.bg" = list(
-    cascade    = c("inputs$secondary_deep", "inputs$primary_deep"),
-    derivation = "inputs$secondary_deep (mirrors primary_deep when secondary NA)",
-    value_getter = function(t) t@column_group@bold@bg
-  ),
-  "column_group.bold.fg" = list(
-    cascade    = c("content$inverse"),
-    derivation = "content.inverse",
-    value_getter = function(t) t@column_group@bold@fg
-  ),
-  "column_group.bold.rule" = list(
-    cascade    = c("content$inverse", "inputs$secondary_deep"),
-    derivation = "40% oklch_mix(content.inverse, secondary_deep)",
-    value_getter = function(t) t@column_group@bold@rule
-  ),
-  "column_group.tint.bg" = list(
-    cascade    = c("inputs$secondary_deep", "surface$base"),
-    derivation = "12% oklch_mix(surface.base, secondary_deep)",
-    value_getter = function(t) t@column_group@tint@bg
-  ),
-
   # -- Row group ----------------------------------------------------
   "row_group.L1.bg" = list(
     cascade    = c("inputs$secondary_deep", "surface$base", "variants$header_style"),
@@ -141,11 +119,6 @@ RESOLVED_LEAVES <- list(
     cascade    = c("inputs$accent", "surface$base"),
     derivation = "75% oklch_mix(accent, surface.base)",
     value_getter = function(t) t@accent@tint_medium
-  ),
-  "semantic.fill" = list(
-    cascade    = c("inputs$accent", "inputs$neutral[1]"),
-    derivation = "80% oklch_mix(accent, neutral[1]) -- soft row-fill tint",
-    value_getter = function(t) t@semantic@fill
   ),
 
   # -- Content — read via v4 cssVars --------------------------------

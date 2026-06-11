@@ -449,24 +449,6 @@ StatusColors <- new_class(
   validator = make_color_validator(c("positive", "negative", "warning", "info"))
 )
 
-#' Semantics (Tier 2): named token colors for the painter UI.
-#'
-#' The painter applies one of five RowSemantic bundles to a row or cell.
-#' One of those bundles (`row.fill`) needs a color whose identity isn't
-#' captured by accent / identity / status. `Semantics` carries that named
-#' slot -- defaults to a derivation from `accent` at resolve time (engagement
-#' axis); authors override the slot to pin a specific token color.
-#'
-#' @usage NULL
-#' @export
-Semantics <- new_class(
-  "Semantics",
-  properties = list(
-    fill      = new_property(class_character, default = NA_character_)
-  ),
-  validator = make_color_validator(c("fill"))
-)
-
 
 # -- Tier 2: data slot bundle --------------------------------------------
 
@@ -618,22 +600,6 @@ SpacingTokens <- new_class(
 
 # -- Tier 3: annotation cluster -----------------------------------------
 
-#' AnnotationCluster: title/subtitle/caption/footnote bindings.
-#'
-#' Each is a TextRole bundle that defaults to mirroring `theme@text@*`.
-#'
-#' @usage NULL
-#' @export
-AnnotationCluster <- new_class(
-  "AnnotationCluster",
-  properties = list(
-    title    = new_property(TextRole, default = quote(TextRole())),
-    subtitle = new_property(TextRole, default = quote(TextRole())),
-    caption  = new_property(TextRole, default = quote(TextRole())),
-    footnote = new_property(TextRole, default = quote(TextRole()))
-  )
-)
-
 
 # -- Tier 3: header cluster (variant token) -----------------------------
 
@@ -658,22 +624,6 @@ HeaderVariant <- new_class(
 #' @export
 HeaderCluster <- new_class(
   "HeaderCluster",
-  properties = list(
-    light = new_property(HeaderVariant, default = quote(HeaderVariant())),
-    tint  = new_property(HeaderVariant, default = quote(HeaderVariant())),
-    bold  = new_property(HeaderVariant, default = quote(HeaderVariant())),
-    text  = new_property(TextRole,      default = quote(TextRole()))
-  )
-)
-
-#' ColumnGroupCluster: column-group header bindings.
-#'
-#' Tracks the same variant as the leaf header.
-#'
-#' @usage NULL
-#' @export
-ColumnGroupCluster <- new_class(
-  "ColumnGroupCluster",
   properties = list(
     light = new_property(HeaderVariant, default = quote(HeaderVariant())),
     tint  = new_property(HeaderVariant, default = quote(HeaderVariant())),
@@ -812,20 +762,6 @@ RowCluster <- new_class(
   }
 )
 
-#' CellCluster: cell-level bindings.
-#' @usage NULL
-#' @export
-CellCluster <- new_class(
-  "CellCluster",
-  properties = list(
-    bg     = new_property(class_character, default = NA_character_),
-    fg     = new_property(class_character, default = NA_character_),
-    border = new_property(class_character, default = NA_character_),
-    text   = new_property(TextRole,        default = quote(TextRole()))
-  ),
-  validator = make_color_validator(c("bg", "fg", "border"))
-)
-
 
 # -- Tier 3: first-column cluster (variant token) ---------------------
 
@@ -891,38 +827,6 @@ PlotScaffold <- new_class(
 
 
 # -- Tier 3: marks recipes -------------------------------------------
-
-#' MarkRecipe: how one mark type consumes slot-bundle fields.
-#'
-#' Each property names a slot-role key ("fill", "stroke", "fill_dim", ...)
-#' so the renderer can look up the actual hex when drawing each visual element.
-#' v1 wires forest + summary; bar/box/violin/lollipop default to passthrough.
-#'
-#' @usage NULL
-#' @export
-MarkRecipe <- new_class(
-  "MarkRecipe",
-  properties = list(
-    body    = new_property(class_character, default = "fill"),
-    outline = new_property(class_character, default = "stroke"),
-    line    = new_property(class_character, default = "stroke")
-  )
-)
-
-#' MarksRecipes: per-mark-type recipes wiring slot bundles to elements.
-#' @usage NULL
-#' @export
-MarksRecipes <- new_class(
-  "MarksRecipes",
-  properties = list(
-    forest   = new_property(MarkRecipe, default = quote(MarkRecipe())),
-    summary  = new_property(MarkRecipe, default = quote(MarkRecipe())),
-    bar      = new_property(MarkRecipe, default = quote(MarkRecipe())),
-    box      = new_property(MarkRecipe, default = quote(MarkRecipe())),
-    violin   = new_property(MarkRecipe, default = quote(MarkRecipe())),
-    lollipop = new_property(MarkRecipe, default = quote(MarkRecipe()))
-  )
-)
 
 
 # -- Config classes (axis + layout) --------------------------------
@@ -1041,12 +945,6 @@ WebTheme <- new_class(
     # Note: rsvg/PNG export does not fetch webfonts -- the system stack
     # falls back. For high-fidelity export, install the font locally.
     web_fonts = new_property(class_list, default = list()),
-    # Optional: name of the sibling theme that flips this theme's
-    # light/dark mode. `NA_character_` means the theme stands alone.
-    # Populated by paired presets (e.g. solarized ↔ solarized_dark).
-    # Wire-only convention this round — the in-widget switcher's
-    # `prefers-color-scheme` auto-mode is deferred to a follow-up.
-    light_dark_pair = new_property(class_character, default = NA_character_),
     # Variants — structural per-theme choices that live alongside the
     # cascade. (header_style moved to ThemeInputs long ago; its WebTheme
     # mirror slot was retired with the variants.headerStyle wire field —
@@ -1076,21 +974,16 @@ WebTheme <- new_class(
     # — `--tv-surface-bg`, `--tv-text`, `--tv-border`, `--tv-cell-border`, etc.
     accent  = new_property(AccentRoles,   default = quote(AccentRoles())),
     status   = new_property(StatusColors, default = quote(StatusColors())),
-    semantic = new_property(Semantics,    default = quote(Semantics())),
     series  = new_property(class_list,    default = list()),
     text    = new_property(TextRoles,     default = quote(TextRoles())),
     spacing = new_property(SpacingTokens, default = quote(SpacingTokens())),
 
     # Tier 3 (component bindings)
-    annotation   = new_property(AnnotationCluster, default = quote(AnnotationCluster())),
     header       = new_property(HeaderCluster,     default = quote(HeaderCluster())),
-    column_group = new_property(ColumnGroupCluster, default = quote(ColumnGroupCluster())),
     row_group    = new_property(RowGroupCluster,   default = quote(RowGroupCluster())),
     row          = new_property(RowCluster,        default = quote(RowCluster())),
-    cell         = new_property(CellCluster,       default = quote(CellCluster())),
     first_column = new_property(FirstColumnCluster, default = quote(FirstColumnCluster())),
     plot         = new_property(PlotScaffold,      default = quote(PlotScaffold())),
-    marks        = new_property(MarksRecipes,      default = quote(MarksRecipes())),
     axis         = new_property(AxisConfig,        default = quote(AxisConfig())),
     layout       = new_property(Layout,            default = quote(Layout())),
     borders      = new_property(ThemeBorders,      default = quote(ThemeBorders()))

@@ -30,10 +30,10 @@ import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import { resolveCategorical } from "../data-schemes";
 import type {
   WebTheme, AccentRoles,
-  StatusColors, Semantics, SlotRole, TextRole, TextRoles,
-  SpacingTokens, AnnotationCluster, HeaderCluster, RowGroupCluster,
-  RowCluster, CellCluster, FirstColumnCluster, PlotScaffold,
-  MarksRecipes, AxisConfig, Layout, ThemeBorders,
+  StatusColors, SlotRole, TextRole, TextRoles,
+  SpacingTokens, HeaderCluster, RowGroupCluster,
+  RowCluster, FirstColumnCluster, PlotScaffold,
+  AxisConfig, Layout, ThemeBorders,
   ThemeVariants,
 } from "../../types/theme-resolved";
 
@@ -215,10 +215,6 @@ export function buildTheme(
     info: t.info,
   };
 
-  const semantic: Semantics = {
-    fill: t.accent_subtle,
-  };
-
   // Series slot bundles — derive 5 from brand + accent ramps
   // D12 (wire-audit 1f): theme-level mark identity. point_shape fills
   // every slot's shape (cascade: row markerStyle > effect.shape > slot
@@ -282,25 +278,11 @@ export function buildTheme(
 
   const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.density_factor);
 
-  const annotation: AnnotationCluster = {
-    title: text.title,
-    subtitle: text.subtitle,
-    caption: text.caption,
-    footnote: text.footnote,
-  };
-
   const header: HeaderCluster = {
     light: { bg: t.paper, fg: t.ink, rule: t.rule_strong },
     tint:  { bg: t.brand_subtle, fg: t.ink, rule: t.rule_strong },
     bold:  { bg: t.brand, fg: t.brand_ink, rule: oklchMix(t.brand_ink, t.brand, 0.4) },
     text:  text.body,
-  };
-
-  const columnGroup: HeaderCluster = {
-    light: { bg: t.paper, fg: t.ink, rule: t.rule_strong },
-    tint:  { bg: t.brand_subtle, fg: t.ink, rule: t.rule_strong },
-    bold:  { bg: t.brand, fg: t.brand_ink, rule: t.rule_strong },
-    text:  { ...text.body, weight: 500 },
   };
 
   const rowGroup: RowGroupCluster = {
@@ -357,13 +339,6 @@ export function buildTheme(
     borderWidth: 1,
   };
 
-  const cell: CellCluster = {
-    bg: null,
-    fg: t.ink,
-    border: t.rule_subtle,
-    text: text.cell,
-  };
-
   const firstColumn: FirstColumnCluster = {
     default: { bg: null, fg: null, rule: null, weight: null },
     bold:    { bg: t.paper_alt, fg: t.ink, rule: t.rule_subtle, weight: 600 },
@@ -384,15 +359,6 @@ export function buildTheme(
              : inputs.marks?.interval_weight === "thick" ? 2.5
              : 1.5,
     pointSize: 6,
-  };
-
-  const marks: MarksRecipes = {
-    forest:   { body: "fill", outline: "stroke", line: "stroke" },
-    summary:  { body: "fill", outline: "stroke", line: "stroke" },
-    bar:      { body: "fill", outline: "stroke", line: "stroke" },
-    box:      { body: "fill", outline: "stroke", line: "stroke" },
-    violin:   { body: "fill", outline: "stroke", line: "stroke" },
-    lollipop: { body: "fill", outline: "stroke", line: "stroke" },
   };
 
   const axis: AxisConfig = {
@@ -423,7 +389,6 @@ export function buildTheme(
     schemaVersion: 4,
     name,
     webFonts: [],
-    lightDarkPair: null,
     variants: variants,
     authoringInputs: inputs,
     roleOverrides,
@@ -434,19 +399,14 @@ export function buildTheme(
     borders,
     accent: accentRoles,
     status,
-    semantic,
     series,
     text,
     spacing,
-    annotation,
     header,
-    columnGroup,
     rowGroup,
     row,
-    cell,
     firstColumn,
     plot,
-    marks,
   };
 
   // Contrast guardrail — warn-only here (user themes with bad anchors

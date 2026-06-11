@@ -44,4 +44,9 @@
 # resolved-theme blob (pre-release clean break). The `header_style`
 # input (inputs block) is the one vocabulary; activeHeaderStyle reads
 # it directly. variants now carries only firstColumnStyle (+ density).
-WIRE_FORMAT_VERSION <- "1.6"
+#
+# v1.7 (2026-06-11): W4 arc 1 — six dead fields REMOVED from the
+# resolved-theme blob: marks, cell, annotation, semantic, columnGroup,
+# lightDarkPair (zero readers; docs/dev/w4-v3-blob-slimming.md records
+# the verdicts). Pre-release clean break.
+WIRE_FORMAT_VERSION <- "1.7"

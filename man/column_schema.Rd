@@ -12,7 +12,7 @@ One of \code{\link[=list_column_types]{list_column_types()}}\verb{$type}.}
 }
 \value{
 A data frame with one row per option: \code{option}, \code{kind}
-(\code{core}/\code{styling}/\code{editor}), \code{themeable} (logical), \code{control}, \code{default},
+(\code{core}/\code{styling}/\code{presentation}), \code{themeable} (logical), \code{control}, \code{default},
 \code{choices} (comma-separated valid values, or \code{NA}), \code{hint}, and
 \code{inherited_from} (the schema in the chain that declares it).
 }
@@ -23,7 +23,7 @@ choices, and whether a theme may default it. This is the machine-readable
 contract behind \verb{col_<type>()}: use it to discover option names/values, or
 to see exactly which options a theme's \code{column_defaults} (via
 \code{\link[=set_column_default]{set_column_default()}}) is allowed to touch (\code{themeable == TRUE}, i.e.
-\code{kind} is \code{"styling"} or \code{"editor"}; \code{"core"} options change what the data
+\code{kind} is \code{"styling"} or \code{"presentation"}; \code{"core"} options change what the data
 means and are never theme-defaultable).
 }
 \examples{

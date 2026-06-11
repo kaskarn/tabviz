@@ -1531,7 +1531,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-summary-border",
   "--tv-summary-fill",
   // The table-border style/width vars are manifest entries (#73).
-  "--tv-text-column-group-weight",
   "--tv-text-header-family",
   "--tv-text-header-size",
   "--tv-text-header-weight",

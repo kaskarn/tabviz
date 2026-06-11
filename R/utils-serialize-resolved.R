@@ -33,7 +33,6 @@ serialize_theme <- function(theme) {
   if (length(theme@components) > 0L) opts$components <- theme@components
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- theme@name
-  if (!is.na(theme@light_dark_pair)) blob$lightDarkPair <- theme@light_dark_pair
 
   # Variants — headerStyle RETIRED from the wire (W3, 2026-06-11): the
   # header_style INPUT is the one vocabulary and rides inputs_json.

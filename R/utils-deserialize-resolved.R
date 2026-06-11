@@ -105,15 +105,6 @@ deserialize_row_group_tier <- function(x) {
   )
 }
 
-deserialize_mark_recipe <- function(x) {
-  if (is.null(x)) return(MarkRecipe())
-  MarkRecipe(
-    body    = if (is.null(x$body))    "fill"   else as.character(x$body),
-    outline = if (is.null(x$outline)) "stroke" else as.character(x$outline),
-    line    = if (is.null(x$line))    "stroke" else as.character(x$line)
-  )
-}
-
 # Inverse of serialize_banding: {mode, level} -> "none" | "row" | "group"
 # | "group-<n>". Accepts the wire shape (list with mode+level) or the
 # string shape (in case TS ever returns the string directly).
@@ -176,9 +167,6 @@ deserialize_resolved_theme <- function(x) {
     warning  = .coerce_chr(st$warning),
     info     = .coerce_chr(st$info)
   )
-  sm <- x$semantic %||% list()
-  semantic <- Semantics(fill = .coerce_chr(sm$fill))
-
   # ---- Tier 2: data series ----
   series_raw <- x$series %||% list()
   series <- lapply(series_raw, deserialize_slot_role)
@@ -216,27 +204,12 @@ deserialize_resolved_theme <- function(x) {
   )
 
   # ---- Tier 3 clusters ----
-  an <- x$annotation %||% list()
-  annotation <- AnnotationCluster(
-    title    = deserialize_text_role(an$title),
-    subtitle = deserialize_text_role(an$subtitle),
-    caption  = deserialize_text_role(an$caption),
-    footnote = deserialize_text_role(an$footnote)
-  )
-
   h <- x$header %||% list()
   header <- HeaderCluster(
     light = deserialize_header_variant(h$light),
     tint  = deserialize_header_variant(h$tint),
     bold  = deserialize_header_variant(h$bold),
     text  = deserialize_text_role(h$text)
-  )
-  cg <- x$columnGroup %||% list()
-  column_group <- ColumnGroupCluster(
-    light = deserialize_header_variant(cg$light),
-    tint  = deserialize_header_variant(cg$tint),
-    bold  = deserialize_header_variant(cg$bold),
-    text  = deserialize_text_role(cg$text)
   )
   rg <- x$rowGroup %||% list()
   row_group <- RowGroupCluster(
@@ -262,14 +235,6 @@ deserialize_resolved_theme <- function(x) {
     border_width        = if (is.null(r$borderWidth)) 1 else as.numeric(r$borderWidth)
   )
 
-  ce <- x$cell %||% list()
-  cell <- CellCluster(
-    bg     = .coerce_chr(ce$bg),
-    fg     = .coerce_chr(ce$fg),
-    border = .coerce_chr(ce$border),
-    text   = deserialize_text_role(ce$text)
-  )
-
   fc <- x$firstColumn %||% list()
   # Accept legacy `plain` key on input for one minor version after the
   # Sprint 1 PR 3 rename.
@@ -290,16 +255,6 @@ deserialize_resolved_theme <- function(x) {
     tick_mark_length = if (is.null(p$tickMarkLength)) 4   else as.numeric(p$tickMarkLength),
     line_width       = if (is.null(p$lineWidth))      1.5 else as.numeric(p$lineWidth),
     point_size       = if (is.null(p$pointSize))      6   else as.numeric(p$pointSize)
-  )
-
-  m <- x$marks %||% list()
-  marks <- MarksRecipes(
-    forest   = deserialize_mark_recipe(m$forest),
-    summary  = deserialize_mark_recipe(m$summary),
-    bar      = deserialize_mark_recipe(m$bar),
-    box      = deserialize_mark_recipe(m$box),
-    violin   = deserialize_mark_recipe(m$violin),
-    lollipop = deserialize_mark_recipe(m$lollipop)
   )
 
   # ---- Config blocks (axis, layout, borders) ----
@@ -344,26 +299,20 @@ deserialize_resolved_theme <- function(x) {
   WebTheme(
     name            = if (is.null(x$name)) "custom" else as.character(x$name),
     web_fonts       = web_fonts,
-    light_dark_pair = .coerce_chr(x$lightDarkPair),
     inputs          = inputs,
     role_overrides  = role_overrides,
     pins            = pins,
     components      = components,
     accent          = accent,
     status          = status,
-    semantic        = semantic,
     series          = series,
     text            = text,
     spacing         = spacing,
-    annotation      = annotation,
     header          = header,
-    column_group    = column_group,
     row_group       = row_group,
     row             = row,
-    cell            = cell,
     first_column    = first_column,
     plot            = plot,
-    marks           = marks,
     axis            = axis,
     layout          = layout,
     borders         = borders

@@ -56,7 +56,10 @@ Order of attack (smallest blast radius first):
 
 ## Sequencing
 
-- Arc 1 (NEXT — all verdicts verified 2026-06-11): delete SIX fields —
+- Arc 1 — **LANDED 2026-06-11** (wire 1.7). Also took the fully
+  orphaned MarkRecipe class/type both sides + deserialize_mark_recipe +
+  five orphaned R S7 cluster classes + the inspect-resolved v3 rows.
+  Original scope: delete SIX fields —
   marks, cell, annotation, semantic, columnGroup, lightDarkPair — from
   blob emission + TS WebTheme type (+ orphaned cluster types) +
   theme-adapter stamps + the column-group bridge row (+ its

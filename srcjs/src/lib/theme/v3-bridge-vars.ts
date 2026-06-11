@@ -68,7 +68,6 @@ export function computeV3BridgeVars(
       theme.header.text?.size && theme.header.text.size !== theme.text.body.size
         ? theme.header.text.size
         : `calc(${theme.text.body.size} * 1.05)`,
-    "--tv-text-column-group-weight": String(theme.columnGroup?.text?.weight ?? 600),
     "--tv-text-numeric-figures": theme.text.numeric?.figures === "proportional" ? "normal" : "tnum",
     "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",
     "--tv-first-col-fg":       firstColVariant?.fg ?? "inherit",

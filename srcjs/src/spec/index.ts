@@ -34,7 +34,7 @@ export type SupportedMajor = (typeof SUPPORTED_MAJORS)[number];
 // 1.4 (additive): spec.figureLayout figure-state block (column width pins,
 // column reorder, row-kind height pins) + interaction.enableAxisZoom +
 // the row_kind_heights Shiny event field (interactivity-UX arc P0/P1).
-export const CURRENT_VERSION = "1.6" as const;
+export const CURRENT_VERSION = "1.7" as const;
 export type SpecVersion = typeof CURRENT_VERSION;
 
 /**

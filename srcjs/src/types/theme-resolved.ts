@@ -111,16 +111,6 @@ export interface RowGroupTier {
   borderBottom: boolean;
 }
 
-/** Per-mark-type slot-bundle field selectors. */
-export interface MarkRecipe {
-  /** Slot-bundle key for the mark's body (e.g. "fill"). */
-  body: string;
-  /** Slot-bundle key for the mark's outline (e.g. "stroke"). */
-  outline: string;
-  /** Slot-bundle key for the mark's connecting line (e.g. "stroke"). */
-  line: string;
-}
-
 // ────────────────────────────────────────────────────────────────────
 // Tier 1 — customer-facing inputs
 // ────────────────────────────────────────────────────────────────────
@@ -151,10 +141,6 @@ export interface StatusColors {
   negative: string;
   warning: string;
   info: string;
-}
-
-export interface Semantics {
-  fill: string;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -208,21 +194,12 @@ export interface SpacingTokens {
 // Tier 3 — clusters
 // ────────────────────────────────────────────────────────────────────
 
-export interface AnnotationCluster {
-  title: TextRole;
-  subtitle: TextRole;
-  caption: TextRole;
-  footnote: TextRole;
-}
-
 export interface HeaderCluster {
   light: HeaderVariant;
   tint: HeaderVariant;
   bold: HeaderVariant;
   text: TextRole;
 }
-
-export type ColumnGroupCluster = HeaderCluster;
 
 export interface RowGroupCluster {
   L1: RowGroupTier;
@@ -247,13 +224,6 @@ export interface RowCluster {
   borderWidth: number;
 }
 
-export interface CellCluster {
-  bg: string | null;
-  fg: string | null;
-  border: string | null;
-  text: TextRole;
-}
-
 export interface FirstColumnCluster {
   /**
    * Default (un-emphasized) first-column variant. Renamed from `plain`
@@ -275,15 +245,6 @@ export interface PlotScaffold {
   tickMarkLength: number;
   lineWidth: number;
   pointSize: number;
-}
-
-export interface MarksRecipes {
-  forest: MarkRecipe;
-  summary: MarkRecipe;
-  bar: MarkRecipe;
-  box: MarkRecipe;
-  violin: MarkRecipe;
-  lollipop: MarkRecipe;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -382,13 +343,8 @@ export interface WebTheme {
   schemaVersion: 4;
   name: string;
   webFonts: WebFont[];
-  /**
-   * Name of the sibling theme that flips this theme's light/dark mode,
-   * or `null` if the theme stands alone. Wire-only convention — the
-   * in-widget switcher's `prefers-color-scheme` auto-mode reads this
-   * but doesn't auto-switch yet (deferred).
-   */
-  lightDarkPair: string | null;
+  // lightDarkPair DELETED (W4 arc 1, 2026-06-11): designed-but-unconsumed
+  // pairing convention — no preset declared it, nothing read it.
   variants: ThemeVariants;
   /**
    * The Tier-1 authoring inputs that produced this theme (anchors,
@@ -438,22 +394,19 @@ export interface WebTheme {
   // `--tv-border`, `--tv-cell-border`, …). R-side S7 WebTheme mirrors.
   accent: AccentRoles;
   status: StatusColors;
-  semantic: Semantics;
   // Tier 2 — data
   series: SlotRole[];
   // Tier 2 — typography + spacing
   text: TextRoles;
   spacing: SpacingTokens;
-  // Tier 3 — component clusters
-  annotation: AnnotationCluster;
+  // Tier 3 — component clusters. (W4 arc 1, 2026-06-11: the DEAD
+  // clusters — semantic, annotation, columnGroup, cell, marks — were
+  // deleted from the blob; consumers read the v4 cssVar manifest.)
   header: HeaderCluster;
-  columnGroup: ColumnGroupCluster;
   rowGroup: RowGroupCluster;
   row: RowCluster;
-  cell: CellCluster;
   firstColumn: FirstColumnCluster;
   plot: PlotScaffold;
-  marks: MarksRecipes;
   /**
    * Tag-driven node finalization rules. Renderers tag RenderNodes
    * with semantic labels (`"interval-range"`, `"footnote-marker"`,
