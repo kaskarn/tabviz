@@ -164,7 +164,8 @@ function installFingerprints(): void {
   (window as unknown as Record<string, unknown>).__panelFp = (): string => {
     const panel = document.querySelector(".settings-panel");
     if (!panel) return "∅";
-    const activeTab = panel.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim() ?? "";
+    const activeTab = panel.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()
+      ?? "single-scroll";
     const text = (panel as HTMLElement).innerText.replace(/\s+/g, " ").trim();
     const open = [...panel.querySelectorAll("details[open], .disclosure.open, [aria-expanded='true']")].length;
     return [activeTab, text.length, open, (panel as HTMLElement).scrollHeight].join("§");
@@ -482,31 +483,29 @@ async function run(): Promise<void> {
       }
     };
 
-    const switchTab = async (tab: string): Promise<boolean> => {
-      const beforePanel = await panelFp(page);
-      const switched = await page.evaluate((t) => {
-        const tabs = [...document.querySelectorAll<HTMLElement>('.settings-panel [role="tab"]')];
-        const el = tabs.find((x) => (x.textContent || "").trim().toLowerCase() === t);
-        if (!el) return false;
-        el.click();
-        return true;
-      }, tab);
-      if (!switched) { failures.push(`tab '${tab}' not found`); return false; }
-      await settle();
-      if (tab !== "identity" && (await panelFp(page)) === beforePanel) {
-        failures.push(`tab '${tab}': clicking it did not change the panel (dead tab)`);
+    // D16 (2026-06-11): the settings panel is SINGLE-SCROLL — the four
+    // section "tabs" are sticky jump-links (role=navigation) and every
+    // section's controls are mounted at once. The studio keeps real tabs.
+    // The walk: verify the four nav links exist + scroll (live), expand
+    // every disclosure once, then walk the WHOLE panel in one pass.
+    const verifyNavLinks = async (): Promise<void> => {
+      for (const label of ["identity", "color", "form", "effects"]) {
+        const found = await page.evaluate((t) => {
+          const links = [...document.querySelectorAll<HTMLElement>(
+            '.settings-panel [role="navigation"] button, .settings-panel [role="tab"]')];
+          const el = links.find((x) => (x.textContent || "").trim().toLowerCase() === t);
+          if (!el) return false;
+          el.click();
+          return true;
+        }, label);
+        if (!found) failures.push(`section link '${label}' not found`);
+        await settle();
       }
-      await expandDisclosures(page);
-      return true;
     };
 
-    // identity: walk the WHOLE panel once (shared quick strip + figure band +
-    // identity content). The other tabs: walk only their .tab-panel content,
-    // so shared chrome isn't re-operated 3× (speed + avoids redundant churn).
-    if (await switchTab("identity")) await walkControls(".settings-panel", "identity");
-    for (const tab of ["color", "form", "effects"]) {
-      if (await switchTab(tab)) await walkControls(".tab-panel", tab);
-    }
+    await verifyNavLinks();
+    await expandDisclosures(page);
+    await walkControls(".settings-panel", "single-scroll");
 
     // Action buttons (external effect): export / import / handoff / close.
     // Not operated (they download files, open dialogs, or close the panel) —

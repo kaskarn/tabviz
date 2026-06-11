@@ -279,6 +279,19 @@
   // landing tab (the high-frequency "make it mine" anchors).
   type PanelTab = "identity" | "color" | "form" | "effects";
   let activeTab = $state<PanelTab>("identity");
+  // D16 (decided 2026-06-11, restoring the settings-overhaul lock): the
+  // SETTINGS host (compact) renders ALL sections in one scroll with the
+  // bar as sticky jump-links; the STUDIO (roomy) keeps content-switching
+  // tabs. `show()` is the one render gate.
+  const singleScroll = $derived(layout === "compact");
+  const show = (t: PanelTab): boolean => singleScroll || activeTab === t;
+  let panelEl = $state<HTMLElement | null>(null);
+  function tabClick(t: PanelTab): void {
+    activeTab = t;
+    if (!singleScroll) return;
+    panelEl?.querySelector(`[data-t1-section="${t}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   const TABS: ReadonlyArray<{ id: PanelTab; label: string; dot: string }> = [
     { id: "identity", label: "Identity", dot: "var(--v2-ink, #15140e)" },
     { id: "color",    label: "Color",    dot: "var(--tv-status-positive, #2f9e6b)" },
@@ -296,18 +309,21 @@
   </div>
 {/if}
 
-<div class="tab-bar" role="tablist" aria-label="Theme controls">
+<div class="tab-bar" class:sticky={singleScroll}
+     role={singleScroll ? "navigation" : "tablist"} aria-label="Theme controls">
   {#each TABS as t (t.id)}
-    <button type="button" role="tab" class="tab" class:active={activeTab === t.id}
-            aria-selected={activeTab === t.id} tabindex={activeTab === t.id ? 0 : -1}
-            onclick={() => (activeTab = t.id)}>
+    <button type="button" role={singleScroll ? undefined : "tab"} class="tab"
+            class:active={activeTab === t.id}
+            aria-selected={singleScroll ? undefined : activeTab === t.id}
+            tabindex={singleScroll ? 0 : (activeTab === t.id ? 0 : -1)}
+            onclick={() => tabClick(t.id)}>
       <span class="tab-dot" style:background={t.dot} aria-hidden="true"></span>{t.label}
     </button>
   {/each}
 </div>
 
-<div class="tab-panel">
-{#if activeTab === "identity"}
+<div class="tab-panel" bind:this={panelEl}>
+{#if show("identity")}<div data-t1-section="identity"></div>
 <Section title="Identity" kicker="Tier 1 · Anchors"
            lede="The theme's color anchors. Everything downstream derives from these through the cascade.">
     {#each ANCHOR_ROWS as row (row.key)}
@@ -342,7 +358,7 @@
   </Section>
 {/if}
 
-{#if activeTab === "form"}
+{#if show("form")}<div data-t1-section="form"></div>
   <Section title="Surface" kicker="Tier 1 · Structure"
            lede="Structural variants — shell, header band, series marks, borders, texture. Each re-resolves the cascade.">
     <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
@@ -415,7 +431,7 @@
   </Section>
 {/if}
 
-{#if activeTab === "color"}
+{#if show("color")}<div data-t1-section="color"></div>
     <DisclosureField label="Color system" summary={colorSystemSummary} bind:open={colorSystemOpen}>
       <EnumRow label="Mode"
                value={inputs.mode ?? "standard"}
@@ -434,7 +450,7 @@
     </DisclosureField>
 {/if}
 
-{#if activeTab === "effects"}
+{#if show("effects")}<div data-t1-section="effects"></div>
     <DisclosureField label="Effects" summary={effectsSummary} bind:open={effectsOpen}>
       <EnumRow label="Title" value={fx.title_style ?? "normal"}
                segments={["normal", "bar", "underline"].map((v) => ({ value: v, label: v }))}
@@ -476,7 +492,7 @@
     </DisclosureField>
 {/if}
 
-{#if activeTab === "form"}
+{#if show("form")}
     <DisclosureField label="Geometry" summary={geometrySummary} bind:open={geometryOpen}>
       <!-- Named SLOTS (Wave 3 geometry roles) — coarse rebinds above the
            fine stops. "custom" shows when the sliders diverge from a preset. -->
@@ -497,7 +513,7 @@
     </DisclosureField>
 {/if}
 
-{#if activeTab === "color"}
+{#if show("color")}
   {#if advancedExtra}
     <Section title="Role tones" kicker="Tier 2 · Roles"
              lede="Curated Tier-2 role nudges — cascade-safe, survives polarity & contrast. The full role spine lives in the studio.">
@@ -562,6 +578,12 @@
   }
   /* ── Axis-tab bar (UX redesign A3) — replaces the long scroll + the
      "Advanced controls" junk-drawer with four orienting tabs. ── */
+  .tab-bar.sticky {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: inherit;
+  }
   .tab-bar {
     display: flex;
     gap: 2px;
