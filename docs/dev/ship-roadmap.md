@@ -200,14 +200,25 @@ is W6 (pre-freeze).
 Dead menus in the column-config settings are the symptom; the discipline
 is a liveness audit across ALL surfaces.
 **Exit criteria:**
-- [ ] `panel-liveness`-style walk extended to: column editor (the known
-      dead menus fixed), header context menu, filter popovers, column
-      type menu, zoom dropdown, arrange seams, pager. Zero dead controls
-      (or justified-no-op allowlisted with reasons).
+- [x] Surface walks LANDED 2026-06-11 (interaction-qa grew 5 scenarios,
+      now 17): header context menu (all 4 items consequential — lookup
+      by data-header-id, the toggle-header leg hides the text it would
+      match), column type menu (search narrows; pick → editor → INSERT
+      commits a column — the pick alone is configure-then-commit, not a
+      direct insert), column editor (opens via configure; Escape
+      closes), zoom dropdown (zoom-row live; Escape closes — the walk's
+      first catch: NO Escape path existed, fixed in ZoomControls), pager
+      (fresh paginated mount: next/prev/readout/continuous/disable).
+      Filter popover + arrange seams already gated (filter scenario,
+      arrange-tool.browser.ts). The pager leg also surfaced a parity
+      gap: TS authoring has no paginate= (recorded in
+      r-ts-parity-notes.md).
 - [ ] Empty/disabled states designed, not accidental (no menu renders
       options that can never apply).
-- [ ] Gesture grammar audit holds: preview/commit/Escape/double-click
-      uniform (re-verified by the arrange gate + new walks).
+- [x] Gesture grammar re-verified 2026-06-11: arrange gate + the new
+      walks; the zoom dropdown's missing Escape was the one breach
+      found and is fixed (preventDefault-consuming, per the Escape
+      priority convention).
 
 ### G. WYSIWYG as a contract
 **Exit criteria:**

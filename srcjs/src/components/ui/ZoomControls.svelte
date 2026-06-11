@@ -128,9 +128,19 @@
     }
     closeDropdown();
   }
+
+  // Escape closes the dropdown (gesture-grammar uniformity, area F —
+  // outside-click was the ONLY dismissal). preventDefault marks the key
+  // consumed so outer Escape listeners (ArrangeButton et al.) skip it.
+  function handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key === "Escape" && dropdownOpen) {
+      event.preventDefault();
+      closeDropdown();
+    }
+  }
 </script>
 
-<svelte:window onclick={handleWindowClick} />
+<svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
 
 <div class="zoom-controls-wrapper">
   <!-- Trigger button showing current actual scale -->

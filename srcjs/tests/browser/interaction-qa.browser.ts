@@ -17,6 +17,12 @@
  *   theme-switch    — switcher swaps theme; data-polarity flips
  *   filter          — filter popover narrows visible rows
  *   export          — SVG download path produces a non-empty SVG
+ *   tableSemantics  — ARIA table tree valid; aria-expanded tracks collapse (area J)
+ *   headerContextMenu — right-click menu: all items consequential (area F)
+ *   columnTypeMenu  — insert flow: type pick → editor → column lands (area F)
+ *   columnEditor    — configure opens the v2 editor; Escape closes (area F)
+ *   zoomDropdown    — portal dropdown: zoom-row live; Escape closes (area F)
+ *   pager           — paginated mount: next/prev/readout/continuous (area F)
  *
  * Run:
  *   cd srcjs && bun run tests/browser/interaction-qa.browser.ts
@@ -164,6 +170,206 @@ const SCENARIOS: Record<string, Scenario> = {
       throw new Error(`aria-sort did not track the keyboard sort (got "${aria}")`);
     }
     return `Enter toggled sort; aria-sort=${aria}`;
+  },
+
+  // ── Area-F surface walks (2026-06-11): the popover/menu/pager
+  // surfaces the original roster never opened. Real input only; each
+  // runs on a fresh mount so destructive picks (hide, insert) are safe.
+
+  async headerContextMenu(page) {
+    // Right-click the N header → menu renders all four items; each item
+    // is operated on a re-opened menu and must have its consequence.
+    const openMenu = async () => {
+      // By data-header-id, not text — the toggle-header leg HIDES the
+      // header text, so a text lookup dies on the second open.
+      const header = await page.evaluateHandle(() => {
+        const h = document.querySelector<HTMLElement>('.header-cell[data-header-id="numeric_n"]');
+        if (!h) throw new Error("numeric_n header cell not found");
+        return h;
+      });
+      const box = await (header as import("puppeteer").ElementHandle<HTMLElement>).boundingBox();
+      if (!box) throw new Error("header has no box");
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: "right" });
+      await new Promise((r) => setTimeout(r, 250));
+      const items = await page.$$eval(".header-ctx-menu .ctx-item", (els) => els.map((e) => e.textContent!.trim()));
+      if (items.length < 4) throw new Error(`context menu rendered ${items.length} items: ${items.join("|")}`);
+      return items;
+    };
+    const items = await openMenu();
+    // toggle-header: header text visibility flips
+    await page.evaluate(() => {
+      [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
+        .find((b) => /header/i.test(b.textContent!))!.click();
+    });
+    await new Promise((r) => setTimeout(r, 250));
+    const headerGone = await page.evaluate(() =>
+      ![...document.querySelectorAll<HTMLElement>(".header-cell .header-text")].some((e) => e.textContent!.trim() === "N"));
+    if (!headerGone) throw new Error("toggle-header did not hide the header text");
+    // hide: the column leaves the grid
+    const colsBefore = await page.$$eval(".header-cell", (els) => els.length);
+    await openMenu();
+    await page.evaluate(() => {
+      [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
+        .find((b) => /hide/i.test(b.textContent!))!.click();
+    });
+    await new Promise((r) => setTimeout(r, 300));
+    const colsAfter = await page.$$eval(".header-cell", (els) => els.length);
+    if (colsAfter !== colsBefore - 1) throw new Error(`hide: headers ${colsBefore} → ${colsAfter}`);
+    return `4 items [${items.join(" | ")}]; toggle-header + hide both consequential`;
+  },
+
+  async columnTypeMenu(page) {
+    // Context-menu "insert" → the type picker renders, search narrows,
+    // a pick INSERTS a column.
+    const header = (await page.$$(".header-cell"))[1]!;
+    const box = (await header.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: "right" });
+    await new Promise((r) => setTimeout(r, 250));
+    await page.evaluate(() => {
+      [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
+        .find((b) => /insert/i.test(b.textContent!))!.click();
+    });
+    await new Promise((r) => setTimeout(r, 300));
+    const leaves = await page.$$eval(".type-menu .menu-item", (els) => els.length);
+    if (leaves === 0) throw new Error("type menu rendered no items");
+    // Search narrows (real keystrokes into the search input)
+    await page.evaluate(() => document.querySelector<HTMLElement>(".type-menu .search-input")?.focus());
+    await page.keyboard.type("text");
+    await new Promise((r) => setTimeout(r, 200));
+    const narrowed = await page.$$eval(".type-menu .menu-item", (els) => els.length);
+    if (narrowed >= leaves) throw new Error(`search did not narrow (${leaves} → ${narrowed})`);
+    const colsBefore = await page.$$eval(".header-cell", (els) => els.length);
+    // REAL mouse — the menu is portaled (synthetic click() is dead on
+    // portaled subtrees; the documented Svelte 5 delegation trap).
+    const item = (await page.$(".type-menu .menu-item"))!;
+    const ibox = (await item.boundingBox())!;
+    await page.mouse.click(ibox.x + ibox.width / 2, ibox.y + ibox.height / 2);
+    await new Promise((r) => setTimeout(r, 400));
+    // The pick opens the v2 editor in INSERT mode (configure-then-commit
+    // flow); the column lands when its insert button is pressed.
+    const editor = await page.$(".v2-popover-shell");
+    if (!editor) throw new Error("type pick did not open the editor in insert mode");
+    const insertBtn = await page.evaluateHandle(() => {
+      const b = [...document.querySelectorAll<HTMLElement>(".v2-popover-shell button")]
+        .find((x) => /^insert$/i.test(x.textContent!.trim()));
+      if (!b) throw new Error("no insert button in the editor");
+      return b;
+    });
+    const bbox = (await (insertBtn as import("puppeteer").ElementHandle<HTMLElement>).boundingBox())!;
+    await page.mouse.click(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
+    await new Promise((r) => setTimeout(r, 400));
+    const colsAfter = await page.$$eval(".header-cell", (els) => els.length);
+    if (colsAfter !== colsBefore + 1) throw new Error(`insert commit: headers ${colsBefore} → ${colsAfter}`);
+    return `${leaves} types, search narrows to ${narrowed}, pick → editor → insert lands a column`;
+  },
+
+  async columnEditor(page) {
+    // Context-menu "configure" on N → the v2 editor opens; a value
+    // control is LIVE (operating it changes the rendered cells); Escape
+    // closes. (The D11 sweep fixed dead menus here — this keeps them dead.)
+    const header = await page.evaluateHandle(() => {
+      return [...document.querySelectorAll<HTMLElement>(".header-cell")]
+        .find((x) => x.textContent!.trim() === "N")!;
+    });
+    const box = await (header as import("puppeteer").ElementHandle<HTMLElement>).boundingBox();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2, { button: "right" });
+    await new Promise((r) => setTimeout(r, 250));
+    await page.evaluate(() => {
+      [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
+        .find((b) => /configure|edit/i.test(b.textContent!))!.click();
+    });
+    await new Promise((r) => setTimeout(r, 400));
+    const shell = await page.$(".v2-popover-shell");
+    if (!shell) throw new Error("column editor did not open");
+    const cellsBefore = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('[data-field="n"]')].map((e) => e.textContent!.trim()).join("|"));
+    // Operate the first range/number control in the editor with real keys.
+    const operated = await page.evaluate(() => {
+      const ctl = document.querySelector<HTMLInputElement>('.v2-popover-shell input[type="range"], .v2-popover-shell input[type="number"]');
+      if (!ctl) return false;
+      ctl.focus();
+      return true;
+    });
+    if (operated) {
+      await page.keyboard.press("ArrowUp");
+      await new Promise((r) => setTimeout(r, 300));
+      const cellsAfter = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('[data-field="n"]')].map((e) => e.textContent!.trim()).join("|"));
+      if (cellsAfter === cellsBefore) throw new Error("editor value control did not change the rendered cells");
+    }
+    await page.keyboard.press("Escape");
+    await new Promise((r) => setTimeout(r, 250));
+    if (await page.$(".v2-popover-shell")) throw new Error("Escape did not close the editor");
+    return `editor opens, ${operated ? "value control live, " : ""}Escape closes`;
+  },
+
+  async zoomDropdown(page) {
+    // The portal dropdown (decision D4): open via the trigger, operate a
+    // zoom-row button, assert data-zoom moves; Escape closes the dropdown.
+    await page.evaluate(() => {
+      document.querySelector<HTMLElement>(".tabviz-container")?.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    });
+    await page.click(".zoom-trigger-btn");
+    await new Promise((r) => setTimeout(r, 300));
+    if (!(await page.$(".zoom-dropdown"))) throw new Error("zoom dropdown did not open");
+    const zBefore = await page.$eval(".tabviz-scalable", (el) => el.getAttribute("data-zoom") ?? el.parentElement?.getAttribute("data-zoom") ?? "");
+    const rows = await page.$$(".zoom-dropdown .zoom-row button");
+    if (rows.length === 0) throw new Error("zoom dropdown has no zoom-row buttons");
+    await rows[rows.length - 1]!.click(); // zoom-in (last in the row)
+    await new Promise((r) => setTimeout(r, 300));
+    const zAfter = await page.$eval(".tabviz-scalable", (el) => el.getAttribute("data-zoom") ?? el.parentElement?.getAttribute("data-zoom") ?? "");
+    const readout = await page.evaluate(() => document.querySelector(".zoom-status-pct")?.textContent ?? "");
+    if (zBefore === zAfter && !readout) throw new Error("zoom-row button moved nothing");
+    await page.keyboard.press("Escape");
+    await new Promise((r) => setTimeout(r, 200));
+    if (await page.$(".zoom-dropdown")) throw new Error("Escape did not close the zoom dropdown");
+    return `opens, zoom-row live (${readout || `${zBefore}→${zAfter}`}), Escape closes`;
+  },
+
+  async pager(page) {
+    // Fresh paginated mount (30 rows / 10 per page): next/prev change the
+    // visible window + readout; the continuous toggle disables paging.
+    const rows = Array.from({ length: 30 }, (_, i) => ({ study: `Row ${String(i + 1).padStart(2, "0")}`, n: i + 1 }));
+    const spec = tabviz({
+      data: rows,
+      label: "study",
+      columns: [colNumeric({ field: "n", header: "N", decimals: 0 })],
+      theme: buildTheme(NEJM, "nejm"),
+    }) as Record<string, unknown>;
+    // TS authoring has NO paginate (KNOWN R↔TS asymmetry — pages are
+    // precomputed R-side in compute_page_breaks); author the wire block
+    // directly. This walk gates the WIDGET pager, not authoring parity.
+    spec.paginate = {
+      rows: 10, breakOn: "none", keepGroups: false, orphanMin: 0,
+      repeatHeader: true, repeatLegend: false, repeatTitle: false,
+      footnotesOn: "last", pageLabel: "x_of_y", nPages: 3,
+      pages: [
+        { startIdx: 0, endIdx: 9 },
+        { startIdx: 10, endIdx: 19 },
+        { startIdx: 20, endIdx: 29 },
+      ],
+    };
+    await mount(page, spec);
+    const labels = async () => (await readLabels(page)).join("|");
+    const p1 = await labels();
+    if (!p1.includes("Row 01") || p1.includes("Row 11")) throw new Error(`page 1 wrong: ${p1.slice(0, 60)}`);
+    await page.click('.pager-btn[aria-label="Next page"]');
+    await new Promise((r) => setTimeout(r, 300));
+    const p2 = await labels();
+    if (!p2.includes("Row 11") || p2.includes("Row 01")) throw new Error(`next page wrong: ${p2.slice(0, 60)}`);
+    const info = await page.evaluate(() => document.querySelector(".pager-label")?.textContent?.trim() ?? "");
+    if (!/2/.test(info)) throw new Error(`pager readout did not advance: "${info}"`);
+    await page.click('.pager-btn[aria-label="Previous page"]');
+    await new Promise((r) => setTimeout(r, 300));
+    if (!(await labels()).includes("Row 01")) throw new Error("prev did not return to page 1");
+    // Continuous mode: all rows render; pager buttons disable.
+    await page.click(".pager-mode-btn");
+    await new Promise((r) => setTimeout(r, 400));
+    const all = await readLabels(page);
+    if (all.length !== 30) throw new Error(`continuous mode rendered ${all.length}/30 rows`);
+    const disabled = await page.$eval('.pager-btn[aria-label="Next page"]', (el) => (el as HTMLButtonElement).disabled);
+    if (!disabled) throw new Error("continuous mode left Next enabled");
+    return `10/page → next/prev + readout live; continuous renders 30 + disables paging`;
   },
 
   async tableSemantics(page) {

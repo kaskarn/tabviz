@@ -159,3 +159,14 @@ key = the same (or namespaced for viz). Don't invent a third short form. The
 R↔TS parity tests (`tests/testthat/test-parity-columns.R`) assert R's
 `col@options$<bucket>` matches TS's `shape$options$<bucket>`, so a bucket-name
 mismatch fails loudly.
+
+## paginate (2026-06-11, area-F pager walk)
+
+R `tabviz(paginate=)` accepts a count / `paginate_spec()` and precomputes
+page BREAKPOINTS at serialize time (`compute_page_breaks()` — grouped
+breaks, orphan rules); the wire carries `paginate.pages[{startIdx,endIdx}]`
+and the widget never re-derives them. TS authoring has NO `paginate`
+argument — a JS author must construct the wire block (incl. `pages` +
+`nPages`) by hand, as `interaction-qa.browser.ts::pager` does. Closing
+this means porting the breakpoint computation to TS (post-1.0 candidate;
+additive, wire already carries the shape).
