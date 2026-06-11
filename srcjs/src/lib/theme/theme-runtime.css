@@ -200,30 +200,6 @@
   width: fit-content; /* ignored on inline .tv-shell-text; hugs block text */
 }
 
-/* data-mode="high-contrast" (Stage 2 §5 HC encoding fidelity). The wash
- * fills already drop via the resolver's mode-aware paint tokens; these
- * rules layer on the non-color encoding (caret glyph, ring chips, thicker
- * emphasis bar) so semantic state survives loss of color. */
-.tabviz-scope[data-mode="high-contrast"] .hc-caret {
-  display: inline;
-  font-weight: 700;
-  margin-right: 0.25em;
-}
-.tabviz-scope:not([data-mode="high-contrast"]) .hc-caret {
-  display: none;
-}
-
-.tabviz-scope[data-mode="high-contrast"] .status-tag,
-.tabviz-scope[data-mode="high-contrast"] .pval-chip {
-  background: transparent !important;
-  box-shadow: inset 0 0 0 var(--tv-hc-ring-width, 1.5px) currentColor;
-  padding: 1px 8px;
-}
-
-.tabviz-scope [data-row-token="emphasis"] .row-bar {
-  width: var(--tv-hc-bar-width, 3px);
-}
-
 /* sv-omit-begin */
 /* Stage 2 §7 browser-additive effects. These rules apply backdrop-filter
  * (glass), gradient strips, and glow shadows; SVG export strips them via

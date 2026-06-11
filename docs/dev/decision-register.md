@@ -16,7 +16,6 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
-| D1 | HC-fidelity vertical (`.hc-caret`/`.status-tag`/`.pval-chip` rules + `--tv-hc-*` tokens): designed a11y encoding with ZERO producers — wire it or kill it? | (a) wire: render the elements, gate visually; (b) kill: delete rules + tokens + resolver branches | (b) kill — unwired since design; a11y floor (roadmap J) can land without it | M2 (a11y area) |
 | D2 | Six authored-but-ignored column options: `range:showBar`, `viz_bar:{barWidth,barGap,orientation}`, `viz_boxplot:{boxWidth,whiskerType}` — wire or delete (incl. R args + types + emit defaults)? | wire each / delete each | delete all six (unread knobs violate the honesty rule; plausible features can return post-1.0 with readers) | M1 (column ontology, pre-wire-freeze) |
 | D3 | Elevation shadow tokens (`--tv-shadow-raised/overlay-near/-far`): emitted, resolver-wired, zero consumers — does `effects.elevation` actually paint, and through what? | (a) wire DOM+export through the tokens; (b) simplify elevation to the one consumed shadow | investigate first (cheap); then (a) if elevation is a real shipped effect | M2 (WYSIWYG area) |
 | D4 | Portaled popovers (zoom dropdown etc. portaled to document.body) cannot inherit container-scoped `--tv-*` vars → chrome renders fallback-slate on themed pages | (a) copy cssVars onto portal nodes; (b) accept + standardize the neutral chrome palette | (b) accept for 1.0 (consistent neutral chrome is defensible); revisit if dark-theme adoption makes it ugly | M2 (UX area) |
@@ -29,13 +28,13 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 | D11 | Column-option `consumedBy` annotation arc (115 grandfathered options) | schedule as one arc / chip per-arc | one dedicated arc inside roadmap area C | M1 |
 | D12 | Default-paginate threshold value (rows) | pick N + breakOn defaults | propose 200 rows, break on group | M3 (scale posture) |
 | D13 | `enable_themes = "default"` ships all 9 resolved presets on EVERY widget wire (weight + chrome) — right default for 1.0? | keep / trim roster on wire / lazy-load presets | keep, but measure wire weight first (serialize-weight gate exists) | M3 |
-| D14 | `theme_blend()` (promised in the 27→9 cull) and the SplitForest static-knit path: in or out of 1.0? | build / cut from 1.0 scope | cut from 1.0; post-1.0 backlog | M1 scope review |
 
 ## Decided
 
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
-| — | (move rows here as they're decided; one line of rationale + link to the landing commit/arc) | | |
+| D1 | HC-fidelity vertical KILLED (rules + `--tv-hc-*` tokens + resolver group + test deleted) | Designed but never wired to any markup; the a11y floor (roadmap J) lands without it — HC mode's live behavior (wash drops, border bump, contrast re-resolve) is untouched | 2026-06-10 |
+| D14 | `theme_blend()` + SplitForest static-knit path CUT from 1.0 scope | Neither is started; neither blocks the 1.0 identity; post-1.0 backlog | 2026-06-10 |
 
 ## Process notes
 

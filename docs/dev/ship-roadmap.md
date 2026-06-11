@@ -162,7 +162,7 @@ Clinical/regulatory audience makes this table stakes.
 **Exit criteria:**
 - [ ] Table semantics + `aria-sort` + keyboard sort (the deferred
       interactivity Phase 3).
-- [ ] HC-fidelity vertical decided (register D1) and, if wired, gated.
+- [x] HC-fidelity vertical decided: KILLED (register D1, 2026-06-10).
 - [ ] Focus visibility + reduced-motion verified across chrome.
 - [ ] One a11y review pass (agent or manual) with findings triaged.
 
@@ -200,7 +200,8 @@ Clinical/regulatory audience makes this table stakes.
 ## Status log
 
 - 2026-06-10 — Document stood up. Decision register populated (14
-  entries). Recent context: interactivity-UX arc (P0–P2) shipped; WYSIWYG
+  entries). Same day: D1 decided (HC vertical killed, code deleted) and
+  D14 decided (theme_blend + split static-knit cut from 1.0). Recent context: interactivity-UX arc (P0–P2) shipped; WYSIWYG
   fidelity pass shipped (shell/paper export parity, typography role
   alignment); search-and-destroy cleanup shipped (−3.9k lines, gates
   repaired, KNOWN_UNCONSUMED 120→49).

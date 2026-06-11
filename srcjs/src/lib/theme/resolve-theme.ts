@@ -266,11 +266,11 @@ function resolveRoleValue(
  *     drops under HC; `--tv-row-emphasis-bg` drops under HC and
  *     swaps to fill-hover under RT.
  *
- *   Layer C — HC fidelity tokens (the named constants below): the
- *     three `caret-char`, `ring-width`, and `bar-width` tokens in the
- *     hc-fidelity cluster, whose VALUE changes with mode (not just a
- *     drop-or-swap). The token.modes schema only carries drop/swap,
- *     not value substitution; keep inline until that schema extends.
+ *   Layer C — RETIRED (decision D1, 2026-06-10): the HC-fidelity value-
+ *     substitution tokens (caret/ring/bar) were designed but never wired
+ *     to any markup, and were deleted with their resolver group. If a
+ *     future token needs mode-dependent VALUES (not drop/swap), extend
+ *     the token.modes schema rather than reviving the inline group.
  *
  *   Layer D — Phase D geometry hcBump (in resolveGeometryComputed):
  *     adds +1px to every border-width under HC. The token.modes
@@ -287,14 +287,6 @@ function resolveRoleValue(
  * byte-identical across all presets × modes. Layers A/C/D stay inline
  * per the rationale above; no further migration is planned.
  */
-
-// Layer-C HC fidelity values — pulled to named constants so each
-// token's mode-dependent value is a one-line read rather than buried
-// in if-chain text.
-const HC_CARET_CHAR_VALUE = "▸";
-const HC_BAR_WIDTH_HC     = "4px";
-const HC_BAR_WIDTH_STD    = "3px";
-const HC_RING_WIDTH_VALUE = "1.5px";
 
 /** Fallback palette when an optional status anchor isn't set on inputs.
  *  SINGLE SOURCE (wire-audit C48): derives from rendering-constants'
@@ -380,23 +372,6 @@ function requireMatch(
   if (value !== null) return value;
   return tokenResolveBug(token.cssVar, token.source.tier,
     `resolverGroup=${group} resolver did not match this cssVar`);
-}
-
-/** HC-fidelity group — mode-dependent VALUE substitution (Layer C of the
- *  HC inventory). These can't ride token.modes (drop/swap only). */
-function resolveHcFidelityGroup(token: ComponentToken, ctx: ResolveCtx): string {
-  const mode = ctx.inputs.mode;
-  if (token.cssVar === "--tv-hc-caret-char") {
-    return mode === "high-contrast" ? HC_CARET_CHAR_VALUE : "";
-  }
-  if (token.cssVar === "--tv-hc-ring-width") {
-    return HC_RING_WIDTH_VALUE;
-  }
-  if (token.cssVar === "--tv-hc-bar-width") {
-    return mode === "high-contrast" ? HC_BAR_WIDTH_HC : HC_BAR_WIDTH_STD;
-  }
-  return tokenResolveBug(token.cssVar, token.source.tier,
-    "resolverGroup=hc-fidelity but cssVar is not an HC fidelity token");
 }
 
 /** Browser-additive effects group (Stage 2 §7). */
@@ -519,7 +494,6 @@ function resolveAnchorGroup(token: ComponentToken, ctx: ResolveCtx): string {
  */
 const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup, ResolverFn>([
   ["v3-bridge", () => V3_BRIDGE_SENTINEL],
-  ["hc-fidelity", resolveHcFidelityGroup],
   ["browser-fx", resolveBrowserFxGroup],
   ["glass", resolveGlassGroup],
   ["geometry", (t, ctx) =>

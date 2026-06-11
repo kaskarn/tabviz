@@ -148,8 +148,8 @@ describe("pinTokenByName — friendly lookup", () => {
     const w = createWire(COCHRANE);
     // --tv-header-light-rule sources from role border-strong — pinnable
     // but for the error path we need a const-sourced token:
-    // --tv-hc-caret-char (HC caret glyph) is const, hence not pinnable.
-    expect(() => pinTokenByName(w, "hc-caret-char", "neutral", 1))
+    // --tv-spacing-cell-padding-y is const (reserved), hence not pinnable.
+    expect(() => pinTokenByName(w, "spacing-cell-padding-y", "neutral", 1))
       .toThrow(TokenNotPinnableError);
   });
 

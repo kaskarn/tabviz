@@ -79,9 +79,10 @@ describe("inspectToken — trace walk", () => {
   });
 
   it("const-sourced tokens trace to const tier", () => {
-    // --tv-cell-bg (the old const exemplar) was deleted in the 2026-06-10
-    // dead-code pass; --tv-hc-caret-char is the surviving const token.
-    const r = inspectToken(resolved, "hc-caret-char");
+    // Earlier const exemplars (--tv-cell-bg, --tv-hc-caret-char) were
+    // deleted in the 2026-06-10 dead-code passes; the reserved
+    // --tv-spacing-cell-padding-y is the surviving const token.
+    const r = inspectToken(resolved, "spacing-cell-padding-y");
     expect(r.trace[1]!.tier).toBe("const");
   });
 
