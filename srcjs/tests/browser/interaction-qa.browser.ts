@@ -238,8 +238,17 @@ const SCENARIOS: Record<string, Scenario> = {
   async columnTypeMenu(page) {
     // Context-menu "insert" → the type picker renders, search narrows,
     // a pick INSERTS a column.
-    const header = (await page.$$(".header-cell"))[1]!;
-    const box = (await header.boundingBox())!;
+    // SETTLE first: content-sized tables (D19) render left-aligned and
+    // the centering margin lands a few frames later — a bbox grabbed
+    // pre-shift right-clicks where the header no longer is. Poll until
+    // the header's x is stable across two frames.
+    let box = (await (await page.$$(".header-cell"))[1]!.boundingBox())!;
+    for (let i = 0; i < 20; i++) {
+      await new Promise((r) => setTimeout(r, 120));
+      const next = (await (await page.$$(".header-cell"))[1]!.boundingBox())!;
+      if (Math.abs(next.x - box.x) < 0.5) { box = next; break; }
+      box = next;
+    }
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: "right" });
     await new Promise((r) => setTimeout(r, 250));
     await page.evaluate(() => {

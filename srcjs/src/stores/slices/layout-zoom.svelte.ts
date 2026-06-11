@@ -54,7 +54,7 @@ import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalab
 import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
-import { flexWeightForColumn, vizNaturalWidthForColumn } from "$lib/layout/flex-weights";
+import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import {
   getCssVars, readVarPx, readBodySize, readLabelSize,
 } from "$lib/theme/consumer-bridge";
@@ -484,10 +484,33 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         cap: flexCap,
       };
     });
-    const flexWidths = resolveFlexWidths(
-      flexSpecs,
-      Math.max(0, layoutWidth - readVarPx(cssVars, "--tv-spacing-padding", 8) * 2),
-    ).widths;
+    // Growth requires an ABSORBER (D19, 2026-06-11): a plain table (no
+    // flex/plot column, no pinned aspect) sizes to its CONTENT — the
+    // distribution is skipped for unpinned columns so the grid template
+    // falls back to max-content and the (already max-content) scalable
+    // hugs + centers. This mirrors the EXPORT's long-standing contract
+    // ("a plain table shrinks to its content" — svg-generator
+    // widthFloor), which the DOM silently diverged from when multi-flex
+    // gave every column DEFAULT_FLEX_WEIGHT and a container-width
+    // target: narrow tables ballooned to fill the div.
+    const hasFlexColumns = allColumns.some(
+      (c) => columnFlexesForAspect(c) && (c.width === "auto" || c.width == null),
+    );
+    let flexWidths: Record<string, number>;
+    if (hasFlexColumns || targetAspect != null) {
+      flexWidths = resolveFlexWidths(
+        flexSpecs,
+        Math.max(0, layoutWidth - readVarPx(cssVars, "--tv-spacing-padding", 8) * 2),
+      ).widths;
+    } else {
+      // Content-sized: keep ONLY explicit pins + user resizes as px;
+      // everything else renders max-content (browser content sizing,
+      // exactly the pre-multi-flex behavior for plain tables).
+      flexWidths = {};
+      for (const s of flexSpecs) {
+        if (s.explicitWidth != null) flexWidths[s.id] = s.explicitWidth;
+      }
+    }
     const hasOverall = !!spec.data.overall;
 
     // Per-row heights. Group-header rows pick up rowGroupPadding (themed
