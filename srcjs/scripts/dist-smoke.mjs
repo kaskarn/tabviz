@@ -63,6 +63,10 @@ const checks = [
   ["export.exportToPNG", typeof exporters.exportToPNG === "function"],
   ["spec.CURRENT_VERSION", typeof spec.CURRENT_VERSION === "string"],
   ["spec.validateSpecVersion", typeof spec.validateSpecVersion === "function"],
+  // Structured spec diagnostics (area D) — the LLM/MCP-driver surface.
+  ["spec.validateSpec", typeof spec.validateSpec === "function"],
+  ["spec.assertValidSpec", typeof spec.assertValidSpec === "function"],
+  ["spec.SpecValidationError", typeof spec.SpecValidationError === "function"],
   ["extend.defineSchema", typeof extend.defineSchema === "function"],
   ["extend.registerColumnType", typeof extend.registerColumnType === "function"],
   ["extend.compose", typeof extend.compose === "function"],

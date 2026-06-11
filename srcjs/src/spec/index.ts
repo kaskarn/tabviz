@@ -95,3 +95,8 @@ export function validateSpecVersion<T extends { version?: unknown }>(
   // Unknown minor is fine — additive-only minor evolution.
   return payload as T & { version: string };
 }
+
+// Structured spec diagnostics ({path, code, message, severity} — the
+// spec-side mirror of ThemeIssue). See ./validate.ts.
+export { validateSpec, assertValidSpec, SpecValidationError } from "./validate";
+export type { SpecIssue } from "./validate";

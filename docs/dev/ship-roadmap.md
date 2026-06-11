@@ -119,9 +119,16 @@ objects rather than palettes — and it exercises the machine contract.
       dist-smoke.
 - [ ] MCP server exposing schema introspection + spec validation +
       render-to-SVG (the LLM-driver path) — minimal but real.
-- [ ] Structured errors (ThemeIssue-style `{path, code, message}`) cover
-      SPEC validation, not just themes (folds in roadmap area "error
-      experience").
+- [x] Structured spec errors LANDED 2026-06-11: src/spec/validate.ts —
+      `validateSpec` collects `{path, code, message, severity}` issues
+      (version, WebData shape, row-id presence/uniqueness, column
+      type/duplicate-id, field references incl. forest options →
+      warnings); `assertValidSpec` is the ingress wall in createTabviz
+      (errors throw SpecValidationError with issues attached; warnings
+      console.warn). Exported on the /spec subpath (dist-smoke gated).
+      Its first run caught MY OWN wrong model of the wire (data is
+      {rows, groups} with per-row metadata, not a flat array) — the
+      interaction-qa gate flagged it before commit.
 
 ### E. Ontology engagement — the component model
 Design: `docs/dev/component-model.md` (locked 2026-06-11). The cascade

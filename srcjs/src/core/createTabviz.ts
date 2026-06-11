@@ -14,7 +14,7 @@
 import { mount, unmount, type Component } from "svelte";
 import TabvizPlot from "$svelte/TabvizPlot.svelte";
 import { createTabvizStore, type TabvizStore } from "$stores/tabvizStore.svelte";
-import { validateSpecVersion } from "$spec";
+import { validateSpecVersion, assertValidSpec } from "$spec";
 import type {
   WebSpec,
   ColumnFilter,
@@ -138,6 +138,14 @@ export function createTabviz(
   options: TabvizOptions = {},
 ): TabvizInstance {
   validateSpecVersion(spec as { version?: unknown }, "WebSpec");
+  // Structured ingress wall (area D): error-severity issues throw
+  // SpecValidationError with {path, code, message} diagnostics;
+  // reference warnings surface but never block the mount.
+  const specWarnings = assertValidSpec(spec);
+  if (specWarnings.length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn("[tabviz] spec warnings:", specWarnings);
+  }
   const x = spec as WebSpecWithInitialState;
   const store = createTabvizStore();
   store.setSpec(spec);
