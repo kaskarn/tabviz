@@ -43,10 +43,6 @@ export function computeV3BridgeVars(
     style === "double" ? Math.max(3, thickness * 3) : Math.max(thickness, floor);
 
   const out: Record<string, string> = {
-    "--tv-header-rule":        headerVariant.rule ?? v4Border,
-    "--tv-row-group-rule":     theme.rowGroup?.L1?.rule ?? v4Border,
-    "--tv-header-bg":          headerVariant.bg ?? "transparent",
-    "--tv-header-fg":          headerVariant.fg ?? v4Text,
     "--tv-summary-fill":       theme.series?.[0]?.fill ?? v4Accent,
     "--tv-summary-border":     theme.series?.[0]?.stroke ?? v4Accent,
     "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",

@@ -72,9 +72,16 @@ Order of attack (smallest blast radius first):
 4. borders cluster (9 tokens) → `border_preset` input already expands
    the cluster; the per-edge overrides become pins or a small input
    block. THEN `theme.borders` deletes from the blob.
-5. header bg/fg/rule (active-variant trio) → header-cell component
-   states already exist; the ACTIVE pick becomes a resolver that reads
-   `inputs.header_style` (done for style; the bridge's hexes go).
+5. ~~header bg/fg/rule (active trio)~~ **PORTED 2026-06-11** — new
+   `header-active` resolver group keyed by inputs.header_style, reading
+   the SAME role recipes as the per-variant tokens (one source of
+   truth; the bridge trio could disagree with the variant tokens inside
+   a single render — live double-source bug class). bold.rule mix
+   ported pixel-faithfully; deltas elsewhere are subtle (fg ~imperceptible,
+   rule one grade) and tint is unshipped. row-group-rule ported via
+   ramp-direct neutral[7] (exact). Active trio + group-header rule are
+   now component-model channels (header-cell bg/col/rule base,
+   group-header rule).
 
 ## Sequencing
 

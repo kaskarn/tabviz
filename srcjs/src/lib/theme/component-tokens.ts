@@ -77,6 +77,7 @@ export type ResolverGroup =
   | "role"        // read resolved.roles[source.role]
   | "anchor"      // pickAnchorHex + status fallback
   | "ramp-direct" // unwalked ramp[grade] reads (W4 recipe ports)
+  | "header-active" // active header trio by inputs.header_style (W4)
   | "density"     // density-table px lookup (spacing-px / border-width)
   | "geometry"    // inputs.geometry radius/border-width projection
   | "effects"     // glow / shell-gradient / emphasis-shadow from ramps
@@ -1239,35 +1240,39 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // theme-css.ts (no anchor-substrate equivalent — they pick from theme.header).
   {
     cssVar: "--tv-header-bg",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "header-active",
     kind: "paint-fill",
-    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).bg — picks light/tint/fill by inputs.header_style" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Active header background — resolved by inputs.header_style.",
+    source: { tier: "computed", note: "active header bg by inputs.header_style (light=surface / tint=fill / bold=brand-solid)" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "studio/StudioChart.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "bg" },
+    description: "ACTIVE column-header background (style-keyed; one source with the variant tokens)",
   },
   {
     cssVar: "--tv-header-fg",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "header-active",
     kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).fg" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Active header foreground — resolved by inputs.header_style.",
+    source: { tier: "computed", note: "active header fg by inputs.header_style (text / text-onsolid)" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "col" },
+    description: "ACTIVE column-header foreground",
   },
   {
     cssVar: "--tv-header-rule",
-    resolverGroup: "v3-bridge",
-    kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).rule, falls back to role:border" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Active header bottom-rule color.",
+    resolverGroup: "header-active",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "active header rule (border-strong; bold = v3 mix of text-onsolid into brand[9])" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "header", component: "header-cell", channel: "rule" },
+    description: "ACTIVE column-header bottom rule",
   },
   {
     cssVar: "--tv-row-group-rule",
-    resolverGroup: "v3-bridge",
-    kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] theme.rowGroup.L1.rule, falls back to role:border" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Row-group separator rule color.",
+    resolverGroup: "ramp-direct",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "ramp:neutral[7] — the v3 rule_strong recipe, unwalked (pixel-faithful port)" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "rows", component: "group-header", channel: "rule" },
+    description: "Row-group header underline",
   },
 
   // ── First-column variant + container (#74) ────────────────────────────────

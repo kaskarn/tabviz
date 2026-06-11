@@ -42,7 +42,7 @@ import { getRoleBinding } from "./theme-wire";
 import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectL } from "./polarity";
-import { pickInkOnBg, oklchToHex, contrastRatio, oklchMix } from "../oklch";
+import { pickInkOnBg, oklchToHex, contrastRatio, oklchMix, rampStep } from "../oklch";
 import { BADGE_VARIANTS } from "../rendering-constants";
 
 /** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
@@ -541,6 +541,32 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
     return ctx.roles[reroute ?? t.source.role];
   }],
   ["anchor", resolveAnchorGroup],
+  // Active header trio (W4 port): picks the SAME role recipes the
+  // per-variant tokens use, keyed by inputs.header_style — one source
+  // of truth (the v3 bridge trio could disagree with the variant
+  // tokens inside a single render). bold.rule ports the v3 mix.
+  ["header-active", (t, ctx) => {
+    const reroute = componentRoleOverride(t, ctx.components);
+    if (reroute) return ctx.roles[reroute];
+    const style = ctx.inputs.header_style ?? "light";
+    const leaf = t.cssVar === "--tv-header-bg" ? "bg"
+      : t.cssVar === "--tv-header-fg" ? "fg"
+      : t.cssVar === "--tv-header-rule" ? "rule" : null;
+    if (!leaf) {
+      return tokenResolveBug(t.cssVar, t.source.tier,
+        "resolverGroup=header-active but cssVar is not an active-header token");
+    }
+    if (leaf === "bg") {
+      return style === "bold" ? ctx.roles["brand-solid"]
+        : style === "tint" ? ctx.roles["fill"] : ctx.roles["surface"];
+    }
+    if (leaf === "fg") {
+      return style === "bold" ? ctx.roles["text-onsolid"] : ctx.roles["text"];
+    }
+    return style === "bold"
+      ? oklchMix(ctx.roles["text-onsolid"], rampStep(ctx.ramps.brand, 9), 0.4)
+      : ctx.roles["border-strong"];
+  }],
   // Direct (UNWALKED) ramp reads — W4 recipe ports. The role layer
   // contrast-walks text-subtle/muted; these tokens preserve the v3
   // pixel (e.g. tick labels read neutral grade 10 exactly). Source
