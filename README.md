@@ -12,12 +12,29 @@ Vite build. The HR-with-confidence-interval you scroll through in
 Shiny is the same plot — same layout solver, same axis math, same
 glyph geometry — that lands in the manuscript SVG.
 
+![tabviz tour: one spec, sorted live, restyled across three themes](docs/images/readme-tour.gif)
+
+*One `tabviz()` call: a clinical forest table, sorted live, then
+restyled across curated themes — same spec, same data, no re-render
+code. Thirty seconds from a data frame:*
+
+```r
+library(tabviz)
+tabviz(trials)                      # zero config — columns inferred
+tabviz(trials, label = "study",     # one minute more: label, group,
+  group = "class",                  # forest plot, themed output
+  columns = list(
+    col_n("n"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper", scale = "log"),
+    col_pvalue("pvalue", stars = TRUE)
+  ),
+  theme = web_theme_nejm())
+```
+
 [![tabviz example: Hobbiton pantry audit](docs/images/hero-hobbit.png)](https://kaskarn.github.io/tabviz/gallery/lotr.html)
 
-*Hobbiton's pantry & meal audit, rendered as an interactive widget and
-exported byte-identically to PNG. Click for the LOTR gallery —
-custom themes (`web_theme_hobbit()`, `_elvish()`, `_dwarven()`) and
-bespoke pictogram glyphs.*
+*Hobbiton's pantry & meal audit. Click for the LOTR gallery —
+`web_theme_dwarven()` plus bespoke pictogram glyphs.*
 
 ## What makes this interesting
 
