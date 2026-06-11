@@ -30,6 +30,8 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 | D13 | `enable_themes = "default"` ships all 9 resolved presets on EVERY widget wire (weight + chrome) — right default for 1.0? | keep / trim roster on wire / lazy-load presets | keep, but measure wire weight first (serialize-weight gate exists) | M3 |
 | D17 | Role-roster naming review for the component model: keep current names (`text`, `text-muted`, `regular`, …) or rename for legibility (`text-main`, `wgt-normal` style)? ONE vocabulary either way — renamed in place pre-freeze (aliases migratable), never a parallel set | keep / rename (which subset?) | keep current names; revisit only names that prove confusing in the Stage-2 UI | M1 (area E Stage 1 — names ship on the W6 wire) |
 
+| D18 | Title color's v4 binding: the manifest declares `--tv-text-title-fg` ← role `brand-text` (chromatic titles — nejm deep crimson, synthwave pink), but the v3 bridge has been masking it with the shipped near-ink value (a deeper mix than role `text`, ~1–2 grades). Which binding ships, so the LAST text-cluster bridge row can retire? | (a) `text` role (small uniform lightening, one vocabulary); (b) `brand-text` (chromatic — re-identities every preset); (c) new `text-strong` role binding text grade+1 (closest to shipped look) | (a) bind to `text` — smallest honest change; users re-route via `set_component("title", col="brand-text")` | M2 (WYSIWYG area G — visual review context) |
+
 ## Decided
 
 | ID | Decision | Rationale | Date |

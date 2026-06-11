@@ -78,9 +78,9 @@ Order of attack (smallest blast radius first):
   divergence mode by construction; full-cssVars snapshots regenerated,
   diff = additions only; wysiwyg gate 0 breaches). Tick-italic dead
   fallback dropped. REMAINING for text-cluster deletion: the bridge
-  title-fg row (v4 brand-text role differs from the v3 ink value —
-  switching is a VISUAL change across presets, needs the visual
-  battery review), the numeric-figures bridge row (figures is a
+  title-fg row → REGISTER D18 (filed 2026-06-11: manifest says
+  brand-text = chromatic titles; shipped look is a deeper-than-text
+  ink; default = bind to `text`; decide by M2 area G), the numeric-figures bridge row (figures is a
   designed knob — find its authoring source before constifying), the
   export validation check, then the R S7 text slot + TextRoles type.
 - Arc 3+: bridge clusters in the order above; finish with
