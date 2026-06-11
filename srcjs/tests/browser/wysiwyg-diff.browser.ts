@@ -91,6 +91,14 @@ const GATE_EXCEPTIONS: Array<{ pattern: RegExp; maxAbs: number; why: string }> =
   // estimator can't see; bounded small.
   { pattern: /^(geometry :: figure\.height|chrome :: artifact\.height)/, maxAbs: 10, why: "measure-loop growth residual" },
   { pattern: /^geometry :: headerBand\.top/, maxAbs: 8, why: "D15 title-block vs caption-block arithmetic (register; fix in area G)" },
+  // D15 INSTRUMENTATION readings (2026-06-11) — these two metrics exist to
+  // decompose headerBand.top per term; budgets = observed max + slack.
+  // First findings: title term = pure ceil() vs sub-pixel (−0.9 on the
+  // nejm family); +3.4 and the subtitle's −5…−13 spread need per-case
+  // attribution (likely probe-side chain assumptions on themes that pin
+  // title_subtitle_gap). Tighten as the terms get fixed.
+  { pattern: /^geometry :: captionTerm\.titleLineBox/, maxAbs: 4, why: "D15 instrumentation (title term)" },
+  { pattern: /^geometry :: captionTerm\.subtitleLineBox/, maxAbs: 14, why: "D15 instrumentation (subtitle term)" },
   { pattern: /^geometry :: row\[/, maxAbs: 4, why: "measure-loop growth residual (per-row)" },
   { pattern: /^geometry :: rowPitch/, maxAbs: 4, why: "measure-loop growth residual" },
 ];
@@ -260,6 +268,8 @@ interface DomProbe {
   captionBlockH: number; // .tv-caption height (title+subtitle block on shell)
   headerBand: { topInScalable: number; topInMain: number; h: number } | null;
   groupLabelX: number | null;
+  captionTerms: { areaH: number; padTop: number; padBottom: number;
+                  titleH: number | null; subtitleH: number | null } | null;
   // primary-cell data rows in document order: top relative to main, height
   dataRows: Array<{ id: string; top: number; h: number }>;
   groupRows: Array<{ top: number; h: number }>;
@@ -316,6 +326,25 @@ const DOM_PROBE_FN = `(() => {
     const gl = document.querySelector(".primary-cell.group-row .group-label");
     if (gl) groupLabelX = R(gl).left - mr.left;
   }
+  // D15 instrumentation (2026-06-11): per-term caption-block boxes so the
+  // headerBand.top delta decomposes — title/subtitle LINE BOXES vs the
+  // export's ceil(size × lineHeight) model, computed case-by-case.
+  let captionTerms = null;
+  {
+    const ha = document.querySelector(".header-area");
+    const tEl = document.querySelector(".plot-title");
+    const sEl = document.querySelector(".plot-subtitle");
+    if (ha) {
+      const haCs = getComputedStyle(ha);
+      captionTerms = {
+        areaH: R(ha).height,
+        padTop: parseFloat(haCs.paddingTop),
+        padBottom: parseFloat(haCs.paddingBottom),
+        titleH: tEl ? R(tEl).height : null,
+        subtitleH: sEl ? R(sEl).height : null,
+      };
+    }
+  }
   const groupRows = [];
   for (const el of document.querySelectorAll(".grid-cell.primary-cell.group-row")) {
     const b = R(el);
@@ -344,7 +373,7 @@ const DOM_PROBE_FN = `(() => {
   const varNames = ["--tv-spacing-row-height", "--tv-spacing-header-height",
     "--tv-shell-padding", "--tv-text-title-size", "--tv-text-subtitle-size",
     "--tv-text-body-size", "--tv-text-label-size", "--tv-spacing-padding",
-    "--tv-spacing-header-gap"];
+    "--tv-spacing-header-gap", "--tv-spacing-title-subtitle-gap"];
   const ccs = getComputedStyle(container);
   const cssVars = {};
   for (const v of varNames) cssVars[v] = ccs.getPropertyValue(v).trim();
@@ -365,6 +394,7 @@ const DOM_PROBE_FN = `(() => {
     captionBlockH: caption ? R(caption).height : 0,
     headerBand,
     groupLabelX,
+    captionTerms,
     dataRows,
     groupRows,
     columns,
@@ -570,6 +600,29 @@ async function runCase(browser: Browser, opts: ReturnType<typeof parseArgs>, c: 
     cmpNum(findings, caseId, "geometry", "row.pitch (row1.top - row0.top)",
       dom.dataRows[1]!.top - dom.dataRows[0]!.top, mData[1]!.top - mData[0]!.top, GEOM_TOL);
   }
+  // D15 decomposition: title/subtitle line boxes vs the export's
+  // ceil(size × lh) model — the term-by-term view the register asked for.
+  if (dom.captionTerms) {
+    const px = (v: string | undefined): number => parseFloat(v || "0") || 0;
+    const titleSize = px(dom.cssVars["--tv-text-title-size"]);
+    const subSize = px(dom.cssVars["--tv-text-subtitle-size"]);
+    const TITLE_PAD = 2.4; // .plot-title padding-bottom 0.15rem
+    if (dom.captionTerms.titleH != null && titleSize > 0) {
+      cmpNum(findings, caseId, "geometry", "captionTerm.titleLineBox",
+        dom.captionTerms.titleH - TITLE_PAD, Math.ceil(titleSize * 1.3), 0.75,
+        "DOM .plot-title line box (minus its 2.4px pad) vs export ceil(size×1.3)");
+    }
+    if (dom.captionTerms.subtitleH != null && subSize > 0) {
+      // has-both subtitles carry border 1 + padding (gap−1) = gap total.
+      const gap = px(dom.cssVars["--tv-spacing-title-subtitle-gap"]) ||
+        (dom.captionTerms.titleH != null ? 13 : 0);
+      const chain = dom.captionTerms.titleH != null ? gap : 0;
+      cmpNum(findings, caseId, "geometry", "captionTerm.subtitleLineBox",
+        dom.captionTerms.subtitleH - chain, Math.ceil(subSize * 1.4), 0.75,
+        "DOM .plot-subtitle line box (minus border+padding chain) vs export ceil(size×1.4)");
+    }
+  }
+
   // D10: group-label x — DOM (post-chevron) vs SVG text x.
   {
     const svgGroup = svg.texts.find((t) => (t.text || "").startsWith("Cohort"));
