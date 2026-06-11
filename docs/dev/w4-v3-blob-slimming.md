@@ -18,9 +18,10 @@ means touching blob + TS type + S7 class + (de)serializers together.
 | `marks` (MarksRecipes) | 0 | **DELETE** — nothing reads the cluster anywhere. |
 | `cell` (CellCluster) | 0 | **DELETE** — consumers read `--tv-cell-*` tokens. |
 | `annotation` (AnnotationCluster) | 0 | **DELETE** — the one grep hit is a forest-annotation object, not the cluster. |
-| `lightDarkPair` | 0 | **DECIDE** — designed-but-unconsumed forward convention (auto light/dark pairing). D1 precedent says kill; check whether any preset declares it first. |
+| `lightDarkPair` | 0 | **DELETE** (verified 2026-06-11: no preset declares it, no reader anywhere — D1 precedent). |
 | `webFonts` | live (font injection + ThemeSwitcher) | keep |
-| `semantic`, `columnGroup` | 1 each | verify the single reader; likely migrate → delete |
+| `semantic` | 0 (the "1" was a types comment) | **DELETE** |
+| `columnGroup` | 1 — the bridge emits `--tv-text-column-group-weight` from it, and THAT var has ZERO consumers | **DELETE** (cluster + bridge row + the var's KNOWN_UNCONSUMED entry, together) |
 | `variants` | 6 | shrinking: headerStyle retired (W3); `firstColumnStyle` remains until the firstColumn bridge migrates; `density` mirrors the input — check readers |
 | `accent`, `status` | ~14 each | real readers remain — migrate consumers to `--tv-accent` / `--tv-status-*` tokens (already in manifest), then delete |
 | `text` | ~27 | the big one: migrate to `--tv-text-{role}-*` reads (typography tokens). Title/footnote fg done earlier; rest per-cluster |
@@ -55,9 +56,14 @@ Order of attack (smallest blast radius first):
 
 ## Sequencing
 
-- Arc 1 (cheap, immediate): delete marks/cell/annotation emissions +
-  types + S7 + serializers; decide lightDarkPair; verify-and-clear
-  semantic/columnGroup. Wire bump (removal, pre-release).
+- Arc 1 (NEXT — all verdicts verified 2026-06-11): delete SIX fields —
+  marks, cell, annotation, semantic, columnGroup, lightDarkPair — from
+  blob emission + TS WebTheme type (+ orphaned cluster types) +
+  theme-adapter stamps + the column-group bridge row (+ its
+  KNOWN_UNCONSUMED entry) + R S7 slots + deserialize/serialize +
+  `inspect-resolved.R`'s v3 cascade-table rows for column_group/
+  semantic (that table documents deleted clusters; rows go with them).
+  Wire bump 1.6 → 1.7 (removal, pre-release).
 - Arc 2: text-cluster consumer migration (~27 reads → typography
   tokens), then delete `theme.text`.
 - Arc 3+: bridge clusters in the order above; finish with
