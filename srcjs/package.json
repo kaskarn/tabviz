@@ -33,10 +33,14 @@
   ],
   "files": [
     "dist",
+    "scripts/mcp-server.mjs",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
+  "bin": {
+    "tabviz-mcp": "scripts/mcp-server.mjs"
+  },
   "exports": {
     ".": {
       "types": "./dist/core/index.d.ts",

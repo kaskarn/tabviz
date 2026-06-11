@@ -148,6 +148,9 @@ severity}` diagnostics), and headless rendering (`render_svg`). It
 imports only from `dist/` — build with `npm run build:npm` first.
 
 ```sh
+# from the published package (the server ships as a bin):
+claude mcp add tabviz -- npx -y -p @tabviz/core tabviz-mcp
+# or from a checkout:
 claude mcp add tabviz -- node <repo>/srcjs/scripts/mcp-server.mjs
 npm run mcp:smoke   # drives the full journey over real stdio
 ```
