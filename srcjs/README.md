@@ -4,9 +4,11 @@
 forest plots and rich interactive tables otherwise consumed via the
 [`tabviz` R package](https://github.com/kaskarn/tabviz).
 
-> **Status: 0.2.0 — pre-1.0.** Authoring API (function builders mirroring
-> R's `tabviz()` / `col_*()` / `viz_*()` / `theme_*()`) landed; wire format
-> stable at v1.0; subpath shape stable. See
+> **Status: 0.6.0 — pre-1.0, wire FROZEN at 1.10** (additive minors
+> only from here). Authoring API (function builders mirroring R's
+> `tabviz()` / `col_*()` / `viz_*()`), nine curated themes, the
+> component-model editing verbs, and a published JSON Schema
+> (`dist/tabviz-spec.schema.json`) all ship. See
 > [`docs/dev/r-ts-parity-notes.md`](https://github.com/kaskarn/tabviz/blob/main/docs/dev/r-ts-parity-notes.md)
 > for per-helper R↔TS parity status and known gaps.
 
@@ -22,7 +24,7 @@ import "@tabviz/core/style.css";
 const spec = tabviz({
   data: rows,
   label: "study",
-  theme: "lancet",
+  theme: "nejm",
   columns: [
     colText({ field: "study", header: "Study" }),
     colInterval({ point: "hr", lower: "lcl", upper: "ucl" }),
@@ -63,7 +65,7 @@ main entry and the `/svelte` subpath both need Svelte 5 installed as
 a peer. The `/export` and `/spec` subpaths are framework-free and
 work without it.
 
-## Quick start (preview)
+## Driving the mounted widget
 
 ```ts
 import { createTabviz } from "@tabviz/core";
@@ -76,11 +78,64 @@ const instance = createTabviz(document.querySelector("#plot")!, spec, {
 
 instance.on("selected", (rowIds) => console.log("selection:", rowIds));
 instance.sortBy({ column: "estimate", direction: "asc" });
+instance.setTheme("terminal");   // live theme swap
+instance.update(nextSpec);       // data/spec update (state survives by id)
+instance.destroy();
 ```
 
-Spec shape is defined in `@tabviz/core/spec`; you can validate against
-the JSON Schema (one schema file per minor version — currently
-`v1.0.json`).
+## Themes
+
+Nine curated presets ship as zero-arg factories — `themeNejm()`
+(default), `themeLedger()`, `themeBrutalist()`, `themeAurora()`,
+`themeTerminal()`, `themeNewsprint()`, `themeBlueprint()`,
+`themeSynthwave()`, `themeDwarven()` — or pass the preset name as a
+string (`theme: "nejm"`). To author your own, give `buildTheme` Tier-1
+inputs (anchors, fonts, geometry) and let the cascade derive the rest:
+
+```ts
+import { buildTheme, buildThemeWire, parseThemeWire, getThemeCSS } from "@tabviz/core";
+
+const inputs = {
+  anchors: {
+    paper: { L: 0.98, C: 0.005, H: 90 },   // OKLCH
+    ink:   { L: 0.22, C: 0.01,  H: 270 },
+    brand: { L: 0.55, C: 0.12,  H: 250 },
+  },
+};
+const house = buildTheme(inputs, { name: "house" });  // resolved theme → tabviz({ theme: house })
+
+// Portable artifact round-trip (share/store/re-import):
+const wire   = buildThemeWire(inputs, "house");       // {$schema: "tabviz-theme/v4", …}
+const parsed = parseThemeWire(JSON.stringify(wire));  // THE validating ingress — never raw JSON.parse
+const back   = buildTheme(parsed.inputs, {
+  name: parsed.name,
+  roleOverrides: parsed.roleOverrides,
+  pins: parsed.pins,
+  components: parsed.components,
+});
+const css = getThemeCSS(back);                        // the resolved token sheet
+```
+
+Themes travel as a portable envelope (`tabviz-theme/v4`) carrying
+authoring inputs + role re-tunes + component re-routes + pins — the
+same three editing verbs the in-widget settings panel and the studio
+use. Always re-enter through `parseThemeWire`; it validates untrusted
+wires at ingress.
+
+## Validating specs (the LLM/codegen path)
+
+The published artifact ships its JSON Schema at
+`@tabviz/core/dist/tabviz-spec.schema.json` (2020-12 dialect): the
+hand-written top-level shape plus per-column-type option definitions
+generated from the schema registry. Unknown column types stay valid
+(additive minors); known types must satisfy their definitions. The
+`scripts/consumer-fixture.mjs` gate exercises the full third-party
+journey — author → schema-validate → headless SVG — against `dist/` on
+every `build:npm`.
+
+Spec shape is defined in `@tabviz/core/spec`; validate payloads against
+the shipped `dist/tabviz-spec.schema.json` (see "Validating specs"
+above).
 
 ## Wire-format versioning
 

@@ -108,9 +108,15 @@ objects rather than palettes — and it exercises the machine contract.
       validates a REAL authored spec with Ajv (2020-12), rejects broken
       ones, and drift-checks def count vs the registry. The schema's
       first catch was real (toggles carry null on the wire).
-- [ ] npm `@tabviz/core` consumable by a third party: JS-author docs
-      (mount a widget, author a spec, themes) exist; dist-smoke extended
-      to a real "external consumer" fixture.
+- [x] npm consumer leg (2026-06-11): srcjs/README.md refreshed into
+      real JS-author docs (mount + drive the instance, author a spec,
+      themes incl. the verified buildTheme/wire round-trip, schema
+      validation) — every snippet RUN against dist/ first (two were
+      wrong as drafted: buildThemeWire takes INPUTS, parseThemeWire
+      returns a wire not a theme). scripts/consumer-fixture.mjs = the
+      real external-consumer gate: author → shipped-schema validate →
+      headless SVG, imports ONLY dist/; runs in build:npm after
+      dist-smoke.
 - [ ] MCP server exposing schema introspection + spec validation +
       render-to-SVG (the LLM-driver path) — minimal but real.
 - [ ] Structured errors (ThemeIssue-style `{path, code, message}`) cover
