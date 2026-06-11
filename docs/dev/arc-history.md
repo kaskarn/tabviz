@@ -11,6 +11,41 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## W4 — v3 blob slimming + bridge retirement — DONE 2026-06-11 (wire 1.6→1.10)
+
+`docs/dev/w4-v3-blob-slimming.md` is the full record. WHAT FUTURE AGENTS
+MUST KNOW:
+
+- **The bridge is GONE.** computeV3BridgeVars no longer exists; the only
+  non-cascade emission is `computeLiveConfigVars` (series slot 0 +
+  layout — blob fields that deliberately stay). The `v3-bridge` resolver
+  group is now `live-config` (sentinel "<live-config>").
+- **Port-don't-rebind was the framework**: v3 values were distinct
+  derivations, not role mirrors (equivalence-swept all 9 presets before
+  every port). New resolver groups carry the recipes: `header-active`
+  (trio by header_style), `first-col` (by first_column_style — now a
+  Tier-1 INPUT), `borders` (lib/theme/borders.ts::resolveBorders is the
+  ONE derivation, shared with the SVG export), `ramp-direct` (UNWALKED
+  ramp[grade] reads — note grammar "ramp:<name>[<grade>]"; the walked
+  text roles would shift dark presets).
+- **Blob fields deleted** (wire 1.6→1.10): marks, cell, annotation,
+  semantic, columnGroup, lightDarkPair, text (TextRoles), variants
+  (ALL of it), firstColumn, borders. S7 classes + serializers mirrored.
+  Surviving clusters (header/rowGroup/row/plot/axis/layout/spacing/
+  series) still ride the blob; field-level slimming of the first three
+  is ordinary post-W4 debt.
+- **D18 (delegated)**: title-fg binds to role `text` (the v3 value was
+  the raw ink ANCHOR — pre-cascade special-casing). Re-route
+  set_component("title", col="brand-text") for chromatic titles.
+- Component-model dividends: cell paint states (emphasis/muted/accent),
+  group-header rule, first-column bg/col/rule (frame region's first
+  inhabitants), header-cell active bg/col/rule are all live channels;
+  anchor/ramp-direct/header-active/first-col/borders resolvers honor
+  re-routes (honesty gate enforces the list).
+- A LIVE bug died with the header port: the bridge trio (v3 hexes) and
+  the variant tokens (v4 roles) could paint different header colors in
+  ONE render (TabvizPlot chrome vs PlotHeader cells).
+
 ## Component-model Stage 1 (W6) — SHIPPED 2026-06-11 (wire 1.5)
 
 Design: `docs/dev/component-model.md` (locked same day, two user rounds).

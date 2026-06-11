@@ -230,6 +230,21 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-11 (W4 COMPLETE) — ALL PRE-FREEZE WIRE WORK DONE (W1–W6).
+  W4 executed across one extended session: blob slimmed (marks, cell,
+  annotation, semantic, columnGroup, lightDarkPair, text, variants,
+  firstColumn, borders all deleted — wire 1.6→1.10); every v3 recipe
+  ported pixel-faithfully into named resolver groups (header-active,
+  first-col, borders, ramp-direct + role/anchor/const/typography
+  entries) or decided (D18 title→text, delegated authority);
+  computeV3BridgeVars DELETED (live-config overlay = series slot 0 +
+  layout only). Dividends along the way: a live double-source header
+  paint bug killed; first_column_style + dead "tint" enum rationalized;
+  cell paint states + group-header + first-column + header-cell active
+  trio all became live component-model channels. The M3 freeze can take
+  1.10's shape. Remaining non-wire W4 cleanup (header/rowGroup/row
+  cluster field slimming) is ordinary debt, not freeze-blocking.
+
 - 2026-06-11 (later still) — W3 LANDED (variants.headerStyle retired,
   wire 1.6; duplicated R S7 mirror slot deleted) + W5 DECIDED
   (hiddenColumns stays in initialState — authored-defaults family;
