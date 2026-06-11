@@ -233,10 +233,18 @@ Clinical/regulatory audience makes this table stakes.
 - [ ] API review: exported surface inventoried; naming/argument-order
       consistent (col_* contract holds everywhere); deprecations done
       cleanly (pre-release = deletions allowed).
-- [ ] Reference docs complete (roxygen, no pkgdown per house rule) +
-      task-oriented vignettes/Quarto guides for: first table, theming,
-      columns, Shiny, export.
-- [ ] `R CMD check --as-cran` clean (0E/0W + the 2 known env NOTEs).
+- [~] Task guides EXIST for all five topics (quick-start, themes,
+      columns, shiny, export — all rendering; themes + export gained
+      their mental-model/fidelity sections 2026-06-11). Roxygen is
+      0-warning as of today's check. Remaining for [x]: a deliberate
+      read-through pass of the five guides against the current API
+      (the docs-drift gate covers columns.qmd's table only).
+- [~] `R CMD check` re-verified 0E/0W (+1 env NOTE) on 2026-06-11 AFTER
+      the session's full surgery (wire 1.4→1.10, blob slimming,
+      component model, D2/D11/D12) — the check itself caught two doc
+      gaps (InteractionSpec axis-zoom/arrange params; the
+      set_first_column_style block my W4 edit clobbered), both fixed.
+      The strict `--as-cran` run (TinyTeX env) remains the M3 ship gate.
 
 ### L. Scale posture (honesty as a feature)
 **Exit criteria:**

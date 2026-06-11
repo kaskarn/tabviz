@@ -2176,6 +2176,11 @@ TABVIZ_INTERACTION_FLAGS <- c(
 #'   switcher dropdown still lets viewers swap presets).
 #' @param show_group_counts Show the row count in parentheses next to each row-group
 #'   header label (e.g. "Main Trials (12)"). Default `FALSE`.
+#' @param enable_axis_zoom Enable Ctrl/Cmd+wheel domain zoom on forest axes
+#'   (author-grade; conservative default OFF).
+#' @param enable_arrange Enable the arrange tool (toolbar mode arming every
+#'   resize seam: row-kind heights, header height, group/footer gaps;
+#'   author-grade; conservative default OFF).
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
 #' @param enable_themes Control the interactive theme-switcher menu. Accepts:
 #'   - `"default"`: show all [`package_themes()`].

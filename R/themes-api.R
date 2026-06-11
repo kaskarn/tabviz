@@ -1558,6 +1558,13 @@ list_components <- function() {
 #' `first_column_style` is a Tier-1 structural input (the header_style
 #' precedent) — the first-col resolver expands it into the four
 #' `--tv-first-col-*` tokens; this setter re-resolves like every input setter.
+#'
+#' @param theme A [WebTheme].
+#' @param first_column_style `"default"` (inert — the leading column
+#'   follows row styling) or `"bold"` (tinted background, ink text,
+#'   weight 600, right-edge rule).
+#' @return The [WebTheme] re-resolved with the variant applied.
+#' @export
 set_first_column_style <- function(theme, first_column_style) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")

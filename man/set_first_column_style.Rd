@@ -6,6 +6,16 @@
 \usage{
 set_first_column_style(theme, first_column_style)
 }
+\arguments{
+\item{theme}{A \link{WebTheme}.}
+
+\item{first_column_style}{\code{"default"} (inert — the leading column
+follows row styling) or \code{"bold"} (tinted background, ink text,
+weight 600, right-edge rule).}
+}
+\value{
+The \link{WebTheme} re-resolved with the variant applied.
+}
 \description{
 \code{first_column_style} is a Tier-1 structural input (the header_style
 precedent) — the first-col resolver expands it into the four
