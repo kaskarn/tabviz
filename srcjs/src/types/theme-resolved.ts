@@ -116,11 +116,10 @@ export interface RowGroupTier {
 // ────────────────────────────────────────────────────────────────────
 
 export interface ThemeVariants {
-  /** "compact" | "comfortable" | "spacious" */
-  density: "compact" | "comfortable" | "spacious";
-  // headerStyle RETIRED from the wire (W3, 2026-06-11): the top-level
-  // input `header_style` is the ONE vocabulary; the variant slot was a
-  // pure mirror (activeHeaderStyle reads authoringInputs directly).
+  // density + headerStyle RETIRED from the wire (W3/W4, 2026-06-11):
+  // both were pure mirrors of theme inputs with zero readers.
+  // firstColumnStyle is the LAST variant — it retires with the
+  // firstColumn bridge cluster.
   /** "default" | "bold" */
   firstColumnStyle: "default" | "bold";
 }

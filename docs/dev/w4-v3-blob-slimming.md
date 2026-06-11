@@ -22,7 +22,7 @@ means touching blob + TS type + S7 class + (de)serializers together.
 | `webFonts` | live (font injection + ThemeSwitcher) | keep |
 | `semantic` | 0 (the "1" was a types comment) | **DELETE** |
 | `columnGroup` | 1 — the bridge emits `--tv-text-column-group-weight` from it, and THAT var has ZERO consumers | **DELETE** (cluster + bridge row + the var's KNOWN_UNCONSUMED entry, together) |
-| `variants` | 6 | shrinking: headerStyle retired (W3); `firstColumnStyle` remains until the firstColumn bridge migrates; `density` mirrors the input — check readers |
+| `variants` | 1 | headerStyle retired (W3); **density DELETED 2026-06-11** (zero readers — spacing resolves from inputs.density); `firstColumnStyle` is the LAST variant, retires with the firstColumn bridge |
 | `accent`, `status` | ~14 each | real readers remain — migrate consumers to `--tv-accent` / `--tv-status-*` tokens (already in manifest), then delete |
 | `text` | 0 | **DELETED 2026-06-11** (wire 1.8) — all reads migrated to typography tokens |
 | `series` | ~20 | KEEP — series slots are deliberately separate (component-model ruling); the slot system rides the blob |

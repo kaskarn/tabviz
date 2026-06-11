@@ -195,9 +195,10 @@ export function buildTheme(
       ];
 
   const variants: ThemeVariants = {
-    density: inputs.density ?? "comfortable",
-    // headerStyle retired from the wire (W3): header_style input is
-    // the one vocabulary; activeHeaderStyle reads it directly.
+    // density retired from the wire (W4, 2026-06-11): zero readers —
+    // spacing resolves from inputs.density via the density resolver.
+    // headerStyle retired at W3. firstColumnStyle is the LAST variant;
+    // it goes when the firstColumn bridge cluster migrates.
     firstColumnStyle: "default",
   };
 
@@ -276,7 +277,7 @@ export function buildTheme(
     numeric:  textRoleBody(fontBody, t.ink),
   };
 
-  const spacing = scaleSpacing(DENSITY_SPACING[variants.density], inputs.density_factor);
+  const spacing = scaleSpacing(DENSITY_SPACING[inputs.density ?? "comfortable"], inputs.density_factor);
 
   const header: HeaderCluster = {
     light: { bg: t.paper, fg: t.ink, rule: t.rule_strong },
