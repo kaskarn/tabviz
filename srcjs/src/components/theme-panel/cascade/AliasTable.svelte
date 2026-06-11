@@ -11,7 +11,7 @@
 -->
 <script lang="ts">
   import type { ResolvedTheme } from "$lib/theme/resolve-theme";
-  import { COMPONENT_TOKENS, type ComponentToken } from "$lib/theme/component-tokens";
+  import { COMPONENT_TOKENS, TOKENS_BY_ROLE, type ComponentToken } from "$lib/theme/component-tokens";
   import { DEFAULT_ROLE_BINDINGS } from "$lib/theme/role-bindings";
   import {
     OFF_RAMP_ROLES, ROLE_KIND, ALL_ROLES, type RoleName,
@@ -61,7 +61,14 @@
   }
 
   function clickRole(r: RoleRow): void {
-    inspectorStore.trace(r.cssVar, resolved);
+    // `r.cssVar` (`--role-X`) is a DISPLAY id, not a real token — feeding
+    // it to the tracer produced the malformed `--tv---role-X` lookup
+    // ("not in COMPONENT_TOKENS"). Trace through a real token bound to
+    // the role instead, exactly like RoleSpine's clickRole.
+    const tokens = TOKENS_BY_ROLE.get(r.name);
+    if (tokens && tokens.length > 0) {
+      inspectorStore.trace(tokens[0].cssVar, resolved);
+    }
   }
 
   // ── token mode rows (Tier 3) ─────────────────────────────────────────────
