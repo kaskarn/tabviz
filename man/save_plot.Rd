@@ -113,6 +113,12 @@ at the new layout, not SVG-stretched.}
 
 For SplitForest objects, dispatches to \code{save_split_table()} to export
 all sub-plots to a directory. To save just one subview, pass \code{which}.
+
+Paginated specs export the \strong{whole table} regardless of which page
+the live widget is showing (a figure is the dataset; a page is a
+view) — except \code{.pdf}, where \code{paginate} produces a multi-page
+document. See the export guide's fidelity contract for the short
+list of deliberate screen/export differences.
 }
 
 \examples{

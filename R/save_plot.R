@@ -44,6 +44,12 @@
 #' For SplitForest objects, dispatches to `save_split_table()` to export
 #' all sub-plots to a directory. To save just one subview, pass `which`.
 #'
+#' Paginated specs export the **whole table** regardless of which page
+#' the live widget is showing (a figure is the dataset; a page is a
+#' view) — except `.pdf`, where `paginate` produces a multi-page
+#' document. See the export guide's fidelity contract for the short
+#' list of deliberate screen/export differences.
+#'
 #' @param x A WebSpec object, forest_plot() htmlwidget output, or SplitForest
 #' @param file Output file path (or directory for SplitForest). Extension
 #'   determines format: `.svg`, `.pdf`, `.png`, `.eps` (vector, for

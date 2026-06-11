@@ -30,7 +30,7 @@ flowchart LR
     style C fill:#93c5fd
 ```
 
-* **Step 1** — `theme = web_theme_nejm()`. Done. Twenty-seven presets cover the common publication, dashboard, and illustrative surfaces.
+* **Step 1** — `theme = web_theme_nejm()`. Done. Nine curated presets cover the common publication, dashboard, and illustrative surfaces.
 * **Step 2** — Swap a primary color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
 * **Step 3** — Reach into a specific component (e.g. the L1 row-group bar background) for surgical control. Rare; the preset cascade handles 95% of cases.
 
@@ -261,6 +261,50 @@ web_theme(
 * **`first_column_style`** gives the row-label column an Excel-style emphasized treatment (background tint + heavier weight). Useful when your first column is genuinely a label, not data.
 
 You can also set variants directly on the `tabviz()` call as overrides (see [tabviz reference](../reference/tabviz.qmd)).
+
+## The three editing verbs — and what each edit travels with
+
+Every theme-editing surface in tabviz — the R modifiers, the widget's
+settings panel, the studio — performs exactly one of three verbs. Knowing
+which verb you're using tells you how far the edit reaches and how it
+behaves when the theme changes around it.
+
+| Verb | What it does | Reach | Functions |
+|---|---|---|---|
+| **Re-tune a role** | Change what a named role *means* (`text-muted` → a darker grade; the `footnote` type role → a smaller step) | **Global** — everything bound to that role follows | `set_role()`, `set_type_role()`, `set_corners()`, `set_rules()` |
+| **Re-route a component channel** | Point one component's channel at a *different* role (`title` color → `accent-text`; `axis-label` family → `numeric`) | **Local** to that component — but still cascade-coherent: the routed role keeps re-resolving under polarity flips, anchor edits, and high-contrast mode | `set_component()`, the settings panel's *Components* band, the studio's components page |
+| **Pin** | Hard-code one token to a raw value (`--tv-text-footnote-size: "0.7rem"`) | Local and **inert** — a pinned value ignores polarity, anchors, and accessibility modes. Last resort. | `set_pin()` |
+
+```{r}
+#| eval: false
+web_theme_nejm() |>
+  set_role("text-muted", "neutral", 9) |>            # re-tune (global)
+  set_component("title", col = "accent-text") |>     # re-route (local, coherent)
+  set_pin("--tv-text-footnote-size", "0.7rem")       # pin (local, inert)
+```
+
+Discover what each verb can address: [`list_roles()`] (every tunable
+role across color, type, and geometry domains), [`list_components()`]
+(every routable component, its region, states, and channels), and
+[`inspect_token()`] (where any single token's value comes from).
+
+### What travels with what
+
+Edits land in one of three tiers, and the tier decides where the edit
+follows you:
+
+* **Theme** — roles, re-routes, pins, fonts, density. Travels with the
+  portable theme artifact (`theme_to_wire()` / `write_theme()`, the
+  studio's export). Send the JSON to a colleague and every edit arrives.
+* **Figure** — column widths and order, row-kind height pins, banding
+  override, watermark. Rides the spec (`spec.figureLayout`), survives
+  data updates, round-trips through Shiny via `set_figure_layout()`.
+* **View** — zoom, fit, contrast mode. Per-reader, per-document
+  (browser local storage); never serialized.
+
+The settings panel is organized around exactly this split: the theme
+half edits what travels with the theme, the *This figure* half edits
+figure state, and the toolbar's zoom controls are view state.
 
 ## How it cascades under the hood
 

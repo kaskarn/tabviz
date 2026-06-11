@@ -154,10 +154,12 @@ is W6 (pre-freeze).
       exploration note.
 - [ ] v3 theme-css bridges (#72–74 clusters) retired into the component
       table (joint with W4).
-- [ ] Every editing surface names its verb + what the edit travels with
-      (theme / figure / view); one user-facing mental-model page; the
-      introspection story (`list_roles()` / `component_schema()` /
-      `inspect_token()`) cross-referenced in docs.
+- [x] Verb + travel mental model documented (2026-06-11): the themes
+      guide's "Three editing verbs" section (verb table + reach + the
+      theme/figure/view travel split + introspection cross-refs:
+      list_roles / list_components / inspect_token). The settings panel
+      + studio band state their verb inline ("re-route"). Also fixed
+      stale "27 presets" doc drift (it's 9).
 
 ---
 
@@ -178,9 +180,11 @@ is a liveness audit across ALL surfaces.
 
 ### G. WYSIWYG as a contract
 **Exit criteria:**
-- [ ] The declared exception list is short, explicit, user-documented:
-      browser-only effects (glass/glow/blobs) + anything else we
-      consciously add. Everything else matches within budget.
+- [x] Exception list user-documented (2026-06-11): the export guide's
+      "What matches the screen" fidelity contract — browser-only
+      effects, whole-table pagination semantics (D7), raw-spec
+      estimator boundary (D8). save_plot's roxygen carries the D7
+      sentence.
 - [ ] wysiwyg-diff budgets green across the full theme/density/shell
       matrix (CI, area A).
 - [ ] The remaining known divergences either fixed or moved to the
