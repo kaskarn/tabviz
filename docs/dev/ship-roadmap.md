@@ -401,7 +401,11 @@ Clinical/regulatory audience makes this table stakes.
       is fully executed. Nothing on the remaining roadmap needs a break.
 - [~] Decision register at ONE entry (D9 — open by its own decide-at-
       ship rule; everything else Decided with rationale, 2026-06-11).
-- [ ] npm publish + CRAN submission; release notes; docs site cut.
+- [~] Release notes DONE (NEWS 0.38.0 + CHANGELOG 0.7.0-unreleased,
+      2026-06-11); docs site CUT fresh same day (freeze cleared; 60
+      sources → 102 pages, zero errors, against the current install).
+      REMAINING — user's call: npm publish + CRAN submission
+      (credentials/timing) and the D9 joint review at ship.
 
 ---
 
