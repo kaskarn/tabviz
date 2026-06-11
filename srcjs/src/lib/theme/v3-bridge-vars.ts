@@ -54,6 +54,12 @@ export function computeV3BridgeVars(
     "--tv-semantic-accent-fg": theme.row.accent?.fg ?? v4Accent,
     "--tv-semantic-muted-bg":  theme.row.muted?.bg ?? "transparent",
     "--tv-semantic-accent-bg": theme.row.accent?.bg ?? "transparent",
+    // Emphasis pair: CellContent consumes these for cell-scope emphasis
+    // paint; only muted+accent were bridged, so DOM emphasis paint was
+    // visually inert while the SVG export resolved it (DOM↔export
+    // divergence).
+    "--tv-semantic-emphasis-fg": theme.row.emphasis?.fg ?? v4Text,
+    "--tv-semantic-emphasis-bg": theme.row.emphasis?.bg ?? "transparent",
     "--tv-text-header-weight": String(theme.header.text.weight ?? 600),
     "--tv-text-header-family": theme.header.text?.family ?? theme.text.body.family,
     "--tv-text-header-size":

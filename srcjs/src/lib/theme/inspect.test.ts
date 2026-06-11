@@ -79,11 +79,10 @@ describe("inspectToken — trace walk", () => {
   });
 
   it("const-sourced tokens trace to const tier", () => {
-    const r = inspectToken(resolved, "cell-bg");
+    // --tv-cell-bg (the old const exemplar) was deleted in the 2026-06-10
+    // dead-code pass; --tv-hc-caret-char is the surviving const token.
+    const r = inspectToken(resolved, "hc-caret-char");
     expect(r.trace[1]!.tier).toBe("const");
-    if (r.trace[1]!.tier === "const") {
-      expect(r.trace[1]!.value).toBe("transparent");
-    }
   });
 
   it("consumedBy reflects the manifest's declared consumers", () => {

@@ -118,9 +118,4 @@ export const RULE_SLOTS: Readonly<Record<RuleSlot, {
 
 // ── SPACING (named density-relative steps) ───────────────────────────────
 // Spacing roles map to the existing density presets — the "step" a viewer
-// picks IS the density preset. Exposed as a scale-role so the roster + DTCG
-// namespace cover spacing without a separate vocabulary.
-export type SpacingStep = "compact" | "comfortable" | "spacious";
-export const SPACING_STEPS: readonly SpacingStep[] = [
-  "compact", "comfortable", "spacious",
-];
+// picks IS the density preset (no separate vocabulary needed).

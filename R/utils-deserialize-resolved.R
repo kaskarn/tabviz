@@ -27,12 +27,6 @@
   as.logical(x)
 }
 
-# Character vector (for neutral, series_anchors). NULL -> character(0).
-.coerce_chr_vec <- function(x) {
-  if (is.null(x) || length(x) == 0L) return(character(0))
-  as.character(unlist(x))
-}
-
 deserialize_text_role <- function(x) {
   if (is.null(x)) return(TextRole())
   TextRole(

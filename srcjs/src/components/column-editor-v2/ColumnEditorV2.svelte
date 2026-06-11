@@ -575,7 +575,7 @@
      editor body stays flat. */
   .editor {
     width: 400px;
-    max-height: var(--tv-editor-max-h, min(640px, calc(100vh - 24px)));
+    max-height: min(640px, calc(100vh - 24px));
     display: flex;
     flex-direction: column;
     min-height: 0;

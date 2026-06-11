@@ -19,7 +19,7 @@ import puppeteer from "puppeteer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
-import { COCHRANE } from "../../src/lib/theme/theme-presets-inputs";
+import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_HTML = path.join(__dirname, "fixtures.html");
@@ -38,7 +38,7 @@ function parseArgs() {
 }
 
 function buildSpec(): unknown {
-  const theme = buildTheme(COCHRANE, "cochrane");
+  const theme = buildTheme(NEJM, "nejm");
   return {
     version: "1.0",
     data: {

@@ -27,7 +27,7 @@ import puppeteer, { type Browser, type Page } from "puppeteer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
-import { COCHRANE, DARK } from "../../src/lib/theme/theme-presets-inputs";
+import { NEJM, TERMINAL } from "../../src/lib/theme/theme-presets-inputs";
 import { tabviz } from "../../src/authoring/tabviz";
 import { colText, colNumeric, colPvalue } from "../../src/authoring/columns";
 
@@ -68,7 +68,7 @@ function buildSpec(): unknown {
       colNumeric({ field: "n", header: "N", decimals: 0 }),
       colPvalue({ field: "p", header: "P", stars: true }),
     ],
-    theme: buildTheme(COCHRANE, "cochrane"),
+    theme: buildTheme(NEJM, "nejm"),
   }) as { interaction: Record<string, unknown> };
   spec.interaction = {
     ...spec.interaction,
@@ -84,8 +84,8 @@ function buildSpec(): unknown {
     enableFilters: true,
     showGroupCounts: false,
     enableThemes: {
-      cochrane: buildTheme(COCHRANE, "cochrane"),
-      dark: buildTheme(DARK, "dark"),
+      nejm: buildTheme(NEJM, "nejm"),
+      terminal: buildTheme(TERMINAL, "terminal"),
     },
   };
   return spec;
@@ -332,12 +332,12 @@ const SCENARIOS: Record<string, Scenario> = {
     await new Promise((r) => setTimeout(r, 400));
     const switched = await page.evaluate(() => {
       const item = [...document.querySelectorAll<HTMLElement>(".dropdown-item")]
-        .find((e) => /\bDark\b/i.test(e.textContent ?? ""));
+        .find((e) => /\bTerminal\b/i.test(e.textContent ?? ""));
       if (!item) return false;
       item.click();
       return true;
     });
-    if (!switched) throw new Error("dark theme entry not found in switcher dropdown");
+    if (!switched) throw new Error("terminal (dark) theme entry not found in switcher dropdown");
     await new Promise((r) => setTimeout(r, 500));
     const after = await pol();
     if (before === after) throw new Error(`data-polarity did not flip (${before} → ${after})`);

@@ -47,7 +47,7 @@ const DEFAULT_CSS = path.resolve(__dirname, "../../../inst/htmlwidgets/tabviz.cs
 const SCREENSHOT_DIR = path.join(__dirname, "screenshots");
 
 /** Presets exercised by default — one per shell-mode/texture archetype. */
-const DEFAULT_PRESETS = ["cochrane", "nature", "synthwave", "brutalist", "dark"];
+const DEFAULT_PRESETS = ["nejm", "newsprint", "synthwave", "brutalist", "terminal"];
 
 function parseArgs() {
   const args = process.argv.slice(2);

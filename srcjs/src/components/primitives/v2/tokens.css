@@ -46,6 +46,7 @@
   /* ── Accent (hot) ────────────────────────────────────────────── */
   --v2-hot:          #b53a1f;   /* override, active dot */
   --v2-hot-soft:     #d8a89a;   /* override soft glow */
+  --v2-accent:       var(--v2-hot, #2563eb);   /* selection/check accent (Dropdown, RoleTones) */
 
   /* ── Kicker (editorial eyebrow) ──────────────────────────────────
      The mono-uppercase masthead kicker ("TIER 1 · ANCHORS"). Cool and

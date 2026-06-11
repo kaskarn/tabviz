@@ -2725,57 +2725,6 @@ effect_violin <- function(data, label = NULL, color = NULL, opacity = 0.5,
 # Viz Column Helper Functions
 # ============================================================================
 
-#' Validate and serialize annotations for viz_* columns
-#'
-#' Common helper used by `viz_bar()`, `viz_boxplot()`, `viz_violin()` (and
-#' could replace `viz_forest()`'s inline logic). Handles three things:
-#' 1. Validates that `annotations` is a list of `ReferenceLine` /
-#'    `CustomAnnotation` objects.
-#' 2. If `null_value` is non-NULL, prepends a synthetic `refline(null_value)`
-#'    to the annotations list (theme-default style).
-#' 3. Serializes via `serialize_annotation()`.
-#'
-#' Returns NULL if there are no annotations to ship (so JSON omits the field).
-#'
-#' @keywords internal
-prepare_viz_annotations <- function(annotations, null_value = NULL) {
-  if (!is.null(null_value)) {
-    checkmate::assert_number(null_value, finite = TRUE)
-  }
-  if (is.null(annotations)) annotations <- list()
-  if (!is.list(annotations)) {
-    cli_abort("{.arg annotations} must be a list of annotation objects (e.g. {.fn refline}).")
-  }
-
-  # Validate types
-  for (i in seq_along(annotations)) {
-    a <- annotations[[i]]
-    if (!(S7_inherits(a, ReferenceLine) || S7_inherits(a, CustomAnnotation))) {
-      cli_abort(c(
-        "All elements of {.arg annotations} must be {.fn refline} or {.fn forest_annotation} objects.",
-        "i" = "Element {i} is {.cls {class(a)[[1]]}}"
-      ))
-    }
-  }
-
-  # null_value: prepend a synthetic refline using theme-default style.
-  # We pass NA color so the renderer falls back to its theme default.
-  if (!is.null(null_value)) {
-    null_refline <- ReferenceLine(
-      x = null_value,
-      label = NA_character_,
-      style = "dashed",
-      color = NA_character_,
-      width = 1,
-      opacity = 0.6
-    )
-    annotations <- c(list(null_refline), annotations)
-  }
-
-  if (length(annotations) == 0) return(NULL)
-  lapply(annotations, serialize_annotation)
-}
-
 #' Visualization column: Bar chart
 #'
 #' Renders horizontal bar charts with support for multiple effects (grouped bars).

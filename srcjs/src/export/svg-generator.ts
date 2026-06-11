@@ -1073,7 +1073,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     titleY: PLOT_HEADER_TOP_PAD + Math.round(titleHeight * 0.8),
     subtitleY: PLOT_HEADER_TOP_PAD + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * 0.8),
     // Header → first row gap. Live widget applies it as `padding-bottom`
-    // on the header element via `--tv-header-gap` (PlotHeader.svelte:130);
+    // on the header element via `--tv-spacing-header-gap` (PlotHeader.svelte);
     // SVG has no header element so we fold the gap into mainY. Default 12
     // matches the live CSS-var fallback in TabvizPlot.svelte.
     mainY: headerTextHeight + headerBlockBottomPad + headerGap + paperPad,

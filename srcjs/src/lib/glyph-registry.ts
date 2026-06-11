@@ -169,13 +169,6 @@ export const GLYPH_REGISTRY: Readonly<Record<string, GlyphDef>> = {
 };
 
 /**
- * Stable list of registry names. Mirrored on the R side
- * (`R/glyph-registry.R::glyph_registry_names()`) for `assert_choice`
- * validation. If you add a glyph, update both files.
- */
-export const GLYPH_NAMES: readonly string[] = Object.keys(GLYPH_REGISTRY);
-
-/**
  * Resolve a `glyph` spec string to either a registry hit (SVG path) or
  * a literal character to render with the surrounding font.
  *

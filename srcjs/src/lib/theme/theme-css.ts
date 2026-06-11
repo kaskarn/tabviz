@@ -22,7 +22,6 @@ import type { WebTheme } from "../../types/theme-resolved";
 import { computeV3BridgeVars } from "./v3-bridge-vars";
 import { getCssVars, getCssVarsRaw, applySpacingPins } from "./consumer-bridge";
 import { VIZ_MARGIN } from "../axis-utils";
-import { generateCSSVariables } from "../rendering-constants";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Caches
@@ -161,7 +160,6 @@ ${v4Body}
             Each cluster has a follow-up task (#72-#74) to become a
             manifest entry. */
 ${bridgeBody}
-      ${generateCSSVariables()}
     `.trim();
 }
 
@@ -221,9 +219,7 @@ function _buildWidgetExtras(ctx: WidgetCSSContext): string {
       --tv-max-height: ${ctx.maxHeight ? `${ctx.maxHeight}px` : "none"};
       --tv-header-height: ${ctx.anyHeaderVisible ? ctx.headerHeight : 0}px;
       --tv-header-row-height: ${ctx.anyHeaderVisible ? ctx.headerHeight / ctx.headerDepth : 0}px;
-      --tv-header-depth: ${ctx.effectiveHeaderDepth};
       --tv-axis-height: ${ctx.axisHeight}px;
-      --tv-plot-width: ${ctx.forestWidth}px;
       --tv-actual-scale: ${ctx.actualScale};
       --tv-zoom: ${ctx.zoom};
     `.trim();

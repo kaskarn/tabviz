@@ -114,12 +114,6 @@ export function createSplitTabvizStore() {
     return filterTree(payload.navTree, searchQuery.toLowerCase());
   });
 
-  // Derived: active spec
-  const activeSpec = $derived.by((): WebSpec | null => {
-    if (!activeKey || !payload) return null;
-    return payload.specs[activeKey] ?? null;
-  });
-
   // Derived: all leaf keys (for keyboard navigation)
   const allLeafKeys = $derived.by((): string[] => {
     if (!payload) return [];
@@ -281,10 +275,6 @@ export function createSplitTabvizStore() {
     activeStore.recordOp(ops.setSharedColumnWidths(enabled));
   }
 
-  function toggleSharedColumnWidths() {
-    setSharedColumnWidths(!sharedColumnWidths);
-  }
-
   function selectSpec(key: string, source: "user" | "proxy" = "user") {
     if (!payload) return;
 
@@ -401,26 +391,11 @@ export function createSplitTabvizStore() {
     activeStore.setThemeObject(theme);
   }
 
-  function resetTheme() {
-    userTheme = null;
-    userThemeObject = null;
-    themeSnapshot = null;
-    // Re-apply original spec theme
-    if (activeKey && payload) {
-      const spec = payload.specs[activeKey];
-      if (spec) {
-        activeStore.setSpec(spec);
-        activeStore.setDimensions(containerWidth - effectiveSidebarWidth, containerHeight);
-      }
-    }
-  }
-
   return {
     // Getters
     get payload() { return payload; },
     get activeKey() { return activeKey; },
     get activeKeySource() { return activeKeySource; },
-    get activeSpec() { return activeSpec; },
     get activeStore() { return activeStore; },
     get navTree() { return filteredNavTree; },
     get searchQuery() { return searchQuery; },
@@ -428,7 +403,6 @@ export function createSplitTabvizStore() {
     get splitVars() { return splitVars; },
     get sidebarWidth() { return effectiveSidebarWidth; },
     get sidebarCollapsed() { return sidebarCollapsed; },
-    get userTheme() { return userTheme; },
     get sharedColumnWidths() { return sharedColumnWidths; },
 
     // Actions
@@ -442,9 +416,7 @@ export function createSplitTabvizStore() {
     selectPrevious,
     setTheme,
     setThemeObject,
-    resetTheme,
     setSharedColumnWidths,
-    toggleSharedColumnWidths,
   };
 }
 

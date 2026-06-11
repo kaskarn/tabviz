@@ -172,7 +172,6 @@
     --tp-chip-rule: #d8d4cc;
     --tp-chip-fg: #66635c;
     --tp-rhs: #5e51a3;
-    --tp-swatch-rule: #c8c4bd;
     --tp-trace-rule: #4a90e2;
     --tp-trace-bg: #eef4fb;
   }

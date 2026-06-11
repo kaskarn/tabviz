@@ -154,10 +154,10 @@ describe("data slice — banding", () => {
 });
 
 describe("data slice — settings panel", () => {
-  test("open/close/toggle flips settingsOpen", () => {
+  test("close/toggle flips settingsOpen", () => {
     const h = buildDataHarness();
     expect(h.slice.settingsOpen).toBe(false);
-    h.slice.openSettings();
+    h.slice.toggleSettings();
     expect(h.slice.settingsOpen).toBe(true);
     h.slice.closeSettings();
     expect(h.slice.settingsOpen).toBe(false);

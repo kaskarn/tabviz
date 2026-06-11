@@ -4,8 +4,6 @@
   import type { WebTheme } from "$types";
   import TabvizPlot from "./TabvizPlot.svelte";
   import SplitSidebar from "$components/split/SplitSidebar.svelte";
-  import { getCssVars, readAccentDefault } from "$lib/theme/consumer-bridge";
-
   interface Props {
     store: SplitTabvizStore;
   }
@@ -15,17 +13,6 @@
   const activeStore = $derived(store.activeStore);
   const activeKey = $derived(store.activeKey);
   const payload = $derived(store.payload);
-  const sidebarWidth = $derived(store.sidebarWidth);
-
-  // Surface the active theme's accent identity color at the split-container
-  // level so chrome surfaces outside the TabvizPlot (sidebar, search, nav
-  // nodes) can tint with identity instead of falling through to bright-blue
-  // hardcoded fallbacks. V4: brand routes through accent.
-  const primaryVar = $derived.by(() => {
-    const theme = activeStore.spec?.theme;
-    if (!theme) return "#2563eb";
-    return readAccentDefault(getCssVars(theme));
-  });
 
   // Theme persistence: ThemeSwitcher applies the new theme to the active leaf
   // directly (via store.setThemeObject) — we just need to remember it on the
@@ -63,7 +50,7 @@
   });
 </script>
 
-<div class="split-forest-container" bind:this={containerRef} style:--sidebar-width="{sidebarWidth}px" style:--tv-primary={primaryVar}>
+<div class="split-forest-container" bind:this={containerRef}>
   {#if payload}
     <!-- Sidebar with navigation tree -->
     <SplitSidebar {store} />

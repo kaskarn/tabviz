@@ -59,8 +59,8 @@
 <!--
   When called with label="", skip the Field wrapper and render the
   bare input. Lets callers that are ALREADY inside a Field's control
-  slot reuse TextField without double-wrapping (same pattern as
-  ColorField). Outer callers pass a non-empty label and get the
+  slot reuse TextField without double-wrapping. Outer callers pass
+  a non-empty label and get the
   standard labeled row.
 -->
 {#snippet bareInput()}

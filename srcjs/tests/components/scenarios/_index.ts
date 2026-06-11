@@ -4,9 +4,6 @@
 
 import type { ScenarioMeta } from "../harness-store.svelte";
 
-import ToggleScenario     from "./Toggle.scenario.svelte";
-import SegmentedScenario  from "./Segmented.scenario.svelte";
-import FieldRowScenario   from "./FieldRow.scenario.svelte";
 import GlyphsScenario     from "./Glyphs.scenario.svelte";
 
 // v2 primitives — the new ink-on-cream editorial set.
@@ -23,24 +20,6 @@ import V2SchemaSweepScenario from "./v2/SchemaSweep.scenario.svelte";
 import V2SettingsScaffoldScenario from "./v2/SettingsScaffold.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
-  {
-    name: "toggle",
-    description: "Pill switch — 26×14, ink-when-on. Boolean primitive.",
-    group: "Primitives",
-    component: ToggleScenario,
-  },
-  {
-    name: "segmented",
-    description: "Enum-picker rows — words vs glyphs side-by-side.",
-    group: "Primitives",
-    component: SegmentedScenario,
-  },
-  {
-    name: "field-row",
-    description: "Layout row — label/control grid that anchors every editor row.",
-    group: "Layout",
-    component: FieldRowScenario,
-  },
   {
     name: "glyphs",
     description: "Contact sheet of the UI glyph vocabulary — visual audit.",

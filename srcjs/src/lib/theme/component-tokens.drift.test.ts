@@ -62,6 +62,10 @@ function walkFiles(dir: string): string[] {
       if (entry === "__tests__" || entry === "node_modules") continue;
       out.push(...walkFiles(full));
     } else if (stat.isFile()) {
+      // Exclude the manifest itself: its KNOWN_UNCONSUMED strings and
+      // `cssVar:` declaration literals would self-match and make both the
+      // entry-has-consumer check and the staleness check vacuous.
+      if (entry === "component-tokens.ts") continue;
       const dot = entry.lastIndexOf(".");
       const ext = dot >= 0 ? entry.slice(dot) : "";
       if (EXTENSIONS.has(ext) && !entry.endsWith(".test.ts")) {

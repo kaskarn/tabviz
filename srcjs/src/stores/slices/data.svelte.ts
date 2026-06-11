@@ -69,7 +69,6 @@ export interface DataSlice {
   setBandingOverride: (value: string | BandingSpec | null) => void;
   setBandingStartsWithBand: (value: boolean | null) => void;
 
-  openSettings: () => void;
   closeSettings: () => void;
   toggleSettings: () => void;
 
@@ -208,7 +207,6 @@ export function createDataSlice(deps: DataSliceDeps): DataSlice {
 
   // ── Settings panel ─────────────────────────────────────────────────────
 
-  function openSettings()   { settingsOpen = true; }
   function closeSettings()  { settingsOpen = false; }
   function toggleSettings() { settingsOpen = !settingsOpen; }
 
@@ -314,7 +312,7 @@ export function createDataSlice(deps: DataSliceDeps): DataSlice {
 
     setCurrentPage, nextPage, prevPage, setContinuousMode,
     setBandingOverride, setBandingStartsWithBand,
-    openSettings, closeSettings, toggleSettings,
+    closeSettings, toggleSettings,
     setTargetAspect, getTargetAspect, setTargetAspectAnchor,
     setWatermark, previewWatermark, setWatermarkColor, setWatermarkOpacity,
     hydrateForSpec, reset,

@@ -1,26 +1,12 @@
 /**
  * Shared rendering constants for forest plots
  *
- * Two partitions, kept together because they're conceptually related:
- *
- *   1. CSS-shaped constants (opacities, ratios consumed by `var(--tv-…)`
- *      in scoped styles) — emitted as CSS custom properties via
- *      `generateCSSVariables()`. Live in TabvizPlot.svelte's runtime
- *      style block.
- *   2. Algorithmic constants (SVG path math, layout estimation, text
- *      measurement) — consumed directly by the Svelte renderer and the
- *      pure svg-generator. Stay as TS exports.
- *
- * Phase 0c-C6 audit: the spec called for moving CSS-shaped constants
- * to custom properties — most of that migration was already in place
- * via `generateCSSVariables()`. The C6 work was minor: removing one
- * orphan (`GROUP_HEADER_HOVER_OPACITY`, never consumed) and routing
- * TabvizPlot's inline-style emission through the helper rather than
- * inlining the same two `${VAR}` substitutions.
- *
- * Adding a new constant: decide which partition. CSS-shaped → add to
- * `generateCSSVariables()`. Algorithmic → keep as TS export, never
- * cross the CSS boundary.
+ * Algorithmic constants (SVG path math, layout estimation, text
+ * measurement) — consumed directly by the Svelte renderer and the
+ * pure svg-generator. Stay as TS exports; never cross the CSS boundary.
+ * (The old CSS-shaped partition — two opacity custom properties emitted
+ * by a generator helper — was deleted in the 2026-06 dead-code pass:
+ * nothing consumed the vars.)
  */
 
 // ============================================================================
@@ -77,7 +63,7 @@ export const BAR = {
   HEIGHT: 8,
   /** Track corner radius (CSS: border-radius: 2px) */
   RADIUS: 2,
-  /** Label font size multiplier vs body (CSS: --tv-font-size-sm ≈ 0.75rem) */
+  /** Label font size multiplier vs body (CSS small-label size ≈ 0.75rem) */
   LABEL_SCALE: 0.75,
   /** Minimum label cell width (CSS: .bar-label min-width: 32px) */
   LABEL_MIN_WIDTH: 32,
@@ -321,21 +307,6 @@ export const GROUP_HEADER = {
 } as const;
 
 // ============================================================================
-// Column Group Header Constants
-// ============================================================================
-
-/**
- * Constants for column group header cells.
- * These match the .column-group-header CSS in TabvizPlot.svelte.
- *
- * Column group headers span multiple child columns and have their own padding.
- */
-export const COLUMN_GROUP = {
-  /** Horizontal padding for column group header cells (--tv-group-padding default) */
-  PADDING: 16, // 8px left + 8px right
-} as const;
-
-// ============================================================================
 // Multi-Effect Rendering Constants
 // ============================================================================
 
@@ -368,7 +339,7 @@ export const EFFECT = {
  *  - `icon.fontScale` — body-font multiples used by the DOM (CSS `rem`) and the
  *    content-height behavior, because the icon glyph is a font character that
  *    must scale with the table's font. The DOM keeps its CSS-var hook
- *    (`--tv-font-size-*`) and mirrors these multiples; height-behaviors imports
+ *    (the text-size custom properties) and mirrors these multiples; height-behaviors imports
  *    them directly.
  */
 export const CELL_GEOMETRY = {
@@ -443,7 +414,7 @@ export const AXIS = {
 /**
  * Semantic color variants for badge columns.
  * Used in SVG export where CSS variables aren't available.
- * Svelte components use CSS variables (--tv-badge-*) with these as fallbacks.
+ * Svelte components use the badge CSS variables with these as fallbacks.
  */
 export const BADGE_VARIANTS = {
   success: "#16a34a",
@@ -467,17 +438,3 @@ export function getEffectYOffset(index: number, total: number): number {
   return -totalHeight / 2 + index * EFFECT.SPACING;
 }
 
-// ============================================================================
-// CSS Custom Property Generation (for Svelte components)
-// ============================================================================
-
-/**
- * Generate CSS custom properties for rendering constants
- * Used by TabvizPlot.svelte to inject consistent values
- */
-export function generateCSSVariables(): string {
-  return `
-    --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
-    --tv-row-hover-opacity: ${ROW_HOVER_OPACITY};
-  `.trim();
-}

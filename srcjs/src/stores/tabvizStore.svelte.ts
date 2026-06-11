@@ -505,7 +505,7 @@ export function createTabvizStore() {
   // findColumnScope / siblingsForColumnScope / moveColumnItem /
   // clearColumnReorder / mintUniqueColumnId / insertColumn / hideColumn /
   // updateColumn / updateColumnPatch / clearColumnEdits / setColumnWidth /
-  // previewColumnWidth / getColumnWidth all live on the columns slice
+  // previewColumnWidth all live on the columns slice
   // (Phase 0c-C1 PR9). Public-API passthrough on the return block below.
   //
   // Row-scope helpers (findRowGroupScope / siblingsForRow*) +
@@ -1081,7 +1081,6 @@ export function createTabvizStore() {
     get exportSpec() {
       return exportSpec;
     },
-    getColumnWidth: columns.getColumnWidth,
     getPlotWidth: layoutZoom.getPlotWidth,
     // Per-column pan/zoom — owned by the axis slice.
     get axisZooms() {
@@ -1292,7 +1291,6 @@ export function createTabvizStore() {
     isRowExpanded: rowsGroups.isRowExpanded,
     setExpandedRows: rowsGroups.setExpandedRows,
     // Settings + banding overrides — data slice passthrough.
-    openSettings: data.openSettings,
     closeSettings: data.closeSettings,
     toggleSettings: data.toggleSettings,
     setBandingOverride: data.setBandingOverride,

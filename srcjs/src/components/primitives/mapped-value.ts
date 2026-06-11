@@ -1,5 +1,5 @@
-// Shared types for MappedValue.svelte. Svelte components can't export
-// types from the `<script>` block; this sidecar file does.
+// Discriminated mapped-option state types (consumed by schema/initial-state).
+// Survivor of the deleted primitives-v1 island (2026-06 dead-code pass).
 
 /**
  * Discriminated state for a styling option that may be off, set to a

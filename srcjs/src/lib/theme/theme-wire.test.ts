@@ -147,10 +147,9 @@ describe("pinTokenByName — friendly lookup", () => {
   it("throws TokenNotPinnableError for computed-sourced tokens", () => {
     const w = createWire(COCHRANE);
     // --tv-header-light-rule sources from role border-strong — pinnable
-    // but for the error path, pick a computed one. The manifest has
-    // --tv-header-text-size (not yet in the initial 40 entries) but
-    // also --tv-cell-bg (const). Let's use cell-bg.
-    expect(() => pinTokenByName(w, "cell-bg", "neutral", 1))
+    // but for the error path we need a const-sourced token:
+    // --tv-hc-caret-char (HC caret glyph) is const, hence not pinnable.
+    expect(() => pinTokenByName(w, "hc-caret-char", "neutral", 1))
       .toThrow(TokenNotPinnableError);
   });
 

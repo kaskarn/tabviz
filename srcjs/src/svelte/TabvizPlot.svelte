@@ -1880,7 +1880,7 @@
             : row?.style}
           {@const rowClasses = row ? getRowClasses(effectiveRowStyle, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
           {@const semBundle = row && theme ? resolveSemanticBundle(effectiveRowStyle, theme) : null}
-          {@const rowStyles = row ? getRowStyles(effectiveRowStyle, rowDepth, semBundle) : ""}
+          {@const rowStyles = row ? getRowStyles(effectiveRowStyle, semBundle) : ""}
           {@const isSpacerRow = !!row && resolveRowKind({ type: "data", row }) === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupTier = isGroupHeader && theme
@@ -2783,7 +2783,6 @@
    */
   function getRowStyles(
     style: RowStyle | undefined,
-    depth: number | undefined,
     bundle: SemanticBundle | null,
   ): string {
     const styles: string[] = [];
@@ -2794,13 +2793,6 @@
     // bundle bg all flow through one precedence ladder without fighting the
     // `style=` attribute. Leaving it here would make the `style:` directive
     // (with `undefined`) overwrite this value.
-    if (style?.indent) styles.push(`--row-indent: ${style.indent}`);
-
-    // Apply depth-based indentation if no explicit indent
-    if (!style?.indent && depth && depth > 0) {
-      styles.push(`--row-indent: ${depth}`);
-    }
-
     if (bundle) {
       if (bundle.fg != null)         styles.push(`--tv-semantic-fg: ${bundle.fg}`);
       if (bundle.fontWeight != null) styles.push(`--tv-semantic-weight: ${bundle.fontWeight}`);
@@ -2879,10 +2871,22 @@
     --tabviz-font-display: var(--tv-text-title-family, var(--tv-text-body-family));
     --tabviz-font-number: var(--tv-text-numeric-family, var(--tv-text-body-family));
     --tabviz-bg-muted: var(--tv-cell-border, rgba(0, 0, 0, 0.05));
-    /* v4 substrate cssVars preferred; v3 fallback (--tv-fg / --tv-bg)
-       remains until step 10's v3-emitter cleanup. */
+    --tabviz-bg-base: transparent;
+    --tabviz-font-mono: ui-monospace, SFMono-Regular, monospace;
+    /* Approximates the export's theme.accent.tintSubtle (no cssVar emits
+       that value directly); 12% accent over transparent is close enough
+       for the render-tree fragments that consume it. */
+    --tabviz-bg-accent: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, transparent);
+    /* Hover aliases: ~30 widget-chrome rules consume --tv-hover-bg /
+       --tv-hover, which nothing emitted (hardcoded slate fallbacks broke
+       dark themes). Sourcing them from the manifest's --tv-row-hover-bg
+       (previously emitted-but-unconsumed) closes both gaps. KNOWN ISSUE:
+       popovers portaled to document.body (zoom dropdown etc.) sit outside
+       .tabviz-container and still resolve the literal fallbacks. */
+    --tv-hover-bg: var(--tv-row-hover-bg, #e2e8f0);
+    --tv-hover: var(--tv-row-hover-bg, #f1f5f9);
     color: var(--tv-text);
-    background: var(--tv-surface-bg, var(--tv-surface-bg));
+    background: var(--tv-surface-bg);
     border: var(--tv-container-border, none);
     border-radius: var(--tv-container-border-radius, var(--tv-radius-lg, 8px));
     /* Phase D gradient surface moved to .tv-shell (theme-runtime.css):
@@ -2920,7 +2924,7 @@
      ============================================================================ */
 
   /* Auto-fit mode (default): scale down if content exceeds container.
-     Padding split into longhand so `--tv-bottom-margin` (theme spacing)
+     Padding split into longhand so `--tv-spacing-bottom-margin` (theme spacing)
      can extend padding-bottom without re-declaring the whole shorthand.
      Fallbacks are 0 to AGREE with the density substrate (container_padding
      is 0 in every preset — the SHELL owns the figure's air since the
@@ -3052,7 +3056,7 @@
   }
 
   /* Base grid cell styles. Row + column dividers both obey
-     theme.borders.layout via the --tv-border-{row,col}-style tokens
+     theme.borders.layout via the row/col border-style tokens
      (`solid` or `none` depending on layout). Colors come from
      theme.borders.minor. */
   .grid-cell {
@@ -3069,22 +3073,21 @@
     border-right-width: var(--tv-row-border-width, 1px);
     border-right-style: var(--tv-border-col-style, none);
     border-right-color: var(--tv-border-minor-color, var(--tv-cell-border, var(--tv-border)));
-    color: var(--tv-text, var(--tv-text));
-    /* Row background: --tv-row-base-bg (v4) | --tv-row-bg (v3) | container bg.
+    color: var(--tv-text);
+    /* Row background: --tv-row-base-bg (v4), falling back to container bg.
        Separate from --tv-surface-bg so users can tint rows distinct from the
        outer container without flipping the whole widget. */
-    background: var(--tv-row-base-bg, var(--tv-row-base-bg, var(--tv-surface-bg, var(--tv-surface-bg))));
+    background: var(--tv-row-base-bg, var(--tv-surface-bg));
   }
 
   /* Header cells - use row height for multi-row headers. Background is
      the dedicated `--tv-header-bg` (theme.colors.headerBg) so users can
-     tint the header row distinctly from data rows. Cascades from
-     --tv-row-bg so existing themes render identically. */
+     tint the header row distinctly from data rows. */
   .header-cell {
     min-height: var(--tv-header-row-height);
     font-family: var(--tv-text-header-family, var(--tv-text-body-family));
     font-weight: var(--tv-text-header-weight, var(--tv-font-weight-bold, 600));
-    font-style: var(--tv-text-header-italic, normal);
+    font-style: normal; /* the header-italic token was never emitted since Coh.22 removed italics from v4 typography */
     font-size: var(--tv-text-header-size, calc(var(--tv-text-body-size, 0.875rem) * var(--tv-header-font-scale, 1.05)));
     border-bottom-width: var(--tv-header-border-width, 2px);
     border-bottom-style: var(--tv-border-major-style, solid);
@@ -3471,7 +3474,7 @@
 
   /*
    * Semantic styling — driven by per-row CSS custom properties set from the
-   * resolved SemanticBundle. Each of the `--tv-semantic-*` vars is either the
+   * resolved SemanticBundle. Each semantic var (fg/weight/style/…) is either the
    * bundle's value or empty when the bundle leaves that field `null`, which
    * makes the `var(name, FALLBACK)` below inherit whatever the row would
    * have rendered without a semantic flag.
@@ -3517,13 +3520,6 @@
      a theme pins it (rare; most themes keep the default 0.5px hairline). */
   :global(.tabviz-container .data-row.row-odd) {
     border-top-width: var(--tv-border-width-hair, 0.5px);
-  }
-
-  /* Phase D — callouts + emphasis bars pick up the thick border-width
-     scale when set (Blueprint-style themes). */
-  :global(.tabviz-container .callout-emphasis) {
-    border-width: var(--tv-border-width-thick, 2.5px);
-    border-radius: var(--tv-radius-sm, 2px);
   }
 
   /* Muted token: lighter, reduced prominence. The fg already shifts to
@@ -3625,9 +3621,9 @@
   .tabviz-details-panel {
     grid-column: 1 / -1;
     padding: 8px 12px 10px;
-    background: var(--tv-surface-alt, var(--tv-row-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, #f8fafc);
     border-bottom: 1px solid var(--tv-border, #e2e8f0);
-    color: var(--tv-text, var(--tv-content-primary, #1a1a1a));
+    color: var(--tv-text, #1a1a1a);
     font-size: var(--tv-text-label-size, 0.8125rem);
     line-height: 1.5;
     overflow-wrap: anywhere;

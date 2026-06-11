@@ -252,7 +252,7 @@
     gap: 3px;
     padding: 1px 5px 1px 2px;
     border-radius: 3px;
-    background: var(--tv-row-alt-bg, var(--tv-row-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, #f8fafc);
     border: 1px solid var(--tv-cell-border, var(--tv-border, #e2e8f0));
     font-size: 10px;
     line-height: 1.2;

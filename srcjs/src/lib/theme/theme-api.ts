@@ -56,7 +56,7 @@ export interface WebThemeArgs {
   headerStyle?: ThemeInputs["header_style"];
   borderPreset?: ThemeInputs["border_preset"];
   slotStyle?: ThemeInputs["slot_style"];
-  /** Base preset name; defaults to `"cochrane"`. */
+  /** Base preset name; defaults to `"nejm"`. */
   baseTheme?: PresetName;
 }
 

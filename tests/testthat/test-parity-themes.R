@@ -14,24 +14,14 @@
 #     a separate alignment task)
 #   - everything else compared with `expect_equal(tolerance = 0)` so
 #     numeric-vs-integer doesn't false-fail but real value drift does
-#   - per-preset KNOWN_DIVERGENCES allowlists the current real diffs
-#     (fonts strings + a few per-preset type/effects/geometry values)
-#     so this test surfaces only NEW drift. The list can only shrink.
+#   - STRICT: the old per-preset known-divergence allowlist burned down
+#     to empty and was removed (2026-06) — any R↔TS divergence fails.
 
 # Per-axis tolerance for anchor comparison. R and TS use independent
 # hex→OKLCH converters that round-trip to the same hex but drift below
 # JND. All thresholds are well below perceptual just-noticeable
 # difference (~0.005 for L and C, ~1° for H).
 .ANCHOR_TOL <- list(L = 1e-3, C = 1e-3, H = 0.1)
-
-# Per-preset known-divergent fields. The intent is to track each diff
-# as its own follow-up (R preset constructor and TS PRESETS literal
-# need alignment). Removing an entry should make the test still pass
-# — meaning the divergence has been resolved.
-.KNOWN_DIVERGENCES <- list(
-  # Empty — all known divergences closed. New divergences trigger
-  # test failure with a "preset 'X' has new R↔TS divergence" message.
-)
 
 # Compare two anchor triples with per-axis tolerance. For achromatic
 # anchors (C ≈ 0 on either side), H is degenerate — different converters
@@ -114,27 +104,24 @@ test_that("R and TS preset status anchors match within OKLCH tolerance", {
   }
 })
 
-test_that("R and TS preset non-anchor fields match (or are known-divergent)", {
+test_that("R and TS preset non-anchor fields match", {
+  # Strict: the known-divergence allowlist burned down to empty
+  # (2026-06) and its machinery was removed. Any new R↔TS preset
+  # divergence fails here at the moment of introduction.
   for (name in names(PRESET_PAIRS)) {
     r  <- theme_inputs_to_json(PRESET_PAIRS[[name]]$r()@inputs)
     ts <- ts_call("inputsForPreset", name)
-    known <- if (is.null(.KNOWN_DIVERGENCES[[name]])) character(0) else .KNOWN_DIVERGENCES[[name]]
     shared <- intersect(names(r), names(ts))
     # anchors AND status are OKLCH-triple objects from independent hex
     # converters — both checked separately with per-axis tolerance.
     shared <- setdiff(shared, c("anchors", "status"))
     unexpected_diffs <- character(0)
-    surprising_matches <- character(0)
     for (k in shared) {
       same <- isTRUE(all.equal(r[[k]], ts[[k]], tolerance = 0))
-      if (!same && !(k %in% known)) unexpected_diffs <- c(unexpected_diffs, k)
-      if (same && (k %in% known))   surprising_matches <- c(surprising_matches, k)
+      if (!same) unexpected_diffs <- c(unexpected_diffs, k)
     }
     expect_equal(unexpected_diffs, character(0),
                  info = sprintf("preset '%s' has new R↔TS divergence", name))
-    expect_equal(surprising_matches, character(0),
-                 info = sprintf("preset '%s' no longer diverges on %s — remove from .KNOWN_DIVERGENCES",
-                                name, paste(surprising_matches, collapse = ", ")))
   }
 })
 

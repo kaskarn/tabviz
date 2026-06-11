@@ -100,9 +100,6 @@ export interface RowsGroupsSlice {
     rowId: string | null,
     position: { x: number; y: number } | null,
   ) => void;
-  /** Setter for tooltipRowId only (used by setSpec to clear stale
-   *  references from a previous spec without touching position). */
-  setTooltipRowId: (id: string | null) => void;
   /** Wipe every state field except hover (which is fine to leak —
    *  the OS or component lifecycle clears it on the next pointer
    *  event). Called from `setSpec` / `resetState`. */
@@ -315,10 +312,6 @@ export function createRowsGroupsSlice(
     tooltipPosition = position;
   }
 
-  function setTooltipRowId(id: string | null): void {
-    tooltipRowId = id;
-  }
-
   function reset(): void {
     collapsedGroups = new Set();
     expandedRows = new Set();
@@ -346,7 +339,7 @@ export function createRowsGroupsSlice(
     toggleGroup, toggleRowDetails, isRowExpanded, setExpandedRows,
     findRowGroupScope, siblingsForRowScope,
     siblingsForRowGroupScope, moveRowItem, moveRowGroupItem,
-    clearRowReorder, setHovered, setTooltip, setTooltipRowId,
+    clearRowReorder, setHovered, setTooltip,
     reset,
   };
 }

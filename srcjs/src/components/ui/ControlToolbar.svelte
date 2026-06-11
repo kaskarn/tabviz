@@ -158,21 +158,11 @@
     color: var(--tv-accent, #2563eb) !important;
   }
 
-  /* `.active` buttons get the standard primary-tint "pressed" treatment
-     EXCEPT the paint-mode button — which owns its own accent-color
-     styling so users can spot the exit target while painting. */
-  :global(.tabviz-container > .control-toolbar button.active:not(.paint-btn)),
-  :global(.tabviz-container > .control-toolbar button[aria-expanded="true"]:not(.paint-btn)) {
+  /* `.active` buttons get the standard primary-tint "pressed" treatment. */
+  :global(.tabviz-container > .control-toolbar button.active),
+  :global(.tabviz-container > .control-toolbar button[aria-expanded="true"]) {
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 85%, transparent) !important;
     color: var(--tv-surface-bg, #ffffff) !important;
-  }
-
-  /* Paint-mode button wears the accent color at full saturation when
-     active — louder than the ambient primary tint so "tool is on" pops. */
-  :global(.tabviz-container > .control-toolbar button.paint-btn.active) {
-    background: var(--tv-accent, #8b5cf6) !important;
-    color: #ffffff !important;
-    border-color: var(--tv-accent, #8b5cf6) !important;
   }
 
   /* ------------------------------------------------------------------ */

@@ -379,39 +379,6 @@ resolve_style_exprs <- function(data, ..., .env = parent.frame()) {
   result
 }
 
-#' Resolve cell style expressions for a column
-#'
-#' Resolves multiple cell-level style expressions for web_col().
-#'
-#' @param data Data frame
-#' @param field Column field name (for .x binding)
-#' @param ... Named style expressions
-#' @param .env Evaluation environment
-#'
-#' @return List with data and resolved column names
-#' @keywords internal
-resolve_cell_style_exprs <- function(data, field, ..., .env = parent.frame()) {
-  checkmate::assert_data_frame(data, min.rows = 1, .var.name = "data")
-  checkmate::assert_string(field, .var.name = "field")
-
-  exprs <- list(...)
-  result <- list(data = data)
-
-  for (name in names(exprs)) {
-    resolved <- resolve_cell_style_expr(
-      expr = exprs[[name]],
-      data = result$data,
-      field = field,
-      param_name = name,
-      env = .env
-    )
-    result$data <- resolved$data
-    result[[name]] <- resolved$col_name
-  }
-
-  result
-}
-
 #' Resolve column style expressions for a ColumnSpec
 #'
 #' Resolves any formula expressions in a column's style properties.

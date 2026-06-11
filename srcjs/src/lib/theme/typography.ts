@@ -73,7 +73,7 @@ export const DEFAULT_TYPE_ROLES: Readonly<Record<TypeRoleName, TypeRole>> = {
 
 /** Tier 1 typography inputs (defaults). The values match v3 conventions: base
  *  14 px, ratio 1.2 (Major Third minus a hair), regular/medium/semibold/bold
- *  weights aligned with the WOFF2 stacks bundled in `font-presets.ts`. */
+ *  weights aligned with the bundled WOFF2 font stacks. */
 export const DEFAULT_TYPE_BASE_SIZE = 14;
 export const DEFAULT_TYPE_SCALE_RATIO = 1.2;
 export const DEFAULT_TYPE_WEIGHTS: Readonly<{

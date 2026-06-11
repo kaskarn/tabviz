@@ -161,7 +161,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "surface" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte", "lib/swatches.ts"],
+    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Default row background fill",
   },
   {
@@ -224,14 +224,6 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
 
   // ── Cell ───────────────────────────────────────────────────────────────────
-  {
-    cssVar: "--tv-cell-bg",
-    resolverGroup: "const",
-    kind: "paint-fill",
-    source: { tier: "const", note: "transparent — cell inherits row" },
-    consumedBy: ["export/svg-generator.ts"],
-    description: "Cell background (transparent by default; inherits row)",
-  },
   {
     cssVar: "--tv-cell-fg",
     resolverGroup: "role",
@@ -501,14 +493,6 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Plot title text color",
   },
   {
-    cssVar: "--tv-text-body-fg",
-    resolverGroup: "role",
-    kind: "paint-color",
-    source: { tier: "role", role: "text" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Body text color",
-  },
-  {
     cssVar: "--tv-text-footnote-fg",
     resolverGroup: "role",
     kind: "paint-color",
@@ -696,7 +680,10 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "hc-fidelity",
     kind: "paint-color",  // emitted as a character literal string
     source: { tier: "const", note: "HC caret glyph (▸ / blank)" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    // TODO: designed HC-fidelity feature pending wiring (audit 2026-06-10:
+    // neither theme-runtime.css nor svg-generator reads it yet; only the
+    // resolver emits it).
+    consumedBy: [],
     description: "Caret glyph emitted in emphasis rows under HC mode; empty string under standard",
   },
   {
@@ -766,7 +753,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 12% black, alpha 0.12" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
+    // only the elevation resolver emits these; no CSS/SVG consumer yet).
+    consumedBy: [],
     description: "Near shadow color for raised elevation (1-2 px softness)",
   },
   {
@@ -774,7 +763,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.08" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
+    // only the elevation resolver emits these; no CSS/SVG consumer yet).
+    consumedBy: [],
     description: "Far shadow color for raised elevation (6-20 px diffusion)",
   },
   {
@@ -782,7 +773,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.18" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
+    // only the elevation resolver emits these; no CSS/SVG consumer yet).
+    consumedBy: [],
     description: "Near shadow color for overlay (modal/popover) elevation",
   },
   {
@@ -790,7 +783,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "elevation",
     kind: "paint-color",
     source: { tier: "computed", note: "elevation: paper hue + 32% black, alpha 0.12" },
-    consumedBy: ["lib/theme/theme-runtime.css", "export/svg-generator.ts"],
+    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
+    // only the elevation resolver emits these; no CSS/SVG consumer yet).
+    consumedBy: [],
     description: "Far shadow color for overlay elevation",
   },
 
@@ -817,7 +812,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "role",
     kind: "paint-fill",
     source: { tier: "role", role: "accent-fill" },
-    consumedBy: ["export/svg-generator.ts"],
+    // TODO: no renderer reads this yet (audit 2026-06-10 — the old
+    // svg-generator claim was false). Wire a consumer or retire.
+    consumedBy: [],
     description: "Accent fill (translucent wash for callout/highlight)",
   },
 
@@ -1384,18 +1381,15 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // ── Stage 2 typography — INTENTIONAL DENSE-GRID HEADROOM.
   // The typography manifest emits 9 roles × {family, size, weight} = 27
   // entries (see buildTypographyManifestEntries above + Coh.22 rationale).
-  // 16 of those are read by renderers today. The 11 below are emitted as
+  // Most are read by renderers today. The 9 below are emitted as
   // headroom: a renderer can opt into them without reopening the manifest.
   // Re-derive: every (role, prop) in the dense generator that doesn't
   // appear in a non-test consumer grep. List built 2026-06-04.
-  "--tv-text-body-size",
   "--tv-text-body-weight",
   "--tv-text-caption-family",
   "--tv-text-cell-family",
-  "--tv-text-cell-size",
   "--tv-text-cell-weight",
   "--tv-text-footnote-family",
-  "--tv-text-label-size",
   "--tv-text-numeric-size",
   "--tv-text-numeric-weight",
   "--tv-text-subtitle-family",
@@ -1403,17 +1397,11 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // ── False positives: drift regex matches bare prefixes from template
   // literals inside resolver / generator helpers. Not real references.
   "--tv-text-",
-  "--tv-shell-",
-  "--tv-paper-",
-  "--tv-shadow-",
   // Phase D bare prefixes from template literals in GeometrySamples viz.
   "--tv-radius-",
   "--tv-border-width-",
   // Bare prefixes appearing inside manifest comments / drift-gate
   // burn-down notes (not actual CSS references).
-  "--tv-first-col-",
-  "--tv-header-",
-  "--tv-table-border-",
   // Coherence pass — bare prefix from density-presets.ts's snakeToCssVar
   // template literal. The expanded cssVars (--tv-spacing-row-height etc.)
   // are real manifest entries; this allow-lists the literal-prefix match.
@@ -1422,42 +1410,21 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // ── Phase D — geometry + effects (declared D2; consumers wire up in D4).
   // Shrink this block as TabvizPlot.svelte + svg-generator.ts start
   // reading the new tokens.
-  "--tv-radius-md",
-  "--tv-radius-pill",
-  "--tv-border-width-thin",
-  "--tv-border-width-regular",
-  "--tv-glow-blur",
-  "--tv-glow-spread",
 
+  // TODO(audit 2026-06-10): --tv-accent-fill has no renderer consumer yet
+  // (manifest entry kept — accent wash is a designed role; wire or retire).
+  "--tv-accent-fill",
   // ── Row state
-  "--tv-row-base-bg",
-  "--tv-row-base-fg",
-  "--tv-row-alt-bg",
-  "--tv-row-hover-bg",
   "--tv-row-selected-bg",
-  "--tv-row-emphasis-bg",
-  "--tv-row-emphasis-bar",
-  "--tv-row-emphasis-fg",
   // ── Cell
-  "--tv-cell-bg",
   // --tv-cell-fg consumed 2026-06-02 (renderUnifiedTableRow default cell fg)
   // --tv-cell-border consumed 2026-06-02 (renderDetailsPanel + axis renderers)
   // ── Header
-  "--tv-header-light-bg",
-  "--tv-header-light-fg",
   "--tv-header-light-rule",
-  "--tv-header-tint-bg",
-  "--tv-header-tint-fg",
-  "--tv-header-fill-bg",
-  "--tv-header-fill-fg",
   // ── Plot (axis-line + tick-mark + line-width + point-size migrated 2026-06-02)
-  "--tv-plot-tick-mark-length",
   // ── Spacing (12 of 13 consumed 2026-06-03; cell-padding-y +
   //              container-padding remain v3-only)
-  "--tv-spacing-cell-padding-y",
-  "--tv-spacing-container-padding",
   // ── Text roles (--tv-text-title-fg + --tv-text-footnote-fg consumed 2026-06-02 by renderHeader/renderFooter)
-  "--tv-text-body-fg",
   // ── Generic T2 role passthroughs (Phase 6 migration helpers)
   // Consumed 2026-06-02: --tv-text, --tv-text-muted, --tv-text-subtle,
   //                      --tv-cell-border (used as border-subtle proxy),
@@ -1466,52 +1433,35 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-surface-subtle-bg",
 
   // ── v3 LEGACY REFERENCES ──────────────────────────────────────────────────
-  // The 140+ entries below are `--tv-*` references already present in v3
+  // The entries below are `--tv-*` references already present in v3
   // code (theme-css.ts, Svelte components, etc.) that
-  // the gate detects but the v4 manifest doesn't model. They are
-  // grandfathered en masse during sprint kickoff. As consumers migrate
-  // (step 6) and v3 emitters get deleted (step 10), these rows disappear.
+  // the gate detects but the v4 manifest doesn't model. They were
+  // grandfathered en masse during sprint kickoff (originally 140+; burned
+  // down to the residue below in the 2026-06-10 dead-code pass). As
+  // consumers migrate and v3 emitters get deleted, these rows disappear.
   // Per Stage 1 §4b: shrink-only; do not add to this block.
   "--tv-actual-scale",
   "--tv-axis-height",
   "--tv-axis-label-fg",
   "--tv-axis-tick-fg",
-  "--tv-badge-",
-  "--tv-bg",
   // --tv-border is now a real manifest entry (see line ~695); removed
   // from the v3-legacy KNOWN_UNCONSUMED list per coherence audit §7.6.
-  "--tv-border-",
-  // --tv-border-{major,minor,table}-color, --tv-border-{row,col,major,table}-style,
-  // --tv-{row,header,group,table}-border-width are real manifest entries (#73).
-  "--tv-bottom-margin",
-  "--tv-focus",
+  // The border color/style/width families (major/minor/table colors,
+  // row/col/major/table styles, row/header/group/table widths) are real
+  // manifest entries (#73).
   // --tv-container-border + --tv-container-border-radius are manifest entries (#74).
-  "--tv-content-primary",
-  "--tv-editor-max-h",
-  "--tv-fg",
-  // --tv-first-col-{bg,fg,weight,rule} are manifest entries (#74).
-  "--tv-font-size-",
-  "--tv-font-size-sm",
+  // The first-col bg/fg/weight/rule vars are manifest entries (#74).
   "--tv-font-weight-bold",
   "--tv-font-weight-normal",
-  "--tv-group-header-opacity",
-  "--tv-group-padding",
-  // --tv-header-{bg,fg,rule} are manifest entries (#72).
+  // The header bg/fg/rule vars are manifest entries (#72).
   "--tv-header-font-scale",
-  "--tv-header-gap",
   "--tv-header-height",
   "--tv-header-row-height",
-  "--tv-header-depth",
-  "--tv-plot-width",
   "--tv-hover",
   "--tv-hover-bg",
   "--tv-max-height",
   "--tv-max-width",
-  "--tv-primary",
-  "--tv-row-bg",
   // --tv-row-group-rule is a manifest entry (#72).
-  "--tv-row-hover-opacity",
-  "--tv-semantic-",
   "--tv-semantic-accent-bg",
   "--tv-semantic-accent-fg",
   "--tv-semantic-emphasis-bg",
@@ -1522,37 +1472,17 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-semantic-style",
   "--tv-semantic-weight",
   "--tv-status-",
-  // --tv-status-{positive,negative,warning,info} are now real manifest
-  // entries (see line ~660). Removed from the v3-legacy grandfather
-  // list per coherence audit §7.5.
+  // The four status vars (positive/negative/warning/info) are now real
+  // manifest entries. Removed from the v3-legacy grandfather list per
+  // coherence audit §7.5.
   "--tv-summary-border",
   "--tv-summary-fill",
-  "--tv-surface-alt",
-  "--tv-surface-muted",
-  // --tv-table-border-{style,width} are manifest entries (#73).
-  "--tv-text",
-  "--tv-text-caption-size",
-  "--tv-text-caption-weight",
+  // The table-border style/width vars are manifest entries (#73).
   "--tv-text-column-group-weight",
-  "--tv-text-footnote-size",
-  "--tv-text-footnote-weight",
   "--tv-text-header-family",
-  "--tv-text-header-italic",
   "--tv-text-header-size",
   "--tv-text-header-weight",
-  "--tv-text-label-family",
-  "--tv-text-label-weight",
-  "--tv-text-muted",
-  "--tv-text-numeric-family",
   "--tv-text-numeric-figures",
-  "--tv-text-subtitle-size",
-  "--tv-text-subtitle-weight",
-  "--tv-text-tick-family",
-  "--tv-text-tick-weight",
-  "--tv-text-title-family",
-  "--tv-text-title-size",
-  "--tv-text-title-weight",
-  "--tv-title-subtitle-gap",
   "--tv-viz-margin",
   "--tv-zoom",
 ]);

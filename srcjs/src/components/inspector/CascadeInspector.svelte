@@ -106,7 +106,7 @@
   .active-token code {
     display: block;
     padding: 4px 8px;
-    background: var(--tv-row-alt-bg, var(--tv-row-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, #f8fafc);
     border-radius: 4px;
     font-family: ui-monospace, monospace;
     font-size: 11.5px;
@@ -159,7 +159,7 @@
     margin-top: 8px;
   }
   .full-trace pre {
-    background: var(--tv-row-alt-bg, var(--tv-row-alt-bg, #f8fafc));
+    background: var(--tv-row-alt-bg, #f8fafc);
     padding: 6px;
     border-radius: 4px;
     font-size: 11px;

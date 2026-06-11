@@ -7,7 +7,7 @@ import { createWire } from "../src/lib/theme/theme-wire.ts";
 import { resolveTheme } from "../src/lib/theme/resolve-theme.ts";
 
 // Path A — direct TS preset
-const wireA = createWire(PRESETS["cochrane"], "cochrane");
+const wireA = createWire(PRESETS["nejm"], "nejm");
 const rA = resolveTheme(wireA);
 console.log("Path A (TS preset) keys mentioning accent:");
 for (const k of Object.keys(rA.cssVars)) if (k.includes("accent")) {
@@ -17,14 +17,14 @@ for (const k of Object.keys(rA.cssVars)) if (k.includes("accent")) {
 // Path B — simulate R wire shape
 import { execSync } from "node:child_process";
 const blobJson = execSync(
-  "Rscript -e 'devtools::load_all(quiet=TRUE); t<-web_theme_cochrane(); blob<-tabviz:::serialize_theme(t); cat(jsonlite::toJSON(blob$authoringInputs, auto_unbox=TRUE, null=\"null\", na=\"null\"))'",
+  "Rscript -e 'devtools::load_all(quiet=TRUE); t<-web_theme_nejm(); blob<-tabviz:::serialize_theme(t); cat(jsonlite::toJSON(blob$authoringInputs, auto_unbox=TRUE, null=\"null\", na=\"null\"))'",
   { cwd: "/Users/antoine/dev/r/forest", encoding: "utf8" }
 );
 const inputs = JSON.parse(blobJson);
 console.log("\nR-emitted authoringInputs top-level:", Object.keys(inputs));
 console.log("anchors:", inputs.anchors);
 
-const wireB = createWire(inputs, "cochrane");
+const wireB = createWire(inputs, "nejm");
 const rB = resolveTheme(wireB);
 console.log("\nPath B (R-emitted inputs) keys mentioning accent:");
 for (const k of Object.keys(rB.cssVars)) if (k.includes("accent")) {

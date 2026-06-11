@@ -115,7 +115,7 @@ export function resolveShellPaper(
       // borderSubtle + 8px radius recipe was authored before any DOM
       // consumed it and would have put a card outline on every default
       // preset. The table's own outer border stays owned by
-      // --tv-table-border-* on .tabviz-main.
+      // the table-border tokens on .tabviz-main.
       // Geometric inertness holds ONLY while elevation is off: a pinned
       // figure depth needs air for its shadow (a lifted sheet is no
       // longer visually flush anyway).

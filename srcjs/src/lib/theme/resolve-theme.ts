@@ -656,7 +656,7 @@ function resolveKnockoutComputed(
   return bg.startsWith("#") ? bg : resolveTextureKnockoutBg(bg);
 }
 
-/** Stage 2 §6 elevation shadow resolver. Matches `--tv-shadow-{tier}-{kind}`
+/** Stage 2 §6 elevation shadow resolver. Matches the shadow tier/kind
  *  cssVars and emits hue-aware shadow colors mixed from the paper bg.
  *  Returns null when the cssVar doesn't match. */
 function resolveElevationComputed(
@@ -670,7 +670,7 @@ function resolveElevationComputed(
   return resolveElevationShadows(paperBg)[key];
 }
 
-/** Stage 2 §2 shell/paper resolver. Matches `--tv-shell-*` and `--tv-paper-*`
+/** Stage 2 §2 shell/paper resolver. Matches the shell and paper
  *  cssVars and emits the corresponding value from resolveShellPaper().
  *  Returns null when the cssVar doesn't match. */
 function resolveShellPaperComputed(
@@ -1044,14 +1044,6 @@ function runCascade(wire: ThemeWire) {
   walkTextRole("text-muted" as RoleName, subtleGrade + 1);
 
   return { polarity, reflected, ramps12, alphaRamps, roles, roleSource };
-}
-
-/** Test-only: build the ResolveCtx the token resolvers receive for a
- *  given wire. Used by the Pass 0d dispatch-parity test to compare the
- *  group dispatch against the legacy waterfall token-by-token. */
-export function _buildResolveCtxForTest(wire: ThemeWire): ResolveCtx {
-  const { reflected, ramps12, roles } = runCascade(wire);
-  return { roles, ramps: ramps12, inputs: reflected };
 }
 
 export function resolveTheme(wire: ThemeWire): ResolvedTheme {

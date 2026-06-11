@@ -328,7 +328,6 @@
     --studio-rule: var(--v2-rule, #ddd7c9);             /* hairline */
     --studio-rule-soft: var(--v2-rule-soft, #ece7da);
     --studio-rule-strong: var(--v2-rule-strong, #15140e);
-    --studio-accent: var(--tv-accent, #2563eb);
     --studio-font: var(--v2-font-sans, "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
     --studio-good: #2f7d4f;
     --studio-warn: #b07314;        /* amber ink (verdict / contrast) */

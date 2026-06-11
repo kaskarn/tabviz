@@ -24,17 +24,6 @@ import type {
   RowStyle, CellStyle, SemanticBundle, SemanticToken, WebTheme,
 } from "$types";
 
-/** A plain all-null bundle — handy when code needs a non-null sentinel. */
-export const EMPTY_BUNDLE: SemanticBundle = {
-  fg: null,
-  bg: null,
-  border: null,
-  markerFill: null,
-  markerStroke: null,
-  fontWeight: null,
-  fontStyle: null,
-};
-
 /** True if at least one field in the bundle is non-null. */
 export function bundleIsActive(b: SemanticBundle | null | undefined): boolean {
   if (!b) return false;

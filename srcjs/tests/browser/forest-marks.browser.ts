@@ -23,7 +23,7 @@ import puppeteer, { type Page } from "puppeteer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
-import { COCHRANE } from "../../src/lib/theme/theme-presets-inputs";
+import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 import { computeAxis } from "../../src/lib/axis-utils";
 import { buildForestScale } from "../../src/lib/layout/forest-scale";
 
@@ -53,7 +53,7 @@ const UPPERS = [0.89, 0.95, 0.81, 0.99, 0.87];
 const NULL_VALUE = 1;
 
 function buildSpec(): { spec: unknown; theme: ReturnType<typeof buildTheme> } {
-  const theme = buildTheme(COCHRANE, "cochrane");
+  const theme = buildTheme(NEJM, "nejm");
   const rows = POINTS.map((p, i) => ({
     id: `r${i}`,
     label: `S${i}`,

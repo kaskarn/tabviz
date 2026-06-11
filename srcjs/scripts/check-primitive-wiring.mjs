@@ -40,15 +40,7 @@ const PRIMITIVES = [
 // `onchange` via bind:value + $effect — the established pattern). They
 // would trip the lint on their own internal usages, so they're skipped.
 const WRAPPER_ALLOWLIST = new Set([
-  "src/components/ui/ColorField.svelte",
-  "src/components/ui/NumberField.svelte",
-  "src/components/ui/BooleanField.svelte",
-  "src/components/ui/SegmentedField.svelte",
   "src/components/ui/TextField.svelte",
-  "src/components/ui/OptionalField.svelte",
-  // Tabs: TabBar value mutates and parent reassigns via bind: at the
-  // tab-strip level. Audited separately in SettingsPanel.
-  "src/components/primitives/v2/TabBar.svelte",
 ]);
 
 const root = path.resolve(import.meta.dirname, "..");

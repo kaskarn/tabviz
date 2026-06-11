@@ -129,7 +129,7 @@
     justify-content: space-between;
     gap: 12px;
     /* Bottom padding is the controllable header→table gap. Sourced from
-       theme.spacing.headerGap via the --tv-header-gap CSS var so the
+       theme.spacing.headerGap via the --tv-spacing-header-gap CSS var so the
        Spacing tab + R API can tune it. Falls back to the historical 4px
        when the var is not set. */
     /* Left edge 0: title aligns with the strip + paper edge (the stray
@@ -156,7 +156,7 @@
     padding: 0 0 0.15rem 0;
     border: none;
     font-family: var(--tv-text-title-family, var(--tv-text-body-family));
-    font-size: var(--tv-text-title-size, var(--tv-text-title-size, 1rem));
+    font-size: var(--tv-text-title-size, 1rem);
     font-weight: var(--tv-text-title-weight, var(--tv-font-weight-bold, 600));
     font-style: normal;
     color: var(--tv-text-title-fg, var(--tv-text, #1a1a1a));
@@ -184,7 +184,7 @@
 
   /* Subtle separator above subtitle when both title and subtitle exist.
      Total gap (border + padding) is themable via
-     `--tv-title-subtitle-gap` so the SVG export and live widget agree
+     `--tv-spacing-title-subtitle-gap` so the SVG export and live widget agree
      on the same number; the CSS subtracts the border's 1px from the
      padding so the visible gap matches the theme value. Defaults to
      13 (1 border + 12 padding) which matches the prior hardcoded

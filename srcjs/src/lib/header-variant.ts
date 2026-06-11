@@ -50,8 +50,3 @@ export function activeHeaderVariant(theme: WebTheme): HeaderVariantHexes {
   return cluster[activeHeaderStyle(theme)] ?? cluster.light ?? {};
 }
 
-/** Return the active column-group header variant hexes. */
-export function activeColumnGroupVariant(theme: WebTheme): HeaderVariantHexes {
-  const cluster = (theme as { columnGroup?: HeaderClusterShape }).columnGroup ?? {};
-  return cluster[activeHeaderStyle(theme)] ?? cluster.light ?? {};
-}

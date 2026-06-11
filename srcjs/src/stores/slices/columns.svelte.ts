@@ -130,7 +130,6 @@ export interface ColumnsSlice {
   clearColumnEdits: () => void;
   setColumnWidth: (columnId: string, width: number) => void;
   previewColumnWidth: (columnId: string, width: number) => void;
-  getColumnWidth: (columnId: string) => number | undefined;
   /** Cancel a width-preview gesture: restore pre-drag width + pin state. */
   cancelPreviewColumnWidth: (columnId: string, startWidth: number, wasUserResized: boolean) => void;
   /** Reset one column to auto width (drop pin + re-measure). */
@@ -456,10 +455,6 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       next.add(columnId);
       userResizedIds = next;
     }
-  }
-
-  function getColumnWidth(columnId: string): number | undefined {
-    return columnWidths[columnId];
   }
 
   /**
@@ -1002,7 +997,6 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     clearColumnEdits,
     setColumnWidth,
     previewColumnWidth,
-    getColumnWidth,
     cancelPreviewColumnWidth,
     resetColumnWidth,
 

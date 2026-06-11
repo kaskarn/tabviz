@@ -192,39 +192,3 @@ export function normalizeKDE(kde: KDEResult, maxWidth: number): KDEResult {
   };
 }
 
-/**
- * Convert KDE result to SVG path for violin plot (mirrored)
- * Creates a path that goes down the right side and up the left side
- */
-export function kdeToViolinPath(
-  kde: KDEResult,
-  xScale: (value: number) => number,
-  yCenter: number,
-  maxWidth: number
-): string {
-  if (kde.x.length < 2) return "";
-
-  // Normalize densities to max width
-  const normalized = normalizeKDE(kde, maxWidth / 2);
-
-  // Build path: right side (top to bottom), then left side (bottom to top)
-  const points: string[] = [];
-
-  // Right side (positive y offset from center)
-  for (let i = 0; i < normalized.x.length; i++) {
-    const x = xScale(normalized.x[i]);
-    const y = yCenter + normalized.y[i];
-    points.push(i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`);
-  }
-
-  // Left side (negative y offset, reversed order)
-  for (let i = normalized.x.length - 1; i >= 0; i--) {
-    const x = xScale(normalized.x[i]);
-    const y = yCenter - normalized.y[i];
-    points.push(`L ${x} ${y}`);
-  }
-
-  points.push("Z"); // Close path
-
-  return points.join(" ");
-}

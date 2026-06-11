@@ -46,7 +46,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
-import { COCHRANE, DARK } from "../../src/lib/theme/theme-presets-inputs";
+import { NEJM, TERMINAL } from "../../src/lib/theme/theme-presets-inputs";
 import type { ThemeInputs } from "../../src/types/theme-inputs";
 import { tabviz } from "../../src/authoring/tabviz";
 import { colText, colNumeric } from "../../src/authoring/columns";
@@ -65,7 +65,7 @@ const SLOW = process.argv.includes("--slow");
  *  shell and would false-flag as dead. Raised shell + status anchors set. */
 function liveInputs(): ThemeInputs {
   return {
-    ...COCHRANE,
+    ...NEJM,
     shell_mode: "raised",
     header_style: "tint",
   } as ThemeInputs;
@@ -91,15 +91,15 @@ function buildSpec(): unknown {
       // it those controls produce no pixel delta and false-flag as dead.
       vizForest({ point: "hr", lower: "lo", upper: "hi", header: "HR (95% CI)", scale: "log" }),
     ],
-    theme: buildTheme(liveInputs(), "cochrane"),
+    theme: buildTheme(liveInputs(), "nejm"),
   }) as { interaction: Record<string, unknown> };
   spec.interaction = {
     ...spec.interaction,
     enableThemeEdit: true,
     enableBanding: true,
     enableThemes: {
-      cochrane: buildTheme(COCHRANE, "cochrane"),
-      dark: buildTheme(DARK, "dark"),
+      nejm: buildTheme(NEJM, "nejm"),
+      terminal: buildTheme(TERMINAL, "terminal"),
     },
   };
   return spec;
@@ -232,7 +232,7 @@ const PANEL_RETARGET = /role to rebind/i;
 
 // Repaint-exempt (justified-no-op): the FIGURE-band Contrast a11y toggle
 // (seg labels "auto"/"more") applies a paint-time HC re-resolve that is
-// visually inert on a theme already meeting high-contrast (cochrane). It is
+// visually inert on a theme already meeting high-contrast (nejm). It is
 // wired but produces no pixel delta on this base; verify operability only.
 const REPAINT_EXEMPT = /^(auto|more)$/i;
 

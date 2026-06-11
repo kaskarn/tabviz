@@ -11,9 +11,9 @@
 
 import { makeFixture, makeSplitFixture, type Fixture } from "../perf/fixtures";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
-import { COCHRANE } from "../../src/lib/theme/theme-presets-inputs";
+import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 
-const THEME = buildTheme(COCHRANE, "cochrane");
+const THEME = buildTheme(NEJM, "nejm");
 
 function toWebSpec(fx: Fixture): unknown {
   return {

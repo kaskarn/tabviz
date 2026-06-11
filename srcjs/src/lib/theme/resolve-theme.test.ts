@@ -55,11 +55,6 @@ describe("resolveTheme — pipeline composition", () => {
     expect(r.cssVars["--tv-spacing-axis-gap"]).toBe("12px");
   });
 
-  it("const-sourced 'transparent' tokens resolve to transparent", () => {
-    const r = resolveTheme(createWire(COCHRANE));
-    expect(r.cssVars["--tv-cell-bg"]).toBe("transparent");
-  });
-
   it("roleSource reflects the binding actually used", () => {
     const r = resolveTheme(createWire(COCHRANE));
     expect(r.roleSource.surface).toEqual({ ramp: "neutral", grade: 1 });
