@@ -19,6 +19,7 @@ Sync points when touching the wire: `R/wire-version.R` ↔
 | W3 | `variants.headerStyle` retirement (superseded by the `header_style` input; still emitted on the wire per the wire-audit backlog) | Wire-audit leftover | M1 (cheap; fold into the next theme-wire touch) |
 | W4 | v3-legacy `WebTheme` blob slimming: `ResolvedInputs` v3 fields emitted with no readers; theme-css user-config bridges (#72–#74 borders/firstColumn/container/header clusters) — decide manifest-migrate vs keep-as-bridge, then delete the dead emissions | v3→v4 cutover backlog | M2 latest (touching it later means a major bump) |
 | W5 | `initialState.hiddenColumns` vs `figureLayout` split: hidden columns ride initialState while widths/order/pins ride figureLayout — decide whether hidden moves into figureLayout (one figure-state home) or stays | Interactivity arc note | M1 decision, land with W2 batch |
+| W6 | **Component-model wire block** (`components` on the theme envelope: per-component, per-state, typed channel→role/enum/scalar bindings) + manifest `region`/`component` fields. Stage-1 substrate of roadmap area E; also the retirement vehicle for W4's v3 bridges | `docs/dev/component-model.md` | M1, area E Stage 1 — schedule EARLY (other E stages depend on it; W4 lands with or after it) |
 
 ## Additive — safe post-freeze, listed for planning
 

@@ -102,16 +102,31 @@ objects rather than palettes — and it exercises the machine contract.
       SPEC validation, not just themes (folds in roadmap area "error
       experience").
 
-### E. Ontology legibility (T1–T2–T3 engagement)
-The cascade is architecturally real but experientially muddy.
+### E. Ontology engagement — the component model
+Design: `docs/dev/component-model.md` (locked 2026-06-11). The cascade
+becomes OPERABLE through the three-verb grammar — re-tune a role /
+re-route a component channel / pin — with T3 components as sparse,
+editable channel→role records organized by table region. This is also
+the retirement path for the v3 theme-css bridges (W4) and the wire work
+is W6 (pre-freeze).
 **Exit criteria:**
-- [ ] Every editing surface signals which tier it touches and what the
-      edit travels with (theme / figure / view) — the persistence-tier
-      vocabulary made visible.
-- [ ] One documented mental-model page (user-facing) explains anchors →
-      roles → tokens with the studio's pedagogy as the deep dive.
-- [ ] `list_roles()` / `column_schema()` / `inspect_token()` form a
-      coherent, cross-referenced introspection story in docs.
+- [ ] Stage 1 substrate + wire: manifest `region`/`component` fields;
+      the `components` wire block validated at every ingress; both
+      resolve paths in lockstep; R verb; parity gates. (PRE-FREEZE.)
+- [ ] Stage 2 color channel: role chip-grid picker (swatch squares,
+      hover names); components page (region accordions, spec-line rows);
+      "set table borders → border-muted" and "title → accent-text" work
+      end-to-end in settings-advanced + studio.
+- [ ] Stage 3 text/border channels: family/size/weight/figures pickers
+      folding type_roles into the same surface; icon/indicator records.
+- [ ] Stage 4 states + decorative: hover/selected/paint-state records;
+      chip / gradient-strip / watermark; HC-as-state-overlay explored.
+- [ ] v3 theme-css bridges (#72–74 clusters) retired into the component
+      table (joint with W4).
+- [ ] Every editing surface names its verb + what the edit travels with
+      (theme / figure / view); one user-facing mental-model page; the
+      introspection story (`list_roles()` / `component_schema()` /
+      `inspect_token()`) cross-referenced in docs.
 
 ---
 
@@ -208,6 +223,12 @@ Clinical/regulatory audience makes this table stakes.
 - 2026-06-10 — Document stood up. Decision register populated (14
   entries). Same day: D1 decided (HC vertical killed, code deleted) and
   D14 decided (theme_blend + split static-knit cut from 1.0).
+- 2026-06-11 — Area E redesigned around the COMPONENT MODEL
+  (docs/dev/component-model.md): three-verb grammar, typed channel
+  archetypes (text/border/surface/icon/decorative), sparse states,
+  curated ~25-component regional roster; W6 added to the wire-freeze
+  inventory; D17 (role naming review) filed. Studio trace bug fixed
+  (AliasTable display-id leak — the user catch that started the thread).
 - 2026-06-10 — M0 substantially landed: js-ci.yaml (ts-suite +
   browser-gates jobs); wysiwyg gate mode (0 breaches, budgets
   register-annotated, D15 filed); all suites fully green (the "jsdom
