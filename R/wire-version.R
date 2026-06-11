@@ -55,4 +55,9 @@
 # manifest tokens; surviving clusters keep their embedded TextRole
 # fields). D18 executed: title-fg binds to role `text`. Bridge rows for
 # title-fg / numeric-figures / header trio all retired.
-WIRE_FORMAT_VERSION <- "1.8"
+#
+# v1.9 (2026-06-11): W4 — `theme.variants` and `theme.firstColumn`
+# REMOVED from the blob. first_column_style is a Tier-1 INPUT (rides
+# inputs); the four --tv-first-col-* tokens resolve via the new
+# first-col resolver group. Dead "tint" first-column enum dropped.
+WIRE_FORMAT_VERSION <- "1.9"

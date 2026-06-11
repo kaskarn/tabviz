@@ -174,6 +174,7 @@ theme_inputs_to_json <- function(inputs) {
     slot_style            = na_to_null(inputs@slot_style),
     border_preset         = na_to_null(inputs@border_preset),
     header_style          = na_to_null(inputs@header_style),
+    first_column_style    = na_to_null(inputs@first_column_style),
     type_base_size        = na_to_null(inputs@type_base_size),
     type_scale_ratio      = na_to_null(inputs@type_scale_ratio),
     type_weights          = if (length(type_weights) > 0L) type_weights else NULL,
@@ -377,8 +378,8 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `"none"`, `"hairline"`, `"ruled"`, `"frame"`, or `"boxed"`. `"frame"` is
 #'   the clean journal look (top+bottom table frame). Default resolver cluster
 #'   (≈ hairline) when unset.
-#' @param first_column_style First (label) column treatment: `"default"`,
-#'   `"tint"`, or `"bold"`. Default `"default"`.
+#' @param first_column_style First (label) column treatment: `"default"` or
+#'   `"bold"` (tinted + weighted leading column). A Tier-1 structural input.
 #' @param web_fonts Optional list of [web_font()] declarations to embed.
 #' @param name Theme name (string).
 #' @return A fully-resolved [WebTheme].
@@ -428,7 +429,9 @@ web_theme <- function(
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
   checkmate::assert_choice(header_style, c("light", "tint", "bold"), null.ok = TRUE)
-  checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
+  # "tint" dropped 2026-06-11: accepted but mapped to NOTHING (the cluster
+  # only ever had default/bold — dead enum value, honesty rule).
+  checkmate::assert_choice(first_column_style, c("default", "bold"))
   checkmate::assert_string(name)
   checkmate::assert_choice(shell_mode, c("flush", "raised", "float", "transparent"), null.ok = TRUE)
   checkmate::assert_choice(shell_texture, c("none", "ruled", "grid", "dotted", "grain"), null.ok = TRUE)
@@ -483,6 +486,7 @@ web_theme <- function(
     density_factor = density_factor,
     shell_mode    = shell_mode    %||% NA_character_,
     header_style       = header_style %||% NA_character_,
+    first_column_style = if (identical(first_column_style, "default")) NA_character_ else first_column_style,
     border_preset = border_preset %||% NA_character_,
     shell_texture = shell_texture %||% NA_character_,
     type_base_size   = type_base_size   %||% NA_real_,
@@ -525,7 +529,6 @@ web_theme <- function(
     interaction_defaults                = interaction_defaults %||% list()
   )
   theme <- resolve_from_inputs(inputs, name = name)
-  theme@first_column_style <- first_column_style
   if (!is.null(web_fonts)) theme@web_fonts <- web_fonts
   theme
 }
@@ -1552,21 +1555,18 @@ list_components <- function() {
 
 #' Set the first (label) column variant.
 #'
-#' `first_column_style` is a post-resolution variant selector (not a Tier-1
-#' input), so this assigns it directly without re-resolving. Mirrors the
-#' `first_column_style` argument of [web_theme()].
-#'
-#' @param theme A [WebTheme].
-#' @param first_column_style `"default"`, `"tint"`, or `"bold"`.
-#' @return The [WebTheme] with the first-column variant applied.
-#' @export
+#' `first_column_style` is a Tier-1 structural input (the header_style
+#' precedent) — the first-col resolver expands it into the four
+#' `--tv-first-col-*` tokens; this setter re-resolves like every input setter.
 set_first_column_style <- function(theme, first_column_style) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  checkmate::assert_choice(first_column_style, c("default", "tint", "bold"))
-  theme@first_column_style <- first_column_style
-  theme
+  checkmate::assert_choice(first_column_style, c("default", "bold"))
+  inputs <- theme@inputs
+  inputs@first_column_style <- if (identical(first_column_style, "default"))
+    NA_character_ else first_column_style
+  re_resolve(theme, inputs)
 }
 
 #' Set named S7 properties on an object from a `...` list. Internal helper for

@@ -27,7 +27,7 @@ means touching blob + TS type + S7 class + (de)serializers together.
 | `text` | 0 | **DELETED 2026-06-11** (wire 1.8) — all reads migrated to typography tokens |
 | `series` | ~20 | KEEP — series slots are deliberately separate (component-model ruling); the slot system rides the blob |
 | `spacing` | ~41 | KEEP for now — spacing pins are the live per-figure channel (`applySpacingPins`); retiring needs the spacing-system rework, NOT W4 |
-| `header`, `rowGroup`, `row`, `firstColumn`, `borders`, `layout` | live | the BRIDGE clusters (#72–74) — see below |
+| `header`, `rowGroup`, `row`, `borders`, `layout` | live | header/rowGroup/row: cluster fields still feed deserialize + some internals — slim AFTER the borders arc; `firstColumn` DELETED 2026-06-11; `borders` = the last bridge cluster |
 | `axis`, `plot` | ~15/~24 | live config (axis defaults, plot dims) — keep; not v3 paint |
 
 ## Bridge retirement (#72–74 → component table)
@@ -64,9 +64,13 @@ Order of attack (smallest blast radius first):
    (emphasis/muted/accent) are now component-model channels on `cell`;
    anchor + ramp-direct resolvers honor re-routes. `--tv-row-group-rule`
    still pending (rowGroup cluster).
-2. firstColumn cluster (4 tokens) → `first_column_style` becomes a
-   theme INPUT (the header_style/W3 precedent, including killing the
-   S7 mirror slot).
+2. ~~firstColumn cluster~~ **PORTED 2026-06-11** (wire 1.9):
+   `first_column_style` is a Tier-1 INPUT (validators both sides; rides
+   inputs on the wire); new `first-col` resolver group expands it into
+   the four tokens (recipes exact: bold = neutral[2]/ink/600/neutral[6]);
+   `theme.variants` + `theme.firstColumn` DELETED from the blob (+ S7
+   mirror slot + both R cluster classes + dead "tint" enum value).
+   first-column is a frame-region component now (bg/col/rule channels).
 3. container (2 tokens) → layout stays spec-side; tokens resolve from
    geometry inputs.
 4. borders cluster (9 tokens) → `border_preset` input already expands

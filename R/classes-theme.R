@@ -223,6 +223,9 @@ ThemeInputs <- new_class(
     # header_style is a TOP-LEVEL structural variant input (relocated out
     # of effects per the R2 decision); slot follows the wire key 1:1.
     header_style                   = new_property(class_character, default = NA_character_),
+    # First-column treatment ("default"/"bold") — was the last WebTheme
+    # variant slot; a Tier-1 structural input since W4 (2026-06-11).
+    first_column_style             = new_property(class_character, default = NA_character_),
     effects_title_style            = new_property(class_character, default = NA_character_),
     # D12 (wire-audit 1f): viz-mark identity — theme defaults for plot
     # marks (cascade: row markerStyle > effect shape > these > rotation).
@@ -329,6 +332,10 @@ ThemeInputs <- new_class(
     hs <- self@header_style
     if (!is.na(hs) && !hs %in% c("light", "tint", "bold")) {
       return("header_style must be 'light', 'tint', or 'bold'")
+    }
+    fcs <- self@first_column_style
+    if (!is.na(fcs) && !fcs %in% c("default", "bold")) {
+      return("first_column_style must be 'default' or 'bold'")
     }
     ss <- self@slot_style
     if (!is.na(ss) && !ss %in% c("fill_with_darker_stroke", "flat_fill", "outlined")) {
@@ -742,38 +749,6 @@ RowCluster <- new_class(
 
 # -- Tier 3: first-column cluster (variant token) ---------------------
 
-#' FirstColumnVariant: one variant of the first-column cluster.
-#' @usage NULL
-#' @export
-FirstColumnVariant <- new_class(
-  "FirstColumnVariant",
-  properties = list(
-    bg     = new_property(class_character, default = NA_character_),
-    fg     = new_property(class_character, default = NA_character_),
-    rule   = new_property(class_character, default = NA_character_),
-    weight = new_property(class_numeric,   default = NA_real_)
-  ),
-  validator = make_color_validator(c("bg", "fg", "rule"))
-)
-
-#' FirstColumnCluster: first-column bindings, default/bold variants.
-#'
-#' Excel-style emphasized first column when first_column_style = "bold".
-#' The default-variant property is named `default` (matching the
-#' `first_column_style` variant id). Renamed from `plain` in Sprint 1
-#' PR 3 — the previous mismatch (param "default", property `plain`)
-#' was a known footgun.
-#'
-#' @usage NULL
-#' @export
-FirstColumnCluster <- new_class(
-  "FirstColumnCluster",
-  properties = list(
-    default = new_property(FirstColumnVariant, default = quote(FirstColumnVariant())),
-    bold    = new_property(FirstColumnVariant, default = quote(FirstColumnVariant()))
-  )
-)
-
 
 # -- Tier 3: plot scaffolding -----------------------------------------
 
@@ -922,11 +897,6 @@ WebTheme <- new_class(
     # Note: rsvg/PNG export does not fetch webfonts -- the system stack
     # falls back. For high-fidelity export, install the font locally.
     web_fonts = new_property(class_list, default = list()),
-    # Variants — structural per-theme choices that live alongside the
-    # cascade. (header_style moved to ThemeInputs long ago; its WebTheme
-    # mirror slot was retired with the variants.headerStyle wire field —
-    # W3, 2026-06-11. first_column_style has no input twin yet: W4.)
-    first_column_style = new_property(class_character, default = "default"),
     inputs   = new_property(ThemeInputs,    default = quote(ThemeInputs())),
     # Tier-2 role pins ({ramp, grade} per role) — the studio spine's
     # drag-to-rebind state. Part of the portable theme artifact
@@ -958,7 +928,6 @@ WebTheme <- new_class(
     header       = new_property(HeaderCluster,     default = quote(HeaderCluster())),
     row_group    = new_property(RowGroupCluster,   default = quote(RowGroupCluster())),
     row          = new_property(RowCluster,        default = quote(RowCluster())),
-    first_column = new_property(FirstColumnCluster, default = quote(FirstColumnCluster())),
     plot         = new_property(PlotScaffold,      default = quote(PlotScaffold())),
     axis         = new_property(AxisConfig,        default = quote(AxisConfig())),
     layout       = new_property(Layout,            default = quote(Layout())),

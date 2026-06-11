@@ -81,10 +81,12 @@ test_that("AccentRoles defaults are NA", {
   for (p in S7::prop_names(a)) expect_true(is.na(S7::prop(a, p)))
 })
 
-test_that("FirstColumnCluster has default and bold variants", {
-  fc <- FirstColumnCluster()
-  expect_true(inherits(fc@default, "tabviz::FirstColumnVariant"))
-  expect_true(inherits(fc@bold, "tabviz::FirstColumnVariant"))
+test_that("first_column_style is a Tier-1 input expanding to the first-col tokens", {
+  v <- theme_css_vars(web_theme(first_column_style = "bold"))
+  expect_false(identical(v[["--tv-first-col-bg"]], "transparent"))
+  expect_identical(unname(v[["--tv-first-col-weight"]]), "600")
+  v0 <- theme_css_vars(web_theme())
+  expect_identical(unname(v0[["--tv-first-col-bg"]]), "transparent")
 })
 
 test_that("RowCluster has all states + banding", {

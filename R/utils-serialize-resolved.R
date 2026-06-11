@@ -34,11 +34,8 @@ serialize_theme <- function(theme) {
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- theme@name
 
-  # Variants — headerStyle RETIRED from the wire (W3, 2026-06-11): the
-  # header_style INPUT is the one vocabulary and rides inputs_json.
-  # firstColumnStyle remains (no input twin yet — W4 candidate).
-  if (is.null(blob$variants)) blob$variants <- list()
-  blob$variants$firstColumnStyle <- theme@first_column_style
+  # `variants` fully retired (W3 + W4): headerStyle + firstColumnStyle
+  # are theme INPUTS now; density resolves from inputs.density.
 
   if (length(theme@web_fonts) > 0L) {
     blob$webFonts <- lapply(theme@web_fonts, function(wf) list(family = wf$family, url = wf$url))

@@ -1409,7 +1409,6 @@ export interface WidgetInstance {
 // migration to `WebTheme` is tracked under Phase 0c-C5 / Phase 1.x.
 // See `./theme-resolved.ts` for the full v2 type tree.
 export type {
-  ThemeVariants,
   AccentRoles,
   StatusColors,
   SlotRole,
@@ -1423,7 +1422,6 @@ export type {
   RowCluster,
   RowState,
   RowSemantic,
-  FirstColumnCluster,
   FirstColumnVariant,
   PlotScaffold,
   Layout,

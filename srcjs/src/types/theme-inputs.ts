@@ -129,6 +129,10 @@ export interface ThemeInputs {
    *  header cluster paints, like shell_mode picks surfaces). One
    *  vocabulary everywhere: light / tint / bold. */
   header_style?: "light" | "tint" | "bold";
+  /** First-column (row-identifier) treatment: "bold" tints + weights the
+   *  leading column. Was the last `variants` slot (W4, 2026-06-11) —
+   *  now a Tier-1 structural input like header_style. */
+  first_column_style?: "default" | "bold";
 
   shell_mode?: "flush" | "raised" | "float" | "transparent";
 

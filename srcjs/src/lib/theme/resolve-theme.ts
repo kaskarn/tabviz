@@ -541,6 +541,23 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
     return ctx.roles[reroute ?? t.source.role];
   }],
   ["anchor", resolveAnchorGroup],
+  // First-column treatment (W4 port) keyed by inputs.first_column_style.
+  // Recipes are the v3 cluster's exactly: bold = {bg neutral[2],
+  // fg ink anchor, weight 600, rule neutral[6]}; default = inert
+  // (transparent/inherit — .primary-cell falls through to row styling).
+  ["first-col", (t, ctx) => {
+    const reroute = componentRoleOverride(t, ctx.components);
+    if (reroute) return ctx.roles[reroute];
+    const bold = ctx.inputs.first_column_style === "bold";
+    switch (t.cssVar) {
+      case "--tv-first-col-bg":     return bold ? rampStep(ctx.ramps.neutral, 2) : "transparent";
+      case "--tv-first-col-fg":     return bold ? pickAnchorHex("ink", ctx.inputs) ?? "inherit" : "inherit";
+      case "--tv-first-col-weight": return bold ? "600" : "inherit";
+      case "--tv-first-col-rule":   return bold ? rampStep(ctx.ramps.neutral, 6) : "transparent";
+    }
+    return tokenResolveBug(t.cssVar, t.source.tier,
+      "resolverGroup=first-col but cssVar is not a first-col token");
+  }],
   // Active header trio (W4 port): picks the SAME role recipes the
   // per-variant tokens use, keyed by inputs.header_style — one source
   // of truth (the v3 bridge trio could disagree with the variant

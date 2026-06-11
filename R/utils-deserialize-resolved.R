@@ -84,16 +84,6 @@ deserialize_header_variant <- function(x) {
   )
 }
 
-deserialize_first_column_variant <- function(x) {
-  if (is.null(x)) return(FirstColumnVariant())
-  FirstColumnVariant(
-    bg     = .coerce_chr(x$bg),
-    fg     = .coerce_chr(x$fg),
-    rule   = .coerce_chr(x$rule),
-    weight = .coerce_num(x$weight)
-  )
-}
-
 deserialize_row_group_tier <- function(x) {
   if (is.null(x)) return(RowGroupTier())
   RowGroupTier(
@@ -221,14 +211,6 @@ deserialize_resolved_theme <- function(x) {
     border_width        = if (is.null(r$borderWidth)) 1 else as.numeric(r$borderWidth)
   )
 
-  fc <- x$firstColumn %||% list()
-  # Accept legacy `plain` key on input for one minor version after the
-  # Sprint 1 PR 3 rename.
-  first_column <- FirstColumnCluster(
-    default = deserialize_first_column_variant(fc$default %||% fc$plain),
-    bold    = deserialize_first_column_variant(fc$bold)
-  )
-
   p <- x$plot %||% list()
   plot <- PlotScaffold(
     bg               = .coerce_chr(p$bg),
@@ -296,7 +278,6 @@ deserialize_resolved_theme <- function(x) {
     header          = header,
     row_group       = row_group,
     row             = row,
-    first_column    = first_column,
     plot            = plot,
     axis            = axis,
     layout          = layout,

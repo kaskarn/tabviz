@@ -50,18 +50,10 @@ export function computeV3BridgeVars(
   const v4Border     = cv["--tv-border"] ?? "#e2e8f0";
   const v4Accent     = cv["--tv-accent"] ?? "#2563eb";
 
-  const firstColBold = theme.variants?.firstColumnStyle === "bold";
-  const fc = theme.firstColumn as (typeof theme.firstColumn & { plain?: typeof theme.firstColumn.default }) | undefined;
-  const firstColDefault = fc?.default ?? fc?.plain;
-  const firstColVariant = firstColBold ? fc?.bold : firstColDefault;
-
   const dbl = (style: string | undefined, thickness: number, floor = 0): number =>
     style === "double" ? Math.max(3, thickness * 3) : Math.max(thickness, floor);
 
   const out: Record<string, string> = {
-    "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",
-    "--tv-first-col-fg":       firstColVariant?.fg ?? "inherit",
-    "--tv-first-col-weight":   String(firstColVariant?.weight ?? "inherit"),
     "--tv-row-border-width":   `${dbl(theme.borders.minor.style, theme.borders.minor.thickness)}px`,
     "--tv-header-border-width": `${dbl(theme.borders.major.style, theme.borders.major.thickness, 2)}px`,
     "--tv-group-border-width": `${dbl(theme.borders.major.style, theme.borders.major.thickness)}px`,
@@ -80,11 +72,6 @@ export function computeV3BridgeVars(
     "--tv-table-border-width": `${theme.borders.table.style === "double" ? Math.max(3, theme.borders.table.thickness * 3) : theme.borders.table.thickness}px`,
     "--tv-table-border-style": theme.borders.table.thickness > 0 ? (theme.borders.table.style === "double" ? "double" : "solid") : "none",
   };
-  // "transparent" when the variant has no rule — the consumer's
-  // documented default (TabvizPlot .primary-cell: transparent means
-  // "don't override .grid-cell's border"). Emitting it always also
-  // clears the manifest's <v3-bridge> sentinel for this token.
-  out["--tv-first-col-rule"] = firstColVariant?.rule ?? "transparent";
   // Component-model guard (W6): a bridged token with an ACTIVE re-route
   // must keep its v4-resolved value — the bridge would otherwise stamp the
   // v3 config back over the user's `components` edit and the re-route

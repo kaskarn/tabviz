@@ -115,15 +115,6 @@ export interface RowGroupTier {
 // Tier 1 — customer-facing inputs
 // ────────────────────────────────────────────────────────────────────
 
-export interface ThemeVariants {
-  // density + headerStyle RETIRED from the wire (W3/W4, 2026-06-11):
-  // both were pure mirrors of theme inputs with zero readers.
-  // firstColumnStyle is the LAST variant — it retires with the
-  // firstColumn bridge cluster.
-  /** "default" | "bold" */
-  firstColumnStyle: "default" | "bold";
-}
-
 // ────────────────────────────────────────────────────────────────────
 // Tier 2 — chrome roles
 // ────────────────────────────────────────────────────────────────────
@@ -221,16 +212,6 @@ export interface RowCluster {
   banding: Banding;
   selectedEdgeWidth: number;
   borderWidth: number;
-}
-
-export interface FirstColumnCluster {
-  /**
-   * Default (un-emphasized) first-column variant. Renamed from `plain`
-   * to `default` in Sprint 1 PR 3 so the wire key matches the
-   * `firstColumnStyle: "default" | "bold"` variant id.
-   */
-  default: FirstColumnVariant;
-  bold: FirstColumnVariant;
 }
 
 export interface PlotScaffold {
@@ -344,7 +325,8 @@ export interface WebTheme {
   webFonts: WebFont[];
   // lightDarkPair DELETED (W4 arc 1, 2026-06-11): designed-but-unconsumed
   // pairing convention — no preset declared it, nothing read it.
-  variants: ThemeVariants;
+  // `variants` DELETED (W3+W4, 2026-06-11): headerStyle/density were
+  // input mirrors; firstColumnStyle is the `first_column_style` input.
   /**
    * The Tier-1 authoring inputs that produced this theme (anchors,
    * polarity, mode, density, fonts, type_*, curves, geometry, effects,
@@ -406,7 +388,6 @@ export interface WebTheme {
   header: HeaderCluster;
   rowGroup: RowGroupCluster;
   row: RowCluster;
-  firstColumn: FirstColumnCluster;
   plot: PlotScaffold;
   /**
    * Tag-driven node finalization rules. Renderers tag RenderNodes

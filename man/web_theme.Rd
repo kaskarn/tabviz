@@ -161,8 +161,8 @@ input): \code{"light"}, \code{"tint"}, or
 the clean journal look (top+bottom table frame). Default resolver cluster
 (≈ hairline) when unset.}
 
-\item{first_column_style}{First (label) column treatment: \code{"default"},
-\code{"tint"}, or \code{"bold"}. Default \code{"default"}.}
+\item{first_column_style}{First (label) column treatment: \code{"default"} or
+\code{"bold"} (tinted + weighted leading column). A Tier-1 structural input.}
 
 \item{web_fonts}{Optional list of \code{\link[=web_font]{web_font()}} declarations to embed.}
 

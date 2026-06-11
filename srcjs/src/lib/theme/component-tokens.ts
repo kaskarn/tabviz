@@ -78,6 +78,7 @@ export type ResolverGroup =
   | "anchor"      // pickAnchorHex + status fallback
   | "ramp-direct" // unwalked ramp[grade] reads (W4 recipe ports)
   | "header-active" // active header trio by inputs.header_style (W4)
+  | "first-col"   // first-column treatment by inputs.first_column_style (W4)
   | "density"     // density-table px lookup (spacing-px / border-width)
   | "geometry"    // inputs.geometry radius/border-width projection
   | "effects"     // glow / shell-gradient / emphasis-shadow from ramps
@@ -1281,35 +1282,38 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // theme.layout.{containerBorder,containerBorderRadius}.
   {
     cssVar: "--tv-first-col-bg",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "first-col",
     kind: "paint-fill",
-    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].bg" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "First-column background under the active variant.",
+    source: { tier: "computed", note: "first_column_style: bold = neutral[2], default = transparent" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "frame", component: "first-column", channel: "bg" },
+    description: "Leading (row-identifier) column background",
   },
   {
     cssVar: "--tv-first-col-fg",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "first-col",
     kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].fg" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "First-column foreground under the active variant.",
+    source: { tier: "computed", note: "first_column_style: bold = ink anchor, default = inherit" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "frame", component: "first-column", channel: "col" },
+    description: "Leading column text color",
   },
   {
     cssVar: "--tv-first-col-weight",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "first-col",
     kind: "font-weight",
-    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].weight" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "First-column font weight under the active variant.",
+    source: { tier: "computed", note: "first_column_style: bold = 600, default = inherit" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Leading column font weight",
   },
   {
     cssVar: "--tv-first-col-rule",
-    resolverGroup: "v3-bridge",
-    kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] firstColumn[variants.firstColumnStyle].rule (optional)" },
-    consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "First-column right-edge rule (when defined by the variant).",
+    resolverGroup: "first-col",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "first_column_style: bold = neutral[6], default = transparent" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    binding: { region: "frame", component: "first-column", channel: "rule" },
+    description: "Leading column right-edge rule",
   },
   {
     cssVar: "--tv-container-border",

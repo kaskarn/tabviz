@@ -6,16 +6,8 @@
 \usage{
 set_first_column_style(theme, first_column_style)
 }
-\arguments{
-\item{theme}{A \link{WebTheme}.}
-
-\item{first_column_style}{\code{"default"}, \code{"tint"}, or \code{"bold"}.}
-}
-\value{
-The \link{WebTheme} with the first-column variant applied.
-}
 \description{
-\code{first_column_style} is a post-resolution variant selector (not a Tier-1
-input), so this assigns it directly without re-resolving. Mirrors the
-\code{first_column_style} argument of \code{\link[=web_theme]{web_theme()}}.
+\code{first_column_style} is a Tier-1 structural input (the header_style
+precedent) — the first-col resolver expands it into the four
+\verb{--tv-first-col-*} tokens; this setter re-resolves like every input setter.
 }

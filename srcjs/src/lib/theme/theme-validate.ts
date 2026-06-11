@@ -209,6 +209,7 @@ const ELEVATION_VALUES = ["none", "low", "medium", "high"] as const;
 const CAPTION_STYLE_VALUES = ["none", "chip", "stripe", "both"] as const;
 const GLASS_VALUES = ["none", "frosted", "aurora"] as const;
 const HEADER_STYLE_VALUES = ["light", "tint", "bold"] as const;
+const FIRST_COLUMN_STYLE_VALUES = ["default", "bold"] as const;
 const BORDER_PRESET_VALUES = ["none", "hairline", "ruled", "frame", "boxed"] as const;
 const TITLE_STYLE_VALUES = ["normal", "bar", "underline"] as const;
 const POINT_SHAPE_VALUES = ["circle", "square", "diamond", "triangle"] as const;
@@ -295,6 +296,7 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
   checkEnum(inputs.effects?.caption_style, CAPTION_STYLE_VALUES, "effects.caption_style", p);
   checkEnum(inputs.effects?.glass, GLASS_VALUES, "effects.glass", p);
   checkEnum(inputs.header_style, HEADER_STYLE_VALUES, "header_style", p);
+  checkEnum(inputs.first_column_style, FIRST_COLUMN_STYLE_VALUES, "first_column_style", p);
   checkEnum(inputs.border_preset, BORDER_PRESET_VALUES, "border_preset", p);
   checkEnum(inputs.effects?.title_style, TITLE_STYLE_VALUES, "effects.title_style", p);
   checkEnum(inputs.marks?.point_shape, POINT_SHAPE_VALUES, "marks.point_shape", p);

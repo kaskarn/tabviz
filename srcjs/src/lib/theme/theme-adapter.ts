@@ -32,9 +32,9 @@ import type {
   WebTheme, AccentRoles,
   StatusColors, SlotRole, TextRole, TextRoles,
   SpacingTokens, HeaderCluster, RowGroupCluster,
-  RowCluster, FirstColumnCluster, PlotScaffold,
+  RowCluster, PlotScaffold,
   AxisConfig, Layout, ThemeBorders,
-  ThemeVariants,
+ 
 } from "../../types/theme-resolved";
 
 // Density px scales live in density-presets.ts as a single source of
@@ -194,13 +194,9 @@ export function buildTheme(
         rampStep(ramps.brand, 5),
       ];
 
-  const variants: ThemeVariants = {
-    // density retired from the wire (W4, 2026-06-11): zero readers —
-    // spacing resolves from inputs.density via the density resolver.
-    // headerStyle retired at W3. firstColumnStyle is the LAST variant;
-    // it goes when the firstColumn bridge cluster migrates.
-    firstColumnStyle: "default",
-  };
+  // `variants` fully retired (W3 + W4, 2026-06-11): headerStyle/density
+  // were input mirrors; firstColumnStyle is now the first_column_style
+  // INPUT (the first-col resolver group reads it).
 
   const accentRoles: AccentRoles = {
     default: t.accent,
@@ -340,11 +336,6 @@ export function buildTheme(
     borderWidth: 1,
   };
 
-  const firstColumn: FirstColumnCluster = {
-    default: { bg: null, fg: null, rule: null, weight: null },
-    bold:    { bg: t.paper_alt, fg: t.ink, rule: t.rule_subtle, weight: 600 },
-  };
-
   const plot: PlotScaffold = {
     bg: null,
     axisLine: t.rule_strong,
@@ -390,7 +381,6 @@ export function buildTheme(
     schemaVersion: 4,
     name,
     webFonts: [],
-    variants: variants,
     authoringInputs: inputs,
     roleOverrides,
     pins,
@@ -405,7 +395,6 @@ export function buildTheme(
     header,
     rowGroup,
     row,
-    firstColumn,
     plot,
   };
 

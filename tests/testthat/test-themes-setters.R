@@ -6,7 +6,7 @@
 test_that("set_header_style / set_first_column_style assign the variant", {
   t <- web_theme_nejm()
   expect_equal(set_header_style(t, "bold")@inputs@header_style, "bold")
-  expect_equal(set_first_column_style(t, "tint")@first_column_style, "tint")
+  expect_equal(set_first_column_style(t, "bold")@inputs@first_column_style, "bold")
   expect_error(set_header_style(t, "nope"))
 })
 
