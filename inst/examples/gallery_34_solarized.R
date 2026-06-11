@@ -1,7 +1,7 @@
 # Gallery Example 34: Solarized (light)
 # Ethan Schoonover's Solarized palette in light variant — base3 cream
 # surfaces, base02 slate text, yellow primary, magenta accent.
-# Pairs with web_theme_aurora() via the light_dark_pair field.
+# Pairs with web_theme_aurora() (the light/dark pairing field was retired in W4).
 
 library(tabviz)
 

@@ -1,7 +1,7 @@
 # Gallery Example 35: Solarized Dark
 # Solarized in dark variant — base03 deep-teal surfaces, base0 slate text,
 # same yellow primary + magenta accent as the light pair. Sibling of
-# web_theme_ledger() via the light_dark_pair field.
+# web_theme_ledger() (the light/dark pairing field was retired in W4).
 
 library(tabviz)
 
