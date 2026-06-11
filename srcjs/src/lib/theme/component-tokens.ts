@@ -548,7 +548,11 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     cssVar: "--tv-text-title-fg",
     resolverGroup: "role",
     kind: "paint-color",
-    source: { tier: "role", role: "brand-text" },
+    // D18 (decided 2026-06-11): bound to `text`, not brand-text. The v3
+    // bridge had been masking this token with the raw ink ANCHOR; the
+    // nearest ROLE wins (one vocabulary). Chromatic titles are one
+    // re-route away: set_component("title", col = "brand-text").
+    source: { tier: "role", role: "text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
     binding: { region: "captions", component: "title", channel: "col" },
     description: "Plot title text color",
@@ -855,6 +859,15 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     source: { tier: "computed", note: "typography role:header (body weight)" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
     description: "Column-header font weight (body weight)",
+  },
+
+  {
+    cssVar: "--tv-text-numeric-figures",
+    kind: "font-figures",
+    resolverGroup: "typography",
+    source: { tier: "computed", note: "typography role:numeric figures (tabular — no authoring surface yet; Stage-3 figures channel)" },
+    consumedBy: ["svelte/TabvizPlot.svelte"],
+    description: "Numeric-cell font-variant-numeric (tabular figures)",
   },
 
   // ── Accent (engagement layer) ─────────────────────────────────────────────
@@ -1560,7 +1573,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-summary-border",
   "--tv-summary-fill",
   // The table-border style/width vars are manifest entries (#73).
-  "--tv-text-numeric-figures",
   "--tv-viz-margin",
   "--tv-zoom",
 ]);

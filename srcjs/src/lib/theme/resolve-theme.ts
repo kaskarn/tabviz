@@ -702,6 +702,11 @@ function resolveTypographyComputed(
     }
   }
   if (!TYPOGRAPHY_ROLE_NAMES.has(role)) return null;
+  // `figures` (font-variant-numeric): no authoring surface yet — every
+  // role resolves tabular, so emit the constant truthfully (W4: replaces
+  // the v3-bridge row that read a blob field nothing could set). The
+  // component model's Stage-3 figures channel turns this recipe-driven.
+  if (prop === "figures") return "tnum";
   if (!TYPOGRAPHY_PROPS.includes(prop as (typeof TYPOGRAPHY_PROPS)[number])) return null;
   const typo = resolveTypographyInputs(inputs);
   // Tier-2 type-role overlay (Wave 3): inputs.type_roles rebinds any subset

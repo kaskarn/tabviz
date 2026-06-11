@@ -77,12 +77,13 @@ Order of attack (smallest blast radius first):
   runtimes read the same token, killing the v3-string-vs-v4-token
   divergence mode by construction; full-cssVars snapshots regenerated,
   diff = additions only; wysiwyg gate 0 breaches). Tick-italic dead
-  fallback dropped. REMAINING for text-cluster deletion: the bridge
-  title-fg row → REGISTER D18 (filed 2026-06-11: manifest says
-  brand-text = chromatic titles; shipped look is a deeper-than-text
-  ink; default = bind to `text`; decide by M2 area G), the numeric-figures bridge row (figures is a
-  designed knob — find its authoring source before constifying), the
-  export validation check, then the R S7 text slot + TextRoles type.
+  fallback dropped. D18 DECIDED + EXECUTED same day
+  (title → role `text`; bridge row gone). numeric-figures promoted to a
+  real typography emission (truthful constant "tnum" — NO authoring
+  surface exists; Stage-3 figures channel makes it recipe-driven);
+  bridge row gone. REMAINING for text-cluster deletion: the export
+  validation check at svg-generator, then the R S7 text slot +
+  TextRoles type + adapter text construction.
 - Arc 3+: bridge clusters in the order above; finish with
   accent/status passthrough migration.
 - DONE when: `computeV3BridgeVars` is deleted, `v3-bridge` resolverGroup

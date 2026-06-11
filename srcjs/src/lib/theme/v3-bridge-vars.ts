@@ -45,7 +45,6 @@ export function computeV3BridgeVars(
   const out: Record<string, string> = {
     "--tv-header-rule":        headerVariant.rule ?? v4Border,
     "--tv-row-group-rule":     theme.rowGroup?.L1?.rule ?? v4Border,
-    "--tv-text-title-fg":      theme.text.title?.fg ?? v4Text,
     "--tv-axis-label-fg":      theme.plot?.axisLabel?.fg ?? v4TextSubtle,
     "--tv-axis-tick-fg":       theme.plot?.tickLabel?.fg ?? v4TextSubtle,
     "--tv-header-bg":          headerVariant.bg ?? "transparent",
@@ -62,7 +61,6 @@ export function computeV3BridgeVars(
     // divergence).
     "--tv-semantic-emphasis-fg": theme.row.emphasis?.fg ?? v4Text,
     "--tv-semantic-emphasis-bg": theme.row.emphasis?.bg ?? "transparent",
-    "--tv-text-numeric-figures": theme.text.numeric?.figures === "proportional" ? "normal" : "tnum",
     "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",
     "--tv-first-col-fg":       firstColVariant?.fg ?? "inherit",
     "--tv-first-col-weight":   String(firstColVariant?.weight ?? "inherit"),
