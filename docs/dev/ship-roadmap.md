@@ -250,14 +250,15 @@ is a liveness audit across ALL surfaces.
       sentence.
 - [x] wysiwyg-diff budgets green across the FULL matrix in CI (area A
       wired it 2026-06-10; 9-preset coverage 2026-06-11).
-- [ ] The remaining known divergences either fixed or moved to the
-      exception list via register decisions: estimator column widths
-      (D8), group-header banding scope + chevron indent (D10),
-      shell-strip/chip/elevation in export, pagination contract (D7).
-      PROGRESS 2026-06-11: D7 documented; D8 accepted+documented; D10
-      VERIFIED ALIGNED by a new permanent groupLabel.x matrix metric
-      (measurement preempted implementation); D15 carries its
-      instrumented-fix prescription.
+- [x] All known divergences decided/fixed (2026-06-11): D7 documented;
+      D8 accepted+documented (budget annotations name it); D10 verified
+      aligned (permanent groupLabel.x metric); D15 RESOLVED (closed-form
+      caption model); shell-strip/chip/elevation are the declared
+      exception list (verified visually in the aurora battery pair).
+      LATE STRENGTHENING: pvalue+bar columns joined the matrix fixture
+      (the V8 boot-split bug lived precisely in the fixture's blind
+      spot) — first run caught the nejm pill inflating compact rows by
+      2px (fixed via margin-block neutralization, not a budget).
 - [x] Battery complete (2026-06-11): the WYSIWYG matrix now covers ALL
       9 presets (15 cases) — every case produces a DOM-vs-export PNG
       pair (/tmp/wysiwyg) and passes the budgeted gate immediately at

@@ -107,9 +107,13 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Significant-value pill (rgc signature) — a soft positive lozenge. */
+  /* Significant-value pill (rgc signature) — a soft positive lozenge.
+     margin-block cancels the vertical padding so the pill NEVER grows
+     the row's line box (it inflated compact rows by 2px, which the SVG
+     export's row estimator can't see — WYSIWYG gate catch 2026-06-11). */
   .cell-pvalue.pill {
     padding: 1px 7px;
+    margin-block: -1px;
     border-radius: 999px;
     background: color-mix(in srgb, var(--tv-status-positive, #2f9e6b) 15%, transparent);
     color: color-mix(in srgb, var(--tv-status-positive, #2f9e6b) 78%, var(--tv-text, #15140e));

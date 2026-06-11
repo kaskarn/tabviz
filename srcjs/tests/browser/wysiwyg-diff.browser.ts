@@ -45,7 +45,7 @@ import { buildTheme } from "../../src/lib/theme/theme-adapter";
 import { PRESETS } from "../../src/lib/theme/theme-presets-inputs";
 import type { ThemeInputs } from "../../src/types/theme-inputs";
 import { tabviz } from "../../src/authoring/tabviz";
-import { colText, colNumeric } from "../../src/authoring/columns";
+import { colText, colNumeric, colPvalue, colBar } from "../../src/authoring/columns";
 import { vizForest } from "../../src/authoring/viz";
 import { generateSVG, computeLayoutMetrics, type LayoutMetrics } from "../../src/export/svg-generator";
 import { bootBuiltinBehaviors } from "../../src/schema/init";
@@ -86,7 +86,7 @@ const GATE_EXCEPTIONS: Array<{ pattern: RegExp; maxAbs: number; why: string }> =
   // flows are protected by systemfonts injection / live widths).
   { pattern: /^geometry :: column\[/, maxAbs: 65, why: "D8 estimator column widths" },
   { pattern: /^geometry :: content\.width/, maxAbs: 65, why: "D8 estimator widths (sum)" },
-  { pattern: /^chrome :: artifact\.width/, maxAbs: 10, why: "D8 flow-through + scalable rounding" },
+  { pattern: /^chrome :: artifact\.width/, maxAbs: 22, why: "D8 flow-through + scalable rounding (10→22 on 2026-06-11: pvalue+bar columns joined the fixture — same accepted D8 estimator class, larger aggregate at density_factor 1.3; per-column Δ stays within the D8 budget)" },
   // Vertical residuals: DOM measure-then-commit grows wrapped/edge rows the
   // estimator can't see; bounded small.
   { pattern: /^(geometry :: figure\.height|chrome :: artifact\.height)/, maxAbs: 11, why: "measure-loop growth residual (10→11 on 2026-06-11: D15's caption fix UNMASKED ~0.7px previously hidden inside the inflated caption reserve on textured themes — register D15 note; the residual itself is the measure-loop's, tracked there)" },
@@ -172,12 +172,12 @@ const T = {
 };
 
 const ROWS = [
-  { study: "Anderson 2020", drug: "Metoprolol", cohort: "Cohort Alpha", n: 245, hr: 0.72, lo: 0.58, hi: 0.89 },
-  { study: "Baker 2021",    drug: "Lisinopril", cohort: "Cohort Alpha", n: 189, hr: 0.81, lo: 0.65, hi: 1.01 },
-  { study: "Chen 2019",     drug: "Amlodipine", cohort: "Cohort Alpha", n: 312, hr: 0.66, lo: 0.50, hi: 0.86 },
-  { study: "Davis 2022",    drug: "Valsartan",  cohort: "Cohort Beta",  n: 278, hr: 0.74, lo: 0.59, hi: 0.93 },
-  { study: "Evans 2023",    drug: "Carvedilol", cohort: "Cohort Beta",  n: 478, hr: 0.91, lo: 0.78, hi: 1.06 },
-  { study: "Foster 2024",   drug: "Ramipril",   cohort: "Cohort Beta",  n: 156, hr: 0.65, lo: 0.49, hi: 0.85 },
+  { study: "Anderson 2020", drug: "Metoprolol", cohort: "Cohort Alpha", n: 245, hr: 0.72, lo: 0.58, hi: 0.89, p: 0.004, share: 0.82 },
+  { study: "Baker 2021",    drug: "Lisinopril", cohort: "Cohort Alpha", n: 189, hr: 0.81, lo: 0.65, hi: 1.01, p: 0.21, share: 0.41 },
+  { study: "Chen 2019",     drug: "Amlodipine", cohort: "Cohort Alpha", n: 312, hr: 0.66, lo: 0.50, hi: 0.86, p: 0.012, share: 0.63 },
+  { study: "Davis 2022",    drug: "Valsartan",  cohort: "Cohort Beta",  n: 278, hr: 0.74, lo: 0.59, hi: 0.93, p: 0.03, share: 0.95 },
+  { study: "Evans 2023",    drug: "Carvedilol", cohort: "Cohort Beta",  n: 478, hr: 0.91, lo: 0.78, hi: 1.06, p: 0.18, share: 0.27 },
+  { study: "Foster 2024",   drug: "Ramipril",   cohort: "Cohort Beta",  n: 156, hr: 0.65, lo: 0.49, hi: 0.85, p: 0.002, share: 0.7 },
 ];
 
 function buildSpec(c: MatrixCase) {
@@ -192,6 +192,11 @@ function buildSpec(c: MatrixCase) {
       colText({ field: "drug", header: T.headerDrug }),
       colNumeric({ field: "n", header: T.headerN, decimals: 0 }),
       vizForest({ point: "hr", lower: "lo", upper: "hi", axisLabel: "Hazard ratio", header: T.headerForest }),
+      // pvalue + bar joined 2026-06-11: the V8 boot-split bug (six types
+      // silently exporting as plain text) lived for months because the
+      // matrix fixture exercised NONE of them. These two cover the class.
+      colPvalue({ field: "p", header: "P" }),
+      colBar({ field: "share", header: "Share" }),
     ],
     theme: buildTheme(inputs, c.preset),
     title: T.title,
