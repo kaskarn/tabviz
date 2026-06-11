@@ -4,7 +4,7 @@
 forest plots and rich interactive tables otherwise consumed via the
 [`tabviz` R package](https://github.com/kaskarn/tabviz).
 
-> **Status: 0.6.0 — pre-1.0, wire FROZEN at 1.10** (additive minors
+> **Status: 0.7.0 — pre-1.0, wire FROZEN at 1.10** (additive minors
 > only from here). Authoring API (function builders mirroring R's
 > `tabviz()` / `col_*()` / `viz_*()`), nine curated themes, the
 > component-model editing verbs, and a published JSON Schema

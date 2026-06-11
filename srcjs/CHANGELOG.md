@@ -4,7 +4,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
-## Unreleased (0.7.0) — the ship-readiness sweep
+## 0.7.0 — 2026-06-11 — the ship-readiness sweep
 
 ### Wire FROZEN at 1.10
 
