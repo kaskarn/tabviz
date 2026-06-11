@@ -98,6 +98,20 @@ describe("getCssVars — density + pin behavior", () => {
     expect(getCssVars(theme)["--tv-spacing-row-group-padding"]).toBe("40px");
   });
 
+  it("spacing is PER-THEME — mutating one theme never leaks to another", () => {
+    // js-ci's maiden run caught this: scaleSpacing's identity path
+    // returned the module-level DENSITY_SPACING entry by reference, so
+    // the mutation test above poisoned every comfortable theme built in
+    // the process (Linux file order surfaced it; macOS order hid it).
+    const a = buildTheme({ ...NEJM, density: "comfortable" }, "a");
+    const b = buildTheme({ ...NEJM, density: "comfortable" }, "b");
+    expect(a.spacing).not.toBe(b.spacing);
+    a.spacing.rowGroupPadding = 99;
+    expect(b.spacing.rowGroupPadding).toBe(12);
+    const c = buildTheme({ ...NEJM, density: "comfortable" }, "c");
+    expect(c.spacing.rowGroupPadding).toBe(12);
+  });
+
   it("applies density_factor scaling", () => {
     const theme = buildTheme({ ...NEJM, density: "comfortable", density_factor: 1.5 }, "t");
     // comfortable rowHeight 24 × 1.5 = 36

@@ -52,7 +52,14 @@ const DENSITY_SPACING: Record<DensityPreset, SpacingTokens> = {
  *  fine dial on top of the named profile). Clamped to [0.5, 2]; rounded to whole
  *  px to keep crisp geometry. `undefined`/1 is an identity passthrough. */
 function scaleSpacing(s: SpacingTokens, factor: number | undefined): SpacingTokens {
-  if (factor == null || factor === 1) return s;
+  // ALWAYS copy — even on the identity path. `s` is the module-level
+  // DENSITY_SPACING entry; returning it by reference made every
+  // factor-1 theme of a density SHARE one spacing object, so a single
+  // mutated theme.spacing.X (the supported v3-compat pin pattern)
+  // silently restyled every other theme in the process. Found by
+  // js-ci's maiden run: Linux test-file order ran the mutation test
+  // before the layout snapshots; macOS order hid it for months.
+  if (factor == null || factor === 1) return { ...s };
   const f = Math.max(0.5, Math.min(2, factor));
   const m = (v: number): number => Math.round(v * f);
   return {
