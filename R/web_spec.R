@@ -190,6 +190,12 @@
 #' }
 #'
 #' @export
+#'   When `NULL` (the default), columns are INFERRED from the data:
+#'   numbers become [col_numeric()] (counts get zero decimals), 0–1
+#'   proportions with telling names become [col_percent()], p-value-named
+#'   columns in range become [col_pvalue()], dates become [col_date()],
+#'   and everything else renders as text. A once-per-session note says
+#'   so; pass `columns` to take control.
 tabviz <- function(
     data,
     label = NULL,
@@ -481,9 +487,15 @@ tabviz <- function(
     }
   }
 
-  # Process columns - ensure they're ColumnSpec or ColumnGroup objects
+  # Process columns - ensure they're ColumnSpec or ColumnGroup objects.
+  # NULL columns => zero-config inference (area I): infer col_* choices
+  # from the data instead of rendering an empty table. label/group
+  # fields are excluded (they have their own homes).
   if (is.null(columns)) {
-    columns <- list()
+    exclude <- character(0)
+    if (!is.null(label)) exclude <- c(exclude, label)
+    if (!is.null(group)) exclude <- c(exclude, group)
+    columns <- infer_columns(data, exclude = exclude)
   } else {
     columns <- lapply(columns, function(col) {
       if (S7_inherits(col, ColumnSpec) || S7_inherits(col, ColumnGroup)) {

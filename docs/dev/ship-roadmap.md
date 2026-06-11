@@ -219,9 +219,12 @@ Deliberately scoped down — correct and unsurprising, not flagship.
 
 ### I. Zero-config first run
 **Exit criteria:**
-- [ ] `tabviz(df)` with no columns produces a genuinely good table
-      (auto-columns: type inference → sensible col_* choices, the
-      versatility-H2 design).
+- [x] `tabviz(df)` auto-columns LANDED 2026-06-11 (R/auto-columns.R):
+      type+name inference → col_numeric (counts get 0 decimals) /
+      col_percent (0–1 + rate-ish name) / col_pvalue (p-name + range) /
+      col_date / col_text; Title-Cased headers; label/group excluded;
+      explicit columns always win; once-per-session hint; 9 behaviors
+      test-locked; visually verified.
 - [ ] The first-run path is the first page of the docs and the README
       GIF; under 30 seconds to something impressive.
 - [ ] Defaults reviewed deliberately at ship (the "decide late" rule
