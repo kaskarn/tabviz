@@ -61,9 +61,10 @@ Every other area on this roadmap decays invisibly without this one.
       milestone (2026-06-10).
 - [ ] Register is EMPTY of pre-1.0 items at ship (every entry decided or
       explicitly re-dated post-1.0).
-- [ ] CLAUDE.md instructs agents: deferring a product call ⇒ register
-      entry; landing an arc ⇒ roadmap status line. (Done 2026-06-10 —
-      verify it's being followed at each milestone review.)
+- [x] CLAUDE.md instructs agents: deferring a product call ⇒ register
+      entry; landing an arc ⇒ roadmap status line. Done 2026-06-10;
+      VERIFIED FOLLOWED across the 2026-06-11 session sweep (every arc
+      logged, every deferral registered or explicitly post-1.0).
 
 ### C0. Wire-freeze planning (the freeze itself is M3)
 Pre-release "clean breaks allowed" is why recent arcs were cheap. The
@@ -166,7 +167,7 @@ is W6 (pre-freeze).
       paths in lockstep (structural — shared getCssVarsRaw + cache key);
       `set_component()`/`clear_component()`/`list_components()`; gates
       both sides; wire 1.4→1.5. (2026-06-11)
-- [~] Stage 2 color channel — SETTINGS HALF LANDED 2026-06-11:
+- [x] Stage 2 color channel — SETTINGS HALF LANDED 2026-06-11:
       RoleChipGrid (grouped swatches, hover names, aria) +
       ComponentsBand (region accordions, live spec-line rows, per-channel
       chip popover, release-to-default) mounted in the panel's theme
@@ -179,8 +180,10 @@ is W6 (pre-freeze).
       roomy below PinsPanel; studio store gained
       setComponentChannel/clearComponentChannel WITH history (components
       ride HistoryStep — undo/redo/revert restore them; init seeds
-      history[0]). REMAINING for the Stage-2 checkbox: liveness-walk
-      coverage of the new controls (area-F harness work).
+      history[0]). Walk coverage CLOSED with area H (2026-06-11): the
+      studio walk operates the 51 channel rows, re-routes, undoes; the
+      re-route leg's first run caught the chart preview dropping
+      components. Stage 2 [x].
 - [x] Stage 3 text channels — LANDED 2026-06-11: family/size/weight
       slot-chip pickers in ComponentsEditor (both hosts); the design
       doc's motivating example (axis-label → numeric/regular) verified
@@ -188,17 +191,19 @@ is W6 (pre-freeze).
       (figures + the unconsumed-token channels join when their consumers
       land — they are SUBSTRATE-ready, the resolver honors them).
       Icon/indicator records remain design work (no manifest tokens yet).
-- [~] Stage 4 (HC exploration DONE 2026-06-11 — component-model.md
+- [x] Stage 4 (HC exploration DONE 2026-06-11 — component-model.md
       "HC-as-state-overlay" note: fits as a reserved-state record BELOW
       the baked ratchet; additive wire; post-1.0 verdict). States LIVE
       already (Stage-2 editor renders state·channel rows — row alt/hover/
       emphasis, cell paint states, header variants all editable);
-      caption-chip records live. REMAINING: gradient-strip + watermark
-      decorative records (watermark is currently FIGURE state — moving a
-      theme-level twin needs a design call) + the HC-as-state-overlay
-      exploration note.
-- [ ] v3 theme-css bridges (#72–74 clusters) retired into the component
-      table (joint with W4).
+      caption-chip records live. Gradient-strip + watermark decorative
+      records EXPLICITLY DEFERRED POST-1.0 (2026-06-11; watermark is
+      figure state today — a theme-level twin is a design call with no
+      pre-1.0 forcing function). The HC-as-state-overlay note is written
+      (component-model.md). Stage 4 [x] at pre-1.0 scope.
+- [x] v3 theme-css bridges RETIRED (W4, 2026-06-11): computeV3BridgeVars
+      deleted; the only non-cascade emission is computeLiveConfigVars
+      (series slot 0 + layout) under its own resolver group.
 - [x] Verb + travel mental model documented (2026-06-11): the themes
       guide's "Three editing verbs" section (verb table + reach + the
       theme/figure/view travel split + introspection cross-refs:
@@ -269,7 +274,7 @@ is a liveness audit across ALL surfaces.
 ### H. Studio: good enough
 Deliberately scoped down — correct and unsurprising, not flagship.
 **Exit criteria:**
-- [~] Studio walk LANDED 2026-06-11 (studio-shot.mjs extended): rail
+- [x] Studio walk LANDED 2026-06-11 (studio-shot.mjs extended): rail
       tabs switch content; the components editor's 51 channel rows live;
       a component re-route repaints the chart; undo restores it; zero
       console/page errors across the walk. FIRST-RUN CATCH: the chart
@@ -292,7 +297,9 @@ Deliberately scoped down — correct and unsurprising, not flagship.
       lesson: the invariant set covers header bands + body text, NOT
       every token — a title-token pin is legitimately unjudged.
       AREA H COMPLETE.
-- [ ] Anything beyond this explicitly deferred post-1.0.
+- [x] Everything beyond the above (richer studio layouts, multi-theme
+      sessions, server-backed galleries) explicitly deferred post-1.0
+      (2026-06-11).
 
 ### I. Zero-config first run
 **Exit criteria:**
@@ -393,6 +400,26 @@ Clinical/regulatory audience makes this table stakes.
 ---
 
 ## Status log
+
+- 2026-06-11 (SESSION SWEEP — areas C, D, F, G, H, J closed; I at
+  pre-ship scope). The day's arcs: 9-preset WYSIWYG battery + matrix
+  fixture extension (pvalue/bar; caught the nejm pill inflating compact
+  rows); ARIA table semantics + a11y review pass (4 findings triaged);
+  spec-first completed (consumer docs+fixture, structured spec errors
+  with ingress wall, dependency-free MCP server + stdio smoke);
+  area-H tail (rail value-control walk, PinsPanel flow, Validate ▦
+  accuracy, lossless round-trip gate); area-F surface walks (5 new
+  interaction-qa scenarios; zoom-dropdown Escape fixed; last-column
+  hide floor); zero-config first-run docs page + README GIF; area C
+  closed (5 preset house styles, #65 re-base fix, and THE catch: six
+  column types silently text-degrading in every headless export —
+  boot-split fixed + gated by schema/boot-coverage.test.ts). Cross-
+  cutting: propagation-readiness survey (docs/dev/
+  propagation-readiness.md); namespace-integrity + Collate gates after
+  export(tabviz) was found dropped. REMAINING (8 open lines): K's API
+  review + task-guide tails + check re-verify; M's release notes +
+  docs cut (agent-executable); D9 ship-time defaults review (joint);
+  branch protection + npm/CRAN credentials (user).
 
 - 2026-06-11 (W4 COMPLETE) — ALL PRE-FREEZE WIRE WORK DONE (W1–W6).
   W4 executed across one extended session: blob slimmed (marks, cell,
