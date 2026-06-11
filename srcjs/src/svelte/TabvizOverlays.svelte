@@ -72,7 +72,10 @@
       columnHeader: column.header ?? column.field,
       anchorX: e.clientX,
       anchorY: e.clientY,
-      canHide: true,
+      // Hiding the LAST visible column leaves a blank widget with no
+      // header left to right-click for recovery (empty-states review,
+      // area F) — the menu omits the item instead of offering a trap.
+      canHide: store.allColumns.length > 1,
       canConfigure,
       headerShown: resolveShowHeader(column.showHeader, column.header),
     };

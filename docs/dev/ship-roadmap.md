@@ -213,8 +213,15 @@ is a liveness audit across ALL surfaces.
       arrange-tool.browser.ts). The pager leg also surfaced a parity
       gap: TS authoring has no paginate= (recorded in
       r-ts-parity-notes.md).
-- [ ] Empty/disabled states designed, not accidental (no menu renders
-      options that can never apply).
+- [x] Empty/disabled states reviewed 2026-06-11: context-menu items are
+      capability-gated (canConfigure by type-def, dynamic toggle-header
+      label); pager hides at ≤1 page; toolbar affordances all flag-
+      gated; settings conditionals documented in the liveness allowlist.
+      ONE real defect found + fixed: hide-column had no floor — a
+      reader could hide EVERY column into a blank widget with no header
+      left to right-click for recovery. The menu now omits "Hide
+      column" on the last visible column; gated in headerContextMenu.
+      AREA F COMPLETE.
 - [x] Gesture grammar re-verified 2026-06-11: arrange gate + the new
       walks; the zoom dropdown's missing Escape was the one breach
       found and is fixed (preventDefault-consuming, per the Escape

@@ -179,23 +179,24 @@ const SCENARIOS: Record<string, Scenario> = {
   async headerContextMenu(page) {
     // Right-click the N header → menu renders all four items; each item
     // is operated on a re-opened menu and must have its consequence.
-    const openMenu = async () => {
-      // By data-header-id, not text — the toggle-header leg HIDES the
-      // header text, so a text lookup dies on the second open.
-      const header = await page.evaluateHandle(() => {
-        const h = document.querySelector<HTMLElement>('.header-cell[data-header-id="numeric_n"]');
-        if (!h) throw new Error("numeric_n header cell not found");
-        return h;
-      });
-      const box = await (header as import("puppeteer").ElementHandle<HTMLElement>).boundingBox();
-      if (!box) throw new Error("header has no box");
-      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: "right" });
+    const openMenuOn = async (id: string, minItems = 0) => {
+      // Synthetic contextmenu dispatch, by data-header-id: a REAL
+      // right-click on the rightmost headers lands on the floating
+      // toolbar instead (it overlaps the hovered top-right header region
+      // — the documented trap), and a text lookup dies after the
+      // toggle-header leg hides the text. Item operations stay real.
+      await page.evaluate((cid: string) => {
+        const h = document.querySelector<HTMLElement>(`.header-cell[data-header-id="${cid}"]`);
+        if (!h) throw new Error(`${cid} header cell not found`);
+        const r = h.getBoundingClientRect();
+        h.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, clientX: r.x + 8, clientY: r.y + r.height / 2 }));
+      }, id);
       await new Promise((r) => setTimeout(r, 250));
       const items = await page.$$eval(".header-ctx-menu .ctx-item", (els) => els.map((e) => e.textContent!.trim()));
-      if (items.length < 4) throw new Error(`context menu rendered ${items.length} items: ${items.join("|")}`);
+      if (items.length < minItems) throw new Error(`context menu rendered ${items.length} items: ${items.join("|")}`);
       return items;
     };
-    const items = await openMenu();
+    const items = await openMenuOn("numeric_n", 4);
     // toggle-header: header text visibility flips
     await page.evaluate(() => {
       [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
@@ -207,15 +208,31 @@ const SCENARIOS: Record<string, Scenario> = {
     if (!headerGone) throw new Error("toggle-header did not hide the header text");
     // hide: the column leaves the grid
     const colsBefore = await page.$$eval(".header-cell", (els) => els.length);
-    await openMenu();
+    await openMenuOn("numeric_n");
     await page.evaluate(() => {
       [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
-        .find((b) => /hide/i.test(b.textContent!))!.click();
+        .find((b) => /hide column/i.test(b.textContent!))!.click();
     });
     await new Promise((r) => setTimeout(r, 300));
     const colsAfter = await page.$$eval(".header-cell", (els) => els.length);
     if (colsAfter !== colsBefore - 1) throw new Error(`hide: headers ${colsBefore} → ${colsAfter}`);
-    return `4 items [${items.join(" | ")}]; toggle-header + hide both consequential`;
+    // Empty-states guard (area F): hide down to ONE column — the menu
+    // must then OMIT "Hide column" (a blank widget has no header left
+    // to right-click for recovery).
+    await openMenuOn("pvalue_p");
+    await page.evaluate(() => {
+      [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
+        .find((b) => /hide column/i.test(b.textContent!))?.click();
+    });
+    await new Promise((r) => setTimeout(r, 250));
+    const lastLeft = await page.$$eval(".header-cell", (els) => els.length);
+    if (lastLeft !== 1) throw new Error(`expected 1 column before the guard check, got ${lastLeft}`);
+    await openMenuOn("label");
+    const hideOffered = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>(".header-ctx-menu .ctx-item")]
+        .some((b) => /hide column/i.test(b.textContent!)));
+    if (hideOffered) throw new Error("menu offers Hide column on the LAST visible column");
+    return `4 items [${items.join(" | ")}]; toggle-header + hide consequential; last column unhidable`;
   },
 
   async columnTypeMenu(page) {
