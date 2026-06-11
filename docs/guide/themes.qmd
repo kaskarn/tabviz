@@ -418,6 +418,46 @@ web_theme_nejm() |>
 
 Re-resolution preserves explicit overrides on subsequent edits — `set_inputs(brand = "...")` after the override above will refresh series colors but leave `surface.base` pinned to your cream.
 
+## Column house styles — `column_defaults` {#column-defaults}
+
+A theme can carry **per-column-TYPE defaults**, so picking a theme also
+picks how its column types dress. The nejm preset turns on significance
+stars and a pill for p-value columns; terminal sets numerals in mono and
+boxes its badges square; synthwave oversizes glyph columns. Same data,
+same `tabviz()` call — the house style rides the theme.
+
+```{r}
+#| eval: false
+my_theme <- web_theme(
+  brand = "#0B6E4F",
+  column_defaults = list(
+    pvalue = list(stars = TRUE, significantStyle = "pill"),
+    badge  = list(shape = "square", outline = TRUE),
+    numeric = list(fontClass = "mono")
+  )
+)
+```
+
+The same field exists for JS authors (`buildTheme({ column_defaults:
+{...} })` — option keys are the wire camelCase). Three rules keep it
+safe, enforced by the engine at every ingest:
+
+1. **The author always wins.** A theme default fills an option only
+   while it sits at its schema default; an explicit
+   `col_pvalue(stars = FALSE)` is never clobbered. Switching themes
+   re-bases cleanly — the old theme's house style never sticks.
+2. **Kind gate.** Only options whose schema kind is `styling` or
+   `presentation` are accepted; `core` options (the data semantics —
+   fields, thresholds, precision) are dropped. Ask
+   `column_schema("pvalue")` which options a theme may touch — the
+   `themeable` column.
+3. **Untrusted-wire safety.** `column_defaults` travels in the portable
+   theme artifact, so every string value passes the same grammar gate
+   as token pins before it can reach an exported SVG attribute.
+
+Discover the vocabulary with `list_column_types()` (the `themeable`
+count per type) and `column_schema(type)` (per-option detail).
+
 ## Going deeper: spacing and typography
 
 ### Density preset values
@@ -473,14 +513,14 @@ web_theme_nejm() |>
   set_theme_field(c("text", "title", "italic"), TRUE)
 ```
 
-## The twenty-seven presets — when to use which
+## The nine presets — when to use which
 
-The roster spans five categories — **journals** (Cochrane, Lancet, JAMA,
-NEJM, Nature, BMJ), **modes** (dark), **design traditions** (Bauhaus,
-Swiss, Tufte, Newsprint, Solarized ×2, Tonal ×2), **Middle-earth**
-(Dwarven, Elvish, Hobbit), and the **showcase** set that exercises the
-full effects surface (Synthwave, Brutalist, Atelier, Executive, Ledger,
-Terminal, Aurora, Blueprint, Sunprint).
+The roster is nine committed identities (the 27→9 cull, 2026-06): the
+**clinical** default `nejm` plus `ledger`, the **design movements**
+`brutalist` and `newsprint`, the **moods** `aurora`, `terminal`,
+`blueprint`, and `synthwave`, and the **storyteller** `dwarven`. Each
+owns a distinct expressive axis; several also carry a column
+[house style](#column-defaults).
 
 Every preset is rendered side-by-side on one fixture in
 [**the Preset Gallery**](../gallery/presets.qmd) — start there. Identity

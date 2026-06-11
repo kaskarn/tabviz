@@ -1,7 +1,7 @@
 // Theme-as-house-style: theme.column_defaults kind-gate + author-wins tests.
 
 import { describe, it, expect } from "bun:test";
-import { applyThemeColumnDefaults, applyThemeColumnDefaultsToSpec } from "./column-defaults";
+import { applyThemeColumnDefaults, applyThemeColumnDefaultsToSpec, rebaseThemeColumnDefaults, rebaseSpecForThemeSwitch } from "./column-defaults";
 import type { ColumnDef, WebSpec } from "../../types";
 
 // Explicit wire-shaped pvalue column (avoids any builder default-omission
@@ -110,5 +110,50 @@ describe("applyThemeColumnDefaultsToSpec (cross-runtime ingest seam)", () => {
     const once = applyThemeColumnDefaultsToSpec(specWith({ pvalue: { stars: true } }));
     const twice = applyThemeColumnDefaultsToSpec(once);
     expect(twice).toBe(once); // already merged → no further change → same ref
+  });
+});
+
+describe("theme-switch re-base (#65)", () => {
+  it("the OLD theme's baked value resets to the schema default", () => {
+    // Theme A baked stars=true (schema default is false).
+    const baked = applyThemeColumnDefaults([pcol({})], { pvalue: { stars: true } });
+    expect(optsOf(baked[0]!).stars).toBe(true);
+    const rebased = rebaseThemeColumnDefaults(baked, { pvalue: { stars: true } });
+    expect(optsOf(rebased[0]!).stars).toBe(false); // back to schema default
+  });
+
+  it("an author value DIFFERENT from the old theme's default survives the re-base", () => {
+    const cols = [pcol({ starsColor: "none" })]; // author deviation
+    const rebased = rebaseThemeColumnDefaults(cols, { pvalue: { starsColor: "negative" } });
+    expect(optsOf(rebased[0]!).starsColor).toBe("none");
+  });
+
+  it("A → B switch: B's house style applies instead of A's sticking", () => {
+    const mkSpec = (columns: ColumnDef[], cd: Record<string, Record<string, unknown>> | undefined): WebSpec =>
+      ({ columns, theme: { authoringInputs: cd ? { column_defaults: cd } : {} } }) as unknown as WebSpec;
+    // Ingest under theme A.
+    const a = applyThemeColumnDefaultsToSpec(mkSpec([pcol({})], { pvalue: { significantStyle: "pill" } }));
+    expect(optsOf(a.columns[0]!).significantStyle).toBe("pill");
+    // Switch to theme B (incoming spec carries A's baked columns + B's theme).
+    const incoming = mkSpec(a.columns as ColumnDef[], { pvalue: { significantStyle: "bold" } });
+    const b = rebaseSpecForThemeSwitch(incoming, { pvalue: { significantStyle: "pill" } });
+    expect(optsOf(b.columns[0]!).significantStyle).toBe("bold"); // not "pill"
+  });
+
+  it("switch to a theme WITHOUT defaults fully un-themes", () => {
+    const mkSpec = (columns: ColumnDef[], cd?: Record<string, Record<string, unknown>>): WebSpec =>
+      ({ columns, theme: { authoringInputs: cd ? { column_defaults: cd } : {} } }) as unknown as WebSpec;
+    const a = applyThemeColumnDefaultsToSpec(mkSpec([pcol({})], { pvalue: { stars: true } }));
+    const b = rebaseSpecForThemeSwitch(mkSpec(a.columns as ColumnDef[]), { pvalue: { stars: true } });
+    expect(optsOf(b.columns[0]!).stars).toBe(false);
+  });
+
+  it("same-theme re-ingest is value-stable (rebase + re-merge round-trips)", () => {
+    const cd = { pvalue: { stars: true } };
+    const mk = (columns: ColumnDef[]): WebSpec =>
+      ({ columns, theme: { authoringInputs: { column_defaults: cd } } }) as unknown as WebSpec;
+    const a = applyThemeColumnDefaultsToSpec(mk([pcol({})]));
+    const again = rebaseSpecForThemeSwitch(mk(a.columns as ColumnDef[]), cd);
+    expect(optsOf(again.columns[0]!).stars).toBe(true);
   });
 });

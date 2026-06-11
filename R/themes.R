@@ -75,6 +75,13 @@ web_theme_nejm <- function() {
       web_font("Lora", FONT_URLS$lora)
     ),
     curves = list(brand = "smooth", neutral = "ease"),
+    # House style (area C): clinical significance affordances — p-value
+    # columns mark significance with stars and a pill; badges outlined.
+    # Mirrors the TS preset (parity-gated). Option keys are wire camelCase.
+    column_defaults = list(
+      pvalue = list(stars = TRUE, significantStyle = "pill"),
+      badge = list(outline = TRUE)
+    ),
     name = "nejm"
   )
 }

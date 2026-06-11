@@ -1,62 +1,21 @@
-// Bar cell renderer (schema-sprint Phase 4c.1).
+// Bar cell renderer (schema-sprint Phase 4c.1) — DOM half.
 //
-// - dom: returns a RenderComponent mounting the existing
-//   `CellBar.svelte`. The component owns the live (browser) DOM
-//   for bar cells; the schema dispatch just forwards props +
-//   ctx.columnSummary so the renderer doesn't iterate visible rows.
-//
-// - svg: mirrors svg-generator.ts:3345-3401. Track pill + filled
-//   bar + optional value label, with the bar fill width scaled
-//   against ctx.columnSummary.max when options.bar.maxValue is
-//   absent.
-//
-// Color cascade: explicit options.bar.color > cell-bundle markerFill
-// > row-bundle markerFill > theme.inputs.primary > theme.accent.default.
-// Mirrors the legacy CellBar / svg-generator branch.
+// Mounts CellBar.svelte (browser only). The SVG half lives in
+// bar-svg-renderer.ts (V8-safe — see the boot-split note there); this
+// module re-registers it so the browser boot keeps one entry point.
 
-import type { ColumnOptions, WebTheme } from "../../types";
-import type { RenderComponent, RenderSvg, CellFormatter } from "../render-types";
+import type { ColumnOptions } from "../../types";
+import type { RenderComponent, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
 import CellBar from "../../components/table/CellBar.svelte";
-import { resolveSemanticBundle } from "../../lib/semantic-styling";
-import { parseFontSize } from "../../lib/typography-layout";
-import { normalizeValue } from "../../lib/scale-utils";
-import { BAR, SPACING } from "../../lib/rendering-constants";
-import {
-  getCssVars, readVarPx,
-  readAccentDefault, readDividerSubtle, readContentPrimary,
-  readBodyFamily, readBodySize,
-} from "../../lib/theme/consumer-bridge";
+import { barSvgRenderer, __svgTesting } from "./bar-svg-renderer";
 
 interface BarOptions {
   maxValue?: number;
   color?: string;
   showLabel?: boolean;
   scale?: "linear" | "log" | "sqrt";
-}
-
-function resolveBarColor(
-  opts: BarOptions | undefined,
-  cellStyle: Parameters<typeof resolveSemanticBundle>[0],
-  rowStyle: Parameters<typeof resolveSemanticBundle>[0],
-  theme: WebTheme,
-): string {
-  const cellBundle = resolveSemanticBundle(cellStyle, theme);
-  const rowBundle = resolveSemanticBundle(rowStyle, theme);
-  return opts?.color
-    ?? cellBundle?.markerFill
-    ?? rowBundle?.markerFill
-    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`. Brand is now
-    // the identity default; v4 routes brand-derived color through accent.
-    ?? readAccentDefault(getCssVars(theme));
-}
-
-function formatBarLabel(value: number): string {
-  // Mirrors CellBar.svelte's formattedValue().
-  if (value >= 100) return value.toFixed(0);
-  if (value >= 10) return value.toFixed(1);
-  return value.toFixed(2);
 }
 
 const barDomRenderer: CellFormatter = (value, options, ctx): RenderComponent => {
@@ -76,57 +35,6 @@ const barDomRenderer: CellFormatter = (value, options, ctx): RenderComponent => 
   };
 };
 
-const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return { kind: "svg", markup: "", width: 0, height: 0 };
-  }
-  const theme = ctx?.theme as WebTheme | null | undefined;
-  if (!theme) return { kind: "svg", markup: "", width: 0, height: 0 };
-
-  const opts = (options as ColumnOptions | undefined)?.bar as BarOptions | undefined;
-  const maxValue = opts?.maxValue ?? ctx?.columnSummary?.max ?? 100;
-  const scale = opts?.scale ?? "linear";
-  const showLabel = opts?.showLabel ?? true;
-  const cssVars = getCssVars(theme);
-  const color = resolveBarColor(opts, ctx?.cellStyle, undefined, theme);
-  const trackColor = readDividerSubtle(cssVars);
-
-  const fontSize = parseFontSize(readBodySize(cssVars));
-  const labelFontSize = fontSize * BAR.LABEL_SCALE;
-  const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
-  const cellWidth = ctx?.cellWidth ?? 100;
-  const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
-  const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
-  const fillRatio = normalizeValue(value, 0, maxValue, scale);
-  const fillWidth = Math.max(0, fillRatio * barAreaWidth);
-  const rowH = ctx?.rowHeight ?? BAR.HEIGHT;
-  const barY = (rowH - BAR.HEIGHT) / 2;
-
-  const pieces: string[] = [];
-  // Track
-  pieces.push(
-    `<rect x="0" y="${barY}" width="${barAreaWidth}" height="${BAR.HEIGHT}" ` +
-    `fill="${trackColor}" rx="${BAR.RADIUS}"/>`,
-  );
-  // Fill
-  pieces.push(
-    `<rect x="0" y="${barY}" width="${fillWidth}" height="${BAR.HEIGHT}" ` +
-    `fill="${color}" rx="${BAR.RADIUS}"/>`,
-  );
-  if (showLabel) {
-    const labelText = formatBarLabel(value);
-    const totalWidth = cellWidth - cellPadX * 2;
-    pieces.push(
-      `<text class="cell-text" dominant-baseline="central" ` +
-      `x="${totalWidth}" y="${rowH / 2}" ` +
-      `font-family="${readBodyFamily(cssVars)}" ` +
-      `font-size="${labelFontSize}px" font-weight="400" ` +
-      `text-anchor="end" fill="${readContentPrimary(cssVars)}">${labelText}</text>`,
-    );
-  }
-  return { kind: "svg", markup: pieces.join(""), width: cellWidth - cellPadX * 2, height: rowH };
-};
-
 /** Idempotent re-register helper. */
 export function registerBarRenderer(): void {
   registerCellComponent("CellBar", CellBar as never);
@@ -135,4 +43,4 @@ export function registerBarRenderer(): void {
 
 registerBarRenderer();
 
-export const __testing = { resolveBarColor, formatBarLabel };
+export const __testing = { resolveBarColor: __svgTesting.resolveBarColor, formatBarLabel: __svgTesting.formatBarLabel };

@@ -33,6 +33,9 @@ import { registerProgressRenderer }   from "./columns/progress-renderer";
 import { registerSparklineRenderer }  from "./columns/sparkline-renderer";
 import { registerAggregateBehaviors } from "./columns/aggregate-behaviors";
 import { registerFormatBehaviors }    from "./columns/format-behaviors";
+import { registerVisualSvgRenderers } from "./columns/visual-svg-renderers";
+import { registerBarSvgRenderer }      from "./columns/bar-svg-renderer";
+import { registerHeatmapSvgRenderer }  from "./columns/heatmap-svg-renderer";
 // DOM cell renderers live in `./init-dom` — they import Svelte
 // components and must NOT be pulled into the V8 bundle. Browser
 // entries import `init-dom` (which side-effect-imports this file too)
@@ -63,4 +66,12 @@ export function bootBuiltinBehaviors(): void {
   registerSparklineRenderer();
   registerAggregateBehaviors();
   registerFormatBehaviors();
+  // SVG halves of the text-only visual cells (pvalue/reference/range/img).
+  // MUST boot here, not only in init-dom: the V8 export can't load the
+  // Svelte-importing visual-cell-renderers module, and without these the
+  // four types silently fell to the legacy text branch in every headless
+  // export (pvalue stars never rendered in save_plot output).
+  registerVisualSvgRenderers();
+  registerBarSvgRenderer();
+  registerHeatmapSvgRenderer();
 }

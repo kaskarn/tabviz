@@ -131,6 +131,14 @@ export const NEJM: ThemeInputs = defineInputs(
       display: "'Lora', Georgia, serif",
     },
     curves: { neutral: "ease", brand: "smooth" },
+    // House style (area C): clinical significance affordances — p-value
+    // columns mark significance with stars and a pill; badges outlined
+    // (journal restraint). Structural only — colors stay role-driven so
+    // polarity/HC keep working.
+    column_defaults: {
+      pvalue: { stars: true, significantStyle: "pill" },
+      badge: { outline: true },
+    },
   },
 );
 // ────────────────────────────────────────────────────────────────────
@@ -160,6 +168,12 @@ export const NEWSPRINT: ThemeInputs = defineInputs(
       display: "'Crimson Pro', Georgia, 'Times New Roman', serif",
     },
     curves: { neutral: "smooth", brand: "log" },
+    // House style (area C): broadsheet restraint — significance marked in
+    // muted ink (no color shout), badges as small print bullets.
+    column_defaults: {
+      pvalue: { stars: true, starsColor: "ink2" },
+      badge: { shape: "circle", size: "sm" },
+    },
   },
 );
 
@@ -256,6 +270,14 @@ export const SYNTHWAVE: ThemeInputs = defineInputs(
       // 2c-i: neon underline beneath the title (lab synthwave).
       title_style: "underline",
     },
+    // House style (area C): neon arcade — glyph columns oversized (the
+    // marquee read), significance as a lit pill.
+    column_defaults: {
+      stars: { size: "lg" },
+      ring: { size: "lg" },
+      pictogram: { size: "lg" },
+      pvalue: { significantStyle: "pill" },
+    },
   },
 );
 
@@ -307,6 +329,12 @@ export const BRUTALIST: ThemeInputs = defineInputs(
       gradient_shell_intensity: "none",
       elevation: "none",
       title_style: "bar",
+    },
+    // House style (area C): stark — square badges, display-weight
+    // numerals.
+    column_defaults: {
+      badge: { shape: "square" },
+      numeric: { fontClass: "display" },
     },
   },
 );
@@ -375,6 +403,13 @@ export const TERMINAL: ThemeInputs = defineInputs(
     type_base_size: 13,
     effects: { glow_intensity: "subtle", glow_anchor: "brand" },
     curves: { neutral: "exp" },
+    // House style (area C): printout register — tabular mono numerals,
+    // square outlined badges (ASCII boxes).
+    column_defaults: {
+      numeric: { fontClass: "mono" },
+      interval: { fontClass: "mono" },
+      badge: { shape: "square", outline: true },
+    },
   },
 );
 

@@ -25,7 +25,7 @@
 import type { RenderComponent, RenderText, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
-import { formatPvalue, truncateString } from "../../lib/formatters";
+import { pvalueSvgRenderer, referenceSvgRenderer, rangeSvgRenderer, imgSvgRenderer } from "./visual-svg-renderers";
 import type { ColumnOptions } from "../../types";
 
 import CellPvalue    from "../../components/table/CellPvalue.svelte";
@@ -166,53 +166,6 @@ const rangeRenderer: CellFormatter = (value, options, ctx) => {
 // svg-generator's render loop catches these and `continue`s past the
 // legacy per-type fallback branches. Phase 4b/c/d migrates the rest.
 
-const pvalueSvgRenderer: CellFormatter = (value, options, ctx) => {
-  const v = value as number | null | undefined;
-  if (typeof v !== "number") return text(ctx?.naText ?? "");
-  return text(formatPvalue(v, options as ColumnOptions));
-};
-
-const referenceSvgRenderer: CellFormatter = (value, options, ctx) => {
-  if (value === undefined || value === null) return text("");
-  const opts = options as AnyOpts;
-  const refOpts = opts?.reference as { maxChars?: number } | undefined;
-  const maxChars = refOpts?.maxChars ?? 30;
-  const str = String(value);
-  return text(truncateString(str, maxChars));
-  void ctx;
-};
-
-const rangeSvgRenderer: CellFormatter = (_value, options, ctx) => {
-  const opts = options as AnyOpts;
-  const rangeOpts = opts?.range as
-    | { minField: string; maxField: string; separator?: string; decimals?: number | null }
-    | undefined;
-  if (!rangeOpts) return text("");
-  const meta = (ctx?.row ?? {}) as Record<string, unknown>;
-  const minVal = meta[rangeOpts.minField];
-  const maxVal = meta[rangeOpts.maxField];
-  const sep = rangeOpts.separator ?? " – ";
-  const decimals = rangeOpts.decimals;
-  const fmt = (v: unknown): string => {
-    if (typeof v !== "number") return "";
-    if (decimals === null || decimals === undefined) {
-      return Number.isInteger(v) ? String(v) : v.toFixed(1);
-    }
-    return v.toFixed(decimals);
-  };
-  if (minVal === null && maxVal === null) return text("");
-  if (minVal === null) return text(fmt(maxVal));
-  if (maxVal === null) return text(fmt(minVal));
-  return text(`${fmt(minVal)}${sep}${fmt(maxVal)}`);
-};
-
-const imgSvgRenderer: CellFormatter = (_value, options, _ctx) => {
-  // Images cannot embed in static SVG export — emit the fallback
-  // placeholder text the legacy path produces.
-  const opts = options as AnyOpts;
-  const imgOpts = opts?.img as { fallback?: string } | undefined;
-  return text(imgOpts?.fallback ?? "[IMG]");
-};
 
 /** Idempotent re-register helper for tests after registry reset. */
 export function registerVisualCellRenderers(): void {

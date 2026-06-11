@@ -83,18 +83,32 @@ The schema + `column_defaults` machinery exists; no shipped theme uses it
 expressively. This is what makes the 9 survivor themes feel like designed
 objects rather than palettes — and it exercises the machine contract.
 **Exit criteria:**
-- [ ] Column ontology reviewed: option vocabulary coherent across types,
-      `kind` taxonomy (core/styling/editor) complete, the 6 dead options
-      ~~decided~~ DECIDED+DELETED (D2, 2026-06-11), inheritance DAG
-      documented.
+- [x] Column ontology reviewed: vocabulary + kind taxonomy audited, the
+      6 dead options DECIDED+DELETED (D2), inheritance DAG documented
+      (docs/dev/column-ontology-review.md §Inheritance DAG; the F4
+      irregularities are recorded there with their fix path).
 - [x] All grandfathered options carry `consumedBy` annotations; the
       grandfather list is EMPTY (119 → 0, 2026-06-11; the sweep also
       killed 3 more dead options — currency editor menus + violin
       maxWidth).
-- [ ] ≥ 4 shipped presets use `column_defaults` to visible, deliberate
-      effect (e.g. clinical theme styles p-value columns; editorial theme
-      styles badges/bars distinctly) — reviewed as *design*, not plumbing.
-- [ ] Theme-level column logic is documented for theme authors (R + JS).
+- [x] FIVE presets ship house styles (2026-06-11), battery-reviewed as
+      design: nejm (pvalue stars+pill, outlined badges), terminal (mono
+      numerals, square boxed badges), brutalist (square badges, display
+      numerals), newsprint (ink stars, small circle badges), synthwave
+      (lg glyph columns, pill significance). Structural-only by design
+      (colors stay role-driven → polarity/HC keep working); no-op
+      entries pruned in review. PREREQUISITE FIXED: theme-switch
+      stickiness (#65) — setSpec now re-bases the outgoing theme's bake
+      (rebaseThemeColumnDefaults, 5 tests). THE ARC'S REAL CATCH: the
+      V8 boot never registered the SVG halves of pvalue/reference/
+      range/img (Svelte-trapped module) NOR bar/heatmap — six types
+      silently exported as plain text (pvalue stars and BARS absent
+      from every save_plot ever). Split into V8-safe modules
+      (visual-svg-renderers.ts, bar-svg-renderer.ts,
+      heatmap-svg-renderer.ts), booted both sides.
+- [x] Documented 2026-06-11: guide/themes.qmd "Column house styles"
+      (three safety rules, R + JS, schema introspection pointers); the
+      stale 27-preset section rewritten to the nine. AREA C COMPLETE.
 
 ### D. Spec-first contract shipped for real
 **Exit criteria:**

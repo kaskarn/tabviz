@@ -20,16 +20,17 @@
 //      attributes (bar-renderer `fill="${color}"`). A string value failing the
 //      shared pin grammar (isValidPinValue) is dropped at the merge below.
 //
-// KNOWN LIMITATION (theme-switch stickiness): the merge bakes the themed value
-// INTO spec.columns, and the theme-edit path (writeThemePath → setSpec) re-runs
-// the merge on those already-merged columns. To the second merge, the prior
-// theme's bake is indistinguishable from an author choice (it's no longer at
-// the schema default), so switching themes does NOT cleanly re-base a column
-// default — the old theme's house style persists. Harmless today (no shipped
-// preset declares column_defaults), but a clean fix needs provenance (mark
-// which option values were theme-applied so they can be re-based). Filed under
-// #65. Interactive `configure` is unaffected: it overlays columnSpecOverrides
-// as a derived replacement and never re-triggers the merge.
+// THEME-SWITCH RE-BASE (#65, fixed 2026-06-11): the merge bakes the themed
+// value INTO spec.columns, so to a later merge a prior theme's bake looks
+// like an author choice. `rebaseThemeColumnDefaults` (below) undoes the OLD
+// theme's bake before the new theme merges: any option whose current value
+// still equals the old theme's default resets to the schema default. The
+// store's setSpec runs it with the previous spec's defaults. Epsilon: an
+// author who EXPLICITLY set the same value as the outgoing theme's default
+// gets re-based — indistinguishable by construction, and the author can
+// re-set it. Interactive `configure` is unaffected: it overlays
+// columnSpecOverrides as a derived replacement and never re-triggers the
+// merge.
 
 import { getSchema } from "../../schema/extend";
 import { isValidPinValue } from "./consumer-bridge";
@@ -163,6 +164,55 @@ export function applyThemeColumnDefaults(
  * on every ingest. NOTE: not stable across a theme SWITCH — see the
  * theme-switch stickiness limitation in the file header.
  */
+/**
+ * Undo a PREVIOUS theme's column_defaults bake (#65): for every option the
+ * old theme could have themed, if the column's current value still equals
+ * the OLD theme's default, reset it to the schema default — so the NEXT
+ * merge sees it as themeable again. Same kind/XSS gates as the merge (a
+ * value the merge could never have written is never re-based).
+ */
+export function rebaseThemeColumnDefaults(
+  columns: readonly ColumnDef[],
+  oldDefaults: Partial<Record<string, Record<string, unknown>>> | undefined,
+): ColumnDef[] {
+  if (!oldDefaults || typeof oldDefaults !== "object") return [...columns];
+  return columns.map((col) => {
+    const c = col as ColumnDef & { type?: string; options?: Record<string, unknown> };
+    const type = c.type;
+    if (typeof type !== "string") return col;
+    const defs = oldDefaults[type];
+    if (!defs || typeof defs !== "object") return col;
+    const meta = optionMetaFor(type);
+    const existingNs = (c.options?.[type] as Record<string, unknown> | undefined) ?? {};
+    const mergedNs: Record<string, unknown> = { ...existingNs };
+    let changed = false;
+    for (const [k, v] of Object.entries(defs)) {
+      const m = meta.get(k);
+      if (!m || m.kind === "core") continue;
+      if (!valueLeavesSafe(v)) continue;
+      if (sameValue(mergedNs[k], v) && !sameValue(mergedNs[k], m.default)) {
+        mergedNs[k] = m.default;
+        changed = true;
+      }
+    }
+    if (!changed) return col;
+    return { ...c, options: { ...(c.options ?? {}), [type]: mergedNs } } as ColumnDef;
+  });
+}
+
+/** Spec-level re-base + re-merge for a theme SWITCH: undo `previousDefaults`,
+ *  then apply the incoming spec's own theme. The store calls this from
+ *  setSpec with the outgoing spec's defaults. */
+export function rebaseSpecForThemeSwitch(
+  spec: WebSpec,
+  previousDefaults: Partial<Record<string, Record<string, unknown>>> | undefined,
+): WebSpec {
+  if (!previousDefaults) return applyThemeColumnDefaultsToSpec(spec);
+  const rebased = rebaseThemeColumnDefaults(spec.columns, previousDefaults);
+  const next = rebased.every((c, i) => c === spec.columns[i]) ? spec : { ...spec, columns: rebased };
+  return applyThemeColumnDefaultsToSpec(next);
+}
+
 export function applyThemeColumnDefaultsToSpec(spec: WebSpec): WebSpec {
   const cd = spec.theme?.authoringInputs?.column_defaults;
   if (!cd) return spec;

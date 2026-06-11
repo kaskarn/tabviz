@@ -32,7 +32,7 @@ export const mintUniqueId = _mintUniqueId;
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 import { compileVariants } from "../schema/variant-compile";
-import { applyThemeColumnDefaultsToSpec } from "../lib/theme/column-defaults";
+import { rebaseSpecForThemeSwitch } from "../lib/theme/column-defaults";
 
 // ====================================================================
 // Op recorder contract
@@ -400,7 +400,11 @@ export function createTabvizStore() {
     // options.<bucket>.__resolved on every variant-bearing column so renderers
     // read primitive options instead of branching on the variant id
     // (schema-sprint Phase 3). Both safe to run on every setSpec.
-    const compiledSpec = compileVariants(applyThemeColumnDefaultsToSpec(newSpec));
+    // On a theme switch the incoming columns may carry the OUTGOING theme's
+    // column_defaults bake; re-base those to schema defaults first (#65) so
+    // the new theme's house style applies instead of the old one sticking.
+    const prevDefaults = spec?.theme?.authoringInputs?.column_defaults;
+    const compiledSpec = compileVariants(rebaseSpecForThemeSwitch(newSpec, prevDefaults));
     // Create a new object reference to ensure derived values recompute properly
     // when switching between specs (e.g., in split forest navigation)
     spec = { ...compiledSpec };

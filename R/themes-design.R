@@ -31,6 +31,12 @@ web_theme_newsprint <- function() {
       web_font("Crimson Pro", FONT_URLS$crimson_pro)
     ),
     curves = list(neutral = "smooth", brand = "log"),
+    # House style (area C): broadsheet restraint — muted ink stars,
+    # badges as small print bullets. Mirrors the TS preset.
+    column_defaults = list(
+      pvalue = list(stars = TRUE, starsColor = "ink2"),
+      badge = list(shape = "circle", size = "sm")
+    ),
     name = "newsprint"
   )
 }

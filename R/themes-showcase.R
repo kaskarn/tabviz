@@ -55,6 +55,14 @@ web_theme_synthwave <- function() {
       # 2c-i: neon underline beneath the title (lab synthwave).
       title_style = "underline"
     ),
+    # House style (area C): neon arcade — glyph columns oversized,
+    # significance as a lit pill. Mirrors the TS preset.
+    column_defaults = list(
+      stars = list(size = "lg"),
+      ring = list(size = "lg"),
+      pictogram = list(size = "lg"),
+      pvalue = list(significantStyle = "pill")
+    ),
     name = "synthwave"
   )
 }
@@ -108,6 +116,12 @@ web_theme_brutalist <- function() {
       gradient_shell_intensity = "none",
       elevation = "none",
       title_style = "bar"
+    ),
+    # House style (area C): stark — square badges, display-weight
+    # numerals. Mirrors the TS preset.
+    column_defaults = list(
+      badge = list(shape = "square"),
+      numeric = list(fontClass = "display")
     ),
     name = "brutalist"
   )
@@ -175,6 +189,13 @@ web_theme_terminal <- function() {
     type_base_size = 13,
     effects = list(glow_intensity = "subtle", glow_anchor = "brand"),
     curves = list(neutral = "exp"),
+    # House style (area C): printout register — mono numerals, square
+    # outlined badges. Mirrors the TS preset.
+    column_defaults = list(
+      numeric = list(fontClass = "mono"),
+      interval = list(fontClass = "mono"),
+      badge = list(shape = "square", outline = TRUE)
+    ),
     name = "terminal"
   )
 }
