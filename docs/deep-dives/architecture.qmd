@@ -67,7 +67,7 @@ The theme system is resolved through three tiers. **Tier 1** is what authors edi
 |---|---|---|
 | 1 — inputs | `ThemeInputs`, `ThemeVariants` | The 16 customer-facing inputs (`primary`, `secondary`, `accent`, `status_*`, `series_anchors`, `slot_style`, fonts) plus three per-table variants (`density`, `header_style`, `first_column_style`). |
 | 2 — chrome roles | `Surfaces`, `Content`, `Dividers`, `AccentRoles`, `StatusColors`, `Semantics` | Derived from chrome inputs (neutrals + primary + accent). Drives surface tones, body text, dividers, status colors, semantic-token base colors. |
-| 2 — data roles | `SlotBundle` (per series anchor) | Derived from data inputs (`series_anchors` + `slot_style`). Each anchor expands into a 7-field bundle: `fill`, `stroke`, `fill_muted`, `stroke_muted`, `fill_emphasis`, `stroke_emphasis`, `text_fg`. |
+| 2 — data roles | `SlotRole` (per series anchor) | Derived from data inputs (`series_anchors` + `slot_style`). Each anchor expands into a 7-field bundle: `fill`, `stroke`, `fill_muted`, `stroke_muted`, `fill_emphasis`, `stroke_emphasis`, `text_fg`. |
 | 2 — typography & spacing | `TextRole`, `TextRoles`, `SpacingTokens` | 8 named text roles; 12 density-derived numeric tokens. |
 | 3 — component bundles | `HeaderCluster` / `HeaderVariant` (`light`/`tint`/`bold`), `ColumnGroupCluster`, `RowGroupCluster` / `RowGroupTier`, `RowCluster` (`base`/`alt`/`hover`/`selected` + 5 `RowSemantic` bundles `emphasis`/`muted`/`accent`/`bold`/`fill`), `CellCluster`, `FirstColumnCluster` / `FirstColumnVariant`, `PlotScaffold`, `MarksRecipes` / `MarkRecipe`, `AnnotationCluster` | Component-by-component bindings the renderer reads at paint time. |
 | config | `AxisConfig`, `Layout` | Forest x-axis range / ticks / gridlines / etc.; layout-level plot width and container border. |
@@ -138,7 +138,7 @@ WebTheme <- new_class("WebTheme", properties = list(
   accent   = AccentRoles(),     # T2
   status   = StatusColors(),    # T2
   semantic = Semantics(),       # T2 — named token color slots
-  series   = list(SlotBundle()),# T2 — per-series-anchor bundles
+  series   = list(SlotRole()),# T2 — per-series-anchor bundles
   text     = TextRoles(),       # T2 — 8 text roles
   spacing  = SpacingTokens(),   # T2 — density-derived numerics
   header / row_group / row / cell / first_column / plot / ...,  # T3 component bundles

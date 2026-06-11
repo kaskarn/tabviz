@@ -511,15 +511,6 @@ SlotRole <- new_class(
   }
 )
 
-#' SlotBundle (deprecated alias for SlotRole)
-#'
-#' Renamed to [SlotRole] in Sprint 1 PR 2. Kept as an alias for one
-#' minor version so existing user code that constructs `SlotBundle(...)`
-#' keeps working.
-#'
-#' @usage NULL
-#' @export
-SlotBundle <- SlotRole
 
 
 # -- Tier 2: typography roles --------------------------------------------

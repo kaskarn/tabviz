@@ -1957,14 +1957,14 @@ col_date <- function(field, header = NULL, width = NULL,
 #'   axis_label = "Odds Ratio (95% CI)"
 #' )
 viz_forest <- function(
-    header = NULL,
-    show_header = NULL,
-    header_align = "center",
-    width = NULL,
     point = NULL,
     lower = NULL,
     upper = NULL,
+    header = NULL,
+    width = NULL,
     effects = NULL,
+    show_header = NULL,
+    header_align = "center",
     scale = c("linear", "log"),
     null_value = NULL,
     axis_label = "Effect",

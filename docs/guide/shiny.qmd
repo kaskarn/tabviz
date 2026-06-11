@@ -217,7 +217,7 @@ ui <- fluidPage(
       hr(),
       h4("Display"),
       selectInput("theme", "Theme",
-        choices = c("Default" = "default", "JAMA" = "jama", "Lancet" = "lancet")),
+        choices = c("NEJM" = "nejm", "Ledger" = "ledger", "Terminal" = "terminal")),
       actionButton("sort_hr", "Sort by HR"),
       actionButton("reset",   "Reset View")
     ),
@@ -245,8 +245,7 @@ server <- function(input, output, session) {
   })
 
   observe({
-    set_theme(tabviz_proxy("plot"), switch(input$theme,
-      "jama" = "jama", "lancet" = "lancet", "default"))
+    set_theme(tabviz_proxy("plot"), input$theme)
   })
 
   sort_state <- reactiveVal("none")

@@ -314,8 +314,10 @@ test_that("set_type_role rebinds a type role + round-trips the wire (Wave 3)", {
 })
 
 test_that("set_column_default records house-style defaults + round-trips the wire", {
-  th <- web_theme_nejm()
-  expect_length(th@inputs@column_defaults, 0L)            # none by default
+  # ledger ships NO house style (nejm now does — area C, 2026-06-11),
+  # so it's the clean base for asserting the modifier's record.
+  th <- web_theme_ledger()
+  expect_length(th@inputs@column_defaults, 0L)            # none on ledger
 
   t2 <- set_column_default(th, "pvalue", stars = TRUE, significantStyle = "pill")
   expect_true(t2@inputs@column_defaults$pvalue$stars)

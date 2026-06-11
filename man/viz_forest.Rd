@@ -5,14 +5,14 @@
 \title{Visualization column: Forest plot}
 \usage{
 viz_forest(
-  header = NULL,
-  show_header = NULL,
-  header_align = "center",
-  width = NULL,
   point = NULL,
   lower = NULL,
   upper = NULL,
+  header = NULL,
+  width = NULL,
   effects = NULL,
+  show_header = NULL,
+  header_align = "center",
   scale = c("linear", "log"),
   null_value = NULL,
   axis_label = "Effect",
@@ -26,9 +26,20 @@ viz_forest(
 )
 }
 \arguments{
+\item{point}{Column name for point estimate. Use for single-effect plots.}
+
+\item{lower}{Column name for lower bound. Use for single-effect plots.}
+
+\item{upper}{Column name for upper bound. Use for single-effect plots.}
+
 \item{header}{Column header label. Defaults to \code{NULL}, which resolves to
 the single-effect field's label (or the point-column name). Multi-effect
 forests fall back to blank.}
+
+\item{width}{Column width in pixels (NULL for auto-sizing based on available space)}
+
+\item{effects}{List of \code{effect_forest()} objects for multi-effect display
+(multiple markers overlaid in same column). Cannot be used with point/lower/upper.}
 
 \item{show_header}{Whether to render the header cell above the plot.
 Defaults to \code{TRUE}. Set to \code{FALSE} to hide the header (useful when the
@@ -37,17 +48,6 @@ axis label already carries the meaning).}
 \item{header_align}{Header text alignment (\code{"left"}, \code{"center"}, \code{"right"}).
 Defaults to \code{"center"} for forest columns — pair nicely with the axis
 labels centered below the plot region.}
-
-\item{width}{Column width in pixels (NULL for auto-sizing based on available space)}
-
-\item{point}{Column name for point estimate. Use for single-effect plots.}
-
-\item{lower}{Column name for lower bound. Use for single-effect plots.}
-
-\item{upper}{Column name for upper bound. Use for single-effect plots.}
-
-\item{effects}{List of \code{effect_forest()} objects for multi-effect display
-(multiple markers overlaid in same column). Cannot be used with point/lower/upper.}
 
 \item{scale}{Scale type: "linear" (default) or "log"}
 

@@ -155,6 +155,10 @@
     fill="#191312">REWIND</text>
 <g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(282 163.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="411" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
+<line x1="12" x2="411" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="12" x2="411" y1="183.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="12" x2="12" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="411" x2="411" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
 
 
 </svg>

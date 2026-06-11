@@ -106,8 +106,8 @@ multiple variants from a single base:
 
 ```r
 base <- tabviz(data, ...)
-jama   <- base |> set_theme("nejm")
-lancet <- base |> set_theme("nejm")
+clinical <- base |> set_theme("nejm")
+neon     <- base |> set_theme("synthwave")
 ```
 :::
 

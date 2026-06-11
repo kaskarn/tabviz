@@ -354,24 +354,30 @@ Clinical/regulatory audience makes this table stakes.
 
 ### K. R interface tidied + documented
 **Exit criteria:**
-- [ ] API review: exported surface inventoried; naming/argument-order
-      consistent (col_* contract holds everywhere); deprecations done
-      cleanly (pre-release = deletions allowed).
-- [~] Task guides EXIST for all five topics (quick-start, themes,
-      columns, shiny, export — all rendering; themes + export gained
-      their mental-model/fidelity sections 2026-06-11). Roxygen is
-      0-warning as of today's check. Remaining for [x]: a deliberate
-      read-through pass of the five guides against the current API
-      (the docs-drift gate covers columns.qmd's table only).
-- [~] `R CMD check` re-verified 0E/0W (+1 env NOTE) on 2026-06-11 AFTER
-      the session's full surgery (wire 1.4→1.10, blob slimming,
-      component model, D2/D11/D12) — the check itself caught two doc
-      gaps (InteractionSpec axis-zoom/arrange params; the
-      set_first_column_style block my W4 edit clobbered), both fixed.
-      The strict `--as-cran` run (TinyTeX env) remains the M3 ship gate.
-
-### L. Scale posture (honesty as a feature)
-**Exit criteria:**
+- [x] API review DONE 2026-06-11: 211 exports inventoried (after the
+      review deleted the deprecated SlotBundle alias). Findings: all 64
+      modifier-family functions are object-first; col_* holds the
+      field/header/width contract; camelCase only where htmlwidgets
+      convention demands (render*/­*Output/elementId); cond()/condition()
+      verified deliberate (reference vs define). ONE real defect fixed:
+      viz_forest led with header while three documented examples called
+      it positionally as (point, lower, upper) — the signature now leads
+      with data fields, making those examples CORRECT (UNILATERAL
+      (delegated): clean pre-release signature break, all internal
+      callers named). Fresh R CMD check after: 0E/0W/0N.
+- [x] Task guides read through 2026-06-11: all six guide pages render
+      clean against the current API; the sweep caught and fixed stale
+      culled-preset references (jama/lancet in shiny.qmd's app + a
+      nonsensical fluent-api example, cochrane in the themes artifact
+      sample) and retargeted them at surviving presets. The deep-dive
+      architecture.qmd still describes the PRE-W4 theme model (variants/
+      cell/annotation fields) — flagged for a docs pass, not API-load-
+      bearing (deep-dive, not task guide).
+- [x] `R CMD check` fully clean 2026-06-11 (END of session surgery):
+      0 errors, 0 warnings, 0 NOTES — after wire 1.10, house styles,
+      the viz_forest reorder, SlotBundle deletion, namespace-integrity
+      gates. (The check run itself caught the namespace gate needing a
+      source-tree skip and a test assuming nejm had no house style.)
 - [x] Default-paginate threshold decided + implemented (D12,
       2026-06-11): 200 rows/group-break auto-default, FALSE opt-out,
       once-per-session hint, test-default-paginate.R locks all four

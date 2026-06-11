@@ -578,7 +578,7 @@ Both editing surfaces export and import **one** portable artifact:
 ```json
 {
   "$schema": "tabviz-theme/v4",
-  "name": "cochrane",
+  "name": "nejm",
   "inputs": { "anchors": { "...": "..." }, "polarity": "light", "...": "..." },
   "roleOverrides": { "text-muted": "brand.8" },
   "pins": { "--tv-text-footnote-size": "0.7rem" }
