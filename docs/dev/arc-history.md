@@ -11,6 +11,41 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-11 (evening) — first pushes, ship mechanics, and the sizing audit
+
+The 74-commit ship-readiness sweep went to GitHub (first real pushes).
+The maiden CI runs caught three issues before going green: an unpinned
+bun runtime in js-ci ("latest" — now pinned 1.3.5), a half-committed
+lockfile state (the frozen-lockfile gate working as designed), and the
+headline find — `scaleSpacing`'s factor-1 identity path returned the
+module-level DENSITY_SPACING entry BY REFERENCE, so every comfortable
+theme in a process shared one spacing object; one mutation restyled
+them all. Linux test-file order exposed what macOS order had hidden for
+months. js-ci (ts-suite + browser-gates), the 5-platform R matrix, and
+Quarto Publish all green after.
+
+npm 0.7.0 staged for publish (version/lockfiles/dated changelog;
+prepublishOnly exit 0; tarball inspected; the MCP server ships as a
+`tabviz-mcp` bin). The published docs site exposed the ingress wall's
+first false positive — col_group containers carry no `type`, so EVERY
+grouped-column widget mounted blank, including the front-page hero;
+none of the harness fixtures used column groups. Validator now recurses
+into groups; the hero shape is regression-pinned. The "thirty seconds"
+index section was axed per maintainer taste (README keeps the GIF).
+
+Then the maintainer's nose drove the SIZING AUDIT
+(docs/dev/sizing-audit-2026-06-11.md): obligate fill-width was real
+(D19 — growth now requires an absorber; plain tables hug content,
+matching the export's long-standing contract), the width estimator was
+font-class-naive (mono themes under-measured ~12% — flush first
+columns), the label column's parallel width path is deleted (the
+remaining label specialness is inventoried in OPEN register entry D20,
+discussion-first per maintainer), the systemfonts injection gained a
+metric-class guard (uninstalled mono fonts shaped with Helvetica while
+rsvg rendered Courier — colliding columns), and the content-sized
+centering flash is gone (synchronous first measurement). Five findings
+fixed, four recorded with revisit triggers.
+
 ## W4 — v3 blob slimming + bridge retirement — DONE 2026-06-11 (wire 1.6→1.10)
 
 `docs/dev/w4-v3-blob-slimming.md` is the full record. WHAT FUTURE AGENTS
