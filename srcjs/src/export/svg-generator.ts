@@ -762,8 +762,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // and subtitleHeight from the BODY size — the title band came out
   // ~12px short at defaults and worse on display-scale themes). Line
   // heights mirror PlotHeader.svelte (title 1.3, subtitle 1.4).
-  const titleHeight = hasTitle ? textRegionHeight(readTypeSize(cssVars, "title", "22.4px"), 1.3) : 0;
-  const subtitleHeight = hasSubtitle ? textRegionHeight(readTypeSize(cssVars, "subtitle", "16.8px"), 1.4) : 0;
+  // D15 title term (instrumented finding, 2026-06-11): the DOM line box
+  // is SUB-PIXEL (size × lh exactly); ceil()ing each line over-reserved
+  // ~0.9px/line on the nejm family. Carry exact values here — the total
+  // is consumed in sums whose other terms are integers, so rounding
+  // happens once at paint, like the browser.
+  const titleHeight = hasTitle ? parseFontSize(readTypeSize(cssVars, "title", "22.4px")) * 1.3 : 0;
+  const subtitleHeight = hasSubtitle ? parseFontSize(readTypeSize(cssVars, "subtitle", "16.8px")) * 1.4 : 0;
   // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
   // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
   // padding = 6+1+6).

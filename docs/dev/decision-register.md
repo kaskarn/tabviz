@@ -17,7 +17,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
 | D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due) | keep / adjust per flag | keep current split | M3 |
-| D15 | Export title-block arithmetic (headerBand.top ≤8px budgeted) | (a) mirror DOM exactly; (b) keep budgeted | INSTRUMENTED 2026-06-11 (the prescription executed): two permanent matrix metrics decompose the delta per term — captionTerm.titleLineBox + captionTerm.subtitleLineBox (DOM element boxes vs the export's ceil(size×lh) model, budgeted as instrumentation). FIRST READINGS: the title term on the nejm family is PURE ceil() rounding (−0.9: DOM sub-pixel 29.12 vs ceil→30 — fix: keep exact, round the SUM); the +3.4 title case and the subtitle −5…−13 spread need per-case attribution (suspect: harness chain assumptions on themes pinning title_subtitle_gap). Arithmetic fix follows the data. | M2 (area G) |
+| D15 | Export title-block arithmetic (headerBand.top ≤8px budgeted) | — | DATA-DRIVEN as of 2026-06-11: (1) title term FIXED — exact line heights replace ceil() (headerBand max\|Δ\| 7.6→7; the nejm family's rounding gone); (2) the remaining divergence ATTRIBUTED by the per-term metrics — it lands exactly on the title_style-decorated presets, whose caption chrome (stripe/chip) alters the subtitle chain the export models as plain. NEXT: a per-title_style chain table in the export's caption block; the instrumentation metrics will verify and the budgets tighten. | M2 (area G) |
 
 
 ## Decided

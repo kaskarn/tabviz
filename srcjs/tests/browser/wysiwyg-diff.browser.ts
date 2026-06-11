@@ -97,8 +97,14 @@ const GATE_EXCEPTIONS: Array<{ pattern: RegExp; maxAbs: number; why: string }> =
   // nejm family); +3.4 and the subtitle's −5…−13 spread need per-case
   // attribution (likely probe-side chain assumptions on themes that pin
   // title_subtitle_gap). Tighten as the terms get fixed.
-  { pattern: /^geometry :: captionTerm\.titleLineBox/, maxAbs: 4, why: "D15 instrumentation (title term)" },
-  { pattern: /^geometry :: captionTerm\.subtitleLineBox/, maxAbs: 14, why: "D15 instrumentation (subtitle term)" },
+  { pattern: /^geometry :: captionTerm\.titleLineBox/, maxAbs: 4, why: "D15 instrumentation (title term — synthwave residue)" },
+  { pattern: /^geometry :: captionTerm\.subtitleLineBox/, maxAbs: 2, why: "D15 instrumentation (uniform +1.5 on title_style themes)" },
+  // ATTRIBUTED (2026-06-11): the chain divergence lands EXACTLY on the
+  // title_style-decorated presets (brutalist/synthwave/terminal) — their
+  // caption chrome (stripe/chip) alters the border/padding chain above
+  // the subtitle; the export models the PLAIN chain only. The fix is a
+  // per-title_style chain table in the export's caption block.
+  { pattern: /^geometry :: captionTerm\.subtitleChain/, maxAbs: 16, why: "D15 instrumentation (title_style chrome not modeled in export)" },
   { pattern: /^geometry :: row\[/, maxAbs: 4, why: "measure-loop growth residual (per-row)" },
   { pattern: /^geometry :: rowPitch/, maxAbs: 4, why: "measure-loop growth residual" },
 ];
@@ -269,7 +275,8 @@ interface DomProbe {
   headerBand: { topInScalable: number; topInMain: number; h: number } | null;
   groupLabelX: number | null;
   captionTerms: { areaH: number; padTop: number; padBottom: number;
-                  titleH: number | null; subtitleH: number | null } | null;
+                  titleH: number | null; subtitleH: number | null;
+                  subtitleChain: number | null } | null;
   // primary-cell data rows in document order: top relative to main, height
   dataRows: Array<{ id: string; top: number; h: number }>;
   groupRows: Array<{ top: number; h: number }>;
@@ -336,12 +343,20 @@ const DOM_PROBE_FN = `(() => {
     const sEl = document.querySelector(".plot-subtitle");
     if (ha) {
       const haCs = getComputedStyle(ha);
+      const sCs = sEl ? getComputedStyle(sEl) : null;
       captionTerms = {
         areaH: R(ha).height,
         padTop: parseFloat(haCs.paddingTop),
         padBottom: parseFloat(haCs.paddingBottom),
         titleH: tEl ? R(tEl).height : null,
         subtitleH: sEl ? R(sEl).height : null,
+        // The REAL chain above the subtitle line box — measured, not
+        // assumed (themes pin title_subtitle_gap; the var+fallback probe
+        // mis-attributed −9.3px on synthwave).
+        subtitleChain: sCs
+          ? parseFloat(sCs.borderTopWidth || "0") + parseFloat(sCs.paddingTop || "0")
+            + parseFloat(sCs.marginTop || "0")
+          : null,
       };
     }
   }
@@ -609,17 +624,19 @@ async function runCase(browser: Browser, opts: ReturnType<typeof parseArgs>, c: 
     const TITLE_PAD = 2.4; // .plot-title padding-bottom 0.15rem
     if (dom.captionTerms.titleH != null && titleSize > 0) {
       cmpNum(findings, caseId, "geometry", "captionTerm.titleLineBox",
-        dom.captionTerms.titleH - TITLE_PAD, Math.ceil(titleSize * 1.3), 0.75,
-        "DOM .plot-title line box (minus its 2.4px pad) vs export ceil(size×1.3)");
+        dom.captionTerms.titleH - TITLE_PAD, titleSize * 1.3, 0.75,
+        "DOM .plot-title line box (minus its 2.4px pad) vs export size×1.3 (exact since the ceil fix)");
     }
     if (dom.captionTerms.subtitleH != null && subSize > 0) {
-      // has-both subtitles carry border 1 + padding (gap−1) = gap total.
-      const gap = px(dom.cssVars["--tv-spacing-title-subtitle-gap"]) ||
-        (dom.captionTerms.titleH != null ? 13 : 0);
-      const chain = dom.captionTerms.titleH != null ? gap : 0;
+      const chain = dom.captionTerms.subtitleChain ?? 0;
       cmpNum(findings, caseId, "geometry", "captionTerm.subtitleLineBox",
-        dom.captionTerms.subtitleH - chain, Math.ceil(subSize * 1.4), 0.75,
-        "DOM .plot-subtitle line box (minus border+padding chain) vs export ceil(size×1.4)");
+        dom.captionTerms.subtitleH - chain, subSize * 1.4, 0.75,
+        "DOM .plot-subtitle line box (minus its MEASURED chain) vs export size×1.4");
+      // And the chain itself vs what the export reserves for it.
+      const exportGap = px(dom.cssVars["--tv-spacing-title-subtitle-gap"]) || 13;
+      cmpNum(findings, caseId, "geometry", "captionTerm.subtitleChain",
+        chain, exportGap, 0.75,
+        "DOM measured border+padding+margin above the subtitle vs the export's gap term");
     }
   }
 
