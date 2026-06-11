@@ -20,64 +20,66 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
   "headerHeight": 29,
   "labelWidth": 74,
   "mainY": 16,
-  "plotHeight": 120,
+  "paperPad": 0,
+  "plotHeight": 126,
   "rows": [
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 0,
       "kind": "data",
-      "markerCenter": 10,
+      "markerCenter": 10.5,
       "top": 0,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 1,
       "kind": "data",
-      "markerCenter": 30,
-      "top": 20,
+      "markerCenter": 31.5,
+      "top": 21,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 2,
       "kind": "data",
-      "markerCenter": 50,
-      "top": 40,
+      "markerCenter": 52.5,
+      "top": 42,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 3,
       "kind": "data",
-      "markerCenter": 70,
-      "top": 60,
+      "markerCenter": 73.5,
+      "top": 63,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 4,
       "kind": "data",
-      "markerCenter": 90,
-      "top": 80,
+      "markerCenter": 94.5,
+      "top": 84,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 5,
       "kind": "data",
-      "markerCenter": 110,
-      "top": 100,
+      "markerCenter": 115.5,
+      "top": 105,
     },
   ],
-  "rowsHeight": 120,
+  "rowsHeight": 126,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 8,
     "cellPaddingX": 8,
@@ -88,7 +90,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-flat 1`] = `
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 206,
+  "totalHeight": 212,
   "totalWidth": 800,
 }
 `;
@@ -113,6 +115,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
   "headerHeight": 32,
   "labelWidth": 78,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 144,
   "rows": [
     {
@@ -171,6 +174,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-flat 1`] =
     },
   ],
   "rowsHeight": 144,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -206,6 +210,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
   "headerHeight": 40,
   "labelWidth": 86,
   "mainY": 32,
+  "paperPad": 0,
   "plotHeight": 180,
   "rows": [
     {
@@ -264,6 +269,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-flat 1`] = `
     },
   ],
   "rowsHeight": 180,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 16,
     "cellPaddingX": 14,
@@ -299,55 +305,57 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
   "headerHeight": 29,
   "labelWidth": 74,
   "mainY": 16,
-  "plotHeight": 130,
+  "paperPad": 0,
+  "plotHeight": 135,
   "rows": [
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 0,
       "kind": "data",
-      "markerCenter": 10,
+      "markerCenter": 10.5,
       "top": 0,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 1,
       "kind": "data",
-      "markerCenter": 30,
-      "top": 20,
+      "markerCenter": 31.5,
+      "top": 21,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 2,
       "kind": "data",
-      "markerCenter": 50,
-      "top": 40,
+      "markerCenter": 52.5,
+      "top": 42,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 3,
       "kind": "data",
-      "markerCenter": 70,
-      "top": 60,
+      "markerCenter": 73.5,
+      "top": 63,
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 4,
       "kind": "data",
-      "markerCenter": 90,
-      "top": 80,
+      "markerCenter": 94.5,
+      "top": 84,
     },
   ],
-  "rowsHeight": 100,
+  "rowsHeight": 105,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 8,
     "cellPaddingX": 8,
@@ -358,7 +366,7 @@ exports[`layout metrics (sizing harness) metrics: density-compact-overall 1`] = 
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 216,
+  "totalHeight": 221,
   "totalWidth": 800,
 }
 `;
@@ -383,6 +391,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
   "headerHeight": 32,
   "labelWidth": 78,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 156,
   "rows": [
     {
@@ -432,6 +441,7 @@ exports[`layout metrics (sizing harness) metrics: density-comfortable-overall 1`
     },
   ],
   "rowsHeight": 120,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -467,6 +477,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
   "headerHeight": 40,
   "labelWidth": 86,
   "mainY": 32,
+  "paperPad": 0,
   "plotHeight": 195,
   "rows": [
     {
@@ -516,6 +527,7 @@ exports[`layout metrics (sizing harness) metrics: density-spacious-overall 1`] =
     },
   ],
   "rowsHeight": 150,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 16,
     "cellPaddingX": 14,
@@ -557,7 +569,8 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
   "headerHeight": 29,
   "labelWidth": 69,
   "mainY": 16,
-  "plotHeight": 116,
+  "paperPad": 0,
+  "plotHeight": 117,
   "rows": [
     {
       "depth": 0,
@@ -570,11 +583,11 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     },
     {
       "depth": 0,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 1,
       "kind": "data",
-      "markerCenter": 58,
+      "markerCenter": 58.5,
       "top": 48,
     },
     {
@@ -583,11 +596,12 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
       "indent": 0,
       "index": 2,
       "kind": "data",
-      "markerCenter": 92,
-      "top": 68,
+      "markerCenter": 93,
+      "top": 69,
     },
   ],
-  "rowsHeight": 116,
+  "rowsHeight": 117,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 8,
     "cellPaddingX": 8,
@@ -598,7 +612,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-compact 1`] = `
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 202,
+  "totalHeight": 203,
   "totalWidth": 800,
 }
 `;
@@ -629,6 +643,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
   "headerHeight": 32,
   "labelWidth": 73,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 120,
   "rows": [
     {
@@ -660,6 +675,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-comfortable 1`] = `
     },
   ],
   "rowsHeight": 120,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -701,6 +717,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
   "headerHeight": 40,
   "labelWidth": 81,
   "mainY": 32,
+  "paperPad": 0,
   "plotHeight": 126,
   "rows": [
     {
@@ -732,6 +749,7 @@ exports[`layout metrics (sizing harness) metrics: wrap-spacious 1`] = `
     },
   ],
   "rowsHeight": 126,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 16,
     "cellPaddingX": 14,
@@ -767,6 +785,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
   "headerHeight": 32,
   "labelWidth": 123,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 96,
   "rows": [
     {
@@ -807,6 +826,7 @@ exports[`layout metrics (sizing harness) metrics: indent-depths 1`] = `
     },
   ],
   "rowsHeight": 96,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -842,6 +862,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
   "headerHeight": 32,
   "labelWidth": 135,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 84,
   "rows": [
     {
@@ -882,6 +903,7 @@ exports[`layout metrics (sizing harness) metrics: spacers 1`] = `
     },
   ],
   "rowsHeight": 84,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -917,7 +939,8 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
   "headerHeight": 29,
   "labelWidth": 106,
   "mainY": 16,
-  "plotHeight": 128,
+  "paperPad": 0,
+  "plotHeight": 132,
   "rows": [
     {
       "depth": 0,
@@ -930,21 +953,21 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     },
     {
       "depth": 1,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 1,
       "kind": "data",
-      "markerCenter": 30,
+      "markerCenter": 30.5,
       "top": 20,
     },
     {
       "depth": 1,
-      "height": 28,
+      "height": 29,
       "indent": 0,
       "index": 2,
       "kind": "data",
-      "markerCenter": 50,
-      "top": 40,
+      "markerCenter": 51.5,
+      "top": 41,
     },
     {
       "depth": 0,
@@ -952,29 +975,30 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
       "indent": 0,
       "index": 3,
       "kind": "group_header",
-      "markerCenter": 78,
-      "top": 68,
+      "markerCenter": 80,
+      "top": 70,
     },
     {
       "depth": 1,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 4,
       "kind": "data",
-      "markerCenter": 98,
-      "top": 88,
+      "markerCenter": 100.5,
+      "top": 90,
     },
     {
       "depth": 1,
-      "height": 20,
+      "height": 21,
       "indent": 0,
       "index": 5,
       "kind": "data",
-      "markerCenter": 118,
-      "top": 108,
+      "markerCenter": 121.5,
+      "top": 111,
     },
   ],
-  "rowsHeight": 128,
+  "rowsHeight": 132,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 8,
     "cellPaddingX": 8,
@@ -985,7 +1009,7 @@ exports[`layout metrics (sizing harness) metrics: groups-compact 1`] = `
     "rowGroupPadding": 8,
     "rowHeight": 20,
   },
-  "totalHeight": 214,
+  "totalHeight": 218,
   "totalWidth": 800,
 }
 `;
@@ -1010,6 +1034,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
   "headerHeight": 32,
   "labelWidth": 110,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 156,
   "rows": [
     {
@@ -1068,6 +1093,7 @@ exports[`layout metrics (sizing harness) metrics: groups-comfortable 1`] = `
     },
   ],
   "rowsHeight": 156,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -1103,6 +1129,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
   "headerHeight": 40,
   "labelWidth": 118,
   "mainY": 32,
+  "paperPad": 0,
   "plotHeight": 196,
   "rows": [
     {
@@ -1161,6 +1188,7 @@ exports[`layout metrics (sizing harness) metrics: groups-spacious 1`] = `
     },
   ],
   "rowsHeight": 196,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 16,
     "cellPaddingX": 14,
@@ -1214,6 +1242,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
   "headerHeight": 32,
   "labelWidth": 78,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 120,
   "rows": [
     {
@@ -1263,6 +1292,7 @@ exports[`layout metrics (sizing harness) metrics: mixed-columns 1`] = `
     },
   ],
   "rowsHeight": 120,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -1298,6 +1328,7 @@ exports[`layout metrics (sizing harness) metrics: pure-table-no-axis 1`] = `
   "headerHeight": 32,
   "labelWidth": 78,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 96,
   "rows": [
     {
@@ -1338,6 +1369,7 @@ exports[`layout metrics (sizing harness) metrics: pure-table-no-axis 1`] = `
     },
   ],
   "rowsHeight": 96,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -1360,19 +1392,20 @@ exports[`layout metrics (sizing harness) metrics: content-height-pictogram 1`] =
     {
       "id": "label",
       "type": "text",
-      "width": 65,
+      "width": 67,
       "x": 12,
     },
     {
       "id": "cnt",
       "type": "pictogram",
       "width": 84,
-      "x": 77,
+      "x": 79,
     },
   ],
   "headerHeight": 32,
-  "labelWidth": 65,
+  "labelWidth": 67,
   "mainY": 24,
+  "paperPad": 0,
   "plotHeight": 136,
   "rows": [
     {
@@ -1404,6 +1437,7 @@ exports[`layout metrics (sizing harness) metrics: content-height-pictogram 1`] =
     },
   ],
   "rowsHeight": 136,
+  "shellPad": 0,
   "spacing": {
     "axisGap": 12,
     "cellPaddingX": 10,
@@ -1415,6 +1449,6 @@ exports[`layout metrics (sizing harness) metrics: content-height-pictogram 1`] =
     "rowHeight": 24,
   },
   "totalHeight": 208,
-  "totalWidth": 173,
+  "totalWidth": 175,
 }
 `;

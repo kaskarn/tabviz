@@ -346,8 +346,12 @@ function calculateSvgAutoWidths(
   // Header cells: use the explicit theme.header.text.size when it's been
   // pinned distinct from body.size; otherwise apply the historical 5%
   // scale-up (matches the .header-cell CSS calc-fallback in TabvizPlot).
+  // Compare PARSED px, not strings (WYSIWYG review pass): the v3 header
+  // string ("0.875rem") never string-equals the v4 body token ("14px"),
+  // so the scale-up branch was unreachable — headers exported at 14px
+  // while the DOM rendered calc(body × 1.05) = 14.7px.
   const headerExplicit = spec.theme.header?.text?.size;
-  const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
+  const headerFontSize = (headerExplicit && Math.abs(parseFontSize(headerExplicit) - parseFontSize(bodySizeStr)) > 0.01)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(fontSize * 1.05 * 100) / 100;
   // Header font weight is theme-controlled via theme.header.text.weight
@@ -565,7 +569,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   // a long primary header doesn't squeeze the label column and trigger
   // ellipsis in the live header.
   const headerExplicit = spec.theme.header?.text?.size;
-  const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
+  const headerFontSize = (headerExplicit && Math.abs(parseFontSize(headerExplicit) - parseFontSize(bodySizeStr)) > 0.01)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(fontSize * 1.05 * 100) / 100;
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
@@ -685,6 +689,13 @@ interface InternalLayout extends ComputedLayout {
   labelWidth: number;               // Calculated label column width
   rowMarkerCenters: number[];       // Per-row marker-center Y (skips trailing rowGroupPadding)
   rowPaddedAfter: boolean[];        // Per-row flag: gets bottom row-group padding
+  /** Shell band padding (px, per side) from --tv-shell-padding. 0 under
+   *  flush/transparent shells and stub themes — when 0 the layout is
+   *  byte-identical to the pre-shell export (geometric inertness). */
+  shellPad: number;
+  /** Paper inner mat (px, per side) from --tv-paper-padding. Folded
+   *  vertically around the table block (mainY / footerY / totalHeight). */
+  paperPad: number;
 }
 
 function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
@@ -696,6 +707,24 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const cssVars = getCssVars(theme);
   const rowHeight = readVarPx(cssVars, "--tv-spacing-row-height", 34);
   const padding = readVarPx(cssVars, "--tv-spacing-padding", 8);
+
+  // Shell/paper export parity (2026-06-10): the live widget wraps the
+  // figure in a shell band (density-scaled outer air, --tv-shell-padding)
+  // and a paper data card with an inner mat (--tv-paper-padding) — see
+  // shell-paper.ts and the wrap contract in TabvizPlot.svelte. The export
+  // mirrors the GEOMETRY: 2×shellPad joins totalWidth/totalHeight (the
+  // drawing pass translates all content by shellPad), and the paper mat is
+  // folded VERTICALLY around the table block (mainY / footerY /
+  // totalHeight) — title/subtitle above and caption/footnote below stay on
+  // the shell surface, exactly like the DOM. Horizontally the mat is NOT
+  // folded into column x positions (v1): the existing --tv-spacing-padding
+  // inset serves as the visible horizontal mat, matching the DOM's
+  // container-constrained width (the DOM table shrinks to fit inside the
+  // mat; it does not grow the artifact). Flush/transparent shells and stub
+  // themes resolve both pads to 0px, keeping this layout byte-identical to
+  // the pre-shell export (geometric inertness contract).
+  const shellPad = readVarPx(cssVars, "--tv-shell-padding", 0);
+  const paperPad = readVarPx(cssVars, "--tv-paper-padding", 0);
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
@@ -736,16 +765,30 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // constants tuned for the default font profile, which truncated the
   // title (or padded too much) when users picked larger / smaller fonts.
   const lineHeight = 1.5;
-  const titleHeight = hasTitle ? textRegionHeight(readTypeSize(cssVars, "subtitle", "16.8px"), lineHeight) : 0;
-  const subtitleHeight = hasSubtitle ? textRegionHeight(readBodySize(cssVars), lineHeight) : 0;
+  // Layout must reserve for the SAME roles the drawing code emits
+  // (WYSIWYG review pass: titleHeight was computed from the SUBTITLE size
+  // and subtitleHeight from the BODY size — the title band came out
+  // ~12px short at defaults and worse on display-scale themes). Line
+  // heights mirror PlotHeader.svelte (title 1.3, subtitle 1.4).
+  const titleHeight = hasTitle ? textRegionHeight(readTypeSize(cssVars, "title", "22.4px"), 1.3) : 0;
+  const subtitleHeight = hasSubtitle ? textRegionHeight(readTypeSize(cssVars, "subtitle", "16.8px"), 1.4) : 0;
   // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
   // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
   // padding = 6+1+6).
   const titleSubtitleGap = (hasTitle && hasSubtitle) ? readVarPx(cssVars, "--tv-spacing-title-subtitle-gap", 13) : 0;
-  const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
+  // Top inset above the title mirrors the DOM's literal `.header-area`
+  // padding-top (PlotHeader.svelte: `padding: 12px 8px var(--tv-spacing-
+  // header-gap) 0`) — it does NOT scale with --tv-spacing-padding, so
+  // using the themed padding here drifted the whole header band up/down
+  // with density (WYSIWYG review pass).
+  const PLOT_HEADER_TOP_PAD = 12;
+  const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? PLOT_HEADER_TOP_PAD : 0);
 
-  const captionHeight = hasCaption ? textRegionHeight(readLabelSize(cssVars), lineHeight) : 0;
-  const footnoteHeight = hasFootnote ? textRegionHeight(readLabelSize(cssVars), lineHeight) : 0;
+  // Caption/footnote reserve from their OWN type roles — the DOM consumes
+  // --tv-text-caption-size / --tv-text-footnote-size (PlotFooter.svelte),
+  // not the mono label role this used to read.
+  const captionHeight = hasCaption ? textRegionHeight(readTypeSize(cssVars, "caption", "12.25px"), lineHeight) : 0;
+  const footnoteHeight = hasFootnote ? textRegionHeight(readTypeSize(cssVars, "footnote", "12.25px"), lineHeight) : 0;
   // Pre-spacing above the caption is already supplied by `footerGap`;
   // adding `padding` here too double-counted the air between axis end
   // and caption text. Remove and let footerGap own that gap exclusively.
@@ -992,16 +1035,24 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // mirror the prior LAYOUT.BOTTOM_MARGIN constant).
   const bottomMargin = readVarPx(cssVars, "--tv-spacing-bottom-margin", LAYOUT.BOTTOM_MARGIN);
   const headerGap = readVarPx(cssVars, "--tv-spacing-header-gap", 12);
-  const totalHeight = headerTextHeight + padding +
-    headerGap +
+  // Below the title block the DOM applies ONLY the header gap (the
+  // .header-area bottom padding) — the extra themed `padding` term that
+  // used to stack here double-padded the seam (review pass). Without a
+  // title block, keep the legacy canvas inset.
+  const headerBlockBottomPad = (hasTitle || hasSubtitle) ? 0 : padding;
+  // Paper mat above the table (below the title block / header gap) and
+  // below the axis end; shell band on all four sides.
+  const totalHeight = headerTextHeight + headerBlockBottomPad +
+    headerGap + paperPad +
     headerHeight + plotHeight +
-    webAxisHeight +
+    webAxisHeight + paperPad +
     footerGap +
     footerTextHeight +
-    bottomMargin;
+    bottomMargin +
+    shellPad * 2;
 
   return {
-    totalWidth,
+    totalWidth: totalWidth + shellPad * 2,
     totalHeight: options.height ?? totalHeight,
     flexWidths,
     headerHeight,
@@ -1019,13 +1070,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // Title baseline = top of region + (titleHeight × 0.8) to drop under the
     // ascender. Replaces the old `+ TITLE_HEIGHT - 4` magic that assumed
     // the constant 28px region.
-    titleY: padding + Math.round(titleHeight * 0.8),
-    subtitleY: padding + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * 0.8),
+    titleY: PLOT_HEADER_TOP_PAD + Math.round(titleHeight * 0.8),
+    subtitleY: PLOT_HEADER_TOP_PAD + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * 0.8),
     // Header → first row gap. Live widget applies it as `padding-bottom`
     // on the header element via `--tv-header-gap` (PlotHeader.svelte:130);
     // SVG has no header element so we fold the gap into mainY. Default 12
     // matches the live CSS-var fallback in TabvizPlot.svelte.
-    mainY: headerTextHeight + padding + headerGap,
+    mainY: headerTextHeight + headerBlockBottomPad + headerGap + paperPad,
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
     // footerY = caption baseline. Live widget renders the caption with
@@ -1035,8 +1086,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // top to baseline ≈ 0.85 × fontSize). Without the +captionAscent,
     // SVG and live disagreed by ~10px and the footer text overlapped
     // the axis region in the export.
-    footerY: headerTextHeight + padding + headerGap
-           + headerHeight + plotHeight + webAxisHeight
+    footerY: headerTextHeight + headerBlockBottomPad + headerGap
+           + paperPad + headerHeight + plotHeight + webAxisHeight + paperPad
            + readVarPx(cssVars, "--tv-spacing-footer-gap", 8)
            + Math.round(parseFontSize(readLabelSize(cssVars)) * 0.85),
     axisGap,
@@ -1047,6 +1098,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     rowHeights,
     rowMarkerCenters,
     rowPaddedAfter,
+    shellPad,
+    paperPad,
   };
 }
 
@@ -1597,24 +1650,30 @@ function renderFooter(
       stroke="${borderStroke}" stroke-width="1"/>`);
   }
 
+  // Caption/footnote draw from their OWN type roles — size AND weight —
+  // matching the DOM's caption/footnote type tokens (PlotFooter.svelte)
+  // (WYSIWYG review pass: this used the mono LABEL role's size with a
+  // hardcoded weight 400, so exported footer text rendered ~13% smaller
+  // everywhere and ignored type-role rebinds). Footnote italic matches
+  // .plot-footnote's font-style in PlotFooter.svelte.
   if (spec.labels?.caption) {
-    const fontSize = parseFontSize(readLabelSize(cssVars));
+    const fontSize = parseFontSize(readTypeSize(cssVars, "caption", "12.25px"));
     lines.push(`<text x="${padding}" y="${y}"
       font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px"
-      font-weight="${400}"
+      font-weight="${readTypeWeight(cssVars, "caption", 400)}"
       fill="${captionFg}">${escapeXml(spec.labels.caption)}</text>`);
     // Advance Y by the caption's actual line height — derived from
     // typography rather than the hardcoded 16px constant.
-    y += textRegionHeight(readLabelSize(cssVars), 1.5);
+    y += textRegionHeight(readTypeSize(cssVars, "caption", "12.25px"), 1.5);
   }
 
   if (spec.labels?.footnote) {
-    const fontSize = parseFontSize(readLabelSize(cssVars));
+    const fontSize = parseFontSize(readTypeSize(cssVars, "footnote", "12.25px"));
     lines.push(`<text x="${padding}" y="${y}"
       font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px"
-      font-weight="${400}"
+      font-weight="${readTypeWeight(cssVars, "footnote", 400)}"
       font-style="italic"
       fill="${footnoteFg}">${escapeXml(spec.labels.footnote)}</text>`);
   }
@@ -2788,13 +2847,16 @@ function renderVizAxis(
       fill="${tickLabelFg}">${label}</text>`);
   }
 
-  // Axis label
+  // Axis label — the LABEL type role, exactly what the DOM consumes
+  // (EffectAxis: --tv-text-label-family/-size/-weight). WYSIWYG review
+  // pass: this emitted body family at weight 500 while the DOM rendered
+  // the label role (mono/bold on several presets).
   if (axisLabel) {
     lines.push(`<text x="${vizX + vizWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${readBodyFamily(cssVars)}"
+      font-family="${readTypeFamily(cssVars, "label", readBodyFamily(cssVars))}"
       font-size="${fontSize}px"
-      font-weight="${500}"
+      font-weight="${readTypeWeight(cssVars, "label", 500)}"
       fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
 
@@ -2904,10 +2966,10 @@ function renderForestAxis(
   if (axisLabel) {
     lines.push(`<text x="${forestX + forestWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${theme.plot?.axisLabel?.family ?? readTypeFamily(cssVars, "label", readBodyFamily(cssVars))}"
+      font-family="${readTypeFamily(cssVars, "label", readBodyFamily(cssVars))}"
       font-size="${fontSize}px"
-      font-weight="${theme.plot?.axisLabel?.weight ?? readTypeWeight(cssVars, "label", 500)}"
-      font-style="${(theme.plot?.axisLabel?.italic ?? theme.text.label?.italic) ? "italic" : "normal"}"
+      font-weight="${readTypeWeight(cssVars, "label", 500)}"
+      font-style="normal"
       fill="${axisLabelFg}">${escapeXml(axisLabel)}</text>`);
   }
 
@@ -2941,7 +3003,7 @@ function renderUnifiedColumnHeaders(
   // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
   const headerExplicit = theme.header?.text?.size;
   const bodySizeStr = readBodySize(cssVars);
-  const fontSize = (headerExplicit && headerExplicit !== bodySizeStr)
+  const fontSize = (headerExplicit && Math.abs(parseFontSize(headerExplicit) - parseFontSize(bodySizeStr)) > 0.01)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(baseFontSize * 1.05 * 100) / 100;
   const fontFamily = theme.header?.text?.family ?? readBodyFamily(cssVars);
@@ -3742,6 +3804,7 @@ export interface ColMetric {
 }
 
 export interface LayoutMetrics {
+  /** Full canvas dims — include the shell band (2×shellPad) when present. */
   totalWidth: number;
   totalHeight: number;
   headerHeight: number;
@@ -3749,10 +3812,15 @@ export interface LayoutMetrics {
   labelWidth: number;
   plotHeight: number;
   rowsHeight: number;
-  /** Absolute Y of the top of the column-header band (svg origin). The
-   *  data-rows area starts at mainY + headerHeight; a row's absolute top is
-   *  mainY + headerHeight + row.top. */
+  /** Y of the top of the column-header band in CONTENT coordinates (the
+   *  space inside the shell translate; add shellPad for canvas-absolute).
+   *  The data-rows area starts at mainY + headerHeight; a row's content-
+   *  space top is mainY + headerHeight + row.top. */
   mainY: number;
+  /** Shell band padding per side (0 = no band; content coords == canvas). */
+  shellPad: number;
+  /** Paper inner mat per side (already folded into mainY / totalHeight). */
+  paperPad: number;
   spacing: {
     rowHeight: number;
     headerHeight: number;
@@ -3838,6 +3906,8 @@ export function computeLayoutMetrics(
     plotHeight: layout.plotHeight,
     rowsHeight: layout.rowsHeight,
     mainY: layout.mainY,
+    shellPad: layout.shellPad,
+    paperPad: layout.paperPad,
     spacing: {
       rowHeight:       readVarPx(cssVars, "--tv-spacing-row-height", 34),
       headerHeight:    readVarPx(cssVars, "--tv-spacing-header-height", 34),
@@ -3896,6 +3966,12 @@ function generateSVGForAspectTarget(
 
   // ----- Natural baseline -----
   const naturalLayout = computeLayout(spec, {});
+  // Shell band rides OUTSIDE the content area: the target dims are final
+  // artifact dims, so the width handed to the column distribution (and the
+  // inner render's width floor) is the target minus the band. Height needs
+  // no equivalent adjustment — naturalLayout.totalHeight already includes
+  // the band, so heightDelta is band-consistent on both sides.
+  const natShellPad = naturalLayout.shellPad;
   const allColumns = flattenAllColumns(spec.columns);
   const autoWidths = calculateSvgAutoWidths(spec, allColumns);
 
@@ -4122,7 +4198,7 @@ function generateSVGForAspectTarget(
     });
   const aspectWidths = resolveFlexWidths(
     aspectFlexSpecs,
-    Math.max(0, targetWidth - aspectPadding * 2 - naturalLayout.labelWidth),
+    Math.max(0, targetWidth - natShellPad * 2 - aspectPadding * 2 - naturalLayout.labelWidth),
   ).widths;
   for (const col of flattenAllColumns(adjustedSpec.columns)) {
     const w = aspectWidths[col.id];
@@ -4169,17 +4245,102 @@ function generateSVGForAspectTarget(
   // We've sized every column explicitly; the standard at-least-width
   // path won't kick in (totalTableWidth + flex == targetWidth by
   // construction, modulo Lever 1B's < targetWidth saturation, which is
-  // intentional). Pass width=targetWidth so the SVG root reports it.
+  // intentional). Pass width=targetWidth (minus the shell band, which the
+  // inner render re-adds around the content) so the SVG root reports it.
   const innerOptions: ExportOptions = {
     ...options,
     targetWidth: undefined,
     targetHeight: undefined,
     flexCap: undefined,
     autoWrap: undefined,
-    width: targetWidth,
+    width: Math.max(50, targetWidth - natShellPad * 2),
     height: undefined,
   };
   return generateSVG(adjustedSpec, innerOptions);
+}
+
+// ============================================================================
+// Shell chrome helpers (export parity for the shell band's gradient + texture)
+// ============================================================================
+
+/** Convert the resolver's `--tv-shell-gradient` CSS value
+ *  (`linear-gradient(<angle>deg, <from> 0%, <to> 100%)` — see
+ *  resolve-theme.ts's gradient-shell resolver, which emits exactly this
+ *  two-stop shape) into an SVG `<linearGradient>` def. Returns null for
+ *  any other shape (unknown future syntax degrades to the flat shell bg
+ *  rather than breaking the export). */
+function cssLinearGradientToSvgDef(
+  id: string,
+  cssGradient: string,
+): { id: string; def: string } | null {
+  const m = cssGradient.match(
+    /^linear-gradient\(\s*(-?[\d.]+)deg\s*,\s*(.+?)\s+0%\s*,\s*(.+?)\s+100%\s*\)$/,
+  );
+  if (!m) return null;
+  const angle = parseFloat(m[1]);
+  if (!Number.isFinite(angle)) return null;
+  const from = m[2].trim();
+  const to = m[3].trim();
+  // CSS angles: 0deg points to top, clockwise-positive. In SVG's y-down
+  // objectBoundingBox space the gradient line direction is therefore
+  // (sin a, -cos a), centered on the box.
+  const rad = (angle * Math.PI) / 180;
+  const dx = Math.sin(rad);
+  const dy = -Math.cos(rad);
+  const f = (n: number) => Math.round(n * 1000) / 1000;
+  return {
+    id,
+    def: `<linearGradient id="${id}" x1="${f(0.5 - dx / 2)}" y1="${f(0.5 - dy / 2)}" x2="${f(0.5 + dx / 2)}" y2="${f(0.5 + dy / 2)}"><stop offset="0%" stop-color="${from}"/><stop offset="100%" stop-color="${to}"/></linearGradient>`,
+  };
+}
+
+/** SVG `<pattern>` defs for the shell textures, mirroring the
+ *  theme-runtime.css `data-shell-texture` recipes 1:1:
+ *    ruled  — 1px line every 29px (line at y 28..29)
+ *    grid   — 1px lines every 24px both axes (at 23..24)
+ *    dotted — ~1.3px dot centered in a 15×15 tile
+ *    grain  — 160×160 feTurbulence fractalNoise tile (baseFrequency 0.85,
+ *             2 octaves, seed 3) with the polarity-matched alpha matrix
+ *             (dark flecks on light surfaces, light flecks on dark).
+ *  Line/dot colors come from --tv-shell-texture-line / --tv-shell-texture-dot. */
+function shellTexturePatternDefs(
+  texture: string,
+  cssVars: Record<string, string>,
+  polarity: "light" | "dark",
+): { id: string; def: string } | null {
+  const line = readVar(cssVars, "--tv-shell-texture-line", "rgba(0,0,0,0.07)") ?? "rgba(0,0,0,0.07)";
+  const dot = readVar(cssVars, "--tv-shell-texture-dot", "rgba(0,0,0,0.10)") ?? "rgba(0,0,0,0.10)";
+  switch (texture) {
+    case "ruled":
+      return {
+        id: "tv-shell-texture",
+        def: `<pattern id="tv-shell-texture" width="8" height="29" patternUnits="userSpaceOnUse"><rect x="0" y="28" width="8" height="1" fill="${line}"/></pattern>`,
+      };
+    case "grid":
+      return {
+        id: "tv-shell-texture",
+        def: `<pattern id="tv-shell-texture" width="24" height="24" patternUnits="userSpaceOnUse"><rect x="0" y="23" width="24" height="1" fill="${line}"/><rect x="23" y="0" width="1" height="24" fill="${line}"/></pattern>`,
+      };
+    case "dotted":
+      return {
+        id: "tv-shell-texture",
+        def: `<pattern id="tv-shell-texture" width="15" height="15" patternUnits="userSpaceOnUse"><circle cx="7.5" cy="7.5" r="1.3" fill="${dot}"/></pattern>`,
+      };
+    case "grain": {
+      // Same alpha-matrix pair as the CSS data-URIs: luminance noise must
+      // oppose the surface to read (dark flecks @0.13 on light; light
+      // flecks @0.10 on dark).
+      const matrix = polarity === "dark"
+        ? "0 0 0 0 0.92  0 0 0 0 0.91  0 0 0 0 0.88  0 0 0 0.10 0"
+        : "0 0 0 0 0.08  0 0 0 0 0.07  0 0 0 0 0.05  0 0 0 0.13 0";
+      return {
+        id: "tv-shell-texture",
+        def: `<filter id="tv-shell-grain-noise" x="0%" y="0%" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3"/><feColorMatrix values="${matrix}"/></filter><pattern id="tv-shell-texture" width="160" height="160" patternUnits="userSpaceOnUse"><rect width="160" height="160" filter="url(#tv-shell-grain-noise)"/></pattern>`,
+      };
+    }
+    default:
+      return null;
+  }
 }
 
 /**
@@ -4264,7 +4425,26 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Extract settings from first forest column
   const forestSettings = getForestColumnSettings(spec);
-  const layout = computeLayout(spec, options, forestSettings.nullValue);
+  const layoutFull = computeLayout(spec, options, forestSettings.nullValue);
+
+  // ── Shell/paper wrap (export parity, 2026-06-10) ──────────────────────────
+  // When the theme resolves a shell band (raised/float: shellPad > 0), the
+  // canvas includes the band and ALL existing content draws inside a
+  // translate(shellPad, shellPad) group. `layout` below stays in CONTENT
+  // coordinates (the pre-shell space every drawing call site was written
+  // in); only the svg root + shell chrome use the full-canvas dims. When
+  // shellPad === 0 the object passes through untouched, so flush output is
+  // byte-identical to the pre-shell export.
+  const shellPad = layoutFull.shellPad;
+  const paperPad = layoutFull.paperPad;
+  const shellWrap = shellPad > 0;
+  const layout: InternalLayout = shellWrap
+    ? {
+        ...layoutFull,
+        totalWidth: layoutFull.totalWidth - shellPad * 2,
+        totalHeight: layoutFull.totalHeight - shellPad * 2,
+      }
+    : layoutFull;
 
   // Calculate auto-widths for columns
   const autoWidths = layout.autoWidths;
@@ -4294,14 +4474,20 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Build SVG
   const parts: string[] = [];
 
-  // SVG opening
+  // SVG opening — root dims include the shell band when present.
   parts.push(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="${layout.totalWidth}" height="${layout.totalHeight}"
-  viewBox="0 0 ${layout.totalWidth} ${layout.totalHeight}">
+  width="${layoutFull.totalWidth}" height="${layoutFull.totalHeight}"
+  viewBox="0 0 ${layoutFull.totalWidth} ${layoutFull.totalHeight}">
 <style>
+  /* Numeric figure style follows the theme token (WYSIWYG review pass:
+     tabular-nums was forced on ALL text — proportional-figure themes
+     rendered tabular numerals everywhere in export). The DOM applies the
+     feature to numeric cells; scoping per-element in SVG isn't worth the
+     markup, so we mirror the token globally — visually inert for
+     non-numeric glyphs. */
   text {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: ${readVar(cssVars, "--tv-text-numeric-figures", "tnum") === "normal" ? "normal" : "tabular-nums"};
   }
 </style>`);
 
@@ -4310,22 +4496,107 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const bgColor = options.backgroundColor ?? surfaceBgResolved;
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
 
-  // Container border (if enabled in theme)
+  // ── Shell chrome (band + gradient + texture; export parity) ──────────────
+  // Mirrors theme-runtime.css's `.tv-shell` paint: bg + 1px outline + radius,
+  // with --tv-shell-gradient as fill and the data-shell-texture recipes as
+  // <pattern> overlays. Paint is decoupled from geometry: a flush theme with
+  // a texture/gradient still paints (over the full canvas, occluded by the
+  // paper card on the table region — same as the DOM, where the opaque
+  // paper covers the 0-pad shell). Plain flush themes emit NOTHING here.
+  const shellTexture = spec.theme.authoringInputs?.shell_texture ?? "none";
+  const shellPolarity = spec.theme.authoringInputs?.polarity ?? "light";
+  const shellGradientCss = readVar(cssVars, "--tv-shell-gradient", "none") ?? "none";
+  const shellBgTok = readVar(cssVars, "--tv-shell-bg", "transparent") ?? "transparent";
+  const shellBorderTok = readVar(cssVars, "--tv-shell-border", "transparent") ?? "transparent";
+  const shellRadiusPx = readVarPx(cssVars, "--tv-shell-radius", 0);
+  const shellGradientDef = shellGradientCss === "none"
+    ? null
+    : cssLinearGradientToSvgDef("tv-shell-gradient-fill", shellGradientCss);
+  const textureDefs = shellTexture === "none"
+    ? null
+    : shellTexturePatternDefs(shellTexture, cssVars, shellPolarity);
+  const shellDecor = shellWrap || shellGradientDef != null || textureDefs != null;
+  if (shellDecor) {
+    const defs: string[] = [];
+    if (shellGradientDef) defs.push(shellGradientDef.def);
+    if (textureDefs) defs.push(textureDefs.def);
+    if (defs.length > 0) parts.push(`<defs>${defs.join("\n")}</defs>`);
+    const shellFill = shellGradientDef
+      ? `url(#${shellGradientDef.id})`
+      : (shellBgTok !== "transparent" ? shellBgTok : null);
+    const shellStroke = shellBorderTok !== "transparent" ? shellBorderTok : null;
+    if (shellFill || shellStroke) {
+      parts.push(`<rect x="0.5" y="0.5"
+        width="${layoutFull.totalWidth - 1}" height="${layoutFull.totalHeight - 1}"
+        fill="${shellFill ?? "none"}"${shellStroke ? ` stroke="${shellStroke}" stroke-width="1"` : ""}
+        rx="${shellRadiusPx}" ry="${shellRadiusPx}"/>`);
+    }
+    // Ruled / grid / dotted overlay the shell surface; grain is drawn
+    // later (over the paper too, matching the CSS grain rule).
+    if (textureDefs && shellTexture !== "grain") {
+      parts.push(`<rect x="0.5" y="0.5"
+        width="${layoutFull.totalWidth - 1}" height="${layoutFull.totalHeight - 1}"
+        fill="url(#${textureDefs.id})" rx="${shellRadiusPx}" ry="${shellRadiusPx}"/>`);
+    }
+  }
+
+  // Container border (if enabled in theme) — full-canvas frame (the DOM's
+  // .tabviz-container border wraps the shell, so it stays OUTSIDE the
+  // shell translate group; identical output when no shell band).
   // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
   if (theme.layout.containerBorder !== false) {
     const borderRadius = theme.layout.containerBorderRadius ?? 8;
     const containerBorderStroke = readDividerSubtle(cssVars);
     parts.push(`<rect x="0.5" y="0.5"
-      width="${layout.totalWidth - 1}" height="${layout.totalHeight - 1}"
+      width="${layoutFull.totalWidth - 1}" height="${layoutFull.totalHeight - 1}"
       fill="none" stroke="${containerBorderStroke}" stroke-width="1"
       rx="${borderRadius}" ry="${borderRadius}"/>`);
+  }
+
+  // All content (title → footer) draws translated into the shell band.
+  if (shellWrap) {
+    parts.push(`<g transform="translate(${shellPad} ${shellPad})">`);
+  }
+
+  // ── Paper card (data surface behind the table region) ────────────────────
+  // Mirrors `.tv-paper`: bg + 1px outline + radius wrapping table + axis,
+  // with the inner mat (paperPad) as breathing room (folded into mainY /
+  // totalHeight by computeLayout). Title/subtitle and caption/footnote sit
+  // OUTSIDE on the shell surface, exactly like the DOM. Emitted only when
+  // shell chrome is active so plain flush output stays byte-identical.
+  if (shellDecor) {
+    const paperBgTok = readVar(cssVars, "--tv-paper-bg", surfaceBgResolved) ?? surfaceBgResolved;
+    const paperBorderTok = readVar(cssVars, "--tv-paper-border", "transparent") ?? "transparent";
+    const paperRadiusPx = readVarPx(cssVars, "--tv-paper-radius", 0);
+    const paperTop = layout.mainY - paperPad;
+    const paperH = layout.headerHeight + layout.plotHeight + layout.axisHeight + paperPad * 2;
+    const paperFill = paperBgTok !== "transparent" ? paperBgTok : null;
+    const paperStroke = paperBorderTok !== "transparent" ? paperBorderTok : null;
+    if ((paperFill || paperStroke) && paperH > 0) {
+      parts.push(`<rect x="0.5" y="${paperTop + 0.5}"
+        width="${layout.totalWidth - 1}" height="${paperH - 1}"
+        fill="${paperFill ?? "none"}"${paperStroke ? ` stroke="${paperStroke}" stroke-width="1"` : ""}
+        rx="${paperRadiusPx}" ry="${paperRadiusPx}"/>`);
+    }
+    // Grain paints the shell AND the paper (theme-runtime.css grain rule:
+    // under flush the opaque paper occludes the shell completely, so the
+    // noise must ride both surfaces). One full-canvas overlay above the
+    // paper rect covers both at once; content draws over it.
+    if (textureDefs && shellTexture === "grain") {
+      const gx = shellWrap ? -shellPad : 0;
+      parts.push(`<rect x="${gx}" y="${gx}"
+        width="${layoutFull.totalWidth}" height="${layoutFull.totalHeight}"
+        fill="url(#${textureDefs.id})" rx="${shellRadiusPx}" ry="${shellRadiusPx}"/>`);
+    }
   }
 
   // Header (title, subtitle)
   parts.push(renderHeader(spec, layout, theme, cssVars));
 
   // Top table border - frames column headers (symmetric with header bottom border)
-  const headerBorderW = 2;
+  // Themed header rule width (set_borders major thickness + the HC bump
+  // ride --tv-header-border-width; this was hardcoded 2).
+  const headerBorderW = readVarPx(cssVars, "--tv-header-border-width", 2);
   const headerVariantRule = activeHeaderVariant(theme).rule
     ?? readDividerStrong(cssVars)
     ?? readDividerSubtle(cssVars);
@@ -4948,7 +5219,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   parts.push(renderFooter(spec, layout, theme, cssVars));
   parts.push(renderLegend(spec, layout, theme, cssVars));
 
-  // Close SVG
+  // Close the shell translate group, then the SVG
+  if (shellWrap) {
+    parts.push("</g>");
+  }
   parts.push("</svg>");
 
   return parts.join("\n");

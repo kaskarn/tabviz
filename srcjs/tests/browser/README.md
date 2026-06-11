@@ -115,3 +115,35 @@ Exits non-zero on failure. NOTE: drive drags with real `page.mouse` moves
 (pointer capture) and detect double-press via `e.detail`/dblclick — the
 toolbar overlaps the top-right header region when visible, so target the
 FIRST column's boundary in fixtures.
+
+## wysiwyg-diff.browser.ts (WYSIWYG DOM ⇄ SVG-export diff harness)
+
+Measures divergence between the LIVE WIDGET (DOM render at actualScale=1,
+autoFit forced off via the store registry, verified by `data-zoom`) and the
+STATIC SVG EXPORT (`generateSVG(spec, { width: 800 })`, the production V8
+estimator path) for the SAME `tabviz()`-authored spec, across a matrix of
+theme × density × density_factor × shell_mode cases (nejm / brutalist /
+synthwave / terminal / newsprint + compact / df1.3 / raised variants).
+
+Per case it diffs: figure + artifact width/height, shell band / paper mat,
+header-band top + height, row heights/pitch/group spans, per-column x/width
+(DOM header cells by `data-header-id` vs `computeLayoutMetrics()`), and
+title/subtitle/caption/footnote/header/cell/group-header font size/weight/
+family (DOM computed style vs SVG `<text>`/`<g>` attrs matched by unique
+probe strings). Geometry tolerance 1.5px; typography exact.
+
+    cd srcjs && npm run build
+    bun run tests/browser/wysiwyg-diff.browser.ts            # full matrix
+    bun run tests/browser/wysiwyg-diff.browser.ts --case nejm-raised
+
+Output: per-case findings + ranked aggregate on stdout; side-by-side PNGs
+(`<case>-dom.png` / `<case>-svg.png`) + `report.json` in `/tmp/wysiwyg/`.
+Browser-only effects (glass/glow/blobs) are the declared 1.0 boundary and
+are NOT flagged; shell padding / paper mat / band geometry, gradient+grain
+textures (slated for export parity), and typography ARE flagged.
+
+NOTE: launches `headless: "shell"` — on this dev box the new headless mode's
+`Page.captureScreenshot` hangs to protocolTimeout even on trivial pages,
+while chrome-headless-shell rasters in ~0.5s (same Blink, identical layout
+probes). This is a diagnosis harness (always exits 0 unless it crashes);
+it is not a CI gate.

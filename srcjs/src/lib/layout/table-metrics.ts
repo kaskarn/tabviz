@@ -149,10 +149,17 @@ export function computeRowLayout(input: RowLayoutInput): RowLayout {
       const base = kindBase(kind); // data / summary / header
       const lines = wrapLineCounts[dr.row.id] ?? 1;
       const wrapH = lines > 1 ? Math.max(base, dataLineHeightPx * lines + 6) : base;
-      // Grow to the tallest of: base/wrap height and the row's intrinsic
+      // Grow to the tallest of: base/wrap height, the row's intrinsic
       // visual content height (stacked pictograms, tall icons, multi-effect
-      // forest, sparkline/img).
-      h = Math.max(wrapH, contentHeights[dr.row.id] ?? 0);
+      // forest, sparkline/img), and ONE text line-height. The line floor is
+      // the WYSIWYG parity rule (review pass): whenever the density/pinned
+      // base drops below the body line-height, the DOM's measure-then-commit
+      // loop grows every data row to fit its text anyway (cell scrollHeight
+      // overflows the track) — without the same floor here, the estimator
+      // (V8/SVG export, first paint) rendered visibly tighter rows than the
+      // settled widget (e.g. brutalist's density_factor 0.88 → 18px base vs
+      // 20px line-height: Δ2px per row, compounding down the table).
+      h = Math.max(wrapH, contentHeights[dr.row.id] ?? 0, dataLineHeightPx);
     } else if (dr.type === "panel") {
       // Details panel: content-driven. The DOM measure-commit supplies the real
       // rendered height (keyed panelContentKey); until then a markdown line-count

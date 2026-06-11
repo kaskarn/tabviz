@@ -2860,6 +2860,25 @@
     position: relative; /* Needed for toolbar positioning */
     font-family: var(--tv-text-body-family);
     font-size: var(--tv-text-body-size);
+    /* Schema render-tree token aliases (WYSIWYG review pass). RenderTree
+       consumes --tabviz-* vars that NOTHING used to emit, so every
+       schema-dispatched fragment (badge/stars/ring text, minor/muted
+       compositions) fell back to literals (12px/#888/inherit) in the DOM
+       while the SVG export resolved the same tokens through the theme —
+       a "typography inconsistent" smoking gun. These aliases mirror the
+       export's token table (svg-generator makeTokenResolvers); keep the
+       two in lockstep. Also gives --tv-text-cell-size its DOM consumer. */
+    --tabviz-text-major: var(--tv-text-body-size, 14px);
+    --tabviz-text-base: var(--tv-text-cell-size, var(--tv-text-body-size, 14px));
+    --tabviz-text-minor: var(--tv-text-label-size, 10.5px);
+    --tabviz-fg-primary: var(--tv-text);
+    --tabviz-fg-secondary: var(--tv-text-muted);
+    --tabviz-fg-muted: var(--tv-text-subtle, #888);
+    --tabviz-fg-accent: var(--tv-accent);
+    --tabviz-font-base: var(--tv-text-body-family);
+    --tabviz-font-display: var(--tv-text-title-family, var(--tv-text-body-family));
+    --tabviz-font-number: var(--tv-text-numeric-family, var(--tv-text-body-family));
+    --tabviz-bg-muted: var(--tv-cell-border, rgba(0, 0, 0, 0.05));
     /* v4 substrate cssVars preferred; v3 fallback (--tv-fg / --tv-bg)
        remains until step 10's v3-emitter cleanup. */
     color: var(--tv-text);
