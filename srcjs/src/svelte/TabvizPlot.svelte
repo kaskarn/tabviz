@@ -473,6 +473,25 @@
     observer.observe(containerRef);
     observer.observe(scalableRef);
 
+    // SYNCHRONOUS first measurement (sizing audit 2026-06-11): the
+    // observer's first callback lands a frame late, so content-sized
+    // tables (D19) painted left-aligned and then JUMPED to center when
+    // centeringMargin finally had a containerContentWidth. Measuring
+    // here — inside the effect, before the first paint — kills the
+    // flash; the observer remains the steady-state source.
+    if (containerRef.clientWidth > 0) {
+      containerContentWidth = containerRef.clientWidth;
+      store.setContainerDimensions(containerRef.clientWidth, containerRef.clientHeight);
+    }
+    // offsetWidth/Height: the LAYOUT box (a persisted zoom's CSS scale
+    // would distort getBoundingClientRect; the observer's contentRect is
+    // also unscaled, so the two sources agree).
+    if (scalableRef.offsetWidth > 0) {
+      scalableNaturalWidth = scalableRef.offsetWidth;
+      scalableNaturalHeight = scalableRef.offsetHeight;
+      store.setScalableNaturalDimensions(scalableRef.offsetWidth, scalableRef.offsetHeight);
+    }
+
     return () => {
       observer.disconnect();
     };
