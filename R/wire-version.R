@@ -39,4 +39,9 @@
 # on the theme: rides the resolved-theme blob in `spec.theme` and the
 # portable theme envelope beside `roleOverrides`/`pins`. See
 # docs/dev/component-model.md.
-WIRE_FORMAT_VERSION <- "1.5"
+#
+# v1.6 (2026-06-11): W3 — `theme.variants.headerStyle` REMOVED from the
+# resolved-theme blob (pre-release clean break). The `header_style`
+# input (inputs block) is the one vocabulary; activeHeaderStyle reads
+# it directly. variants now carries only firstColumnStyle (+ density).
+WIRE_FORMAT_VERSION <- "1.6"

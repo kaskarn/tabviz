@@ -196,9 +196,8 @@ export function buildTheme(
 
   const variants: ThemeVariants = {
     density: inputs.density ?? "comfortable",
-    // Mirrors the top-level header_style input (one vocabulary; the
-    // variant slot stays on the wire as the v3 bridge's pick).
-    headerStyle: inputs.header_style ?? "light",
+    // headerStyle retired from the wire (W3): header_style input is
+    // the one vocabulary; activeHeaderStyle reads it directly.
     firstColumnStyle: "default",
   };
 

@@ -52,7 +52,7 @@ The `col_*()` helpers are thin, opinionated wrappers over [`web_col()`](../refer
 | `col_bar(field)` | Inline magnitude bar (no axis) | `max_value`, `show_label`, `color`, `scale` |
 | `col_sparkline(field)` | Trend charts | `type`, `height`, `color` |
 | `col_heatmap(field)` | Color-scale values | `palette`, `min_value`, `max_value`, `decimals`, `show_value`, `scale` |
-| `col_progress(field)` | Percentage progress bar | `min_value`, `max_value`, `show_label`, `height`, `color` |
+| `col_progress(field)` | Percentage progress bar | `max_value`, `show_label`, `color`, `scale` |
 | `col_icon(field)` | Icons / emoji | `mapping`, `size`, `color` |
 | `col_badge(field)` | Status chips | `variants`, `colors`, `size` |
 | `col_stars(field)` | Rating (1–N stars) | `max_stars`, `color`, `empty_color`, `half_stars`, `min_value`, `max_value`, `size` |

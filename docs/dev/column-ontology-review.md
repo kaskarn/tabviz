@@ -99,8 +99,11 @@ base ── categorical ── ordinal
 ## Remaining review passes (next sessions)
 
 1. ~~D11 arc~~ DONE 2026-06-11 (see inventory above).
-2. Vocabulary doc: the per-type option tables in `docs/guide/columns.qmd`
-   regenerate from the registry (kill hand-maintained drift — the D2
-   deletions found two stale doc rows).
+2. ~~Vocabulary doc~~ RESOLVED 2026-06-11 as a DRIFT GATE instead of
+   regeneration (the table documents the CURATED R authoring surface,
+   incl. sugar args that never reach the wire — regenerating from the
+   registry would document the wrong surface). `test-docs-drift.R`
+   asserts every documented helper + arg exists in formals(); its first
+   run caught two more stale rows (col_progress min_value/height).
 3. `column_defaults`-in-presets design work (the area-C creative half:
    ≥4 shipped presets using theme-level column styling deliberately).

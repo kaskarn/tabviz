@@ -652,7 +652,7 @@ HeaderVariant <- new_class(
 
 #' HeaderCluster: column-header bindings with light/tint/bold variants.
 #'
-#' Active variant is selected by `theme@variants@header_style`.
+#' Active variant is selected by the `header_style` theme input.
 #'
 #' @usage NULL
 #' @export
@@ -1048,10 +1048,9 @@ WebTheme <- new_class(
     # `prefers-color-scheme` auto-mode is deferred to a follow-up.
     light_dark_pair = new_property(class_character, default = NA_character_),
     # Variants — structural per-theme choices that live alongside the
-    # cascade. The TS adapter defaults headerStyle="light",
-    # firstColumnStyle="default"; presets override at construction time
-    # so theme identity can ride on more than just colors.
-    header_style       = new_property(class_character, default = "light"),
+    # cascade. (header_style moved to ThemeInputs long ago; its WebTheme
+    # mirror slot was retired with the variants.headerStyle wire field —
+    # W3, 2026-06-11. first_column_style has no input twin yet: W4.)
     first_column_style = new_property(class_character, default = "default"),
     inputs   = new_property(ThemeInputs,    default = quote(ThemeInputs())),
     # Tier-2 role pins ({ramp, grade} per role) — the studio spine's

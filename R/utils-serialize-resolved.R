@@ -35,11 +35,10 @@ serialize_theme <- function(theme) {
   blob$name <- theme@name
   if (!is.na(theme@light_dark_pair)) blob$lightDarkPair <- theme@light_dark_pair
 
-  # Variants — adapter defaults are "light"/"default"; presets author
-  # different choices at construction time and we surface them here so
-  # the renderer reads the per-preset variant.
+  # Variants — headerStyle RETIRED from the wire (W3, 2026-06-11): the
+  # header_style INPUT is the one vocabulary and rides inputs_json.
+  # firstColumnStyle remains (no input twin yet — W4 candidate).
   if (is.null(blob$variants)) blob$variants <- list()
-  blob$variants$headerStyle <- theme@header_style
   blob$variants$firstColumnStyle <- theme@first_column_style
 
   if (length(theme@web_fonts) > 0L) {

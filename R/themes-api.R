@@ -525,7 +525,6 @@ web_theme <- function(
     interaction_defaults                = interaction_defaults %||% list()
   )
   theme <- resolve_from_inputs(inputs, name = name)
-  theme@header_style <- header_style %||% "light"
   theme@first_column_style <- first_column_style
   if (!is.null(web_fonts)) theme@web_fonts <- web_fonts
   theme
@@ -1028,9 +1027,7 @@ set_header_style <- function(theme, header_style) {
   checkmate::assert_choice(header_style, c("light", "tint", "bold"))
   inputs <- theme@inputs
   inputs@header_style <- header_style
-  theme <- re_resolve(theme, inputs)
-  theme@header_style <- header_style
-  theme
+  re_resolve(theme, inputs)
 }
 
 #' Set the border treatment preset.

@@ -4,5 +4,5 @@
 \alias{HeaderCluster}
 \title{HeaderCluster: column-header bindings with light/tint/bold variants.}
 \description{
-Active variant is selected by \code{theme@variants@header_style}.
+Active variant is selected by the \code{header_style} theme input.
 }

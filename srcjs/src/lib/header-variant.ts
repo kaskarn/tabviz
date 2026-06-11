@@ -23,24 +23,17 @@ interface HeaderClusterShape {
   bold?: HeaderVariantHexes;
 }
 
-interface VariantsShape {
-  headerStyle?: string;
-}
-
 /** Resolve the active header style, falling back to "light" on unknown.
  *
- *  ONE vocabulary (R2 decision: header_style is a structural VARIANT,
- *  not an effect): the top-level input `header_style` (light/tint/bold)
- *  is authoritative; `variants.headerStyle` mirrors it for the v3
- *  bridge and remains the fallback for inputs-less themes. The old
- *  effects.header_style {normal,tint,fill} enum is gone. */
+ *  ONE vocabulary (R2 decision; W3 retirement 2026-06-11): the
+ *  top-level input `header_style` (light/tint/bold) is the only
+ *  source — the `variants.headerStyle` wire mirror is gone (every
+ *  shipped theme carries authoringInputs; pre-release clean break). */
 export function activeHeaderStyle(theme: WebTheme): HeaderStyle {
   const t1 = (theme as {
     authoringInputs?: { header_style?: string };
   }).authoringInputs?.header_style;
   if (t1 === "bold" || t1 === "tint" || t1 === "light") return t1;
-  const v = (theme as { variants?: VariantsShape }).variants?.headerStyle;
-  if (v === "bold" || v === "tint") return v;
   return "light";
 }
 

@@ -1121,9 +1121,9 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     cssVar: "--tv-header-bg",
     resolverGroup: "v3-bridge",
     kind: "paint-fill",
-    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).bg — picks light/tint/fill by variants.headerStyle" },
+    source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).bg — picks light/tint/fill by inputs.header_style" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Active header background — resolved by variants.headerStyle.",
+    description: "Active header background — resolved by inputs.header_style.",
   },
   {
     cssVar: "--tv-header-fg",
@@ -1131,7 +1131,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "paint-color",
     source: { tier: "computed", note: "[v3-bridge] activeHeaderVariant(theme).fg" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
-    description: "Active header foreground — resolved by variants.headerStyle.",
+    description: "Active header foreground — resolved by inputs.header_style.",
   },
   {
     cssVar: "--tv-header-rule",

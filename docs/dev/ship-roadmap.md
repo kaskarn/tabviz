@@ -230,6 +230,14 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-11 (later still) — W3 LANDED (variants.headerStyle retired,
+  wire 1.6; duplicated R S7 mirror slot deleted) + W5 DECIDED
+  (hiddenColumns stays in initialState — authored-defaults family;
+  figureLayout extension is additive if ever needed). New docs-drift
+  gate (test-docs-drift.R) validates columns.qmd's curated table against
+  live formals — first run caught 2 more stale rows. Pre-freeze wire
+  work remaining: W2 (review fallout) + W4 (v3 blob slimming).
+
 - 2026-06-11 (later) — D11 EXECUTED: consumedBy sweep complete, drift-gate
   grandfather list 119 → 0. Found + fixed a live area-F instance
   (currency symbol/position dead editor menus) and a 7th D2-class dead
