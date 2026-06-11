@@ -64,7 +64,6 @@ import {
 } from "./typography";
 import { effectiveTypeRoles } from "./scale-roles";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
-import { resolveElevationShadows, elevationKeyForCssVar } from "./elevation";
 import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } from "./textures";
 import { validateThemeInputs } from "./theme-validate";
 import {
@@ -515,8 +514,6 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
       t, "typography")],
   ["shell-paper", (t, ctx) =>
     requireMatch(resolveShellPaperComputed(t.cssVar, ctx), t, "shell-paper")],
-  ["elevation", (t, ctx) =>
-    requireMatch(resolveElevationComputed(t.cssVar, ctx), t, "elevation")],
   ["texture", (t, ctx) =>
     requireMatch(resolveTextureComputed(t.cssVar, ctx), t, "texture")],
   ["knockout", (t, ctx) =>
@@ -739,20 +736,6 @@ function resolveKnockoutComputed(
   // showing through).
   const bg = sp.shellBg.startsWith("#") ? sp.shellBg : sp.paperBg;
   return bg.startsWith("#") ? bg : resolveTextureKnockoutBg(bg);
-}
-
-/** Stage 2 §6 elevation shadow resolver. Matches the shadow tier/kind
- *  cssVars and emits hue-aware shadow colors mixed from the paper bg.
- *  Returns null when the cssVar doesn't match. */
-function resolveElevationComputed(
-  cssVar: string,
-  resolved: { roles: Record<RoleName, string>; inputs: ThemeInputs },
-): string | null {
-  const key = elevationKeyForCssVar(cssVar);
-  if (key === null) return null;
-  const sp = resolveShellPaper(resolved.inputs, shellPaperRoles(resolved));
-  const paperBg = sp.paperBg.startsWith("#") ? sp.paperBg : "#FFFFFF";
-  return resolveElevationShadows(paperBg)[key];
 }
 
 /** Stage 2 §2 shell/paper resolver. Matches the shell and paper

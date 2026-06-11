@@ -85,7 +85,6 @@ export type ResolverGroup =
   | "effects"     // glow / shell-gradient / emphasis-shadow from ramps
   | "typography"  // --tv-text-{role}-{prop} via type-role table
   | "shell-paper" // resolveShellPaper projection
-  | "elevation"   // hue-aware shadow stacks
   | "texture"     // texture line/dot colors from neutral ramp
   | "knockout"    // premixed text-knockout backgrounds
   | "hc-fidelity" // mode-dependent VALUE substitution (caret/ring/bar)
@@ -779,46 +778,6 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // black. Browser CSS uses them in box-shadow; SVG export uses them as
   // <feFlood flood-color> inside <filter> definitions. Same value, both
   // surfaces — the parity guarantee.
-  {
-    cssVar: "--tv-shadow-raised-near",
-    resolverGroup: "elevation",
-    kind: "paint-color",
-    source: { tier: "computed", note: "elevation: paper hue + 12% black, alpha 0.12" },
-    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
-    // only the elevation resolver emits these; no CSS/SVG consumer yet).
-    consumedBy: [],
-    description: "Near shadow color for raised elevation (1-2 px softness)",
-  },
-  {
-    cssVar: "--tv-shadow-raised-far",
-    resolverGroup: "elevation",
-    kind: "paint-color",
-    source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.08" },
-    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
-    // only the elevation resolver emits these; no CSS/SVG consumer yet).
-    consumedBy: [],
-    description: "Far shadow color for raised elevation (6-20 px diffusion)",
-  },
-  {
-    cssVar: "--tv-shadow-overlay-near",
-    resolverGroup: "elevation",
-    kind: "paint-color",
-    source: { tier: "computed", note: "elevation: paper hue + 24% black, alpha 0.18" },
-    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
-    // only the elevation resolver emits these; no CSS/SVG consumer yet).
-    consumedBy: [],
-    description: "Near shadow color for overlay (modal/popover) elevation",
-  },
-  {
-    cssVar: "--tv-shadow-overlay-far",
-    resolverGroup: "elevation",
-    kind: "paint-color",
-    source: { tier: "computed", note: "elevation: paper hue + 32% black, alpha 0.12" },
-    // TODO: designed elevation feature pending wiring (audit 2026-06-10:
-    // only the elevation resolver emits these; no CSS/SVG consumer yet).
-    consumedBy: [],
-    description: "Far shadow color for overlay elevation",
-  },
 
   // ── Stage 2 — Typography Tier 3 (family/size/weight per role) ────────────
   // 9 type roles × 3 properties = 27 entries. Sourced from typography-
