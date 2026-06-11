@@ -9,6 +9,7 @@ import { studioStore } from "./studio-store.svelte";
 import { PRESETS } from "../lib/theme/theme-presets-inputs";
 import { WIRE_SCHEMA } from "../lib/theme/theme-wire";
 import { normalizeRoleOverrides } from "../lib/theme/alias";
+import { parseThemeWire } from "../lib/theme/theme-wire-parse";
 
 describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
   test("envelope carries schema, name, inputs AND roleOverrides", () => {
@@ -45,6 +46,31 @@ describe("studio exportWire — the single envelope (DT-8/DT-10)", () => {
     // One schema for both surfaces: the prefix artifact is the SAME
     // top-level shape, never a different envelope.
     expect(Object.keys(wire).sort()).toEqual(["$schema", "inputs", "name", "roleOverrides"]);
+  });
+});
+
+describe("studio round-trip losslessness (area H, 2026-06-11)", () => {
+  test("export → parseThemeWire → re-init → export is DEEP-EQUAL across all four edit kinds", () => {
+    studioStore.init(PRESETS["nejm"]!, "nejm");
+    // One edit of every kind the studio can make:
+    studioStore.apply({ ...studioStore.inputs!, density_factor: 1.3 }, "Density");   // Tier-1 input
+    studioStore.setRoleBinding("text-muted", "accent", 9);                            // role re-tune
+    studioStore.setPin("--tv-text-title-fg", "#ff00aa");                              // pin
+    studioStore.setComponentChannel("title", "base", "col", "accent-text");           // component re-route
+    const wire1 = JSON.parse(JSON.stringify(studioStore.exportWire()));
+
+    // Through the REAL validating ingress (never raw JSON.parse + seed):
+    const parsed = parseThemeWire(JSON.stringify(wire1));
+    studioStore.init(parsed.inputs, wire1.name, {
+      roleOverrides: parsed.roleOverrides as never,
+      pins: parsed.pins,
+      components: parsed.components as never,
+    });
+    const wire2 = JSON.parse(JSON.stringify(studioStore.exportWire()));
+    expect(wire2).toEqual(wire1);
+
+    // And the artifact is itself re-parseable (idempotent ingress).
+    expect(() => parseThemeWire(JSON.stringify(wire2))).not.toThrow();
   });
 });
 

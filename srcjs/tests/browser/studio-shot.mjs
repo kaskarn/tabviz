@@ -180,6 +180,181 @@ async function main() {
       else console.log("✓ undo restores the re-route");
     }
 
+    // Leg 4 — rail VALUE controls (area-H tail, 2026-06-11): per tab,
+    // operate every range slider with REAL keyboard (focus → ArrowRight)
+    // and assert the chart repaints. The panel-liveness depth, compact:
+    // a slider that moves nothing is DEAD.
+    for (const label of ["identity", "color", "form", "effects"]) {
+      await page.evaluate((t) => {
+        const tabs = [...document.querySelectorAll('.studio-rail [role="tab"]')];
+        tabs.find((x) => (x.textContent || "").trim().toLowerCase() === t)?.click();
+      }, label);
+      await new Promise((r) => setTimeout(r, 150));
+      // Anchors + effects sliders live behind collapsed rows/disclosures
+      // (LCH editors open per-anchor; gradient angle behind a toggle) —
+      // open everything first or the walk is blind to them.
+      await page.evaluate(() => {
+        for (const btn of document.querySelectorAll(".studio-rail .disclosure:not(.open) .head .row")) btn.click();
+        for (const btn of document.querySelectorAll(".studio-rail .anchor-row > button, .studio-rail .anchor-head")) btn.click();
+      });
+      await new Promise((r) => setTimeout(r, 250));
+      const n = await page.$$eval('.studio-rail input[type="range"]', (els) => els.length);
+      let live = 0, dead = [];
+      for (let i = 0; i < n; i++) {
+        const before = await chartFp();
+        const info = await page.evaluate((idx) => {
+          const el = [...document.querySelectorAll('.studio-rail input[type="range"]')][idx];
+          if (!el) return null;
+          el.focus();
+          const label = el.getAttribute("aria-label") ?? `range[${idx}]`;
+          // Known-inert: a HUE slider on a near-achromatic anchor (C≈0)
+          // resolves to the same hex — repaint-exempt, like the liveness
+          // harness's contrast-toggle exemption.
+          const lch = el.closest(".lch");
+          const chroma = lch ? Number([...lch.querySelectorAll('input[type="range"]')][1]?.value ?? 1) : 1;
+          const exempt = /hue$/i.test(label) && chroma < 0.02;
+          const atMax = Number(el.value) >= Number(el.max);
+          return { label, exempt, atMax };
+        }, i);
+        if (info === null) continue;
+        // At-max sliders can't ArrowRight — nudge left instead. PageUp/
+        // PageDown jump ~10% of range: one arrow step on a fine-grained
+        // slider (chroma step 0.002) can round to the SAME hex and
+        // false-flag a live control.
+        const fwd = info.atMax ? "PageDown" : "PageUp";
+        const back = info.atMax ? "PageUp" : "PageDown";
+        await page.keyboard.press(fwd);
+        await new Promise((r) => setTimeout(r, 200));
+        if ((await chartFp()) !== before || info.exempt) live++;
+        else dead.push(info.label);
+        // restore (one step back) so legs stay near the base theme
+        await page.keyboard.press(back);
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      if (dead.length > 0) { failed = true; console.error(`✗ DEAD rail sliders on '${label}': ${dead.join(" · ")}`); }
+      else console.log(`✓ rail '${label}': ${live}/${n} sliders repaint the chart`);
+    }
+
+    // Leg 5 — PinsPanel + pins banner accuracy: add a pin via the REAL
+    // add-pin inputs → row appears + banner names the count + chart
+    // repaints; clear → both disappear.
+    {
+      const before = await chartFp();
+      const bannerBefore = await page.$(".pins-warn-banner");
+      if (bannerBefore) { failed = true; console.error("✗ pins banner visible with zero pins"); }
+      // First, the validation surface: a bogus token must surface the
+      // manifest error inline (typed-by-validation, P3) — never a silent
+      // no-op and never a pin.
+      // The panel's content is inside a closed DisclosureField — open it.
+      await page.evaluate(() => document.querySelector(".pins-panel .disclosure:not(.open) .head .row")?.click());
+      await new Promise((r) => setTimeout(r, 200));
+      // REAL typing — synthetic value+event writes don't drive Svelte 5
+      // bindings reliably (the untrusted-event trap; interaction-qa
+      // lesson). Focus each TextInput and type; Enter fires oncommit.
+      const haveInputs = await page.$$eval(".pins-panel .add-pin input", (els) => els.length);
+      let added = "no-inputs";
+      if (haveInputs >= 2) {
+        await page.evaluate(() => document.querySelectorAll(".pins-panel .add-pin input")[0].focus());
+        await page.keyboard.type("--tv-not-a-token");
+        await page.evaluate(() => document.querySelectorAll(".pins-panel .add-pin input")[1].focus());
+        await page.keyboard.type("#123456");
+        await page.keyboard.press("Enter");
+        await new Promise((r) => setTimeout(r, 250));
+        const errText = await page.evaluate(() => document.querySelector(".pin-error")?.textContent ?? "");
+        if (!errText.includes("not in the component-token manifest")) {
+          failed = true; console.error(`✗ bogus pin token did not surface the manifest error (got "${errText.slice(0, 60)}")`);
+        } else console.log("✓ bogus pin token surfaces the manifest error");
+        // Clear drafts by triple-click-select (Cmd+A is unreliable in
+        // headless) then type-over with the REAL token.
+        const inputBox = async (i) => {
+          const boxes = await page.$$(".pins-panel .add-pin input");
+          return boxes[i];
+        };
+        for (const [idx, text] of [[0, "--tv-text-title-fg"], [1, "#ff00aa"]]) {
+          const el = await inputBox(idx);
+          await el.click({ clickCount: 3 });
+          await page.keyboard.type(text);
+        }
+        await page.keyboard.press("Enter");
+        added = "ok";
+      }
+      await new Promise((r) => setTimeout(r, 300));
+      if (added !== "ok") { failed = true; console.error(`✗ PinsPanel add-pin path broken: ${added}`); }
+      else {
+        const rows = await page.$$eval(".pins-panel .pin-row", (n) => n.length);
+        const banner = await page.evaluate(() => document.querySelector(".pins-warn-banner")?.textContent ?? "");
+        const repainted = (await chartFp()) !== before;
+        if (rows === 0) { failed = true; console.error("✗ pin committed but no pin row rendered"); }
+        if (!banner.includes("1 hardcoded pin")) { failed = true; console.error(`✗ pins banner inaccurate: "${banner.slice(0, 80)}"`); }
+        if (!repainted) { failed = true; console.error("✗ pin did not repaint the chart"); }
+        if (rows > 0 && banner.includes("1 hardcoded pin") && repainted) console.log("✓ PinsPanel: pin lands (row + accurate banner + repaint)");
+        await page.evaluate(() => document.querySelector(".pins-panel .pin-clear")?.click());
+        await new Promise((r) => setTimeout(r, 250));
+        const rowsAfter = await page.$$eval(".pins-panel .pin-row", (n) => n.length);
+        const bannerAfter = await page.$(".pins-warn-banner");
+        if (rowsAfter !== 0 || bannerAfter) { failed = true; console.error("✗ pin clear did not remove row/banner"); }
+        else console.log("✓ pin clear removes row + banner");
+      }
+    }
+
+    // Leg 6 — Validate ▦ accuracy: the matrix renders every polarity ×
+    // contrast cell with a verdict; a deliberately unreadable pin
+    // (white title on the light paper) must flip verdicts to ⚠ — pins
+    // overlay BEFORE contrast validation (PinsPanel contract), so the
+    // matrix judging pre-pin state would be the bug this leg exists for.
+    {
+      const readMatrix = async () => page.evaluate(() => {
+        const cells = [...document.querySelectorAll(".validate-cell")];
+        return cells.map((c) => ({
+          label: c.querySelector(".validate-cell-head span")?.textContent ?? "?",
+          bad: [...c.querySelectorAll(".v-bad")].map((b) => b.textContent).join("|"),
+          ok: c.querySelector(".v-ok") != null,
+          hasChart: c.querySelector(".validate-chart .studio-chart, .validate-chart svg, .validate-chart .tabviz-container") != null,
+        }));
+      });
+      const toggleValidate = async () => {
+        await page.evaluate(() => document.querySelector(".validate-toggle")?.click());
+        await new Promise((r) => setTimeout(r, 600)); // 4 charts mount
+      };
+      await toggleValidate();
+      const base = await readMatrix();
+      if (base.length === 0) { failed = true; console.error("✗ Validate ▦ rendered no cells"); }
+      else if (base.some((c) => c.bad.includes("resolve failed"))) { failed = true; console.error("✗ Validate ▦ cell failed to resolve"); }
+      else if (base.some((c) => !c.hasChart)) { failed = true; console.error("✗ Validate ▦ cell missing its chart"); }
+      else console.log(`✓ Validate ▦ renders ${base.length} cells with verdicts + charts`);
+      const baseWarn = base.filter((c) => c.bad.includes("contrast")).length;
+      await toggleValidate(); // back to single view
+
+      // The unreadable pin must hit a CHECKED invariant pair (the
+      // validator covers header bands + body text, NOT every token —
+      // first draft pinned the title token and learned that): pin the
+      // header-fill band's fg AND bg to the same grey → ratio 1.0.
+      const addPin = async (token, value) => {
+        const inputs2 = await page.$$(".pins-panel .add-pin input");
+        await inputs2[0].click({ clickCount: 3 });
+        await page.keyboard.type(token);
+        await inputs2[1].click({ clickCount: 3 });
+        await page.keyboard.type(value);
+        await page.keyboard.press("Enter");
+        await new Promise((r) => setTimeout(r, 250));
+      };
+      await addPin("--tv-header-fill-fg", "#888888");
+      await addPin("--tv-header-fill-bg", "#888888");
+      await toggleValidate();
+      const pinned = await readMatrix();
+      const pinnedWarn = pinned.filter((c) => c.bad.includes("contrast")).length;
+      if (pinnedWarn <= baseWarn) {
+        failed = true;
+        console.error(`✗ Validate ▦ did not judge the pinned value (warn cells ${baseWarn} → ${pinnedWarn}): ${JSON.stringify(pinned)}`);
+      } else console.log(`✓ Validate ▦ judges pinned values (warn cells ${baseWarn} → ${pinnedWarn})`);
+      await toggleValidate();
+      // release both pins
+      for (let k = 0; k < 2; k++) {
+        await page.evaluate(() => document.querySelector(".pins-panel .pin-clear")?.click());
+        await new Promise((r) => setTimeout(r, 150));
+      }
+    }
+
     if (errors.length) { failed = true; console.error("✗ page errors:\n  " + errors.join("\n  ")); }
     else console.log("✓ no console/page errors across the walk");
     // The screenshot is the eyeball AID, not the gate — a capture timeout

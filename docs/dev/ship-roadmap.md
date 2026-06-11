@@ -241,11 +241,24 @@ Deliberately scoped down — correct and unsurprising, not flagship.
       a component re-route repaints the chart; undo restores it; zero
       console/page errors across the walk. FIRST-RUN CATCH: the chart
       preview rebuilt its theme WITHOUT components (the hand-rolled
-      opts-bag class) — fixed. Remaining for [x]: walking the rail's
-      VALUE controls (the panel-liveness depth) + PinsPanel.
-- [ ] Round-trips lossless: handoff in, envelope out, undo/redo sane.
-- [~] No console errors in the full session walk [x] (2026-06-11);
-      validate ▦ / contrast-banner accuracy checks remain.
+      opts-bag class) — fixed. TAIL CLOSED same day:
+      the walk now operates every rail VALUE slider with real keys
+      (24 identity LCH + 8 form; PageUp-sized nudges — one arrow step
+      on chroma rounds to the same hex and false-flags live controls)
+      and the full PinsPanel flow (bogus token → manifest error; real
+      pin → row + accurate count banner + repaint; clear → both gone).
+- [x] Round-trips lossless (2026-06-11): runes gate — one edit of EVERY
+      kind (input/re-tune/pin/re-route) → exportWire → parseThemeWire
+      (the real ingress) → re-init → exportWire DEEP-EQUAL; envelope
+      re-parseable. Plus handoff-seed + undo/redo gates already in
+      studio-store.runes.ts.
+- [x] No console errors across the full session walk (2026-06-11);
+      Validate ▦ accuracy GATED: the matrix renders all 4 polarity ×
+      contrast cells with verdicts + charts, and JUDGES PINNED VALUES
+      (same-grey header-fill fg/bg pin flips 0 → 4 warn cells). Probe
+      lesson: the invariant set covers header bands + body text, NOT
+      every token — a title-token pin is legitimately unjudged.
+      AREA H COMPLETE.
 - [ ] Anything beyond this explicitly deferred post-1.0.
 
 ### I. Zero-config first run
