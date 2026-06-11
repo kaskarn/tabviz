@@ -166,6 +166,69 @@ const SCENARIOS: Record<string, Scenario> = {
     return `Enter toggled sort; aria-sort=${aria}`;
   },
 
+  async tableSemantics(page) {
+    // Table-semantics gate (a11y floor, area J 2026-06-11): the CSS grid
+    // must expose a VALID ARIA table — role="table" with aria-row/colcount,
+    // display:contents row wrappers, columnheader/cell leaves, and
+    // aria-expanded tracking group collapse on the row. Drawing layers
+    // (plot overlays, axis strip) must be aria-hidden.
+    const report = await page.evaluate(() => {
+      const table = document.querySelector('.tabviz-main');
+      if (!table) throw new Error("no .tabviz-main");
+      if (table.getAttribute("role") !== "table") throw new Error("missing role=table");
+      const rows = [...table.querySelectorAll(':scope > [role="row"]')];
+      const rowcount = Number(table.getAttribute("aria-rowcount"));
+      if (rows.length !== rowcount) {
+        throw new Error(`aria-rowcount=${rowcount} but ${rows.length} role=row children`);
+      }
+      const colcount = Number(table.getAttribute("aria-colcount"));
+      const headerCells = rows[0] ? [...rows[0].querySelectorAll('[role="columnheader"]')] : [];
+      if (headerCells.length !== colcount) {
+        throw new Error(`first row has ${headerCells.length} columnheaders, aria-colcount=${colcount}`);
+      }
+      // Every data row's visible children must be cells (or aria-hidden).
+      for (const r of rows.slice(1)) {
+        for (const child of r.children) {
+          const role = child.getAttribute("role");
+          if (child.getAttribute("aria-hidden") === "true") continue;
+          if (role !== "cell" && role !== "columnheader" && role !== "button") {
+            throw new Error(`row child with role=${role ?? "none"} (${child.className})`);
+          }
+        }
+      }
+      const expanded = rows.filter((r) => r.hasAttribute("aria-expanded")).length;
+      const overlays = [...document.querySelectorAll(".plot-overlay")];
+      if (overlays.some((o) => o.getAttribute("aria-hidden") !== "true")) {
+        throw new Error("plot overlay not aria-hidden");
+      }
+      return { rows: rows.length, cols: colcount, groupRows: expanded };
+    });
+    if (report.groupRows < 2) throw new Error(`expected ≥2 aria-expanded group rows, got ${report.groupRows}`);
+    // Collapse a group via the existing toggle and assert aria-expanded flips.
+    const flipped = await page.evaluate(() => {
+      const g = [...document.querySelectorAll<HTMLElement>(".primary-cell.group-row")]
+        .find((e) => e.textContent!.includes("Group A"));
+      if (!g) throw new Error("Group A header not found");
+      const row = g.closest('[role="row"]')!;
+      const before = row.getAttribute("aria-expanded");
+      g.click();
+      return { before, row: row.getAttribute("data-x") };
+    });
+    await new Promise((r) => setTimeout(r, 300));
+    const after = await page.evaluate(() => {
+      const g = [...document.querySelectorAll<HTMLElement>(".primary-cell.group-row")]
+        .find((e) => e.textContent!.includes("Group A"))!;
+      const v = g.closest('[role="row"]')!.getAttribute("aria-expanded");
+      g.click(); // restore
+      return v;
+    });
+    await new Promise((r) => setTimeout(r, 300));
+    if (!(flipped.before === "true" && after === "false")) {
+      throw new Error(`aria-expanded did not track collapse (${flipped.before} → ${after})`);
+    }
+    return `table ${report.rows}×${report.cols}, ${report.groupRows} group rows, aria-expanded tracks collapse`;
+  },
+
   async collapse(page) {
     const n0 = (await readLabels(page)).length;
     await page.evaluate(() => {

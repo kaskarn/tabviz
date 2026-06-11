@@ -1698,9 +1698,21 @@
         {/if}
       {/snippet}
 
-      <!-- CSS Grid layout: columns in order (leftmost = primary) -->
+      <!-- CSS Grid layout: columns in order (leftmost = primary).
+           Table semantics (a11y floor, area J): the grid is role="table"
+           with display:contents row wrappers — placement is unaffected
+           (contents children join the grandparent grid; every cell is
+           explicitly placed) while screen readers get real
+           row/columnheader/cell structure. Drawing layers (viz overlays,
+           axis strip, watermark) are aria-hidden; the semantic content
+           of viz columns lives in the paired text/numeric columns.
+           Survey + triage: docs/dev/a11y-semantics.md. -->
       <div
         class="tabviz-main"
+        role="table"
+        aria-label={labelTitle || "Data table"}
+        aria-rowcount={effectiveHeaderDepth + displayRows.length}
+        aria-colcount={allColumns.length}
         style:grid-template-columns={gridTemplateColumns}
         style:grid-template-rows={gridTemplateRows}
       >
@@ -1715,7 +1727,10 @@
         <!-- Header cells (supports hierarchical column groups).
              Skipped entirely when no column's header is visible. -->
         {#if anyHeaderVisible}
-        {#each headerCells as cell (cell.col.id)}
+        {@const headerRowStarts = [...new Set(headerCells.map((c) => c.rowStart))].sort((a, b) => a - b)}
+        {#each headerRowStarts as hrs (hrs)}
+        <div role="row" style="display: contents" aria-rowindex={hrs}>
+        {#each headerCells.filter((c) => c.rowStart === hrs) as cell (cell.col.id)}
           {#if cell.isGroupHeader}
             <!-- Group header. dblclick toggles rename when editing is on; no
                  keyboard parity because the edit path is also exposed via the
@@ -1725,7 +1740,8 @@
             <div
               class="grid-cell header-cell column-group-header"
               class:editable={interaction.enableEdit}
-              role={interaction.enableEdit ? "button" : undefined}
+              role="columnheader"
+              aria-colspan={cell.colspan}
               tabindex={interaction.enableEdit ? 0 : undefined}
               data-header-id={cell.col.id}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
@@ -1759,6 +1775,9 @@
               use:forestColumnRef={column.id}
               class="grid-cell header-cell plot-header"
               class:sortable={canSortViz}
+              role="columnheader"
+              aria-sort={canSortViz ? (vizSortDir === "asc" ? "ascending" : vizSortDir === "desc" ? "descending" : "none") : undefined}
+              tabindex={canSortViz ? 0 : undefined}
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
@@ -1767,6 +1786,13 @@
               onclick={canSortViz ? (e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
+                store.toggleSort(column.field);
+              } : undefined}
+              onkeydown={canSortViz ? (e) => {
+                // Keyboard sort parity for viz headers (a11y floor, area J).
+                if (e.key !== "Enter" && e.key !== " ") return;
+                if ((e.target as HTMLElement).closest('.resize-handle, .drag-handle')) return;
+                e.preventDefault();
                 store.toggleSort(column.field);
               } : undefined}
             >
@@ -1807,7 +1833,7 @@
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
-              role={canSort ? "columnheader" : undefined}
+              role="columnheader"
               aria-sort={canSort ? (sortDir === "asc" ? "ascending" : sortDir === "desc" ? "descending" : "none") : undefined}
               tabindex={canSort ? 0 : undefined}
               aria-label={canSort ? `${column.header || column.field} — sortable column` : undefined}
@@ -1850,15 +1876,30 @@
             </div>
           {/if}
         {/each}
+        </div>
+        {/each}
         {/if}
 
         <!-- Data rows -->
         {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+          <!-- a11y row wrapper (display:contents — invisible to the grid).
+               Group headers carry aria-expanded here: `row` supports it
+               (treegrid vocabulary); the cell role does not. -->
+          <div
+            role="row"
+            style="display: contents"
+            aria-rowindex={effectiveHeaderDepth + 1 + i}
+            aria-expanded={displayRow.type === "group_header"
+              ? !(displayRow.group.collapsed || store.collapsedGroups.has(displayRow.group.id))
+              : undefined}
+          >
           {#if displayRow.type === "panel"}
             <!-- Details/disclosure panel: full-width free content (markdown),
                  content-driven height. Measured under panel:<rowId>. -->
             <div
               class="grid-cell tabviz-details-panel"
+              role="cell"
+              aria-colspan={allColumns.length}
               data-panel-row-id={displayRow.rowId}
               style:grid-row={effectiveHeaderDepth + 1 + i}
               style:grid-column="1 / -1"
@@ -1987,7 +2028,7 @@
                   return lvl ? `${lvl * indentPx}px` : undefined;
                 })()}
                 style={cellSemCss || undefined}
-                role={isGroupHeader || (row && store.paintTool) ? "button" : undefined}
+                role={!isGroupHeader && row && store.paintTool ? "button" : "cell"}
                 tabindex={isGroupHeader || (row && store.paintTool) ? 0 : undefined}
                 aria-pressed={!isGroupHeader && row && store.paintTool
                   ? !!cellActiveTok || rowClasses.includes("row-active-")
@@ -2048,6 +2089,7 @@
                    for the row, so this cell is presentational. -->
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_interactive_supports_focus -->
               <div
                 class={`grid-cell data-cell plot-cell ${rowClasses}${cellActiveTok ? ` cell-active-${cellActiveTok}` : ""}`}
                 class:group-row={isGroupHeader}
@@ -2055,7 +2097,7 @@
                 class:group-row-bordered={groupLevelBorder}
                 class:spacer-row={isSpacerRow}
                 class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
-                role="presentation"
+                role="cell"
                 style:grid-row={gridRow}
                 style:background-color={cellSemBg ?? effectiveBg}
                 style={cellSemCss || undefined}
@@ -2073,6 +2115,7 @@
               {@const cellBg = row ? (getCellStyle(row, column)?.bg ?? null) : null}
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_interactive_supports_focus -->
               <div
                 class={`grid-cell data-cell ${rowClasses}${cellActiveTok ? ` cell-active-${cellActiveTok}` : ""}`}
                 class:numeric-cell={NUMERIC_COLUMN_TYPES.has(column.type)}
@@ -2083,7 +2126,7 @@
                 class:wrap-enabled={column.wrap}
                 class:editable={editableHere}
                 class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
-                role="presentation"
+                role="cell"
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
                 style:grid-row={gridRow}
@@ -2103,6 +2146,7 @@
             {/if}
           {/each}
           {/if}
+          </div>
         {/each}
 
         <!-- Axis row: one axis cell per viz column -->
@@ -2110,9 +2154,9 @@
           {@const axisRowNum = effectiveHeaderDepth + 1 + displayRows.length}
           {#each allColumns as column, idx (column.id)}
             {#if vizColumnTypes.includes(column.type)}
-              <div class="grid-cell axis-cell" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
+              <div class="grid-cell axis-cell" aria-hidden="true" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
             {:else}
-              <div class="grid-cell axis-spacer" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
+              <div class="grid-cell axis-spacer" aria-hidden="true" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
             {/if}
           {/each}
         {/if}
@@ -2130,6 +2174,7 @@
           {@const fcClipId = `viz-clip-${instanceId}-${fc.column.id}`}
           <svg
             class="plot-overlay"
+            aria-hidden="true"
             width={forestWidth}
             height={rowsAreaHeight + layout.axisHeight}
             viewBox="0 0 {forestWidth} {rowsAreaHeight + layout.axisHeight}"
@@ -2315,6 +2360,7 @@
           {#if vizOpts}
             <svg
               class="plot-overlay"
+            aria-hidden="true"
               width={vizWidth}
               height={rowsAreaHeight + layout.axisHeight}
               viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
@@ -2403,6 +2449,7 @@
           {#if vizOpts}
             <svg
               class="plot-overlay"
+            aria-hidden="true"
               width={vizWidth}
               height={rowsAreaHeight + layout.axisHeight}
               viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
@@ -2491,6 +2538,7 @@
           {#if vizOpts}
             <svg
               class="plot-overlay"
+            aria-hidden="true"
               width={vizWidth}
               height={rowsAreaHeight + layout.axisHeight}
               viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"

@@ -243,13 +243,16 @@ Deliberately scoped down — correct and unsurprising, not flagship.
 ### J. Accessibility floor
 Clinical/regulatory audience makes this table stakes.
 **Exit criteria:**
-- [~] `aria-sort` + keyboard sort LANDED 2026-06-11: sortable headers
-      are focusable columnheaders; Enter/Space toggles (same vocabulary
-      as click, guards for resize/drag/filter targets); aria-sort tracks
-      ascending/descending/none. GATED: interaction-qa's keyboardSort
-      leg drives it with REAL keystrokes and asserts aria-sort.
-      Remaining for [x]: the full table-semantics survey (grid/row roles
-      across the region tree).
+- [x] Table semantics LANDED 2026-06-11: the CSS grid is a real ARIA
+      table — role="table" + rowcount/colcount, display:contents row
+      wrappers (layout-inert: WYSIWYG gate zero-delta), columnheader on
+      ALL headers (was sortable-only; viz headers got keyboard-sort
+      parity too), role="cell" everywhere (data cells were
+      role="presentation" — the table was structurally INVISIBLE to
+      screen readers), aria-expanded collapse-tracking on group rows,
+      aria-hidden drawing layers. Survey + map:
+      docs/dev/a11y-semantics.md. GATED: interaction-qa keyboardSort +
+      tableSemantics legs (real input).
 - [x] HC-fidelity vertical decided: KILLED (register D1, 2026-06-10).
 - [x] Focus visibility + reduced motion (2026-06-11): ONE global
       prefers-reduced-motion kill-switch in theme-runtime.css covers
@@ -258,7 +261,10 @@ Clinical/regulatory audience makes this table stakes.
       sortable headers got a :focus-visible ring on the new
       --tv-focus-ring token (the focus-ring ROLE finally has its
       emission — the drift gate forced the honest declaration).
-- [ ] One a11y review pass (agent or manual) with findings triaged.
+- [x] Review pass done 2026-06-11 — 4 findings triaged in
+      docs/dev/a11y-semantics.md (viz-marks text alternative ACCEPTED
+      w/ guidance; paint-mode role flip ACCEPTED; keyboard edit path
+      BACKLOG→area F; spacer verbosity ACCEPTED). AREA J COMPLETE.
 
 ---
 
