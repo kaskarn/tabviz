@@ -128,8 +128,10 @@
 #'   shares identical per-column widths. Default `FALSE`. Set `TRUE` when you
 #'   plan to stack screenshots (slides / PowerPoint) and want columns to line
 #'   up. Widths are computed once from the combined data.
-#' @param paginate Pagination configuration. One of: `NULL` (default — no
-#'   pagination), `TRUE` (default [paginate_spec()]), a positive integer
+#' @param paginate Pagination configuration. One of: `NULL` (the default —
+#'   tables over 200 rows auto-paginate at 200 rows/page breaking on
+#'   groups; smaller tables don't paginate), `FALSE` (never paginate,
+#'   even past the threshold), `TRUE` (default [paginate_spec()]), a positive integer
 #'   (rows-per-page shorthand), or a `PaginateSpec` from [paginate_spec()]
 #'   or one of its presets ([paginate_letter()], `paginate_a4()`,
 #'   `paginate_slide()`). The HTML viewer renders one page at a time with
@@ -648,7 +650,7 @@ tabviz <- function(
     marker_size_col = style_resolved$marker_size,
     weight_col = style_resolved$weight,
     original_call = .tabviz_call,
-    paginate = as_paginate_spec(paginate),
+    paginate = resolve_default_paginate(paginate, nrow(data)),
     conditions = evaluate_conditions(conditions, data) %||% list()
   )
 

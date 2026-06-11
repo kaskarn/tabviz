@@ -162,6 +162,26 @@ paginate_slide <- function(...) {
 # entry points so users can write `paginate = TRUE` or `paginate = 50` without
 # touching the spec constructor.
 #' @noRd
+# D12 (decided 2026-06-11): the default-paginate threshold. NULL past
+# 200 rows auto-paginates (200 rows/page, break on group) with a
+# once-per-session hint; `paginate = FALSE` is the documented opt-out.
+# Scale posture (roadmap area L): pagination is the honest scale story —
+# a 5k-row DOM mount degrades interaction well before the algorithms do.
+DEFAULT_PAGINATE_THRESHOLD <- 200L
+
+#' @noRd
+resolve_default_paginate <- function(paginate, n_rows) {
+  if (is.null(paginate) && n_rows > DEFAULT_PAGINATE_THRESHOLD) {
+    cli::cli_inform(
+      c("i" = "{n_rows} rows > {DEFAULT_PAGINATE_THRESHOLD}: paginating at {DEFAULT_PAGINATE_THRESHOLD} rows/page (break on group).",
+        " " = "Opt out with {.code paginate = FALSE}; tune with {.fn paginate_spec}."),
+      .frequency = "once", .frequency_id = "tabviz_default_paginate"
+    )
+    return(paginate_spec(rows = DEFAULT_PAGINATE_THRESHOLD, break_on = "group"))
+  }
+  as_paginate_spec(paginate)
+}
+
 as_paginate_spec <- function(x, arg = "paginate") {
   if (is.null(x)) return(NULL)
   if (S7_inherits(x, PaginateSpec)) return(x)

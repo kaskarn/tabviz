@@ -240,7 +240,10 @@ Clinical/regulatory audience makes this table stakes.
 
 ### L. Scale posture (honesty as a feature)
 **Exit criteria:**
-- [ ] Default-paginate threshold decided (register D12) + implemented.
+- [x] Default-paginate threshold decided + implemented (D12,
+      2026-06-11): 200 rows/group-break auto-default, FALSE opt-out,
+      once-per-session hint, test-default-paginate.R locks all four
+      behaviors.
 - [ ] Documented row-count envelope: what's smooth, what degrades, what's
       unsupported; arrange-mode degradation noted.
 - [x] Windowed-flatten design note exists (2026-06-11):

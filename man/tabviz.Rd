@@ -220,8 +220,10 @@ shares identical per-column widths. Default \code{FALSE}. Set \code{TRUE} when y
 plan to stack screenshots (slides / PowerPoint) and want columns to line
 up. Widths are computed once from the combined data.}
 
-\item{paginate}{Pagination configuration. One of: \code{NULL} (default — no
-pagination), \code{TRUE} (default \code{\link[=paginate_spec]{paginate_spec()}}), a positive integer
+\item{paginate}{Pagination configuration. One of: \code{NULL} (the default —
+tables over 200 rows auto-paginate at 200 rows/page breaking on
+groups; smaller tables don't paginate), \code{FALSE} (never paginate,
+even past the threshold), \code{TRUE} (default \code{\link[=paginate_spec]{paginate_spec()}}), a positive integer
 (rows-per-page shorthand), or a \code{PaginateSpec} from \code{\link[=paginate_spec]{paginate_spec()}}
 or one of its presets (\code{\link[=paginate_letter]{paginate_letter()}}, \code{paginate_a4()},
 \code{paginate_slide()}). The HTML viewer renders one page at a time with

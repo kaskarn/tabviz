@@ -17,7 +17,6 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
 | D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due) | keep / adjust per flag | keep current split | M3 |
-| D12 | Default-paginate threshold value (rows) | pick N + breakOn defaults | propose 200 rows, break on group | M3 (scale posture) |
 | D15 | Export title-block arithmetic vs DOM caption block: ≤8px density-correlated offset on display-type themes (headerBand.top — wysiwyg gate, 2026-06-10) | (a) mirror the DOM caption-block layout exactly in computeLayout (title pad 0.15rem, subtitle border+padding chain, measured line boxes); (b) accept ≤8px as a budgeted exception | (b) budgeted at 8px (encoded in GATE_EXCEPTIONS with this ID); fix via (a) when area G lands | M2 (WYSIWYG, area G) |
 | D13 | `enable_themes = "default"` ships all 9 resolved presets on EVERY widget wire (weight + chrome) — right default for 1.0? | keep / trim roster on wire / lazy-load presets | keep, but measure wire weight first (serialize-weight gate exists) | M3 |
 
@@ -26,6 +25,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
+| D12 | Default-paginate threshold IMPLEMENTED: NULL past 200 rows auto-paginates (200 rows/page, break on group, once-per-session hint); `paginate = FALSE` is the documented opt-out; explicit specs untouched | UNILATERAL (delegated): the register default applied verbatim; pagination is the honest scale story (the DOM mount degrades before the algorithms do — bench-backed) | 2026-06-11 |
 | D17 | Role-roster names KEPT as-is | UNILATERAL (delegated): the names now ship on wire 1.5–1.10 envelopes and the Stage-2/3 UI displays them daily without complaints surfacing; renaming would break existing envelopes for marginal legibility | 2026-06-11 |
 | D3 | `effects.elevation` KEPT (it paints — shell-paper consumes it as figure-wide depth, decided 2026-06-05); the four orphan `--tv-shadow-raised/overlay-*` tokens + the elevation resolver group + the orphaned elevation.ts module DELETED | UNILATERAL (delegated): option (b) — the honesty rule (D2/D11 precedent); the quartet had zero consumers and TODO flags | 2026-06-11 |
 | D4 | Portaled-popover neutral chrome ACCEPTED for 1.0 | UNILATERAL (delegated): default (b) — consistent neutral chrome is defensible; revisit on dark-theme adoption feedback | 2026-06-11 |
