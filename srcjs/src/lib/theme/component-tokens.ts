@@ -1007,6 +1007,15 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Pooled-summary diamond outline (series slot 0)",
   },
 
+  {
+    cssVar: "--tv-focus-ring",
+    resolverGroup: "role",
+    kind: "paint-stroke",
+    source: { tier: "role", role: "focus-ring" },
+    consumedBy: ["lib/theme/theme-runtime.css"],
+    description: "Keyboard focus ring (sortable headers + focusable chrome)",
+  },
+
   // ── Generic T2 role passthroughs (consumer migration helpers) ─────────────
   // These mirror Tier-2 roles 1:1 with no Tier-3 specialization. Consumers
   // reading e.g. theme.surface.base / theme.content.primary / theme.content.muted

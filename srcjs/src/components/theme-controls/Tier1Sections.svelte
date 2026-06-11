@@ -289,8 +289,10 @@
   function tabClick(t: PanelTab): void {
     activeTab = t;
     if (!singleScroll) return;
+    const reduce = typeof matchMedia !== "undefined"
+      && matchMedia("(prefers-reduced-motion: reduce)").matches;
     panelEl?.querySelector(`[data-t1-section="${t}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   }
   const TABS: ReadonlyArray<{ id: PanelTab; label: string; dot: string }> = [
     { id: "identity", label: "Identity", dot: "var(--v2-ink, #15140e)" },

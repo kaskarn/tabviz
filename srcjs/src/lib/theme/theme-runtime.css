@@ -476,3 +476,26 @@
 }
 
 /* sv-omit-end */
+
+/* ── Reduced motion (a11y floor, area J — 2026-06-11) ──────────────────
+   One kill-switch for every transition/animation in widget + chrome.
+   Individual components need no per-file media queries; new transitions
+   are covered by construction. (JS smooth-scrolls guard separately via
+   matchMedia — CSS cannot override scrollIntoView options.) */
+@media (prefers-reduced-motion: reduce) {
+  .tabviz-container *, .tabviz-container *::before, .tabviz-container *::after,
+  .settings-panel *, .control-toolbar *, .zoom-dropdown * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Sortable headers became FOCUSABLE with keyboard sort (area J): the
+   focus ring uses the theme's focus-ring role and only shows for
+   keyboard focus. */
+.tabviz-container .header-cell.sortable:focus-visible {
+  outline: 2px solid var(--tv-focus-ring, #2563eb);
+  outline-offset: -2px;
+}

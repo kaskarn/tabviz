@@ -226,7 +226,13 @@ Clinical/regulatory audience makes this table stakes.
       Remaining for [x]: the full table-semantics survey (grid/row roles
       across the region tree).
 - [x] HC-fidelity vertical decided: KILLED (register D1, 2026-06-10).
-- [ ] Focus visibility + reduced-motion verified across chrome.
+- [x] Focus visibility + reduced motion (2026-06-11): ONE global
+      prefers-reduced-motion kill-switch in theme-runtime.css covers
+      every transition/animation in widget + chrome by construction
+      (was 4-of-18 files); D16's smooth scroll guards via matchMedia;
+      sortable headers got a :focus-visible ring on the new
+      --tv-focus-ring token (the focus-ring ROLE finally has its
+      emission — the drift gate forced the honest declaration).
 - [ ] One a11y review pass (agent or manual) with findings triaged.
 
 ---
