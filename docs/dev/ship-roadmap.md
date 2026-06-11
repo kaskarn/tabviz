@@ -43,8 +43,12 @@ Every other area on this roadmap decays invisibly without this one.
       over-budget findings fail. 0 breaches at stand-up; the gate's first
       catch (header.fontSize v3-bridge mismatch) was fixed, not budgeted
       (2026-06-10).
-- [ ] Perf benches run with regression thresholds against checked-in
-      baselines (bun bench at minimum; browser bench at least weekly).
+- [x] Perf benches run with regression thresholds against checked-in
+      baselines: bun bench `--gate` on every push (calibration-normalized
+      vs `baseline-current.json`, 1.75×, missing-scenario rot guard) +
+      region-tree budget gate in CI; browser bench weekly
+      (perf-weekly.yaml, informational artifacts). The bench itself had
+      ROTTED (culled-preset import) — repaired same day (2026-06-11).
 - [ ] A gate failure blocks merge (configure branch protection once CI is
       green on main). Known-failure allowance: NONE — the long-standing
       vitest "jsdom canvas" failure was a test-harness bug (`?? null`

@@ -20,7 +20,25 @@ Focused single-concern benches (own runner, own budget gate):
 bun run tests/perf/region-tree-bench.ts
 ```
 
-To save a baseline before a refactor:
+## CI regression gate (M0-A)
+
+```bash
+bun run tests/perf/run-bench.ts --gate             # what CI runs on every push
+bun run tests/perf/run-bench.ts --write-baseline   # refresh baseline-current.json
+```
+
+The gate compares each scenario's median against the checked-in
+`baseline-current.json`, normalized by a runtime CALIBRATION workload so
+a laptop-recorded baseline transfers to CI runners (machine speed
+cancels; only algorithmic drift remains). Tolerance 1.75× on scenarios
+whose baseline median ≥ 1 ms; a baseline scenario missing from the run
+fails too (the rot guard — this bench itself rotted once via a
+culled-preset import, repaired 2026-06-11). After an INTENTIONAL perf
+change, re-baseline and commit the JSON diff alongside the change.
+The real-browser bench runs weekly (`.github/workflows/perf-weekly.yaml`,
+informational artifacts).
+
+To save a human-readable snapshot before a refactor:
 
 ```bash
 bun run tests/perf/run-bench.ts > tests/perf/baseline.txt

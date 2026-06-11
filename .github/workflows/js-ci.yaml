@@ -60,6 +60,16 @@ jobs:
       - name: Bundle-size budget
         run: npm run check:size
 
+      # Perf regression gate (M0-A last criterion): bun bench medians vs
+      # the checked-in baseline, normalized by a runtime calibration so
+      # laptop-recorded baselines transfer to CI runners. Re-baseline with
+      # --write-baseline after INTENTIONAL perf changes.
+      - name: Perf gate (bun bench vs baseline)
+        run: bun run tests/perf/run-bench.ts --gate
+
+      - name: Perf gate (region-tree flatten budget)
+        run: bun run tests/perf/region-tree-bench.ts
+
       - name: Lockfile parity
         run: npm run check:lockfiles
 

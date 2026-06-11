@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "date": "2026-06-11",
+    "calibrationMs": 7.866250000000036,
+    "note": "Regenerate with: bun run tests/perf/run-bench.ts --write-baseline (commit alongside any intentional perf change)."
+  },
+  "results": [
+    {
+      "scenario": "measure.estimator",
+      "fixture": "small_mixed",
+      "medianMs": 0.255
+    },
+    {
+      "scenario": "measure.rankTopK",
+      "fixture": "small_mixed",
+      "medianMs": 0.163
+    },
+    {
+      "scenario": "measure.estimator",
+      "fixture": "medium_mixed",
+      "medianMs": 2.512
+    },
+    {
+      "scenario": "measure.rankTopK",
+      "fixture": "medium_mixed",
+      "medianMs": 2.408
+    },
+    {
+      "scenario": "measure.estimator",
+      "fixture": "large_mixed",
+      "medianMs": 11.9
+    },
+    {
+      "scenario": "measure.rankTopK",
+      "fixture": "large_mixed",
+      "medianMs": 11.983
+    },
+    {
+      "scenario": "measure.estimator",
+      "fixture": "xl_mixed",
+      "medianMs": 45.765
+    },
+    {
+      "scenario": "measure.rankTopK",
+      "fixture": "xl_mixed",
+      "medianMs": 45.67
+    },
+    {
+      "scenario": "theme.resolve",
+      "fixture": "-",
+      "medianMs": 0.724
+    },
+    {
+      "scenario": "theme.cssBuild",
+      "fixture": "-",
+      "medianMs": 0
+    },
+    {
+      "scenario": "theme.cssBuild.cached",
+      "fixture": "-",
+      "medianMs": 0
+    },
+    {
+      "scenario": "split.measure",
+      "fixture": "split_small",
+      "medianMs": 1.929
+    },
+    {
+      "scenario": "split.themeBuild",
+      "fixture": "split_small",
+      "medianMs": 0.002
+    },
+    {
+      "scenario": "split.measure",
+      "fixture": "split_medium",
+      "medianMs": 9.53
+    },
+    {
+      "scenario": "split.themeBuild",
+      "fixture": "split_medium",
+      "medianMs": 0.005
+    },
+    {
+      "scenario": "split.measure",
+      "fixture": "split_large",
+      "medianMs": 8.88
+    },
+    {
+      "scenario": "split.themeBuild",
+      "fixture": "split_large",
+      "medianMs": 0
+    }
+  ]
+}

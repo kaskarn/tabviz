@@ -1,0 +1,57 @@
+# Weekly browser-bench run (roadmap M0-A: "browser bench at least weekly").
+#
+# The bun bench gates every push (js-ci.yaml); real-Chromium render cost
+# can't gate the same way (runner GPU/scheduling variance), so it runs
+# weekly + on demand, INFORMATIONAL: results upload as artifacts for
+# trend-eyeballing against tests/browser/baseline-current.json. A real
+# regression shows up as a step away from the artifact trail.
+
+on:
+  schedule:
+    - cron: "23 6 * * 1" # Mondays 06:23 UTC (off the :00 stampede)
+  workflow_dispatch:
+
+name: perf-weekly
+
+jobs:
+  browser-bench:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: srcjs
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: srcjs/package-lock.json
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: npm ci
+
+      - name: Install chrome-headless-shell
+        run: npx puppeteer browsers install chrome-headless-shell
+
+      - name: Build bundles
+        run: npm run build
+
+      - name: Bun bench (table, for the artifact trail)
+        run: bun run tests/perf/run-bench.ts | tee /tmp/perf-bun.txt
+
+      - name: Browser bench (real Chromium renderValue)
+        run: bun run tests/browser/run-bench.ts --out /tmp/perf-browser.json
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-weekly-${{ github.run_id }}
+          path: |
+            /tmp/perf-bun.txt
+            /tmp/perf-browser.json
+          if-no-files-found: error
