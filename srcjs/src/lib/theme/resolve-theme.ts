@@ -33,6 +33,7 @@
 import type { ThemeInputs, OklchTriple, TokenRamps } from "../../types/theme-inputs";
 import type { RoleName } from "../../types/theme-roles";
 import type { ThemeWire } from "./theme-wire";
+import { resolveBorders } from "./borders";
 import {
   componentRoleOverride,
   componentChannelOverride,
@@ -68,7 +69,7 @@ import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } f
 import { validateThemeInputs } from "./theme-validate";
 import {
   COMPONENT_TOKENS,
-  isV3BridgeToken,
+  isLiveConfigToken,
   type ComponentToken,
   type ResolverGroup,
   type TokenSource,
@@ -311,17 +312,11 @@ export const STATUS_ANCHOR_FALLBACK: Record<string, string> = {
  *  beats leaking the literal text `<computed>` into the cascade. */
 const TOKEN_RESOLVE_BUG_SENTINEL = "";
 
-/** Placeholder for manifest entries that are *declared* for drift-gate
- *  ownership + Inspector visibility, but whose values come from
- *  theme-css.ts's user-config-bridge tail (theme.borders / theme.firstColumn /
- *  theme.layout / theme.variants — user-pinnable config with no anchor-
- *  substrate equivalent). The token's source.note must begin with
- *  `[v3-bridge]` to opt into this skip.
- *
- *  `_emitV4CssVarsBody` skips any value starting with `<`, so these entries
- *  never end up in the v4 manifest emission — theme-css.ts's tail keeps
- *  emitting them from theme.X.Y until the v4 substrate grows native support. */
-const V3_BRIDGE_SENTINEL = "<v3-bridge>";
+/** Placeholder for live-config manifest entries (series slot 0, layout)
+ *  realized by computeLiveConfigVars rather than the cascade. Emitters
+ *  skip values starting with `<`; the live-config overlay supplies the
+ *  real value on every read path. */
+const LIVE_CONFIG_SENTINEL = "<live-config>";
 
 /** True under `vite dev`, vitest, bun:test, and any other non-PROD bundle.
  *  Vite inlines `import.meta.env.PROD` to a literal at build time; under
@@ -506,7 +501,7 @@ function resolveAnchorGroup(token: ComponentToken, ctx: ResolveCtx): string {
  * dev-throws unreachable and silently mis-routed mis-tagged tokens.
  */
 const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup, ResolverFn>([
-  ["v3-bridge", () => V3_BRIDGE_SENTINEL],
+  ["live-config", () => LIVE_CONFIG_SENTINEL],
   ["browser-fx", resolveBrowserFxGroup],
   ["glass", resolveGlassGroup],
   ["geometry", (t, ctx) =>
@@ -541,6 +536,41 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
     return ctx.roles[reroute ?? t.source.role];
   }],
   ["anchor", resolveAnchorGroup],
+  // Borders cluster (W4 finale): the 11 border tokens derive from ONE
+  // place — resolveBorders(border_preset, role border, role
+  // border-subtle). Same derivation the SVG export consumes
+  // (lib/theme/borders.ts), so DOM and export agree by construction.
+  // The dbl() math (double style = 3x thickness floor) is the v3
+  // bridge's exactly.
+  ["borders", (t, ctx) => {
+    const reroute = componentRoleOverride(t, ctx.components);
+    if (reroute) return ctx.roles[reroute];
+    const b = resolveBorders(ctx.inputs.border_preset,
+      ctx.roles["border"], ctx.roles["border-subtle"]);
+    const dbl = (style: string | undefined, thickness: number, floor = 0): number =>
+      style === "double" ? Math.max(3, thickness * 3) : Math.max(thickness, floor);
+    switch (t.cssVar) {
+      case "--tv-row-border-width":    return `${dbl(b.minor.style, b.minor.thickness)}px`;
+      case "--tv-header-border-width": return `${dbl(b.major.style, b.major.thickness, 2)}px`;
+      case "--tv-group-border-width":  return `${dbl(b.major.style, b.major.thickness)}px`;
+      case "--tv-border-major-color":  return b.major.color;
+      case "--tv-border-minor-color":  return b.minor.color;
+      case "--tv-border-table-color":  return b.table.color;
+      case "--tv-border-row-style":
+        return (b.layout === "horizontal" || b.layout === "grid")
+          ? (b.minor.style === "double" ? "double" : "solid") : "none";
+      case "--tv-border-col-style":
+        return (b.layout === "vertical" || b.layout === "grid")
+          ? (b.minor.style === "double" ? "double" : "solid") : "none";
+      case "--tv-border-major-style":  return b.major.style === "double" ? "double" : "solid";
+      case "--tv-table-border-width":
+        return `${b.table.style === "double" ? Math.max(3, b.table.thickness * 3) : b.table.thickness}px`;
+      case "--tv-table-border-style":
+        return b.table.thickness > 0 ? (b.table.style === "double" ? "double" : "solid") : "none";
+    }
+    return tokenResolveBug(t.cssVar, t.source.tier,
+      "resolverGroup=borders but cssVar is not a border token");
+  }],
   // First-column treatment (W4 port) keyed by inputs.first_column_style.
   // Recipes are the v3 cluster's exactly: bold = {bg neutral[2],
   // fg ink anchor, weight 600, rule neutral[6]}; default = inert
@@ -616,10 +646,9 @@ function resolveTokenValue(
   resolved: ResolveCtx,
 ): string {
   // ── Cross-cutting pre-filter (order preserved from the waterfall) ──────
-  // V3-bridge short-circuit. Manifest entries that opt into theme-css.ts's
-  // user-config-bridge tail skip resolution here and yield the sentinel;
-  // `_emitV4CssVarsBody` drops it so the tail's own emission wins.
-  if (isV3BridgeToken(token)) return V3_BRIDGE_SENTINEL;
+  // Live-config short-circuit: computeLiveConfigVars realizes these
+  // (series slot 0, layout); emitters drop the sentinel so the overlay wins.
+  if (isLiveConfigToken(token)) return LIVE_CONFIG_SENTINEL;
 
   // Layer B — declarative token.modes drop/swap. Runs BEFORE the group
   // dispatch for every token; a `drop`/`swap` replaces the base value.

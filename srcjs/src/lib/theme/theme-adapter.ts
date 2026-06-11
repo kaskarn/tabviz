@@ -33,7 +33,7 @@ import type {
   StatusColors, SlotRole, TextRole, TextRoles,
   SpacingTokens, HeaderCluster, RowGroupCluster,
   RowCluster, PlotScaffold,
-  AxisConfig, Layout, ThemeBorders,
+  AxisConfig, Layout,
  
 } from "../../types/theme-resolved";
 
@@ -83,55 +83,6 @@ function textRoleTitle(family: string, fg: string): TextRole {
  *  re-applied locally to back-fill the small set of v3-shaped
  *  computations (series anchors, text-role fonts) that still need
  *  the reflected ramps. */
-/** Expand the Tier-1 `border_preset` enum into the T3 borders cluster.
- *  Five treatments over the theme's own rule colors; "hairline" is the
- *  named form of the historical default (so unset ≡ hairline byte-for-
- *  byte and no existing theme shifts). */
-function expandBorderPreset(
-  preset: ThemeInputs["border_preset"],
-  ruleStrong: string,
-  ruleSubtle: string,
-): ThemeBorders {
-  switch (preset) {
-    case "none":
-      return {
-        layout: "none",
-        major: { thickness: 0, style: "single", color: ruleStrong },
-        minor: { thickness: 0, style: "single", color: ruleSubtle },
-        table: { thickness: 0, style: "single", color: ruleStrong },
-      };
-    case "ruled":
-      return {
-        layout: "horizontal",
-        major: { thickness: 2, style: "single", color: ruleStrong },
-        minor: { thickness: 1, style: "single", color: ruleSubtle },
-        table: { thickness: 0, style: "single", color: ruleStrong },
-      };
-    case "frame":
-      return {
-        layout: "horizontal",
-        major: { thickness: 1, style: "single", color: ruleStrong },
-        minor: { thickness: 1, style: "single", color: ruleSubtle },
-        table: { thickness: 2, style: "single", color: ruleStrong },
-      };
-    case "boxed":
-      return {
-        layout: "grid",
-        major: { thickness: 1, style: "single", color: ruleStrong },
-        minor: { thickness: 1, style: "single", color: ruleSubtle },
-        table: { thickness: 1, style: "single", color: ruleStrong },
-      };
-    case "hairline":
-    default:
-      // The historical default cluster, now nameable.
-      return {
-        layout: "horizontal",
-        major: { thickness: 1, style: "single", color: ruleStrong },
-        minor: { thickness: 1, style: "single", color: ruleSubtle },
-        table: { thickness: 0, style: "single", color: ruleStrong },
-      };
-  }
-}
 
 /** Options bag for buildTheme's second argument. A bare string remains
  *  accepted as shorthand for `{ name }` (every pre-P0 call site). */
@@ -367,16 +318,6 @@ export function buildTheme(
     banding: { mode: "group", level: null },
   };
 
-  // Border treatment — `border_preset` is a Tier-1 structural enum the
-  // resolver expands into the full T3 cluster (settings-overhaul P0,
-  // header_style precedent). Unset keeps the default cluster, which is
-  // deliberately ≡ "hairline" so existing themes are byte-stable.
-  const borders: ThemeBorders = expandBorderPreset(
-    inputs.border_preset,
-    t.rule_strong,
-    t.rule_subtle,
-  );
-
   const built: WebTheme = {
     schemaVersion: 4,
     name,
@@ -387,7 +328,6 @@ export function buildTheme(
     ...(Object.keys(components).length > 0 ? { components } : {}),
     axis,
     layout,
-    borders,
     accent: accentRoles,
     status,
     series,

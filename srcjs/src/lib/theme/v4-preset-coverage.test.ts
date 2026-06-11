@@ -11,7 +11,7 @@ import { describe, it, expect } from "bun:test";
 import { PRESETS } from "./theme-presets-inputs";
 import { buildTheme } from "./theme-adapter";
 import { getCssVars } from "./consumer-bridge";
-import { COMPONENT_TOKENS, isV3BridgeToken } from "./component-tokens";
+import { COMPONENT_TOKENS, isLiveConfigToken } from "./component-tokens";
 
 // Tokens whose v4 source is still a placeholder ("<computed>" / "<input:…>")
 // are exempt; they'll be cleaned up as the resolver lands their concrete paths.
@@ -34,7 +34,7 @@ describe("v4 cssVars: per-preset coverage", () => {
       // emit `<v3-bridge>` from the v4 resolver — they're realized in
       // theme-css.ts's user-config-bridge tail, not by the manifest pass.
       const v3BridgeVars = new Set(
-        COMPONENT_TOKENS.filter(isV3BridgeToken).map(t => t.cssVar)
+        COMPONENT_TOKENS.filter(isLiveConfigToken).map(t => t.cssVar)
       );
       const leaked: Array<{ cssVar: string; value: string }> = [];
       for (const [cssVar, value] of Object.entries(cssVars)) {

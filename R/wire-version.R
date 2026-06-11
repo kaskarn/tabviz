@@ -60,4 +60,11 @@
 # REMOVED from the blob. first_column_style is a Tier-1 INPUT (rides
 # inputs); the four --tv-first-col-* tokens resolve via the new
 # first-col resolver group. Dead "tint" first-column enum dropped.
-WIRE_FORMAT_VERSION <- "1.9"
+#
+# v1.10 (2026-06-11): W4 FINALE — `theme.borders` REMOVED from the blob
+# (derivable: border_preset rides inputs; lib/theme/borders.ts is the
+# one derivation feeding the 11 --tv-*border* tokens AND the SVG
+# export). computeV3BridgeVars DELETED — zero v3-bridge manifest rows
+# remain; the live-config overlay (series slot 0 + layout) is the only
+# non-cascade emission left.
+WIRE_FORMAT_VERSION <- "1.10"

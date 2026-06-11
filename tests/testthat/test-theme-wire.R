@@ -67,22 +67,20 @@ test_that("theme_inputs_from_wire is a fixpoint of theme_inputs_to_json", {
   }
 })
 
-test_that("set_border_preset expands into five distinct clusters", {
+test_that("set_border_preset expands into five distinct token signatures", {
   presets <- c("none", "hairline", "ruled", "frame", "boxed")
-  sigs <- vapply(presets, function(p) {
-    b <- set_border_preset(web_theme_nejm(), p)@borders
-    paste(b@layout, b@major@thickness, b@minor@thickness, b@table@thickness)
-  }, "")
+  sig <- function(th) {
+    v <- theme_css_vars(th)
+    paste(v[["--tv-border-row-style"]], v[["--tv-row-border-width"]],
+          v[["--tv-group-border-width"]], v[["--tv-border-major-style"]],
+          v[["--tv-table-border-width"]], v[["--tv-table-border-style"]])
+  }
+  sigs <- vapply(presets, function(p) sig(set_border_preset(web_theme_nejm(), p)), "")
   expect_length(unique(sigs), 5L)
   # Re-applying a theme's OWN declared preset must be a no-op. nejm ships
-  # "frame" (the journal frame), so its resolved default IS the frame cluster
-  # — applying "frame" again must not shift it.
+  # "frame" — applying "frame" again must not shift the tokens.
   expect_identical(web_theme_nejm()@inputs@border_preset, "frame")
-  d <- web_theme_nejm()@borders
-  f <- set_border_preset(web_theme_nejm(), "frame")@borders
-  expect_identical(d@layout, f@layout)
-  expect_equal(d@major@thickness, f@major@thickness)
-  expect_equal(d@table@thickness, f@table@thickness)
+  expect_identical(sig(web_theme_nejm()), sig(set_border_preset(web_theme_nejm(), "frame")))
 })
 
 test_that("border_preset survives the inputs wire", {

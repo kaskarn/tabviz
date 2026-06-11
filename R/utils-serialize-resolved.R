@@ -21,7 +21,7 @@ serialize_theme <- function(theme) {
   }
 
   # Canonical resolved-theme wire shape comes from the TS adapter — derived from
-  # the inputs that authored this theme. R-side axis/layout/borders/
+  # the inputs that authored this theme. R-side axis/layout/
   # web_fonts can have been modified after construction; overlay them.
   inputs_json <- theme_inputs_to_json(theme@inputs)
   # role_overrides ride the options bag so the TS adapter stamps them on
@@ -41,7 +41,7 @@ serialize_theme <- function(theme) {
     blob$webFonts <- lapply(theme@web_fonts, function(wf) list(family = wf$family, url = wf$url))
   }
 
-  # Overlay R-side mutable axis/layout/borders so user edits to these
+  # Overlay R-side mutable axis/layout so user edits to these
   # survive (they're not part of the inputs cascade).
   axis_block <- list(
     rangeMin       = if (is.na(theme@axis@range_min))  NULL else theme@axis@range_min,
@@ -63,25 +63,12 @@ serialize_theme <- function(theme) {
     banding               = serialize_banding(theme@row@banding)
   )
 
-  # Borders are emitted as a flat sibling of axis/layout; layout × type
-  # model (see ThemeBorders + BorderSpec in R/classes-theme.R).
-  serialize_border_spec <- function(b) {
-    list(
-      thickness = b@thickness,
-      style     = b@style,
-      color     = if (is.na(b@color)) "#000000" else b@color
-    )
-  }
-  borders_block <- list(
-    layout = theme@borders@layout,
-    major  = serialize_border_spec(theme@borders@major),
-    minor  = serialize_border_spec(theme@borders@minor),
-    table  = serialize_border_spec(theme@borders@table)
-  )
+  # `borders` left the blob (W4 finale, 2026-06-11): the cluster is
+  # derivable — border_preset rides inputs; the TS borders resolver +
+  # export share lib/theme/borders.ts::resolveBorders.
 
   blob$axis    <- axis_block
   blob$layout  <- layout_block
-  blob$borders <- borders_block
 
   # Overlay R-side spacing edits (round-2 cross-runtime review P2):
   # set_spacing() writes theme@spacing slots, but they were NEVER

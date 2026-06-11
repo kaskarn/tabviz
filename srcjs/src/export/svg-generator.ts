@@ -68,6 +68,7 @@ import {
   readAccentDefault, readSurfaceBg, readRowAltBg,
   readBodyFamily, readBodySize, readLabelSize, readCellSize,
 } from "$lib/theme/consumer-bridge";
+import { resolveBorders } from "$lib/theme/borders";
 
 /** SVG-boundary defense-in-depth (round-2 robustness review P0): cssVar
  *  values are interpolated into double-quoted SVG attributes throughout
@@ -3585,7 +3586,7 @@ function renderReferenceLine(
 // Border helpers — Phase 11 layout × type border model
 // ============================================================================
 
-import type { BorderSpec } from "$types/theme-resolved";
+import type { BorderSpecResolved as BorderSpec } from "$lib/theme/borders";
 
 /**
  * Emit one SVG line obeying a BorderSpec. `single` → one stroke;
@@ -5172,7 +5173,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // only fire when `theme.borders.layout` includes them. Major borders
     // (summary top, group-header bottom) ignore `layout` since they
     // demarcate structure rather than data-row stride.
-    const borders = theme.borders;
+    const borders = resolveBorders(theme.authoringInputs?.border_preset,
+      readDividerStrong(cssVars), readDividerSubtle(cssVars));
     const drawRowDividers = layoutHasHorizontal(borders.layout);
     const x1 = padding;
     const x2 = layout.totalWidth - padding;
@@ -5195,8 +5197,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Table outer edge — `borders.table` always paints when layout !=
   // "none" and thickness > 0. The rect spans from the header top to the
   // last row bottom; horizontal sides paint twice for "double" style.
-  if (theme.borders.layout !== "none" && theme.borders.table.thickness > 0) {
-    const t = theme.borders.table;
+  const resolvedBorders = resolveBorders(theme.authoringInputs?.border_preset,
+    readDividerStrong(cssVars), readDividerSubtle(cssVars));
+  if (resolvedBorders.layout !== "none" && resolvedBorders.table.thickness > 0) {
+    const t = resolvedBorders.table;
     const topY = layout.mainY;
     const botY = rowsY + layout.rowsHeight;
     const leftX = padding;

@@ -72,24 +72,26 @@ describe("roleOverrides on the theme artifact", () => {
   });
 });
 
-describe("border_preset → borders cluster expansion", () => {
-  it("five presets produce five distinct clusters", () => {
+describe("border_preset → border tokens (resolveBorders is the one derivation)", () => {
+  it("five presets produce five distinct token signatures", () => {
     const sig = (p: NonNullable<typeof inputs.border_preset>): string => {
-      const b = buildTheme({ ...inputs, border_preset: p }, p).borders;
-      return `${b.layout}/${b.major.thickness}/${b.minor.thickness}/${b.table.thickness}`;
+      const v = getCssVars(buildTheme({ ...inputs, border_preset: p }, p));
+      return `${v["--tv-border-row-style"]}/${v["--tv-row-border-width"]}/` +
+        `${v["--tv-group-border-width"]}/${v["--tv-border-major-style"]}/` +
+        `${v["--tv-table-border-width"]}/${v["--tv-table-border-style"]}`;
     };
     const sigs = (["none", "hairline", "ruled", "frame", "boxed"] as const).map(sig);
     expect(new Set(sigs).size).toBe(5);
   });
 
   it("unset ≡ hairline (the resolver default)", () => {
-    // Strip border_preset from the fixture — cochrane now ships "frame"
-    // (2026-06-08 elegance pass), so the UNSET default must be tested on a
-    // border_preset-free input.
     const bare = { ...inputs, border_preset: undefined };
-    const unset = buildTheme(bare, "u").borders;
-    const hair = buildTheme({ ...bare, border_preset: "hairline" }, "h").borders;
-    expect(unset).toEqual(hair);
+    const pick = (t: ReturnType<typeof buildTheme>) => {
+      const v = getCssVars(t);
+      return ["--tv-border-row-style", "--tv-row-border-width", "--tv-border-minor-color",
+        "--tv-border-major-color", "--tv-table-border-width"].map(k => v[k]).join("/");
+    };
+    expect(pick(buildTheme(bare, "u"))).toEqual(pick(buildTheme({ ...bare, border_preset: "hairline" }, "h")));
   });
 });
 

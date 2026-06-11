@@ -3,7 +3,7 @@
 import { describe, it, expect } from "bun:test";
 import { resolveTheme } from "./resolve-theme";
 import { createWire, setRoleBinding } from "./theme-wire";
-import { COMPONENT_TOKENS, isV3BridgeToken } from "./component-tokens";
+import { COMPONENT_TOKENS, isLiveConfigToken } from "./component-tokens";
 import { inputsFromHex } from "./theme-presets-inputs";
 import { hexToOklch } from "../oklch";
 import type { ThemeInputs } from "../../types/theme-inputs";
@@ -272,7 +272,7 @@ describe("resolveTheme — cssVars has no TBD placeholders", () => {
       // emit unitless or em values; skip them here.
       if (token.source.tier === "computed" && token.cssVar.startsWith("--tv-text-")) continue;
       // V3-bridge tokens emit a sentinel; realized by theme-css.ts's tail.
-      if (isV3BridgeToken(token)) continue;
+      if (isLiveConfigToken(token)) continue;
       if (token.kind === "spacing-px") {
         expect(r.cssVars[token.cssVar]).toMatch(/px$/);
       }

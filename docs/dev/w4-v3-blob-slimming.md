@@ -1,6 +1,16 @@
-# W4 — v3 resolved-blob slimming + bridge retirement (scoping)
+# W4 — v3 resolved-blob slimming + bridge retirement
 
-Status: **scoped 2026-06-11**; the LAST open pre-freeze wire item
+Status: **DONE-CONDITION MET 2026-06-11** (wire 1.10):
+`computeV3BridgeVars` is DELETED, the `v3-bridge` resolver group has
+ZERO manifest rows (replaced by the `live-config` group: series slot 0
++ layout — blob fields that deliberately stay). The borders cluster was
+the finale: `theme.borders` was ALWAYS derivable (no mutation surface
+existed; the R tests asserted colors ≡ role tokens), so
+`lib/theme/borders.ts::resolveBorders` is now the one derivation
+feeding the 11 tokens AND the SVG export. Remaining slimming
+(header/rowGroup/row cluster fields with live internal feeds) is
+post-W4 cleanup, not wire-freeze-blocking — the WIRE policy can freeze
+on 1.10's shape. Originally the LAST open pre-freeze wire item
 (`wire-freeze-inventory.md`). Execution lands in arcs; each arc updates
 the verdict table below. Joint with the component model
 (`component-model.md` — the bridge clusters become component-table
@@ -73,9 +83,12 @@ Order of attack (smallest blast radius first):
    first-column is a frame-region component now (bg/col/rule channels).
 3. container (2 tokens) → layout stays spec-side; tokens resolve from
    geometry inputs.
-4. borders cluster (9 tokens) → `border_preset` input already expands
-   the cluster; the per-edge overrides become pins or a small input
-   block. THEN `theme.borders` deletes from the blob.
+4. ~~borders cluster~~ **PORTED + DELETED 2026-06-11** (wire 1.10):
+   no per-edge surface ever existed — pure preset expansion. resolveBorders
+   extracted to lib/theme/borders.ts; `borders` resolver group emits all
+   11 tokens; export derives the same structs from cssVars + the shared
+   helper; blob field + TS/R classes + serializers deleted; R tests
+   rewritten against the token contract.
 5. ~~header bg/fg/rule (active trio)~~ **PORTED 2026-06-11** — new
    `header-active` resolver group keyed by inputs.header_style, reading
    the SAME role recipes as the per-variant tokens (one source of

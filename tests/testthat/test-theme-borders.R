@@ -1,36 +1,19 @@
-# Phase 11: layout × type border model.
-#
-# Mirror of `theme-resolve.test.ts` borders describe block. Locks the R
-# resolver behavior (defaults + partial overrides) and the wire shape
-# emitted by `serialize_theme()` so future churn surfaces here.
+# Borders — token contract (rewritten at the W4 finale, 2026-06-11,
+# when `theme.borders` left the blob). The cluster is DERIVABLE:
+# border_preset rides inputs; lib/theme/borders.ts::resolveBorders is
+# the one derivation feeding both the --tv-*border* tokens and the SVG
+# export. These tests pin the R-visible contract: the tokens.
 
-test_that("borders default to horizontal layout with minor=subtle divider", {
-  th <- web_theme()
-  expect_equal(th@borders@layout, "horizontal")
-  expect_equal(th@borders@minor@thickness, 1)
-  expect_equal(th@borders@minor@style, "single")
-  cv <- theme_css_vars(th)
-  expect_equal(th@borders@minor@color, unname(cv["--tv-cell-border"]))
-  expect_equal(th@borders@major@color, unname(cv["--tv-border"]))
-  expect_equal(th@borders@table@color, unname(cv["--tv-border"]))
+test_that("default borders: horizontal hairline-family tokens", {
+  v <- theme_css_vars(web_theme())
+  expect_identical(unname(v[["--tv-border-row-style"]]), "solid")
+  expect_identical(unname(v[["--tv-row-border-width"]]), "1px")
+  expect_identical(unname(v[["--tv-border-minor-color"]]), unname(v[["--tv-cell-border"]]))
+  expect_identical(unname(v[["--tv-border-major-color"]]), unname(v[["--tv-border"]]))
 })
 
-test_that("serialize_theme emits the borders wire block", {
-  th <- web_theme()
-  wire <- tabviz:::serialize_theme(th)
-  expect_true(!is.null(wire$borders))
-  expect_setequal(names(wire$borders), c("layout", "major", "minor", "table"))
-  expect_setequal(names(wire$borders$major), c("thickness", "style", "color"))
-  expect_equal(wire$borders$layout, "horizontal")
-  expect_equal(wire$borders$minor$thickness, 1)
-})
-
-test_that("ThemeBorders validates layout against the four allowed values", {
-  expect_error(ThemeBorders(layout = "diagonal"))
-  expect_silent(ThemeBorders(layout = "none"))
-})
-
-test_that("BorderSpec validates style against single/double", {
-  expect_error(BorderSpec(style = "dashed"))
-  expect_silent(BorderSpec(style = "double"))
+test_that("the blob no longer carries the borders cluster", {
+  wire <- tabviz:::serialize_theme(web_theme())
+  expect_null(wire$borders)
+  expect_null(wire$variants)
 })

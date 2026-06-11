@@ -265,36 +265,6 @@ export interface Layout {
 // Borders — layout × type model
 // ────────────────────────────────────────────────────────────────────
 
-/**
- * One named border type. `double` emits two parallel hairlines with a
- * `thickness`-sized gap between them; `single` emits one stroke at
- * `thickness` px.
- */
-export interface BorderSpec {
-  thickness: number;
-  /** "single" | "double" */
-  style: "single" | "double";
-  color: string;
-}
-
-/**
- * `layout` controls *where* dividers appear; the three named types
- * (`major` / `minor` / `table`) control *how* they look.
- *
- * Mapping:
- *   - Row data dividers  → `minor` (layout ∈ {horizontal, grid})
- *   - Column dividers    → `minor` (layout ∈ {vertical,   grid})
- *   - Header bottom + group/summary breaks → `major`
- *   - Outer table edge   → `table` (always rendered when thickness > 0)
- */
-export interface ThemeBorders {
-  /** "horizontal" | "vertical" | "grid" | "none" */
-  layout: "horizontal" | "vertical" | "grid" | "none";
-  major: BorderSpec;
-  minor: BorderSpec;
-  table: BorderSpec;
-}
-
 // ────────────────────────────────────────────────────────────────────
 // Top-level WebTheme (v2 wire shape)
 // ────────────────────────────────────────────────────────────────────
@@ -369,7 +339,9 @@ export interface WebTheme {
   components?: Record<string, Record<string, Record<string, string>>>;
   axis: AxisConfig;
   layout: Layout;
-  borders: ThemeBorders;
+  // `borders` DELETED from the blob (W4 finale, 2026-06-11): the cluster
+  // was always derivable — lib/theme/borders.ts::resolveBorders is the
+  // one derivation; tokens + export both consume it.
   // V4: surface/content/divider chrome fields dropped — consumers read
   // them via the v4 cssVar manifest (`--tv-surface-bg`, `--tv-text`,
   // `--tv-border`, `--tv-cell-border`, …). R-side S7 WebTheme mirrors.

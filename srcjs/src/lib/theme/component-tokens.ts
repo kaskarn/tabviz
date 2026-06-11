@@ -79,6 +79,7 @@ export type ResolverGroup =
   | "ramp-direct" // unwalked ramp[grade] reads (W4 recipe ports)
   | "header-active" // active header trio by inputs.header_style (W4)
   | "first-col"   // first-column treatment by inputs.first_column_style (W4)
+  | "borders"     // the 11 border tokens from resolveBorders (W4 finale)
   | "density"     // density-table px lookup (spacing-px / border-width)
   | "geometry"    // inputs.geometry radius/border-width projection
   | "effects"     // glow / shell-gradient / emphasis-shadow from ramps
@@ -91,7 +92,8 @@ export type ResolverGroup =
   | "browser-fx"  // brand-gradient / glow-brand-color
   | "glass"       // glass pane tokens — polarity + paper-hue aware (5a)
   | "const"       // literal constants
-  | "v3-bridge";  // realized by theme-css.ts's user-config tail
+  | "live-config"; // realized by computeLiveConfigVars (blob fields that
+                   // deliberately STAY on the wire: series slot 0, layout)
 
 /** Per-mode behavior applied at resolve time. The resolver consults this
  *  field when computing each token's value under HC or RT modes. */
@@ -141,22 +143,13 @@ export interface ComponentTokenBinding {
   readonly state?: ComponentStateName;
 }
 
-/** Prefix marking a manifest entry as a v3-bridge token — declared for
- *  drift-gate ownership + Inspector visibility, but realized by
- *  theme-css.ts's user-config-bridge tail rather than the v4 resolver.
- *  Used by `isV3BridgeToken()` and the `_emitV4CssVarsBody` skip path. */
-export const V3_BRIDGE_NOTE_PREFIX = "[v3-bridge]";
-
-/** True for manifest entries that opt into theme-css.ts's user-config-
- *  bridge tail. The v4 resolver short-circuits them to a sentinel; the
- *  tail emits the real value from theme.borders / theme.firstColumn /
- *  theme.layout / theme.variants. */
-export function isV3BridgeToken(token: ComponentToken): boolean {
-  return (
-    token.source.tier === "computed" &&
-    typeof token.source.note === "string" &&
-    token.source.note.startsWith(V3_BRIDGE_NOTE_PREFIX)
-  );
+/** True for manifest entries realized by computeLiveConfigVars (live
+ *  blob config — series slot 0, layout) rather than the v4 cascade. The
+ *  resolver short-circuits them to a sentinel the emitters skip; the
+ *  live-config overlay supplies the real value. (The v3-bridge
+ *  machinery this replaced was deleted at the W4 finale, 2026-06-11.) */
+export function isLiveConfigToken(token: ComponentToken): boolean {
+  return token.resolverGroup === "live-config";
 }
 
 /** One entry in the manifest. */
@@ -1037,6 +1030,24 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     description: "Axis tick-label text color (neutral grade 10, unwalked)",
   },
 
+  // ── Pooled-summary marker (live config: series slot 0) ───────────────────
+  {
+    cssVar: "--tv-summary-fill",
+    resolverGroup: "live-config",
+    kind: "paint-fill",
+    source: { tier: "computed", note: "live config: theme.series[0].fill — the slot system stays on the wire" },
+    consumedBy: ["components/forest/SummaryDiamond.svelte"],
+    description: "Pooled-summary diamond fill (series slot 0)",
+  },
+  {
+    cssVar: "--tv-summary-border",
+    resolverGroup: "live-config",
+    kind: "paint-stroke",
+    source: { tier: "computed", note: "live config: theme.series[0].stroke" },
+    consumedBy: ["components/forest/SummaryDiamond.svelte"],
+    description: "Pooled-summary diamond outline (series slot 0)",
+  },
+
   // ── Generic T2 role passthroughs (consumer migration helpers) ─────────────
   // These mirror Tier-2 roles 1:1 with no Tier-3 specialization. Consumers
   // reading e.g. theme.surface.base / theme.content.primary / theme.content.muted
@@ -1317,17 +1328,17 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   },
   {
     cssVar: "--tv-container-border",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "live-config",
     kind: "paint-stroke",
-    source: { tier: "computed", note: "[v3-bridge] theme.layout.containerBorder → `1px solid var(--tv-border)` or `none`" },
+    source: { tier: "computed", note: "live config: theme.layout.containerBorder → `1px solid var(--tv-border)` or `none`" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Outer-frame border shorthand around the chart container.",
   },
   {
     cssVar: "--tv-container-border-radius",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "live-config",
     kind: "spacing-px",
-    source: { tier: "computed", note: "[v3-bridge] theme.layout.containerBorderRadius" },
+    source: { tier: "computed", note: "live config: theme.layout.containerBorderRadius" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Outer-frame border radius around the chart container.",
   },
@@ -1338,89 +1349,89 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // emitter resolves style="double" into widened pixel thickness.
   {
     cssVar: "--tv-border-major-color",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.color" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Major (header/group) border color.",
   },
   {
     cssVar: "--tv-border-minor-color",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.minor.color" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Minor (row) border color.",
   },
   {
     cssVar: "--tv-border-table-color",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "paint-color",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.table.color" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Outer table-frame border color.",
   },
   {
     cssVar: "--tv-row-border-width",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-width",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.minor.thickness (×3 floor 3 if style='double')" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Row divider width (px).",
   },
   {
     cssVar: "--tv-header-border-width",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-width",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.thickness (floor 2; ×3 floor 3 if style='double')" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Header bottom-rule width (px).",
   },
   {
     cssVar: "--tv-group-border-width",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-width",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.thickness (×3 floor 3 if style='double')" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Group separator width (px).",
   },
   {
     cssVar: "--tv-table-border-width",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-width",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.table.thickness (×3 floor 3 if style='double')" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Outer table-frame width (px).",
   },
   {
     cssVar: "--tv-border-row-style",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-style",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.{layout,minor.style} — 'solid'/'double'/'none'" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Row divider line-style.",
   },
   {
     cssVar: "--tv-border-col-style",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-style",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.{layout,minor.style} — 'solid'/'double'/'none'" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Column divider line-style.",
   },
   {
     cssVar: "--tv-border-major-style",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-style",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.major.style — 'solid' or 'double'" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["export/svg-generator.ts", "svelte/TabvizPlot.svelte"],
     description: "Major rule line-style.",
   },
   {
     cssVar: "--tv-table-border-style",
-    resolverGroup: "v3-bridge",
+    resolverGroup: "borders",
     kind: "border-style",
-    source: { tier: "computed", note: "[v3-bridge] theme.borders.table.{thickness,style} — 'solid'/'double'/'none'" },
+    source: { tier: "computed", note: "resolveBorders(border_preset, border, border-subtle) — lib/theme/borders.ts" },
     consumedBy: ["svelte/TabvizPlot.svelte"],
     description: "Outer table-frame line-style.",
   },
@@ -1649,8 +1660,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   // The four status vars (positive/negative/warning/info) are now real
   // manifest entries. Removed from the v3-legacy grandfather list per
   // coherence audit §7.5.
-  "--tv-summary-border",
-  "--tv-summary-fill",
   // The table-border style/width vars are manifest entries (#73).
   "--tv-viz-margin",
   "--tv-zoom",

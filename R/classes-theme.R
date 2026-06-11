@@ -825,54 +825,6 @@ Layout <- new_class(
   )
 )
 
-#' BorderSpec: one named border type (thickness + style + color).
-#'
-#' `style = "double"` paints two parallel hairlines separated by a
-#' `thickness`-sized gap. `single` paints one stroke at `thickness` px.
-#' @usage NULL
-#' @export
-BorderSpec <- new_class(
-  "BorderSpec",
-  properties = list(
-    thickness = new_property(class_numeric,   default = 1),
-    style     = new_property(class_character, default = "single"),
-    color     = new_property(class_character, default = NA_character_)
-  ),
-  validator = function(self) {
-    if (!self@style %in% c("single", "double")) {
-      return("style must be 'single' or 'double'")
-    }
-    NULL
-  }
-)
-
-#' ThemeBorders: layout × type border model.
-#'
-#' `layout` controls *where* dividers appear; the three named types
-#' (`major` / `minor` / `table`) control *how* they look. See the TS
-#' shape `ThemeBorders` in `srcjs/src/types/theme-resolved.ts` for the
-#' wire-side mirror.
-#' @usage NULL
-#' @export
-ThemeBorders <- new_class(
-  "ThemeBorders",
-  properties = list(
-    layout = new_property(class_character, default = "horizontal"),
-    major  = new_property(BorderSpec, default = quote(BorderSpec())),
-    minor  = new_property(BorderSpec, default = quote(BorderSpec())),
-    # Table edge defaults OFF (thickness = 0) — users typically don't
-    # want a frame around the chart container; the inner borders carry
-    # structure. Theme authors opt in by pinning a positive thickness.
-    table  = new_property(BorderSpec, default = quote(BorderSpec(thickness = 0)))
-  ),
-  validator = function(self) {
-    if (!self@layout %in% c("horizontal", "vertical", "grid", "none")) {
-      return("layout must be 'horizontal', 'vertical', 'grid', or 'none'")
-    }
-    NULL
-  }
-)
-
 
 # -- Top-level WebTheme --------------------------------------------
 
@@ -930,8 +882,7 @@ WebTheme <- new_class(
     row          = new_property(RowCluster,        default = quote(RowCluster())),
     plot         = new_property(PlotScaffold,      default = quote(PlotScaffold())),
     axis         = new_property(AxisConfig,        default = quote(AxisConfig())),
-    layout       = new_property(Layout,            default = quote(Layout())),
-    borders      = new_property(ThemeBorders,      default = quote(ThemeBorders()))
+    layout       = new_property(Layout,            default = quote(Layout()))
   ),
   validator = function(self) {
     if (length(self@series) > 0L) {

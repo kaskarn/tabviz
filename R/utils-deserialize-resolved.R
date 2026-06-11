@@ -110,15 +110,6 @@ deserialize_row_group_tier <- function(x) {
   "group"
 }
 
-deserialize_border_spec <- function(x) {
-  if (is.null(x)) return(BorderSpec())
-  BorderSpec(
-    thickness = if (is.null(x$thickness)) 1 else as.numeric(x$thickness),
-    style     = if (is.null(x$style))     "single" else as.character(x$style),
-    color     = .coerce_chr(x$color)
-  )
-}
-
 #' Deserialize a resolved theme JSON list (from TS `buildTheme` via V8)
 #' back into an S7 WebTheme.
 #'
@@ -248,14 +239,6 @@ deserialize_resolved_theme <- function(x) {
     container_border_radius = if (is.null(ly$containerBorderRadius)) 8 else as.numeric(ly$containerBorderRadius)
   )
 
-  bd <- x$borders %||% list()
-  borders <- ThemeBorders(
-    layout = if (is.null(bd$layout)) "horizontal" else as.character(bd$layout),
-    major  = deserialize_border_spec(bd$major),
-    minor  = deserialize_border_spec(bd$minor),
-    table  = deserialize_border_spec(bd$table)
-  )
-
   # ---- web_fonts pass-through ----
   wf_raw <- x$webFonts %||% list()
   web_fonts <- if (length(wf_raw) == 0L) {
@@ -280,8 +263,7 @@ deserialize_resolved_theme <- function(x) {
     row             = row,
     plot            = plot,
     axis            = axis,
-    layout          = layout,
-    borders         = borders
+    layout          = layout
   )
 }
 
