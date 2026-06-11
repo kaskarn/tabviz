@@ -828,6 +828,35 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
   // (lh/track/font shorthand were dropped in Coh.22 — zero consumers.)
   ...buildTypographyManifestEntries(),
 
+  // ── Header typography (derived role: body recipe, size ×1.05) ────────────
+  // Real manifest entries since W4 arc 2 (2026-06-11) — previously
+  // v3-bridge calc() emissions. Consumed by the DOM header CSS vars and
+  // the export's header text (which used to inline the same ×1.05 math).
+  {
+    cssVar: "--tv-text-header-family",
+    kind: "font-family",
+    resolverGroup: "typography",
+    source: { tier: "computed", note: "typography role:header (derived from body)" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Column-header font family (body family)",
+  },
+  {
+    cssVar: "--tv-text-header-size",
+    kind: "font-size",
+    resolverGroup: "typography",
+    source: { tier: "computed", note: "typography role:header (body size × 1.05)" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Column-header font size (body × 1.05)",
+  },
+  {
+    cssVar: "--tv-text-header-weight",
+    kind: "font-weight",
+    resolverGroup: "typography",
+    source: { tier: "computed", note: "typography role:header (body weight)" },
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
+    description: "Column-header font weight (body weight)",
+  },
+
   // ── Accent (engagement layer) ─────────────────────────────────────────────
   {
     cssVar: "--tv-accent",
@@ -1531,9 +1560,6 @@ export const KNOWN_UNCONSUMED: ReadonlySet<string> = new Set<string>([
   "--tv-summary-border",
   "--tv-summary-fill",
   // The table-border style/width vars are manifest entries (#73).
-  "--tv-text-header-family",
-  "--tv-text-header-size",
-  "--tv-text-header-weight",
   "--tv-text-numeric-figures",
   "--tv-viz-margin",
   "--tv-zoom",

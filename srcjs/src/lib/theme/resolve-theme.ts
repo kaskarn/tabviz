@@ -682,8 +682,25 @@ function resolveTypographyComputed(
   // Pattern: --tv-text-{role}-{prop}
   const m = cssVar.match(/^--tv-text-([a-z]+)-([a-z]+)$/);
   if (!m) return null;
-  const role = m[1] as TypeRoleName;
+  const role = m[1] as TypeRoleName | "header";
   const prop = m[2];
+  // "header" is a DERIVED role (W4 arc 2, 2026-06-11): column headers
+  // ride the body recipe with the canonical ×1.05 size bump — replaces
+  // the v3-bridge calc() emission AND svg-generator's inline mirror of
+  // it (the WYSIWYG gate's header.fontSize budget watches this math).
+  // Deriving from the BODY recipe keeps headers responsive to
+  // type_roles body rebinds.
+  if (role === "header") {
+    if (!TYPOGRAPHY_PROPS.includes(prop as (typeof TYPOGRAPHY_PROPS)[number])) return null;
+    const typoH = resolveTypographyInputs(inputs);
+    const body = resolveTypeRole("body", typoH, effectiveTypeRoles(inputs));
+    switch (prop) {
+      case "family": return body.family;
+      case "size":   return `${Math.round(body.size * 1.05 * 100) / 100}px`;
+      case "weight": return String(body.weight);
+      default:       return null;
+    }
+  }
   if (!TYPOGRAPHY_ROLE_NAMES.has(role)) return null;
   if (!TYPOGRAPHY_PROPS.includes(prop as (typeof TYPOGRAPHY_PROPS)[number])) return null;
   const typo = resolveTypographyInputs(inputs);

@@ -62,12 +62,6 @@ export function computeV3BridgeVars(
     // divergence).
     "--tv-semantic-emphasis-fg": theme.row.emphasis?.fg ?? v4Text,
     "--tv-semantic-emphasis-bg": theme.row.emphasis?.bg ?? "transparent",
-    "--tv-text-header-weight": String(theme.header.text.weight ?? 600),
-    "--tv-text-header-family": theme.header.text?.family ?? theme.text.body.family,
-    "--tv-text-header-size":
-      theme.header.text?.size && theme.header.text.size !== theme.text.body.size
-        ? theme.header.text.size
-        : `calc(${theme.text.body.size} * 1.05)`,
     "--tv-text-numeric-figures": theme.text.numeric?.figures === "proportional" ? "normal" : "tnum",
     "--tv-first-col-bg":       firstColVariant?.bg ?? "transparent",
     "--tv-first-col-fg":       firstColVariant?.fg ?? "inherit",

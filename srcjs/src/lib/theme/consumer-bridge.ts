@@ -301,7 +301,8 @@ export function readVarPx(
 /** Stage 2 §1 typography role names. */
 export type TypeRoleName =
   | "title" | "subtitle" | "body" | "numeric"
-  | "label" | "caption" | "footnote" | "cell" | "tick";
+  | "label" | "caption" | "footnote" | "cell" | "tick"
+  | "header"; // derived role (body recipe ×1.05) — W4 arc 2
 
 /** Read a typography role's `family` cssVar with v3 fallback (a
  *  font-family stack string). Stage 2 §1 migration helper. */
