@@ -11,42 +11,6 @@ library(dplyr)
 
 **tabviz** turns a data frame into a publication-quality, fully interactive htmlwidget — sortable, filterable, draggable, editable — with SVG / PNG / PDF export that captures exactly what you see on screen.
 
-## Thirty seconds to a first table
-
-No column specs, no configuration — hand `tabviz()` a data frame and it
-infers the columns: counts get zero decimals, p-values get p-value
-formatting, proportions become percents, names become Title-Case headers.
-
-```{r}
-#| message: false
-library(tabviz)
-data(glp1_trials)
-
-trials <- subset(glp1_trials, row_type == "data",
-                 select = c(study, drug, year, n, events, hr, lower, upper, pvalue))
-
-tabviz(trials)
-```
-
-One minute more buys the label column, grouping, and a forest plot:
-
-```{r}
-tabviz(trials,
-  label = "study",
-  columns = list(
-    col_text("drug", "Drug"),
-    col_n("n"),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1),
-    col_pvalue("pvalue", "P", stars = TRUE)
-  )
-)
-```
-
-Everything else — themes, groups, summary rows, annotations, painting,
-export — layers onto that same call. The hero below is the full
-vocabulary; the [guide](guide/quick-start.qmd) walks there step by step.
-
 ::: {.studio-cta}
 [**Try the Studio →**](studio.qmd){.btn .btn-primary .btn-lg}
 A browser-only theme forge — tweak any input, copy the R code, paste into your script.

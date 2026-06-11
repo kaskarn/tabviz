@@ -127,11 +127,23 @@ export function validateSpec(
     err("columns", "shape", "`columns` must be an array.");
   }
   const columns = Array.isArray(payload.columns) ? payload.columns : [];
-  const seenIds = new Map<string, number>();
-  columns.forEach((col, i) => {
-    const path = `columns[${i}]`;
+  const seenIds = new Map<string, string>();
+  const checkColumn = (col: unknown, path: string): void => {
     if (!isRecord(col)) {
       err(path, "shape", "Column must be an object.");
+      return;
+    }
+    // Column GROUPS are containers (isGroup: true, no `type` of their
+    // own — the R col_group wire shape); validate their children and
+    // skip the leaf checks. THE INGRESS WALL'S FIRST FALSE POSITIVE:
+    // the docs hero (col_group) mounted blank because this branch was
+    // missing — every grouped-column spec failed "missing-type".
+    if (col.isGroup === true) {
+      if (col.columns !== undefined && !Array.isArray(col.columns)) {
+        err(`${path}.columns`, "shape", "Group column children must be an array.");
+      } else if (Array.isArray(col.columns)) {
+        col.columns.forEach((child, j) => checkColumn(child, `${path}.columns[${j}]`));
+      }
       return;
     }
     if (typeof col.type !== "string" || col.type === "") {
@@ -144,9 +156,9 @@ export function validateSpec(
       const prev = seenIds.get(col.id);
       if (prev !== undefined) {
         err(`${path}.id`, "duplicate-id",
-          `Column id "${col.id}" duplicates columns[${prev}] — figure layout, reorder, and width pins key on ids.`);
+          `Column id "${col.id}" duplicates ${prev} — figure layout, reorder, and width pins key on ids.`);
       }
-      seenIds.set(col.id, i);
+      seenIds.set(col.id, path);
     }
     // Field references. Forest-family columns reference data through
     // options.forest (point/lower/upper); their own `field` is synthetic.
@@ -163,7 +175,8 @@ export function validateSpec(
       warn(`${path}.field`, "unknown-ref",
         `Column references data field "${col.field}", which no data row carries.`);
     }
-  });
+  };
+  columns.forEach((col, i) => checkColumn(col, `columns[${i}]`));
 
   // ── labelColumn ──────────────────────────────────────────────────
   const label = payload.labelColumn;

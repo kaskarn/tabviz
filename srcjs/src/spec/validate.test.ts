@@ -86,6 +86,22 @@ describe("validateSpec", () => {
     expect(validateSpec(s)).toEqual([]);
   });
 
+  it("column GROUPS (isGroup, no type) validate their children — never 'missing-type'", () => {
+    // THE INGRESS WALL'S FIRST FALSE POSITIVE: the docs hero (col_group)
+    // mounted BLANK because group containers carry no `type` on the wire.
+    const s = goodSpec();
+    (s.columns as unknown[]).unshift({
+      id: "grp1", header: "Study Info", isGroup: true,
+      columns: [
+        { id: "g_c1", type: "text", field: "s" },
+        { id: "g_bad", field: "s" },           // child WITHOUT type — must be caught
+      ],
+    });
+    const issues = validateSpec(s);
+    expect(issues.map((i) => i.code)).toEqual(["missing-type"]);
+    expect(issues[0].path).toBe("columns[0].columns[1].type");
+  });
+
   it("unknown-type warning only fires with an explicit roster", () => {
     const s = goodSpec();
     expect(validateSpec(s, { knownTypes: ["text", "numeric"] }).map((i) => i.code)).toContain("unknown-type");
