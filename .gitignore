@@ -38,7 +38,7 @@ docs/_freeze/
 docs/tests/
 docs/site_libs/
 docs/guide/*.html
-docs/guide/*.rmarkdown
+docs/**/*.rmarkdown
 docs/guide/styling/*.html
 docs/guide/visualizations/*.html
 docs/reference/*.html

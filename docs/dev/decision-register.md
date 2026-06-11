@@ -16,7 +16,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
-| D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due) | keep / adjust per flag | keep current split | M3 |
+| D9 | Conservative-everywhere interaction defaults: re-confirm the baked ON/OFF split before ship (the "decide defaults late" rule comes due). **REVIEW BRIEF (2026-06-11, agent-prepared for the joint pass):** reader-safe ON — showLegend, enableSort, enableCollapse, enableSelect, enableHover, enableResize (the one universal table idiom), enableExport, enableThemeEdit (hosts the reader a11y contrast toggle), enableFilters; author-grade OFF — enableReorderRows, enableReorderColumns, enableEdit, enableAxisZoom, enableArrange; cosmetic OFF — showGroupCounts. Recommendation: KEEP — the split survived the full liveness/interaction-qa battery and the docs gallery with zero default-surprise reports; the 4-tier chain (options → theme → spec) gives every consumer a one-line override. The one flag worth a second look at the table: enableThemeEdit ON means every reader sees the cog (the a11y toggle justifies it, but it is the most author-flavored of the ON set). | keep / adjust per flag | keep current split | M3 |
 
 
 ## Decided
