@@ -1,0 +1,748 @@
+# Arc history — chronological status records
+
+Moved out of `.claude/CLAUDE.md` on 2026-06-10 when it was restructured
+to lean conventions + current-state map (the diary had grown to ~750
+lines that every agent session paid context for). These records are the
+arc-by-arc trail: what shipped, in what order, with the reasoning of the
+moment. The DURABLE residue (conventions, traps, key files, invariants)
+was distilled into CLAUDE.md's "Current architecture" and "Traps" sections
+— if you find something here that still bites and isn't in CLAUDE.md,
+promote it.
+
+Newest first within each block, as originally accreted.
+
+## Interactivity-UX arc — SHIPPED 2026-06-10 (P0/P1/P2; wire 1.4)
+
+Plan + decision record: `docs/dev/interactivity-ux-plan.md` (decisions locked
+via user Q&A; memory `interactivity-ux-decisions`). Three commits
+`[interactivity P0/P1/P2]`. WHAT FUTURE AGENTS MUST KNOW:
+
+- **Interaction flags resolve through a 4-tier chain** in
+  `srcjs/src/lib/interaction-resolve.ts`: baked defaults <
+  `spec.interactionDefaults` (R `options(tabviz.interaction_defaults=)`) <
+  theme `inputs.interaction_defaults` (web_theme opinion; UNTRUSTED — validated
+  at both wire ingresses) < `spec.interaction` (SPARSE explicit tier). NEVER
+  read `spec.interaction.X` directly — use `store.interaction` /
+  `resolveInteraction(spec)`. R `InteractionSpec` slots default NA (= unset);
+  the serializer drops NAs. **Conservative-everywhere baked defaults**:
+  reader-safe ON (sort/collapse/hover/select/filters/export/resize/theme cog);
+  author-grade OFF (enableEdit, enableReorderRows/Columns, enableAxisZoom,
+  enableArrange). `web_interaction_full()` = explicit all-on.
+- **Persistence tiers**: VIEW state (zoom/fit/contrast → localStorage, key
+  scoped by document path + element id) · FIGURE state (column width pins,
+  reorder, row-KIND height pins → `spec.figureLayout` wire block, hydrated
+  UNDER surviving session state on setSpec; `set_figure_layout()` re-attaches
+  Shiny `input$<id>_column_widths` / `_row_kind_heights` across data refreshes;
+  `columns.hydrateForSpec` reconciles by column id instead of wiping) · THEME
+  state (spacing gap drags → theme, travels with it).
+- **The seam grammar** (every resize surface): preview during drag → ONE
+  commit on release; Escape CANCELS (restores, no commit); double-click resets
+  to auto (column autosize via `e.detail >= 2` on pointerdown — preventDefault
+  suppresses synthesized dblclick); live px readout; arrow-key nudge ±1/±10 on
+  focused armed seams. `EdgeResize.svelte` is the canonical implementation.
+- **The arrange tool** (`ArrangeButton`, `store.arrangeMode`, gated by
+  `interaction.enableArrange`): toolbar mode that arms ALL seams — header
+  height / group gaps / footer gap (theme spacing) + per-row-KIND height
+  handles (`RowEdgeHandles.svelte`, now mounted INSIDE the rows region with
+  `topOffset = layout.headerHeight` — the old root-level mount never aligned).
+  Hover/drag ghost-highlights every row of the kind (per-kind model must be
+  visible). The old per-row `spacing.rowHeight` seam is DELETED — density owns
+  global row height; per-kind pins own row seams.
+- **Domain zoom** (forest x-axis) is Ctrl/Cmd+wheel ONLY (plain wheel always
+  scrolls the page) and opt-in via `enable_axis_zoom`; disabled overlays set
+  `pointer-events: none` so painter clicks pass natively. Cmd/Ctrl+wheel over
+  the widget = WIDGET zoom (the overlay stopPropagates when it consumes).
+- **TRAPS**: `.grid-cell` has `overflow: hidden` — a header affordance that
+  overhangs the cell edge is CLIPPED out of hit-testing (the resize handle
+  sits fully inside the cell). The floating toolbar overlaps the top-right
+  header region whenever the widget is hovered — it now has `pointer-events:
+  none` while faded out, but VISIBLE it still shadows the last column's
+  header; don't put load-bearing affordances there. Puppeteer
+  `mouse.click({clickCount: 2})` sends ONE pointer pair (detail 2-ish, but
+  CDP reports detail 0 — use the dblclick event or e.detail, and test both).
+- **Gate**: `srcjs/tests/browser/arrange-tool.browser.ts` (build first; real
+  mouse input) walks default-off → arm → ghost → drag → Escape-cancel →
+  dblclick-release → column drag/autosize → disarm. Extend it, don't bypass.
+- `ColumnHeaders.svelte` is ORPHANED (zero importers — TabvizPlot renders
+  headers inline); candidate for deletion in the next consolidation pass.
+
+**REVIEW PASS — 2026-06-10 (4-lens adversarial panel: wiring / UX-gesture /
+cross-runtime / robustness; commit [interactivity review]).** ~20 verified
+fixes landed. CONSTRAINTS future agents must keep:
+- **Drag deltas divide by `elementScale(el)`** (`lib/scale-factor.ts`) —
+  every gesture lives inside the CSS-scaled `.tabviz-scalable`, and raw
+  client deltas lag/outrun the cursor at zoom ≠ 100% (auto-fit shrink is
+  the DEFAULT for wide tables). Applies to EdgeResize, RowEdgeHandles,
+  column resize, and zoom-interactions' nodeLocalX/pan. New drag surfaces
+  MUST do the same.
+- **figureLayout is honored by the EXPORT path**: `generateSVG` applies
+  `applyFigureLayoutColumnOrder` (shared `lib/column-order.ts` — also used
+  by the columns slice), merges width pins under `options.columnWidths`,
+  and feeds `sanitizeRowKindPins(spec.figureLayout.rowKindHeights)` (shared
+  gate in `row-kind-heights.ts`, vocab + [8,2000] clamp) into
+  computeRowLayout; `exportSpec` attaches the live block. Gate:
+  `src/export/figure-layout-export.test.ts`.
+- **Escape priority**: drag surfaces use CAPTURE-phase window listeners
+  (always win); panel/menu consumers mark consumption with
+  `preventDefault()`, and ArrangeButton's bubble listener honors
+  `e.defaultPrevented`. `stopPropagation` does NOT order same-node window
+  listeners — never rely on it for that.
+- **Escape-cancel must restore PIN STATE, not just the value**:
+  `previewColumnWidth` side-effects `userResizedIds`; cancel goes through
+  `cancelPreviewColumnWidth`. EdgeResize has a moved-guard (zero-movement
+  click commits nothing — a stray click on a seam used to permanently pin
+  the theme spacing value).
+- **Row handles sit on the VISIBLE row bottom** (track − trailingPad) via
+  the `trailingPads` prop — this both de-collides them from the group-gap
+  seam (previously 100% occluded) and keeps the trailing pad OUT of the
+  pinned kind height. Gate leg: the group-gap drag in
+  arrange-tool.browser.ts.
+- **`hydrateForSpec` validIds must include `spec.labelColumn.id`** (the
+  label column rides a separate wire slot but resizes like any column).
+- **Interaction flag rosters sync-gated**: R `TABVIZ_INTERACTION_FLAGS`
+  (classes-components.R; must sit ABOVE the InteractionSpec roxygen block
+  or roxygen rebinds the docs) ↔ TS `INTERACTION_FLAG_KEYS`, enforced by
+  `test-interaction-roster-sync.R`. The R ThemeInputs validator REJECTS
+  unknown interaction_defaults flag names (the R resolve path never crosses
+  TS validateThemeInputs, which THROWS — an R-accepted typo made the
+  exported envelope un-importable).
+- **`set_figure_layout()` unwraps Shiny envelopes** (`list(value, source,
+  ts)`) and the serializer drops `source`/`ts` keys + gates row kinds
+  against `FIGURE_LAYOUT_ROW_KINDS`; flat character vectors accepted as
+  top-level column order (the shape the `column_order` event emits).
+- **Presets are COMPLETE statements**: web_interaction_minimal/publication
+  pin every flag explicitly so theme/global tiers can't flip capabilities
+  under a named preset.
+- Width-measure reads RESOLVED interaction (`resolveInteraction(spec)`),
+  never raw spec.interaction — measure and render must budget identically.
+- localStorage zoom state is field-validated on load (NaN re-persists
+  through the setZoom clamp otherwise — sticky poison).
+- Known remaining (documented, deliberate): arrange-mode renders one
+  handle per row (no virtualization — arrange is opt-in; degrades on 10k
+  unpaginated rows); per-dimension Shiny `column_order` event is still a
+  flat array (the by-group shape only rides spec.figureLayout).
+
+**SEARCH-AND-DESTROY CLEANUP — 2026-06-10 (commit [cleanup]; 3-agent audit
++ 1 executor; ~3,900 lines deleted).** What future agents must know:
+- **The flagship browser gates had been BROKEN since the preset cull**
+  (panel-liveness / interaction-qa / fixtures imported deleted COCHRANE/
+  DARK — failing at import, silently not running). Fixed (NEJM/TERMINAL).
+  LESSON: gates that aren't executed in CI rot invisibly; when deleting
+  exports, grep tests/browser/ and scripts/ too.
+- **The component-tokens drift gate had a self-scan hole**: it scanned
+  component-tokens.ts itself, so KNOWN_UNCONSUMED strings self-matched and
+  the staleness test was vacuous. Fixed (file excluded). KNOWN_UNCONSUMED
+  burned 120 → 49; the gate now has real teeth — regen via the documented
+  awk pipeline when it complains.
+- **Wired (were consumed-but-never-emitted, silently falling back)**:
+  `--tv-hover-bg`/`--tv-hover` (now alias --tv-row-hover-bg on
+  .tabviz-container — hovers follow the theme; NOTE portaled popovers
+  (zoom dropdown) can't inherit container-scoped vars and still render
+  fallbacks — open issue), `--tv-semantic-emphasis-{bg,fg}` (added to
+  v3-bridge — cell-scope emphasis paint was DOM-inert), `--v2-accent`
+  (tokens.css ← --v2-hot), 3 more --tabviz-* RenderTree aliases.
+- **Deleted** (zero-reference verified): primitives v1 island (12 files +
+  scenarios; v2 is the live dialect; mapped-value.ts SURVIVES — schema/
+  initial-state.ts imports MappedState), ColumnHeaders.svelte (+
+  getColumnWidth), Color/Number/Boolean/OptionalField + swatch-palettes,
+  OklchPicker, theme-store trio, lib/swatches, lib/font-presets, 7 dead
+  lib exports, dead split-store/slice methods, 9 dead R serialize_*
+  helpers + slow-path extract_*/build_cell_styles + nice_domain cluster,
+  the empty .KNOWN_DIVERGENCES machinery, dead emissions
+  (--tv-header-depth/--tv-plot-width/--row-indent/--tv-primary/
+  --tv-group-header-opacity/--tv-row-hover-opacity/--studio-accent).
+- **Deliberately KEPT (decision needed, not dead)**: the HC-fidelity
+  vertical (.hc-caret/.status-tag/.pval-chip rules + --tv-hc-* tokens —
+  designed a11y feature, zero producers; wire or kill as a product call)
+  and the 4 elevation shadow tokens (--tv-shadow-raised/overlay-near/far
+  — consumedBy corrected to [] + TODO). Column-schema grandfather list:
+  115 options need consumedBy annotation (separate arc); 6 options are
+  truly dead (range:showBar, viz_bar barWidth/barGap/orientation,
+  viz_boxplot boxWidth/whiskerType) — wire or delete with their R args.
+
+**WYSIWYG FIDELITY PASS — 2026-06-10 (commit [wysiwyg]).** Measured (not
+guessed): new harness `srcjs/tests/browser/wysiwyg-diff.browser.ts` mounts
+the real widget at scale-1 vs `generateSVG` of the same spec across a
+theme/density/shell matrix, diffs geometry + computed typography, drops
+side-by-side PNGs in /tmp/wysiwyg. 181 findings -> fixes:
+- **Export now draws the SHELL + PAPER**: band rect (bg/border/radius from
+  the same --tv-shell-bg/--tv-shell-border/--tv-shell-radius tokens),
+  content translated by shellPad, paper card behind the table region only
+  (title/caption stay on the shell like the DOM), gradient
+  (--tv-shell-gradient -> linearGradient def), grain (same feTurbulence
+  recipe as theme-runtime.css), ruled/grid/dotted patterns. Raised-theme
+  artifact deltas: 44x70px -> ~3px. FLUSH INERTNESS INVARIANT: when
+  shell/paper pads resolve 0, export geometry is byte-identical to
+  pre-shell output (layout-metrics snapshots enforce). Glass/glow/blobs
+  stay browser-only (declared boundary); shell-strip seam + caption chip +
+  elevation shadows still TODO in export.
+- **Crossed typography reads fixed in svg-generator**: title layout was
+  reserved from the SUBTITLE size (and subtitle from BODY) — now
+  title/subtitle roles with PlotHeader's 1.3/1.4 line-heights;
+  caption/footnote drew the mono LABEL role at hardcoded weight 400 — now
+  their own roles + readTypeWeight (footnote keeps italic — PlotFooter has
+  font-style: italic); axis label drew body/500 while the DOM consumes the
+  LABEL role (mono/bold on several presets); the header-size scale-up
+  branch was unreachable (v3 "0.875rem" string-compared against the v4
+  "14px" body token — compare PARSED px); header rule width was hardcoded
+  2 (now --tv-header-border-width); tabular-nums was forced on all export
+  text (now follows --tv-text-numeric-figures).
+- **Schema render-tree vars wired**: RenderTree.svelte consumes --tabviz-*
+  aliases that nothing emitted — every schema fragment (badge/stars/ring
+  text) rendered 12px/#888 literals in the DOM while the export themed
+  them. `.tabviz-container` now emits the aliases, mirroring
+  svg-generator's makeTokenResolvers table — KEEP THE TWO IN LOCKSTEP.
+  This also gave --tv-text-cell-size its DOM consumer.
+- **Row line-height floor in computeRowLayout**: data rows floor at
+  dataLineHeightPx — whenever density/pins drop the base below the body
+  line-height the DOM measure loop grows rows anyway, so the estimator
+  (export/first-paint) rendered tighter tables (brutalist df0.88: 18 vs
+  20px per row, compounding down the table).
+- Title-block top inset is the DOM's literal 12px (PlotHeader padding),
+  NOT --tv-spacing-padding; below the block only headerGap applies (the
+  extra padding term double-padded the seam).
+- KNOWN RESIDUAL (documented boundary): estimator-vs-canvas column widths
+  (delta up to ~30px/column on raw generateSVG) — mitigated in real flows
+  by save_plot's systemfonts injection and the widget download's live
+  widths; group-header banding scope + chevron indent relationship still
+  differ between DOM and export.
+- TRAP: the component-tokens drift gate scans svg-generator + Svelte
+  COMMENTS too — never write a `--tv-` glob/prefix shorthand in a comment
+  (it string-matches as a dead token name).
+
+## Theme cascade — V4 LANDED on main
+
+**Status (2026-06-04):** the V4 substrate is the package's theme system. Merged from `feat/v4-input-surface` to `origin/main` at `0d6b80b` (19-commit branch arc: Phase A vocabulary migration → Phase B shared cascade authoring surface → Phase B2 rgc_v4-fidelity rebuild → Phase D substrate extensions → coherence pass). Stages 1, 2, 3, 4 from the prior design docs are all landed; the prior staged-plan documents are superseded by the realized architecture described below.
+
+**V4 authoring vocabulary:**
+- Tier 1 inputs live as `anchors: { paper, ink, brand, accent? }` OKLCH triples + `polarity` (L-reflection) + `mode` (accessibility: standard / high-contrast / reduced-transparency) + `geometry` (radius + border-width scales) + `effects` (glow + gradient-shell + elevation) + the existing fonts / curves / shell_mode / shell_texture / density / density_factor / type_* / row_kinds blocks.
+- Wire format at v1.2 (Tier-1 inputs additively gained geometry + effects since v1.1; mode now fully wired from R).
+- R `web_theme()` accepts hex or [`oklch()`] triples for every anchor; status/curves/geometry/effects each have a focused `set_*` modifier (15+ focused setters in `R/themes-api.R` plus `set_inputs()` escape hatch).
+
+**Key files (current surface):**
+- `srcjs/src/types/theme-inputs.ts` — `ThemeInputs` interface + `ThemeStructure.schemaVersion = 4`.
+- `srcjs/src/lib/theme/component-tokens.ts` — `--tv-*` manifest with `consumedBy` declarations + drift gate.
+- `srcjs/src/lib/theme/resolve-theme.ts` — `resolveTheme(wire) → ResolvedTheme`; calls `validateThemeInputs()` up front.
+- `srcjs/src/lib/theme/theme-validate.ts` — `validateThemeInputs(inputs)` (construction-time range/enum checks) + `validateResolvedTheme(theme)` (post-resolution contrast).
+- `srcjs/src/lib/theme/density-presets.ts` — single source for the density px scales; v3-adapter and v4-resolver project from this.
+- `srcjs/src/lib/theme/theme-presets-inputs.ts` — 22 presets via `defineInputs(seeds, rest)` helper.
+- `srcjs/src/lib/layout/row-kind-heights.ts` — 5-layer per-row-kind height cascade. Layer 3 (theme defaults) reads from `inputs.row_kinds.<kind>.heightRatio`.
+- `srcjs/src/components/theme-panel/ThemeControlsStrip.svelte` — Tier-1 controls only. Used by both the widget cog drawer (`components/ui/ThemeControl.svelte`) and the studio (left rail). Eight categories: Identity / Polarity / Shell / Texture / Type / Density / Geometry / Effects.
+- `srcjs/src/components/theme-panel/CascadeView.svelte` — pedagogical visualization (studio-only). Six `CascadeStep` sections: TIER 1 · COLOR (RampPlateGrid), TIER 1 · GEOMETRY (GeometrySamples), TIER 1 · EFFECTS (EffectsPreview), TIER 2 · BINDING (SpineDiagram + OffTheScales) + TIER 2 · COLOR (AliasTable role-mode), TIER 3 · COLOR (AliasTable token-mode), SCALE · TYPE (TypeRolePreview), RESILIENCE · FALLBACK (ResilienceTriptych).
+- **R-side**: `R/theme-defaults.R` (single source for R-side default constants; parity-tested vs TS via `tests/testthat/test-parity-defaults.R`); `R/font-urls.R` (Google Fonts URL registry); `R/themes.R` / `R/themes-modes.R` / `R/themes-design.R` / `R/themes-lotr.R` / `R/themes-showcase.R` (22 preset constructors, file location matches `package_themes()` category).
+- `R/v4-inspect.R` — `list_component_tokens()`, `theme_css_vars()`, `inspect_token()`, `diff_themes()`, `contrast_report()`.
+
+**Vocabulary clarifications (post-coherence-pass):**
+- `set_polarity(theme, polarity)` sets the L-reflection axis (light/dark).
+- `set_mode(theme, mode)` sets the accessibility axis (standard/high-contrast/reduced-transparency). It was a deprecated alias for `set_polarity()` through earlier sessions; **now it does what its name says.**
+- Wire field is `density_factor` (snake_case, post-coherence; was `densityFactor` previously).
+- R S7 slot prefixes mirror their wire keys 1:1: `curves_X` / `fonts_X` / `type_weights_X` (plural, matching `curves.X` / `fonts.X` / `type_weights.X` on the wire). Were singular through earlier sessions.
+- `WebTheme.schemaVersion = 4` (was 2 — bumped to align with `ThemeStructure.schemaVersion = 4`). Distinct from `CURRENT_VERSION = "1.2"` (wire spec version).
+
+**Wire naming convention (locked 2026-06-04, task #60):**
+The theme wire deliberately uses **two cases**, separated by surface:
+
+- **`ThemeInputs` (user-authoring surface) — `snake_case`.** What R/JS authors hand-write: `shell_mode`, `density_factor`, `type_weights`, `row_kinds`, `shell_texture`, etc. Matches R / Python idioms so the same JSON ships unchanged from either language.
+- **`WebTheme` (resolved / engine-internal surface) — `camelCase`.** Engine-produced; consumers don't hand-write it: `headerStyle`, `firstColumnStyle`, `authoringInputs`, `lightDarkPair`, `tintSubtle`, `axisLabel`, etc.
+
+This split is intentional, not technical debt. Don't "unify" it — each case is right for its surface. When adding a new field, match the case of the surface it lives on. The R serializer (`R/utils-serialize-resolved.R` + `R/themes-api.R::theme_inputs_to_json`) converts snake_case S7 slots → snake_case wire for ThemeInputs and snake_case S7 slots → camelCase wire for WebTheme fields, per this rule.
+
+**WIRE-AUDIT ARC — SHIPPED 2026-06-05 (wire 1.3 / v0.37.0).** The rgc_v4
+design-lab parity plan (`docs/dev/wire-audit-plan.md`, Round 3) executed in
+full: theme-runtime.css is LIVE (shell/paper wrap on the widget DOM; flush
+mode is geometrically inert), the resolver is a `resolverGroup` Map table
+(0d — add new tokens by declaring their group; dev-throws are reachable),
+new Tier-1 inputs (`ink2`, `monochrome`, `marks`, `effects.{glass,
+caption_style,header_style,title_style}`, `labels.tag`), 27 presets with
+distinctness CI gates, LCH-native studio rail (5 tabs, Alt+click trace,
+preview-without-measure path). KEY NEW HARNESSES:
+`srcjs/tests/browser/theme-screenshots.browser.ts` (the ONLY gate that
+sees browser-additive effects — V8/rsvg renders a flat rect),
+`preset-distinctness.test.ts`, the full-cssVars snapshot lock in
+`resolver-dispatch.test.ts` (regen + review diff on intentional resolver
+changes). B2 (group-padding runaway) was CLOSED post-arc: the measure
+loop committed scrollHeight of non-overflowing cells (which just reports
+the pinned track back, re-adding trailing rowGroupPadding every frame) —
+fixed by overflow-only commits + grow-merge in setMeasuredRowHeights.
+Open: variants.headerStyle
+retirement (superseded by effects.header_style, still on wire); post-V4
+backlog in the plan doc. Docs screenshots MUST be taken over HTTP —
+file:// CORS breaks Quarto module scripts and fakes layout regressions.
+
+**SPACING REWORK — SHIPPED 2026-06-05.** Three-agent review (geometry /
+rgc_v4-aesthetics / spacing-architecture) converged; landed in one arc.
+CURRENT WRAP CONTRACT: `.tv-shell > .tabviz-scalable > (.tv-caption,
+.shell-strip, .tv-paper(table+pager), PlotFooter)` — the paper lives
+INSIDE the measured/zoom-scaled subtree; the strip is the caption↔data
+SEAM (lab semantics), never a top cap; chip+title share a baseline grid
+row. Shell owns the figure's air: raised pad 14/20/26×density_factor +
+paper inner mat 10/14/18 (scales live in `shell-paper.ts`, deliberately
+NOT in DENSITY_PX — mode-gated, flush stays 0/0 inert). Auto-fit height
+formula = `scaledHeight + 2*containerPadding(0) + 2*readVarPx(--tv-shell-
+padding) + bottomMargin` — `shellExtrasPad`/`shellPaperPaddingPx` are
+DELETED; never hand-count chrome heights again, put new chrome inside
+`.tabviz-scalable`. Texture always lives on the SHELL (paper-texture
+fallthrough + `--tv-paper-texture-*` + `--tv-paper-text-knockout-bg` +
+`svgTexturePattern` all deleted); transparent/glass shells premix the
+knockout against the PAPER bg (white-pad legibility bug). Glass: outline
+drops to `--tv-glass-faint`; shell-borne prose promoted to `--tv-text`.
+Axis descent reservation is 0.6×font (was 0.4 — under-reserved by one
+descender, geometry audit). The drift gate string-matches `--tv-*` even
+inside COMMENTS — never write a dead token name or a `{a,b}` brace
+expansion in a comment. KNOWN pre-existing failures NOT from this arc:
+vitest `layout-zoom.runes.ts` null-spec headerHeight (jsdom canvas env),
+4 eslint no-irregular-whitespace in extract-svg-css.ts (intentional
+zero-width-space escapes).
+
+**SHELL/PAPER EXPORT PARITY — SHIPPED 2026-06-10.** `generateSVG` now mirrors
+the DOM's shell band + paper card: `computeLayout` reads `--tv-shell-padding`
+/ `--tv-paper-padding` from cssVars, adds 2×shellPad to totalWidth/totalHeight
+and folds the paper mat VERTICALLY (mainY/footerY/totalHeight); drawing wraps
+all content in a `translate(shellPad shellPad)` group while `layout` stays in
+CONTENT coordinates (generateSVG derives the inner layout from `layoutFull` —
+drawing call sites untouched). Shell rect (bg/border/radius) + paper rect
+(around table+axis; title/caption stay on the shell) + `--tv-shell-gradient`
+as `<linearGradient>` + ruled/grid/dotted/grain textures as `<pattern>` defs
+(grain = the CSS feTurbulence recipe, polarity-matched; VERIFIED rendering
+through rsvg). Horizontal paper mat is NOT folded into column x (v1:
+`--tv-spacing-padding` serves as the visible side mat — matches the DOM
+artifact width, which is content + 2×shellPad only). INVARIANTS: flush/stub
+themes (pads 0) stay byte-identical to the pre-shell export; the aspect path
+passes `width = targetWidth − 2×shellPad` inward so the artifact hits the
+target exactly; `LayoutMetrics` gained `shellPad`/`paperPad` (snapshots
+regenerated — only the two new 0-valued keys changed). Gate:
+`tests/browser/wysiwyg-diff.browser.ts` (shell-aware comparisons; raised
+artifact deltas collapsed from 44/70px to ≤4px). NOT ported: texture knockout
+pads behind shell-borne prose, the shell-strip seam, glass/glow/blobs
+(declared browser-only).
+
+**1.0 STRATEGY LOCKED — 2026-06-06 (spec-first).** Four decisions after the
+R3 ideation round (7 agents; plan: `docs/dev/spec-first-1.0-plan.md`):
+(1) 1.0 identity = ENGINE-AS-PRODUCT / SPEC-FIRST — "the declarative table
+engine any language (or LLM) can drive": publish npm @tabviz/core for real,
+emit the machine contract (JSON Schema generated from SCHEMA_REGISTRY's
+option metadata + runtime validator), MCP server, token compiler. R stays
+the richest wrapper, stops being the only shipping artifact.
+(2) Effects boundary DECLARED: browser-only effects (glass/glow/blobs)
+frozen at current polish; gradient+grain get real SVG export parity;
+save_plot warns when active effects are dropped. Never polish an effect
+that only renders in the runtime that matters least.
+(3) PRESET CULL 27 → ~8 archetypes + theme_blend() interpolation (OKLab
+anchor lerp + scalar lerp + enum snap). Stop ADDING presets.
+(4) Virtualization OUT of 1.0: default-paginate threshold + documented
+row-count ceiling + windowed-flatten design note. XL retrofit-hostile.
+FONTS-IN-PDF — FIXED (verified by 2 round-2 user agents via pdffonts):
+NEJM PDFs embed Lora-Regular/SemiBold (subsetted TrueType), dwarven embeds
+Cinzel-Bold + EBGaramond — NOT Georgia. register_web_fonts_for_rsvg() →
+session fontconfig (hoisted above .inject_systemfonts_widths in save_plot)
+works. The old "journal fonts DO NOT survive PDF" bug is HISTORY; don't
+re-flag it. Still Phase 0: NO LEGEND exists anywhere (multi-effect forests
+are uninterpretable); neutral paint mode (painter is never null — clicking
+to read paints).
+
+**THEME-TIER EXPOSURE REWORK — SHIPPED 2026-06-07 (Waves 0–4 + 1.5/3.5;
+plan: `~/.claude/plans/lazy-churning-eich.md`).** How the 3-tier cascade is
+EXPOSED across viewer / studio / API, reviewed by a recurring 6-lens
+adversarial panel (two interim checkups; every P0/P1 fixed). Realized:
+- **W0 named-alias wire** (`lib/theme/alias.ts`): role bindings serialize as
+  stable NAME aliases (`"neutral.5"`) — DTCG-shaped + rename-migratable (NOT
+  re-tune-proof); readers accept both alias + legacy `{ramp,grade}`. R mirror
+  in `theme-wire-import.R`. + `list_roles()` roster (domain-aware) + pin
+  accessibility ratchet at paint (`applyTokenPins` drops `modes.hc` pins under
+  HC) + full-precision wire (`digits=NA`).
+- **W1 studio**: RoleSpine MOUNTED (left rail); runtime-honest handoff (viewer
+  "Edit in studio" copies the wire to clipboard + posts Shiny
+  `tabviz_studio_request` — observer recipe in `?tabviz_studio`;
+  `read_theme()` accepts inline JSON); pins-are-last-resort banners + lints (R
+  `set_pin` throttled warn, `theme_from_wire`/`parseThemeWire` warn).
+- **W2 viewer**: lean core (identity anchors) + an "Advanced controls" TOGGLE
+  (plain button, NOT a disclosure — depth≤1) gating surface/type/color/
+  effects/geometry; RoleTones "safe middle rung" (curated color role nudges
+  via `setThemeRoleOverride`, cascade-safe not raw pins).
+- **W3 non-color scale-role keystone** (`lib/theme/scale-roles.ts`): TYPE roles
+  rebindable via `inputs.type_roles` (overlay on `DEFAULT_TYPE_ROLES`;
+  snapshot-safe — `effectiveTypeRoles` returns the default table BY REFERENCE
+  when empty); geometry named SLOTS (`set_corners`/`set_rules` → CORNER_SLOTS/
+  RULE_SLOTS, single-sourced via `ts_call("geometrySlotTables")`); spacing =
+  density; ALL in one `list_roles()` namespace. R `set_type_role`; `set_role`
+  redirects non-color roles. Shared "Text sizes" + Corners/Rules UI in
+  `Tier1Sections` (both studio rail + viewer advanced).
+- **W4 contract**: `parseThemeWire`/`buildThemeWire`/`toDtcg`/`fromDtcg`/
+  `suggestTheme`/`listRoles` now PUBLISHED from `@tabviz/core` + gated in
+  `dist-smoke.mjs` (27 checks). Structured error envelope
+  (`ThemeIssue{path,code,message}` on both validation errors, `.problems`
+  back-compat). DTCG adapter (`lib/theme/dtcg-adapter.ts`): reference/semantic/
+  component groups, lossless round-trip via `$extensions["com.tabviz.theme"]`.
+  `suggest_theme(brand_hex)` (R + TS). NEW harnesses:
+  `srcjs/tests/browser/studio-shot.mjs` + `panel-shot.mjs` (screenshot the
+  studio / viewer settings panel over HTTP — the only way to eyeball them
+  without launching R; double as smoke gates).
+- **type_roles is UNTRUSTED ingress** — validated in `validateThemeInputs`
+  (TS) + `theme_inputs_from_wire` (R drops out-of-vocab leaves); a garbage
+  `size` once rendered `undefinedpx` (W3.5 P0). When adding a ThemeInputs
+  field, validate it at BOTH ingresses.
+- DEFERRED past this arc: `dtcgPath`/`pinnable` on the ComponentToken manifest
+  (the two-ingress pin gap stays open — raw setPin/wire-import validate grammar
+  + `--tv-` prefix but not pinnability); studio RoleSpine remains color-only
+  (type/geometry rebind is via the shared Tier1Sections control, not the drag
+  spine); HC border-width `+1px` bump still inline (not yet `token.modes`).
+
+**SETTINGS OVERHAUL EXECUTED — 2026-06-07 (P0–P4, commits 48030de…77968ae;
+plan doc carries the status section).** The realized architecture:
+- **Portable theme artifact = the wire envelope** `{$schema:"tabviz-theme/
+  v4", name, inputs, roleOverrides, pins?}`. Every egress emits it (studio
+  Copy JSON/Download/Save-as/studio_done; settings export ⇩ in the quick
+  strip); imports: `theme_from_wire()` (R), `read_theme()` (auto-detects),
+  settings import ⇧, studio preset switcher. roleOverrides AND pins ride
+  WebTheme next to authoringInputs and reach BOTH resolve paths
+  (`getCssVars` two-level cache + `_emitV4CssVarsBody` paint path — they
+  MUST stay in lockstep or widget diverges from export; gate:
+  `role-overrides-wiring.test.ts`).
+- **Token pins** = the studio's T2/3 channel: cssVar→value validated
+  against TOKENS_BY_VAR at set time, overlaid AFTER resolve BEFORE
+  contrast validation (never a reapplyEdits-style cluster stamp). R:
+  `set_pin()/clear_pin()`; studio: PinsPanel; snippet emits `set_pin()`
+  steps. `set_role()/clear_role()` = the T2 spine twin.
+- **Shared controls**: `theme-controls/Tier1Sections.svelte` is THE
+  Tier-1 IA; ThemeBand (settings, compact) and StudioRail (studio, roomy)
+  are thin wrappers. AnchorRow = the flagship (swatch+hex → LCH editors
+  with axis-painting tracks). Dialects B (LayoutControl cards) and C
+  (--tp-*/theme-panel/controls) are DELETED; --tp-* survives ONLY inside
+  the cascade pedagogy components (self-defined).
+- **The panel**: 400px fixed, no tabs, quick strip (preset echo +
+  divergence count + export/import + polarity/density), THEME band,
+  FIGURE band on recessed paper with its OWN reset. Store seam:
+  hasThemeEdits (theme-only) vs hasFigureEdits; resetThemeEdits vs
+  resetWatermark+banding+rowpins. `web_interaction(enable_theme_edit =
+  FALSE)` removes the cog (author freeze).
+- **Gates to extend, not bypass**: settings-band-contract.test.ts (DT-11
+  — the settings tree may NEVER call setThemeField/writeThemePath),
+  control-contract.test.ts (theme-controls import no store, no --tp-),
+  studio-store.runes.ts (envelope shape + self-round-trip),
+  test-theme-wire.R (39 assertions: pins/roles through serialize, paint
+  path, envelope re-hydration, border presets).
+- **themeEdits/reapplyEdits survive deliberately** for canvas gestures
+  (gap drags = per-figure APPLY); the DT-11 gate is the boundary.
+- TRAPS from this arc: `hexToOklch` NaN-poisons on garbage (gate user
+  input with `isValidHex`); the primitive-wiring audit's tag regex stops
+  at the first `>` — an options arrow fn truncates the attr scan, so put
+  `onchange=` BEFORE `options=` on Select call sites; jsonlite `$` partial
+  matching (wire with density_factor but no density → w$density returns
+  the factor — `[[ ]]` exact access in wire importers).
+
+**WORKSTREAM C — INTERNALS EXPOSURE (theme-controlled behavior + queryable
+column schema) — SHIPPED 2026-06-09.** Two deliverables realizing "idiomatic,
+flowing use of the column schema and theme-controlled behavior":
+- **`theme.column_defaults`** — a theme declares per-column-TYPE default
+  options (`list(pvalue = list(stars = TRUE, significantStyle = "pill"))`),
+  merged UNDER each matching column. THREE rules, all in
+  `srcjs/src/lib/theme/column-defaults.ts`: (1) AUTHOR WINS — applies only when
+  the column is still at the option's SCHEMA default (col_* builders eager-fill,
+  so "unset" == "at schema default"); (2) KIND GATE — only `styling`/`editor`
+  options (the `OptionKind` taxonomy on `OptionSpec`), never `core`
+  (data/precision) or un-annotated; (3) XSS GRAMMAR GATE — string values can
+  ride an UNTRUSTED shareable theme wire and several styling options are colors
+  the renderers emit RAW into SVG attrs (`bar-renderer.ts fill="${color}"`), so
+  any string failing `isValidPinValue` is dropped. The MERGE is the universal
+  chokepoint: `applyThemeColumnDefaultsToSpec(spec)` runs at every engine
+  spec-ingest (store `setSpec` + svg-generator's two `compileVariants` sites),
+  so an R-authored spec gets it in widget AND export with ZERO R schema/kind
+  logic (R just serializes `column_defaults` onto the wire). R surface:
+  `column_defaults` S7 list slot, `web_theme(column_defaults=)`,
+  `set_column_default(theme, type, ...)`; untrusted wire-import sanitizes
+  structure + value grammar in `theme-wire-import.R`. KNOWN LIMITATION (doc'd in
+  the .ts header): the merge bakes into spec.columns, so a theme SWITCH re-merges
+  over already-merged columns and a prior theme's house style sticks (harmless —
+  no shipped preset uses it; clean fix needs provenance marking). Deliberately
+  NOT baked into any preset (the "don't pre-bake defaults" rule). Gate:
+  `column-defaults.test.ts` + `column-defaults.integration.test.ts` + the
+  `set_column_default` block in `test-theme-wire.R`.
+- **`list_column_types()` + `column_schema(type)`** — the queryable column
+  CONTRACT (`srcjs/src/authoring/schema-introspect.ts`, reachable via the V8
+  `callBuilder` bridge; R wrappers in `R/column-schema.R`). list = concrete
+  types (abstract schemas excluded) + option/themeable counts; column_schema =
+  every option resolved across the inheritance DAG with kind/themeable/control/
+  default/enum-choices/hint/consumedBy/inheritedFrom. `subset(column_schema(t),
+  themeable)` is exactly what `set_column_default()` may touch — the discovery
+  companion. This is the machine-readable substrate an MCP server / JSON-Schema
+  generator would build on; shipped now as plain introspection (no speculative
+  codegen). Gate: `schema-introspect.test.ts` + `test-column-schema.R`.
+- TRAP learned: R `format(x, trim=TRUE)` still LEFT-PADS character vectors to
+  common width (trim only affects numeric justification) — use `paste()` to
+  collapse choice vectors or trailing whitespace leaks into the contract string.
+
+**CONSOLIDATION PASS — SHIPPED 2026-06-10 (commits [consolidation], waves
+A/B/C).** A 3-lens audit panel (interface-legibility / wiring-hygiene /
+optimization) drove a no-new-features pass: clean wiring, optimize, legible
+chrome. KEY OUTCOMES future agents must know:
+- **DELETED modules (don't look for them):** `lib/theme/token-attribution.ts`
+  (+test) and `lib/theme/extract-svg-css.ts` (+test) were fully orphaned
+  (zero non-test importers; extract-svg-css's `sv-omit` markers existed
+  nowhere). The 4 vestigial `data-tv-token=` literal emissions (TabvizPlot,
+  svg-generator) went with them. `inspector-store` lost `tryTraceFromEvent`
+  (widget-root trace handler that was never installed — the LIVE trace path
+  is StudioChart's selector-based `handleTraceClick` → `inspectorStore.trace`
+  → CascadeInspector, mounted via TraceInspector) and `learningMode` (a
+  no-op toggle). Also gone: `studioStore.reset()` (no caller), `readSlotStyle`
+  (dead twin of theme-adapter.ts's inline `inputs.slot_style ?? …`).
+- **getCssVars now WeakMap-caches the base+v3-bridge overlay** keyed on the
+  immutable theme identity (`cssVarsBridgeCache` in consumer-bridge.ts).
+  Spacing pins are STILL applied fresh per call (they're per-figure mutable —
+  the documented landmine) and the result is still spread per call (callers
+  mutate it). The cache only elides the bridge recompute. Don't "simplify" by
+  caching the full result — callers mutate the map AND spacing is per-figure.
+- **region-tree childGroups** is now a single-pass `childrenByParent` Map +
+  memoized `countDescendantRows` (was O(G²)); **split-shared computeSharedWidths**
+  uses a per-subset id→col Map (was O(M²·K)); **column-defaults optionMetaFor**
+  is memoized per type; **save_plot `.inject_systemfonts_widths`** shapes only
+  the top-K widest candidates (`top_candidates`, dedup + nchar rank), not every
+  cell — mirrors the TS width-measure contract; **utils-serialize** hoists
+  spec@group_col/@group_cols out of the per-row loop.
+- **Studio chrome unified onto v2:** `.studio` root now carries `[data-tv-v2]`,
+  so `--studio-*` are aliased onto `--v2-*` (warm-cream fallbacks resolve
+  outside a widget DOM) — the parallel near-duplicate literals are gone.
+  PresetHeader's `based on` switcher is the v2 `Dropdown` (last native
+  `<select>` killed); its chrome buttons use the recessive `.bar-btn` grammar
+  (transparent + ink-2, inversion reserved for the one CTA). CascadeStep h3
+  routes through `--v2-font-sans`/`--v2-text-large` (was a third heading font).
+  Tier1Sections: Effects tab has a "Surface finish" micro-cap divider; type
+  family/size/weight are a left-ruled `.sub-group` (was "· family" dot labels).
+- KEPT despite "tested-but-unwired" flags: `polarityOf` (assertion helper for
+  the live reflectAnchors tests), `aliasToTypeRole` (clean inverse) — removing
+  trades a named helper for inline duplication. `--tp-*` stays in the cascade
+  pedagogy components (CLAUDE.md's documented home; NOT touched).
+
+**ROUND-3 USER-PERSONA REVIEW — EXECUTED 2026-06-07 (6 persona agents,
+commits [review2-user]; plan doc carries the full record).** Personas:
+biostatistician / Shiny-dev / no-code-journalist / a11y / LLM-driver /
+Quarto-author. KEY LANDED CHANGES (future agents: these are DONE, don't
+re-flag or revert):
+- **ink2 anchor REMOVED — merged into accent.** There is NO `ink2` anchor
+  anymore (TS ThemeAnchors / R anchors_ink2_* slots / web_theme ink2 arg /
+  set_ink2() all gone). It silently won the accent-ramp seed (redundant
+  second engagement hue). Rubrication is now the `--tv-ink2` TOKEN (kept,
+  defaults to accent-anchor) + the p-value `starsColor:"ink2"`/"Rubrication"
+  column option; pin `--tv-ink2` to make rubrication differ from accent.
+  Presets that used ink2 got `accent := old ink2` (behavior-preserving —
+  the resolver snapshot + R↔TS parity both unchanged). Don't reintroduce
+  an ink2 anchor.
+- **write_theme emits the WIRE ENVELOPE** (`theme_to_wire()`), not the
+  resolved blob; `write_theme(theme, file=)` writes an arbitrary path.
+  read_theme restores inputs from a legacy resolved blob's authoringInputs
+  (the old round-trip silently returned a different theme). Envelope is the
+  one portable artifact everywhere.
+- **Static knit (format:pdf) routes through save_plot** — `knit_print_webspec`
+  detects `!is_html_output()` and emits PNG/PDF via `.render_static_image`
+  (webshot fallback rendered BLANK). SplitForest static path still TODO.
+- **End-user high-contrast**: TabvizPlot honors OS `prefers-contrast`/
+  `forced-colors` (matchMedia) + a `contrastOverride` ("auto"|"more") on
+  the layout-zoom slice, surfaced as a Contrast row in the FIGURE band.
+  Applied as a paint-time re-resolve (mode=high-contrast) — NEVER mutates
+  theme.inputs.mode or the export.
+- **Dark-mode anchor display**: Tier1Sections shows the polarity-REFLECTED
+  (on-screen) anchor hex in dark mode and un-reflects on commit (reflectL
+  is an involution); status anchors stay absolute. "Match brand" renamed
+  "Harmonize hues to brand".
+- VERIFIED working (no change): explicit `axis_range` is honored+clipped;
+  PDF fonts embed; proxy set_theme(WebTheme) applies. Doc-drift swept
+  (README set_colors/set_axis were dead; ?set_theme names; themes.qmd
+  @surface/@content + preset count). The "fonts DO NOT survive PDF" bug
+  is HISTORY.
+
+**ROUND-2 REVIEW BOARD — EXECUTED 2026-06-07 (6 agents, commits
+[review2-A..D]; plan doc carries the full record).** Scopes orthogonal to
+the first board: cross-runtime fidelity / state-machine / input-robustness
+/ test-gap / TS-quality / R-quality. 1 P0 + 8 P1s; the artifact core held
+(test-gap planted 10 regressions, gates caught 7). KEY LANDED CONSTRAINTS:
+- **Pin VALUES are untrusted and reach exported SVG `fill="…"` attributes
+  → stored XSS in a SHARED artifact.** TWO defenses, keep BOTH: ingress
+  grammar gate `isValidPinValue` (consumer-bridge, bans `<>{};"`+ctrl,
+  ≤512) at applyTokenPins (the chokepoint all resolve paths share) AND R
+  `set_pin`/`theme_from_wire`/studio `setPin`/`parseThemeWire`; egress
+  neutralizer — svg-generator wraps `getCssVars` as `getCssVarsUnsanitized`
+  + a local `getCssVars` that strips `"<>` from values. Never emit a pin
+  value into an SVG attribute unescaped.
+- **Untrusted theme-wire JSON has ONE validating ingress:
+  `lib/theme/theme-wire-parse.ts::parseThemeWire`** (Tier-1 range/enum via
+  validateThemeInputs, pin grammar, roleOverride shape). Settings import
+  uses it — NEVER raw `JSON.parse` + `buildTheme` (that skipped
+  validateThemeInputs; R's S7 validator rejected what TS rendered as
+  `#NANNANNAN`). `validateThemeInputs` now uses `Number.isFinite` (typeof
+  NaN==="number" sailed through range checks).
+- **Theme file names are filesystem paths** — `studio_save_as` +
+  `write_theme` gate names to `^[A-Za-z0-9._-]+$` (path traversal).
+  `studio_save_as` body extracted to `.studio_save_as_payload()` (testable)
+  and persists the wire envelope VERBATIM (not the resolved blob).
+- **The paint path overlays spacing pins**: `_emitV4CssVarsBody` does
+  `applySpacingPins({...getCssVarsRaw(theme)}, theme)` — spacing lives
+  OUTSIDE the cache key (per-figure), so it can't ride getCssVarsRaw; the
+  bridge vars are emitted separately. R `set_spacing()` now overlays
+  `theme@spacing` (non-NA, snake→camel) onto `blob$spacing` in
+  serialize_theme (was dropped entirely).
+- **Shiny `set_theme(proxy, <WebTheme>)` applies** via `setThemeObject`
+  (the dispatcher branch was a no-op); studio `init(base, name, seed)`
+  captures handoff pins/roleOverrides in history[0] (else first undo wipes
+  them); `hasThemeEdits` compares live pins/roleOverrides vs initialTheme
+  (else pin-clear stranded Reset); `applyThemeSnapshot` snaps the restored
+  theme as the reset target.
+- **ONE rebuild idiom** in theme.svelte.ts: private `rebuild({inputs?,
+  roleOverrides?, pins?, remeasure?, skipValidation?})` — the "artifacts
+  ride every rebuild" invariant lives at one site. `WebSpec["theme"]` IS
+  `WebTheme` (declares authoringInputs/roleOverrides/pins) — don't re-cast
+  it. `rString` has ONE home (op-recorder, newline-safe); theme-diff
+  re-exports it. DT-11 gate walks SettingsPanel's TRANSITIVE .svelte import
+  graph (not a dir glob) + catches bracket-member evasion.
+
+**SETTINGS⇄STUDIO BOUNDARY LOCKED — 2026-06-06 (plan:
+`docs/dev/settings-overhaul-plan.md`; supersedes/rescinds D14).** Three agent
+rounds (5-perspective debate → proposal workshop → 3 blueprints). Model:
+**tier-gated writes, artifact-typed travel** — settings = Tier-1 + variants
+(everything cascade-re-resolving) + a FIGURE section (per-spec state:
+banding/watermark/row-pins; does NOT travel); studio = superset (same Tier-1
++ total T2/3 via a TYPED pin channel entering the cascade PRE-resolve, never
+a reapplyEdits-style post-resolve stamp) + pedagogy/validate/snippet/trace.
+Both export ONE JSON envelope `{schemaVersion, inputs, roleOverrides?,
+pins?}` with provenance marks. Settings is a strict prefix → "Edit in
+studio" is a lossless projection. LOCKED: 400px fixed panel; tabs die
+(vertical scroll + sticky smcp flags); ONE control dialect (v2 primitives)
+as SHARED components both hosts mount (--tp-* and theme-panel/controls/*
+die at end of migration); disclosure depth ≤ 1; collapsed sections carry
+value chips; two scoped resets (theme vs figure); content text editing is
+inline-on-canvas, NOT panel fields. KNOWN SHIPPED BUG the plan fixes first:
+studio JSON export drops roleOverrides (all 3 PresetHeader paths serialize
+.inputs only) and roleOverrides has NO wire field in R. The settings'
+Text/Tokens/Spacing/raw-Border tabs are CUT (→ studio); border presets must
+become a REAL Tier-1 enum (header_style precedent) or the boundary is
+cosmetic. `themeEdits`/`reapplyEdits` get DELETED with a grep gate once no
+settings control writes T2/3 paths. Design tests DT-1..14 in the plan doc.
+
+**STUDIO/SETTINGS REVIEW ARC — EXECUTED 2026-06-06 (5 batches, commits
+[studio A]–[studio E]).** Six agents (wiring/UX/effectiveness/IA/SoC/
+chrome) reviewed the studio + settings drawer; all batches landed:
+- A (contract truth): snippet diff covers EVERY input family (ink2/
+  header_style/slot_style/geometry/effects), anchors emit oklch()
+  triples, buildBaseExpression derives from PRESETS (the stale inline
+  KNOWN map is gone — gate: `snippet-generator.test.ts`). theme-validate
+  split into non-throwing `collectContrastFailures(cv)` + throwing
+  wrapper; studio shows a live amber contrast banner. V3-bridge values
+  single-sourced in `v3-bridge-vars.ts` — theme-css emits from the map,
+  getCssVars overlays it; R `theme_css_vars()` reports 0 sentinels.
+- B (Reset ≡ gate): `hasThemeEdits` folds watermark color/opacity +
+  cross-slice probes (rowKindHeights pins, banding overrides) via new
+  ThemeSliceDeps; confirmReset clears the same set; resetThemeEdits
+  clears themeOverrides.
+- C (split-brain killed): `slot_style` derivation moved INTO
+  theme-adapter's slotRole (was ONLY implemented inside LayoutControl —
+  R/studio produced identical series regardless; gate:
+  `slot-style-wiring.test.ts`). R ThemeInputs gained the slot_style
+  slot + validator + serializer entry. LayoutControl density/header/
+  series delegate to setAuthoringInputs (private DENSITY_PRESETS mirror
+  + oklch slot math deleted). Vocabulary unified: studio tab
+  Shell→Surface, "Depth"→"Figure shadow", "Marks"→"Series style",
+  density labels = wire words, one shared `ui/weight-ladder.ts`.
+  SettingsPanel is Theme-tab-first.
+- D (chrome/a11y): v2 `tokens.css` + ThemeControlsStrip `--tp-*` derive
+  from `--tv-*` with light fallbacks (dark themes get dark drawers; the
+  studio rail, outside widget DOM, stays light by construction). All
+  seg radiogroups carry role="radio"+aria-checked. LCH H-sliders draw
+  hue-wheel tracks + anchor-colored thumbs; aria-valuetext everywhere;
+  24px hit areas; prefers-reduced-motion.
+- E (consequence): "Validate ▦" renders the REAL chart 2×2 across
+  light/dark × standard/HC with per-cell contrast verdicts (StudioChart
+  `overrides` prop). History labels via `describeInputsEdit` (reuses the
+  snippet diff); undo/redo buttons name their step. In-studio preset
+  switcher (dirty-confirmed). Match-brand toast. Density effective-px
+  readout. Deferred: preview fixture switcher (needs designed fixtures).
+
+**ROUND-2 ADVERSARIAL REVIEW — EXECUTED 2026-06-05/06.** Two rounds of
+8-agent adversarial review (spacing/color/UX/effects/versatility/API/
+code-quality/extensibility), all R1 closures re-verified empirically in
+R2, ~70 R1 + ~40 R2 findings triaged, P0+P1+R2 batches landed (commits
+[review-p0] [review-p1] [review-r2] ×3). LOCKED DECISIONS:
+- `effects.elevation` = FIGURE-WIDE depth, vocabulary `none|low|medium|
+  high` (magnitude words only — never reuse shell_mode's raised/float).
+  Shell carries it under raised; paper otherwise; band-less shells gain
+  shadow air (ELEVATION_AIR_PX) when pinned.
+- `header_style` is a TOP-LEVEL STRUCTURAL VARIANT input (`light|tint|
+  bold`), NOT an effect. `effects.header_style` + the {normal,tint,fill}
+  enum are DELETED. One surface: `web_theme(header_style=)` /
+  `set_header_style()` (re-resolves). Studio control lives in the Shell
+  tab. variants.headerStyle mirrors the input (v3 bridge).
+- `categorical` schemes are WIRED: a pinned scheme fills series slots 1+
+  while slot 0 keeps theme identity (gate: scheme-wiring.test.ts). The
+  registry rosters are mirrored into R assert_choice calls.
+- `col_custom(field, type, ...)` = R escape hatch for JS-registered
+  plugin types (validator honors an opt-in attr; built-ins stay strict).
+- Status anchors are NEVER polarity-reflected (absolute semantics).
+- text-subtle/muted carry a structural ≥4.5 contrast guarantee with
+  hierarchy preservation (muted ≥ subtle's grade + 1) and provenance
+  write-back to roleSource.
+- contrast gates: theme-validate.test.ts (all presets, throw-mode) +
+  warn-only validateResolvedTheme in buildTheme.
+TRAPS LEARNED (do not re-introduce): a CSS var consumed inside
+background-image LISTS must resolve "none", never "transparent" (one
+invalid <image> layer voids the whole declaration — killed all
+textures once); the formatter test file must import `it` (bun silently
+SKIPS unimported test fns); pinned systemfonts widths are narrower than
+the estimator — export truncation thresholds need ~one-pad tolerance;
+single-text schema trees ellipsize IN the tree path (falling through to
+the legacy emitter skips schema formatters).
+R2 BACKLOG (not yet done): drift-gate consumedBy/name-presence
+enforcement + KNOWN_UNCONSUMED stale-check; registerMark() registry;
+auto-columns for tabviz(df) (versatility H2 — design in R2 report);
+header keyboard sort + table ARIA; virtualization; banding ΔL floor
+(14 presets imperceptible); light-mode chroma at solids; studio history
+labels; resolveShellPaper hoist to ResolveCtx; hexToRgba dedup;
+adding-a-column-type.md / adding-a-theme-preset.md.
+
+**V3→V4 cutover — STRUCTURALLY COMPLETE as of 2026-06-04 late.** The duality is killed (single value source), the parity test is strict (11 documented divergences closed, KNOWN_DIVERGENCES is empty), and the remaining v3 surface is a documented compat shim with a clear deletion path. 21 cutover commits this session.
+
+**LANDED this session (commits prefixed `[coh.*]` and `[v3→v4 #*]`):**
+1. **Real parity test** (`tests/testthat/test-parity-themes.R`): top-level field set + per-axis anchor tolerance (L/C 1e-3, H 0.1°, H skipped on achromatic) + strict-with-known-divergences allowlist. 11 documented divergences (10 font strings, nejm curves) as burn-down backlog.
+2. **`readVar` dev-throw + CI gate** (`tests/testthat/test-render-smoke.R::V3 fallback path in readVar is dead`): proves the 35 svg-generator `readVar(cssVars, "--tv-X", v3_fallback)` calls never actually fall back in production flows. Toggle via TS `setReadVarDevThrow(true)`.
+3. **svg-generator deep migration**: 200+ direct `theme.X.Y` reads collapsed to ~12 leftovers. Cluster helpers added to `consumer-bridge.ts`: `readContentPrimary/Secondary/Muted`, `readDividerSubtle/Strong`, `readAccentDefault`, `readSurfaceBg`, `readRowAltBg`, `readBodyFamily/Size`, `readLabelSize`, `readCellSize`. Layout-metrics snapshots regenerated to lock v4-driven values.
+4. **8 column renderers migrated**: badge, bar, ring, progress, icon, pictogram, sparkline, heatmap.
+5. **Store slices migrated**: `stores/slices/columns.svelte.ts` + `stores/slices/layout-zoom.svelte.ts` (full layout derivation v4-driven).
+6. **`swatches.ts`** rewritten on cssVars.
+7. **theme-css.ts: dual emission killed.** `_buildThemeCSSImpl` no longer computes the v3 `--tv-*` block from `theme.X.Y` paths. Instead it emits the v4 manifest first (canonical source) + a small tail of user-config bridges (see below).
+8. **Svelte/CSS sweep**: every `var(--tv-X)` consumer of a v3 var name migrated to its v4 manifest equivalent (`--tv-bg` → `--tv-surface-bg`, `--tv-fg` → `--tv-text`, `--tv-primary` → `--tv-accent`, `--tv-font-family` → `--tv-text-body-family`, etc.). 53 files touched in one sweep.
+9. **Status manifest entries** added: `--tv-status-{positive,negative,warning,info}` sourced from status anchors via `pickAnchorHex`, with `STATUS_ANCHOR_FALLBACK` palette when unset.
+10. **Italic CSS reads dropped** (Coh.22 had removed italic from v4 typography; consumers replaced with inline literals).
+
+**ADDITIONAL CLEANUP this session (post-duality):**
+11. **R↔TS theme parity test KNOWN_DIVERGENCES → empty** (#67, #68): 10 R preset font strings aligned to TS canonical forms (cochrane/bmj/bauhaus/swiss/tufte/dwarven/elvish/hobbit/atelier/executive) + NEJM curves ordering aligned (TS-side reordered to neutral-first matching R serializer). Any future drift fails the test at the moment of introduction.
+12. **`ResolvedInputs` marked deprecated** (#62): 4 of 5 consumers migrated to v4 cssVars helpers (ThemeSwitcher, CellHeatmap, SplitTabvizPlot, TokensControl, LayoutControl partial). The interface stays as a documented compat shim until LayoutControl's two remaining reads (seriesAnchors + slotStyle) migrate per #76.
+13. **`theme-inputs.ts` v3 vocabulary block marked `@deprecated`** (#63): prominent "V3 LEGACY VOCABULARY" section header + `@deprecated` on every export (TokenName/RampStepRef/ColorRef/ref/lit/PaintRole/ThemeRoles + 13 cluster interfaces + ClustersInputs). The block stays because `buildThemeStructure` still depends on it, but future agents see the boundary instantly.
+14. **`AnchorName` cleanup**: dropped `"decorative"` from theme-roles.ts (vestigial pre-V4 anchor; no consumer).
+15. **Drift gate burn-down** (#64): 54 orphan v3-legacy entries removed from `KNOWN_UNCONSUMED`. List shrunk 194 → 140.
+16. **Status manifest entries** (#71): `--tv-status-{positive,negative,warning,info}` added as proper manifest entries sourcing from status anchors via `pickAnchorHex`, with `STATUS_ANCHOR_FALLBACK` palette when unset. 12+ Svelte/CSS consumers now resolve via the v4 manifest.
+
+**REMAINING IN THE V3 TAIL (not duality, just config bridges):**
+
+The ~30 lines left in `theme-css.ts::_buildThemeCSSImpl` are NOT a duality problem. They're single-source bridges between user-pinnable config and CSS, with no v4 manifest equivalent because they aren't anchor-derived:
+
+- **Borders** (`theme.borders.{major,minor,table}.{color,style,thickness}`): user pins border attributes via R `set_borders()`; theme-css.ts emits `--tv-border-{major,minor,table}-{color,style,width}`. Task #73 — add manifest entries with computed resolvers if/when this is worth it.
+- **First-column variant** (`theme.firstColumn.{default,bold}` × `theme.variants.firstColumnStyle`): emits `--tv-first-col-{bg,fg,weight,rule}`. Task #74.
+- **Container** (`theme.layout.{containerBorder,containerBorderRadius}`): 2 vars. Task #74.
+- **Header variant** (active-row pick from `theme.firstColumn.X` based on `theme.variants.headerStyle`): emits `--tv-header-{bg,fg,rule}`. Task #72.
+- **Row-state semantic** (`theme.row.{emphasis,muted,accent}.{bg,fg}`): user-pinnable row tints; emits `--tv-semantic-{emphasis,muted,accent}-{bg,fg}`. No follow-up filed; small.
+- **Series slot[0]** (`theme.series[0].{stroke,fill}`): emits `--tv-summary-{fill,border}`. No follow-up filed.
+- **Header role typography** (header role not in v4 9-role matrix): emits `--tv-text-header-{weight,family,size}`. Either add header to the v4 typography matrix, or accept this bridge.
+- **text-title-fg, axis-label-fg, axis-tick-fg** (computed from theme.text.title.fg / theme.plot.X.fg fallbacks): small set.
+- **`--tv-text-column-group-weight`, `--tv-text-numeric-figures`** (column-group + numeric-figures bridges).
+
+These can stay indefinitely without re-introducing duality. The pattern: user pins config → resolver emits to CSS once. The v4 manifest hosts the substrate-derived tokens; theme-css.ts hosts the user-config bridges.
+
+**theme-adapter.ts::buildTheme still calls `buildThemeStructure` (v3)** to populate `WebTheme.{borders,firstColumn,layout,variants,series,row,text.title,text.tick,...,text.header}` — these are still the user-config payload that theme-css.ts's tail reads from. Until those clusters become manifest entries (tasks #72-#74), buildThemeStructure stays.
+
+**ResolvedInputs v3 fields** (`primary`/`primaryDeep`/`secondary`/etc. at theme-resolved.ts:128) — emitted on every wire but no consumer reads them post-cutover. Safe to delete in a follow-up commit alongside dropping v3 vocabulary from theme-inputs.ts (`TokenName`, `ColorRef`, `ref`, `lit`).
+
+**Other deferred items (smaller):**
+- Manifest singleton clustering (`--tv-brand-glow` / `--tv-emphasis-shadow` cluster renames) — touches consumer references.
+- HC mode behavior migration — `applyHcGradePush` (in `resolveRoleValue`) and inline `hcBump` in `resolveGeometryComputed` should migrate to declarative `token.modes.{hc,rt}` on the manifest.
+- Resolver-as-manifest-table refactor — `resolveTokenValue` dispatches via prefix-matching; cleaner as a `Map<resolverGroup, ResolverFn>` driven by a `resolverGroup` field on `ComponentToken`. **Made urgent by Coh.23**: the dev-throw I added at the placeholder branches is structurally dead until this refactor — `tier: "input"` entries never reach the switch because earlier branches intercept by `cssVar` or `kind`.
+
+Full audit at `docs/dev/v4-coherence-audit.md`.
+
+**When working on theme-related code:** the v4 substrate IS the target. Add new manifest entries to `component-tokens.ts` rather than scattering inline reads. Update `KNOWN_UNCONSUMED` downward, not upward. Per-axis defaults belong in `density-presets.ts` / `R/theme-defaults.R` / inline at the resolver (each axis has one canonical home — don't duplicate).
+
