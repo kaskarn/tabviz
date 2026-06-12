@@ -41,7 +41,7 @@ describe("v2 value-primitive API contract", () => {
     const raw = readFileSync(path.join(HERE, file), "utf8");
     const src = stripHtmlComments(raw);
 
-    test(`${file} declares value via \$bindable`, () => {
+    test(`${file} declares value via $bindable`, () => {
       // Svelte 5 destructuring: `value = $bindable(...)` in the
       // `let { ... }: Props = $props();` block.
       expect(src).toMatch(/\bvalue\s*=\s*\$bindable\(/);

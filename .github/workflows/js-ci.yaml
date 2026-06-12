@@ -56,7 +56,7 @@ jobs:
       - name: Type check (svelte-check)
         run: npm run check
 
-      - name: Lint (errors fail; warnings are tracked debt)
+      - name: Lint (zero-warning baseline, all rules error — 2026-06-12)
         run: npm run lint
 
       - name: Build all bundles

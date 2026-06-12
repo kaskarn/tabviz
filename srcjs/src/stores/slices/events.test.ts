@@ -66,8 +66,7 @@ describe("createEventEmitter", () => {
   test("a listener can unsubscribe itself during emit", () => {
     const e = createEventEmitter<TestEvents>();
     const received: string[] = [];
-    let off: () => void;
-    off = e.on("ping", (v) => {
+    const off: () => void = e.on("ping", (v) => {
       received.push(v);
       off!();
     });

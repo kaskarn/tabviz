@@ -78,7 +78,6 @@
   import VizBar from "$components/viz/VizBar.svelte";
   import VizBoxplot from "$components/viz/VizBoxplot.svelte";
   import VizViolin from "$components/viz/VizViolin.svelte";
-  import { scaleLinear, scaleLog } from "d3-scale";
   import {
     computeVizBarDomain,
     computeVizBoxplotDomain,
@@ -338,7 +337,6 @@
     dispatchLifecycle(lifecycleState, allColumnDefs, widget);
   });
   const forestColumns = $derived(store.forestColumns);
-  const hasForestColumns = $derived(forestColumns.length > 0);
   const vizColumns = $derived(store.vizColumns);
   const hasVizColumns = $derived(vizColumns.length > 0);
   const primaryColumnId = $derived(store.primaryColumnId);
@@ -362,9 +360,6 @@
   const hasColumnGroups = $derived(
     allColumnDefs.some(c => c.isGroup)
   );
-  const tooltipRow = $derived(store.tooltipRow);
-  const tooltipPosition = $derived(store.tooltipPosition);
-  const hoveredRowId = $derived(store.hoveredRowId);
 
   // The painter is always-on in the unified select-as-paint model. We read
   // paint state via `store.paintTool` and `store.paintHoverCellField`
@@ -379,7 +374,6 @@
   const actualScale = $derived(store.actualScale);
   const maxWidth = $derived(store.maxWidth);
   const maxHeight = $derived(store.maxHeight);
-  const showZoomControls = $derived(store.showZoomControls);
 
   // Create reactive dependency on columnWidths to trigger re-render when widths change
   const columnWidthsSnapshot = $derived({ ...store.columnWidths });
@@ -420,8 +414,6 @@
   let scalableNaturalWidth = $state(0);
   let scalableNaturalHeight = $state(0);
 
-  // Natural content width from store (calculated from column specs)
-  const naturalContentWidth = $derived(store.naturalContentWidth);
 
   // Scaled dimensions for container sizing (CSS transform doesn't affect layout)
   // Container should be sized to scaled dimensions so it responds to zoom
@@ -742,7 +734,7 @@
   }
 
   // Helper to get unique key for display rows
-  function getDisplayRowKey(dr: DisplayRow, idx: number): string {
+  function getDisplayRowKey(dr: DisplayRow, _idx: number): string {
     if (dr.type === "group_header") {
       return `group_${dr.group.id}`;
     }
@@ -758,11 +750,6 @@
     return col.columns.reduce((sum, c) => sum + getColspan(c), 0);
   }
 
-  // Helper to get flat leaf columns from a column definition
-  function getLeafColumns(col: ColumnDef): ColumnSpec[] {
-    if (!col.isGroup) return [col];
-    return col.columns.flatMap(c => getLeafColumns(c));
-  }
 
   // Calculate the maximum depth of column groups (0 = no groups, 1 = one level, etc.)
   function getMaxGroupDepth(cols: ColumnDef[]): number {
@@ -776,11 +763,6 @@
     return maxDepth;
   }
 
-  // Get the depth of a specific column (how many levels from root)
-  function getColumnDepth(col: ColumnDef): number {
-    if (!col.isGroup) return 0;
-    return 1 + Math.max(0, ...col.columns.map(c => getColumnDepth(c)));
-  }
 
   // Compute group header background color based on nesting level
   // Uses solid colors (pre-blended with background) to avoid transparency artifacts
@@ -955,19 +937,7 @@
     return "max-content";
   }
 
-  // Helper: width of the primary (leftmost) column, for legacy callers that
-  // still want a "label width". Returns undefined if the primary column is
-  // not yet measured or is missing.
-  function getLabelWidth(): string | undefined {
-    if (!primaryColumnId) return undefined;
-    const width = columnWidthsSnapshot[primaryColumnId];
-    return width ? `${width}px` : undefined;
-  }
 
-  function getLabelFlex(): string {
-    if (!primaryColumnId) return "1";
-    return columnWidthsSnapshot[primaryColumnId] ? "none" : "1";
-  }
 
   // Viz column types that need fixed widths
   const vizColumnTypes = ["forest", "viz_bar", "viz_boxplot", "viz_violin"];
@@ -1137,21 +1107,6 @@
     return [...headers, ...rows, ...axisTrack].join(" ");
   });
 
-  // Total column count for grid (positional — leftmost column is the primary)
-  const totalColumns = $derived(allColumns.length);
-
-  // Get grid column indices for viz columns (1-based for CSS grid)
-  // Returns array of { gridCol, column } for each viz column
-  const vizColumnGridIndices = $derived.by((): { gridCol: number; column: typeof allColumns[0] }[] => {
-    const result: { gridCol: number; column: typeof allColumns[0] }[] = [];
-    for (let i = 0; i < allColumns.length; i++) {
-      if (vizColumnTypes.includes(allColumns[i].type)) {
-        result.push({ gridCol: 1 + i, column: allColumns[i] });
-      }
-    }
-    return result;
-  });
-
   // Refs to measure forest column positions for SVG overlays
   // Maps column id to { element, left }
   let forestColumnRefs = $state<Map<string, HTMLDivElement>>(new Map());
@@ -1272,34 +1227,6 @@
   // resolver (`store.forestAxes`) — each column resolves its own
   // domain/width/zoom. See lib/layout/forest-scale.ts + the axis slice.
 
-  // Plot resize state and handlers
-  let resizingPlot = $state(false);
-  let plotStartX = 0;
-  let plotStartWidth = 0;
-
-  function startPlotResize(e: PointerEvent) {
-    if (!interaction.enableResize) return;
-    e.preventDefault();
-    e.stopPropagation();
-    resizingPlot = true;
-    plotStartX = e.clientX;
-    plotStartWidth = layout.flexWidths?.[forestColumns[0]?.column.id ?? ""] ?? 200;
-    document.addEventListener("pointermove", onPlotResize);
-    document.addEventListener("pointerup", stopPlotResize);
-  }
-
-  function onPlotResize(e: PointerEvent) {
-    if (!resizingPlot) return;
-    // Dragging right increases plot width, dragging left decreases
-    const delta = e.clientX - plotStartX;
-    store.setPlotWidth(plotStartWidth + delta);
-  }
-
-  function stopPlotResize() {
-    resizingPlot = false;
-    document.removeEventListener("pointermove", onPlotResize);
-    document.removeEventListener("pointerup", stopPlotResize);
-  }
 
   // Column resize state and handlers — the seam grammar (P2): preview per
   // move, ONE commit on release, Escape cancels (restores the start width,
@@ -1440,18 +1367,6 @@
     }
   }
 
-  // Hover-preview helpers. These read store.paintTool / store.hoveredRowId /
-  // store.paintHoverCellField via prop access (which the Svelte 5 compiler
-  // preserves) so the bundle resolution sees the would-be token without
-  // committing it. Must live in the instance script — module-script helpers
-  // can't access the `store` prop.
-  function paintRowPreviewToken(row: Row | null): string | null {
-    const tool = store.paintTool;
-    if (!row || !tool) return null;
-    if (tool.scope !== "row") return null;
-    if (store.hoveredRowId !== row.id) return null;
-    return tool.token;
-  }
   function paintCellPreviewToken(row: Row | null, field: string): string | null {
     const tool = store.paintTool;
     if (!row || !tool) return null;
@@ -1754,8 +1669,6 @@
             <!-- Group header. dblclick toggles rename when editing is on; no
                  keyboard parity because the edit path is also exposed via the
                  right-click context menu on the primary cell. -->
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
             <div
               class="grid-cell header-cell column-group-header"
               class:editable={interaction.enableEdit}
@@ -1783,13 +1696,9 @@
           {:else if cell.isForest}
             <!-- Viz column header (forest, bar, boxplot, violin) -->
             {@const column = cell.col as ColumnSpec}
-            {@const vizDefaultWidth = column.type === "forest"
-              ? (column.options?.forest?.width ?? layout.flexWidths?.[column.id] ?? 200)
-              : (typeof column.width === "number" ? column.width : (layout.flexWidths?.[column.id] ?? 200))}
             {@const canSortViz = !!interaction.enableSort && column.sortable !== false}
             {@const vizSortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               use:forestColumnRef={column.id}
               class="grid-cell header-cell plot-header"
@@ -1841,7 +1750,6 @@
             {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             {@const isPrimaryHeader = column.id === primaryColumnId}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
             <div
               use:primaryHeaderRef={isPrimaryHeader}
               class="grid-cell header-cell"
@@ -2088,7 +1996,6 @@
                   />
                 {:else if row}
                   {#if row.details}
-                    <!-- svelte-ignore a11y_consider_explicit_label -->
                     <button
                       class="details-toggle"
                       class:open={store.isRowExpanded(row.id)}
@@ -2106,7 +2013,6 @@
               <!-- Viz cell (empty - SVG overlays this). Click/hover are row-
                    level affordances; the primary-cell owns keyboard selection
                    for the row, so this cell is presentational. -->
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_interactive_supports_focus -->
               <div
@@ -2132,7 +2038,6 @@
                    context menu on the primary cell. -->
               {@const editableHere = !!(row && interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
               {@const cellBg = row ? (getCellStyle(row, column)?.bg ?? null) : null}
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_interactive_supports_focus -->
               <div
@@ -2303,7 +2208,7 @@
                   row={displayRow.row}
                   yPosition={markerY}
                   xScale={colScale}
-                  layout={layout} plotWidth={forestWidth}
+                  plotWidth={forestWidth}
                   {theme}
                   clipBounds={colScale.domain() as [number, number]}
                   {isLog}
@@ -2352,8 +2257,7 @@
                 upper={spec.data.overall.upper}
                 yPosition={rowsAreaHeight + layout.rowHeight / 2}
                 xScale={colScale}
-                layout={layout} plotWidth={forestWidth}
-                {theme}
+                plotWidth={forestWidth}
               />
             {/if}
             </g>

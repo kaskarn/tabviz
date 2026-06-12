@@ -51,8 +51,8 @@ describe("renderNodeToSvg — group layout", () => {
       children: [text("a"), text("b"), text("c")],
     };
     const out = renderNodeToSvg(g);
-    const transforms = (out.markup.match(/translate\([\d\.]+ /g) ?? []).map((m) =>
-      parseFloat(m.match(/[\d\.]+/)![0]),
+    const transforms = (out.markup.match(/translate\([\d.]+ /g) ?? []).map((m) =>
+      parseFloat(m.match(/[\d.]+/)![0]),
     );
     expect(transforms).toHaveLength(3);
     expect(transforms[0]).toBe(0);

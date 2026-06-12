@@ -193,7 +193,7 @@
   function endDrag(e: PointerEvent) {
     if (!dragging) return;
     dragging = false;
-    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* capture already released */ }
   }
 
   // ── Dismiss handlers ─────────────────────────────────────────
@@ -250,7 +250,6 @@
 </script>
 
 {#if target && schema}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="v2-popover-shell"
     class:dragging

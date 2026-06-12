@@ -61,24 +61,7 @@ const jsKey = (k: string) => (IDENT_RE.test(k) ? k : JSON.stringify(k));
 // Mirrors the `?? defaultValue` defaults in srcjs/src/authoring/columns.ts.
 // ────────────────────────────────────────────────────────────────────
 
-interface BuilderSpec {
-  name: string;          // builder function name (e.g. "colText")
-  /** Fields read directly off `args` (positional / named, depending on builder). */
-  argMap: (col: ColumnSpec) => Record<string, unknown>;
-  /** Defaults for each named arg — entries equal to these are omitted from output. */
-  defaults: Record<string, unknown>;
-}
 
-// Common header default = field. Width default = "auto". Align = "left".
-// Sortable = true. Flex auto-derived per type.
-const COMMON_DEFAULTS = {
-  width: "auto" as const,
-  align: "left",
-  sortable: true,
-  wrap: false,
-  showHeader: undefined,
-  headerAlign: null,
-};
 
 /**
  * Extract `header`/`width`/`align`/etc. into a "common" sub-object only when

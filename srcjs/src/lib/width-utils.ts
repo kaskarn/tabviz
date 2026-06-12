@@ -251,7 +251,7 @@ export function flattenColumns(
       result.push(...flattenColumns(col.columns, position));
     } else {
       const spec = col as ColumnSpec;
-      if (!position || (spec as any).position === position) {
+      if (!position || (spec as { position?: string }).position === position) {
         result.push(spec);
       }
     }

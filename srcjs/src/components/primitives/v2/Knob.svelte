@@ -146,7 +146,7 @@
   }
   function onPointerUp(e: PointerEvent) {
     dragging = false;
-    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* capture already released */ }
   }
 
   // ── Wheel adjust on chip focus ───────────────────────────────

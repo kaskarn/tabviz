@@ -67,21 +67,34 @@ export default tseslint.config(
       "@typescript-eslint/no-empty-object-type": "error",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
 
-      // ── Backlog (warn) — real violations remain; chip down then promote.
-      //    Counts at last paydown: prefer-const 129, no-unused-vars 117,
-      //    no-unused-svelte-ignore 22, no-useless-escape 3, no-empty 3,
-      //    no-explicit-any 2, no-at-html-tags 1.
-      "prefer-const": "warn",
-      "@typescript-eslint/no-explicit-any": "warn",
+      // ── Paid down to ZERO and promoted (2026-06-12; was a 277-warning
+      //    backlog). The paydown deleted real dead code: the legacy
+      //    plot-resize trio, getLabelWidth/getLabelFlex (D20 item 7),
+      //    a vestigial polarity reflection in buildTheme, dead deriveds
+      //    and unused component props. New violations now FAIL the
+      //    gate (lint runs in js-ci's ts-suite job).
+      "prefer-const": "error",
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
       ],
-      "no-empty": "warn",
-      "no-useless-escape": "warn",
-      "svelte/no-at-html-tags": "warn",
-      "svelte/no-unused-svelte-ignore": "warn",
+      "no-empty": "error",
+      "no-useless-escape": "error",
+      "svelte/no-at-html-tags": "error",
+      "svelte/no-unused-svelte-ignore": "error",
     },
+  },
+
+  // Svelte 5 runes idiom: `let { x } = $props()` / `let y = $state()` —
+  // prefer-const is WRONG here (const props break bindability; const
+  // $state can't be reassigned reactively); all 107 hits were this
+  // pattern. plugin v3's svelte/prefer-const knows runes — re-enable
+  // through it on upgrade. MUST sit after the baseline block (flat
+  // config: last match wins).
+  {
+    files: ["**/*.svelte", "**/*.svelte.ts"],
+    rules: { "prefer-const": "off" },
   },
 
   // Test + harness files: relax further (test ergonomics over strictness).

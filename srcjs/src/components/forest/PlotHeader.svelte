@@ -73,9 +73,7 @@
   <div class="header-area" class:has-both={title && subtitle}>
     <div class="title-area">
       {#if title}
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
         <h2
           class="plot-title"
           class:editable={enableEdit}
@@ -88,9 +86,7 @@
       {/if}
       {#if subtitle}
         <div class="subtitle-wrap">
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-          <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
           <p
             class="plot-subtitle"
             class:editable={enableEdit}

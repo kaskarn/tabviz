@@ -125,21 +125,6 @@ export function zoomStorageKey(elementId: string): string {
   return `tabviz_zoom_${docScope}::${elementId}`;
 }
 
-/** Shallow value-equality for measured-height maps (within 0.5px), so the
- *  ResizeObserver→commit loop doesn't churn on sub-pixel jitter. */
-function sameHeightMap(
-  a: Record<string, number> | null,
-  b: Record<string, number> | null,
-): boolean {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  const ka = Object.keys(a), kb = Object.keys(b);
-  if (ka.length !== kb.length) return false;
-  for (const k of ka) {
-    if (!(k in b) || Math.abs(a[k] - b[k]) > 0.5) return false;
-  }
-  return true;
-}
 
 /** True if any top-level column in the spec is a ColumnGroup. Pushes the
  *  header strip to a 2-row layout, which changes the min header-row height. */
@@ -336,7 +321,6 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       readVarPx(cssVars, "--tv-plot-tick-mark-length", 5),
     );
     const axisHeight = computeAxisHeight(hasAxisColumn, axisGap, axisGeom.axisRegionHeight);
-    const hasForest = forestColumns.length > 0;
     const themePlotWidth = spec.theme.layout?.plotWidth;
     // Column widths now come from the multi-flex distribution below
     // (resolveFlexWidths); forest is just a high-weight column. A pinned plot

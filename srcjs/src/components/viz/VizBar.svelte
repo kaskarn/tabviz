@@ -24,7 +24,6 @@
   const barConfig = $derived.by(() => {
     const numEffects = options.effects.length;
     const totalBarHeight = rowHeight * 0.7; // Use 70% of row height
-    const barHeight = totalBarHeight / numEffects;
     const barGap = numEffects > 1 ? 2 : 0;
     const adjustedBarHeight = (totalBarHeight - barGap * (numEffects - 1)) / numEffects;
 

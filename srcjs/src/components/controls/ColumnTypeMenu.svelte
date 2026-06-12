@@ -320,14 +320,6 @@
     }
   });
 
-  function clampFocus(len: number) {
-    if (len === 0) {
-      focusIndex = 0;
-      return;
-    }
-    if (focusIndex < 0) focusIndex = 0;
-    if (focusIndex >= len) focusIndex = len - 1;
-  }
 
   // onkeydownCAPTURE on the portaled menu (not onkeydown): Svelte 5
   // delegates bubble-phase keydown to the app root, which portaled
@@ -535,7 +527,6 @@
   </div>
 
   {#if !isSearching && activeSubmenu && submenuLeft != null && submenuTop != null}
-    {@const subLeaves = submenuLeaves(activeSubmenu)}
     <!--
       Portal the submenu out of .tabviz-container so its `position: fixed`
       resolves against the viewport, not the contain-scoped widget root.

@@ -36,7 +36,6 @@ const KIND_STROKE: Record<RowMetric["kind"], string> = {
   panel: "#c026d3",
 };
 
-const BOX_STROKE = "#334155"; // cell allocated-box outline
 const PAD_FILL = "rgba(244,114,182,0.25)"; // padding region (pink wash)
 const ANCHOR = "#dc2626"; // text-anchor marker
 const MARKER_LINE = "#2563eb"; // row marker-center guide

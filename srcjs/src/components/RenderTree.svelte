@@ -96,7 +96,8 @@
 {:else if node.kind === "svg"}
   {@const s = node as RenderSvg}
   <svg width={s.width} height={s.height} viewBox={s.viewBox ?? `0 0 ${s.width} ${s.height}`}>
-    {@html s.markup}
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -- node markup is engine-built (schema renderers), never raw user input -->
+  {@html s.markup}
   </svg>
 {:else if node.kind === "spacer"}
   {@const sp = node as RenderSpacer}

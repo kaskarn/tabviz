@@ -774,7 +774,6 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // The primary column is the first leaf and takes the "label" slot in the SVG
   // layout. Exclude it from the unifiedColumns list so it isn't rendered twice.
   const primaryCol = getPrimaryColumn(columns);
-  const primaryHeader = primaryCol?.header ?? "Study";
   const unifiedColumns = flattenAllColumns(columns).filter(c =>
     (c as { position?: string }).position === undefined && c.id !== primaryCol?.id
   );
@@ -1291,7 +1290,7 @@ function flattenColumns(columns: ColumnDef[], position?: "left" | "right"): Colu
 
 /** Get column definitions (preserving groups) filtered by position */
 function getColumnDefs(columns: ColumnDef[], position: "left" | "right"): ColumnDef[] {
-  return columns.filter((c) => (c as any).position === position);
+  return columns.filter((c) => (c as { position?: string }).position === position);
 }
 
 /**
@@ -1443,7 +1442,7 @@ function createLogScale(domain: [number, number], range: [number, number]): Scal
 
   scale.domain = (): [number, number] => [d0, d1];
   scale.range = () => range;
-  scale.ticks = (count: number): number[] => {
+  scale.ticks = (_count: number): number[] => {
     // Generate log-spaced ticks at nice values (powers of 10 and 2x, 5x multiples)
     const ticks: number[] = [];
     const minPow = Math.floor(Math.log10(d0));
@@ -2278,7 +2277,7 @@ function renderVizAnnotations(
   cssVars: Record<string, string>,
   plotY: number,
   rowsHeight: number,
-  theme: WebTheme,
+  _theme: WebTheme,
 ): string {
   if (!annotations || annotations.length === 0) return "";
   const parts: string[] = [];
@@ -2975,7 +2974,6 @@ function renderUnifiedColumnHeaders(
   cssVars: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  const baseFontSize = parseFontSize(readBodySize(cssVars));
   // Header cells: prefer explicit theme.header.text.size when pinned
   // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
   const bodySizeStr = readBodySize(cssVars);
@@ -3132,7 +3130,7 @@ function renderUnifiedTableRow(
   autoWidths: Map<string, number>,
   getColWidth: (col: ColumnSpec) => number,
   columnPositions: number[],
-  allRows: Row[] = [],
+  _allRows: Row[] = [],
   columnSummaries: Map<string, { min: number; max: number }> = new Map(),
   rowIdToIndex: Map<string, number> = new Map(),
   banks: import("../schema/banks").EffectiveBanks | null = null,
@@ -4390,8 +4388,6 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       forestColumnIndices.push(i);
     }
   }
-  const hasForestColumns = forestColumnIndices.length > 0;
-
   // Identify viz columns (viz_bar, viz_boxplot, viz_violin)
   interface VizColumnInfo {
     index: number;
@@ -5169,7 +5165,6 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const x1 = padding;
     const x2 = layout.totalWidth - padding;
     if (displayRow.type === "data") {
-      const row = displayRow.row;
       const kind = resolveRowKind(displayRow);
       const isSummaryRow = rowKindProps(kind).summaryMarker;
       const isSpacerRow = kind === "spacer";

@@ -78,9 +78,7 @@
       />
     {/if}
     {#if caption}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
       <p
         class="plot-caption"
         class:editable={enableEdit}
@@ -92,9 +90,7 @@
       >{caption}</p>
     {/if}
     {#if footnote}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
       <p
         class="plot-footnote"
         class:editable={enableEdit}

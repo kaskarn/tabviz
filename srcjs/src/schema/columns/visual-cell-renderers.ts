@@ -22,11 +22,10 @@
 // fit the per-cell ctx shape. They stay on the legacy TabvizPlot
 // branches until Phase 4c lands the aggregate behavior + bank entry.
 
-import type { RenderComponent, RenderText, CellFormatter } from "../render-types";
+import type { RenderComponent, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
 import { pvalueSvgRenderer, referenceSvgRenderer, rangeSvgRenderer, imgSvgRenderer } from "./visual-svg-renderers";
-import type { ColumnOptions } from "../../types";
 
 import CellPvalue    from "../../components/table/CellPvalue.svelte";
 import CellBadge     from "../../components/table/CellBadge.svelte";
@@ -49,10 +48,6 @@ function component(
   return { kind: "component", name, props };
 }
 
-// Helper: bare RenderText for the SVG-side text-only renderers.
-function text(value: string): RenderText {
-  return { kind: "text", value };
-}
 
 // ────────────────────────────────────────────────────────────────────
 // Renderers

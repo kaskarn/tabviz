@@ -348,17 +348,6 @@ export function createSplitTabvizStore() {
     expandedNodes = newExpanded;
   }
 
-  function expandPathToKey(key: string) {
-    // Add path nodes to existing expanded set (for manual expansion)
-    const parts = key.split("__");
-    const newExpanded = new Set(expandedNodes);
-    let path = "";
-    for (let i = 0; i < parts.length - 1; i++) {
-      path = path ? `${path}__${parts[i]}` : parts[i];
-      newExpanded.add(path);
-    }
-    expandedNodes = newExpanded;
-  }
 
   function selectNext() {
     if (currentIndex >= 0 && currentIndex < allLeafKeys.length - 1) {

@@ -58,9 +58,7 @@ function reflectAnchorMaybe(a: OklchTriple | undefined): OklchTriple | undefined
 import {
   resolveTypographyInputs,
   resolveTypeRole,
-  DEFAULT_TYPE_ROLES,
   type TypeRoleName,
-  type TypeRole,
 } from "./typography";
 import { effectiveTypeRoles } from "./scale-roles";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";

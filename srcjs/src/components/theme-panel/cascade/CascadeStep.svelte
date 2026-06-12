@@ -64,7 +64,8 @@
       <div class="aside">{@render aside()}</div>
     {/if}
   </header>
-  <p class="prose">{@html prose}</p>
+  <p class="prose"><!-- eslint-disable-next-line svelte/no-at-html-tags -- derivation strings are package-authored (cascade registry), not user input -->
+  {@html prose}</p>
   {#if children}
     <div class="body">{@render children()}</div>
   {/if}

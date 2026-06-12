@@ -3,13 +3,12 @@
   import { formatNumber } from "$lib/formatters";
 
   interface Props {
-    value: unknown;
     metadata: Record<string, unknown>;
     options?: RangeColumnOptions;
     naText?: string;
   }
 
-  const { value, metadata, options, naText }: Props = $props();
+  const { metadata, options, naText }: Props = $props();
 
   const separator = $derived(options?.separator ?? " – ");
   const decimals = $derived(options?.decimals);

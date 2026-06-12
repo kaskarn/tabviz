@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { WebTheme, ComputedLayout } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
 
   interface Props {
@@ -8,14 +7,11 @@
     upper: number;
     yPosition: number;
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
-    layout: ComputedLayout;
     /** This plot column's pixel width (from the multi-flex distribution). */
     plotWidth: number;
-    theme: WebTheme | undefined;
-    label?: string;
   }
 
-  const { point, lower, upper, yPosition, xScale, layout, plotWidth, theme, label }: Props = $props();
+  const { point, lower, upper, yPosition, xScale, plotWidth }: Props = $props();
 
   const diamondHeight = 10;
   const halfHeight = diamondHeight / 2;

@@ -24,7 +24,6 @@
 
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
-import { applyPolarityToInputs } from "./resolve-theme";
 import { validateResolvedTheme } from "./theme-validate";
 import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import { resolveCategorical } from "../data-schemes";
@@ -121,7 +120,6 @@ export function buildTheme(
   const roleOverrides = opts.roleOverrides ?? {};
   const pins = opts.pins ?? {};
   const components = opts.components ?? {};
-  const reflected = applyPolarityToInputs(inputs);
   const v3 = buildThemeStructure(inputs, name);
   const t = v3.tokens;
   const ramps = v3.ramps;

@@ -142,7 +142,6 @@
   </button>
 
   {#if open}
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <ul
       class="dd-list"
       class:up={flipUp}

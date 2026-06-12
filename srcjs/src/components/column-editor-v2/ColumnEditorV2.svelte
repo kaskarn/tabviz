@@ -43,7 +43,6 @@
   import { resolveSchema } from "../../schema/resolve";
   import { schemaGlyph, slotGlyphFor } from "../../schema/glyph-utils";
   import { SCHEMA_REGISTRY } from "../../schema/columns";
-  import { glyph as glyphChar } from "../../lib/ui-glyphs";
 
   import Pill   from "../primitives/v2/Pill.svelte";
   import Knob   from "../primitives/v2/Knob.svelte";
@@ -201,17 +200,6 @@
     commit(opt, opt.default);
   }
 
-  // ── Variants — recipe selector ──────────────────────────────────
-  // Variants land at column.options[bucket].variant. We surface the
-  // selector at the top of the leaf-most accordion's body (the schema
-  // that owns the variants). If the same key is inherited up the
-  // chain, the deepest-declaring layer wins.
-  function variantOwner(): ColumnSchema | null {
-    for (const layer of cascade) {
-      if (layer.variants && layer.variants.length > 0) return layer;
-    }
-    return null;
-  }
   function readVariant(layer: ColumnSchema): string | null {
     if (!layer.bucket) return null;
     const opts = (column.options ?? {}) as Record<string, Record<string, unknown>>;
@@ -344,9 +332,6 @@
     oncommit?.(next as Partial<ColumnSpec>);
   }
 
-  // ── Section pin counts ─────────────────────────────────────────
-  const FIXED_KEYS = ["header", "align", "width", "sortable", "headerAlign", "showHeader"];
-
   // ── Header bits ────────────────────────────────────────────────
   const headerGlyph = $derived(schemaGlyph(schema, SCHEMA_REGISTRY));
 </script>
@@ -407,7 +392,7 @@
          general options precede the specialized ones, and a true
          single-open accordion enforces "one section visible at a time"
          to limit vertical sprawl. -->
-    {#each cascade as layer, idx (layer.key)}
+    {#each cascade as layer (layer.key)}
       {@const opts = optionsFor(layer.key)}
       {@const isLeaf = layer === schema}
       {@const hasVariants = isLeaf && layer.variants && layer.variants.length > 0}

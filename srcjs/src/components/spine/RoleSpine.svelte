@@ -64,7 +64,7 @@
   // ── Drag state ──────────────────────────────────────────────────────────
   let dragging = $state<{ role: string; pointerId: number } | null>(null);
   let dragTarget = $state<{ ramp: RampName | "neutral" | "brand" | "accent"; grade: number } | null>(null);
-  let columnRefs: Partial<Record<"neutral" | "brand" | "accent", HTMLElement>> = {};
+  const columnRefs: Partial<Record<"neutral" | "brand" | "accent", HTMLElement>> = {};
 
   function onPointerDown(e: PointerEvent, roleName: string): void {
     e.preventDefault();
@@ -152,8 +152,6 @@
             <div class="swatch" style:background={hex} title={`${rampName}[${grade}] = ${hex}`}></div>
             <div class="role-tokens">
               {#each roles as role (role.name)}
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <!-- svelte-ignore a11y_mouse_events_have_key_events -->
                 <span
                   class="role-token"
                   class:dragging={dragging?.role === role.name}

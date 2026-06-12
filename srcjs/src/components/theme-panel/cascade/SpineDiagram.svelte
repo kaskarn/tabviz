@@ -14,7 +14,7 @@
 <script lang="ts">
   import type { ResolvedTheme } from "$lib/theme/resolve-theme";
   import { hexToOklch } from "$lib/oklch";
-  import { ROLE_KIND, OFF_RAMP_ROLES, type RoleName, type RoleKind, type RampName } from "$types/theme-roles";
+  import { ROLE_KIND, OFF_RAMP_ROLES, type RoleName, type RoleKind } from "$types/theme-roles";
   import { DEFAULT_ROLE_BINDINGS } from "$lib/theme/role-bindings";
   import { studioStore } from "../../../studio/studio-store.svelte";
   import { inspectorStore } from "$stores/inspector-store.svelte";

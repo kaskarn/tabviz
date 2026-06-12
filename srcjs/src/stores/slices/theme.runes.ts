@@ -374,7 +374,7 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
     theme.captureInitial(initial);
     expect(theme.hasThemeEdits).toBe(false);
     theme.setThemeRoleOverride("surface-subtle", "neutral", 4);
-    let t = harness.spec?.theme as { roleOverrides?: Record<string, unknown> };
+    const t = harness.spec?.theme as { roleOverrides?: Record<string, unknown> };
     expect(t.roleOverrides?.["surface-subtle"]).toEqual({ ramp: "neutral", grade: 4 });
     expect(t.roleOverrides?.["text-subtle"]).toEqual({ ramp: "accent", grade: 6 }); // sibling survives
     expect(theme.hasThemeEdits).toBe(true); // diverges from initial → Reset enabled

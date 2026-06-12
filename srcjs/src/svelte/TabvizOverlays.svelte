@@ -30,11 +30,9 @@
   }
   const { store, containerRef }: Props = $props();
 
-  const spec = $derived(store.spec);
   // Resolved interaction surface (4-tier defaults chain) — never read
   // spec.interaction directly; it is the sparse explicit tier only.
   const interaction = $derived(store.interaction);
-  const theme = $derived(spec?.theme);
   const tooltipRow = $derived(store.tooltipRow);
   const tooltipPosition = $derived(store.tooltipPosition);
 
@@ -208,7 +206,7 @@
 </script>
 
 <!-- Tooltip -->
-<Tooltip row={tooltipRow} position={tooltipPosition} fields={interaction.tooltipFields} {theme} />
+<Tooltip row={tooltipRow} position={tooltipPosition} fields={interaction.tooltipFields} />
 
 <!-- Drop indicator (fixed-positioned at root) -->
 {#if store.dragState?.active && store.dragState.indicatorIndex != null}

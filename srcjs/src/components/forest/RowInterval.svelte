@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Row, RowStyle, CellStyle, WebTheme, ComputedLayout, MarkerShape, ForestColumnOptions } from "$types";
+  import type { Row, RowStyle, CellStyle, WebTheme, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
@@ -13,7 +13,6 @@
     row: Row;
     yPosition: number;
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
-    layout: ComputedLayout;
     /** This plot column's pixel width (from the multi-flex distribution). */
     plotWidth: number;
     theme: WebTheme | undefined;
@@ -37,7 +36,6 @@
     row,
     yPosition,
     xScale,
-    layout,
     plotWidth,
     theme,
     weightCol = null,

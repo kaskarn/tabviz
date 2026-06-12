@@ -1,15 +1,14 @@
 <script lang="ts">
-  import type { Row, WebTheme } from "$types";
+  import type { Row } from "$types";
   import { portal } from "$lib/portal";
 
   interface Props {
     row: Row | null;
     position: { x: number; y: number } | null;
     fields?: string[] | null;
-    theme?: WebTheme | undefined;
   }
 
-  const { row, position, fields = null, theme }: Props = $props();
+  const { row, position, fields = null }: Props = $props();
 
   // Tooltip element for measuring
   let tooltipEl: HTMLDivElement | undefined = $state();
@@ -44,7 +43,6 @@
 
     // Keep tooltip within viewport bounds
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1000;
-    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
 
     // Flip to left side if too close to right edge
     if (x + tooltipWidth > viewportWidth - margin) {

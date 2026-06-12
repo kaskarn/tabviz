@@ -162,8 +162,6 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
 // T2 — Token resolution (demo subset; PR B expands to full vocabulary)
 // ────────────────────────────────────────────────────────────────────
 
-/** APCA target Lc for body text on a colored bg. */
-const APCA_BODY_FLOOR = 75;
 /** APCA target Lc for large/header text on a colored bg. */
 const APCA_LARGE_FLOOR = 60;
 

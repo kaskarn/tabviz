@@ -98,7 +98,7 @@
     if (!dragging) return;
     dragging = false;
     if (activeEl && activePointerId != null) {
-      try { activeEl.releasePointerCapture(activePointerId); } catch {}
+      try { activeEl.releasePointerCapture(activePointerId); } catch { /* capture already released */ }
     }
     activeEl = null;
     activePointerId = null;
@@ -195,7 +195,6 @@
 
 <!-- A focusable role="separator" IS valid interactive ARIA (a movable
      splitter); the linter doesn't model that pattern. -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
