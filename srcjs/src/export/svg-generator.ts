@@ -336,7 +336,7 @@ export interface ExportOptions {
  * 2. Then check if column groups need more width than their children provide
  * 3. If so, distribute extra width evenly to all children
  */
-function calculateSvgAutoWidths(
+export function calculateSvgAutoWidths(
   spec: WebSpec,
   columns: ColumnSpec[],
   primaryCol?: ColumnSpec | null,
@@ -379,16 +379,16 @@ function calculateSvgAutoWidths(
     let maxWidth = 0;
     const primaryHeader = primaryCol.header;
     if (primaryHeader) {
-      maxWidth = Math.max(maxWidth, estimateTextWidth(primaryHeader, headerFontSize, headerWeight, bodyFamily));
+      maxWidth = Math.max(maxWidth, measureTextWidth(primaryHeader, headerFontSize, bodyFamily, headerWeight));
     }
     for (const row of rows) {
       if (!row.label) continue;
       const depth = row.groupId != null ? (groupDepths.get(row.groupId) ?? 0) + 1 : 0;
       const totalIndent = depth + (row.style?.indent ?? 0);
-      let rowWidth = estimateTextWidth(row.label, fontSize, 400, bodyFamily) + totalIndent * indentPx;
+      let rowWidth = measureTextWidth(row.label, fontSize, bodyFamily, 400) + totalIndent * indentPx;
       if (row.style?.badge) {
         const badgeText = String(row.style.badge);
-        const badgeTextWidth = estimateTextWidth(badgeText, fontSize * BADGE.FONT_SCALE, 400, bodyFamily);
+        const badgeTextWidth = measureTextWidth(badgeText, fontSize * BADGE.FONT_SCALE, bodyFamily, 400);
         rowWidth += BADGE.GAP + badgeTextWidth + BADGE.PADDING * 2;
       }
       maxWidth = Math.max(maxWidth, rowWidth);
@@ -401,11 +401,11 @@ function calculateSvgAutoWidths(
       let countWidth = 0;
       if (showGroupCounts) {
         const rowCount = countGroupDescendantRows(group.id, groups, rows);
-        countWidth = estimateTextWidth(`(${rowCount})`, fontSize * 0.75, 400, bodyFamily) + GROUP_HEADER.GAP;
+        countWidth = measureTextWidth(`(${rowCount})`, fontSize * 0.75, bodyFamily, 400) + GROUP_HEADER.GAP;
       }
       maxWidth = Math.max(maxWidth,
         group.depth * indentPx + GROUP_HEADER.CHEVRON_WIDTH + GROUP_HEADER.GAP +
-        estimateTextWidth(group.label, fontSize, 400, bodyFamily) + countWidth + GROUP_HEADER.SAFETY_MARGIN);
+        measureTextWidth(group.label, fontSize, bodyFamily, 400) + countWidth + GROUP_HEADER.SAFETY_MARGIN);
     }
     const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
     widths.set(primaryCol.id, Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth)));
@@ -455,7 +455,7 @@ function calculateSvgAutoWidths(
     if (col.header) {
       maxWidth = Math.max(
         maxWidth,
-        estimateTextWidth(col.header, headerFontSize, headerWeight, bodyFamily),
+        measureTextWidth(col.header, headerFontSize, bodyFamily, headerWeight),
       );
     }
 
@@ -466,7 +466,7 @@ function calculateSvgAutoWidths(
       }
       const text = getColumnDisplayText(row, col);
       if (text) {
-        maxWidth = Math.max(maxWidth, estimateTextWidth(text, fontSize, 400, bodyFamily));
+        maxWidth = Math.max(maxWidth, measureTextWidth(text, fontSize, bodyFamily, 400));
       }
     }
 

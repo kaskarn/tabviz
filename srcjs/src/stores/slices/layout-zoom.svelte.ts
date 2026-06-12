@@ -54,6 +54,7 @@ import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalab
 import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
+import { calculateSvgAutoWidths } from "../../export/svg-generator";
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import {
   getCssVars, readVarPx, readBodySize, readLabelSize,
@@ -447,6 +448,18 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // into the (possibly grown) layoutWidth, cap-bounded. Forest is a high-weight
     // column; pinned/user-resized columns are immovable. (docs/dev/multi-flex-columns.md)
     const FLEX_DEFAULT_COL_WIDTH = 100;
+    // CONTENT naturals via the shared estimator (sizing audit S9, fixed
+    // 2026-06-12): unmeasured columns previously entered the
+    // distribution at a flat 100, so a column whose content wants ~120
+    // (the hero's interval column) could be PINNED below its text and
+    // clip — with an absorber present the fill hid nothing. The same
+    // estimator the export uses supplies per-column "wants", and they
+    // double as shrink FLOORS so the distribution can't cut into text.
+    const estimatorNaturals = calculateSvgAutoWidths(
+      spec,
+      allColumns.filter((c) => c.id !== allColumns[0]?.id),
+      allColumns[0] ?? null,
+    );
     const flexCap = targetAspect != null ? ASPECT.FLEX_CAP : undefined;
     const flexSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
       const measured = columnWidths[c.id];
@@ -457,14 +470,15 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         forestPin ??
         (userResized && typeof measured === "number" ? measured
           : typeof c.width === "number" ? c.width : null);
+      const contentNatural = estimatorNaturals.get(c.id);
       const natural =
-        explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? FLEX_DEFAULT_COL_WIDTH;
+        explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? contentNatural ?? FLEX_DEFAULT_COL_WIDTH;
       return {
         id: c.id,
         naturalWidth: natural,
         flexWeight: flexWeightForColumn(c),
         explicitWidth: explicit,
-        minWidth: measured ?? undefined,
+        minWidth: measured ?? contentNatural ?? undefined,
         cap: flexCap,
       };
     });
