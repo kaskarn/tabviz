@@ -422,6 +422,15 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 (early) — R presets GENERATED from the TS literals
+  (propagation flag #2 resolved; −231 net lines): fixpoint-verified
+  value-identical imports, web-font URL table moved to TS as single
+  source (also fixing npm's silent webFonts:[] gap), FONT_URLS retired.
+  All three workflows green on the commit (js-ci 3m53s, 5-platform R
+  matrix 4m45s, Quarto Publish). Six of seven propagation red flags
+  now resolved or gated; only #6 (toolbar placement, a UX call)
+  remains.
+
 - 2026-06-11 (late) — CRAN submission moved to DISTANT FUTURE by
   maintainer ("lots of work to do still"); check discipline unchanged.
   CI fully green on the sizing-arc commits (js-ci + 5-platform R
