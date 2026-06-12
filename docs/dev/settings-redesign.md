@@ -88,14 +88,22 @@ control per concern per layer; a pointer instead of a duplicate.
 6. **Channel pickers filter by kind** — a text channel offers text
    roles only (and then doesn't need to say "this is a text kind").
 
+## Layer × travel matrix (written 2026-06-12, pre-Variations)
+
+| Surface | Writes | Travels with | Reverted by | Notes |
+|---|---|---|---|---|
+| Variations (L1) | theme INPUTS (the variant fields: polarity, density, banding, header_style, shell, effects, border_preset, slot_style, type size/scale) | the theme artifact (export carries the picks) | **Reset theme** | Storage-wise identical to identity edits today; the SEMANTIC split (variant picks vs identity edits) is visible in the UI strata, not the wire. If dirty-tracking ever needs to distinguish them, a figure-variant store is an additive wire minor — deferred until a real need. |
+| Labels (L1b) | spec labels (+ watermark) | the FIGURE (spec / figureLayout) | **Reset figure** | Never rides a theme export. |
+| Identity (L2) | theme inputs (anchors, fonts, geometry) | theme artifact | Reset theme | |
+| Plots (L3) | theme (series overrides; exact mechanism fixed at Phase 4) | theme artifact | Reset theme | Freeform by D21 ruling 3. |
+| Styling (L4) | theme (roleOverrides, pins, spacing detail) — EXCEPT per-row-KIND height pins, which stay FIGURE state | theme artifact / figure respectively | Reset theme / Reset figure | The carried-overrides release affordance lives here when the tab lands. |
+| Toolbar (view) | localStorage (zoom, fit, reader contrast) | this browser + document only | toolbar reset | Never in the panel (D21 ruling 10). |
+
 ## Open inputs the build needs
 
-- **Layer × travel matrix** (which choices ride the theme artifact vs
-  figure state vs view state) — write before Variations lands; the
-  lean: reader flips persist as FIGURE state, theme-travel only on
-  author export.
-- **D23 polarity battery** — 9 presets flipped, eyeballed, pin-or-bless
-  each.
+- ~~D23 polarity battery~~ — DECIDED 2026-06-12: all 9 presets bless the
+  derived flip, no pins (register D23). The Variations polarity control
+  shows everywhere.
 - **D20 label-column discussion** — gates Styling's component roster.
 - Border + slot_style v2 design notes (separate docs).
 

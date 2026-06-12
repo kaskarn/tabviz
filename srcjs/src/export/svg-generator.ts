@@ -831,6 +831,12 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // other column (D20 — the parallel label-width path is gone).
     autoWidths = calculateSvgAutoWidths(spec, allColumns, primaryCol);
     labelWidth = (primaryCol?.id ? pinnedWidths[primaryCol.id] : undefined)
+      // EXPLICIT width (incl. R's systemfonts injection, which stamps
+      // numeric widths onto the spec): the auto-width branch correctly
+      // skips pinned columns, so the chain must read the pin itself —
+      // without this every injected-width primary fell to AUTO_WIDTH.MIN
+      // and the label overlapped its neighbor (D23 battery catch).
+      ?? (typeof primaryCol?.width === "number" ? primaryCol.width : undefined)
       ?? (primaryCol?.id ? autoWidths.get(primaryCol.id) : undefined)
       ?? AUTO_WIDTH.MIN;
   }

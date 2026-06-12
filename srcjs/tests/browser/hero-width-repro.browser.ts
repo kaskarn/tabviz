@@ -17,7 +17,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const spec = JSON.parse(readFileSync(path.join(__dirname, "fixtures/hero-embedded.json"), "utf8"));
 const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] });
 const page = await browser.newPage();
-page.on("console", (m) => { if (m.text().includes("[iv-natural]")) console.log("PAGE:", m.text()); });
 await page.goto(`file://${path.join(__dirname, "fixtures.html")}`, { waitUntil: "load" });
 await page.addStyleTag({ path: path.resolve(__dirname, "../../../inst/htmlwidgets/tabviz.css") });
 await page.addScriptTag({ path: path.resolve(__dirname, "../../../inst/htmlwidgets/tabviz.js") });
@@ -54,21 +53,9 @@ const verdict = await page.evaluate(() => {
       bad.push(`${content.textContent!.trim().slice(0, 24)} content=${content.offsetWidth} room=${Math.round(room)}`);
     }
   }
-  const boldCell = cells.find((c) => c.className.includes("row-bold") || (c.textContent ?? "").includes("0.81, 0.91"));
-  let boldDiag = null;
-  if (boldCell) {
-    const cc = boldCell.querySelector<HTMLElement>(".cell-content")!;
-    const cs = getComputedStyle(cc);
-    const cv = document.createElement("canvas").getContext("2d")!;
-    cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    boldDiag = { w: cs.fontWeight, size: cs.fontSize, ls: cs.letterSpacing, fam: cs.fontFamily.slice(0, 24),
-                 canvasSame: Math.round(cv.measureText(cc.textContent!.trim()).width), dom: cc.offsetWidth,
-                 text: cc.textContent!.trim().slice(0, 26) };
-  }
-  return { checked: cells.length, bad, boldDiag };
+  return { checked: cells.length, bad };
 });
 console.log(`interval cells checked: ${verdict.checked}; overflows: ${verdict.bad.length}`);
-console.log("boldDiag:", JSON.stringify((verdict as never as {boldDiag: object}).boldDiag));
 if (verdict.bad.length > 0) {
   console.error(verdict.bad.join("\n"));
   process.exit(1);
