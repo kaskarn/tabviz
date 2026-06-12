@@ -35,48 +35,7 @@ gf <- function(family, spec = NULL) {
   }
 }
 
-# Canonical URLs for the families used by 2+ presets. Each entry is the
-# "standard" weight set we want across presets that share the font; a
-# preset can still inline a custom URL when its weight set differs
-# (Brutalist for Inter, Dwarven for EB Garamond with italics).
-FONT_URLS <- list(
-  inter          = gf("Inter",             "wght@400;500;600;700"),
-  inter_heavy    = gf("Inter",             "wght@500;700;800;900"),
-  eb_garamond    = gf("EB Garamond",       "ital,wght@0,400;0,500;0,600;1,400"),
-  eb_garamond_full = gf("EB Garamond",     "ital,wght@0,400;0,500;0,600;0,700;1,400"),
-  cinzel         = gf("Cinzel",            "wght@400;500;600;700"),
-  cormorant      = gf("Cormorant Garamond", "wght@400;500;600;700"),
-  cormorant_ital = gf("Cormorant Garamond", "ital,wght@0,400;0,500;0,600;1,400"),
-  jetbrains_mono = gf("JetBrains Mono",    "wght@400;500;600;700"),
-  jetbrains_mono_thin = gf("JetBrains Mono", "wght@400;500;600"),
-  roboto         = gf("Roboto",            "wght@400;500;600;700"),
-  roboto_flex    = gf("Roboto Flex",
-                      "opsz,wght@8..144,400;8..144,500;8..144,700"),
-  crimson_pro    = gf("Crimson Pro",       "wght@400;500;600;700"),
-  archivo        = gf("Archivo",           "wght@400;500;700;800"),
-  archivo_black  = gf("Archivo Black"),
-  italianno      = gf("Italianno"),
-  im_fell_english    = gf("IM Fell English",    "ital@0;1"),
-  im_fell_english_sc = gf("IM Fell English SC"),
-  # wire-audit Pass 1d de-slop pack (C64): one intentional family per
-  # preset that previously defaulted to Inter / Arial / Georgia.
-  source_sans_3    = gf("Source Sans 3",    "wght@400;500;600;700"),
-  source_serif_4   = gf("Source Serif 4",   "opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700"),
-  spline_sans      = gf("Spline Sans",      "wght@400;500;600;700"),
-  spline_sans_mono = gf("Spline Sans Mono", "wght@400;500;600;700"),
-  lora             = gf("Lora",             "ital,wght@0,400;0,500;0,600;1,400"),
-  ibm_plex_sans    = gf("IBM Plex Sans",    "wght@400;500;600;700"),
-  ibm_plex_serif   = gf("IBM Plex Serif",   "wght@400;500;600;700"),
-  hanken_grotesk   = gf("Hanken Grotesk",   "wght@400;500;600;700"),
-  frank_ruhl_libre = gf("Frank Ruhl Libre", "wght@400;500;700"),
-  public_sans      = gf("Public Sans",      "wght@400;500;600;700"),
-  mulish           = gf("Mulish",           "wght@400;500;600;700"),
-  fraunces         = gf("Fraunces",         "opsz,wght@9..144,400;9..144,600;9..144,700"),
-  darker_grotesque = gf("Darker Grotesque", "wght@700;800;900"),
-  # wire-audit 2b presets (ledger / terminal / aurora)
-  spectral         = gf("Spectral",         "ital,wght@0,400;0,500;0,600;1,400"),
-  space_mono       = gf("Space Mono",       "ital,wght@0,400;0,700;1,400"),
-  outfit           = gf("Outfit",           "wght@400;500;600;700"),
-  ibm_plex_mono    = gf("IBM Plex Mono",    "wght@400;500;600;700"),
-  karla            = gf("Karla",            "wght@400;500;600;700")
-)
+# The per-preset URL registry moved to TS (2026-06-11):
+# srcjs/src/lib/theme/preset-web-fonts.ts is the single source — R's
+# generated preset constructors fetch it via the presetWebFonts V8 seam.
+# `gf()` above remains for authors building custom `web_font()` entries.

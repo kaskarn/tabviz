@@ -3,7 +3,7 @@
 #
 # V4 (2026-06-04): anchors vocabulary. Each preset declares a brand hex
 # plus optional accent / polarity / paper-ink derivations and passes
-# them through `derive_preset_anchors()` (mirrors TS `defineInputs` in
+# them via the TS `defineInputs` literals (now the single source —
 # srcjs/src/lib/theme/theme-presets-inputs.ts). The helper returns
 # paper / ink / brand / accent OKLCH triples ready to forward to
 # [web_theme()]. The preset's full Stage 2/3 personality (typography,
@@ -16,74 +16,42 @@
 PRESET_PAPER_L <- THEME_DEFAULTS$paper_L
 PRESET_INK_L   <- THEME_DEFAULTS$ink_L
 
-# Derive the four V4 anchors from v3-style hex seeds. Mirrors the TS
-# `deriveAnchors` in theme-presets-inputs.ts so R and TS presets emit
-# identical anchor triples for the same seeds.
-#
-#   brand_hex        Required brand hex (drives the brand ramp + identity).
-#   accent_hex       Optional accent hex. NULL = accent mirrors brand.
-#   neutral_hue_from One of "brand" (default — paper/ink take brand hue),
-#                    a hex string (paper/ink take that hex's hue — for
-#                    editorial themes routing a secondary hue through
-#                    neutrals), or `NA_character_` for achromatic
-#                    (paper/ink H = 0).
-#   paper_C, ink_C   Chroma intensity baked into paper/ink. Higher = warmer
-#                    or more visibly tinted paper. Default 0.005/0.010
-#                    (clinical clean).
-#   paper_L, ink_L   Override paper/ink L. Default 0.987/0.180.
-#
-# Returns list(paper=, ink=, brand=, accent=) of oklch triples ready to
-# forward to [web_theme()].
-derive_preset_anchors <- function(brand_hex,
-                                  accent_hex = NULL,
-                                  neutral_hue_from = "brand",
-                                  paper_C = 0.005,
-                                  ink_C = 0.010,
-                                  paper_L = PRESET_PAPER_L,
-                                  ink_L = PRESET_INK_L) {
-  brand_t  <- hex_to_oklch(brand_hex)
-  accent_t <- if (!is.null(accent_hex)) hex_to_oklch(accent_hex) else NULL
+# ── Preset generation (2026-06-11, propagation-readiness flag #2) ─────
+# The nine preset constructors are GENERATED from the TS literals
+# (srcjs/src/lib/theme/theme-presets-inputs.ts) via the inputsForPreset
+# V8 helper — the hand-mirrored R bodies cost 2x per theme change and
+# the two construction idioms drifted stylistically.
+# theme_inputs_from_wire() round-trips all nine presets VALUE-IDENTICAL
+# (fixpoint-verified across every field, tolerance 1e-9, 2026-06-11),
+# so the TS literal is now the single source of truth. Inputs are
+# cached per session; resolution work dominates the one V8 fetch.
+.preset_inputs_cache <- new.env(parent = emptyenv())
 
-  neutral_H <- if (length(neutral_hue_from) == 1L && is.na(neutral_hue_from)) {
-    0
-  } else if (identical(neutral_hue_from, "brand")) {
-    brand_t$H
-  } else {
-    hex_to_oklch(neutral_hue_from)$H
+.theme_from_preset <- function(name) {
+  inputs <- get0(name, envir = .preset_inputs_cache, inherits = FALSE)
+  if (is.null(inputs)) {
+    inputs <- theme_inputs_from_wire(ts_call("inputsForPreset", name))
+    assign(name, inputs, envir = .preset_inputs_cache)
   }
-
-  list(
-    paper  = list(L = paper_L, C = paper_C, H = neutral_H),
-    ink    = list(L = ink_L,   C = ink_C,   H = neutral_H),
-    brand  = brand_t,
-    accent = accent_t
-  )
+  th <- resolve_from_inputs(inputs, name = name)
+  # Web fonts are THEME-level (not inputs) and the URL table is TS-owned
+  # (preset-web-fonts.ts) — fetch through the same V8 seam so npm and R
+  # presets load identical fonts.
+  wf <- get0(paste0(name, ".webfonts"), envir = .preset_inputs_cache, inherits = FALSE)
+  if (is.null(wf)) {
+    raw <- tryCatch(ts_call("presetWebFonts", name), error = function(e) list())
+    wf <- lapply(raw, function(x) web_font(x[["family"]], x[["url"]]))
+    assign(paste0(name, ".webfonts"), wf, envir = .preset_inputs_cache)
+  }
+  if (length(wf) > 0L) th@web_fonts <- wf
+  th
 }
+
 #' NEJM theme - crimson brand + slate accent, classic medical serif.
 #' @return A [WebTheme].
 #' @export
 web_theme_nejm <- function() {
-  a <- derive_preset_anchors("#BD2F2F", "#1B5377")
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    border_preset = "frame",
-    type_scale_ratio = 1.25,
-    fonts_body = "'Lora', Georgia, serif",
-    fonts_display = "'Lora', Georgia, serif",
-    web_fonts = list(
-      web_font("Lora", FONT_URLS$lora)
-    ),
-    curves = list(brand = "smooth", neutral = "ease"),
-    # House style (area C): clinical significance affordances — p-value
-    # columns mark significance with stars and a pill; badges outlined.
-    # Mirrors the TS preset (parity-gated). Option keys are wire camelCase.
-    column_defaults = list(
-      pvalue = list(stars = TRUE, significantStyle = "pill"),
-      badge = list(outline = TRUE)
-    ),
-    name = "nejm"
-  )
+  .theme_from_preset("nejm")
 }
 #' Available theme presets, organized by category.
 #'

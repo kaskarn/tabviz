@@ -242,6 +242,11 @@ export function inputsForPreset(name: string): _ThemeInputs {
   return inputs;
 }
 
+/** The web fonts a named preset loads — the V8 seam R's GENERATED preset
+ *  constructors fetch alongside inputsForPreset (the URL table is
+ *  TS-owned: lib/theme/preset-web-fonts.ts). */
+export { presetWebFonts } from "../lib/theme/preset-web-fonts";
+
 // Contrast probe for the R-side `contrast_report(theme)` wrapper.
 import { apcaLc as _apcaLc, oklchToHex as _oklchToHex, oklchMix as _oklchMix } from "../lib/oklch";
 export { apcaContrast, apcaLc } from "../lib/oklch";

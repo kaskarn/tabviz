@@ -33,13 +33,15 @@ machinery actually fired. Read this before starting a cross-cutting arc.
    nothing in the type system says so. **Rule: new cell renderers put
    the svg half in its own pure module, registered from BOTH boots.**
 
-2. **Hand-duplicated R presets.** `column_defaults` had to be mirrored
-   by hand into three R files with exact camelCase keys. The parity
-   test catches value drift, but every theme change costs 2× and the
-   construction idioms differ (`defineInputs` vs `derive_preset_anchors`
-   + flat args). If preset churn continues post-1.0, generate the R
-   constructors from the TS literals (V8 at build time) instead of
-   mirroring.
+2. **Hand-duplicated R presets — RESOLVED (2026-06-11).** The nine R
+   constructors are GENERATED: `.theme_from_preset(name)` fetches the
+   TS literal via the `inputsForPreset` V8 seam (fixpoint-verified
+   value-identical across every preset and field) and resolves;
+   `derive_preset_anchors` and ~250 lines of mirrored bodies are gone.
+   Web fonts came along: the URL table moved to TS
+   (`preset-web-fonts.ts`) — which also FIXED a latent npm gap (TS
+   factories shipped `webFonts: []`; themeTerminal() never loaded
+   Space Mono for JS consumers). One source, both languages.
 
 3. **`devtools::install` is outside every loop.** The dropped
    `export(tabviz)` and the missing Collate entry both shipped silently

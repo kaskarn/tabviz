@@ -14,29 +14,5 @@
 #' @return A [WebTheme].
 #' @export
 web_theme_newsprint <- function() {
-  a <- derive_preset_anchors("#2C2C2C", "#5C8A3F",
-                             neutral_hue_from = "#B17D5F",
-                             paper_C = 0.016, ink_C = 0.018)
-  web_theme(
-    paper = a$paper, ink = a$ink, brand = a$brand, accent = a$accent,
-    categorical = "okabe_ito",
-    # C65: newspaper rows are tight — column-inches discipline.
-    density_factor = 0.95,
-    shell_texture = "grain",
-    type_scale_ratio = 1.2,
-    fonts_body = "'Frank Ruhl Libre', Georgia, serif",
-    fonts_display = "'Crimson Pro', Georgia, 'Times New Roman', serif",
-    web_fonts = list(
-      web_font("Frank Ruhl Libre", FONT_URLS$frank_ruhl_libre),
-      web_font("Crimson Pro", FONT_URLS$crimson_pro)
-    ),
-    curves = list(neutral = "smooth", brand = "log"),
-    # House style (area C): broadsheet restraint — muted ink stars,
-    # badges as small print bullets. Mirrors the TS preset.
-    column_defaults = list(
-      pvalue = list(stars = TRUE, starsColor = "ink2"),
-      badge = list(shape = "circle", size = "sm")
-    ),
-    name = "newsprint"
-  )
+  .theme_from_preset("newsprint")
 }

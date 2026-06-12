@@ -8,6 +8,7 @@
 //   `tabviz({ theme: "lancet" })` and the View Source emitter.
 
 import { buildTheme } from "./theme-adapter";
+import { presetWebFonts } from "./preset-web-fonts";
 import { PRESETS, preset } from "./theme-presets-inputs";
 import type { ThemeInputs } from "../../types/theme-inputs";
 import type { WebTheme } from "../../types/theme-resolved";
@@ -23,15 +24,24 @@ export type PresetName = keyof typeof PRESETS;
 // type-scale / density).
 // ────────────────────────────────────────────────────────────────────
 
-export const themeNejm          = (): WebTheme => buildTheme(PRESETS.nejm,       "nejm");
-export const themeLedger        = (): WebTheme => buildTheme(PRESETS.ledger,     "ledger");
-export const themeBrutalist     = (): WebTheme => buildTheme(PRESETS.brutalist,  "brutalist");
-export const themeAurora        = (): WebTheme => buildTheme(PRESETS.aurora,     "aurora");
-export const themeTerminal      = (): WebTheme => buildTheme(PRESETS.terminal,   "terminal");
-export const themeNewsprint     = (): WebTheme => buildTheme(PRESETS.newsprint,  "newsprint");
-export const themeBlueprint     = (): WebTheme => buildTheme(PRESETS.blueprint,  "blueprint");
-export const themeSynthwave     = (): WebTheme => buildTheme(PRESETS.synthwave,  "synthwave");
-export const themeDwarven       = (): WebTheme => buildTheme(PRESETS.dwarven,    "dwarven");
+/** Build a curated preset WITH its web fonts attached. Until 2026-06-11
+ *  the TS factories shipped `webFonts: []` (the URL table lived only in
+ *  R) — npm consumers' themeTerminal() never loaded Space Mono. The
+ *  table is now TS-owned (preset-web-fonts.ts); R presets inherit it
+ *  through generation. */
+export function presetTheme(name: PresetName): WebTheme {
+  return { ...buildTheme(PRESETS[name], name), webFonts: presetWebFonts(name) };
+}
+
+export const themeNejm          = (): WebTheme => presetTheme("nejm");
+export const themeLedger        = (): WebTheme => presetTheme("ledger");
+export const themeBrutalist     = (): WebTheme => presetTheme("brutalist");
+export const themeAurora        = (): WebTheme => presetTheme("aurora");
+export const themeTerminal      = (): WebTheme => presetTheme("terminal");
+export const themeNewsprint     = (): WebTheme => presetTheme("newsprint");
+export const themeBlueprint     = (): WebTheme => presetTheme("blueprint");
+export const themeSynthwave     = (): WebTheme => presetTheme("synthwave");
+export const themeDwarven       = (): WebTheme => presetTheme("dwarven");
 
 // ────────────────────────────────────────────────────────────────────
 // webTheme: custom theme constructor (mirrors R::web_theme)
@@ -114,6 +124,9 @@ export type ThemeRef =
 export function resolveThemeRef(ref: ThemeRef): WebTheme {
   if (typeof ref === "string") {
     // preset() falls back to NEJM for an unknown/deleted name (post-cull).
+    // Known names route through presetTheme so the web fonts attach
+    // (tabviz({theme: "terminal"}) loads Space Mono like themeTerminal()).
+    if (ref in PRESETS) return presetTheme(ref as PresetName);
     return buildTheme(preset(ref), ref);
   }
   if (isResolvedTheme(ref)) return ref;
