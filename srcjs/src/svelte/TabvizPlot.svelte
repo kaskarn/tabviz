@@ -465,6 +465,7 @@
     observer.observe(containerRef);
     observer.observe(scalableRef);
 
+
     // SYNCHRONOUS first measurement (sizing audit 2026-06-11): the
     // observer's first callback lands a frame late, so content-sized
     // tables (D19) painted left-aligned and then JUMPED to center when

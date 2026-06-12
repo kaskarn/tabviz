@@ -33,6 +33,13 @@ export const ROW_HOVER_OPACITY = 0.12; // 12%
 export const TEXT_MEASUREMENT = {
   /** Buffer for Canvas vs CSS text rendering differences */
   RENDERING_BUFFER: 4,
+  /** INTERIM (2026-06-12): composed cell types (interval/events) render
+   *  as span trees whose width exceeds their plain string by separator/
+   *  spacing chrome — string measurement (canvas or estimator) cannot
+   *  see it. This buffer covers the observed delta until per-type
+   *  composed-width behaviors land (the structural fix; see
+   *  hero-width-repro's header). */
+  COMPOSED_TEXT_BUFFER: 18,
 
   /** Default axis gap fallback (should match theme.spacing.axisGap default) */
   DEFAULT_AXIS_GAP: 12,

@@ -544,6 +544,17 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       document.fonts.ready.then(() => {
         doMeasurement(fontSize, dataFontKey, headerFontKey, columnWidths);
       });
+      // fonts.ready can resolve BEFORE the theme's webfont <link> is even
+      // injected (it settles the loading set at call time) — the hero
+      // measured Georgia and rendered Lora (2026-06-12). loadingdone
+      // fires per settle; re-measure then too. Self-removing listener so
+      // repeated measureAutoColumns calls don't stack.
+      const onLoadingDone = () => {
+        doMeasurement(fontSize, dataFontKey, headerFontKey, columnWidths);
+      };
+      document.fonts.addEventListener("loadingdone", onLoadingDone);
+      // Detach after the widget's realistic font-settle window.
+      setTimeout(() => document.fonts.removeEventListener("loadingdone", onLoadingDone), 15000);
     }
   }
 
@@ -621,20 +632,32 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         : 0;
 
       // Build the candidate-pool for the cells: skip header/spacer rows.
+      // Bold rows (row_bold styling, summary rows) measure at the bold
+      // key — measuring them at 400 under-budgeted the hero's overall-
+      // summary intervals by ~13px and they clipped (regression gate:
+      // hero-width-repro).
       const candidates: string[] = [];
+      const boldCandidates: string[] = [];
       for (const row of spec!.data.rows) {
         if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) continue;
         const text = getColumnDisplayText(row, col);
-        if (text) candidates.push(text);
+        if (text) (row.style?.bold ? boldCandidates : candidates).push(text);
       }
       maxWidth = Math.max(maxWidth, exactMax(candidates, dataFontKey, baseFontSize));
+      if (boldCandidates.length > 0) {
+        maxWidth = Math.max(maxWidth, exactMax(boldCandidates, headerFontKey, baseFontSize));
+      }
 
       maxWidth = Math.max(maxWidth, glyphNaturalWidth(col, spec!.data.rows));
 
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
+      // Composed cell types render span trees wider than their string —
+      // see TEXT_MEASUREMENT.COMPOSED_TEXT_BUFFER (interim).
+      const composedBuffer = (col.type === "interval" || col.type === "custom")
+        ? TEXT_MEASUREMENT.COMPOSED_TEXT_BUFFER : 0;
       const computedWidth = Math.min(
         AUTO_WIDTH.MAX,
-        Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
+        Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER + composedBuffer)),
       );
       target[col.id] = computedWidth;
     }

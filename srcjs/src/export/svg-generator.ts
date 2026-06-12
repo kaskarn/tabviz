@@ -466,7 +466,12 @@ export function calculateSvgAutoWidths(
       }
       const text = getColumnDisplayText(row, col);
       if (text) {
-        maxWidth = Math.max(maxWidth, measureTextWidth(text, fontSize, bodyFamily, 400));
+        // Bold rows (row_bold styling, summary rows) render wider than
+        // regular weight — the hero's overall-summary intervals clipped
+        // 13px when everything was measured at 400 (regression gate:
+        // hero-width-repro).
+        const weight = row.style?.bold ? 700 : 400;
+        maxWidth = Math.max(maxWidth, measureTextWidth(text, fontSize, bodyFamily, weight));
       }
     }
 
@@ -481,6 +486,9 @@ export function calculateSvgAutoWidths(
     // Use type-specific minimum for visual columns, else default minimum
     const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
     const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
+    // TEMP-DIAG2
+    // eslint-disable-next-line no-console
+    if (col.type === "interval") console.log("[iv-natural]", maxWidth, "→", computedWidth);
     widths.set(col.id, Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth)));
   }
 
