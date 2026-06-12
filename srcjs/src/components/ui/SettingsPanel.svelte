@@ -7,21 +7,18 @@
   // The panel is a two-part document on one vertical scroll:
   //
   //   PANEL BAR     settings · [Reset theme] · ✕
-  //   QUICK STRIP   preset echo + edited pip · Polarity · Density
-  //   THEME band    Tier-1 only (identity/surface/type + disclosures) —
-  //                 travels with the theme, re-resolves the cascade
-  //   FIGURE band   per-spec state (banding/watermark/row pins) on
-  //                 recessed paper, with its OWN scoped reset
+  //   THEME band    Tier-1 only — INTERIM shell while the D21 redesign
+  //                 builds Variations/Labels/Identity/Plots/Styling
+  //                 tab-by-tab (docs/dev/settings-redesign.md)
+  //   FIGURE band   per-spec state, with its OWN scoped reset
   //
   // Boundary law (DT-11): nothing in this tree writes a Tier-2/3 theme
   // path — deep editing lives in the studio. The grep gate in
   // settings-band-contract.test.ts enforces it.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
-  import QuickStrip from "./settings/QuickStrip.svelte";
   import ThemeBand from "./settings/ThemeBand.svelte";
   import FigureBand from "./settings/FigureBand.svelte";
-  import ComponentsBand from "./settings/ComponentsBand.svelte";
   // v2 design tokens — the primitives cascade off [data-tv-v2].
   import "$components/primitives/v2/tokens.css";
 
@@ -142,11 +139,14 @@
       </div>
     </div>
 
-    <QuickStrip {store} />
+    <!-- PHASE 0 (settings-redesign D21): the quick strip and components
+         band are REMOVED — Variations and Styling replace them, built
+         tab-by-tab per docs/dev/settings-redesign.md. The interim panel
+         is ThemeBand (Tier-1 sections, raw material for Identity) +
+         FigureBand (figure state, reshaped by the travel matrix). -->
     <div class="panel-body">
       <div class="theme-band">
         <ThemeBand {store} />
-        <ComponentsBand {store} />
       </div>
       <FigureBand {store} />
     </div>

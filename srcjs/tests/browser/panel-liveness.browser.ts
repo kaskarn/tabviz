@@ -488,22 +488,12 @@ async function run(): Promise<void> {
     // section's controls are mounted at once. The studio keeps real tabs.
     // The walk: verify the four nav links exist + scroll (live), expand
     // every disclosure once, then walk the WHOLE panel in one pass.
-    const verifyNavLinks = async (): Promise<void> => {
-      for (const label of ["identity", "color", "form", "effects"]) {
-        const found = await page.evaluate((t) => {
-          const links = [...document.querySelectorAll<HTMLElement>(
-            '.settings-panel [role="navigation"] button, .settings-panel [role="tab"]')];
-          const el = links.find((x) => (x.textContent || "").trim().toLowerCase() === t);
-          if (!el) return false;
-          el.click();
-          return true;
-        }, label);
-        if (!found) failures.push(`section link '${label}' not found`);
-        await settle();
-      }
-    };
-
-    await verifyNavLinks();
+    // PHASE 0 (settings-redesign D21): the jump-link nav is REMOVED —
+    // the interim panel is a plain section scroll while the real tabs
+    // (Variations/Labels/Identity/Plots/Styling) are built. The walk
+    // shrinks to the surviving shell; each new tab brings its own
+    // CONSEQUENCE harness (visible-pixel delta), which supersedes this
+    // fingerprint-liveness walk per the redesign plan.
     await expandDisclosures(page);
     await walkControls(".settings-panel", "single-scroll");
 

@@ -48,12 +48,10 @@
      *  When provided, the footer renders an "Edit in studio" button the
      *  host wires to a runtime-honest handoff (clipboard wire + Shiny
      *  request) instead of the dead `tabviz_studio(plot)` R-snippet text. */
-    onOpenStudio?: () => void;
     /** Extra content rendered at the END of the advanced section (compact
      *  host only, theme-rework Wave 2). The viewer injects its curated
      *  RoleTones here — kept OUT of this store-agnostic component so it can
      *  carry the store-wired callbacks. */
-    advancedExtra?: import("svelte").Snippet;
   }
   const {
     inputs,
@@ -63,8 +61,6 @@
     onpreview,
     showMatchBrand = false,
     onmatchbrand,
-    onOpenStudio,
-    advancedExtra,
   }: Props = $props();
 
   const roomy = $derived(layout === "roomy");
@@ -279,20 +275,17 @@
   // landing tab (the high-frequency "make it mine" anchors).
   type PanelTab = "identity" | "color" | "form" | "effects";
   let activeTab = $state<PanelTab>("identity");
-  // D16 (decided 2026-06-11, restoring the settings-overhaul lock): the
-  // SETTINGS host (compact) renders ALL sections in one scroll with the
-  // bar as sticky jump-links; the STUDIO (roomy) keeps content-switching
-  // tabs. `show()` is the one render gate.
+  // PHASE 0 (settings-redesign D21): D16's single-scroll jump-link nav
+  // is REMOVED from the compact (settings) host — the redesign brings
+  // REAL tabs (Variations/Labels/Identity/Plots/Styling) at the panel
+  // level. Compact renders a plain section scroll in the interim. The
+  // roomy host (dormant studio) keeps its content-switching tabs so the
+  // dormant build stays green.
   const singleScroll = $derived(layout === "compact");
   const show = (t: PanelTab): boolean => singleScroll || activeTab === t;
   let panelEl = $state<HTMLElement | null>(null);
   function tabClick(t: PanelTab): void {
     activeTab = t;
-    if (!singleScroll) return;
-    const reduce = typeof matchMedia !== "undefined"
-      && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    panelEl?.querySelector(`[data-t1-section="${t}"]`)
-      ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   }
   const TABS: ReadonlyArray<{ id: PanelTab; label: string; dot: string }> = [
     { id: "identity", label: "Identity", dot: "var(--v2-ink, #15140e)" },
@@ -311,18 +304,19 @@
   </div>
 {/if}
 
-<div class="tab-bar" class:sticky={singleScroll}
-     role={singleScroll ? "navigation" : "tablist"} aria-label="Theme controls">
+{#if !singleScroll}
+<div class="tab-bar" role="tablist" aria-label="Theme controls">
   {#each TABS as t (t.id)}
-    <button type="button" role={singleScroll ? undefined : "tab"} class="tab"
+    <button type="button" role="tab" class="tab"
             class:active={activeTab === t.id}
-            aria-selected={singleScroll ? undefined : activeTab === t.id}
-            tabindex={singleScroll ? 0 : (activeTab === t.id ? 0 : -1)}
+            aria-selected={activeTab === t.id}
+            tabindex={activeTab === t.id ? 0 : -1}
             onclick={() => tabClick(t.id)}>
       <span class="tab-dot" style:background={t.dot} aria-hidden="true"></span>{t.label}
     </button>
   {/each}
 </div>
+{/if}
 
 <div class="tab-panel" bind:this={panelEl}>
 {#if show("identity")}<div data-t1-section="identity"></div>
@@ -435,14 +429,6 @@
 
 {#if show("color")}<div data-t1-section="color"></div>
     <DisclosureField label="Color system" summary={colorSystemSummary} bind:open={colorSystemOpen}>
-      <EnumRow label="Mode"
-               value={inputs.mode ?? "standard"}
-               segments={[
-                 { value: "standard", label: "Std" },
-                 { value: "high-contrast", label: "HC", title: "High contrast" },
-                 { value: "reduced-transparency", label: "RT", title: "Reduced transparency" },
-               ]}
-               onchange={(v) => patch("mode", v as ThemeInputs["mode"])} />
       <Field label="Scheme" hint="Categorical palette for series slots 1+; slot 0 keeps brand identity.">
         <Dropdown value={inputs.categorical ?? ""}
                 ariaLabel="Categorical scheme"
@@ -515,30 +501,7 @@
     </DisclosureField>
 {/if}
 
-{#if show("color")}
-  {#if advancedExtra}
-    <Section title="Role tones" kicker="Tier 2 · Roles"
-             lede="Curated Tier-2 role nudges — cascade-safe, survives polarity & contrast. The full role spine lives in the studio.">
-      {@render advancedExtra()}
-    </Section>
-  {/if}
-{/if}
 </div>
-
-<!-- The handoff renders ONLY when the host wires a real action (onOpenStudio
-     → clipboard wire + Shiny request). The old `{:else}` printed a dead
-     `tabviz_studio(plot)` R-snippet with no live effect in a GUI — deleted
-     (A4 zero-dead-buttons). -->
-{#if !roomy && onOpenStudio}
-  <div class="studio-handoff">
-    <button type="button" class="studio-handoff-btn" onclick={onOpenStudio}>
-      Edit in studio →
-    </button>
-    <span class="studio-handoff-hint">
-      Per-role type, tokens, raw borders, role rebinding.
-    </span>
-  </div>
-{/if}
 
 <style>
   /* Micro-cap divider inside a disclosure body — tracked uppercase eyebrow
@@ -577,14 +540,6 @@
   .match-brand button:hover {
     background: var(--v2-hover-tint, rgba(21,20,14,0.05));
     color: var(--v2-ink, #15140e);
-  }
-  /* ── Axis-tab bar (UX redesign A3) — replaces the long scroll + the
-     "Advanced controls" junk-drawer with four orienting tabs. ── */
-  .tab-bar.sticky {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: inherit;
   }
   .tab-bar {
     display: flex;
@@ -627,30 +582,4 @@
   }
   .tab.active .tab-dot { opacity: 1; }
   .tab-panel { display: flex; flex-direction: column; }
-  .studio-handoff {
-    display: flex;
-    align-items: center;
-    gap: var(--v2-gap-small, 6px);
-    padding: 8px 0 12px;
-    flex-wrap: wrap;
-  }
-  .studio-handoff-btn {
-    font-size: var(--v2-text-body, 11.5px);
-    padding: 3px 10px;
-    border: 1px solid var(--v2-rule, #d6d0c1);
-    border-radius: var(--v2-r-soft, 3px);
-    background: transparent;
-    color: var(--v2-ink-2, #4a463c);
-    cursor: pointer;
-    flex: none;
-  }
-  .studio-handoff-btn:hover {
-    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
-    color: var(--v2-ink, #15140e);
-  }
-  .studio-handoff-hint {
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
-    min-width: 0;
-  }
 </style>

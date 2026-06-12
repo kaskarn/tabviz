@@ -101,7 +101,21 @@ control per concern per layer; a pointer instead of a duplicate.
 
 ## The plan
 
-**Phase 0 — REMOVAL (complete before adding a single frontend element).**
+**Phase 0 — REMOVAL — EXECUTED 2026-06-12.** Removed: QuickStrip (file +
+mount), ComponentsBand (file + mount; ComponentsEditor/RoleChipGrid
+files remain for the dormant studio build), RoleTones (file + the
+advancedExtra host slot + the "Role tones" section), the Edit-in-studio
+button + clipboard/Shiny handoff plumbing, the HC/RT mode control in
+Color system (D21 ruling 10), and D16's compact single-scroll jump-link
+nav (compact renders a plain section scroll in the interim; the dormant
+studio keeps its roomy content tabs so its build stays green). The
+"Studio overrides" disclosure became "Carried overrides" (the per-pin/
+override RELEASE affordance survives — its home until Styling lands).
+Verified: svelte-check 0/0, lint 0 warnings, units green,
+settings-band-contract 22/22, interaction-qa 17/17, panel-liveness
+shrunk to the surviving shell (62 controls live, 4 allow-listed),
+widget + studio builds green. Original spec follows:
+(complete before adding a single frontend element).
 Delete from the panel: the role-tones band (arbitrary foursome), the
 components band (returns redesigned in Styling), "Edit in studio" +
 studio-overrides chrome, the color-system HC control, the quick strip
