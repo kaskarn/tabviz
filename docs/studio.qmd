@@ -68,6 +68,13 @@ format:
           </style>
 ---
 
+::: {.callout-note}
+**The studio is dormant.** It will be rebuilt after the core settings
+UX redesign lands (see the dev plan) — the redesign supersedes its
+current surface. This page remains for reference; nothing here is a
+stable API.
+:::
+
 ```{r setup-studio-assets}
 #| include: false
 #| echo: false

@@ -422,6 +422,17 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 — **SETTINGS UX TOTAL REDESIGN OPENED** (D21; canonical
+  record docs/dev/settings-redesign.md). The maintainer's layer
+  taxonomy locks five surfaces (Variations · Labels · Identity ·
+  Plots · Styling); old panel + studio presentation superseded
+  (substrate unchanged). Studio DORMANT (D22, de-documented); a11y
+  polish deferred to pre-CRAN (D24); polarity-as-variation open as D23
+  (9-preset flipped battery before Variations ships). Plan: Phase 0
+  removal first — nothing new until the old surfaces are gone — then
+  tab-by-tab with a consequence gate (visible-pixel delta) replacing
+  fingerprint liveness as the merge bar.
+
 - 2026-06-12 (early) — R presets GENERATED from the TS literals
   (propagation flag #2 resolved; −231 net lines): fixpoint-verified
   value-identical imports, web-font URL table moved to TS as single

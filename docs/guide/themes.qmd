@@ -227,8 +227,6 @@ Two ways to override:
   set_theme_field(t, c("semantic", "fill"), "#1F3A5F")  # custom fill navy
   ```
 
-  Or interactively: in the studio's **Token pins** panel (the settings
-  panel stays Tier-1-only — deep token edits live in the studio).
 
 * **Per-bundle override** for any field on any token:
 
@@ -237,9 +235,6 @@ Two ways to override:
   set_theme_field(t, c("row", "fill",   "fg"),     "#FFFFFF")  # force white text on fill rows
   set_theme_field(t, c("row", "accent", "border"), "#C8553D")  # red border on accent rows
   ```
-
-  Or interactively: studio **Token pins** — pin any manifest token to a
-  direct value; per-pin release reverts to the resolved default.
 
 ### Variants — three knobs every table can flip
 
@@ -265,14 +260,14 @@ You can also set variants directly on the `tabviz()` call as overrides (see [tab
 ## The three editing verbs — and what each edit travels with
 
 Every theme-editing surface in tabviz — the R modifiers, the widget's
-settings panel, the studio — performs exactly one of three verbs. Knowing
+settings panel — performs exactly one of three verbs. Knowing
 which verb you're using tells you how far the edit reaches and how it
 behaves when the theme changes around it.
 
 | Verb | What it does | Reach | Functions |
 |---|---|---|---|
 | **Re-tune a role** | Change what a named role *means* (`text-muted` → a darker grade; the `footnote` type role → a smaller step) | **Global** — everything bound to that role follows | `set_role()`, `set_type_role()`, `set_corners()`, `set_rules()` |
-| **Re-route a component channel** | Point one component's channel at a *different* role (`title` color → `accent-text`; `axis-label` family → `numeric`) | **Local** to that component — but still cascade-coherent: the routed role keeps re-resolving under polarity flips, anchor edits, and high-contrast mode | `set_component()`, the settings panel's *Components* band, the studio's components page |
+| **Re-route a component channel** | Point one component's channel at a *different* role (`title` color → `accent-text`; `axis-label` family → `numeric`) | **Local** to that component — but still cascade-coherent: the routed role keeps re-resolving under polarity flips, anchor edits, and high-contrast mode | `set_component()` (the interactive surface is being redesigned) |
 | **Pin** | Hard-code one token to a raw value (`--tv-text-footnote-size: "0.7rem"`) | Local and **inert** — a pinned value ignores polarity, anchors, and accessibility modes. Last resort. | `set_pin()` |
 
 ```{r}
@@ -295,7 +290,7 @@ follows you:
 
 * **Theme** — roles, re-routes, pins, fonts, density. Travels with the
   portable theme artifact (`theme_to_wire()` / `write_theme()`, the
-  studio's export). Send the JSON to a colleague and every edit arrives.
+  interactive export). Send the JSON to a colleague and every edit arrives.
 * **Figure** — column widths and order, row-kind height pins, banding
   override, watermark. Rides the spec (`spec.figureLayout`), survives
   data updates, round-trips through Shiny via `set_figure_layout()`.
@@ -542,30 +537,13 @@ See the [Gallery → LOTR Easter Egg](../gallery/lotr.qmd) page for a worked LOT
 Two surfaces, deliberately split — and the settings panel itself is
 **task-framed**: lean by default, with depth one click away.
 
-* **The widget settings panel** (cog) leads with the high-frequency
-  "make it mine" task — the **identity anchors** (paper / ink / brand /
-  accent + status, each with an LCH editor) — alongside polarity and
-  density in the quick strip. One **Advanced controls** toggle reveals
-  the rest of the Tier-1 surface (shell, header style, border preset,
-  texture, type scale, color system, effects, geometry) plus **role
-  tones** — a curated, cascade-safe rung for nudging muted / subtle /
-  alt-row / border tones lighter or darker (it rebinds Tier-2 roles, so
-  it survives polarity and high-contrast — *not* a raw pin). An **Edit
-  in studio →** button copies the portable theme wire to the clipboard
-  (and, in Shiny, posts a `tabviz_studio_request` input — see
-  `?tabviz_studio`) so you can reopen it with
-  `tabviz_studio(read_theme("<paste>"))`. The panel's **This figure**
-  band carries per-figure state (contrast, banding, watermark, row
-  pins) with its own scoped reset, and a carried-pin banner warns when
-  an imported theme hard-codes tokens.
-* **The Studio** ([open it here](../studio.qmd)) is the superset for
-  *total* control: the same Tier-1 controls (roomier face) **plus** the
-  live Tier-2 **role spine** (drag — or arrow-key — a role across ramps
-  and grades; ⌫ resets one), token pins, a pin-aware validate matrix,
-  50-step undo, and the live cascade visualization. **Alt+click any
-  element in the preview** to trace which theme token paints it. "Copy R
-  code" exports your edits as a reproducible `web_theme()` / `set_*()`
-  chain — including `set_role()` rebinds and `set_pin()` token pins.
+* **The in-widget settings panel is being REDESIGNED** around five
+  surfaces (Variations · Labels · Identity · Plots · Styling — the
+  layered-engagement model in `docs/dev/settings-redesign.md`). Until
+  it lands, treat the R verbs above as the stable editing surface; the
+  current panel's sections are historical and not worth learning.
+* **The studio is dormant** — it will be rebuilt after the core
+  settings UX lands.
 
 Discover the bindable roles from R with `list_roles()` (the `set_role()`
 companion) and the pinnable tokens with `list_component_tokens()` (the
@@ -587,16 +565,14 @@ Both editing surfaces export and import **one** portable artifact:
 
 * `inputs` are the Tier-1 authoring values — everything the settings
   panel writes.
-* `roleOverrides` (studio spine / settings role-tones / `set_role()`)
-  and `pins` (studio token pins / `set_pin()`) are the optional
+* `roleOverrides` (`set_role()`) and `pins` (`set_pin()`) are the optional
   total-control members; a settings-only export simply carries them
   empty. Role bindings serialize as stable **name aliases**
   (`"brand.8"` = ramp `brand`, grade 8) — DTCG-shaped and
   rename-migratable; the legacy `{ "ramp": "brand", "grade": 8 }`
   coordinate form is still read back.
-* The settings panel's **export / import** buttons, the studio's
-  "Copy JSON" / "Download .json" / "Save as…", and R's
-  `read_theme()` all speak this envelope; `theme_from_wire()` resolves
+* Every egress and ingress — the interactive surfaces and R's
+  `read_theme()` — speaks this envelope; `theme_from_wire()` resolves
   one into a `WebTheme`. Files written by the resolved-blob
   `write_theme()` form are also read back transparently.
 

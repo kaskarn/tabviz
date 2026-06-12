@@ -1,0 +1,134 @@
+# Settings UX — total redesign (locked 2026-06-12)
+
+Status: **the canonical record.** The shipped settings panel and the
+studio are SUPERSEDED — they grew by accretion across four arcs (one
+presentation idiom per arc) and failed the maintainer's review on every
+axis: unwired/inert controls, internal vocabulary in chrome
+("(recipe)"), arbitrary curation (the role-tones foursome), redundancy
+without commitment to idioms, no preview in pickers, no legibility
+strata, and special-cases (first-column) surfacing as first-class UI.
+Nothing in the old presentation layer is load-bearing for this rebuild;
+the SUBSTRATE (three verbs, cascade, token manifest, store verbs, wire
+envelope, undo) is sound and unchanged.
+
+## The layer model (maintainer-authored)
+
+| Surface | Layer | Contents | Semantics |
+|---|---|---|---|
+| **Variations** | 1 | polarity · density · banding · header tint/bold · title variants · shell · effects · border style · stroke/fill style · text size + scaling sliders | **Theme-blessed mode selection.** Every flip does what the THEME says should happen in that mode. Nothing freeform. |
+| **Labels** | 1b | content + location of title / subtitle / caption / footer (once supported) · watermark | Figure content. Figure travel. |
+| **Identity** (Edit theme) | 2 | color identity sliders · typography families · geometry | Tier-1 identity editing; cascade re-resolves. |
+| **Plots** (Edit theme) | 3 | per-series marker shape, fill color, stroke color (roster TBD as viz grows) | **Deliberately freeform — users may break the theme's series logic.** The once-in-a-blue-moon escape hatch. |
+| **Styling** (Edit theme) | 4 | detailed spacing (moved from L2) · role remapping · token remapping | Expert wiring. Spacing FIRST in section order (more arrivals via the density signpost than role remappers). |
+
+Tab structure: `Variations | Labels | {Edit theme: Identity | Plots | Styling}`.
+
+**The signpost pattern** (kills redundancy structurally): an L1 control
+with a deeper sibling carries a caption pointing at it — e.g. the
+density segmented control reads *"advanced control in Styling"*. One
+control per concern per layer; a pointer instead of a duplicate.
+
+## Decisions (each maintainer-ruled, 2026-06-11/12 discussion)
+
+1. **Layer × surface mapping** as above. Five tabs, two everyday + an
+   Edit-theme cluster of three.
+2. **L1 semantics**: mode selection within the theme — "do what the
+   theme says should happen in that mode."
+3. **L3 is uncurated**: per-series overrides may break the
+   accent/secondary ornament principle; that is accepted ("can come in
+   handy once in a blue moon").
+4. **Detailed spacing**: L2 → L4 (Styling), with the L1 density caption
+   signposting it.
+5. **Polarity is an L1 variation** (amends the manifesto's
+   "single-mode theme" stance): derive the flipped mode via the
+   existing reflection machinery by default; a theme may PIN a single
+   polarity where the flip is aesthetic nonsense (the control then
+   hides — consequence-or-absence). Pending: eyeball all 9 presets
+   flipped before claiming theme-blessing (register D23).
+6. **Borders + stroke/fill (slot_style)** ship in Variations AS-IS
+   behind honest labels; each gets its own short design note for a v2
+   vocabulary (both APIs ruled ineffective — borders are three
+   half-APIs for one concept; slot_style is invisible on most
+   fixtures). The panel arc does NOT absorb these redesigns.
+7. **Studio: DEAD (dormant).** De-documented (front-page CTA + navbar
+   removed; dormancy notice on its page). Reborn after the core UX
+   lands, carrying forward the lossless round-trip + validate-matrix
+   lessons. Its harness stays passing but is not extended.
+8. **A11y POLISH deferred to immediately-before-CRAN** (pragmatic: it
+   needs user feedback, which needs a stable design under it). The
+   landed ARIA floor (table semantics, keyboard sort, reduced motion)
+   stays — this defers further investment, not the floor.
+9. **Placeholder title regions** (shaded clickable empty slots on
+   key+hover): TABLED — real estate too precious to spend
+   unilaterally on settings-open.
+10. **View state stays in the toolbar**, out of the panel (zoom / fit /
+    reader contrast toggle — localStorage travel, reader-owned). The
+    authoring-side "color system → HC" control DIES.
+11. **First-column channels in Styling are blocked on D20**: the wiring
+    tab faithfully exposes whatever the theme system declares, so the
+    label-column ontology discussion gates what appears there.
+
+## First principles (derived from the critique; bind every build PR)
+
+1. **Consequence or absence** — every visible control changes visible
+   pixels in the CURRENT figure, now; controls for absent features
+   don't render. (Liveness ≠ meaningfulness — the old gate measured
+   operability only.)
+2. **Preview before commit** — no blind pickers. Swatches, type
+   specimens, mini-previews; discrete expressive pickers (e.g. a
+   stepped weight slider) over dropdowns.
+3. **One idiom per value type** — color → filtered swatch row; weight →
+   discrete slider; enum → segmented with specimen. Never two idioms
+   for the same type.
+4. **No internal vocabulary in chrome** — resolver-group names
+   ("recipe"), tier numbers, role coordinates: banned from user-facing
+   text.
+5. **Curation must be derivable** — anything "featured" comes from a
+   stated rule, never an arc's leftover judgment.
+6. **Channel pickers filter by kind** — a text channel offers text
+   roles only (and then doesn't need to say "this is a text kind").
+
+## Open inputs the build needs
+
+- **Layer × travel matrix** (which choices ride the theme artifact vs
+  figure state vs view state) — write before Variations lands; the
+  lean: reader flips persist as FIGURE state, theme-travel only on
+  author export.
+- **D23 polarity battery** — 9 presets flipped, eyeballed, pin-or-bless
+  each.
+- **D20 label-column discussion** — gates Styling's component roster.
+- Border + slot_style v2 design notes (separate docs).
+
+## The plan
+
+**Phase 0 — REMOVAL (complete before adding a single frontend element).**
+Delete from the panel: the role-tones band (arbitrary foursome), the
+components band (returns redesigned in Styling), "Edit in studio" +
+studio-overrides chrome, the color-system HC control, the quick strip
+(superseded by Variations), the Advanced-controls disclosure structure,
+D16's single-scroll nav. Retire `settings-band-contract` walks that
+gate removed structures (keep the tier-write rule itself). The
+panel-liveness harness shrinks to the surviving shell until tabs land.
+Old sections die in code, not behind flags.
+
+**Phases 1–5 — build tab by tab, in order: Variations → Labels →
+Identity → Plots → Styling.** Each tab's exit gate:
+- every control passes **consequence** (visible pixel delta in the
+  rendered fixture — a NEW harness check, not DOM-fingerprint
+  liveness);
+- idioms conform to the principle table;
+- vocabulary audit clean;
+- travel verified against the matrix;
+- nothing superfluous (a control without a consequence test does not
+  merge).
+
+Validation cadence per tab: screenshot battery across ≥3 presets +
+the consequence harness + the standing gates (wysiwyg, interaction-qa).
+
+## What this supersedes
+
+The settings-overhaul plan (two-band panel), D16 single-scroll, the
+role-tones curation, the studio's Stage-2/3 component editor surfaces
+(the STORE verbs survive), and the panel sections of
+`interactivity-ux-plan.md`. Those documents stay as history; this one
+is current.
