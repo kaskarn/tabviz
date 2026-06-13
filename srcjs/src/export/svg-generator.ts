@@ -2136,7 +2136,13 @@ function renderInterval(
     const cx = xScale(effect.point!);
     const style = getEffectStyle(effect, idx);
     const pointSize = getPointSize(idx === 0);
-    const lineColor = semanticLineColor ?? defaultLineColor;
+    // Per-slot CI line stroke (idx), mirroring the live RowInterval fix:
+    // each effect's line follows its OWN series slot's stroke, not slot 0
+    // — multi-effect forests distinguish series by line color and the
+    // Plots per-series stroke control reaches every series. WYSIWYG: DOM
+    // + export changed together (CLAUDE.md rule).
+    const slotLineColor = (theme.series?.[idx] as { stroke?: string } | undefined)?.stroke ?? defaultLineColor;
+    const lineColor = semanticLineColor ?? slotLineColor;
 
     if (isSummaryRow) {
       // Summary row: render diamond shape spanning lower to upper.

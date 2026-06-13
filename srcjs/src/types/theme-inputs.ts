@@ -200,6 +200,22 @@ export interface ThemeInputs {
     interval_weight?: "hair" | "regular" | "thick";
   };
 
+  /** Per-series viz OVERRIDES (settings-redesign Phase 4 / Layer 3 — the
+   *  freeform escape hatch). A sparse array indexed by SERIES SLOT (0 =
+   *  first series in every viz column, 1 = second, …): override the
+   *  resolved fill / stroke hex and/or marker shape for that slot.
+   *  Applied AFTER the `slot_style` derivation; a fill/stroke override
+   *  re-derives its dim/hot variants so the bundle stays coherent.
+   *  Breakage is DELIBERATELY ALLOWED (D21 ruling 3) — this bypasses the
+   *  accent/secondary ornament principle on purpose. UNTRUSTED ingress:
+   *  hex grammar + shape enum gated at every ingress; invalid leaves are
+   *  dropped. Empty / all-null = the cascade-derived series stand. */
+  series_overrides?: Array<{
+    fill?: string;
+    stroke?: string;
+    shape?: "circle" | "square" | "diamond" | "triangle";
+  } | null>;
+
   /** Series viz mark style. Drives how each series slot's fill / stroke
    *  pair derives from the slot's anchor color.
    *    fill_with_darker_stroke — saturated fill + darker stroke (default)

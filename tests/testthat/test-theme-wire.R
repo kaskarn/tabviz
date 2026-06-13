@@ -107,6 +107,30 @@ test_that("banding + banding_start are Tier-1 inputs that survive the wire", {
   expect_error(web_theme(banding_start = "stripey"))
 })
 
+test_that("series_overrides survive the inputs wire + sanitize on import", {
+  th <- web_theme(series_overrides = list(
+    list(fill = "#ff0000", shape = "diamond"),
+    NULL,
+    list(stroke = "#00aa00")
+  ))
+  w <- tabviz:::theme_inputs_to_json(th@inputs)
+  expect_equal(w$series_overrides[[1]]$fill, "#ff0000")
+  expect_equal(w$series_overrides[[1]]$shape, "diamond")
+  expect_equal(w$series_overrides[[3]]$stroke, "#00aa00")
+  back <- tabviz:::theme_inputs_from_wire(w)
+  expect_equal(back@series_overrides[[1]]$fill, "#ff0000")
+  expect_equal(back@series_overrides[[3]]$stroke, "#00aa00")
+  # Untrusted import drops a malicious fill (attribute-breaking) + an
+  # unknown shape, keeps the clean siblings.
+  dirty <- list(series_overrides = list(
+    list(fill = "#abc\" onload=x", stroke = "#112233", shape = "blob")
+  ))
+  cleaned <- tabviz:::theme_inputs_from_wire(dirty)
+  expect_null(cleaned@series_overrides[[1]]$fill)
+  expect_equal(cleaned@series_overrides[[1]]$stroke, "#112233")
+  expect_null(cleaned@series_overrides[[1]]$shape)
+})
+
 test_that("set_role validates ramp and grade", {
   expect_error(set_role(web_theme_nejm(), "text-muted", "rainbow", 3))
   expect_error(set_role(web_theme_nejm(), "text-muted", "brand", 0))

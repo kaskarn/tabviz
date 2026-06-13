@@ -234,8 +234,37 @@ re-pointed at the new tab files. The Edit-theme CLUSTER chrome (inner
 Identity | Plots | Styling tab row) lands with Phase 4 — one inner tab
 needs no inner chrome.
 
-**Phases 4–5 — build tab by tab, in order:
-Plots → Styling.** Each tab's exit gate:
+**Phase 4 — PLOTS — EXECUTED 2026-06-12.** The "edit theme" top-tab
+became an inner CLUSTER (`EditThemeCluster`: inner tab row Identity |
+Plots — the inner chrome appears now that a SECOND inner tab exists)
+and gained `PlotsTab` (L3 — per-series viz control): one row per series
+slot the figure actually renders (deepest effect stack across its viz
+columns), each with a shape picker + fill + stroke swatch.
+DELIBERATELY FREEFORM (D21 ruling 3). NEW SUBSTRATE: `series_overrides`
+— a sparse theme-input array indexed by series slot
+(`{ fill?, stroke?, shape? }`), overlaid in the adapter AFTER the
+slot_style derivation (fill/stroke re-derive dim/hot for coherence;
+hex gated defensively). Full parity: TS type + validate (hex grammar +
+shape enum, XSS-relevant) + adapter overlay + 3 unit tests; R S7 list
+slot + structural validator + verbatim serialize (I()-wrapped) +
+sanitizing import (hex/shape filter, slot position preserved) +
+`web_theme(series_overrides=)` + round-trip test. REAL RENDERER BUG
+the consequence harness surfaced and FIXED: multi-effect forest CI
+lines hardcoded `series[0].stroke`, so every series drew slot-0's line
+color and the per-series stroke control was inert (stroke-1 = 1px) —
+now `series[idx].stroke`, fixed in BOTH the DOM (RowInterval) and the
+SVG export (svg-generator) together (WYSIWYG gate + forest-marks green;
+single-effect forests unchanged since idx≡0). Consequence harness
+gained select/dropdown/Swatch-hex ops, per-slot distinct colors (two
+series' lines overlap — same hue showed nothing), and the fixture moved
+its point estimates to HR 0.2–0.4 with a pinned [0,1] axis so the
+markers fall LEFT of the panel and are observable (they sat behind the
+panel at HR≈1.0). 45 controls + both reset travels green; liveness 76
+repaints (Plots shape segments included); a Plots inner-tab walk added
+to liveness. The Identity scheme-picker's hasMultiSeries gate (Phase 3)
+now has live coverage via the fixture's 2-effect forest.
+
+**Phase 5 — STYLING.** The final tab. Exit gate:
 - every control passes **consequence** (visible pixel delta in the
   rendered fixture — a NEW harness check, not DOM-fingerprint
   liveness);

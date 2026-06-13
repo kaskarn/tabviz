@@ -422,6 +422,16 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 — **SETTINGS REDESIGN PHASE 4 (PLOTS) LANDED.** "Edit
+  theme" is now an inner cluster (Identity | Plots); PlotsTab gives
+  per-series shape/fill/stroke control (L3 freeform). NEW substrate:
+  series_overrides theme-input (full TS+R+wire parity, hex/shape
+  gated). REAL renderer bug fixed (harness-surfaced): multi-effect
+  forest CI lines hardcoded series[0].stroke — now per-slot, in DOM +
+  export together (WYSIWYG + forest-marks green). 45 controls + both
+  resets green; liveness 76 repaints. Record: settings-redesign.md
+  Phase 4.
+
 - 2026-06-12 — **SETTINGS REDESIGN PHASE 3 (IDENTITY) LANDED.** Real
   IdentityTab (anchors + status + monochrome + font families + geometry
   + data scheme) replaces the interim ThemeBand (deleted; Tier1Sections

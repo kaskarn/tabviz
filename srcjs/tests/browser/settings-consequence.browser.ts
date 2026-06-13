@@ -60,11 +60,17 @@ const ONLY = (() => {
 })();
 
 function buildSpec(): unknown {
+  // Point estimates deliberately SMALL (0.2–0.4) so the forest markers
+  // fall in the LEFT half of the plot region — the part visible left of
+  // the 400px settings panel. With HR near 1.0 the markers sat at the
+  // right of the plot, behind the panel, and the Plots fill/shape walk
+  // measured them off-screen (1px). The axis is pinned [0,1] to keep the
+  // mapping stable.
   const rows = [
-    { study: "Alpha One", grp: "Group A", n: 240, hr: 0.72, lo: 0.55, hi: 0.94, hr2: 0.81, lo2: 0.66, hi2: 1.0, p: 0.004 },
-    { study: "Alpha Two", grp: "Group A", n: 410, hr: 0.91, lo: 0.78, hi: 1.06, hr2: 0.97, lo2: 0.84, hi2: 1.12, p: 0.21 },
-    { study: "Beta One", grp: "Group B", n: 150, hr: 0.66, lo: 0.44, hi: 0.99, hr2: 0.74, lo2: 0.52, hi2: 1.05, p: 0.04 },
-    { study: "Beta Two", grp: "Group B", n: 380, hr: 0.83, lo: 0.69, hi: 1.0, hr2: 0.88, lo2: 0.74, hi2: 1.05, p: 0.05 },
+    { study: "Alpha One", grp: "Group A", n: 240, hr: 0.24, lo: 0.16, hi: 0.34, hr2: 0.31, lo2: 0.22, hi2: 0.42, p: 0.004 },
+    { study: "Alpha Two", grp: "Group A", n: 410, hr: 0.30, lo: 0.21, hi: 0.40, hr2: 0.37, lo2: 0.27, hi2: 0.48, p: 0.21 },
+    { study: "Beta One", grp: "Group B", n: 150, hr: 0.20, lo: 0.12, hi: 0.30, hr2: 0.27, lo2: 0.18, hi2: 0.37, p: 0.04 },
+    { study: "Beta Two", grp: "Group B", n: 380, hr: 0.28, lo: 0.19, hi: 0.38, hr2: 0.34, lo2: 0.24, hi2: 0.45, p: 0.05 },
   ];
   return tabviz({
     data: rows,
@@ -84,6 +90,7 @@ function buildSpec(): unknown {
           effectForest({ point: "hr", lower: "lo", upper: "hi", label: "Primary" }),
           effectForest({ point: "hr2", lower: "lo2", upper: "hi2", label: "Adjusted" }),
         ],
+        axisRange: [0, 1],
         header: "HR (95% CI)",
       }),
       colPvalue({ field: "p", header: "P" }),
@@ -304,7 +311,20 @@ async function main(): Promise<void> {
           "anchor-paper": "#f2e8da", "anchor-ink": "#20262e",
           "anchor-brand": "#9a1c1c", "anchor-accent": "#0e7a5f",
         };
-        const typed = HEXES[id] ?? (id.includes("color") ? "#cc2200" : `Walked ${id}`);
+        // Swatch hex fields (watermark color, Plots fill/stroke) reject
+        // non-hex — feed them a valid color. The color must be DISTINCT
+        // per slot: two series' interval lines overlap, so painting
+        // slot-1's stroke the same hue as slot-0's already-painted line
+        // showed nothing (a false 1px fail). Vary by the trailing slot #.
+        const wantsHex = id.includes("color") || id.startsWith("fill-") || id.startsWith("stroke-");
+        const slotN = parseInt(id.split("-").pop() ?? "0", 10) || 0;
+        const FILLS = ["#cc2200", "#8800cc", "#aa6600"];
+        const STROKES = ["#0033cc", "#cc00aa", "#007722"];
+        const typed = HEXES[id]
+          ?? (id.startsWith("fill-") ? FILLS[slotN % FILLS.length]
+            : id.startsWith("stroke-") ? STROKES[slotN % STROKES.length]
+            : id.includes("color") ? "#cc2200"
+            : `Walked ${id}`);
         await page.keyboard.type(typed, { delay: 5 });
         await page.keyboard.press("Enter");
         await settle(page);
@@ -399,9 +419,23 @@ async function main(): Promise<void> {
   await walk("data-lt");
 
   // ── IDENTITY tab (Phase 3) — Tier-1 identity, theme travel ─────────
+  // "edit theme" lands on the Identity inner tab by default.
   await gotoTab("edit theme");
   if (!(await page.$("[data-it]"))) throw new Error("Identity tab has no [data-it] controls");
   await walk("data-it");
+
+  // ── PLOTS inner tab (Phase 4) — per-series viz, theme travel ───────
+  const innerOk = await page.evaluate(() => {
+    const t = [...document.querySelectorAll<HTMLElement>(".settings-panel .inner-strip [role=tab]")]
+      .find((b) => (b.textContent || "").trim() === "plots");
+    if (!t) return false;
+    t.click();
+    return true;
+  });
+  if (!innerOk) throw new Error("Plots inner tab not found under edit theme");
+  await settle(page, 250);
+  if (!(await page.$("[data-pt]"))) throw new Error("Plots tab has no [data-pt] controls (fixture needs a viz series)");
+  await walk("data-pt");
 
   // Reset-figure travel: every Labels write is FIGURE state — the scoped
   // reset (on the this-figure tab) must revert the typed labels +

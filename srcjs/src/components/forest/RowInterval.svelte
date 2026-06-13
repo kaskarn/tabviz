@@ -283,7 +283,12 @@
         {@const style = getEffectStyle(effect, idx)}
         {@const pointSize = getEffectSize(idx === 0)}
         {@const semanticStroke = semanticStrokeFor(row.style, theme)}
-        {@const lineColor = semanticStroke ?? theme?.series?.[0]?.stroke ?? "#475569"}
+        <!-- Each effect's CI line follows its OWN series slot's stroke
+             (idx), not slot 0 — multi-effect forests now distinguish
+             series by line color, and the Plots tab's per-series stroke
+             control reaches every series (was hardcoded slot 0; the
+             consequence harness caught stroke-1 as inert). -->
+        {@const lineColor = semanticStroke ?? theme?.series?.[idx]?.stroke ?? theme?.series?.[0]?.stroke ?? "#475569"}
         {@const mutedOp = semanticMarkOpacity(effectiveStyleForMarker)}
         {@const fillOp = mutedOp ? style.opacity * mutedOp.fill : style.opacity}
         {@const strokeOp = mutedOp ? mutedOp.stroke : 1}

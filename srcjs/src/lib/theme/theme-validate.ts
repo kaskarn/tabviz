@@ -18,7 +18,7 @@
  * synthetic high-saturation colors.
  */
 
-import { contrastRatio } from "../oklch";
+import { contrastRatio, isValidHex } from "../oklch";
 import { INTERACTION_FLAG_KEYS } from "../interaction-resolve";
 import type { WebTheme } from "../../types/theme-resolved";
 import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
@@ -338,6 +338,33 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
       checkEnum(rec.family, TYPE_FAMILY_VALUES, `type_roles.${role}.family`, p);
       checkEnum(rec.size, TYPE_SIZE_VALUES, `type_roles.${role}.size`, p);
       checkEnum(rec.weight, TYPE_WEIGHT_VALUES, `type_roles.${role}.weight`, p);
+    }
+  }
+
+  // Per-series viz overrides (Phase 4 / L3): sparse array, each entry
+  // null or { fill?, stroke? (valid hex), shape? (enum) }. UNTRUSTED:
+  // invalid hex / unknown shape flagged here; the adapter ALSO drops
+  // invalid hex defensively. Hex reaches exported SVG attributes → the
+  // grammar gate is an XSS defense (same rule as pins).
+  if (inputs.series_overrides !== undefined) {
+    if (!Array.isArray(inputs.series_overrides)) {
+      p.push({ path: "series_overrides", code: "shape", message: "series_overrides must be an array indexed by series slot" });
+    } else {
+      inputs.series_overrides.forEach((ov, i) => {
+        if (ov == null) return;
+        if (typeof ov !== "object") {
+          p.push({ path: `series_overrides[${i}]`, code: "shape", message: `series_overrides[${i}] must be null or an object` });
+          return;
+        }
+        for (const ch of ["fill", "stroke"] as const) {
+          const v = (ov as Record<string, unknown>)[ch];
+          if (v !== undefined && (typeof v !== "string" || !isValidHex(v))) {
+            p.push({ path: `series_overrides[${i}].${ch}`, code: "shape", message: `series_overrides[${i}].${ch} must be a hex color, got ${JSON.stringify(v)}` });
+          }
+        }
+        checkEnum((ov as { shape?: string }).shape as (typeof POINT_SHAPE_VALUES)[number] | undefined,
+          POINT_SHAPE_VALUES, `series_overrides[${i}].shape`, p);
+      });
     }
   }
 

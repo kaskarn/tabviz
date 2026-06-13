@@ -58,3 +58,41 @@ describe("slot_style → series slot wiring", () => {
     expect(new Set(variants).size).toBe(3);
   });
 });
+
+describe("series_overrides (Phase 4 / L3 freeform escape hatch)", () => {
+  it("overlays fill + re-derives dim/hot; other slots untouched", () => {
+    const base = series(buildTheme({ ...PRESETS["nejm"]! }, "base"));
+    const t = buildTheme(
+      { ...PRESETS["nejm"]!, series_overrides: [{ fill: "#ff0000" }] },
+      "ov",
+    );
+    const s = series(t);
+    expect(s[0]!.fill).toBe("#ff0000");
+    // dim/hot re-derived from the new fill (not equal to base, not equal
+    // to the raw override).
+    expect(s[0]!.fillDim).not.toBe(base[0]!.fillDim);
+    expect(s[0]!.fillDim).not.toBe("#ff0000");
+    // slot 1 is untouched by a slot-0 override.
+    expect(s[1]).toEqual(base[1]);
+  });
+
+  it("overlays stroke and shape independently", () => {
+    const t = buildTheme(
+      { ...PRESETS["nejm"]!, series_overrides: [null, { stroke: "#00aa00", shape: "diamond" }] },
+      "ov2",
+    );
+    const s = series(t);
+    expect(s[1]!.stroke).toBe("#00aa00");
+    expect(s[1]!.shape).toBe("diamond");
+  });
+
+  it("drops an invalid hex defensively (no NaN poisoning)", () => {
+    const t = buildTheme(
+      { ...PRESETS["nejm"]!, series_overrides: [{ fill: "not-a-hex" }] },
+      "ov3",
+    );
+    const base = series(buildTheme({ ...PRESETS["nejm"]! }, "base3"));
+    // Invalid fill ignored → slot 0 equals the un-overridden bundle.
+    expect(series(t)[0]).toEqual(base[0]);
+  });
+});

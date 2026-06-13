@@ -513,6 +513,25 @@ async function run(): Promise<void> {
       await walkControls(".settings-panel .panel-body", tabLabel.replace(" ", "-"));
     }
 
+    // "edit theme" is an inner cluster (D21 Phase 4): the loop above walked
+    // its default Identity pane; click the Plots inner tab and walk that too
+    // so the zero-dead-buttons promise reaches every series control.
+    await gotoTab("edit theme");
+    const wentPlots = await page.evaluate(() => {
+      const t = [...document.querySelectorAll<HTMLElement>(".settings-panel .inner-strip [role=tab]")]
+        .find((b) => (b.textContent || "").trim() === "plots");
+      if (!t) return false;
+      t.click();
+      return true;
+    });
+    if (wentPlots) {
+      await settle(250);
+      await expandDisclosures(page);
+      await walkControls(".settings-panel .panel-body", "plots");
+    } else {
+      skipped.push("plots inner tab: not present (fixture has no viz series)");
+    }
+
     // Action buttons (external effect): export / import / handoff / close.
     // Not operated (they download files, open dialogs, or close the panel) —
     // but a present-yet-DISABLED action is a dead affordance, and an action

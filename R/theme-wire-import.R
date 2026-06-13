@@ -197,6 +197,31 @@ theme_inputs_from_wire <- function(wire_inputs) {
     if (length(clean_cd) > 0L) v$column_defaults <- clean_cd
   }
 
+  # Per-series overrides (Phase 4 / L3). UNTRUSTED wire: a list indexed by
+  # slot, each entry NULL or a named list over {fill, stroke, shape}. Keep
+  # only hex-grammar-clean fill/stroke strings and the four valid shapes;
+  # drop everything else (the TS adapter also gates defensively). Preserves
+  # slot POSITION (NULL holes survive) so override[[2]] stays slot 2.
+  so <- w[["series_overrides"]] %||% list()
+  if (length(so) > 0L) {
+    shape_ok <- c("circle", "square", "diamond", "triangle")
+    hex_ok <- function(x) is.character(x) && length(x) == 1L && !is.na(x) &&
+      grepl("^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", x)
+    clean_so <- vector("list", length(so))
+    any_kept <- FALSE
+    for (i in seq_along(so)) {
+      entry <- so[[i]]
+      if (is.null(entry) || !is.list(entry) || is.null(names(entry))) next
+      kept <- list()
+      if (hex_ok(entry[["fill"]]))   kept$fill   <- as.character(entry[["fill"]])
+      if (hex_ok(entry[["stroke"]])) kept$stroke <- as.character(entry[["stroke"]])
+      sh <- entry[["shape"]]
+      if (length(sh) == 1L && !is.na(sh) && as.character(sh) %in% shape_ok) kept$shape <- as.character(sh)
+      if (length(kept) > 0L) { clean_so[[i]] <- kept; any_kept <- TRUE }
+    }
+    if (any_kept) v$series_overrides <- clean_so
+  }
+
   # Theme-opinionated interaction defaults (interactivity-UX arc P1).
   # UNTRUSTED wire: keep only known capability flags (snake or camelCase)
   # whose value is a single non-NA logical; drop the rest. Mirrors

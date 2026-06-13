@@ -252,6 +252,15 @@ ThemeInputs <- new_class(
     row_kinds_header_height_ratio       = new_property(class_numeric, default = NA_real_),
     row_kinds_panel_height_ratio        = new_property(class_numeric, default = NA_real_),
 
+    # Per-series viz OVERRIDES (settings-redesign Phase 4 / Layer 3 — the
+    # freeform escape hatch). A sparse list indexed by series slot, each
+    # entry NULL or `list(fill=, stroke=, shape=)` (hex colors + one of
+    # circle/square/diamond/triangle). Stored as ONE list slot (mirrors
+    # type_roles); serializes to the wire's `series_overrides`. The
+    # adapter overlays these AFTER the slot_style derivation. Empty = the
+    # cascade-derived series stand. UNTRUSTED on import (hex/shape gated).
+    series_overrides = new_property(class_list, default = quote(list())),
+
     # Theme-as-house-style (2026-06-09). A theme may declare per-column-TYPE
     # default options, merged UNDER each matching column at engine spec-
     # ingest: `list(<type> = list(<option> = value, ...))`, e.g.
@@ -385,6 +394,29 @@ ThemeInputs <- new_class(
       v <- S7::prop(self, slot)
       if (!is.na(v) && (v <= 0 || v > 10)) {
         return(paste0(slot, " must be a positive number in (0, 10], got ", v))
+      }
+    }
+    # series_overrides — structural: a list indexed by slot, each entry NULL
+    # or a named list over {fill, stroke, shape} with scalar values. Value
+    # gates (hex grammar / shape enum) live TS-side at the validating ingress
+    # and on import; the S7 validator guards SHAPE only.
+    so <- self@series_overrides
+    if (length(so) > 0L) {
+      for (i in seq_along(so)) {
+        entry <- so[[i]]
+        if (is.null(entry)) next
+        if (!is.list(entry) || is.null(names(entry)) ||
+            !all(names(entry) %in% c("fill", "stroke", "shape"))) {
+          return(paste0("series_overrides[[", i,
+                        "]] must be NULL or a named list over fill/stroke/shape"))
+        }
+        for (ch in names(entry)) {
+          val <- entry[[ch]]
+          if (!is.null(val) && (length(val) != 1L || !is.character(val))) {
+            return(paste0("series_overrides[[", i, "]]$", ch,
+                          " must be a single string"))
+          }
+        }
       }
     }
     # column_defaults — structural only (the kind-gate lives TS-side). Must be a

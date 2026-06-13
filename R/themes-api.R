@@ -121,6 +121,13 @@ theme_inputs_to_json <- function(inputs) {
   column_defaults_out <-
     if (length(inputs@column_defaults) > 0L) inputs@column_defaults else NULL
 
+  # Per-series overrides (Phase 4 / L3). The slot already holds the wire
+  # shape (a list indexed by slot, each NULL or list(fill,stroke,shape));
+  # emit verbatim, omit when empty. Wrapped in I() so a length-1 list still
+  # serializes as a JSON ARRAY (auto_unbox would otherwise collapse it).
+  series_overrides_out <-
+    if (length(inputs@series_overrides) > 0L) I(inputs@series_overrides) else NULL
+
   # Theme-opinionated interaction defaults (interactivity-UX arc P1).
   # Sparse named list of flag → logical; emit verbatim (omit when empty).
   # Resolution (explicit > theme > global > baked) runs TS-side.
@@ -188,6 +195,7 @@ theme_inputs_to_json <- function(inputs) {
     monochrome            = monochrome_out,
     row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL,
     column_defaults       = column_defaults_out,
+    series_overrides      = series_overrides_out,
     interaction_defaults  = interaction_defaults_out
   )
   out[!vapply(out, is.null, logical(1))]
@@ -380,10 +388,15 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `"none"`, `"hairline"`, `"ruled"`, `"frame"`, or `"boxed"`. `"frame"` is
 #'   the clean journal look (top+bottom table frame). Default resolver cluster
 #'   (≈ hairline) when unset.
+#' @param series_overrides Per-series viz overrides (Layer 3 — the freeform
+#'   escape hatch): a list indexed by series slot (1-based in R), each entry
+#'   `NULL` or `list(fill=, stroke=, shape=)` with hex colors and a shape of
+#'   `"circle"`/`"square"`/`"diamond"`/`"triangle"`. Overlaid after the
+#'   `slot_style` derivation; deliberately bypasses the ornament principle.
 #' @param banding Alternating-row background as a Tier-1 structural variant:
 #'   the banding grammar string `"none"`, `"row"`, `"group"`, or `"group-N"`
 #'   (band alternates at group depth N). Default `"group"` when unset. The
-#'   per-figure runtime override ([set_banding()]) still wins at display time.
+#'   per-figure runtime banding override (Shiny proxy) still wins at display time.
 #' @param banding_start Whether the first band is shaded (`"band"`) or plain
 #'   (`"plain"`). Default: shaded for group banding, plain otherwise.
 #' @param first_column_style First (label) column treatment: `"default"` or
@@ -424,6 +437,7 @@ web_theme <- function(
     marks = NULL,
     row_kinds = NULL,
     column_defaults = NULL,
+    series_overrides = NULL,
     interaction_defaults = NULL,
     header_style = NULL,
     border_preset = NULL,
@@ -456,6 +470,7 @@ web_theme <- function(
   checkmate::assert_list(marks, null.ok = TRUE)
   checkmate::assert_list(row_kinds, null.ok = TRUE)
   checkmate::assert_list(column_defaults, null.ok = TRUE, names = "named")
+  checkmate::assert_list(series_overrides, null.ok = TRUE)
   checkmate::assert_list(interaction_defaults, null.ok = TRUE, names = "named")
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
@@ -540,6 +555,7 @@ web_theme <- function(
     row_kinds_header_height_ratio       = row_kinds$header$heightRatio       %||% NA_real_,
     row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_,
     column_defaults                     = column_defaults %||% list(),
+    series_overrides                    = series_overrides %||% list(),
     interaction_defaults                = interaction_defaults %||% list()
   )
   theme <- resolve_from_inputs(inputs, name = name)

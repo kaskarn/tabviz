@@ -25,7 +25,7 @@
 import type { ThemeInputs } from "../../types/theme-inputs";
 import { buildThemeStructure } from "./theme-resolve";
 import { validateResolvedTheme } from "./theme-validate";
-import { rampStep, oklchMix, oklchDarken } from "../oklch";
+import { rampStep, oklchMix, oklchDarken, isValidHex } from "../oklch";
 import { resolveCategorical } from "../data-schemes";
 import { parseBandingString } from "../banding";
 import type {
@@ -216,7 +216,36 @@ export function buildTheme(
       ...common,
     };
   }
-  const series: SlotRole[] = seriesAnchors.map(slotRole);
+  // Per-series OVERRIDES (Phase 4 / L3): overlay fill / stroke / shape on
+  // the cascade-derived slot, re-deriving dim/hot from any new fill/
+  // stroke so the bundle stays coherent. Hex is gated defensively here
+  // too (oklchMix NaN-poisons on garbage) — the validating ingress
+  // already drops invalid leaves, but the adapter runs on raw inputs in
+  // tests. Breakage of the ornament principle is intentional (D21).
+  function applySeriesOverride(
+    role: SlotRole,
+    ov: { fill?: string; stroke?: string; shape?: string },
+  ): SlotRole {
+    const next: SlotRole = { ...role };
+    if (ov.shape) next.shape = ov.shape;
+    if (ov.fill && isValidHex(ov.fill)) {
+      next.fill = ov.fill;
+      next.fillDim = oklchMix(ov.fill, t.paper, 0.65);
+      next.fillHot = oklchDarken(ov.fill, 0.05);
+    }
+    if (ov.stroke && isValidHex(ov.stroke)) {
+      next.stroke = ov.stroke;
+      next.strokeDim = oklchDarken(oklchMix(ov.stroke, t.paper, 0.65), 0.10);
+      next.strokeHot = oklchDarken(ov.stroke, 0.20);
+    }
+    return next;
+  }
+  const seriesOverrides = inputs.series_overrides;
+  const series: SlotRole[] = seriesAnchors.map((anchor, i) => {
+    const role = slotRole(anchor);
+    const ov = seriesOverrides?.[i];
+    return ov ? applySeriesOverride(role, ov) : role;
+  });
 
   const text: TextRoles = {
     title:    textRoleTitle(fontDisplay, t.ink),

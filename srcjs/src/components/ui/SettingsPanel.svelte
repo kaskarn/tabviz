@@ -20,7 +20,7 @@
   import FigureBand from "./settings/FigureBand.svelte";
   import VariationsTab from "./settings/VariationsTab.svelte";
   import LabelsTab from "./settings/LabelsTab.svelte";
-  import IdentityTab from "./settings/IdentityTab.svelte";
+  import EditThemeCluster from "./settings/EditThemeCluster.svelte";
   // v2 design tokens — the primitives cascade off [data-tv-v2].
   import "$components/primitives/v2/tokens.css";
 
@@ -174,7 +174,7 @@
       {:else if activeTab === "labels"}
         <div class="tab-pad"><LabelsTab {store} /></div>
       {:else if activeTab === "theme"}
-        <div class="tab-pad"><IdentityTab {store} /></div>
+        <div class="tab-pad"><EditThemeCluster {store} /></div>
       {:else}
         <!-- Interim figure band — Labels absorbs this when Phase 2 lands. -->
         <FigureBand {store} />

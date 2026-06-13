@@ -36,6 +36,7 @@ web_theme(
   marks = NULL,
   row_kinds = NULL,
   column_defaults = NULL,
+  series_overrides = NULL,
   interaction_defaults = NULL,
   header_style = NULL,
   border_preset = NULL,
@@ -146,6 +147,12 @@ options are accepted — a theme can never change what the data means
 (precision, thresholds). NULL = no house-style defaults. See
 \code{\link[=set_column_default]{set_column_default()}}.}
 
+\item{series_overrides}{Per-series viz overrides (Layer 3 — the freeform
+escape hatch): a list indexed by series slot (1-based in R), each entry
+\code{NULL} or \code{list(fill=, stroke=, shape=)} with hex colors and a shape of
+\code{"circle"}/\code{"square"}/\code{"diamond"}/\code{"triangle"}. Overlaid after the
+\code{slot_style} derivation; deliberately bypasses the ornament principle.}
+
 \item{interaction_defaults}{Theme-opinionated interaction defaults.
 Named list of capability flags to logicals (snake_case names matching
 \code{\link[=web_interaction]{web_interaction()}} arguments), e.g. \code{list(enable_axis_zoom = TRUE)}.
@@ -166,7 +173,7 @@ the clean journal look (top+bottom table frame). Default resolver cluster
 \item{banding}{Alternating-row background as a Tier-1 structural variant:
 the banding grammar string \code{"none"}, \code{"row"}, \code{"group"}, or \code{"group-N"}
 (band alternates at group depth N). Default \code{"group"} when unset. The
-per-figure runtime override (\code{\link[=set_banding]{set_banding()}}) still wins at display time.}
+per-figure runtime banding override (Shiny proxy) still wins at display time.}
 
 \item{banding_start}{Whether the first band is shaded (\code{"band"}) or plain
 (\code{"plain"}). Default: shaded for group banding, plain otherwise.}
