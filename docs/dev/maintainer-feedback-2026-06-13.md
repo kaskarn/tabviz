@@ -74,6 +74,22 @@ at top of each item.
     protocolTimeout — a Chrome/env issue, not the code); do it when the gate
     runs clean (CI, or a less-contended local env). (Bug A — the DOM missing
     col1/col2 divider — was already fixed in B3.)
+  - DEEPER FINDING (2026-06-13): the divergence is a frame-MODEL disagreement,
+    not just missing edges. The DOM frame is DESIGNED to sit ABOVE the axis
+    (frame bottom between the last data row and the axis ticks, via the
+    axis-cell border-top — TabvizPlot.svelte:3035-3044), while the EXPORT rect
+    spans the FULL figure INCLUDING the axis (height = totalHeight,
+    svg-generator.ts:5231-5236). So DOM and export disagree on the frame's
+    BOUNDS, not only which edges paint. The numeric wysiwyg gate does NOT catch
+    this (it measures geometry/typography positions, not the presence/extent of
+    1px border lines) — it passes at 0 breaches today with `frame` presets. Fix
+    requires (1) a DECISION: does the outer frame enclose the axis or stop above
+    it? then (2) reconcile BOTH renderers to it (DOM: non-layout-affecting
+    4-side frame — inset box-shadow / overlay, gated on --tv-table-border, on
+    the element with the chosen bounds; export: match), (3) VISUAL verification
+    via the wysiwyg side-by-side PNGs under a `boxed` + `frame` case (add to the
+    harness matrix — currently no boxed case). A register entry (frame-model
+    decision) is the right home before implementation.
 - **DECISIONS (await maintainer):** glow/glass reimagine-or-remove (now
   shell-painted-gating could help; B6 added explanations); horizontal density
   model (needs a gap multiplier that doesn't feed auto-width); border vocabulary
