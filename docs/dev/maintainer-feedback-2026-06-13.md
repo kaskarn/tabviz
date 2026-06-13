@@ -17,7 +17,16 @@ at top of each item.
   affordances default ON (dev-tinker audience). Commit 0b583e2.
 - **B2 — geometry sliders live-preview** (IdentityTab radii + rule widths):
   were `oncommit`-only (drag-blind); now `onchange`=preview + `oncommit`=commit
-  via one `writeGeometry(write,…)`. (this commit)
+  via one `writeGeometry(write,…)`. Commit 136cd8b.
+- **B3 — boxed first-column missing divider (Bug A)**: `--tv-first-col-rule`
+  emitted `"transparent"` when not bold, defeating the consumer var() fallback
+  → col1/col2 divider vanished under boxed. Resolver now emits the concrete
+  minor divider color. Regression-tested; per-preset snapshot regenerated.
+  Commit 9810056.
+- **B4 — font selectors actually preview**: FontFamily was wired to the native
+  `<select>` (option font-family is a no-op in Chrome/Safari); swapped to the
+  custom DOM `Dropdown` (prop-compatible). Every font name now previews in its
+  own face + selected value too. Commit 7664fd6.
 
 ## Diagnosis (evidence) + remaining plan
 
