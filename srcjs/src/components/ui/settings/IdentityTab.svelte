@@ -130,8 +130,18 @@
 
   // ── Geometry (slots + fine stops) ────────────────────────────────────
   let geometryOpen = $state(false);
-  function patchGeometry(group: "radius" | "border_width", key: string, value: number): void {
-    commit({
+  // One writer, two channels: `preview` on drag-tick (onchange) for a live
+  // figure, `commit` on release (oncommit) for the history step — the same
+  // dual-channel contract the anchor/density sliders use. Sliders that pass
+  // only `oncommit` are release-only (drag-blind); every settings slider
+  // should preview.
+  function writeGeometry(
+    write: (next: ThemeInputs) => void,
+    group: "radius" | "border_width",
+    key: string,
+    value: number,
+  ): void {
+    write({
       ...inputs!,
       geometry: {
         ...inputs!.geometry,
@@ -274,12 +284,12 @@
                  segments={["fine", "normal", "strong", ...(currentRules === "custom" ? ["custom"] : [])].map((v) => ({ value: v, label: v }))}
                  onchange={(v) => v !== "custom" && applyRules(v as RuleSlot)} />
       </div>
-      <Field label="Radius sm"><Slider value={inputs.geometry?.radius?.sm ?? 2} min={0} max={24} step={1} suffix="px" ariaLabel="Radius sm" oncommit={(v) => patchGeometry("radius", "sm", v)} /></Field>
-      <Field label="Radius md"><Slider value={inputs.geometry?.radius?.md ?? 6} min={0} max={32} step={1} suffix="px" ariaLabel="Radius md" oncommit={(v) => patchGeometry("radius", "md", v)} /></Field>
-      <Field label="Radius lg"><Slider value={inputs.geometry?.radius?.lg ?? 10} min={0} max={48} step={1} suffix="px" ariaLabel="Radius lg" oncommit={(v) => patchGeometry("radius", "lg", v)} /></Field>
-      <Field label="Rule hair"><Slider value={inputs.geometry?.border_width?.hair ?? 0.5} min={0} max={3} step={0.25} suffix="px" ariaLabel="Border width hair" oncommit={(v) => patchGeometry("border_width", "hair", v)} /></Field>
-      <Field label="Rule thin"><Slider value={inputs.geometry?.border_width?.thin ?? 1} min={0} max={4} step={0.25} suffix="px" ariaLabel="Border width thin" oncommit={(v) => patchGeometry("border_width", "thin", v)} /></Field>
-      <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? 2.5} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" oncommit={(v) => patchGeometry("border_width", "thick", v)} /></Field>
+      <Field label="Radius sm"><Slider value={inputs.geometry?.radius?.sm ?? 2} min={0} max={24} step={1} suffix="px" ariaLabel="Radius sm" onchange={(v) => writeGeometry(preview, "radius", "sm", v)} oncommit={(v) => writeGeometry(commit, "radius", "sm", v)} /></Field>
+      <Field label="Radius md"><Slider value={inputs.geometry?.radius?.md ?? 6} min={0} max={32} step={1} suffix="px" ariaLabel="Radius md" onchange={(v) => writeGeometry(preview, "radius", "md", v)} oncommit={(v) => writeGeometry(commit, "radius", "md", v)} /></Field>
+      <Field label="Radius lg"><Slider value={inputs.geometry?.radius?.lg ?? 10} min={0} max={48} step={1} suffix="px" ariaLabel="Radius lg" onchange={(v) => writeGeometry(preview, "radius", "lg", v)} oncommit={(v) => writeGeometry(commit, "radius", "lg", v)} /></Field>
+      <Field label="Rule hair"><Slider value={inputs.geometry?.border_width?.hair ?? 0.5} min={0} max={3} step={0.25} suffix="px" ariaLabel="Border width hair" onchange={(v) => writeGeometry(preview, "border_width", "hair", v)} oncommit={(v) => writeGeometry(commit, "border_width", "hair", v)} /></Field>
+      <Field label="Rule thin"><Slider value={inputs.geometry?.border_width?.thin ?? 1} min={0} max={4} step={0.25} suffix="px" ariaLabel="Border width thin" onchange={(v) => writeGeometry(preview, "border_width", "thin", v)} oncommit={(v) => writeGeometry(commit, "border_width", "thin", v)} /></Field>
+      <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? 2.5} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" onchange={(v) => writeGeometry(preview, "border_width", "thick", v)} oncommit={(v) => writeGeometry(commit, "border_width", "thick", v)} /></Field>
     </DisclosureField>
 
     <!-- Type-role rebinds + carried-overrides release moved to the
