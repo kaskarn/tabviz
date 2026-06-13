@@ -190,8 +190,52 @@ reset travels green; liveness 71 repaint-verified across 4 tabs.
 Label LOCATION controls await engine support (the maintainer's "(once
 supported)").
 
-**Phases 3–5 — build tab by tab, in order:
-Identity → Plots → Styling.** Each tab's exit gate:
+**Phase 3 — IDENTITY — scoping (written 2026-06-12, pre-build).**
+Replaces the interim ThemeBand/Tier1Sections under "edit theme" with
+the real Identity tab (L2: who the theme IS): the four anchor rows +
+status disclosure (AnchorRow already idiom-conformant — swatch
+preview, LCH expand) · typography FAMILIES (body / display / mono /
+numeric via FontFamily) · geometry (corner/rule slots + fine stops) ·
+data scheme. Per the layer model these LEAVE Identity: type-ROLE
+rebinds (role remapping = L4 Styling; interim home: stays on Identity
+bottom under a disclosure until Phase 5 — homeless controls are worse
+than a marked interim) · carried-overrides release (Styling-bound, same
+interim treatment). The "Edit theme" CLUSTER chrome (inner tab row
+Identity | Plots | Styling) arrives when a second inner tab exists
+(Phase 4) — one inner tab needs no inner chrome. Consequence harness
+gains the Identity walk (anchor rows operate via LCH keyboard;
+families via the FontFamily picker).
+
+**Phase 3 — IDENTITY — EXECUTED 2026-06-12.** The interim ThemeBand
+mount under "edit theme" is replaced by the real `IdentityTab` (L2 —
+who the theme IS): the four anchor rows (+ status disclosure; AnchorRow
+reused — swatch chip, hex field, LCH expand) · `monochrome` toggle ·
+typography FAMILIES (body / display / mono / numeric via FontFamily
+native select) · geometry (corner/rule slots + fine stops) · the data
+scheme. ThemeBand.svelte DELETED; Tier1Sections.svelte stays as the
+DORMANT studio rail's component (D22). Two STYLING-bound groups
+(type-role rebinds, carried-overrides release) live under a marked
+"advanced — moving to styling" interim disclosure until Phase 5 —
+homeless controls beat lost ones. CONSEQUENCE-OR-ABSENCE FINDING: the
+categorical scheme colors series slots 1+ only, so it is inert on a
+single-series figure — the harness flagged it (0px), and the tab now
+gates it on `hasMultiSeries` (a multi-effect forest or any multi-series
+viz); the harness fixture gained a 2-effect forest to exercise it.
+Harness also gained: select + custom-dropdown operation, anchor hex
+typing (triple-click selects — Cmd+A is NOT delivered headless on mac,
+the append silently failed the hex validator and the 456px "pass" was
+the focus ring — comment guards against re-learning), and QUIESCENT
+screenshots (poll until two shots are identical — a fixed delay raced
+the theme re-resolve, leaking a repaint into the next op's window). The
+caption chip is now BAKED into the fixture theme so the Labels tag
+field stays consequential across resets. 39 controls + both reset
+travels green; liveness 72 repaints across 4 tabs; band-contract walk
+re-pointed at the new tab files. The Edit-theme CLUSTER chrome (inner
+Identity | Plots | Styling tab row) lands with Phase 4 — one inner tab
+needs no inner chrome.
+
+**Phases 4–5 — build tab by tab, in order:
+Plots → Styling.** Each tab's exit gate:
 - every control passes **consequence** (visible pixel delta in the
   rendered fixture — a NEW harness check, not DOM-fingerprint
   liveness);

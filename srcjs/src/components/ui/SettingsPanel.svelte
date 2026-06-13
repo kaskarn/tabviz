@@ -17,10 +17,10 @@
   // settings-band-contract.test.ts enforces it.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
-  import ThemeBand from "./settings/ThemeBand.svelte";
   import FigureBand from "./settings/FigureBand.svelte";
   import VariationsTab from "./settings/VariationsTab.svelte";
   import LabelsTab from "./settings/LabelsTab.svelte";
+  import IdentityTab from "./settings/IdentityTab.svelte";
   // v2 design tokens — the primitives cascade off [data-tv-v2].
   import "$components/primitives/v2/tokens.css";
 
@@ -32,10 +32,12 @@
 
   // ── D21 tab spine ────────────────────────────────────────────────────
   // Final IA: Variations | Labels | Edit theme{Identity · Plots · Styling}.
-  // Built tab-by-tab (settings-redesign.md): "variations" is live (Phase
-  // 1); "theme" hosts the interim Tier-1 band until Identity/Plots/
-  // Styling land; "figure" hosts the interim figure band until Labels
-  // absorbs it. Tab labels rename as each phase replaces its interim.
+  // Built tab-by-tab (settings-redesign.md): variations (P1) + labels
+  // (P2) + identity under "edit theme" (P3) are live. The Edit-theme
+  // CLUSTER chrome (inner tab row Identity | Plots | Styling) arrives
+  // with Phase 4 when a second inner tab exists; "figure" hosts the
+  // interim figure band (row pins + scoped reset) until Styling absorbs
+  // the pins.
   type PanelTab = "variations" | "labels" | "theme" | "figure";
   let activeTab = $state<PanelTab>("variations");
   const TABS: ReadonlyArray<{ id: PanelTab; label: string }> = [
@@ -172,11 +174,7 @@
       {:else if activeTab === "labels"}
         <div class="tab-pad"><LabelsTab {store} /></div>
       {:else if activeTab === "theme"}
-        <!-- Interim Tier-1 band — raw material for Identity/Plots/Styling
-             (built next, per docs/dev/settings-redesign.md). -->
-        <div class="theme-band">
-          <ThemeBand {store} />
-        </div>
+        <div class="tab-pad"><IdentityTab {store} /></div>
       {:else}
         <!-- Interim figure band — Labels absorbs this when Phase 2 lands. -->
         <FigureBand {store} />
@@ -331,14 +329,6 @@
     flex-direction: column;
   }
   .tab-pad {
-    padding: 0 12px;
-  }
-  .theme-band {
-    flex: none;
-    /* ONE spine: this band owns the same 12px gutter QuickStrip and
-       FigureBand use, so every label column right-aligns to one edge
-       (visual review MEDIUM — THEME rows sat 12px off-grid; the right
-       half also fixes UX review P0 clipped readouts). */
     padding: 0 12px;
   }
 </style>

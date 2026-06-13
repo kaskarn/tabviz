@@ -90,12 +90,13 @@ function transitiveSvelteImports(entry: string): string[] {
 describe("DT-11: the settings tree writes no Tier-2/3 theme paths", () => {
   const files = transitiveSvelteImports(PANEL);
 
-  test("the import walk actually reaches the bands (sanity)", () => {
+  test("the import walk actually reaches the tabs (sanity)", () => {
     const names = files.map((f) => path.basename(f));
     // If these aren't reached, the walk is broken and the gate is blind.
-    expect(names).toContain("ThemeBand.svelte");
+    expect(names).toContain("VariationsTab.svelte");
+    expect(names).toContain("LabelsTab.svelte");
+    expect(names).toContain("IdentityTab.svelte");
     expect(names).toContain("FigureBand.svelte");
-    expect(names).toContain("Tier1Sections.svelte");
   });
 
   for (const file of files) {

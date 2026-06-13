@@ -1,14 +1,15 @@
 <!--
-  Settings Panel scaffold — renders the OVERHAULED panel bands
-  (settings-overhaul P2/P3: QuickStrip + THEME band + FIGURE band) in
-  isolation against a fake-but-fully-resolved spec, so the visual design
-  iterates without standing up a widget/table. 400px production width.
+  Settings Panel scaffold — renders the D21 redesign tabs (Variations /
+  Labels / Identity + the interim figure band) STACKED in isolation
+  against a fake-but-fully-resolved spec, so the visual design iterates
+  without standing up a widget/table. 400px production width.
 -->
 <script lang="ts">
   import { tabviz } from "$authoring/tabviz";
   import { createTabvizStore } from "$stores/tabvizStore.svelte";
-  import QuickStrip from "$components/ui/settings/QuickStrip.svelte";
-  import ThemeBand from "$components/ui/settings/ThemeBand.svelte";
+  import VariationsTab from "$components/ui/settings/VariationsTab.svelte";
+  import LabelsTab from "$components/ui/settings/LabelsTab.svelte";
+  import IdentityTab from "$components/ui/settings/IdentityTab.svelte";
   import FigureBand from "$components/ui/settings/FigureBand.svelte";
   import "$components/primitives/v2/tokens.css";
 
@@ -31,7 +32,7 @@
       { field: "hr", type: "interval", options: { interval: { point: "hr", lower: "lo", upper: "hi" } }, header: "HR (95% CI)" },
       { field: "pval", type: "pvalue", header: "P value" },
     ],
-    theme: "jama",
+    theme: "nejm",
   });
 
   const store = createTabvizStore();
@@ -40,8 +41,9 @@
 
 <div class="scaffold">
   <div class="panel" data-tv-v2>
-    <QuickStrip {store} />
-    <ThemeBand {store} />
+    <VariationsTab {store} />
+    <LabelsTab {store} />
+    <IdentityTab {store} />
     <FigureBand {store} />
   </div>
 </div>

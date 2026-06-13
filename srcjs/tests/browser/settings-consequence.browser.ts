@@ -30,7 +30,7 @@ import { buildTheme } from "../../src/lib/theme/theme-adapter";
 import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 import { tabviz } from "../../src/authoring/tabviz";
 import { colNumeric, colPvalue } from "../../src/authoring/columns";
-import { vizForest } from "../../src/authoring/viz";
+import { vizForest, effectForest } from "../../src/authoring/viz";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_HTML = path.join(__dirname, "fixtures.html");
@@ -61,10 +61,10 @@ const ONLY = (() => {
 
 function buildSpec(): unknown {
   const rows = [
-    { study: "Alpha One", grp: "Group A", n: 240, hr: 0.72, lo: 0.55, hi: 0.94, p: 0.004 },
-    { study: "Alpha Two", grp: "Group A", n: 410, hr: 0.91, lo: 0.78, hi: 1.06, p: 0.21 },
-    { study: "Beta One", grp: "Group B", n: 150, hr: 0.66, lo: 0.44, hi: 0.99, p: 0.04 },
-    { study: "Beta Two", grp: "Group B", n: 380, hr: 0.83, lo: 0.69, hi: 1.0, p: 0.05 },
+    { study: "Alpha One", grp: "Group A", n: 240, hr: 0.72, lo: 0.55, hi: 0.94, hr2: 0.81, lo2: 0.66, hi2: 1.0, p: 0.004 },
+    { study: "Alpha Two", grp: "Group A", n: 410, hr: 0.91, lo: 0.78, hi: 1.06, hr2: 0.97, lo2: 0.84, hi2: 1.12, p: 0.21 },
+    { study: "Beta One", grp: "Group B", n: 150, hr: 0.66, lo: 0.44, hi: 0.99, hr2: 0.74, lo2: 0.52, hi2: 1.05, p: 0.04 },
+    { study: "Beta Two", grp: "Group B", n: 380, hr: 0.83, lo: 0.69, hi: 1.0, hr2: 0.88, lo2: 0.74, hi2: 1.05, p: 0.05 },
   ];
   return tabviz({
     data: rows,
@@ -76,10 +76,25 @@ function buildSpec(): unknown {
     tag: "TABLE 1",
     columns: [
       colNumeric({ field: "n", header: "N", decimals: 0 }),
-      vizForest({ point: "hr", lower: "lo", upper: "hi", header: "HR (95% CI)" }),
+      // TWO effects → series slots 0 AND 1, so the Identity scheme picker
+      // is present and consequential (slot 1+ takes the categorical
+      // palette). A single-effect forest would correctly HIDE the scheme.
+      vizForest({
+        effects: [
+          effectForest({ point: "hr", lower: "lo", upper: "hi", label: "Primary" }),
+          effectForest({ point: "hr2", lower: "lo2", upper: "hi2", label: "Adjusted" }),
+        ],
+        header: "HR (95% CI)",
+      }),
       colPvalue({ field: "p", header: "P" }),
     ],
-    theme: buildTheme(NEJM, "nejm"),
+    // caption_style "chip" is BAKED INTO the fixture theme so the Labels
+    // tab's tag-text field is consequential REGARDLESS of walk order: the
+    // chip renders labels.tag, and reset-theme reverts to this same
+    // chip-on theme (not "none"), so the chip survives every reset the
+    // walk performs before reaching Labels. Without it the tag field is
+    // a real cross-tab dependency the harness rightly flagged.
+    theme: buildTheme({ ...NEJM, effects: { ...NEJM.effects, caption_style: "chip" } }, "nejm"),
   });
 }
 
@@ -100,6 +115,22 @@ async function shotFigure(page: Page): Promise<PNG> {
 function diffCount(a: PNG, b: PNG): number {
   if (a.width !== b.width || a.height !== b.height) return Number.MAX_SAFE_INTEGER;
   return pixelmatch(a.data, b.data, null, a.width, a.height, { threshold: 0 });
+}
+
+/** Screenshot the figure once it has gone QUIESCENT: poll until two
+ *  consecutive shots are pixel-identical (or ~3s). A fixed delay raced
+ *  the theme re-resolve — a slow repaint landed during the NEXT op's
+ *  window, producing constant small false-positive deltas while the op
+ *  that caused them read 0. */
+async function shotQuiescent(page: Page): Promise<PNG> {
+  let prev = await shotFigure(page);
+  for (let i = 0; i < 12; i++) {
+    await settle(page, 250);
+    const cur = await shotFigure(page);
+    if (diffCount(prev, cur) === 0) return cur;
+    prev = cur;
+  }
+  return prev;
 }
 
 async function main(): Promise<void> {
@@ -151,6 +182,18 @@ async function main(): Promise<void> {
   // Variations, data-lt for Labels).
   async function walk(attr = "data-vt"): Promise<void> {
   for (let round = 0; round < 6; round++) {
+    // Open collapsed disclosures so their [data-*] controls are walkable
+    // (geometry, status colors). Anchor-row carets stay closed — anchors
+    // operate via their hex field.
+    await page.evaluate(() => {
+      const panel = document.querySelector(".settings-panel");
+      if (!panel) return;
+      for (const b of panel.querySelectorAll<HTMLElement>('[aria-expanded="false"]')) {
+        if (b.closest(".anchor-row")) continue;
+        b.click();
+      }
+    });
+    await settle(page, 150);
     const ids = await page.evaluate((a) =>
       [...document.querySelectorAll<HTMLElement>(`[${a}]`)].map((el) => el.getAttribute(a)!),
     attr);
@@ -166,6 +209,8 @@ async function main(): Promise<void> {
         if (!root) return "missing";
         if (root.querySelector("input[type=range]")) return "slider";
         if (root.querySelector("[role=radio]")) return "pill";
+        if (root.querySelector("select")) return "select";
+        if (root.querySelector(".dd-trigger")) return "dropdown";
         if (root.querySelector("input[type=text]")) return "text";
         return "unknown";
       }, { vtId: id, a: attr });
@@ -177,7 +222,7 @@ async function main(): Promise<void> {
         continue;
       }
       operated.add(`${attr}:${id}`);
-      const before = await shotFigure(page);
+      const before = await shotQuiescent(page);
 
       if (kind === "pill") {
         // Click inactive segments — real pointer input — until one moves
@@ -209,7 +254,7 @@ async function main(): Promise<void> {
           }, { vtId: id, label: target, a: attr });
           await (handle.asElement() as import("puppeteer").ElementHandle<Element>).click();
           await settle(page);
-          const after = await shotFigure(page);
+          const after = await shotQuiescent(page);
           const n = diffCount(before, after);
           if (n >= MIN_PIXELS) moved = { label: target, n };
         }
@@ -236,7 +281,7 @@ async function main(): Promise<void> {
         const key = atMax ? "Home" : "End";
         await page.keyboard.press(key);
         await settle(page);
-        const after = await shotFigure(page);
+        const after = await shotQuiescent(page);
         const n = diffCount(before, after);
         (n >= MIN_PIXELS ? passes : failures).push(
           `${id} (${key}): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
@@ -248,20 +293,60 @@ async function main(): Promise<void> {
           return root.querySelector<HTMLInputElement>("input[type=text]")!;
         }, { vtId: id, a: attr });
         const input = handle.asElement() as import("puppeteer").ElementHandle<HTMLInputElement>;
-        await input.click();
-        await page.keyboard.down(process.platform === "darwin" ? "Meta" : "Control");
-        await page.keyboard.press("a");
-        await page.keyboard.up(process.platform === "darwin" ? "Meta" : "Control");
-        const typed = id.includes("color") ? "#cc2200" : `Walked ${id}`;
+        // Triple-click selects the existing value (Cmd/Ctrl+A is NOT
+        // delivered by headless Chromium on macOS — the typed text
+        // APPENDED, which the anchor hex field rightly rejected as
+        // garbage and snapped back; the walk's 456px "pass" was the
+        // focus ring, a false positive this comment exists to prevent
+        // re-learning).
+        await input.click({ clickCount: 3 });
+        const HEXES: Record<string, string> = {
+          "anchor-paper": "#f2e8da", "anchor-ink": "#20262e",
+          "anchor-brand": "#9a1c1c", "anchor-accent": "#0e7a5f",
+        };
+        const typed = HEXES[id] ?? (id.includes("color") ? "#cc2200" : `Walked ${id}`);
         await page.keyboard.type(typed, { delay: 5 });
         await page.keyboard.press("Enter");
         await settle(page);
-        const after = await shotFigure(page);
+        const after = await shotQuiescent(page);
         const n = diffCount(before, after);
         (n >= MIN_PIXELS ? passes : failures).push(
           `${id} (typed "${typed}"): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
+      } else if (kind === "select") {
+        // Native <select> (FontFamily roster): pick a different option.
+        const picked = await page.evaluate(({ vtId, a }) => {
+          const sel = document.querySelector<HTMLSelectElement>(`[${a}="${vtId}"] select`)!;
+          const opts = [...sel.options].filter((o) => !o.disabled && o.value !== sel.value);
+          if (!opts.length) return null;
+          const target = opts[Math.min(2, opts.length - 1)];
+          sel.value = target.value;
+          sel.dispatchEvent(new Event("change", { bubbles: true }));
+          return target.textContent!.trim();
+        }, { vtId: id, a: attr });
+        if (picked == null) { failures.push(`${id}: native select has no alternative option`); continue; }
+        await settle(page);
+        const after = await shotQuiescent(page);
+        const n = diffCount(before, after);
+        (n >= MIN_PIXELS ? passes : failures).push(
+          `${id} → "${picked}": ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
+      } else if (kind === "dropdown") {
+        // Custom Dropdown: REAL keyboard only (Svelte 5 delegation — see
+        // the liveness harness lessons): focus trigger → ArrowDown opens
+        // and advances → Enter commits.
+        await page.evaluate(({ vtId, a }) => {
+          document.querySelector<HTMLElement>(`[${a}="${vtId}"] .dd-trigger`)!.focus();
+        }, { vtId: id, a: attr });
+        await page.keyboard.press("ArrowDown");
+        await settle(page, 150);
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+        await settle(page);
+        const after = await shotQuiescent(page);
+        const n = diffCount(before, after);
+        (n >= MIN_PIXELS ? passes : failures).push(
+          `${id} (dropdown pick): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
       } else {
-        failures.push(`${id}: unrecognized control anatomy (no pill, slider, or text input)`);
+        failures.push(`${id}: unrecognized control anatomy (pill/slider/select/dropdown/text all absent)`);
       }
     }
   }
@@ -271,7 +356,7 @@ async function main(): Promise<void> {
 
   // Travel check: Reset theme must revert the accumulated Variations
   // edits (every write above was a theme-input write — the matrix).
-  const beforeReset = await shotFigure(page);
+  const beforeReset = await shotQuiescent(page);
   await page.evaluate(() => {
     const btn = [...document.querySelectorAll<HTMLElement>(".settings-panel .bar-btn")]
       .find((b) => b.textContent!.includes("Reset theme"));
@@ -285,7 +370,7 @@ async function main(): Promise<void> {
     document.querySelector<HTMLElement>(".confirm-modal .confirm-btn")?.click();
   });
   await settle(page, 500);
-  const afterReset = await shotFigure(page);
+  const afterReset = await shotQuiescent(page);
   const resetMoved = diffCount(beforeReset, afterReset);
   const resetOk = resetMoved >= MIN_PIXELS;
   if (!resetOk) {
@@ -313,10 +398,15 @@ async function main(): Promise<void> {
   if (!(await page.$("[data-lt]"))) throw new Error("Labels tab has no [data-lt] controls");
   await walk("data-lt");
 
+  // ── IDENTITY tab (Phase 3) — Tier-1 identity, theme travel ─────────
+  await gotoTab("edit theme");
+  if (!(await page.$("[data-it]"))) throw new Error("Identity tab has no [data-it] controls");
+  await walk("data-it");
+
   // Reset-figure travel: every Labels write is FIGURE state — the scoped
   // reset (on the this-figure tab) must revert the typed labels +
   // watermark.
-  const beforeFigReset = await shotFigure(page);
+  const beforeFigReset = await shotQuiescent(page);
   await gotoTab("this figure");
   const figClicked = await page.evaluate(() => {
     const btn = document.querySelector<HTMLButtonElement>(".settings-panel .reset-figure");
@@ -331,7 +421,7 @@ async function main(): Promise<void> {
     failures.push(`reset-figure: button ${figClicked} after Labels edits — figure travel broken`);
   } else {
     await settle(page, 500);
-    figResetMoved = diffCount(beforeFigReset, await shotFigure(page));
+    figResetMoved = diffCount(beforeFigReset, await shotQuiescent(page));
     figResetOk = figResetMoved >= MIN_PIXELS;
     if (!figResetOk) failures.push(`reset-figure: only ${figResetMoved}px moved — labels did not revert`);
   }

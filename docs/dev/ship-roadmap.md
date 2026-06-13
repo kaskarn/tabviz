@@ -422,6 +422,15 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 — **SETTINGS REDESIGN PHASE 3 (IDENTITY) LANDED.** Real
+  IdentityTab (anchors + status + monochrome + font families + geometry
+  + data scheme) replaces the interim ThemeBand (deleted; Tier1Sections
+  stays for the dormant studio). Consequence-or-absence finding: the
+  categorical scheme is inert on single-series figures — now gated on
+  hasMultiSeries. Harness extended (select/dropdown ops, anchor hex
+  typing, quiescent screenshots); 39 controls + both reset travels
+  green; liveness 72 repaints. Record: settings-redesign.md Phase 3.
+
 - 2026-06-12 — **SETTINGS REDESIGN PHASE 2 (LABELS) LANDED.** Labels
   tab (title/subtitle/caption/footnote/tag fields + watermark) on the
   spine; tag promoted to a first-class label slot (op kind + R
