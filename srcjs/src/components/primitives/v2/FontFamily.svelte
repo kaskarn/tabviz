@@ -1,6 +1,14 @@
 <!--
-  FontFamily — curated font roster + Select. Each option renders in
-  its own family so the user previews live.
+  FontFamily — curated font roster + Dropdown. Each option renders in
+  its own family so the user previews live, AND the selected value shows
+  in its own face.
+
+  Uses the custom DOM `Dropdown`, NOT the native `Select`: native
+  <option> elements ignore `font-family` in Chrome/Safari, so the
+  per-option preview (the whole point of this control) was a silent
+  no-op under Select. Dropdown renders its option list as real DOM where
+  font-family applies. The two are prop-compatible (value / options /
+  renderOptionStyle / …), so this is a mechanical swap.
 
   Roster mirrors rgc-design's tested set: 5 serifs, 6 sans, 3 mono,
   arranged so the most-likely choices float near the top. Authors
@@ -10,7 +18,7 @@
   already baked in).
 -->
 <script lang="ts">
-  import Select from "./Select.svelte";
+  import Dropdown from "./Dropdown.svelte";
 
   export interface FontEntry {
     /** CSS font-family value (typically a quoted family + fallbacks). */
@@ -83,7 +91,7 @@
   });
 </script>
 
-<Select
+<Dropdown
   bind:value
   {options}
   renderOptionStyle
