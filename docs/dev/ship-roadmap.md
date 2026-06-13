@@ -422,6 +422,29 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-13 — **AREA G — EMPIRICAL TEXT ESTIMATOR + D20 FORCING
+  FUNCTION (a systematic-review payoff).** A closer look at G's loosest
+  joint (the raw-`generateSVG` estimator, D8) found the width engine ran
+  on hand-tuned character-class MAGIC NUMBERS (+ a magic mono advance +
+  a magic weight coefficient) that accreted with no ground truth.
+  Replaced with REAL measured per-font advance tables (all 17 preset
+  faces, weights 400/700, per-glyph weight interpolation;
+  `scripts/measure-font-metrics.mjs` → `font-metrics.generated.ts`);
+  verified sub-pixel vs canvas (≤0.6px, down from ~5px). BUT making the
+  estimator honest BROKE the WYSIWYG gate — because the old ~7%
+  over-estimate was accidentally compensating for a pre-existing,
+  SEPARATE DOM/SVG column-width divergence. Root-caused precisely: the
+  raw export and the widget's layout-zoom feed `resolveFlexWidths`
+  structurally different inputs because the LABEL COLUMN is an ordinary
+  flexing grid column in the DOM but a separately-positioned special
+  column in the export — **D20 item-4 verbatim**, maintainer-gated ("no
+  further sheds before the discussion"). The estimator is preserved on
+  branch `wip/empirical-text-metrics` (unit-tested, sub-pixel) and lands
+  WITH the D20 item-4 layout unification, which closes the flex parity.
+  Register: D8 updated (measurement half solved), D20 item-4 now carries
+  the forcing function + root cause. The "green" wysiwyg gate was a
+  fragile false-green built on two cancelling errors — now understood.
+
 - 2026-06-12 — **SETTINGS REDESIGN COMPLETE — PHASE 5 (STYLING)
   LANDED.** All five surfaces shipped (Variations · Labels · Identity ·
   Plots · Styling). StylingTab: density_factor dial (Variations
