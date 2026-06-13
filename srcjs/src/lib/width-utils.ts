@@ -78,8 +78,10 @@ export function isMonospaceFamily(family: string | undefined | null): boolean {
 /** Extract the PRIMARY family name from a CSS font-family string —
  *  `"'Lora', Georgia, serif"` → `Lora`. The primary is what loads and
  *  renders when available (and what systemfonts measures R-side); we key
- *  the per-font metric tables on it. */
-function primaryFamily(family: string | undefined | null): string {
+ *  the per-font metric tables on it. Exported so the roster-sync gate
+ *  (`font-roster-sync.runes.ts`) keys preset fonts the SAME way the
+ *  estimator does. */
+export function primaryFamily(family: string | undefined | null): string {
   if (!family) return "";
   const first = family.split(",")[0]!.trim();
   return first.replace(/^["']|["']$/g, "");
