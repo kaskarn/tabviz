@@ -4,7 +4,13 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
-## 0.7.0 — 2026-06-11 — the ship-readiness sweep
+## 0.7.0 — 2026-06-13 — ship-readiness sweep + settings substrate
+
+(Staged 2026-06-11 for the ship-readiness sweep; the settings-redesign
+substrate landed before the first publish, so both ship together in
+0.7.0 — the registry goes 0.6.0 → 0.7.0. Wire stays frozen at 1.10 and
+the theme envelope at `tabviz-theme/v4`: every addition below is
+additive.)
 
 ### Wire FROZEN at 1.10
 
@@ -35,6 +41,21 @@ their definitions.
 * **Consumer fixture** (`scripts/consumer-fixture.mjs`): author →
   shipped-schema validate → headless SVG, importing only `dist/` — runs
   in `build:npm`.
+* **Settings UX rebuilt from first principles** (the `./svelte` widget):
+  a five-surface panel — Variations · Labels · Edit-theme{Identity ·
+  Plots · Styling} — each control gated on a visible-pixel consequence
+  harness. New `ThemeInputs` fields (additive, `tabviz-theme/v4`):
+  - `banding` / `banding_start` — alternating-row background as Tier-1
+    structural-variant inputs (the grammar string `none|row|group|
+    group-N`, and whether the first band is shaded), previously
+    figure-only runtime state.
+  - `series_overrides` — sparse per-series viz overrides indexed by slot
+    (`{fill?, stroke?, shape?}`), overlaid after the `slot_style`
+    derivation; the freeform escape hatch for marker styling. Hex/shape
+    gated at every ingress.
+* **`tag` is a first-class plot-label slot** (`PlotLabels.tag`): the
+  caption-chip stamp, editable like title/subtitle/caption/footnote
+  (was author-only).
 
 ### Fixed
 
@@ -51,6 +72,10 @@ their definitions.
 * ARIA table semantics: the CSS grid now exposes a real
   table/row/columnheader/cell tree; `aria-sort` + keyboard sort on all
   sortable headers; `aria-expanded` tracks group collapse.
+* **Multi-effect forest CI lines drew every series in slot-0's stroke**
+  (`./export` + the DOM renderer) — each effect's interval line now
+  follows its OWN series slot's stroke, so multi-series forests are
+  distinguishable by line color (single-effect forests unchanged).
 
 ### Changed
 
