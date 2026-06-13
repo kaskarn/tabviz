@@ -43,16 +43,37 @@ at top of each item.
   descriptions (`TOKENS_BY_ROLE`), jargon stripped, curated overrides + naming-
   pattern fallback for token-less roles. Commit a663508.
 
+- **B8 (LANDED) — remaining release-only sliders preview live**: role grade
+  (new `previewThemeRoleOverride` verb), row-kind heights + watermark opacity
+  (already history-free → onchange wired to the same verb), banding level
+  (`writeBanding` commitNow flag). Slider inconsistency fully closed. Commit
+  4a0151e.
+
 ## Remaining
 
-- **Release-only sliders** (role grade, row-kind heights, watermark opacity,
-  banding level): still commit-on-release; need NEW preview verbs
-  (previewThemeRoleOverride / previewRowKindHeight) — a focused arc. B2 did the
-  geometry subset (clean preview path existed).
-- **Bug B — boxed DOM↔export frame divergence**: DOM draws no left edge + export
-  draws no internal verticals → `boxed` renders differently in the two paths.
-  The bigger WYSIWYG fix; needs the wysiwyg gate. (Bug A — the DOM missing
-  divider — was fixed in B3.)
+- **Bug B — boxed DOM↔export frame divergence** (the last clear fix; SCOPED,
+  not yet done — needs careful geometry + a working wysiwyg gate):
+  - The DOM "frame" is STRUCTURALLY INCOMPLETE. `--tv-table-border-*` drives
+    ONLY the top edge (`.tabviz-main` border-top, TabvizPlot.svelte:3040-3044).
+    The right + bottom edges are ACCIDENTAL — they appear only when the cell
+    col/row border styles happen to be solid (boxed → right via last-col
+    border-right; bottom via last-row border-bottom). There is NO `border-left`
+    anywhere → the table's left side is open under boxed/frame (the user's
+    "absent border before 1st column").
+  - The EXPORT draws a proper 4-side rect OVERLAY (svg-generator.ts:5231-5236),
+    no layout impact, AND draws no internal vertical column dividers at all
+    (col/table tokens are `consumedBy` DOM-only) → boxed renders a visibly
+    different table in DOM vs export.
+  - FIX DIRECTION: give the DOM a real 4-side frame that does NOT perturb layout
+    (a plain border shifts content + breaks the flush-inertness invariant — must
+    be an outline / inset box-shadow / positioned overlay, like the export's
+    rect), and draw internal verticals in the export under grid layout so the
+    two paths match. MUST be verified by `wysiwyg-diff.browser.ts` (DOM vs
+    export parity) + layout-metrics (geometry unchanged). Deferred from this
+    pass because that gate was flaking locally (captureScreenshot
+    protocolTimeout — a Chrome/env issue, not the code); do it when the gate
+    runs clean (CI, or a less-contended local env). (Bug A — the DOM missing
+    col1/col2 divider — was already fixed in B3.)
 - **DECISIONS (await maintainer):** glow/glass reimagine-or-remove (now
   shell-painted-gating could help; B6 added explanations); horizontal density
   model (needs a gap multiplier that doesn't feed auto-width); border vocabulary
