@@ -30,6 +30,7 @@
   import { DEFAULT_TYPE_ROLES, type TypeRoleName, type TypeRole } from "$lib/theme/typography";
   import { TYPE_ROLE_NAMES } from "$lib/theme/scale-roles";
   import { KNOWN_UNCONSUMED } from "$lib/theme/component-tokens";
+  import { roleElementHint } from "./role-element-hint";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -166,7 +167,7 @@
     <EnumRow label="Kind" value={roleKind}
              segments={KIND_SEGS}
              onchange={(v) => (roleKind = v as Kind)} />
-    <Field label="Role">
+    <Field label="Role" hint={roleElementHint(roleSel)}>
       <Dropdown value={roleSel} ariaLabel="Role to re-route"
               onchange={(v) => (roleSel = v as RoleName)} options={roleOpts} />
     </Field>
