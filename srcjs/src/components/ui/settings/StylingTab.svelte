@@ -19,9 +19,8 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import type { ThemeInputs } from "$types/theme-inputs";
-  import type { WebTheme } from "$types/theme-resolved";
   import { ALL_ROLES, ROLE_KIND, ALL_RAMPS, type RoleName, type RampName, type RoleKind } from "$types/theme-roles";
+  import { useThemeInputs } from "./theme-inputs.svelte";
   import { DEFAULT_ROLE_BINDINGS } from "$lib/theme/role-bindings";
   import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
@@ -34,17 +33,10 @@
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  const theme = $derived(store.spec?.theme);
-  const inputs = $derived(
-    (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null,
-  );
-
-  function commit(next: ThemeInputs): void {
-    store.setAuthoringInputs(next);
-  }
-  function preview(next: ThemeInputs): void {
-    store.previewAuthoringInputs(next);
-  }
+  const ti = useThemeInputs(() => store);
+  const theme = $derived(ti.theme);
+  const inputs = $derived(ti.inputs);
+  const { commit, preview } = ti;
 
   // ── Spacing — the continuous density dial (Variations density signposts
   // here). density_factor is a theme INPUT → DT-11-clean. ───────────────
@@ -69,7 +61,7 @@
   const roleOpts = $derived(rolesOfKind.map((r) => ({ value: r, label: r })));
 
   const overrides = $derived(
-    (theme as WebTheme | undefined)?.roleOverrides ?? {},
+    theme?.roleOverrides ?? {},
   );
   // Current binding = the override if set, else the cascade default.
   const curBinding = $derived(
@@ -118,10 +110,10 @@
 
   // ── Carried overrides (release list — moved here from Identity) ──────
   const pins = $derived(
-    Object.entries((theme as WebTheme | undefined)?.pins ?? {}),
+    Object.entries(theme?.pins ?? {}),
   );
   const ovList = $derived(
-    Object.entries((theme as WebTheme | undefined)?.roleOverrides ?? {}),
+    Object.entries(theme?.roleOverrides ?? {}),
   );
   let carriedOpen = $state(false);
 

@@ -18,7 +18,7 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeInputs, OklchTriple } from "$types/theme-inputs";
-  import type { WebTheme } from "$types/theme-resolved";
+  import { useThemeInputs } from "./theme-inputs.svelte";
   import AnchorRow from "$components/theme-controls/AnchorRow.svelte";
   import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
@@ -35,21 +35,11 @@
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  const theme = $derived(store.spec?.theme);
-  const inputs = $derived(
-    (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null,
-  );
+  const ti = useThemeInputs(() => store);
+  const theme = $derived(ti.theme);
+  const inputs = $derived(ti.inputs);
   const cssVars = $derived(theme ? getCssVars(theme) : {});
-
-  function commit(next: ThemeInputs): void {
-    store.setAuthoringInputs(next);
-  }
-  function preview(next: ThemeInputs): void {
-    store.previewAuthoringInputs(next);
-  }
-  function patch<K extends keyof ThemeInputs>(key: K, value: ThemeInputs[K]): void {
-    commit({ ...inputs!, [key]: value });
-  }
+  const { commit, preview, patch } = ti;
 
   // ── Anchors (display-reflection in dark polarity — reflectL is an
   // involution, so the round-trip is lossless) ─────────────────────────
@@ -176,7 +166,7 @@
   // The pins-banner names carried pins; the RELEASE list + type-role
   // rebinds moved to the Styling inner tab (Phase 5).
   const pins = $derived(
-    Object.entries((theme as WebTheme | undefined)?.pins ?? {}),
+    Object.entries(theme?.pins ?? {}),
   );
 </script>
 

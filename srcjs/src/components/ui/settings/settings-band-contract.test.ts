@@ -58,8 +58,17 @@ function resolveSvelte(spec: string, fromFile: string): string | null {
     }
   }
   if (!base) return null;
-  for (const cand of [base, base + ".svelte"]) {
-    if (cand.endsWith(".svelte") && existsSync(cand)) return cand;
+  // The store IS the sanctioned home of setThemeField/writeThemePath — the
+  // DT-11 boundary stops there. Type-only imports of `$stores/*.svelte`
+  // must NOT drag the store into the FORBIDDEN scan (it would false-fail).
+  if (base.includes(`${path.sep}stores${path.sep}`)) return null;
+  // Resolve BOTH Svelte components (.svelte) AND panel-tree RUNE MODULES
+  // (.svelte.ts) — the latter (theme-inputs.svelte.ts, the tabs' shared
+  // write conduit) is imported as "./x.svelte" but lives on disk as
+  // "x.svelte.ts". It MUST be in the walk or it's an ungated hole in the
+  // DT-11 boundary (the conduit every tab commits through).
+  for (const cand of [base, base + ".svelte", base + ".ts", base + ".svelte.ts"]) {
+    if ((cand.endsWith(".svelte") || cand.endsWith(".svelte.ts")) && existsSync(cand)) return cand;
   }
   return null;
 }
@@ -97,6 +106,9 @@ describe("DT-11: the settings tree writes no Tier-2/3 theme paths", () => {
     expect(names).toContain("LabelsTab.svelte");
     expect(names).toContain("IdentityTab.svelte");
     expect(names).toContain("FigureBand.svelte");
+    // The shared write conduit (rune module) must be in the walk — every
+    // tab commits through it, so it's load-bearing for the boundary.
+    expect(names).toContain("theme-inputs.svelte.ts");
   });
 
   for (const file of files) {

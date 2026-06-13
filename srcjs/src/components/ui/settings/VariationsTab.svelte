@@ -27,6 +27,7 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeInputs } from "$types/theme-inputs";
+  import { useThemeInputs } from "./theme-inputs.svelte";
   import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
@@ -34,20 +35,12 @@
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  const theme = $derived(store.spec?.theme);
-  const inputs = $derived(
-    (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null,
-  );
+  const ti = useThemeInputs(() => store);
+  const inputs = $derived(ti.inputs);
+  const { commit, preview, patch } = ti;
 
-  function commit(next: ThemeInputs): void {
-    store.setAuthoringInputs(next);
-  }
-  function preview(next: ThemeInputs): void {
-    store.previewAuthoringInputs(next);
-  }
-  function patch<K extends keyof ThemeInputs>(key: K, value: ThemeInputs[K]): void {
-    commit({ ...inputs!, [key]: value });
-  }
+  // Effects is the one nested-key patch Variations needs beyond the
+  // generic top-level `patch`; kept local (Variations-only).
   function patchEffects(key: string, value: unknown, commitNow = true): void {
     const next = { ...inputs!, effects: { ...inputs!.effects, [key]: value } } as ThemeInputs;
     if (commitNow) commit(next); else preview(next);

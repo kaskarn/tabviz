@@ -16,18 +16,17 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import type { ThemeInputs } from "$types/theme-inputs";
   import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
   import Swatch from "$components/primitives/v2/Swatch.svelte";
+  import { useThemeInputs } from "./theme-inputs.svelte";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  const theme = $derived(store.spec?.theme);
-  const inputs = $derived(
-    (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null,
-  );
+  const ti = useThemeInputs(() => store);
+  const theme = $derived(ti.theme);
+  const inputs = $derived(ti.inputs);
 
   type Shape = "circle" | "square" | "diamond" | "triangle";
   type Override = { fill?: string; stroke?: string; shape?: Shape };
@@ -61,9 +60,7 @@
   });
 
   // Resolved series bundles (for swatch defaults — what "unset" shows).
-  const resolvedSeries = $derived(
-    (theme as { series?: { fill: string; stroke: string }[] } | undefined)?.series ?? [],
-  );
+  const resolvedSeries = $derived(theme?.series ?? []);
 
   function overrideAt(slot: number): Override {
     return (inputs?.series_overrides?.[slot] as Override | null | undefined) ?? {};
