@@ -27,6 +27,12 @@ at top of each item.
   `<select>` (option font-family is a no-op in Chrome/Safari); swapped to the
   custom DOM `Dropdown` (prop-compatible). Every font name now previews in its
   own face + selected value too. Commit 7664fd6.
+- **B5 — dead cell family/weight controls honesty-filtered**: the text-role
+  rebind now shows only the {family,size,weight} channels whose backing
+  `--tv-text-<role>-<channel>` token actually paints (NOT KNOWN_UNCONSUMED),
+  mirroring the component roster's filter. cell→size only; numeric→family only;
+  a hint names the fixed channels. Reset moved to the always-present Role field.
+  Test locks the data basis. Commit 10884e3.
 
 ## Diagnosis (evidence) + remaining plan
 
