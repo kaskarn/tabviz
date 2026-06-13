@@ -29,6 +29,7 @@
   import type { ThemeInputs } from "$types/theme-inputs";
   import { useThemeInputs } from "./theme-inputs.svelte";
   import { EnumRow } from "$components/theme-controls";
+  import { describedSegments } from "./option-descriptions";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
 
@@ -120,12 +121,12 @@
     <!-- ── Mode ─────────────────────────────────────────────────────── -->
     <div data-vt="polarity">
       <EnumRow label="Polarity" value={inputs.polarity ?? "light"}
-               segments={POLARITY.map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("polarity", POLARITY)}
                onchange={(v) => patch("polarity", v as ThemeInputs["polarity"])} />
     </div>
     <div data-vt="density">
       <EnumRow label="Density" value={inputs.density ?? "comfortable"}
-               segments={DENSITY.map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("density", DENSITY)}
                onchange={(v) => patch("density", v as ThemeInputs["density"])} />
       <p class="signpost">Fine dial in Edit theme → Styling.</p>
     </div>
@@ -169,7 +170,7 @@
     <div class="strata">chrome</div>
     <div data-vt="header">
       <EnumRow label="Header" value={inputs.header_style ?? "light"}
-               segments={HEADER.map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("header_style", HEADER)}
                onchange={(v) => patch("header_style", v as ThemeInputs["header_style"])} />
     </div>
     {#if hasTitle}
@@ -190,17 +191,17 @@
     </div>
     <div data-vt="shell">
       <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
-               segments={SHELL.map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("shell_mode", SHELL)}
                onchange={(v) => patch("shell_mode", v as ThemeInputs["shell_mode"])} />
     </div>
     <div data-vt="texture">
       <EnumRow label="Texture" value={inputs.shell_texture ?? "none"}
-               segments={TEXTURE.map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("shell_texture", TEXTURE)}
                onchange={(v) => patch("shell_texture", v as ThemeInputs["shell_texture"])} />
     </div>
     <div data-vt="borders">
       <EnumRow label="Borders" value={inputs.border_preset ?? "hairline"}
-               segments={BORDERS.map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("border_preset", BORDERS)}
                onchange={(v) => patch("border_preset", v as ThemeInputs["border_preset"])} />
     </div>
     {#if hasSeriesMarks}
@@ -216,20 +217,20 @@
     <div class="strata">effects</div>
     <div data-vt="glow">
       <EnumRow label="Glow" value={fx.glow_intensity ?? "none"}
-               segments={["none", "subtle", "neon"].map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("glow_intensity", ["none", "subtle", "neon"])}
                onchange={(v) => patchEffects("glow_intensity", v)} />
     </div>
     {#if (fx.glow_intensity ?? "none") !== "none"}
       <div data-vt="glow-anchor">
         <EnumRow label="Anchor" value={fx.glow_anchor ?? "brand"}
-                 segments={["brand", "accent"].map((v) => ({ value: v, label: v }))}
+                 segments={describedSegments("glow_anchor", ["brand", "accent"])}
                  onchange={(v) => patchEffects("glow_anchor", v)} />
       </div>
     {/if}
     {#if shellPainted}
       <div data-vt="gradient">
         <EnumRow label="Gradient" value={fx.gradient_shell_intensity ?? "none"}
-                 segments={["none", "subtle", "vivid"].map((v) => ({ value: v, label: v }))}
+                 segments={describedSegments("gradient_shell_intensity", ["none", "subtle", "vivid"])}
                  onchange={(v) => patchEffects("gradient_shell_intensity", v)} />
       </div>
       {#if (fx.gradient_shell_intensity ?? "none") !== "none"}
@@ -246,13 +247,13 @@
     {/if}
     <div data-vt="shadow">
       <EnumRow label="Shadow" value={fx.elevation ?? "none"}
-               segments={["none", "low", "medium", "high"].map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("elevation", ["none", "low", "medium", "high"])}
                onchange={(v) => patchEffects("elevation", v)} />
     </div>
     <div data-vt="glass">
       <EnumRow label="Glass" hint="Translucent shell (browser only — exports render it opaque)."
                value={fx.glass ?? "none"}
-               segments={["none", "frosted", "aurora"].map((v) => ({ value: v, label: v }))}
+               segments={describedSegments("glass", ["none", "frosted", "aurora"])}
                onchange={(v) => patchEffects("glass", v)} />
     </div>
 
