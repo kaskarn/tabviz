@@ -11,7 +11,6 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import Swatch from "$components/primitives/v2/Swatch.svelte";
@@ -21,33 +20,11 @@
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  // ── Banding (data-slice override; finite structural pick) ──────────
-  // The pill must not lie (review P1 #3): group-N themes surface their
-  // level in the Level slider, and re-picking "group" PRESERVES the
-  // current level instead of collapsing it to null.
-  const banding = $derived(store.effectiveBanding);
-  const bandingValue = $derived.by(() => {
-    if (!banding || banding.mode === "none") return "none";
-    return banding.mode === "row" ? "row" : "group";
-  });
-  const bandingLevel = $derived(
-    banding && banding.mode !== "none" && banding.mode !== "row"
-      ? (banding.level ?? 1)
-      : 1,
-  );
-  const groupDepth = $derived(store.maxGroupDepth);
-  const startsWithBand = $derived(store.bandingStartsWithBand);
-
-  function setBandingMode(v: string): void {
-    if (v === "group") {
-      // Preserve the active level when one exists.
-      const lvl = banding && banding.mode !== "none" && banding.mode !== "row"
-        ? banding.level : null;
-      store.setBandingOverride(lvl ? `group-${lvl}` : "group");
-    } else {
-      store.setBandingOverride(v === "none" ? "none" : "row");
-    }
-  }
+  // Banding controls moved to the VARIATIONS tab as theme-input writes
+  // (settings-redesign Phase 1); the runtime override (Shiny set_banding)
+  // still participates in figure dirty/reset below. The Contrast row left
+  // too — it duplicated the toolbar's ContrastButton (view state belongs
+  // to the toolbar, D21 ruling 10).
 
   // ── Watermark ───────────────────────────────────────────────────────
   let watermarkOpen = $state(false);
@@ -81,55 +58,6 @@
     <span class="seam-title">this figure</span>
     <span class="seam-sub">stays with this figure · not exported with the theme</span>
   </div>
-
-  <!-- Accessibility: a low-vision VIEWER can force high-contrast without
-       the author having baked it into the theme (round-2 a11y B2). "auto"
-       honors the OS prefers-contrast / forced-colors signal. Viewer
-       preference — overlaid at paint time, never written to the theme. -->
-  <EnumRow
-    label="Contrast"
-    value={store.contrastOverride}
-    segments={[
-      { value: "auto", label: "auto" },
-      { value: "more", label: "more" },
-    ]}
-    onchange={(v) => store.setContrastOverride(v as "auto" | "more")}
-  />
-
-  <EnumRow
-    label="Banding"
-    value={bandingValue}
-    segments={groupDepth > 0
-      ? [
-          { value: "none", label: "none" },
-          { value: "row", label: "row" },
-          { value: "group", label: "group" },
-        ]
-      : [
-          { value: "none", label: "none" },
-          { value: "row", label: "row" },
-        ]}
-    onchange={setBandingMode}
-  />
-  {#if bandingValue === "group" && groupDepth > 1}
-    <Field label="Level" hint="Which group depth alternates the band.">
-      <Slider value={bandingLevel} min={1} max={groupDepth} step={1}
-              ariaLabel="Banding group level"
-              oncommit={(v) => store.setBandingOverride(`group-${v}`)} />
-    </Field>
-  {/if}
-  {#if bandingValue !== "none"}
-    <EnumRow
-      label="Start"
-      hint="Whether the first band is shaded or plain."
-      value={startsWithBand ? "band" : "plain"}
-      segments={[
-        { value: "band", label: "band" },
-        { value: "plain", label: "plain" },
-      ]}
-      onchange={(v) => store.setBandingStartsWithBand(v === "band")}
-    />
-  {/if}
 
   <DisclosureField label="Watermark" summary={wmSummary} bind:open={watermarkOpen}>
     <Field label="Text">

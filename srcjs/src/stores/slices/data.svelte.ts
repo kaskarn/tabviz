@@ -186,6 +186,12 @@ export function createDataSlice(deps: DataSliceDeps): DataSlice {
 
   const bandingStartsWithBand = $derived.by((): boolean => {
     if (bandingStartsWithBandOverride !== null) return bandingStartsWithBandOverride;
+    // Theme tier (settings-redesign Phase 1): banding_start is a Tier-1
+    // input, between the figure override and the historical default.
+    const themeStart = (deps.getSpec()?.theme as { authoringInputs?: { banding_start?: string } } | undefined)
+      ?.authoringInputs?.banding_start;
+    if (themeStart === "band") return true;
+    if (themeStart === "plain") return false;
     return effectiveBanding.mode === "group";
   });
 

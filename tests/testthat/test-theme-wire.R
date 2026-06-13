@@ -91,6 +91,22 @@ test_that("border_preset survives the inputs wire", {
   expect_identical(back@border_preset, "boxed")
 })
 
+test_that("banding + banding_start are Tier-1 inputs that survive the wire", {
+  th <- web_theme(banding = "row", banding_start = "plain")
+  # Resolved theme carries the parsed grammar on the row cluster.
+  expect_identical(th@row@banding, "row")
+  w <- tabviz:::theme_inputs_to_json(th@inputs)
+  expect_identical(w$banding, "row")
+  expect_identical(w$banding_start, "plain")
+  back <- tabviz:::theme_inputs_from_wire(w)
+  expect_identical(back@banding, "row")
+  expect_identical(back@banding_start, "plain")
+  # group-N grammar parses; garbage rejects.
+  expect_identical(web_theme(banding = "group-2")@inputs@banding, "group-2")
+  expect_error(web_theme(banding = "zebra"))
+  expect_error(web_theme(banding_start = "stripey"))
+})
+
 test_that("set_role validates ramp and grade", {
   expect_error(set_role(web_theme_nejm(), "text-muted", "rainbow", 3))
   expect_error(set_role(web_theme_nejm(), "text-muted", "brand", 0))

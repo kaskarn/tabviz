@@ -220,6 +220,18 @@ export interface ThemeInputs {
    *  Unset keeps the resolver's default cluster (≡ hairline). */
   border_preset?: "none" | "hairline" | "ruled" | "frame" | "boxed";
 
+  /** Banding as a Tier-1 structural variant (settings-redesign Phase 1 —
+   *  the header_style/border_preset precedent). The banding GRAMMAR
+   *  string: "none" | "row" | "group" | "group-N" (N = group depth that
+   *  alternates the band). The adapter parses it onto the resolved
+   *  `layout.banding`; the runtime FIGURE override (Shiny `set_banding`)
+   *  still wins over this at display time. Unset ≡ "group". */
+  banding?: string;
+  /** Whether the first band is shaded ("band") or plain ("plain").
+   *  Unset → shaded for group banding, plain otherwise (the historical
+   *  default the figure override preserved). */
+  banding_start?: "band" | "plain";
+
   /** Per-row-kind theme defaults — currently only height ratio; Stage 2
    *  paint fields (bg, fg, border, weight) extend this shape per Q10
    *  closure. Layer 3 of the row-kind height cascade (Stage 1 §33). */

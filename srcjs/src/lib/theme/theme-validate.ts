@@ -214,6 +214,7 @@ const BORDER_PRESET_VALUES = ["none", "hairline", "ruled", "frame", "boxed"] as 
 const TITLE_STYLE_VALUES = ["normal", "bar", "underline"] as const;
 const POINT_SHAPE_VALUES = ["circle", "square", "diamond", "triangle"] as const;
 const INTERVAL_WEIGHT_VALUES = ["hair", "regular", "thick"] as const;
+const BANDING_START_VALUES = ["band", "plain"] as const;
 // Tier-2 type-role vocab (Wave 3.5 ingress validation).
 const TYPE_ROLE_VALUES = [
   "title", "subtitle", "body", "numeric", "label", "caption", "footnote", "cell", "tick",
@@ -301,6 +302,12 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
   checkEnum(inputs.effects?.title_style, TITLE_STYLE_VALUES, "effects.title_style", p);
   checkEnum(inputs.marks?.point_shape, POINT_SHAPE_VALUES, "marks.point_shape", p);
   checkEnum(inputs.marks?.interval_weight, INTERVAL_WEIGHT_VALUES, "marks.interval_weight", p);
+  // banding rides the R grammar ("none" | "row" | "group" | "group-N"),
+  // so it's a pattern check, not an enum membership.
+  if (inputs.banding !== undefined && !/^(none|row|group(-[1-9]\d*)?)$/.test(inputs.banding)) {
+    p.push({ path: "banding", code: "enum", message: `banding must be 'none', 'row', 'group', or 'group-N', got '${inputs.banding}'` });
+  }
+  checkEnum(inputs.banding_start, BANDING_START_VALUES, "banding_start", p);
 
   // Numeric ranges
   checkRange(inputs.density_factor, 0.5, 2, "density_factor", p);

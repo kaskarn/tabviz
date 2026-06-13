@@ -422,6 +422,17 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 — **SETTINGS REDESIGN PHASE 1 (VARIATIONS) LANDED** + D23
+  DECIDED (all 9 presets bless the polarity flip, no pins — battery in
+  the register). The panel carries the real tab spine; Variations is
+  the landing tab with 16 theme-input controls; `banding`/
+  `banding_start` promoted to Tier-1 inputs end-to-end (TS+R+wire);
+  the NEW consequence harness (settings-consequence.browser.ts,
+  CI-gated) pixel-diffs every control and already caught the
+  gradient×shell-mode inertness + drove the row-level gates. Liveness
+  + interaction-qa rewritten for the spine. Full record:
+  settings-redesign.md Phase 1.
+
 - 2026-06-12 — **SETTINGS UX TOTAL REDESIGN OPENED** (D21; canonical
   record docs/dev/settings-redesign.md). The maintainer's layer
   taxonomy locks five surfaces (Variations · Labels · Identity ·

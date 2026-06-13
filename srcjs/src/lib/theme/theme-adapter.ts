@@ -27,6 +27,7 @@ import { buildThemeStructure } from "./theme-resolve";
 import { validateResolvedTheme } from "./theme-validate";
 import { rampStep, oklchMix, oklchDarken } from "../oklch";
 import { resolveCategorical } from "../data-schemes";
+import { parseBandingString } from "../banding";
 import type {
   WebTheme, AccentRoles,
   StatusColors, SlotRole, TextRole, TextRoles,
@@ -257,6 +258,16 @@ export function buildTheme(
     indentPerLevel: spacing.indentPerLevel,
   };
 
+  // banding as a Tier-1 structural input (settings-redesign Phase 1):
+  // parse the grammar string onto both cluster homes. Invalid strings
+  // can't reach here (validateThemeInputs pattern-gates the ingress),
+  // but parse defensively anyway — a bad value falls back to the
+  // historical default rather than throwing mid-resolve.
+  let themeBanding = { mode: "group" as const, level: null };
+  if (inputs.banding) {
+    try { themeBanding = parseBandingString(inputs.banding) as typeof themeBanding; } catch { /* keep default */ }
+  }
+
   const row: RowCluster = {
     base:     { bg: t.paper, fg: t.ink },
     alt:      { bg: t.paper_alt, fg: t.ink },
@@ -287,7 +298,7 @@ export function buildTheme(
       markerFill: null, markerStroke: null,
       fontWeight: 600, fontStyle: null,
     },
-    banding: { mode: "group", level: null },
+    banding: { ...themeBanding },
     selectedEdgeWidth: 2,
     borderWidth: 1,
   };
@@ -320,7 +331,7 @@ export function buildTheme(
     plotWidth: "auto",
     containerBorder: false,
     containerBorderRadius: 8,
-    banding: { mode: "group", level: null },
+    banding: { ...themeBanding },
   };
 
   const built: WebTheme = {

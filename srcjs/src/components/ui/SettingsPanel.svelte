@@ -19,6 +19,7 @@
   import ConfirmDialog from "./ConfirmDialog.svelte";
   import ThemeBand from "./settings/ThemeBand.svelte";
   import FigureBand from "./settings/FigureBand.svelte";
+  import VariationsTab from "./settings/VariationsTab.svelte";
   // v2 design tokens — the primitives cascade off [data-tv-v2].
   import "$components/primitives/v2/tokens.css";
 
@@ -27,6 +28,20 @@
   }
 
   const { store }: Props = $props();
+
+  // ── D21 tab spine ────────────────────────────────────────────────────
+  // Final IA: Variations | Labels | Edit theme{Identity · Plots · Styling}.
+  // Built tab-by-tab (settings-redesign.md): "variations" is live (Phase
+  // 1); "theme" hosts the interim Tier-1 band until Identity/Plots/
+  // Styling land; "figure" hosts the interim figure band until Labels
+  // absorbs it. Tab labels rename as each phase replaces its interim.
+  type PanelTab = "variations" | "theme" | "figure";
+  let activeTab = $state<PanelTab>("variations");
+  const TABS: ReadonlyArray<{ id: PanelTab; label: string }> = [
+    { id: "variations", label: "variations" },
+    { id: "theme", label: "edit theme" },
+    { id: "figure", label: "this figure" },
+  ];
 
   const open = $derived(store.settingsOpen);
   const themeDirty = $derived(store.hasThemeEdits);
@@ -139,16 +154,29 @@
       </div>
     </div>
 
-    <!-- PHASE 0 (settings-redesign D21): the quick strip and components
-         band are REMOVED — Variations and Styling replace them, built
-         tab-by-tab per docs/dev/settings-redesign.md. The interim panel
-         is ThemeBand (Tier-1 sections, raw material for Identity) +
-         FigureBand (figure state, reshaped by the travel matrix). -->
+    <div class="tab-strip" role="tablist" aria-label="Settings sections">
+      {#each TABS as t (t.id)}
+        <button type="button" role="tab" class="tab"
+                class:active={activeTab === t.id}
+                aria-selected={activeTab === t.id}
+                tabindex={activeTab === t.id ? 0 : -1}
+                onclick={() => (activeTab = t.id)}>{t.label}</button>
+      {/each}
+    </div>
+
     <div class="panel-body">
-      <div class="theme-band">
-        <ThemeBand {store} />
-      </div>
-      <FigureBand {store} />
+      {#if activeTab === "variations"}
+        <div class="tab-pad"><VariationsTab {store} /></div>
+      {:else if activeTab === "theme"}
+        <!-- Interim Tier-1 band — raw material for Identity/Plots/Styling
+             (built next, per docs/dev/settings-redesign.md). -->
+        <div class="theme-band">
+          <ThemeBand {store} />
+        </div>
+      {:else}
+        <!-- Interim figure band — Labels absorbs this when Phase 2 lands. -->
+        <FigureBand {store} />
+      {/if}
     </div>
   </div>
 
@@ -260,12 +288,46 @@
   }
   .bar-icon-btn:hover { color: var(--v2-ink, #15140e); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
 
+  .tab-strip {
+    display: flex;
+    gap: 2px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--v2-rule, #d6d0c1);
+    flex: none;
+  }
+  .tab {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 7px 8px 6px;
+    margin-bottom: -1px;
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-small, 10.5px);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--v2-ink-3, #8a8478);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .tab:hover { color: var(--v2-ink, #15140e); }
+  .tab.active {
+    color: var(--v2-ink, #15140e);
+    border-bottom-color: var(--v2-ink, #15140e);
+  }
+  .tab:focus-visible {
+    outline: 1px solid var(--v2-focus-ring, #15140e);
+    outline-offset: -1px;
+  }
+
   .panel-body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+  }
+  .tab-pad {
+    padding: 0 12px;
   }
   .theme-band {
     flex: none;

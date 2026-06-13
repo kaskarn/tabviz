@@ -63,8 +63,6 @@
     onmatchbrand,
   }: Props = $props();
 
-  const roomy = $derived(layout === "roomy");
-
   function commit(next: ThemeInputs, label?: string): void {
     onchange(next, label);
   }
@@ -146,34 +144,16 @@
     return n > 0 ? `${n} set` : "defaults";
   });
 
-  // ── Surface enums ───────────────────────────────────────────────────
-  const SHELL = ["flush", "raised", "float", "transparent"] as const;
-  const HEADER = ["light", "tint", "bold"] as const;
-  const SERIES = [
-    { value: "fill_with_darker_stroke", label: "ring" },
-    { value: "flat_fill", label: "flat" },
-    { value: "outlined", label: "outline" },
-  ] as const;
-  const BORDERS = ["none", "hairline", "ruled", "frame", "boxed"] as const;
-  const TEXTURE = ["none", "ruled", "grid", "dotted", "grain"] as const;
+  // Surface variants + effects moved to the panel's VARIATIONS tab
+  // (settings-redesign Phase 1) — their enum rosters and patchEffects
+  // left with them.
 
   // ── Disclosure summaries (collapsed ≠ blind) ────────────────────────
   // Disclosures now live INSIDE the axis-tabs (UX redesign A3), so they
   // default OPEN — the tab IS the grouping; the collapse is just optional
   // tidying within a tab.
   let colorSystemOpen = $state(true);
-  let effectsOpen = $state(true);
   let geometryOpen = $state(true);
-
-  const fx = $derived(inputs?.effects ?? {});
-  const effectsSummary = $derived.by(() => {
-    const parts: string[] = [];
-    if (fx.title_style && fx.title_style !== "normal") parts.push(fx.title_style);
-    if (fx.glow_intensity && fx.glow_intensity !== "none") parts.push(`glow ${fx.glow_intensity}`);
-    if (fx.gradient_shell_intensity && fx.gradient_shell_intensity !== "none") parts.push("gradient");
-    if (fx.elevation && fx.elevation !== "none") parts.push(fx.elevation);
-    return parts.length ? parts.join(" · ") : "none";
-  });
   const geometrySummary = $derived.by(() => {
     const g = inputs?.geometry;
     const r = g?.radius?.md;
@@ -187,10 +167,6 @@
     return parts.length ? parts.join(" · ") : "default";
   });
 
-  function patchEffects(key: string, value: unknown, commitNow = true): void {
-    const next = { ...inputs, effects: { ...inputs.effects, [key]: value } } as ThemeInputs;
-    if (commitNow) commit(next); else preview(next);
-  }
   function patchGeometry(group: "radius" | "border_width", key: string, value: number): void {
     commit({
       ...inputs,
@@ -273,7 +249,7 @@
   // the "Advanced controls" junk-drawer. Each tab maps to a cascade input
   // family; the colored dot is the rgc axis-identity cue. IDENTITY is the
   // landing tab (the high-frequency "make it mine" anchors).
-  type PanelTab = "identity" | "color" | "form" | "effects";
+  type PanelTab = "identity" | "color" | "form";
   let activeTab = $state<PanelTab>("identity");
   // PHASE 0 (settings-redesign D21): D16's single-scroll jump-link nav
   // is REMOVED from the compact (settings) host — the redesign brings
@@ -291,7 +267,6 @@
     { id: "identity", label: "Identity", dot: "var(--v2-ink, #15140e)" },
     { id: "color",    label: "Color",    dot: "var(--tv-status-positive, #2f9e6b)" },
     { id: "form",     label: "Form",     dot: "var(--tv-accent, #2563eb)" },
-    { id: "effects",  label: "Effects",  dot: "#7c3aed" },
   ];
 </script>
 
@@ -355,30 +330,12 @@
 {/if}
 
 {#if show("form")}<div data-t1-section="form"></div>
-  <Section title="Surface" kicker="Tier 1 · Structure"
-           lede="Structural variants — shell, header band, series marks, borders, texture. Each re-resolves the cascade.">
-    <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
-             segments={SHELL.map((v) => ({ value: v, label: v }))}
-             onchange={(v) => patch("shell_mode", v)} />
-    <EnumRow label="Header" value={inputs.header_style ?? "light"}
-             segments={HEADER.map((v) => ({ value: v, label: v }))}
-             onchange={(v) => patch("header_style", v)} />
-    <EnumRow label="Series" value={inputs.slot_style ?? "fill_with_darker_stroke"}
-             segments={SERIES.map((s) => ({ value: s.value, label: s.label }))}
-             onchange={(v) => patch("slot_style", v as ThemeInputs["slot_style"])} />
-    <EnumRow label="Borders" value={inputs.border_preset ?? "hairline"}
-             segments={BORDERS.map((v) => ({ value: v, label: v }))}
-             onchange={(v) => patch("border_preset", v as ThemeInputs["border_preset"])} />
-    <Field label="Texture">
-      <Dropdown value={inputs.shell_texture ?? "none"}
-              ariaLabel="Texture"
-              onchange={(v) => patch("shell_texture", v as ThemeInputs["shell_texture"])}
-              options={TEXTURE.map((v) => ({ value: v, label: v }))} />
-    </Field>
-  </Section>
-
+  <!-- Surface variants + Effects + Base/Scale moved to the panel's
+       VARIATIONS tab (settings-redesign Phase 1 — one control per
+       concern). This component keeps the Identity-bound material:
+       anchors, families, role rebinds, scheme, geometry. -->
   <Section title="Type" kicker="Tier 1 · Type"
-           lede="Body family + the two Tier-1 scale knobs. Per-role typography is studio territory.">
+           lede="Families + per-role rebinds. Size and scaling live in Variations.">
     <Field label="Body">
       <FontFamily value={inputs.fonts?.body ?? null}
                   ariaLabel="Body font"
@@ -388,16 +345,6 @@
       <FontFamily value={inputs.fonts?.numeric ?? null}
                   ariaLabel="Numeric figure font"
                   onchange={(v) => patchFonts("numeric", v)} />
-    </Field>
-    <Field label="Base">
-      <Slider value={inputs.type_base_size ?? 14} min={10} max={22} step={0.5} suffix="px"
-              ariaLabel="Type base size"
-              oncommit={(v) => patch("type_base_size", v)} />
-    </Field>
-    <Field label="Scale">
-      <Slider value={inputs.type_scale_ratio ?? 1.2} min={1.05} max={1.5} step={0.01} valueWidth={4}
-              ariaLabel="Type scale ratio"
-              oncommit={(v) => patch("type_scale_ratio", v)} />
     </Field>
     <!-- Text sizes — Tier-2 type-role rebind (Wave 3.5). Pick a role, then
          rebind its family / size / weight. Cascade-safe (rides
@@ -438,48 +385,6 @@
     </DisclosureField>
 {/if}
 
-{#if show("effects")}<div data-t1-section="effects"></div>
-    <DisclosureField label="Effects" summary={effectsSummary} bind:open={effectsOpen}>
-      <EnumRow label="Title" value={fx.title_style ?? "normal"}
-               segments={["normal", "bar", "underline"].map((v) => ({ value: v, label: v }))}
-               onchange={(v) => patchEffects("title_style", v)} />
-      <EnumRow label="Title tag"
-               hint="A boxed stamp beside the title (the 'Table 1' chip). Set its text with tag= on tabviz() or by double-clicking it on the canvas."
-               value={fx.caption_style ?? "none"}
-               segments={["none", "chip", "stripe", "both"].map((v) => ({ value: v, label: v }))}
-               onchange={(v) => patchEffects("caption_style", v)} />
-      <div class="fx-flag">Surface finish</div>
-      <EnumRow label="Glow" value={fx.glow_intensity ?? "none"}
-               segments={["none", "subtle", "neon"].map((v) => ({ value: v, label: v }))}
-               onchange={(v) => patchEffects("glow_intensity", v)} />
-      {#if (fx.glow_intensity ?? "none") !== "none"}
-        <EnumRow label="Anchor" value={fx.glow_anchor ?? "brand"}
-                 segments={["brand", "accent"].map((v) => ({ value: v, label: v }))}
-                 onchange={(v) => patchEffects("glow_anchor", v)} />
-      {/if}
-      <EnumRow label="Gradient" value={fx.gradient_shell_intensity ?? "none"}
-               segments={["none", "subtle", "vivid"].map((v) => ({ value: v, label: v }))}
-               onchange={(v) => patchEffects("gradient_shell_intensity", v)} />
-      {#if (fx.gradient_shell_intensity ?? "none") !== "none"}
-        <Field label="Angle">
-          <Slider value={fx.gradient_shell_angle ?? 90} min={0} max={360} step={5}
-                  valueText={`${Math.round(fx.gradient_shell_angle ?? 90)}°`}
-                  ariaLabel="Gradient angle"
-                  onchange={(v) => patchEffects("gradient_shell_angle", v, false)}
-                  oncommit={(v) => patchEffects("gradient_shell_angle", v)} />
-        </Field>
-      {/if}
-      <EnumRow label="Shadow" hint="Figure-wide depth; magnitude words only."
-               value={fx.elevation ?? "none"}
-               segments={["none", "low", "medium", "high"].map((v) => ({ value: v, label: v }))}
-               onchange={(v) => patchEffects("elevation", v)} />
-      <EnumRow label="Glass" hint="Translucent frosted / aurora shell (browser only)."
-               value={fx.glass ?? "none"}
-               segments={["none", "frosted", "aurora"].map((v) => ({ value: v, label: v }))}
-               onchange={(v) => patchEffects("glass", v)} />
-    </DisclosureField>
-{/if}
-
 {#if show("form")}
     <DisclosureField label="Geometry" summary={geometrySummary} bind:open={geometryOpen}>
       <!-- Named SLOTS (Wave 3 geometry roles) — coarse rebinds above the
@@ -504,19 +409,6 @@
 </div>
 
 <style>
-  /* Micro-cap divider inside a disclosure body — tracked uppercase eyebrow
-     that groups related controls (e.g. "Surface finish" effects). */
-  .fx-flag {
-    margin: 6px 0 0;
-    padding-top: 6px;
-    border-top: 1px solid var(--v2-rule-soft, #e6e0d1);
-    font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: var(--v2-text-micro, 9.5px);
-    font-weight: 600;
-    letter-spacing: var(--v2-track-flag, 0.14em);
-    text-transform: uppercase;
-    color: var(--v2-ink-3, #8a8478);
-  }
   /* Indented sub-group: child fields of a selected parent (e.g. the type
      role's family/size/weight). A left rule carries the hierarchy. */
   .sub-group {

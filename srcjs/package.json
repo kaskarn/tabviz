@@ -90,6 +90,7 @@
     "bench": "bun run tests/perf/run-bench.ts",
     "bench:browser": "bun run tests/browser/run-bench.ts",
     "qa:liveness": "bun run tests/browser/panel-liveness.browser.ts",
+    "qa:consequence": "bun run tests/browser/settings-consequence.browser.ts",
     "lint": "eslint src",
     "format": "prettier --write 'src/**/*.{ts,svelte,css}'",
     "screenshot": "node scripts/screenshot.js"

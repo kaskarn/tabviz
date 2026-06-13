@@ -106,6 +106,11 @@ control per concern per layer; a pointer instead of a duplicate.
   shows everywhere.
 - **D20 label-column discussion** — gates Styling's component roster.
 - Border + slot_style v2 design notes (separate docs).
+- **Specimen upgrades (Phase-1 residual)**: Variations satisfies
+  preview-before-commit at the no-blind-dropdowns level (every enum is a
+  labeled Pill), but Shell / Texture / Borders are visual choices where
+  micro-specimens (VariantPicker cards) would dramatically help. Upgrade
+  candidates when the idiom kit gains real (non-text) preview slots.
 
 ## The plan
 
@@ -133,7 +138,39 @@ gate removed structures (keep the tier-write rule itself). The
 panel-liveness harness shrinks to the surviving shell until tabs land.
 Old sections die in code, not behind flags.
 
-**Phases 1–5 — build tab by tab, in order: Variations → Labels →
+**Phase 1 — VARIATIONS — EXECUTED 2026-06-12.** The panel gained the
+real tab spine (`variations | edit theme | this figure`; interim labels
+for the not-yet-rebuilt surfaces) with Variations as the landing tab:
+Polarity · Density · Banding(+level/start) · Header · Title · Tag ·
+Shell · Texture · Borders · Series · Glow(+anchor) · Gradient(+angle) ·
+Shadow · Glass · text Size/Scaling — every write a THEME-INPUT write
+(travel matrix honored; Reset theme reverts all of it, verified by the
+harness). Substrate: `banding` + `banding_start` were promoted to
+Tier-1 structural-variant inputs end-to-end (TS types/validate/adapter,
+R S7 slots/validator/wire both directions, `web_theme(banding=)`,
+fixpoint + round-trip tests); the panel banding handlers CLEAR the
+runtime figure override before writing so the theme write is never
+masked. Removals (one control per concern): Tier1Sections lost the
+Surface section, the Effects disclosure, and the Base/Scale sliders;
+FigureBand lost its banding rows and the Contrast row (duplicate of the
+toolbar ContrastButton — D21 ruling 10). Consequence gates in the tab:
+Title needs a title, Tag's chip needs a tag, Series needs a plot
+column, banding's group segment needs groups, Gradient hides at
+float/transparent shells (the shell isn't painted there — found by the
+harness, every segment 0px at float). The NEW consequence harness
+(`tests/browser/settings-consequence.browser.ts`, `npm run
+qa:consequence`, CI-gated) walks every `[data-vt]` control with real
+input and pixel-diffs the figure region (pixelmatch threshold 0 —
+deterministic headless rendering makes raw inequality the honest
+measure; several blessed variations are sub-perceptual: nejm banding
+Δ≈4/255). Its maiden runs caught the gradient/shell interaction and
+proved header/shadow/angle wiring real. panel-liveness walks all three
+tabs (67 repaint-verified); interaction-qa's settings leg rewritten for
+the tab spine. Deferred to Phase 5: the density "advanced control in
+Styling" signpost caption (pointing at a tab that doesn't exist yet
+would be a broken signpost).
+
+**Phases 2–5 — build tab by tab, in order: Labels →
 Identity → Plots → Styling.** Each tab's exit gate:
 - every control passes **consequence** (visible pixel delta in the
   rendered fixture — a NEW harness check, not DOM-fingerprint

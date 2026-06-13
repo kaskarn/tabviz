@@ -173,6 +173,8 @@ theme_inputs_to_json <- function(inputs) {
     shell_texture         = na_to_null(inputs@shell_texture),
     slot_style            = na_to_null(inputs@slot_style),
     border_preset         = na_to_null(inputs@border_preset),
+    banding               = na_to_null(inputs@banding),
+    banding_start         = na_to_null(inputs@banding_start),
     header_style          = na_to_null(inputs@header_style),
     first_column_style    = na_to_null(inputs@first_column_style),
     type_base_size        = na_to_null(inputs@type_base_size),
@@ -378,6 +380,12 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   `"none"`, `"hairline"`, `"ruled"`, `"frame"`, or `"boxed"`. `"frame"` is
 #'   the clean journal look (top+bottom table frame). Default resolver cluster
 #'   (≈ hairline) when unset.
+#' @param banding Alternating-row background as a Tier-1 structural variant:
+#'   the banding grammar string `"none"`, `"row"`, `"group"`, or `"group-N"`
+#'   (band alternates at group depth N). Default `"group"` when unset. The
+#'   per-figure runtime override ([set_banding()]) still wins at display time.
+#' @param banding_start Whether the first band is shaded (`"band"`) or plain
+#'   (`"plain"`). Default: shaded for group banding, plain otherwise.
 #' @param first_column_style First (label) column treatment: `"default"` or
 #'   `"bold"` (tinted + weighted leading column). A Tier-1 structural input.
 #' @param web_fonts Optional list of [web_font()] declarations to embed.
@@ -419,6 +427,8 @@ web_theme <- function(
     interaction_defaults = NULL,
     header_style = NULL,
     border_preset = NULL,
+    banding = NULL,
+    banding_start = NULL,
     first_column_style = "default",
     web_fonts = NULL,
     name = "custom") {
@@ -435,6 +445,8 @@ web_theme <- function(
   checkmate::assert_string(name)
   checkmate::assert_choice(shell_mode, c("flush", "raised", "float", "transparent"), null.ok = TRUE)
   checkmate::assert_choice(shell_texture, c("none", "ruled", "grid", "dotted", "grain"), null.ok = TRUE)
+  if (!is.null(banding)) parse_banding(banding)  # grammar gate: none/row/group/group-N
+  checkmate::assert_choice(banding_start, c("band", "plain"), null.ok = TRUE)
   checkmate::assert_number(type_base_size, lower = 8, upper = 32, null.ok = TRUE)
   checkmate::assert_number(type_scale_ratio, lower = 1.05, upper = 1.6, null.ok = TRUE)
   checkmate::assert_list(type_weights, null.ok = TRUE)
@@ -488,6 +500,8 @@ web_theme <- function(
     header_style       = header_style %||% NA_character_,
     first_column_style = if (identical(first_column_style, "default")) NA_character_ else first_column_style,
     border_preset = border_preset %||% NA_character_,
+    banding       = banding       %||% NA_character_,
+    banding_start = banding_start %||% NA_character_,
     shell_texture = shell_texture %||% NA_character_,
     type_base_size   = type_base_size   %||% NA_real_,
     type_scale_ratio = type_scale_ratio %||% NA_real_,

@@ -406,17 +406,36 @@ async function run(): Promise<void> {
     if (!(await page.$(".settings-panel"))) throw new Error("settings panel did not open");
     progress("panel opened");
 
-    // A4 reset gutter — both scoped resets present, both disabled while clean.
-    const gutter0 = await page.evaluate(() => {
+    // D21 tab spine: the panel hosts three tabs (variations / edit theme /
+    // this figure). Helper clicks one by its visible label.
+    const gotoTab = async (label: string): Promise<void> => {
+      const ok = await page.evaluate((l) => {
+        const tab = [...document.querySelectorAll<HTMLElement>(".settings-panel .tab-strip [role=tab]")]
+          .find((t) => (t.textContent || "").trim() === l);
+        if (!tab) return false;
+        tab.click();
+        return true;
+      }, label);
+      if (!ok) throw new Error(`panel tab "${label}" not found`);
+      await settle(250);
+    };
+
+    // A4 reset gutter — both scoped resets present, both disabled while
+    // clean. Reset theme lives in the panel bar; Reset figure on its tab.
+    const themeClean = await page.evaluate(() => {
       const panel = document.querySelector(".settings-panel")!;
       const theme = [...panel.querySelectorAll<HTMLButtonElement>("button")].find((b) => /reset theme/i.test(b.textContent || ""));
-      const fig = panel.querySelector<HTMLButtonElement>(".reset-figure");
-      return { theme: theme ? !theme.disabled : null, fig: fig ? !fig.disabled : null };
+      return theme ? !theme.disabled : null;
     });
-    if (gutter0.theme === null) failures.push("reset gutter: 'Reset theme' button missing");
-    else if (gutter0.theme) failures.push("reset gutter: 'Reset theme' enabled on a CLEAN theme (should gate on dirty)");
-    if (gutter0.fig === null) failures.push("reset gutter: 'Reset figure' button missing");
-    else if (gutter0.fig) failures.push("reset gutter: 'Reset figure' enabled on a CLEAN figure (should gate on dirty)");
+    if (themeClean === null) failures.push("reset gutter: 'Reset theme' button missing");
+    else if (themeClean) failures.push("reset gutter: 'Reset theme' enabled on a CLEAN theme (should gate on dirty)");
+    await gotoTab("this figure");
+    const figClean = await page.evaluate(() => {
+      const fig = document.querySelector<HTMLButtonElement>(".settings-panel .reset-figure");
+      return fig ? !fig.disabled : null;
+    });
+    if (figClean === null) failures.push("reset gutter: 'Reset figure' button missing");
+    else if (figClean) failures.push("reset gutter: 'Reset figure' enabled on a CLEAN figure (should gate on dirty)");
 
     // Walk every value/nav control in `rootSel`, operating each + asserting a
     // widget-or-panel delta. `label` tags the run; shared chrome (quick strip
@@ -483,25 +502,24 @@ async function run(): Promise<void> {
       }
     };
 
-    // D16 (2026-06-11): the settings panel is SINGLE-SCROLL — the four
-    // section "tabs" are sticky jump-links (role=navigation) and every
-    // section's controls are mounted at once. The studio keeps real tabs.
-    // The walk: verify the four nav links exist + scroll (live), expand
-    // every disclosure once, then walk the WHOLE panel in one pass.
-    // PHASE 0 (settings-redesign D21): the jump-link nav is REMOVED —
-    // the interim panel is a plain section scroll while the real tabs
-    // (Variations/Labels/Identity/Plots/Styling) are built. The walk
-    // shrinks to the surviving shell; each new tab brings its own
-    // CONSEQUENCE harness (visible-pixel delta), which supersedes this
-    // fingerprint-liveness walk per the redesign plan.
-    await expandDisclosures(page);
-    await walkControls(".settings-panel", "single-scroll");
+    // D21 (settings-redesign Phase 1): the panel carries the REAL tab
+    // spine. Walk each tab's mounted controls in turn. The VARIATIONS
+    // tab's stronger gate is settings-consequence.browser.ts (visible-
+    // pixel delta); this walk still covers it for operability (a control
+    // that jams or throws is caught here even if its pixels move).
+    for (const tabLabel of ["variations", "edit theme", "this figure"] as const) {
+      await gotoTab(tabLabel);
+      await expandDisclosures(page);
+      await walkControls(".settings-panel .panel-body", tabLabel.replace(" ", "-"));
+    }
 
     // Action buttons (external effect): export / import / handoff / close.
     // Not operated (they download files, open dialogs, or close the panel) —
     // but a present-yet-DISABLED action is a dead affordance, and an action
     // whose accessible name is empty is a mystery button. Verify each that
-    // exists is named + enabled.
+    // exists is named + enabled. Export/import live in the theme band, so
+    // snapshot from the edit-theme tab (close ✕ is in the bar, always there).
+    await gotoTab("edit theme");
     const actions = await page.evaluate(() => {
       const panel = document.querySelector(".settings-panel");
       if (!panel) return [];

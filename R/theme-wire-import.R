@@ -118,6 +118,8 @@ theme_inputs_from_wire <- function(wire_inputs) {
   v$shell_texture <- .wire_chr(w[["shell_texture"]])
   v$slot_style    <- .wire_chr(w[["slot_style"]])
   v$border_preset <- .wire_chr(w[["border_preset"]])
+  v$banding       <- .wire_chr(w[["banding"]])
+  v$banding_start <- .wire_chr(w[["banding_start"]])
   v$header_style  <- .wire_chr(w[["header_style"]])
   v$first_column_style <- .wire_chr(w[["first_column_style"]])
   v$type_base_size   <- .wire_num(w[["type_base_size"]])

@@ -167,6 +167,14 @@ ThemeInputs <- new_class(
     # header_style precedent). One of "none" / "hairline" / "ruled" /
     # "frame" / "boxed". NA keeps the default cluster (= "hairline").
     border_preset   = new_property(class_character, default = NA_character_),
+    # Banding as a Tier-1 structural variant (settings-redesign Phase 1).
+    # The banding grammar string: "none" / "row" / "group" / "group-N".
+    # NA defaults to "group" at resolution. The runtime figure override
+    # (set_banding proxy) still wins over this at display time.
+    banding         = new_property(class_character, default = NA_character_),
+    # Whether the first band is shaded ("band") or plain ("plain"). NA →
+    # shaded for group banding, plain otherwise.
+    banding_start   = new_property(class_character, default = NA_character_),
 
     # Stage 1 §25 / Q-P4.3 — per-ramp curve shape. Each of "linear" / "ease" /
     # "smooth" / "log" / "exp". NA defaults: neutral=ease, brand=linear,
@@ -344,6 +352,16 @@ ThemeInputs <- new_class(
     bp <- self@border_preset
     if (!is.na(bp) && !bp %in% c("none", "hairline", "ruled", "frame", "boxed")) {
       return("border_preset must be 'none', 'hairline', 'ruled', 'frame', or 'boxed'")
+    }
+    bd <- self@banding
+    if (!is.na(bd)) {
+      err <- tryCatch({ parse_banding(bd); NULL },
+                      error = function(e) conditionMessage(e))
+      if (!is.null(err)) return(err)
+    }
+    bs <- self@banding_start
+    if (!is.na(bs) && !bs %in% c("band", "plain")) {
+      return("banding_start must be 'band' or 'plain'")
     }
     ts2 <- self@effects_title_style
     if (!is.na(ts2) && !ts2 %in% c("normal", "bar", "underline")) {

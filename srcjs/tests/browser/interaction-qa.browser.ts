@@ -602,43 +602,36 @@ const SCENARIOS: Record<string, Scenario> = {
       btn.click();
     });
     await new Promise((r) => setTimeout(r, 400));
-    // Overhaul P2 contract: single-scroll two-band panel. Assert the
-    // quick strip (Polarity + Density pills), the THEME band sections,
-    // and the FIGURE band seam — no tabs anywhere (D14 is rescinded;
-    // the panel now carries the FULL Tier-1 surface).
+    // D21 redesign contract (docs/dev/settings-redesign.md): the panel
+    // carries the tab spine — Variations is the landing tab (theme-
+    // blessed mode flips, every control consequence-gated by
+    // settings-consequence.browser.ts); "edit theme" hosts the interim
+    // Tier-1 band; "this figure" hosts the figure band.
     const shape = await page.evaluate(() => {
       const panel = document.querySelector<HTMLElement>(".settings-panel");
       if (!panel) return "no-panel";
-      const hasTabs = !!panel.querySelector("[role=tablist], [aria-label='Settings section']");
-      const pills = [...panel.querySelectorAll<HTMLElement>(".quick-strip [role=radiogroup], .quick-strip .pill")];
-      const sections = [...panel.querySelectorAll<HTMLElement>(".section .title, .section-title, .head .title")]
-        .map((el) => el.textContent?.trim().toLowerCase() ?? "");
-      const figure = panel.querySelector(".figure-band .seam-title");
-      const anchors = panel.querySelectorAll(".anchor-row").length;
-      return JSON.stringify({
-        pills: pills.length,
-        hasIdentity: sections.some((t) => t.includes("identity")),
-        figure: !!figure,
-        anchors,
-        hasTabs,
-      });
+      const tabs = [...panel.querySelectorAll<HTMLElement>(".tab-strip [role=tab]")]
+        .map((t) => t.textContent!.trim());
+      const variations = panel.querySelectorAll("[data-vt]").length;
+      return JSON.stringify({ tabs, variations });
     });
     if (shape === "no-panel") throw new Error("settings panel did not open");
-    // Tab-apparatus check is carried in the parsed shape below (register
-    // D16): the locked settings design says "tabs die, single-scroll", but
-    // the shared Tier1Sections ships role=tablist and the settings panel
-    // inherited it while this gate was broken. WARN until D16 decides
-    // (default: restore single-scroll in the settings host). Don't delete.
-    const parsed = JSON.parse(shape) as { pills: number; hasIdentity: boolean; figure: boolean; anchors: number; hasTabs?: boolean };
-    if (parsed.hasTabs) {
-      console.warn("⚠ settings: tab apparatus present (register D16 — locked design says single-scroll)");
-    }
-    // 4 anchors = paper/ink/brand/accent (the ≥5 expectation predated the
-    // ink2 anchor's removal in the round-3 persona review).
-    if (parsed.anchors < 4) throw new Error(`expected ≥4 anchor rows in THEME band, got ${parsed.anchors}`);
-    if (!parsed.figure) throw new Error("FIGURE band seam missing");
-    // Flagship interaction: expand the Brand anchor row, assert the LCH
-    // editor appears with 3 sliders.
+    const parsed = JSON.parse(shape) as { tabs: string[]; variations: number };
+    if (parsed.tabs.length < 3) throw new Error(`expected ≥3 panel tabs, got [${parsed.tabs.join(", ")}]`);
+    if (parsed.variations < 10) throw new Error(`Variations landing tab: expected ≥10 [data-vt] controls, got ${parsed.variations}`);
+
+    // "edit theme" interim tab: the Tier-1 anchors live here. Flagship
+    // interaction: expand the Brand anchor row → 3 LCH sliders.
+    await page.evaluate(() => {
+      const tab = [...document.querySelectorAll<HTMLElement>(".settings-panel .tab-strip [role=tab]")]
+        .find((t) => /edit theme/i.test(t.textContent ?? ""));
+      if (!tab) throw new Error("edit theme tab not found");
+      tab.click();
+    });
+    await new Promise((r) => setTimeout(r, 250));
+    const anchors = await page.evaluate(() =>
+      document.querySelectorAll(".settings-panel .anchor-row").length);
+    if (anchors < 4) throw new Error(`expected ≥4 anchor rows under edit theme, got ${anchors}`);
     const lch = await page.evaluate(() => {
       const rows = [...document.querySelectorAll<HTMLElement>(".anchor-row")];
       const brand = rows.find((r) => /Brand/i.test(r.textContent ?? ""));
@@ -648,7 +641,19 @@ const SCENARIOS: Record<string, Scenario> = {
         resolve(brand.querySelectorAll("input[type=range]").length), 300));
     });
     if (lch !== 3) throw new Error(`Brand anchor expand: expected 3 LCH sliders, got ${lch}`);
-    return `panel: ${shape}, brand LCH sliders: ${lch}`;
+
+    // "this figure" interim tab: the figure seam + scoped reset.
+    await page.evaluate(() => {
+      const tab = [...document.querySelectorAll<HTMLElement>(".settings-panel .tab-strip [role=tab]")]
+        .find((t) => /this figure/i.test(t.textContent ?? ""));
+      if (!tab) throw new Error("this figure tab not found");
+      tab.click();
+    });
+    await new Promise((r) => setTimeout(r, 250));
+    const figure = await page.evaluate(() =>
+      !!document.querySelector(".settings-panel .figure-band .seam-title"));
+    if (!figure) throw new Error("FIGURE band seam missing under this-figure tab");
+    return `tabs [${parsed.tabs.join(" | ")}], ${parsed.variations} variations controls, brand LCH sliders: ${lch}`;
   },
 
   async "theme-switch"(page) {

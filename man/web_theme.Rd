@@ -39,6 +39,8 @@ web_theme(
   interaction_defaults = NULL,
   header_style = NULL,
   border_preset = NULL,
+  banding = NULL,
+  banding_start = NULL,
   first_column_style = "default",
   web_fonts = NULL,
   name = "custom"
@@ -160,6 +162,14 @@ input): \code{"light"}, \code{"tint"}, or
 \code{"none"}, \code{"hairline"}, \code{"ruled"}, \code{"frame"}, or \code{"boxed"}. \code{"frame"} is
 the clean journal look (top+bottom table frame). Default resolver cluster
 (≈ hairline) when unset.}
+
+\item{banding}{Alternating-row background as a Tier-1 structural variant:
+the banding grammar string \code{"none"}, \code{"row"}, \code{"group"}, or \code{"group-N"}
+(band alternates at group depth N). Default \code{"group"} when unset. The
+per-figure runtime override (\code{\link[=set_banding]{set_banding()}}) still wins at display time.}
+
+\item{banding_start}{Whether the first band is shaded (\code{"band"}) or plain
+(\code{"plain"}). Default: shaded for group banding, plain otherwise.}
 
 \item{first_column_style}{First (label) column treatment: \code{"default"} or
 \code{"bold"} (tinted + weighted leading column). A Tier-1 structural input.}

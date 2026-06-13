@@ -16,7 +16,6 @@
   import Tier1Sections from "$components/theme-controls/Tier1Sections.svelte";
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
   import { getCssVars } from "$lib/theme/consumer-bridge";
-  import type { RampName } from "$types/theme-roles";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();

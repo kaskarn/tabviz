@@ -140,6 +140,9 @@ jobs:
       - name: 'Gate: settings-panel liveness (zero dead buttons)'
         run: bun run tests/browser/panel-liveness.browser.ts
 
+      - name: 'Gate: settings consequence (visible-pixel delta per control)'
+        run: bun run tests/browser/settings-consequence.browser.ts
+
       - name: 'Gate: interaction QA (sort/collapse/paint/edit/zoom)'
         run: bun run tests/browser/interaction-qa.browser.ts
 
