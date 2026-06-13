@@ -15,13 +15,14 @@
  *
  * === TEXT WIDTH ESTIMATION ===
  *
- * The estimateTextWidth() function uses character-class width multipliers:
- * - Very narrow: superscripts (×0.3)
- * - Narrow: i, l, 1, punctuation, space (×0.35)
- * - Math operators: ×, − (×0.5)
- * - Wide: m, w, M, W, @, % (×0.85)
- * - Digits: 0-9 (×0.6, tabular width)
- * - Normal: everything else (×0.55)
+ * estimateTextWidth() sums REAL per-glyph advance widths from
+ * `font-metrics.generated.ts` (measured offline from Georgia/Helvetica by
+ * scripts/measure-font-metrics.mjs), choosing the serif/sans/mono table by
+ * family and interpolating per glyph across the weight axis. This replaced
+ * the former hand-tuned character-class multipliers — magic numbers that
+ * accreted via local nudges with no ground truth and over-budgeted ~7%
+ * (the WYSIWYG D8 gap). Regenerate the table when the measurement method
+ * or the canonical faces change; never hand-edit the constants.
  *
  * === USAGE ===
  *
@@ -41,6 +42,10 @@
 
 import type { ColumnSpec, Row } from "../types";
 import { dispatchForColumn } from "../schema/dispatch";
+import {
+  PROP_FONTS, MONO_ADVANCE_BY_FONT, FALLBACK, FONT_METRIC_WEIGHTS,
+  type PropAdvances,
+} from "./font-metrics.generated";
 
 // ============================================================================
 // Text Width Measurement
@@ -70,57 +75,73 @@ export function isMonospaceFamily(family: string | undefined | null): boolean {
   return !!family && /mono|courier|consolas|menlo/i.test(family);
 }
 
-/** Fixed advance for mono faces, as a fraction of fontSize. Space Mono /
- *  Courier-class faces sit at ~0.60em; 0.62 carries a small safety pad. */
-const MONO_ADVANCE = 0.62;
+/** Extract the PRIMARY family name from a CSS font-family string —
+ *  `"'Lora', Georgia, serif"` → `Lora`. The primary is what loads and
+ *  renders when available (and what systemfonts measures R-side); we key
+ *  the per-font metric tables on it. */
+function primaryFamily(family: string | undefined | null): string {
+  if (!family) return "";
+  const first = family.split(",")[0]!.trim();
+  return first.replace(/^["']|["']$/g, "");
+}
 
+/** Whether the family resolves to serif vs sans for the class fallback
+ *  (used only when the primary font isn't in the measured roster).
+ *  "sans-serif" contains "serif", so check sans first. */
+function isSerifFamily(family: string | undefined | null): boolean {
+  const f = (family ?? "").toLowerCase();
+  if (f.includes("sans")) return false;
+  return f.includes("serif") || /\b(georgia|times|garamond|cambria|spectral|lora|libre|book antiqua|palatino|cinzel|crimson)\b/.test(f);
+}
+
+/**
+ * Estimate text width from REAL measured advance widths — no canvas
+ * needed (the V8/export path). Replaces the former hand-tuned character-
+ * class multipliers, the magic mono advance, and the magic weight
+ * coefficient (the WYSIWYG D8 work, 2026-06-13). Advances are measured by
+ * `scripts/measure-font-metrics.mjs` → `font-metrics.generated.ts` from
+ * the actual webfonts every preset ships (at anchor weights 400/700),
+ * plus Georgia/Helvetica/Courier offline fallbacks for unknown families.
+ *
+ * Resolution: primary family → its per-font table (interpolating per glyph
+ * across the continuous weight axis) or fixed mono advance; unknown family
+ * → the serif/sans/mono class fallback. Residual vs a real canvas is
+ * kerning only (~1–2%, which a class model could never reach).
+ */
 export function estimateTextWidth(
   text: string,
   fontSize: number,
   weight: number = 400,
   family?: string,
 ): number {
-  if (isMonospaceFamily(family)) {
-    const weightMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.035;
-    return [...text].length * fontSize * MONO_ADVANCE * weightMultiplier;
+  const name = primaryFamily(family);
+
+  // Monospace: one fixed, weight-independent advance per face (true mono
+  // bold has the same advance). Known face → measured; else class fallback.
+  const monoAdv = MONO_ADVANCE_BY_FONT[name] ?? (isMonospaceFamily(family) ? FALLBACK.monoAdvance : null);
+  if (monoAdv != null) {
+    return [...text].length * fontSize * monoAdv;
   }
-  // Character width categories (proportions of fontSize):
-  // Very narrow: superscript/subscript characters (0.15) - rendered at ~50% size and narrower
-  // Narrow: i, l, I, 1, punctuation, space (0.35)
-  // Math operators: ×, − (0.4) - typically narrower than digits in sans-serif fonts
-  // Normal lowercase: a-z except i,l,m,w (0.55)
-  // Digits: 0-9 tabular (0.6)
-  // Uppercase: A-Z except I,M,W (0.68) - capitals are wider than lowercase
-  // Wide: m, w, M, W, @, % (0.85)
-  const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻";
-  const NARROW = "ilI1.,;:|!()[]{}' -";
-  const WIDE = "mwMW@%";
-  const UPPERCASE = "ABCDEFGHJKLNOPQRSTUVXYZ"; // excluding I, M, W (handled separately)
+
+  // Proportional: per-font table if measured, else the serif/sans fallback.
+  // The lowercase-mean default (for exotic glyphs absent from the table)
+  // follows the face's class.
+  const serif = isSerifFamily(family);
+  const tbl: PropAdvances = PROP_FONTS[name] ?? PROP_FONTS[serif ? FALLBACK.serif : FALLBACK.sans];
+  const def = serif ? FALLBACK.serifDefault : FALLBACK.sansDefault;
+
+  // Per-glyph weight interpolation: t=0 at 400, 1 at 700; clamp the
+  // extrapolation to weights ~100–1000 so an absurd value can't run away.
+  const t = Math.max(-1, Math.min(2,
+    (weight - FONT_METRIC_WEIGHTS.lo) / (FONT_METRIC_WEIGHTS.hi - FONT_METRIC_WEIGHTS.lo)));
 
   let width = 0;
   for (const char of text) {
-    if (SUPERSCRIPTS.includes(char)) {
-      width += fontSize * 0.15;
-    } else if (NARROW.includes(char)) {
-      width += fontSize * 0.35;
-    } else if ("×−".includes(char)) {
-      width += fontSize * 0.4;
-    } else if (WIDE.includes(char)) {
-      width += fontSize * 0.85;
-    } else if (char >= "0" && char <= "9") {
-      width += fontSize * 0.6;
-    } else if (UPPERCASE.includes(char)) {
-      // Uppercase letters are wider than lowercase
-      width += fontSize * 0.68;
-    } else {
-      // Lowercase and other characters
-      width += fontSize * 0.55;
-    }
+    const a = tbl.w400[char] ?? def.w400;
+    const b = tbl.w700[char] ?? def.w700;
+    width += fontSize * (a + (b - a) * t);
   }
-  // Weight correction. The base scan is tuned for regular (400); bolder
-  // weights render slightly wider per glyph at the same fontSize.
-  const weightMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.035;
-  return width * weightMultiplier;
+  return width;
 }
 
 /**
