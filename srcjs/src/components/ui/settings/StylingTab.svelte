@@ -29,6 +29,7 @@
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
   import { DEFAULT_TYPE_ROLES, type TypeRoleName, type TypeRole } from "$lib/theme/typography";
   import { TYPE_ROLE_NAMES } from "$lib/theme/scale-roles";
+  import { KNOWN_UNCONSUMED } from "$lib/theme/component-tokens";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -89,6 +90,23 @@
   });
   const typeRoleOverridden = $derived(
     Object.keys(inputs?.type_roles?.[typeRoleSel] ?? {}).length > 0,
+  );
+  // Honesty filter: a type-role channel is editable only if its backing
+  // token (`--tv-text-<role>-<channel>`) actually paints something. Many
+  // are KNOWN_UNCONSUMED headroom — e.g. CELL family+weight (cell text
+  // deliberately follows the body family; svg-generator skips them to keep
+  // DOM/export parity), NUMERIC size+weight, TICK size, several -family.
+  // Offering a control that does nothing is the "option nothing reads" bug
+  // class the component roster already filters; mirror it here so each role
+  // shows only the channels it really has. (Fix 2026-06-13.)
+  const liveTypeChannels = $derived({
+    family: !KNOWN_UNCONSUMED.has(`--tv-text-${typeRoleSel}-family`),
+    size:   !KNOWN_UNCONSUMED.has(`--tv-text-${typeRoleSel}-size`),
+    weight: !KNOWN_UNCONSUMED.has(`--tv-text-${typeRoleSel}-weight`),
+  });
+  const hiddenChannelNote = $derived(
+    [["family", liveTypeChannels.family], ["size", liveTypeChannels.size], ["weight", liveTypeChannels.weight]]
+      .filter(([, live]) => !live).map(([k]) => k).join(" / "),
   );
   function patchTypeRole(key: "family" | "size" | "weight", value: string): void {
     const cur = inputs!.type_roles?.[typeRoleSel] ?? {};
@@ -172,30 +190,39 @@
     <!-- ── Text roles ───────────────────────────────────────────────── -->
     <div class="strata">text roles</div>
     <DisclosureField label="Rebind a text role" summary={textRolesSummary} bind:open={textRolesOpen}>
-      <Field label="Role" hint="Rebind one type role's family / size / weight.">
+      <Field label="Role"
+             hint={hiddenChannelNote
+               ? `Only the channels this role actually paints are shown — ${hiddenChannelNote} is fixed for ${typeRoleSel}.`
+               : "Rebind one type role's family / size / weight."}
+             onreset={typeRoleOverridden ? resetTypeRole : undefined}>
         <Dropdown value={typeRoleSel} ariaLabel="Type role to rebind"
                 onchange={(v) => (typeRoleSel = v as TypeRoleName)} options={TYPE_ROLE_OPTS} />
       </Field>
       <div class="sub-group">
-        <div data-st="type-family">
-          <Field label="Family">
-            <Dropdown value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
-                    onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
-          </Field>
-        </div>
-        <div data-st="type-size">
-          <Field label="Size">
-            <Dropdown value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
-                    onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
-          </Field>
-        </div>
-        <div data-st="type-weight">
-          <Field label="Weight"
-                 onreset={typeRoleOverridden ? resetTypeRole : undefined}>
-            <Dropdown value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
-                    onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
-          </Field>
-        </div>
+        {#if liveTypeChannels.family}
+          <div data-st="type-family">
+            <Field label="Family">
+              <Dropdown value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
+                      onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
+            </Field>
+          </div>
+        {/if}
+        {#if liveTypeChannels.size}
+          <div data-st="type-size">
+            <Field label="Size">
+              <Dropdown value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
+                      onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
+            </Field>
+          </div>
+        {/if}
+        {#if liveTypeChannels.weight}
+          <div data-st="type-weight">
+            <Field label="Weight">
+              <Dropdown value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
+                      onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
+            </Field>
+          </div>
+        {/if}
       </div>
     </DisclosureField>
 

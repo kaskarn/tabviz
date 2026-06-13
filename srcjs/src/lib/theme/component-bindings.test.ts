@@ -287,3 +287,28 @@ describe("components on the wire envelope", () => {
     expect(err!.issues.some((i) => i.path === "components.no-such")).toBe(true);
   });
 });
+
+// Type-role channel honesty filter (StylingTab, 2026-06-13). The text-role
+// rebind UI shows a {family,size,weight} control only when the backing
+// `--tv-text-<role>-<channel>` token actually paints — i.e. is NOT
+// KNOWN_UNCONSUMED headroom. This locks the data basis of that filter so a
+// token can't silently leave/join KNOWN_UNCONSUMED without the UI tracking
+// it (when one leaves, its control should auto-appear — the filter does it).
+describe("type-role channel honesty filter (data basis)", () => {
+  const live = (role: string, ch: string) => !KNOWN_UNCONSUMED.has(`--tv-text-${role}-${ch}`);
+  it("cell exposes only size (family + weight deliberately follow the body)", () => {
+    expect(live("cell", "size")).toBe(true);
+    expect(live("cell", "family")).toBe(false);
+    expect(live("cell", "weight")).toBe(false);
+  });
+  it("numeric exposes only family (size + weight are headroom)", () => {
+    expect(live("numeric", "family")).toBe(true);
+    expect(live("numeric", "size")).toBe(false);
+    expect(live("numeric", "weight")).toBe(false);
+  });
+  it("title exposes all three channels", () => {
+    expect(live("title", "family")).toBe(true);
+    expect(live("title", "size")).toBe(true);
+    expect(live("title", "weight")).toBe(true);
+  });
+});
