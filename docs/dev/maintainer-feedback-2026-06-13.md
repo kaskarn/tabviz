@@ -33,6 +33,30 @@ at top of each item.
   mirroring the component roster's filter. cell→size only; numeric→family only;
   a hint names the fixed channels. Reset moved to the always-present Role field.
   Test locks the data basis. Commit 10884e3.
+- **B6 — hover explanations for theme toggles** (what is glow/glass/ruled):
+  `Pill` already rendered `seg.title`; only the copy was missing. Centralized
+  `OPTION_DESCRIPTIONS` (option-descriptions.ts) keyed by vocabulary → value,
+  wired via `describedSegments()` across the Variations enum toggles. Keying by
+  vocabulary disambiguates the overloaded `ruled`. Commit d752e26.
+- **B7 — role→element legibility**: the Styling color-role picker shows a hint
+  describing what the selected role paints, DERIVED from the manifest token
+  descriptions (`TOKENS_BY_ROLE`), jargon stripped, curated overrides + naming-
+  pattern fallback for token-less roles. Commit a663508.
+
+## Remaining
+
+- **Release-only sliders** (role grade, row-kind heights, watermark opacity,
+  banding level): still commit-on-release; need NEW preview verbs
+  (previewThemeRoleOverride / previewRowKindHeight) — a focused arc. B2 did the
+  geometry subset (clean preview path existed).
+- **Bug B — boxed DOM↔export frame divergence**: DOM draws no left edge + export
+  draws no internal verticals → `boxed` renders differently in the two paths.
+  The bigger WYSIWYG fix; needs the wysiwyg gate. (Bug A — the DOM missing
+  divider — was fixed in B3.)
+- **DECISIONS (await maintainer):** glow/glass reimagine-or-remove (now
+  shell-painted-gating could help; B6 added explanations); horizontal density
+  model (needs a gap multiplier that doesn't feed auto-width); border vocabulary
+  rename vs doc-clarify (B6 tooltips partially mitigate).
 
 ## Diagnosis (evidence) + remaining plan
 
