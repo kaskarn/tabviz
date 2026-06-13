@@ -569,7 +569,15 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
   // First-column treatment (W4 port) keyed by inputs.first_column_style.
   // Recipes are the v3 cluster's exactly: bold = {bg neutral[2],
   // fg ink anchor, weight 600, rule neutral[6]}; default = inert
-  // (transparent/inherit — .primary-cell falls through to row styling).
+  // (bg transparent / fg+weight inherit — .primary-cell falls through to
+  // row styling). The RULE is the exception: a non-bold first column must
+  // still show the SAME column divider as every other cell under a
+  // grid/boxed layout, so its default is the resolved MINOR divider color,
+  // NOT "transparent" (a transparent value defeated the consumer's
+  // `var(--tv-first-col-rule, --tv-border-minor-color)` fallback — the
+  // col1/col2 divider went silently missing under `boxed`; 2026-06-13).
+  // Under hairline the column-border style is `none`, so this color is
+  // never painted there — no visual change for horizontal layouts.
   ["first-col", (t, ctx) => {
     const reroute = componentRoleOverride(t, ctx.components);
     if (reroute) return ctx.roles[reroute];
@@ -578,7 +586,10 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
       case "--tv-first-col-bg":     return bold ? rampStep(ctx.ramps.neutral, 2) : "transparent";
       case "--tv-first-col-fg":     return bold ? pickAnchorHex("ink", ctx.inputs) ?? "inherit" : "inherit";
       case "--tv-first-col-weight": return bold ? "600" : "inherit";
-      case "--tv-first-col-rule":   return bold ? rampStep(ctx.ramps.neutral, 6) : "transparent";
+      case "--tv-first-col-rule":   return bold
+        ? rampStep(ctx.ramps.neutral, 6)
+        : resolveBorders(ctx.inputs.border_preset,
+            ctx.roles["border"], ctx.roles["border-subtle"]).minor.color;
     }
     return tokenResolveBug(t.cssVar, t.source.tier,
       "resolverGroup=first-col but cssVar is not a first-col token");

@@ -3241,11 +3241,12 @@
     background-color: var(--tv-first-col-bg, transparent);
     color: var(--tv-first-col-fg, inherit);
     font-weight: var(--tv-first-col-weight, inherit);
-    /* If the variant explicitly sets a first-column rule, use it.
-       Otherwise fall back to the standard column-divider color (the
-       minor border color), which is what every other cell uses under
-       cols/grid layout. Without the fallback, the primary cell would
-       show no right border at all under cols/grid. */
+    /* --tv-first-col-rule resolves to the strong rule when first_column_style
+       is "bold", else to the standard MINOR divider color (so col1 matches
+       every other column under cols/grid). The resolver now always emits a
+       concrete color (it used to emit "transparent" when not bold, which made
+       the col1/col2 divider vanish under boxed — fixed 2026-06-13); the var()
+       fallbacks below are defense-in-depth for hand-authored partial themes. */
     border-right-color: var(--tv-first-col-rule, var(--tv-border-minor-color, var(--tv-border)));
   }
   .primary-cell.reorderable {

@@ -279,3 +279,26 @@ describe("resolveTheme — cssVars has no TBD placeholders", () => {
     }
   });
 });
+
+describe("first-column rule — boxed divider regression (2026-06-13)", () => {
+  // A non-bold first column must show the SAME column divider as every other
+  // cell under boxed/grid. The bug: the resolver emitted "transparent", which
+  // defeated the consumer's var() fallback, so the col1/col2 divider went
+  // missing under boxed.
+  it("non-bold first-col-rule resolves to the minor divider color, not 'transparent'", () => {
+    const boxed: ThemeInputs = { ...COCHRANE, border_preset: "boxed" };
+    const r = resolveTheme(createWire(boxed));
+    const rule = r.cssVars["--tv-first-col-rule"];
+    expect(rule).not.toBe("transparent");
+    expect(rule).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    // It is exactly the standard minor divider color every other cell uses.
+    expect(rule).toBe(r.cssVars["--tv-border-minor-color"]);
+  });
+
+  it("bold first-col-rule still uses the strong neutral[6] rule", () => {
+    const bold: ThemeInputs = { ...COCHRANE, border_preset: "boxed", first_column_style: "bold" };
+    const r = resolveTheme(createWire(bold));
+    // rampStep is 1-indexed: rampStep(neutral, 6) === neutral[5].
+    expect(r.cssVars["--tv-first-col-rule"]).toBe(r.ramps.neutral[5]!);
+  });
+});
