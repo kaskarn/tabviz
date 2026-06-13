@@ -189,18 +189,15 @@
                  onchange={(v) => patchEffects("title_style", v)} />
       </div>
     {/if}
-    {#if hasTag || (fx.caption_style ?? "none") !== "none"}
-      <!-- chip stamps labels.tag; stripe draws the shell seam without one.
-           Without a tag the chip/both segments would be half-inert, so the
-           roster narrows (consequence-or-absence at segment granularity). -->
-      <div data-vt="tag">
-        <EnumRow label="Tag" value={fx.caption_style ?? "none"}
-                 hint={hasTag ? undefined : "Set tag text by double-clicking it on the canvas, or tag= in R."}
-                 segments={(hasTag ? ["none", "chip", "stripe", "both"] : ["none", "stripe"])
-                   .map((v) => ({ value: v, label: v }))}
-                 onchange={(v) => patchEffects("caption_style", v)} />
-      </div>
-    {/if}
+    <!-- chip stamps labels.tag (default "TABLE" when none is set — never
+         inert); stripe draws the brand seam on the shell. Both work on
+         every figure, so no consequence gate here. -->
+    <div data-vt="tag">
+      <EnumRow label="Tag" value={fx.caption_style ?? "none"}
+               hint={hasTag ? undefined : "No tag text set — the chip stamps \"TABLE\". Set tag= in R."}
+               segments={["none", "chip", "stripe", "both"].map((v) => ({ value: v, label: v }))}
+               onchange={(v) => patchEffects("caption_style", v)} />
+    </div>
     <div data-vt="shell">
       <EnumRow label="Shell" value={inputs.shell_mode ?? "flush"}
                segments={SHELL.map((v) => ({ value: v, label: v }))}
