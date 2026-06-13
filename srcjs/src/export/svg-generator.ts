@@ -419,22 +419,17 @@ export function calculateSvgAutoWidths(
     // (labels/indent/badges/group chrome); the generic metadata-text
     // scan would see an empty field and clobber it down to MIN.
     if (primaryCol && col.id === primaryCol.id) continue;
-    // Plot columns (forest, viz_bar, viz_boxplot, viz_violin) with width="auto"
-    // are intentionally omitted here so the downstream renderer falls through
-    // to their multi-flex distributed width (`layout.flexWidths`, the
-    // expand-to-fill value). A natural-min autoWidth would cap the plot to
-    // ~200px even when the caller asked for a 1600px canvas, producing a
-    // narrow plot with empty space to the right. User-resized widths still
-    // arrive via `options.columnWidths` (see computeLayout).
-    if (
-      (col.type === "forest" ||
-        col.type === "viz_bar" ||
-        col.type === "viz_boxplot" ||
-        col.type === "viz_violin") &&
-      (col.width === "auto" || col.width == null)
-    ) {
-      continue;
-    }
+    // Plot columns (forest, viz_*) measure to their VISUAL_MIN here — the
+    // generic loop below gives them their type floor (no text content to
+    // grow past it). This is their flex NATURAL + min, NOT a cap: the
+    // multi-flex distribution grows them (high flexWeight) to fill the
+    // canvas, and the FINAL width is the distributed value, not this
+    // floor. (D20 item-4 / 2026-06-13: previously these were SKIPPED here,
+    // so their natural fell to vizNaturalWidthForColumn (e.g. 240) while
+    // the live widget's measureLeafColumn computes the VISUAL_MIN floor
+    // (200) — the mismatched naturals gave the plot column a different
+    // effective weight and over-distributed spare to it vs the screen.
+    // The stale "would cap the plot to 200px" worry predates multi-flex.)
 
     // Explicit numeric width is a hard pin — respect the author's intent.
     // Earlier behaviour silently auto-grew the column past `col.width` when
@@ -953,7 +948,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
 
   // Per-column width distribution — the single source of truth for column
   // widths (forest is just a high-weight plot column, no privileged scalar).
-  // Distributes the non-label content area across every column by effective
+  // Distributes the FULL content area across every column by effective
   // weight (flexWeight × natural); pinned columns immovable. See
   // docs/dev/multi-flex-columns.md.
   const flexColSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
@@ -974,12 +969,36 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
       minWidth: measured ?? undefined,
     };
   });
-  // Target = the non-label content area (the primary/label column is positioned
-  // separately via labelWidth and excluded from allColumns).
+  // D20 item-4 (2026-06-13): the label/primary column is an ORDINARY
+  // flexing column in the flex set — the live widget's layout-zoom
+  // includes it, so the export MUST too, or every non-label column
+  // distributes spare differently and the raw-export columns diverge from
+  // the screen (the WYSIWYG flex-parity gap, masked for years by the
+  // text-estimator's error). It PINS in the provided-widths path (stays
+  // pixel-exact) and FLEXES in the R-from-scratch path (matches the
+  // screen). Its chrome ownership (D20 item 3 — row drag, group toggle,
+  // indent, badge, paint target) is untouched: only the width threading
+  // unifies. `labelWidth` becomes the distributed result.
+  if (primaryCol) {
+    const provided = providedWidths?.[primaryCol.id];
+    const explicit =
+      typeof provided === "number" ? provided
+        : typeof primaryCol.width === "number" ? primaryCol.width : null;
+    flexColSpecs.unshift({
+      id: primaryCol.id,
+      naturalWidth: labelWidth, // the label's content natural, measured above
+      flexWeight: flexWeightForColumn(primaryCol),
+      explicitWidth: explicit,
+      minWidth: labelWidth, // content floor — the label never shrinks below its text+chrome
+    });
+  }
+  // Target = the FULL content area (the label now flexes within it,
+  // exactly like the widget's grid).
   const flexWidths = resolveFlexWidths(
     flexColSpecs,
-    Math.max(0, totalWidth - padding * 2 - labelWidth),
+    Math.max(0, totalWidth - padding * 2),
   ).widths;
+  if (primaryCol) labelWidth = flexWidths[primaryCol.id] ?? labelWidth;
 
 
   // Total height: include full axis area only when a column actually renders

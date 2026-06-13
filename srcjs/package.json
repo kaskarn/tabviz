@@ -91,6 +91,7 @@
     "bench:browser": "bun run tests/browser/run-bench.ts",
     "qa:liveness": "bun run tests/browser/panel-liveness.browser.ts",
     "qa:consequence": "bun run tests/browser/settings-consequence.browser.ts",
+    "regen:font-metrics": "bun run scripts/measure-font-metrics.mjs",
     "lint": "eslint src",
     "format": "prettier --write 'src/**/*.{ts,svelte,css}'",
     "screenshot": "node scripts/screenshot.js"

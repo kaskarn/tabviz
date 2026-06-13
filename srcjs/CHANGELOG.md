@@ -4,6 +4,30 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## [Unreleased]
+
+### Changed
+
+* **Text-width estimator is now empirical** (the V8/export path that runs
+  without a canvas). The hand-tuned character-class multipliers — magic
+  numbers that accreted via local nudges and over-budgeted column widths
+  by ~7% — are replaced by REAL per-glyph advance tables measured offline
+  from every preset's actual webfonts at anchor weights 400/700
+  (`font-metrics.generated.ts`; regenerate with `npm run
+  regen:font-metrics`). Resolution: primary family → its measured table
+  (interpolating each glyph across the continuous weight axis) or fixed
+  mono advance; unknown family → a serif/sans/mono class fallback. Residual
+  vs a real canvas is kerning only (~1–2%). Export column widths are now
+  sub-pixel-accurate to the browser.
+* **Export label-column layout unified with the widget.** The
+  label/primary column now participates in the export's multi-flex width
+  distribution exactly as it does in the live widget's layout-zoom grid —
+  it pins under provided widths (systemfonts/widget; stays pixel-exact) and
+  flexes from-scratch (matches the screen). Forest/viz columns measure to
+  their visual-min floor like the DOM. Closes the long-standing
+  WYSIWYG flex-parity gap: the raw `generateSVG` path now matches the DOM
+  layout (gate at 0 breaches). No wire or API change.
+
 ## 0.7.0 — 2026-06-13 — ship-readiness sweep + settings substrate
 
 (Staged 2026-06-11 for the ship-readiness sweep; the settings-redesign

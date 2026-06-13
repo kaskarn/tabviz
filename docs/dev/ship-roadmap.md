@@ -257,7 +257,11 @@ is a liveness audit across ALL surfaces.
       "What matches the screen" fidelity contract — browser-only
       effects, whole-table pagination semantics (D7), raw-spec
       estimator boundary (D8). save_plot's roxygen carries the D7
-      sentence.
+      sentence. UPDATE 2026-06-13: D8 is no longer a boundary — it was
+      RESOLVED (empirical estimator + label-flex unification); the
+      raw-generateSVG path now matches the DOM at 0 breaches. The
+      browser-only effects (glass/glow/blobs/gradients) remain the only
+      declared exceptions.
 - [x] wysiwyg-diff budgets green across the FULL matrix in CI (area A
       wired it 2026-06-10; 9-preset coverage 2026-06-11).
 - [x] All known divergences decided/fixed (2026-06-11): D7 documented;
@@ -422,28 +426,26 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
-- 2026-06-13 — **AREA G — EMPIRICAL TEXT ESTIMATOR + D20 FORCING
-  FUNCTION (a systematic-review payoff).** A closer look at G's loosest
-  joint (the raw-`generateSVG` estimator, D8) found the width engine ran
-  on hand-tuned character-class MAGIC NUMBERS (+ a magic mono advance +
-  a magic weight coefficient) that accreted with no ground truth.
-  Replaced with REAL measured per-font advance tables (all 17 preset
-  faces, weights 400/700, per-glyph weight interpolation;
-  `scripts/measure-font-metrics.mjs` → `font-metrics.generated.ts`);
-  verified sub-pixel vs canvas (≤0.6px, down from ~5px). BUT making the
-  estimator honest BROKE the WYSIWYG gate — because the old ~7%
-  over-estimate was accidentally compensating for a pre-existing,
-  SEPARATE DOM/SVG column-width divergence. Root-caused precisely: the
-  raw export and the widget's layout-zoom feed `resolveFlexWidths`
-  structurally different inputs because the LABEL COLUMN is an ordinary
-  flexing grid column in the DOM but a separately-positioned special
-  column in the export — **D20 item-4 verbatim**, maintainer-gated ("no
-  further sheds before the discussion"). The estimator is preserved on
-  branch `wip/empirical-text-metrics` (unit-tested, sub-pixel) and lands
-  WITH the D20 item-4 layout unification, which closes the flex parity.
-  Register: D8 updated (measurement half solved), D20 item-4 now carries
-  the forcing function + root cause. The "green" wysiwyg gate was a
-  fragile false-green built on two cancelling errors — now understood.
+- 2026-06-13 — **AREA G: D8 RESOLVED — empirical estimator + label-flex
+  unification close the WYSIWYG flex-parity gap.** The V8/export
+  text-width estimator's hand-tuned character-class multipliers (magic
+  numbers, ~7% over-budget) were replaced by REAL per-glyph advance tables
+  measured offline from every preset's actual webfonts at 400/700, with
+  serif/sans/mono class fallbacks + continuous-axis weight interpolation
+  (`font-metrics.generated.ts`, `measure-font-metrics.mjs`,
+  `npm run regen:font-metrics`; sub-pixel vs canvas). The sub-pixel
+  estimator UNMASKED a real divergence (label flexed in the DOM but was a
+  separate export scalar; viz naturals mismatched) — root-caused to D20
+  item-4 and fixed: the primary column now joins the export multi-flex set
+  (pins under provided widths, flexes from-scratch) and viz columns measure
+  to visual-min like the DOM. WYSIWYG gate 5→0 breaches, 178→155 findings
+  (tighter). Full validation green: layout-metrics 26/0 (snapshots
+  regenerated — pure width redistribution, geometry preserved), TS 1398
+  bun + 298 vitest, forest-marks ≤1px, lint 0, check 0; R 85/85
+  (render-smoke/save-plot/parity/systemfonts); visual eyeballed clean.
+  Branch `wip/empirical-text-metrics` (2087168 estimator + 7edcf73 D20-4).
+  D20 item-4 width-threading half DONE; structural `columns[0]` membership
+  stays coupled to wire-frozen item (1), post-1.0.
 
 - 2026-06-12 — **SETTINGS REDESIGN COMPLETE — PHASE 5 (STYLING)
   LANDED.** All five surfaces shipped (Variations · Labels · Identity ·
