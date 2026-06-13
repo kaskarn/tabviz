@@ -134,6 +134,7 @@
       <EnumRow label="Density" value={inputs.density ?? "comfortable"}
                segments={DENSITY.map((v) => ({ value: v, label: v }))}
                onchange={(v) => patch("density", v as ThemeInputs["density"])} />
+      <p class="signpost">Fine dial in Edit theme → Styling.</p>
     </div>
     <div data-vt="banding">
       <EnumRow label="Banding" value={bandingValue}
@@ -290,6 +291,15 @@
     flex-direction: column;
     gap: var(--v2-gap-hair, 2px);
     padding: 8px 0;
+  }
+  /* Signpost caption (kills redundancy structurally): an L1 control with
+     a deeper sibling points at it instead of duplicating it. */
+  .signpost {
+    margin: 0 0 4px;
+    padding-left: 2px;
+    font-size: var(--v2-text-small, 10.5px);
+    font-style: italic;
+    color: var(--v2-ink-3, #8a8478);
   }
   /* Strata eyebrow — tracked micro-cap divider between control groups. */
   .strata {

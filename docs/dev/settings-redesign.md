@@ -1,7 +1,9 @@
 # Settings UX — total redesign (locked 2026-06-12)
 
-Status: **the canonical record.** The shipped settings panel and the
-studio are SUPERSEDED — they grew by accretion across four arcs (one
+Status: **COMPLETE (2026-06-12).** All five surfaces built and shipped
+(Phases 0–5 below). This remains the canonical record of the design and
+its execution. The shipped (pre-redesign) settings panel and the
+studio were SUPERSEDED — they grew by accretion across four arcs (one
 presentation idiom per arc) and failed the maintainer's review on every
 axis: unwired/inert controls, internal vocabulary in chrome
 ("(recipe)"), arbitrary curation (the role-tones foursome), redundancy
@@ -264,7 +266,49 @@ repaints (Plots shape segments included); a Plots inner-tab walk added
 to liveness. The Identity scheme-picker's hasMultiSeries gate (Phase 3)
 now has live coverage via the fixture's 2-effect forest.
 
-**Phase 5 — STYLING.** The final tab. Exit gate:
+**Phase 5 — STYLING — EXECUTED 2026-06-12. THE REDESIGN IS COMPLETE.**
+The third inner tab under "edit theme" (Identity | Plots | Styling).
+`StylingTab` (L4 expert wiring) carries, top to bottom: SPACING — the
+continuous `density_factor` dial (where the Variations density signpost
+now points: *"Fine dial in Edit theme → Styling"*); COLOR ROLES — the
+FULL role roster re-routing (kind-filtered text/fill/border per
+principle 6 — answering the review's "why those 4 role tones?"), pick a
+role → ramp (neutral/brand/accent) + grade (1–11), reset clears the
+override; TEXT ROLES — the type-role rebind editor (moved from
+Identity's interim home, default role "cell" so it's consequential);
+CARRIED OVERRIDES — the pin/role-override release list (also moved from
+Identity). DT-11 HELD: StylingTab writes ONLY sanctioned channels
+(`setAuthoringInputs` for density_factor/type_roles,
+`setThemeRoleOverride`/`clearThemeRoleOverride`, `clearThemePin`) — NO
+`writeThemePath`/`setThemeField`; the band-contract gate (23 tests)
+confirms. The kind + role selectors carry NO data-st marker (navigation,
+not value controls — the consequence harness must not demand a figure
+delta from a selector). Registered gaps (D25 + follow-ups): per-TOKEN
+spacing override, pin CREATION, and component-channel re-routing all
+need sanctioned verbs the panel doesn't yet expose — they stay
+R/`set_spacing()`/`set_pin()` territory; density+factor cover the
+common spacing case. Consequence harness: 51 controls + both reset
+travels green. Liveness: 85 repaints across all five surfaces. The
+interim ThemeBand/FigureBand-as-only-theme-surface era is fully retired.
+
+### Build complete — what shipped
+
+Five surfaces, tab-by-tab, each gated on the consequence harness
+(visible-pixel delta, the merge bar that replaced DOM-fingerprint
+liveness): **Variations** (16 theme-blessed mode flips) · **Labels**
+(figure content + watermark) · Edit theme → **Identity** (anchors,
+families, geometry, scheme) · **Plots** (per-series shape/fill/stroke)
+· **Styling** (density factor, role/text-role remapping, override
+release). New substrate landed along the way: `banding`/`banding_start`
++ `series_overrides` Tier-1 inputs (full TS+R+wire parity); `tag` as a
+first-class label slot. Bugs the harness surfaced and fixed: the dead
+`setLabel` proxy handler (live Shiny label updates never worked) and
+the per-slot forest CI-line stroke (multi-effect series were
+indistinguishable). The old panel + studio presentation is gone; the
+substrate (three verbs, cascade, token manifest, wire envelope) is
+unchanged. Original Phase-5 spec follows:
+
+The final tab. Exit gate:
 - every control passes **consequence** (visible pixel delta in the
   rendered fixture — a NEW harness check, not DOM-fingerprint
   liveness);

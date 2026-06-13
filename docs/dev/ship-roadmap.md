@@ -422,6 +422,17 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 — **SETTINGS REDESIGN COMPLETE — PHASE 5 (STYLING)
+  LANDED.** All five surfaces shipped (Variations · Labels · Identity ·
+  Plots · Styling). StylingTab: density_factor dial (Variations
+  signpost target) + full kind-filtered color-role remapping + text-role
+  rebinds + carried-override release — all via SANCTIONED verbs (DT-11
+  held, band-contract 23 tests). Registered D25: per-token spacing /
+  pin-creation / component re-routing need new sanctioned verbs
+  (post-1.0). Consequence harness 51 controls; liveness 85 repaints.
+  The accreted panel + studio presentation is fully retired; substrate
+  unchanged. Full record: settings-redesign.md ("Build complete").
+
 - 2026-06-12 — **SETTINGS REDESIGN PHASE 4 (PLOTS) LANDED.** "Edit
   theme" is now an inner cluster (Identity | Plots); PlotsTab gives
   per-series shape/fill/stroke control (L3 freeform). NEW substrate:

@@ -437,6 +437,19 @@ async function main(): Promise<void> {
   if (!(await page.$("[data-pt]"))) throw new Error("Plots tab has no [data-pt] controls (fixture needs a viz series)");
   await walk("data-pt");
 
+  // ── STYLING inner tab (Phase 5) — expert wiring, theme travel ──────
+  const wentStyling = await page.evaluate(() => {
+    const t = [...document.querySelectorAll<HTMLElement>(".settings-panel .inner-strip [role=tab]")]
+      .find((b) => (b.textContent || "").trim() === "styling");
+    if (!t) return false;
+    t.click();
+    return true;
+  });
+  if (!wentStyling) throw new Error("Styling inner tab not found under edit theme");
+  await settle(page, 250);
+  if (!(await page.$("[data-st]"))) throw new Error("Styling tab has no [data-st] controls");
+  await walk("data-st");
+
   // Reset-figure travel: every Labels write is FIGURE state — the scoped
   // reset (on the this-figure tab) must revert the typed labels +
   // watermark.

@@ -30,8 +30,7 @@
   import { reflectL } from "$lib/theme/polarity";
   import { getCssVars } from "$lib/theme/consumer-bridge";
   import { CATEGORICAL_SCHEMES } from "$lib/data-schemes";
-  import { CORNER_SLOTS, RULE_SLOTS, TYPE_ROLE_NAMES, type CornerSlot, type RuleSlot } from "$lib/theme/scale-roles";
-  import { DEFAULT_TYPE_ROLES, type TypeRoleName, type TypeRole } from "$lib/theme/typography";
+  import { CORNER_SLOTS, RULE_SLOTS, type CornerSlot, type RuleSlot } from "$lib/theme/scale-roles";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -174,46 +173,11 @@
       ["hair", "thin", "regular", "thick"], "normal"));
   const geometrySummary = $derived(`${currentCorners} · ${currentRules}`);
 
-  // ── INTERIM (Styling-bound, Phase 5): type-role rebinds ──────────────
-  let rolesOpen = $state(false);
-  let typeRoleSel = $state<TypeRoleName>("footnote");
-  const TYPE_ROLE_OPTS = TYPE_ROLE_NAMES.map((r) => ({ value: r, label: r }));
-  const TYPE_FAMILY_OPTS = ["display", "body", "mono", "numeric"].map((v) => ({ value: v, label: v }));
-  const TYPE_SIZE_OPTS = ["label", "foot", "body", "head", "subtitle", "title", "display"]
-    .map((v) => ({ value: v, label: v }));
-  const TYPE_WEIGHT_OPTS = ["regular", "medium", "semibold", "bold"].map((v) => ({ value: v, label: v }));
-  const effectiveTypeRole = $derived<TypeRole>({
-    ...DEFAULT_TYPE_ROLES[typeRoleSel],
-    ...(inputs?.type_roles?.[typeRoleSel] ?? {}),
-  });
-  const typeRoleOverridden = $derived(
-    Object.keys(inputs?.type_roles?.[typeRoleSel] ?? {}).length > 0,
-  );
-  function patchTypeRole(key: "family" | "size" | "weight", value: string): void {
-    const cur = inputs!.type_roles?.[typeRoleSel] ?? {};
-    commit({
-      ...inputs!,
-      type_roles: { ...inputs!.type_roles, [typeRoleSel]: { ...cur, [key]: value } },
-    });
-  }
-  function resetTypeRole(): void {
-    const next = { ...inputs!.type_roles };
-    delete (next as Record<string, unknown>)[typeRoleSel];
-    commit({ ...inputs!, type_roles: Object.keys(next).length ? next : undefined });
-  }
-  const rolesSummary = $derived.by(() => {
-    const n = Object.keys(inputs?.type_roles ?? {}).length;
-    return n > 0 ? `${n} rebound` : "defaults";
-  });
-
-  // ── INTERIM (Styling-bound, Phase 5): carried overrides ─────────────
+  // The pins-banner names carried pins; the RELEASE list + type-role
+  // rebinds moved to the Styling inner tab (Phase 5).
   const pins = $derived(
     Object.entries((theme as WebTheme | undefined)?.pins ?? {}),
   );
-  const overrides = $derived(
-    Object.entries((theme as WebTheme | undefined)?.roleOverrides ?? {}),
-  );
-  let overridesOpen = $state(false);
 </script>
 
 {#if inputs}
@@ -328,58 +292,8 @@
       <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? 2.5} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" oncommit={(v) => patchGeometry("border_width", "thick", v)} /></Field>
     </DisclosureField>
 
-    <!-- ── INTERIM: Styling-bound groups (move in Phase 5) ─────────── -->
-    <div class="strata">advanced — moving to styling</div>
-    <DisclosureField label="Text roles" summary={rolesSummary} bind:open={rolesOpen}>
-      <Field label="Role" hint="Rebind one type role's family / size / weight.">
-        <Dropdown value={typeRoleSel} ariaLabel="Type role to rebind"
-                onchange={(v) => (typeRoleSel = v as TypeRoleName)} options={TYPE_ROLE_OPTS} />
-      </Field>
-      <div class="sub-group">
-        <Field label="Family">
-          <Dropdown value={effectiveTypeRole.family} ariaLabel="{typeRoleSel} family"
-                  onchange={(v) => patchTypeRole("family", v)} options={TYPE_FAMILY_OPTS} />
-        </Field>
-        <Field label="Size">
-          <Dropdown value={effectiveTypeRole.size} ariaLabel="{typeRoleSel} size"
-                  onchange={(v) => patchTypeRole("size", v)} options={TYPE_SIZE_OPTS} />
-        </Field>
-        <Field label="Weight"
-               onreset={typeRoleOverridden ? resetTypeRole : undefined}>
-          <Dropdown value={effectiveTypeRole.weight} ariaLabel="{typeRoleSel} weight"
-                  onchange={(v) => patchTypeRole("weight", v)} options={TYPE_WEIGHT_OPTS} />
-        </Field>
-      </div>
-    </DisclosureField>
-    {#if pins.length > 0 || overrides.length > 0}
-      <DisclosureField
-        label="Carried overrides"
-        summary={`${pins.length + overrides.length} carried`}
-        bind:open={overridesOpen}
-      >
-        {#each overrides as [role, binding] (role)}
-          <div class="ov-row">
-            <code class="ov-name">{role}</code>
-            <span class="ov-value">{binding.ramp} · {binding.grade}</span>
-            <button type="button" class="ov-clear"
-                    aria-label="Release role override {role}"
-                    title="Release role override"
-                    onclick={() => store.clearThemeRoleOverride(role)}>✕</button>
-          </div>
-        {/each}
-        {#each pins as [cssVar, value] (cssVar)}
-          <div class="ov-row">
-            <code class="ov-name">{cssVar}</code>
-            <span class="ov-value">{value}</span>
-            <button type="button" class="ov-clear"
-                    aria-label="Release pin {cssVar}"
-                    title="Release pin"
-                    onclick={() => store.clearThemePin(cssVar)}>✕</button>
-          </div>
-        {/each}
-        <p class="ov-hint">Set in R (set_role / set_pin) — release here.</p>
-      </DisclosureField>
-    {/if}
+    <!-- Type-role rebinds + carried-overrides release moved to the
+         STYLING inner tab (Phase 5) — their L4 home. -->
   </div>
 {/if}
 
@@ -401,14 +315,6 @@
     text-transform: uppercase;
     color: var(--v2-ink-3, #8a8478);
   }
-  .sub-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--v2-gap-tight, 4px);
-    margin-left: 4px;
-    padding-left: 8px;
-    border-left: 1px solid var(--v2-rule-soft, #e6e0d1);
-  }
   .pins-banner {
     margin: 8px 0;
     padding: 6px 10px;
@@ -418,43 +324,5 @@
     background: color-mix(in srgb, #7c3aed 9%, var(--v2-paper, #fff));
     border: 1px solid color-mix(in srgb, #7c3aed 28%, transparent);
     color: var(--v2-ink, #4c2889);
-  }
-  .ov-row {
-    display: flex;
-    align-items: center;
-    gap: var(--v2-gap-small, 6px);
-    min-height: 24px;
-  }
-  .ov-name {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink, #15140e);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ov-value {
-    margin-left: auto;
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-2, #4a463c);
-    white-space: nowrap;
-  }
-  .ov-clear {
-    flex: none;
-    width: 24px;
-    height: 24px;
-    border: 0;
-    background: transparent;
-    color: var(--v2-ink-2, #4a463c);
-    cursor: pointer;
-    border-radius: var(--v2-r-hair, 2px);
-    font-size: var(--v2-text-small, 10.5px);
-  }
-  .ov-clear:hover { color: var(--v2-hot, #b53a1f); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
-  .ov-hint {
-    margin: 2px 0 0;
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
   }
 </style>

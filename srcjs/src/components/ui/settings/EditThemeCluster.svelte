@@ -12,15 +12,17 @@
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import IdentityTab from "./IdentityTab.svelte";
   import PlotsTab from "./PlotsTab.svelte";
+  import StylingTab from "./StylingTab.svelte";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  type Inner = "identity" | "plots";
+  type Inner = "identity" | "plots" | "styling";
   let inner = $state<Inner>("identity");
   const INNER: ReadonlyArray<{ id: Inner; label: string }> = [
     { id: "identity", label: "identity" },
     { id: "plots", label: "plots" },
+    { id: "styling", label: "styling" },
   ];
 </script>
 
@@ -36,8 +38,10 @@
   </div>
   {#if inner === "identity"}
     <IdentityTab {store} />
-  {:else}
+  {:else if inner === "plots"}
     <PlotsTab {store} />
+  {:else}
+    <StylingTab {store} />
   {/if}
 </div>
 

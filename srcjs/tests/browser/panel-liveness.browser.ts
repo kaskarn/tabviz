@@ -532,6 +532,21 @@ async function run(): Promise<void> {
       skipped.push("plots inner tab: not present (fixture has no viz series)");
     }
 
+    const wentStyling = await page.evaluate(() => {
+      const t = [...document.querySelectorAll<HTMLElement>(".settings-panel .inner-strip [role=tab]")]
+        .find((b) => (b.textContent || "").trim() === "styling");
+      if (!t) return false;
+      t.click();
+      return true;
+    });
+    if (wentStyling) {
+      await settle(250);
+      await expandDisclosures(page);
+      await walkControls(".settings-panel .panel-body", "styling");
+    } else {
+      skipped.push("styling inner tab: not present");
+    }
+
     // Action buttons (external effect): export / import / handoff / close.
     // Not operated (they download files, open dialogs, or close the panel) —
     // but a present-yet-DISABLED action is a dead affordance, and an action
