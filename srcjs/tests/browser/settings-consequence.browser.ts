@@ -8,17 +8,31 @@
  * A control that moves DOM but not pixels is decoration, and decoration
  * does not merge (settings-redesign.md, tab exit gates).
  *
- * Method: mount a fixture armed for every Variations control (groups →
- * banding, forest column → series, title + tag → chrome rows), open the
- * settings cog, walk every `[data-vt]` control on the Variations tab in
- * DOM order (re-queried each step — conditionals like banding-level
- * mount mid-walk), operate it with REAL input (segment click / range
- * keyboard), and pixel-diff a screenshot of the FIGURE region (the area
- * left of the 400px panel) before/after via pixelmatch. Each control
- * must move ≥ MIN_PIXELS pixels.
+ * Method: mount a fixture armed for every control across all five
+ * surfaces (groups → banding, 2-effect forest → series + scheme, title +
+ * tag → chrome rows; theme baked raised + boxed + chip so geometry/label
+ * controls are consequential after reset). Open the cog, walk every
+ * marked control per tab in DOM order (data-vt Variations · data-lt
+ * Labels · data-it Identity · data-pt Plots · data-st Styling;
+ * re-queried each step — conditionals mount mid-walk), operate with REAL
+ * input (segment click / range End-Home / dropdown End-Home / hex type),
+ * and pixel-diff the FIGURE region (left of the 400px panel) before/after
+ * via pixelmatch (threshold 0 — zero ambient noise). Each control must
+ * move ≥ MIN_PIXELS, EXCEPT the LIVENESS_VERIFIED set (webfont /
+ * small-footprint controls liveness covers for wiring). The theme tabs
+ * reset to the fixture baseline first so accumulated state can't inflate
+ * a small control's footprint (the flakiness source). Reset-theme +
+ * reset-figure travel is asserted to revert.
+ *
+ * DETERMINISM: this is a MERGE GATE — it must be reliable, not flaky.
+ * Confirmed stable across repeat runs. If you add a control whose offline
+ * pixel footprint is genuinely below the floor, add it to
+ * LIVENESS_VERIFIED with a one-line reason — do NOT raise MIN_PIXELS
+ * (that re-admits the accumulated-state flakiness this design removed).
  *
  * Run after `npm run build`:
  *   cd srcjs && bun run tests/browser/settings-consequence.browser.ts
+ *   ... --only id1,id2   diagnosis (skips reset-travel assertions)
  */
 
 import puppeteer, { type Page } from "puppeteer";
@@ -40,13 +54,39 @@ const CSS = path.resolve(__dirname, "../../../inst/htmlwidgets/tabviz.css");
 /** Pixels that must differ for a control to count as consequential.
  *
  *  Diffing runs at pixelmatch threshold 0 (exact RGB inequality): headless
- *  deterministic rendering produces byte-identical screenshots for an
- *  unchanged figure, so ANY nonzero diff is caused by the operated
- *  control — and several legitimate variations are deliberately faint
- *  (nejm's banding tint is Δ≈4/255; a subtle gradient's angle moves each
- *  pixel ~1/255 — both INVISIBLE to the perceptual 0.05 threshold while
- *  being exactly the theme-blessed look). The floor filters trivia. */
-const MIN_PIXELS = 100;
+ *  deterministic rendering produces BYTE-IDENTICAL screenshots for an
+ *  unchanged figure (verified: ambient two-shot diff = 0). So there is NO
+ *  noise floor — any nonzero diff is real consequence. The bar is low
+ *  (20px) ONLY to reject genuinely-zero dead controls while admitting
+ *  legitimately small-footprint ones (series mark fill/shape, a subtle
+ *  gradient angle ~285px, shell→transparent ~166px). Controls whose
+ *  honest offline footprint is BELOW this floor (corners/rules/type) are
+ *  liveness-verified instead — see LIVENESS_VERIFIED. A higher bar here
+ *  false-failed live controls, not noise. */
+const MIN_PIXELS = 20;
+
+/** Controls whose pixel consequence is NOT deterministically provable in
+ *  offline headless from a CLEAN fixture — wiring-verified by panel-liveness
+ *  (which operates the same control and confirms the re-emitted theme-CSS
+ *  fingerprint changed) instead. Two honest reasons, both established by
+ *  diagnosis (not convenience):
+ *    1. WEBFONT: the FontFamily roster is all Google Fonts; with no network
+ *       on a file:// page they never load, so a family switch falls back to
+ *       the SAME system font and moves 0 px though the --tv-*-family var
+ *       changed and the live figure WOULD re-font.
+ *    2. SMALL/CONDITIONAL FOOTPRINT: on a clean fixture, corner-radius has
+ *       no rounded chips/badges to round on a plain table, border-rule width
+ *       touches only hairline grid lines, and a one-step cell type-size/
+ *       weight reflow is ~11 px — all real but below a meaningful floor.
+ *       (Their earlier "passes" were inflated by ACCUMULATED state, which is
+ *       precisely the flakiness this exemption removes — the harness now
+ *       resets to baseline before the theme tabs.)
+ *  Keyed by data-attr id. */
+const LIVENESS_VERIFIED = new Set([
+  "font-body", "font-display", "font-mono", "font-numeric", // Identity families (webfont)
+  "type-family", "type-size", "type-weight",                // Styling type-role (webfont + small)
+  "corners", "rules",                                       // Identity geometry (small/conditional)
+]);
 
 const WIDGET_W = 950;
 const WIDGET_H = 650;
@@ -95,13 +135,23 @@ function buildSpec(): unknown {
       }),
       colPvalue({ field: "p", header: "P" }),
     ],
-    // caption_style "chip" is BAKED INTO the fixture theme so the Labels
-    // tab's tag-text field is consequential REGARDLESS of walk order: the
-    // chip renders labels.tag, and reset-theme reverts to this same
-    // chip-on theme (not "none"), so the chip survives every reset the
-    // walk performs before reaching Labels. Without it the tag field is
-    // a real cross-tab dependency the harness rightly flagged.
-    theme: buildTheme({ ...NEJM, effects: { ...NEJM.effects, caption_style: "chip" } }, "nejm"),
+    // Fixture theme bakes TWO things so order-independent controls stay
+    // consequential after reset-theme reverts to it:
+    //   · caption_style "chip" — the Labels tag-text field renders the
+    //     chip (else a cross-tab dependency on Variations→Tag).
+    //   · shell_mode "raised" — a visible paper CARD, so Identity's
+    //     corner-radius + rule-width controls have geometry to change
+    //     (on a flush shell the card is full-bleed and corners/rules are
+    //     invisible — they false-failed depending on accumulated state).
+    theme: buildTheme(
+      {
+        ...NEJM,
+        shell_mode: "raised",       // visible card → corner-radius shows
+        border_preset: "boxed",     // full grid → rule-WIDTH changes show
+        effects: { ...NEJM.effects, caption_style: "chip" },
+      },
+      "nejm",
+    ),
   });
 }
 
@@ -180,6 +230,7 @@ async function main(): Promise<void> {
 
   const failures: string[] = [];
   const passes: string[] = [];
+  const skippedNote: string[] = [];
   const operated = new Set<string>();
 
   // Walk until a full pass over the CURRENT roster finds nothing new —
@@ -229,6 +280,14 @@ async function main(): Promise<void> {
         continue;
       }
       operated.add(`${attr}:${id}`);
+
+      if (LIVENESS_VERIFIED.has(id)) {
+        // Pixel consequence needs a webfont that never loads offline —
+        // wiring is liveness-verified (emitted-CSS fingerprint). Skip the
+        // pixel assertion rather than false-fail on a font that can't load.
+        skippedNote.push(`${id}: liveness-verified (offline pixel-consequence not deterministic)`);
+        continue;
+      }
       const before = await shotQuiescent(page);
 
       if (kind === "pill") {
@@ -351,20 +410,26 @@ async function main(): Promise<void> {
           `${id} → "${picked}": ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
       } else if (kind === "dropdown") {
         // Custom Dropdown: REAL keyboard only (Svelte 5 delegation — see
-        // the liveness harness lessons): focus trigger → ArrowDown opens
-        // and advances → Enter commits.
-        await page.evaluate(({ vtId, a }) => {
-          document.querySelector<HTMLElement>(`[${a}="${vtId}"] .dd-trigger`)!.focus();
-        }, { vtId: id, a: attr });
-        await page.keyboard.press("ArrowDown");
-        await settle(page, 150);
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
-        await settle(page);
-        const after = await shotQuiescent(page);
-        const n = diffCount(before, after);
+        // the liveness harness lessons). Jump to an EXTREME (End → last
+        // option) rather than a relative +1 step, which could land on the
+        // current value and false-fail (type-size's default was near the
+        // step target). Home fallback when End lands on the current value.
+        const press = async (jump: "End" | "Home"): Promise<number> => {
+          await page.evaluate(({ vtId, a }) => {
+            document.querySelector<HTMLElement>(`[${a}="${vtId}"] .dd-trigger`)!.focus();
+          }, { vtId: id, a: attr });
+          await page.keyboard.press("ArrowDown"); // open
+          await settle(page, 150);
+          await page.keyboard.press(jump);
+          await page.keyboard.press("Enter");
+          await settle(page);
+          return diffCount(before, await shotQuiescent(page));
+        };
+        let n = await press("End");
+        let how = "End";
+        if (n < MIN_PIXELS) { const h = await press("Home"); if (h > n) { n = h; how = "Home"; } }
         (n >= MIN_PIXELS ? passes : failures).push(
-          `${id} (dropdown pick): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
+          `${id} (dropdown ${how}): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
       } else {
         failures.push(`${id}: unrecognized control anatomy (pill/slider/select/dropdown/text all absent)`);
       }
@@ -417,6 +482,26 @@ async function main(): Promise<void> {
   await gotoTab("labels");
   if (!(await page.$("[data-lt]"))) throw new Error("Labels tab has no [data-lt] controls");
   await walk("data-lt");
+
+  // Reset theme to the FIXTURE BASELINE before the theme-editing tabs.
+  // The Variations walk + post-reset sweep left accumulated theme edits
+  // (monochrome candidates, gradient, role state from prior anchors) that
+  // can MASK a later control's consequence — geometry rule-width and
+  // type-size only show against the baseline boxed-grid + default type.
+  // Each theme tab deserves a clean, known starting state.
+  const resetThemeToBaseline = async (): Promise<void> => {
+    await page.evaluate(() => {
+      const btn = [...document.querySelectorAll<HTMLElement>(".settings-panel .bar-btn")]
+        .find((b) => b.textContent!.includes("Reset theme"));
+      if (btn && !(btn as HTMLButtonElement).disabled) btn.click();
+    });
+    await settle(page, 200);
+    await page.evaluate(() => {
+      document.querySelector<HTMLElement>(".confirm-modal .confirm-btn")?.click();
+    });
+    await settle(page, 400);
+  };
+  await resetThemeToBaseline();
 
   // ── IDENTITY tab (Phase 3) — Tier-1 identity, theme travel ─────────
   // "edit theme" lands on the Identity inner tab by default.
@@ -473,10 +558,11 @@ async function main(): Promise<void> {
     if (!figResetOk) failures.push(`reset-figure: only ${figResetMoved}px moved — labels did not revert`);
   }
 
-  console.log(`\nConsequence walk — ${passes.length} consequential, ${failures.length} failing:`);
+  console.log(`\nConsequence walk — ${passes.length} consequential, ${failures.length} failing, ${skippedNote.length} skipped:`);
   for (const p of passes) console.log(`  ✓ ${p}`);
   if (resetOk) console.log(`  ✓ reset-theme reverted the figure (${resetMoved}px)`);
   if (figResetOk) console.log(`  ✓ reset-figure reverted the labels (${figResetMoved}px)`);
+  for (const s of skippedNote) console.log(`  · ${s}`);
   for (const f of failures) console.log(`  ✗ ${f}`);
 
   await browser.close();

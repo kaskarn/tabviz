@@ -1,18 +1,20 @@
 <!--
-  Tier1Sections — the ONE implementation of the Tier-1 section IA
-  (settings-overhaul P3). Both hosts mount THIS:
-    - settings ThemeBand (layout="compact"): anchors collapse to
-      swatch+hex rows, LCH on expand, disclosures closed.
-    - studio rail (layout="roomy"): anchors always show the LCH editor;
-      same sections, same vocabulary, same order — learn once.
+  Tier1Sections — Tier-1 section IA for the DORMANT STUDIO RAIL ONLY
+  (layout="roomy"). The settings panel NO LONGER mounts this: the D21
+  redesign replaced the compact-host ThemeBand with the purpose-built
+  Identity/Plots/Styling tabs (docs/dev/settings-redesign.md, complete
+  2026-06-12). This component survives because the dormant studio build
+  (D22) still imports it; do not extend it. The compact layout branch is
+  kept so the studio build stays green, not because any live panel uses
+  it.
 
   Store-agnostic by contract: receives inputs + cssVars + callbacks,
   never imports a store (control-contract gate).
 
-  IA (locked blueprint): IDENTITY (anchor rows + status disclosure) ·
-  SURFACE (shell / header / series / border preset / texture) · TYPE
-  (family / base / scale) · then COLOR SYSTEM / EFFECTS / GEOMETRY
-  disclosures with value-chip summaries. Disclosure depth ≤ 1 (law).
+  IA: IDENTITY (anchor rows + status disclosure) · TYPE (families +
+  role rebind) · then COLOR SYSTEM / GEOMETRY disclosures. (SURFACE +
+  EFFECTS + base/scale moved to the panel's Variations tab in the
+  redesign; this component kept the Identity-bound material.)
 -->
 <script lang="ts">
   import type { ControlLayout } from "./index";
