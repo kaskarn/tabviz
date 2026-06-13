@@ -28,6 +28,7 @@ import { validateResolvedTheme } from "./theme-validate";
 import { rampStep, oklchMix, oklchDarken, isValidHex } from "../oklch";
 import { resolveCategorical } from "../data-schemes";
 import { parseBandingString } from "../banding";
+import { CONTAINER_BORDER_DEFAULT, CONTAINER_BORDER_RADIUS_DEFAULT } from "./layout-defaults";
 import type {
   WebTheme, AccentRoles,
   StatusColors, SlotRole, TextRole, TextRoles,
@@ -358,8 +359,8 @@ export function buildTheme(
 
   const layout: Layout = {
     plotWidth: "auto",
-    containerBorder: false,
-    containerBorderRadius: 8,
+    containerBorder: CONTAINER_BORDER_DEFAULT,
+    containerBorderRadius: CONTAINER_BORDER_RADIUS_DEFAULT,
     banding: { ...themeBanding },
   };
 

@@ -426,6 +426,26 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-13 — **MAINTAINER FEEDBACK PASS (settings/roles/borders) — batch
+  1: crash fix + D9 reversal.** A live-testing pass surfaced ~11 issues,
+  several pointing at brittle/hardcoded substrate. Landed first: (1) the
+  `theme.layout.containerBorder` theme-switch CRASH — `computeLiveConfigVars`
+  read the layout blob raw while guarding `series?.` right beside it; fixed
+  by a shared `resolveContainerBorder()` (`lib/theme/layout-defaults.ts`)
+  that also kills the triplicated magic `8` radius default (DOM emitter +
+  SVG export + buildTheme now single-source it); regression-tested. (2) **D9
+  REVERSED to MAXIMAL** interaction defaults — author-grade affordances
+  (edit/reorder/axis-zoom/arrange) default ON; rationale: primary users are
+  developers who tinker, edits are local. Reaches R/JS/Shiny via the
+  unchanged baked tier. Gates green (1402 bun + 300 vitest; R 44/44).
+  REMAINING from the pass (next batches, mostly one brittle root —
+  role↔element legibility): hover-explanations for theme toggles + glow/glass
+  reimagine-or-remove; density slider is vertical-only (H density matters
+  more); rebind-role omits COLOR; "cell" role purpose; "ruled" border
+  meaning; boxed-borders first-column anomaly (likely the D20 label
+  special-casing); sliders commit-on-release vs on-change (duplicate
+  component defs?); font-selector previews.
+
 - 2026-06-13 — **AREA G: D8 RESOLVED — empirical estimator + label-flex
   unification close the WYSIWYG flex-parity gap.** The V8/export
   text-width estimator's hand-tuned character-class multipliers (magic

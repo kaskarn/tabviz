@@ -98,6 +98,7 @@ import { resolveForestLegend, legendGlyphSvg } from "../lib/legend";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
 import { compileVariants } from "../schema/variant-compile";
 import { applyThemeColumnDefaultsToSpec } from "../lib/theme/column-defaults";
+import { resolveContainerBorder } from "../lib/theme/layout-defaults";
 import { computeEffectiveBanks } from "../schema/banks";
 import { resolveStyleMapping } from "$lib/style-mapping-resolve";
 import {
@@ -4562,8 +4563,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // .tabviz-container border wraps the shell, so it stays OUTSIDE the
   // shell translate group; identical output when no shell band).
   // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
-  if (theme.layout.containerBorder !== false) {
-    const borderRadius = theme.layout.containerBorderRadius ?? 8;
+  const { border: drawContainerBorder, radius: borderRadius } = resolveContainerBorder(theme.layout);
+  if (drawContainerBorder) {
     const containerBorderStroke = readDividerSubtle(cssVars);
     parts.push(`<rect x="0.5" y="0.5"
       width="${layoutFull.totalWidth - 1}" height="${layoutFull.totalHeight - 1}"

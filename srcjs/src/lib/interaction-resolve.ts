@@ -57,16 +57,21 @@ export const BAKED_INTERACTION_DEFAULTS: Readonly<Record<InteractionFlag, boolea
   enableExport: true,
   enableThemeEdit: true, // settings cog hosts the reader contrast (a11y) toggle
   enableFilters: true,
-  showGroupCounts: false,
-  // Author-grade (mutates what the figure shows) — OFF everywhere.
-  enableReorderRows: false,
-  enableReorderColumns: false,
-  enableEdit: false,
-  enableAxisZoom: false,
+  showGroupCounts: false, // display opinion, not a tinker affordance — stays off
+  // Author-grade (mutates what the figure shows) — ON by default as of the
+  // D9 reversal (pre-release, 2026-06-13): the package's primary users are
+  // developers who want every affordance available to check/tinker without
+  // re-enabling it each time. Edits are LOCAL (never persist to the doc),
+  // so the cost of default-on is low. A publisher targeting passive readers
+  // turns these off per-spec / per-theme / via the global tier. Revisit at
+  // actual ship if the audience broadens to embedded published figures.
+  enableReorderRows: true,
+  enableReorderColumns: true,
+  enableEdit: true,
+  enableAxisZoom: true,
   // The arrange tool (P2): a toolbar mode that lights up every resize seam
-  // (row-kind edges, header/gap/footer spacing). Author-grade — OFF; flip
-  // on per spec, per theme, or globally.
-  enableArrange: false,
+  // (row-kind edges, header/gap/footer spacing). ON with the D9 reversal.
+  enableArrange: true,
 };
 
 /** The fully-resolved interaction surface consumers read. Boolean flags are

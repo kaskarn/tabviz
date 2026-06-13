@@ -91,14 +91,14 @@ describe("tabviz top-level constructor", () => {
     });
     // The explicit tier carries ONLY what the author passed — nothing here.
     expect(Object.keys(spec.interaction)).toEqual([]);
-    // The resolved surface: reader-safe ON, author-grade OFF
-    // (conservative-everywhere; interactivity-UX arc P1).
+    // The resolved surface: reader-safe ON, AND author-grade ON as of the
+    // D9 reversal (pre-release maximal-defaults stance, 2026-06-13).
     const r = resolveInteraction(spec);
     expect(r.showLegend).toBe(true);
     expect(r.enableSort).toBe(true);
     expect(r.enableExport).toBe(true);
-    expect(r.enableEdit).toBe(false);
-    expect(r.enableAxisZoom).toBe(false);
+    expect(r.enableEdit).toBe(true);
+    expect(r.enableAxisZoom).toBe(true);
   });
 
   test("explicitly passed interaction flags reach the sparse tier", () => {

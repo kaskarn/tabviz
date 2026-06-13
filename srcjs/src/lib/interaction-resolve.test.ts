@@ -20,11 +20,14 @@ describe("resolveInteraction", () => {
     expect(r.enableCollapse).toBe(true);
     expect(r.enableResize).toBe(true);
     expect(r.enableThemeEdit).toBe(true);
-    // Author-grade affordances mutate what the figure shows — OFF.
-    expect(r.enableEdit).toBe(false);
-    expect(r.enableReorderRows).toBe(false);
-    expect(r.enableReorderColumns).toBe(false);
-    expect(r.enableAxisZoom).toBe(false);
+    // Author-grade affordances are ON by default as of the D9 reversal
+    // (pre-release dev-convenience stance) — every affordance available
+    // without re-enabling per spec.
+    expect(r.enableEdit).toBe(true);
+    expect(r.enableReorderRows).toBe(true);
+    expect(r.enableReorderColumns).toBe(true);
+    expect(r.enableAxisZoom).toBe(true);
+    expect(r.enableArrange).toBe(true);
   });
 
   it("null spec resolves to baked defaults", () => {

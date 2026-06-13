@@ -6,8 +6,28 @@ Wire-format versioning policy lives in
 
 ## [Unreleased]
 
+### Fixed
+
+* **Theme switch no longer crashes** with `Cannot read properties of
+  undefined (reading 'containerBorder')`. `computeLiveConfigVars` read
+  `theme.layout.containerBorder` raw while guarding `theme.series?.[0]`
+  right above it — a transitioning/partial theme (no `layout` blob) threw,
+  and the bad object corrupted every subsequent render. The container-border
+  defaults (`false` / `8px`), previously hardcoded in three places, are now
+  owned by one `resolveContainerBorder(layout)` helper
+  (`lib/theme/layout-defaults.ts`) that the DOM emitter, the SVG export, and
+  `buildTheme` all call — robust to absent layout, no drift.
+
 ### Changed
 
+* **Interaction defaults are now MAXIMAL** (`BAKED_INTERACTION_DEFAULTS`).
+  Author-grade affordances — `enableEdit`, `enableReorderRows`,
+  `enableReorderColumns`, `enableAxisZoom`, `enableArrange` — default ON
+  alongside the reader-safe set, so every affordance is available without
+  re-enabling it per spec. Edits are local (never persist to the doc).
+  `showGroupCounts` / `showFilters` stay off. Opt out per-spec, per-theme,
+  or via the global `tabviz.interaction_defaults` tier (4-tier resolution
+  chain unchanged). Decision register D9.
 * **Text-width estimator is now empirical** (the V8/export path that runs
   without a canvas). The hand-tuned character-class multipliers — magic
   numbers that accreted via local nudges and over-budgeted column widths
