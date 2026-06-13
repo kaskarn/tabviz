@@ -61,13 +61,15 @@
   const groupDepth = $derived(store.maxGroupDepth);
   const startsWithBand = $derived(store.bandingStartsWithBand);
 
-  function writeBanding(grammar: string): void {
+  function writeBanding(grammar: string, commitNow = true): void {
     // Clear the figure-tier override FIRST: effectiveBanding resolves
     // override > theme, so a Shiny-set override would silently mask the
     // theme write (a dead control — the exact bug class this redesign
-    // exists to kill).
+    // exists to kill). Cleared on preview too, or the drag-tick would be
+    // masked by a lingering override.
     store.setBandingOverride(null);
-    patch("banding", grammar);
+    if (commitNow) patch("banding", grammar);
+    else preview({ ...inputs!, banding: grammar });
   }
   function setBandingMode(v: string): void {
     if (v === "group") {
@@ -149,6 +151,7 @@
         <Field label="Level" hint="Which group depth alternates the band.">
           <Slider value={bandingLevel} min={1} max={groupDepth} step={1}
                   ariaLabel="Banding group level"
+                  onchange={(v) => writeBanding(`group-${v}`, false)}
                   oncommit={(v) => writeBanding(`group-${v}`)} />
         </Field>
       </div>

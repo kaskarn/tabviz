@@ -61,6 +61,7 @@
           <span class="pin-row">
             <Slider value={px} min={12} max={120} step={1} suffix="px"
                     ariaLabel="{kind} row height"
+                    onchange={(v) => store.setRowKindHeight(kind, v)}
                     oncommit={(v) => store.setRowKindHeight(kind, v)} />
             {#if pinned}
               <button type="button" class="pin-clear" title="Release pin"

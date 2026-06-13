@@ -149,6 +149,7 @@ export interface ThemeSlice {
    *  safe (re-resolves; survives polarity/HC) — NOT a raw pin. Grade is
    *  clamped to 1..11. */
   setThemeRoleOverride: (role: string, ramp: RampName, grade: number) => void;
+  previewThemeRoleOverride: (role: string, ramp: RampName, grade: number) => void;
   /** Release one Tier-2 role override from the theme artifact. */
   clearThemeRoleOverride: (role: string) => void;
   resetThemeEdits: () => void;
@@ -376,6 +377,18 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     const g = Math.max(1, Math.min(11, Math.round(grade)));
     const ro = { ...(carried.roleOverrides ?? {}), [role]: { ramp, grade: g } };
     rebuild({ roleOverrides: ro as WebTheme["roleOverrides"], remeasure: true });
+  }
+
+  // Drag-tick PREVIEW for setThemeRoleOverride — same re-route, but SKIPS the
+  // remeasure + contrast validation so the role-grade slider can update live
+  // per tick (commit lands on pointer-up via setThemeRoleOverride). Mirrors
+  // previewAuthoringInputs vs setAuthoringInputs.
+  function previewThemeRoleOverride(role: string, ramp: RampName, grade: number): void {
+    const carried = deps.getSpec()?.theme;
+    if (!carried) return;
+    const g = Math.max(1, Math.min(11, Math.round(grade)));
+    const ro = { ...(carried.roleOverrides ?? {}), [role]: { ramp, grade: g } };
+    rebuild({ roleOverrides: ro as WebTheme["roleOverrides"], skipValidation: true });
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -653,7 +666,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewAuthoringInputs, previewThemeField,
     setComponentChannel, clearComponentChannel,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
-    clearThemePin, setThemeRoleOverride, clearThemeRoleOverride,
+    clearThemePin, setThemeRoleOverride, previewThemeRoleOverride, clearThemeRoleOverride,
     resetThemeEdits, resetWatermark, captureThemeSnapshot, applyThemeSnapshot,
     reset,
   };

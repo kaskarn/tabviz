@@ -387,6 +387,24 @@ describe("theme slice — artifact survival through Tier-1 edits (final review P
     expect(ro2?.["surface-subtle"]?.grade).toBe(11);
   });
 
+  test("previewThemeRoleOverride applies the re-route live (drag-tick channel)", () => {
+    const initial = buildArtifactSpec();
+    const harness = buildDeps(initial);
+    const theme = createThemeSlice(harness.deps);
+    theme.captureInitial(initial);
+    // The role-grade slider's onchange previews per tick; the override lands
+    // so the figure repaints live (commit on release validates + remeasures).
+    theme.previewThemeRoleOverride("surface-subtle", "neutral", 7);
+    const t = harness.spec?.theme as { roleOverrides?: Record<string, unknown> };
+    expect(t.roleOverrides?.["surface-subtle"]).toEqual({ ramp: "neutral", grade: 7 });
+    // clamps like the commit path
+    theme.previewThemeRoleOverride("surface-subtle", "neutral", -5);
+    const ro = (harness.spec?.theme as {
+      roleOverrides?: Record<string, { grade: number }>;
+    }).roleOverrides;
+    expect(ro?.["surface-subtle"]?.grade).toBe(1);
+  });
+
   test("clearThemePin flips hasThemeEdits so Reset is enabled (round-2 state P1)", () => {
     const initial = buildArtifactSpec();
     const harness = buildDeps(initial);

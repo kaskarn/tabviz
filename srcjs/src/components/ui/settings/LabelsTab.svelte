@@ -83,6 +83,7 @@
       <Field label="Opacity">
         <Slider value={wmOpacity} min={0.02} max={0.5} step={0.01} valueWidth={4}
                 ariaLabel="Watermark opacity"
+                onchange={(v) => store.setWatermarkOpacity(v)}
                 oncommit={(v) => store.setWatermarkOpacity(v)} />
       </Field>
     </div>

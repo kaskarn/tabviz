@@ -1430,6 +1430,7 @@ export function createTabvizStore() {
     previewAuthoringInputs: theme.previewAuthoringInputs,
     clearThemePin: theme.clearThemePin,
     setThemeRoleOverride: theme.setThemeRoleOverride,
+    previewThemeRoleOverride: theme.previewThemeRoleOverride,
     clearThemeRoleOverride: theme.clearThemeRoleOverride,
     captureThemeSnapshot: theme.captureThemeSnapshot,
     applyThemeSnapshot: theme.applyThemeSnapshot,

@@ -74,6 +74,9 @@
   function setRole(ramp: RampName, grade: number): void {
     store.setThemeRoleOverride(roleSel, ramp, grade);
   }
+  function previewRole(ramp: RampName, grade: number): void {
+    store.previewThemeRoleOverride(roleSel, ramp, grade);
+  }
 
   // ── Text-role rebinds (moved here from Identity's interim home) ──────
   // Default to "cell" (every data cell renders it) so the family/size/
@@ -183,6 +186,7 @@
                onreset={roleOverridden ? () => store.clearThemeRoleOverride(roleSel) : undefined}>
           <Slider value={curBinding.grade} min={1} max={11} step={1}
                   ariaLabel="Role grade"
+                  onchange={(v) => previewRole(curBinding.ramp, v)}
                   oncommit={(v) => setRole(curBinding.ramp, v)} />
         </Field>
       </div>
