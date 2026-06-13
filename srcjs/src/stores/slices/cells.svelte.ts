@@ -44,7 +44,7 @@ export interface CellsSliceDeps {
   markSource: (field: string) => void;
 }
 
-type LabelField = "title" | "subtitle" | "caption" | "footnote";
+type LabelField = "title" | "subtitle" | "caption" | "footnote" | "tag";
 type LabelEdits = Partial<Record<LabelField, string | null>>;
 
 export interface CellsSlice {
@@ -77,6 +77,9 @@ export interface CellsSlice {
   setLabel: (field: LabelField, value: string | null) => void;
   previewLabel: (field: LabelField, value: string | null) => void;
   getPlotLabel: (field: LabelField) => string | null;
+  /** Clear ONLY the plot-label overlay (figure reset scope) — cell edits
+   *  are data edits and survive a figure reset. */
+  resetLabelEdits: () => void;
 
   /** Clear all cell- and label-edit state. Called from the main
    *  factory's `clearAllEdits()` and `resetState()` / `setSpec()`
@@ -206,6 +209,11 @@ export function createCellsSlice(deps: CellsSliceDeps): CellsSlice {
     editingTarget = null;
   }
 
+  function resetLabelEdits(): void {
+    labelEdits = {};
+    deps.markSource("label_edits");
+  }
+
   return {
     get cellEdits() { return cellEdits; },
     get labelEdits() { return labelEdits; },
@@ -215,7 +223,7 @@ export function createCellsSlice(deps: CellsSliceDeps): CellsSlice {
     startEdit, endEdit, setCellValue, clearCellEdit, setRowLabel,
     setGroupHeader, setForestCellValues,
     getDisplayValue, getLabel,
-    setLabel, previewLabel, getPlotLabel,
+    setLabel, previewLabel, getPlotLabel, resetLabelEdits,
     reset,
   };
 }

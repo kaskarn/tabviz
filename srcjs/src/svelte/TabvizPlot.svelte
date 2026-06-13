@@ -265,7 +265,8 @@
   const captionChip = $derived(
     v4Inputs?.effects?.caption_style === "chip" ||
     v4Inputs?.effects?.caption_style === "both"
-      ? (spec?.labels?.tag ?? "TABLE")
+      // Merged read: session tag edits (Labels tab) overlay spec.labels.
+      ? (store.getPlotLabel("tag") ?? "TABLE")
       : null,
   );
   // Fallback "TABLE": a theme that opts into the chip renders the lab's

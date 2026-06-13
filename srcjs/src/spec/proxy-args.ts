@@ -166,6 +166,13 @@ export interface SetRowLabelArgs {
   label: string;
 }
 
+/** `setLabel` — set/clear a plot-label slot (R set_title/set_subtitle/
+ *  set_caption/set_footnote/set_tag on a proxy). `text` null clears. */
+export interface SetLabelArgs {
+  which: "title" | "subtitle" | "caption" | "footnote" | "tag";
+  text: string | null;
+}
+
 /** `setRowSemantic` — toggle a row-level semantic token (or clear all). */
 export interface SetRowSemanticArgs {
   rowId: string;
@@ -353,6 +360,13 @@ export const normalize = {
   setRowLabel(raw: Record<string, unknown>): SetRowLabelArgs | null {
     if (typeof raw.rowId !== "string" || typeof raw.label !== "string") return null;
     return { rowId: raw.rowId, label: raw.label };
+  },
+
+  setLabel(raw: Record<string, unknown>): SetLabelArgs | null {
+    const slots = ["title", "subtitle", "caption", "footnote", "tag"] as const;
+    if (typeof raw.which !== "string" || !(slots as readonly string[]).includes(raw.which)) return null;
+    const text = typeof raw.text === "string" && !isNA(raw.text) ? raw.text : null;
+    return { which: raw.which as SetLabelArgs["which"], text };
   },
 
   setRowSemantic(raw: Record<string, unknown>): SetRowSemanticArgs | null {

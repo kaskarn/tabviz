@@ -507,7 +507,7 @@ async function run(): Promise<void> {
     // tab's stronger gate is settings-consequence.browser.ts (visible-
     // pixel delta); this walk still covers it for operability (a control
     // that jams or throws is caught here even if its pixels move).
-    for (const tabLabel of ["variations", "edit theme", "this figure"] as const) {
+    for (const tabLabel of ["variations", "labels", "edit theme", "this figure"] as const) {
       await gotoTab(tabLabel);
       await expandDisclosures(page);
       await walkControls(".settings-panel .panel-body", tabLabel.replace(" ", "-"));

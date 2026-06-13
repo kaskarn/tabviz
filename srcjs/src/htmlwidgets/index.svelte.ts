@@ -134,6 +134,15 @@ export const proxyMethods: Record<string, (store: TabvizStore, args: Record<stri
     if (!a) return;
     store.setRowLabel(a.rowId, a.label);
   },
+  // R set_title/set_subtitle/set_caption/set_footnote/set_tag on a proxy.
+  // This handler was MISSING until the Labels tab build (settings-redesign
+  // P2): R sent setLabel and the table silently dropped it — live Shiny
+  // label updates never worked.
+  setLabel: (store, raw) => {
+    const a = normalize.setLabel(raw);
+    if (!a) return;
+    store.setLabel(a.which, a.text);
+  },
   clearEdits: (store) => {
     store.clearAllEdits();
   },

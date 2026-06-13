@@ -37,6 +37,7 @@ export interface OpRecord {
     | "set_subtitle"
     | "set_caption"
     | "set_footnote"
+    | "set_tag"
     | "set_watermark"
     | "paint_row"
     | "paint_cell"
@@ -208,7 +209,7 @@ export const ops = {
   }),
 
   setLabelSlot: (
-    slot: "title" | "subtitle" | "caption" | "footnote",
+    slot: "title" | "subtitle" | "caption" | "footnote" | "tag",
     text: string | null,
   ): OpRecord => ({
     kind: `set_${slot}` as OpRecord["kind"],

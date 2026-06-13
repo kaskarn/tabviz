@@ -20,6 +20,7 @@
   import ThemeBand from "./settings/ThemeBand.svelte";
   import FigureBand from "./settings/FigureBand.svelte";
   import VariationsTab from "./settings/VariationsTab.svelte";
+  import LabelsTab from "./settings/LabelsTab.svelte";
   // v2 design tokens — the primitives cascade off [data-tv-v2].
   import "$components/primitives/v2/tokens.css";
 
@@ -35,10 +36,11 @@
   // 1); "theme" hosts the interim Tier-1 band until Identity/Plots/
   // Styling land; "figure" hosts the interim figure band until Labels
   // absorbs it. Tab labels rename as each phase replaces its interim.
-  type PanelTab = "variations" | "theme" | "figure";
+  type PanelTab = "variations" | "labels" | "theme" | "figure";
   let activeTab = $state<PanelTab>("variations");
   const TABS: ReadonlyArray<{ id: PanelTab; label: string }> = [
     { id: "variations", label: "variations" },
+    { id: "labels", label: "labels" },
     { id: "theme", label: "edit theme" },
     { id: "figure", label: "this figure" },
   ];
@@ -167,6 +169,8 @@
     <div class="panel-body">
       {#if activeTab === "variations"}
         <div class="tab-pad"><VariationsTab {store} /></div>
+      {:else if activeTab === "labels"}
+        <div class="tab-pad"><LabelsTab {store} /></div>
       {:else if activeTab === "theme"}
         <!-- Interim Tier-1 band — raw material for Identity/Plots/Styling
              (built next, per docs/dev/settings-redesign.md). -->

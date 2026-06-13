@@ -422,6 +422,15 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-12 — **SETTINGS REDESIGN PHASE 2 (LABELS) LANDED.** Labels
+  tab (title/subtitle/caption/footnote/tag fields + watermark) on the
+  spine; tag promoted to a first-class label slot (op kind + R
+  set_tag()); figure reset now covers label edits. REAL BUG: the
+  widget proxy table had no setLabel handler — R's set_title(proxy,…)
+  family was silently dropped on live Shiny widgets; fixed + covered.
+  Consequence harness extended (Labels walk + Reset-figure travel; 27
+  controls green). Record: settings-redesign.md Phase 2.
+
 - 2026-06-12 — **SETTINGS REDESIGN PHASE 1 (VARIATIONS) LANDED** + D23
   DECIDED (all 9 presets bless the polarity flip, no pins — battery in
   the register). The panel carries the real tab spine; Variations is

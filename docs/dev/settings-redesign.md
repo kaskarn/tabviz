@@ -170,7 +170,27 @@ the tab spine. Deferred to Phase 5: the density "advanced control in
 Styling" signpost caption (pointing at a tab that doesn't exist yet
 would be a broken signpost).
 
-**Phases 2–5 — build tab by tab, in order: Labels →
+**Phase 2 — LABELS — EXECUTED 2026-06-12.** The `labels` tab (second in
+the spine): text fields for title / subtitle / caption / footnote / tag
+(one verb underneath — `setLabel` onto the session label overlay; the
+exporter merges into spec.labels; inline canvas dblclick editing stays)
++ the watermark group (text/color/opacity, moved out of the figure
+band). Substrate: `tag` became a first-class label slot (LabelField +
+op kind `set_tag` + R `set_tag()` modifier + the chip's read now merges
+session edits); `hasFigureEdits` includes label edits and the figure
+reset clears them (`resetLabelEdits` — labels are figure content per
+the matrix). REAL BUG FOUND AND FIXED: the widget proxy dispatch table
+had NO `setLabel` handler — R's `set_title(proxy, …)` family was
+silently dropped on live Shiny widgets since the proxy surface was
+built (handler + normalize entry added; test-label-slots.R covers the
+spec path). The consequence harness gained the Labels walk (text-input
+operation: real typing + Enter) and the Reset-figure travel check;
+ids namespaced per tab (title/tag exist on both). 27 controls + both
+reset travels green; liveness 71 repaint-verified across 4 tabs.
+Label LOCATION controls await engine support (the maintainer's "(once
+supported)").
+
+**Phases 3–5 — build tab by tab, in order:
 Identity → Plots → Styling.** Each tab's exit gate:
 - every control passes **consequence** (visible pixel delta in the
   rendered fixture — a NEW harness check, not DOM-fingerprint

@@ -146,23 +146,29 @@ async function main(): Promise<void> {
 
   // Walk until a full pass over the CURRENT roster finds nothing new —
   // conditional controls (banding-level/start, glow-anchor, gradient-
-  // angle) mount only after their parent is switched on.
-  async function walk(): Promise<void> {
+  // angle, watermark color/opacity) mount only after their parent is
+  // switched on. `attr` selects the tab's control marker (data-vt for
+  // Variations, data-lt for Labels).
+  async function walk(attr = "data-vt"): Promise<void> {
   for (let round = 0; round < 6; round++) {
-    const ids = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>("[data-vt]")].map((el) => el.dataset.vt!),
-    );
-    const fresh = ids.filter((id) => !operated.has(id) && (!ONLY || ONLY.has(id)));
+    const ids = await page.evaluate((a) =>
+      [...document.querySelectorAll<HTMLElement>(`[${a}]`)].map((el) => el.getAttribute(a)!),
+    attr);
+    // Namespace by attr: "title"/"tag" exist on BOTH tabs (Variations
+    // style row, Labels text field) — without the prefix the Labels walk
+    // skipped them as already-operated.
+    const fresh = ids.filter((id) => !operated.has(`${attr}:${id}`) && (!ONLY || ONLY.has(id)));
     if (fresh.length === 0) break;
 
     for (const id of fresh) {
-      const kind = await page.evaluate((vtId) => {
-        const root = document.querySelector<HTMLElement>(`[data-vt="${vtId}"]`);
+      const kind = await page.evaluate(({ vtId, a }) => {
+        const root = document.querySelector<HTMLElement>(`[${a}="${vtId}"]`);
         if (!root) return "missing";
         if (root.querySelector("input[type=range]")) return "slider";
         if (root.querySelector("[role=radio]")) return "pill";
+        if (root.querySelector("input[type=text]")) return "text";
         return "unknown";
-      }, id);
+      }, { vtId: id, a: attr });
 
       if (kind === "missing") {
         // A conditional whose parent was switched away mid-walk (e.g.
@@ -170,7 +176,7 @@ async function main(): Promise<void> {
         // the post-reset sweep retries it from the restored baseline.
         continue;
       }
-      operated.add(id);
+      operated.add(`${attr}:${id}`);
       const before = await shotFigure(page);
 
       if (kind === "pill") {
@@ -186,21 +192,21 @@ async function main(): Promise<void> {
         const tried: string[] = [];
         let moved: { label: string; n: number } | null = null;
         for (let attempt = 0; attempt < 6 && !moved; attempt++) {
-          const target = await page.evaluate(({ vtId, skip }) => {
-            const root = document.querySelector<HTMLElement>(`[data-vt="${vtId}"]`)!;
+          const target = await page.evaluate(({ vtId, skip, a }) => {
+            const root = document.querySelector<HTMLElement>(`[${a}="${vtId}"]`)!;
             const segs = [...root.querySelectorAll<HTMLElement>("[role=radio]")]
               .filter((b) => b.getAttribute("aria-checked") !== "true")
               .map((b) => b.textContent!.trim())
               .filter((t) => !skip.includes(t));
             return segs.length ? segs[segs.length - 1] : null;
-          }, { vtId: id, skip: tried });
+          }, { vtId: id, skip: tried, a: attr });
           if (target == null) break;
           tried.push(target);
-          const handle = await page.evaluateHandle(({ vtId, label }) => {
-            const root = document.querySelector<HTMLElement>(`[data-vt="${vtId}"]`)!;
+          const handle = await page.evaluateHandle(({ vtId, label, a }) => {
+            const root = document.querySelector<HTMLElement>(`[${a}="${vtId}"]`)!;
             return [...root.querySelectorAll<HTMLElement>("[role=radio]")]
               .find((b) => b.textContent!.trim() === label)!;
-          }, { vtId: id, label: target });
+          }, { vtId: id, label: target, a: attr });
           await (handle.asElement() as import("puppeteer").ElementHandle<Element>).click();
           await settle(page);
           const after = await shotFigure(page);
@@ -218,15 +224,15 @@ async function main(): Promise<void> {
         // Real keyboard on the focused native range input. End/Home jumps
         // the full domain — the strongest stride (a 4-step nudge on a
         // 0–360° dial was a sub-pixel-budget rotation).
-        await page.evaluate((vtId) => {
-          const root = document.querySelector<HTMLElement>(`[data-vt="${vtId}"]`)!;
+        await page.evaluate(({ vtId, a }) => {
+          const root = document.querySelector<HTMLElement>(`[${a}="${vtId}"]`)!;
           root.querySelector<HTMLInputElement>("input[type=range]")!.focus();
-        }, id);
-        const atMax = await page.evaluate((vtId) => {
-          const el = document.querySelector<HTMLElement>(`[data-vt="${vtId}"]`)!
+        }, { vtId: id, a: attr });
+        const atMax = await page.evaluate(({ vtId, a }) => {
+          const el = document.querySelector<HTMLElement>(`[${a}="${vtId}"]`)!
             .querySelector<HTMLInputElement>("input[type=range]")!;
           return parseFloat(el.value) >= parseFloat(el.max);
-        }, id);
+        }, { vtId: id, a: attr });
         const key = atMax ? "Home" : "End";
         await page.keyboard.press(key);
         await settle(page);
@@ -234,8 +240,28 @@ async function main(): Promise<void> {
         const n = diffCount(before, after);
         (n >= MIN_PIXELS ? passes : failures).push(
           `${id} (${key}): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
+      } else if (kind === "text") {
+        // Real typing into the text field (label slots, watermark, hex):
+        // click, select-all, type a distinctive value, Enter commits.
+        const handle = await page.evaluateHandle(({ vtId, a }) => {
+          const root = document.querySelector<HTMLElement>(`[${a}="${vtId}"]`)!;
+          return root.querySelector<HTMLInputElement>("input[type=text]")!;
+        }, { vtId: id, a: attr });
+        const input = handle.asElement() as import("puppeteer").ElementHandle<HTMLInputElement>;
+        await input.click();
+        await page.keyboard.down(process.platform === "darwin" ? "Meta" : "Control");
+        await page.keyboard.press("a");
+        await page.keyboard.up(process.platform === "darwin" ? "Meta" : "Control");
+        const typed = id.includes("color") ? "#cc2200" : `Walked ${id}`;
+        await page.keyboard.type(typed, { delay: 5 });
+        await page.keyboard.press("Enter");
+        await settle(page);
+        const after = await shotFigure(page);
+        const n = diffCount(before, after);
+        (n >= MIN_PIXELS ? passes : failures).push(
+          `${id} (typed "${typed}"): ${n}px ${n >= MIN_PIXELS ? "moved" : "— NO VISIBLE CONSEQUENCE"}`);
       } else {
-        failures.push(`${id}: unrecognized control anatomy (no pill, no slider)`);
+        failures.push(`${id}: unrecognized control anatomy (no pill, slider, or text input)`);
       }
     }
   }
@@ -271,9 +297,49 @@ async function main(): Promise<void> {
   // now from the restored baseline.
   await walk();
 
+  // ── LABELS tab (Phase 2) — figure-content controls, figure travel ──
+  const gotoTab = async (label: string): Promise<void> => {
+    const ok = await page.evaluate((l) => {
+      const tab = [...document.querySelectorAll<HTMLElement>(".settings-panel .tab-strip [role=tab]")]
+        .find((t) => (t.textContent || "").trim() === l);
+      if (!tab) return false;
+      tab.click();
+      return true;
+    }, label);
+    if (!ok) throw new Error(`panel tab "${label}" not found`);
+    await settle(page, 250);
+  };
+  await gotoTab("labels");
+  if (!(await page.$("[data-lt]"))) throw new Error("Labels tab has no [data-lt] controls");
+  await walk("data-lt");
+
+  // Reset-figure travel: every Labels write is FIGURE state — the scoped
+  // reset (on the this-figure tab) must revert the typed labels +
+  // watermark.
+  const beforeFigReset = await shotFigure(page);
+  await gotoTab("this figure");
+  const figClicked = await page.evaluate(() => {
+    const btn = document.querySelector<HTMLButtonElement>(".settings-panel .reset-figure");
+    if (!btn) return "missing";
+    if (btn.disabled) return "disabled";
+    btn.click();
+    return "clicked";
+  });
+  let figResetOk = false;
+  let figResetMoved = 0;
+  if (figClicked !== "clicked") {
+    failures.push(`reset-figure: button ${figClicked} after Labels edits — figure travel broken`);
+  } else {
+    await settle(page, 500);
+    figResetMoved = diffCount(beforeFigReset, await shotFigure(page));
+    figResetOk = figResetMoved >= MIN_PIXELS;
+    if (!figResetOk) failures.push(`reset-figure: only ${figResetMoved}px moved — labels did not revert`);
+  }
+
   console.log(`\nConsequence walk — ${passes.length} consequential, ${failures.length} failing:`);
   for (const p of passes) console.log(`  ✓ ${p}`);
   if (resetOk) console.log(`  ✓ reset-theme reverted the figure (${resetMoved}px)`);
+  if (figResetOk) console.log(`  ✓ reset-figure reverted the labels (${figResetMoved}px)`);
   for (const f of failures) console.log(`  ✗ ${f}`);
 
   await browser.close();
@@ -281,7 +347,7 @@ async function main(): Promise<void> {
     console.error(`\nFAIL: ${failures.length} control(s) without visible consequence.`);
     process.exit(1);
   }
-  console.log(`\n✓ every Variations control changes visible pixels (${passes.length} controls + reset travel)`);
+  console.log(`\n✓ every Variations + Labels control changes visible pixels (${passes.length} controls + both reset travels)`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

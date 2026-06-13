@@ -124,6 +124,7 @@ export function createTabvizStore() {
     hasRowKindHeightPins: () => Object.keys(layoutZoom.rowKindHeights).length > 0,
     hasBandingOverride: () =>
       data.bandingOverride != null || data.bandingStartsWithBandOverride != null,
+    hasLabelEdits: () => Object.keys(cells.labelEdits).length > 0,
   });
 
   // ── Axis (cross-slice $derived) ──────────────────────────────────────────
@@ -1359,6 +1360,7 @@ export function createTabvizStore() {
     setLabel: cells.setLabel,
     previewLabel: cells.previewLabel,
     getPlotLabel: cells.getPlotLabel,
+    resetLabelEdits: cells.resetLabelEdits,
     // Paint tool — owned by the semantics slice (Phase 0c-C1 PR6).
     setPaintTool: semantics.setPaintTool,
     setPaintHoverCellField: semantics.setPaintHoverCellField,

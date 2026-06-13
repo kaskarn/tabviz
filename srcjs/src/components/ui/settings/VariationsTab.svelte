@@ -90,14 +90,10 @@
   }
 
   // ── Consequence gates ────────────────────────────────────────────────
-  // Session label edits (inline dblclick edits) overlay spec.labels — a
-  // title typed this session must arm the Title control too.
-  const hasTitle = $derived(
-    Boolean(store.labelEdits["title"] ?? store.spec?.labels?.title),
-  );
-  // tag is not a session-editable label field (LabelField excludes it) —
-  // it arrives via spec.labels.tag (R `tag=`) only.
-  const hasTag = $derived(Boolean(store.spec?.labels?.tag));
+  // Merged reads: session label edits (inline dblclick / Labels tab)
+  // overlay spec.labels — a title typed this session arms the Title row.
+  const hasTitle = $derived(Boolean(store.getPlotLabel("title")));
+  const hasTag = $derived(Boolean(store.getPlotLabel("tag")));
   // slot_style restyles series marks — without a plot column it is inert.
   const hasSeriesMarks = $derived(
     store.allColumns.some((c) =>

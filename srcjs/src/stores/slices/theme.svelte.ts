@@ -96,6 +96,8 @@ export interface ThemeSliceDeps {
    *  them (R3 studio wiring — Reset gate/action asymmetry). */
   hasRowKindHeightPins: () => boolean;
   hasBandingOverride: () => boolean;
+  /** Session plot-label edits (Labels tab / inline dblclick) — figure state. */
+  hasLabelEdits: () => boolean;
 }
 
 export interface ThemeSlice {
@@ -643,6 +645,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
       }
       if (deps.hasRowKindHeightPins()) return true;
       if (deps.hasBandingOverride()) return true;
+      if (deps.hasLabelEdits()) return true;
       return false;
     },
 

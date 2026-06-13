@@ -13,8 +13,6 @@
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
-  import Swatch from "$components/primitives/v2/Swatch.svelte";
-  import TextInput from "$components/primitives/v2/TextInput.svelte";
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
 
   interface Props { store: TabvizStore; }
@@ -24,14 +22,9 @@
   // (settings-redesign Phase 1); the runtime override (Shiny set_banding)
   // still participates in figure dirty/reset below. The Contrast row left
   // too — it duplicated the toolbar's ContrastButton (view state belongs
-  // to the toolbar, D21 ruling 10).
-
-  // ── Watermark ───────────────────────────────────────────────────────
-  let watermarkOpen = $state(false);
-  const wmText = $derived(store.spec?.watermark ?? "");
-  const wmColor = $derived(store.spec?.watermarkColor ?? null);
-  const wmOpacity = $derived(store.spec?.watermarkOpacity ?? 0.08);
-  const wmSummary = $derived(wmText ? `"${wmText}"` : "off");
+  // to the toolbar, D21 ruling 10). Watermark moved to the LABELS tab
+  // (Phase 2); this band keeps the row pins + the scoped figure reset
+  // until Styling absorbs the pins.
 
   // ── Row-height pins ─────────────────────────────────────────────────
   // The roster lists every pinnable kind in the figure (not just pinned
@@ -50,6 +43,8 @@
     store.setBandingOverride(null);
     store.setBandingStartsWithBand(null);
     store.resetRowKindHeights();
+    // Labels are figure content (travel matrix: Labels → Reset figure).
+    store.resetLabelEdits();
   }
 </script>
 
@@ -58,29 +53,6 @@
     <span class="seam-title">this figure</span>
     <span class="seam-sub">stays with this figure · not exported with the theme</span>
   </div>
-
-  <DisclosureField label="Watermark" summary={wmSummary} bind:open={watermarkOpen}>
-    <Field label="Text">
-      <TextInput
-        value={wmText}
-        alignLeft
-        placeholder="DRAFT"
-        ariaLabel="Watermark text"
-        oncommit={(v) => store.setWatermark(v)}
-      />
-    </Field>
-    {#if wmText}
-      <Field label="Color">
-        <Swatch value={wmColor} allowUnset
-                onchange={(v) => store.setWatermarkColor(v)} />
-      </Field>
-      <Field label="Opacity">
-        <Slider value={wmOpacity} min={0.02} max={0.5} step={0.01} valueWidth={4}
-                ariaLabel="Watermark opacity"
-                oncommit={(v) => store.setWatermarkOpacity(v)} />
-      </Field>
-    {/if}
-  </DisclosureField>
 
   {#if rowKinds.length > 0}
     <DisclosureField label="Row heights" summary={pinsSummary} bind:open={pinsOpen}>

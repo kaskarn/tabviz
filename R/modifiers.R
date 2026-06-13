@@ -1124,6 +1124,17 @@ set_caption <- function(x, text) set_label_slot(x, "caption", text)
 #' @export
 set_footnote <- function(x, text) set_label_slot(x, "footnote", text)
 
+#' Set the plot tag (the short stamp label, e.g. "TABLE 2")
+#'
+#' Rendered as the caption chip on the shell when the theme's
+#' `effects.caption_style` is `"chip"` or `"both"`; the chip stamps a
+#' default "TABLE" when no tag is set.
+#'
+#' @inheritParams set_title
+#' @return The modified input
+#' @export
+set_tag <- function(x, text) set_label_slot(x, "tag", text)
+
 # ----------------------------------------------------------------------------
 # Watermark
 # ----------------------------------------------------------------------------

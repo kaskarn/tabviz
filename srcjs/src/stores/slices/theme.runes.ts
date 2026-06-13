@@ -18,7 +18,7 @@ function buildDeps(initialSpec?: WebSpec) {
   const calls = { clearAuto: 0, measure: 0 };
   // Cross-slice dirty probes (mutable so tests can simulate row-height
   // pins / banding overrides owned by other slices).
-  const probes = { rowKindPins: false, banding: false };
+  const probes = { rowKindPins: false, banding: false, labels: false };
   const deps = {
     getSpec: () => spec,
     setSpec: (next: WebSpec) => { spec = next; },
@@ -27,6 +27,7 @@ function buildDeps(initialSpec?: WebSpec) {
     appendOp: (r: OpRecord) => { opLog.push(r); },
     hasRowKindHeightPins: () => probes.rowKindPins,
     hasBandingOverride: () => probes.banding,
+    hasLabelEdits: () => probes.labels,
   };
   return {
     deps,
