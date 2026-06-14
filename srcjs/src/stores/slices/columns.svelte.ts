@@ -761,7 +761,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         if (c.badgeText) {
           s += BADGE.GAP
             + estimateTextWidth(c.badgeText, badgeFontSize, dataFontKey.weight)
-            + BADGE.PADDING * 2;
+            + BADGE.PADDING_X * 2;
         }
         return s;
       };
@@ -786,7 +786,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         if (c.badgeText) {
           const badgeExact = measureExact(c.badgeText, dataFontKey, badgeFontSize)
             ?? estimateTextWidth(c.badgeText, badgeFontSize, dataFontKey.weight);
-          rowWidth += BADGE.GAP + badgeExact + BADGE.PADDING * 2;
+          rowWidth += BADGE.GAP + badgeExact + BADGE.PADDING_X * 2;
         }
         if (rowWidth > maxLabelWidth) maxLabelWidth = rowWidth;
       }

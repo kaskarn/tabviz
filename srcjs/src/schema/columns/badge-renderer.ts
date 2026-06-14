@@ -123,14 +123,14 @@ function computeBadgeGeometry(
   const cssVars = getCssVars(theme);
   const baseFontSize = parseFontSize(readBodySize(cssVars));
   const fontSize = baseFontSize * BADGE.FONT_SCALE;
-  const height = fontSize + BADGE.PADDING * 2;
+  const height = fontSize + BADGE.PADDING_Y * 2;
   const textWidth = measureTextWidth(text, fontSize, readBodyFamily(cssVars), 600);
   // Circle / square shapes are 1:1 aspect — use height as the
   // controlling dimension so "1" and "12" render the same diameter.
   const aspectShape = shape === "circle" || shape === "square";
   const width = aspectShape
-    ? Math.max(height, textWidth + BADGE.PADDING)
-    : textWidth + BADGE.PADDING * 2;
+    ? Math.max(height, textWidth + BADGE.PADDING_X)
+    : textWidth + BADGE.PADDING_X * 2;
   const radius = shape === "square"
     ? 3
     : shape === "circle"

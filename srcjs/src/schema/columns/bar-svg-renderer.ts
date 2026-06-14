@@ -15,7 +15,7 @@ import { BAR, SPACING } from "../../lib/rendering-constants";
 import {
   getCssVars, readVarPx,
   readAccentDefault, readDividerSubtle, readContentPrimary,
-  readBodyFamily, readBodySize,
+  readBodyFamily, readLabelSize,
 } from "../../lib/theme/consumer-bridge";
 
 interface BarOptions {
@@ -63,8 +63,9 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
   const color = resolveBarColor(opts, ctx?.cellStyle, undefined, theme);
   const trackColor = readDividerSubtle(cssVars);
 
-  const fontSize = parseFontSize(readBodySize(cssVars));
-  const labelFontSize = fontSize * BAR.LABEL_SCALE;
+  // Label draws at the `label` type-role — the SAME token the DOM reads
+  // (CellBar.svelte `var(--tv-text-label-size)`). Role, not `* BAR.LABEL_SCALE`.
+  const labelFontSize = parseFontSize(readLabelSize(cssVars));
   const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
   const cellWidth = ctx?.cellWidth ?? 100;
   const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);

@@ -13,11 +13,11 @@ import { registerRenderers } from "../extend";
 import { normalizeValue } from "../../lib/scale-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { parseFontSize } from "../../lib/typography-layout";
-import { SPACING } from "../../lib/rendering-constants";
+import { SPACING, PROGRESS } from "../../lib/rendering-constants";
 import {
   getCssVars, readVarPx,
-  readAccentDefault, readDividerSubtle, readContentPrimary,
-  readBodyFamily, readBodySize,
+  readAccentDefault, readDividerStrong, readContentPrimary,
+  readBodyFamily, readLabelSize,
 } from "../../lib/theme/consumer-bridge";
 
 interface ProgressOptions {
@@ -27,9 +27,9 @@ interface ProgressOptions {
   scale?: "linear" | "log" | "sqrt";
 }
 
-const PROGRESS_BAR_HEIGHT = 10;
-const PROGRESS_LABEL_WIDTH = 40;
-const PROGRESS_BAR_RADIUS = 5;
+const PROGRESS_BAR_HEIGHT = PROGRESS.BAR_HEIGHT;
+const PROGRESS_LABEL_WIDTH = PROGRESS.LABEL_WIDTH;
+const PROGRESS_BAR_RADIUS = PROGRESS.BAR_RADIUS;
 
 function resolveProgressColor(
   opts: ProgressOptions | undefined,
@@ -70,15 +70,16 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
   const barWidth = Math.max(0, ratio * barAreaWidth);
   const totalWidth = cellWidth - cellPadX * 2;
-  const fontSize = parseFontSize(readBodySize(cssVars));
-  const labelFontSize = fontSize * 0.9;
+  // Label draws at the `label` type-role — the SAME token the DOM reads
+  // (CellProgress.svelte `var(--tv-text-label-size)`). Role, not multiplier.
+  const labelFontSize = parseFontSize(readLabelSize(cssVars));
   const height = Math.max(PROGRESS_BAR_HEIGHT, showLabel ? labelFontSize : PROGRESS_BAR_HEIGHT);
 
   const pieces: string[] = [];
   // Track
   pieces.push(
     `<rect x="0" y="${(height - PROGRESS_BAR_HEIGHT) / 2}" width="${barAreaWidth}" height="${PROGRESS_BAR_HEIGHT}" ` +
-    `fill="${readDividerSubtle(cssVars)}" opacity="0.5" rx="${PROGRESS_BAR_RADIUS}"/>`,
+    `fill="${readDividerStrong(cssVars)}" opacity="${PROGRESS.TRACK_OPACITY}" rx="${PROGRESS_BAR_RADIUS}"/>`,
   );
   // Fill
   pieces.push(

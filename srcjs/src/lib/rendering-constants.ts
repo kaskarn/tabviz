@@ -69,11 +69,22 @@ export const HEATMAP_TEXT = {
 } as const;
 
 export const BADGE = {
-  /** Font size multiplier relative to base font */
-  FONT_SCALE: 0.8,
+  /** Font size multiplier relative to base font. Mirrors CellBadge.svelte
+   *  `.badge-base { font-size: 0.77em }` — the live DOM reference. */
+  FONT_SCALE: 0.77,
 
-  /** Horizontal padding inside badge pill (one side) */
-  PADDING: 4,
+  /** Horizontal padding inside the badge pill, ONE side. Mirrors
+   *  CellBadge.svelte `.badge-pill { padding: 0 10px }`. Drives pill WIDTH +
+   *  the column-width estimator (both DOM + SVG). Was conflated with the
+   *  vertical pad at 4 (badge cells under-sized + the export pill narrower
+   *  than the DOM); split 2026-06-14 so width tracks the real CSS. */
+  PADDING_X: 10,
+
+  /** Vertical padding inside the badge pill, ONE side — drives pill HEIGHT
+   *  (height = fontSize + 2·PADDING_Y). Distinct from PADDING_X: the DOM pill
+   *  has 0 CSS vertical padding (height is the line-box), and ~4px reproduces
+   *  that line-box height in the export's font-box model. */
+  PADDING_Y: 4,
 
   /** Gap between label text and badge */
   GAP: 6,
@@ -89,14 +100,36 @@ export const BAR = {
   HEIGHT: 8,
   /** Track corner radius (CSS: border-radius: 2px) */
   RADIUS: 2,
-  /** Label font size multiplier vs body (CSS small-label size ≈ 0.75rem) */
-  LABEL_SCALE: 0.75,
+  // NOTE: label FONT SIZE is the `label` type-role (readLabelSize), not a
+  // constant — see feedback_type_roles_not_multipliers. LABEL_SCALE removed.
   /** Minimum label cell width (CSS: .bar-label min-width: 32px) */
   LABEL_MIN_WIDTH: 32,
   /** Gap between bar track and label (CSS: .cell-bar gap: 6px) */
   GAP: 6,
   /** Track fill opacity (subtle band behind the bar) */
   TRACK_OPACITY: 1,
+} as const;
+
+/**
+ * Progress-bar (col_progress) geometry. Mirrors CellProgress.svelte's CSS so
+ * the SVG export renders the same shape as the live widget. Was module-local
+ * consts in progress-renderer.ts that drifted from the DOM (label width 40 vs
+ * 32, label font 0.9 vs 0.75, track --tv-cell-border vs the DOM's --tv-border);
+ * centralized + reconciled to the DOM reference 2026-06-14.
+ */
+export const PROGRESS = {
+  /** Track + fill height (CSS: .progress-track height: 10px) */
+  BAR_HEIGHT: 10,
+  /** Track corner radius (CSS: border-radius: 5px) */
+  BAR_RADIUS: 5,
+  /** Label cell reservation (CSS: .progress-label min-width: 32px) */
+  LABEL_WIDTH: 32,
+  /** Track fill opacity over the border color (CSS: color-mix(border 50%, transparent)) */
+  TRACK_OPACITY: 0.5,
+  // NOTE: the label FONT SIZE is NOT a constant here — it's the `label`
+  // type-role (`--tv-text-label-size`, the DOM's `var(--tv-text-label-size)`).
+  // The renderer reads readLabelSize() so a theme can move it; a magic 0.75/0.9
+  // multiplier was the very divergence this reconcile removed.
 } as const;
 
 /**

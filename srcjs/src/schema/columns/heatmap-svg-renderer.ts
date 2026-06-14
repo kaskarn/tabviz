@@ -7,7 +7,7 @@ import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import {
   getCssVars, readAccentDefault, readSurfaceBg,
-  readBodyFamily, readBodySize,
+  readBodyFamily, readLabelSize,
 } from "../../lib/theme/consumer-bridge";
 import { normalizeValue } from "../../lib/scale-utils";
 import { parseFontSize } from "../../lib/typography-layout";
@@ -88,7 +88,9 @@ export const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSv
   // text in exports; cell-parity review #3, 2026-06-14).
   const textColor = luminance > 0.5 ? HEATMAP_TEXT.DARK : HEATMAP_TEXT.LIGHT;
 
-  const fontSize = parseFontSize(readBodySize(cssVars));
+  // Value text draws at the `label` type-role — the SAME token the DOM reads
+  // (CellHeatmap.svelte `var(--tv-text-label-size)`). Role, not a `* 0.9`.
+  const labelFontSize = parseFontSize(readLabelSize(cssVars));
   const cellWidth = ctx?.cellWidth ?? 100;
   const rowH = ctx?.rowHeight ?? 24;
 
@@ -103,7 +105,7 @@ export const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSv
       `<text class="cell-text" dominant-baseline="central" ` +
       `x="${cellWidth / 2}" y="${rowH / 2}" ` +
       `font-family="${readBodyFamily(cssVars)}" ` +
-      `font-size="${fontSize * 0.9}px" font-weight="400" ` +
+      `font-size="${labelFontSize}px" font-weight="400" ` +
       `text-anchor="middle" fill="${textColor}">${value.toFixed(decimals)}</text>`,
     );
   }

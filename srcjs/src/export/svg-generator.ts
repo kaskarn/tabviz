@@ -391,7 +391,7 @@ export function calculateSvgAutoWidths(
       if (row.style?.badge) {
         const badgeText = String(row.style.badge);
         const badgeTextWidth = measureTextWidth(badgeText, fontSize * BADGE.FONT_SCALE, bodyFamily, 400);
-        rowWidth += BADGE.GAP + badgeTextWidth + BADGE.PADDING * 2;
+        rowWidth += BADGE.GAP + badgeTextWidth + BADGE.PADDING_X * 2;
       }
       maxWidth = Math.max(maxWidth, rowWidth);
     }
@@ -3249,12 +3249,12 @@ function renderUnifiedTableRow(
   if (row.style?.badge) {
     const badgeText = String(row.style.badge);
     const badgeFontSize = fontSize * BADGE.FONT_SCALE;
-    const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
+    const badgeHeight = badgeFontSize + BADGE.PADDING_Y * 2;
     // Use smart measurement for accurate label width
     const labelTextWidth = measureTextWidth(row.label, fontSize, readBodyFamily(cssVars), fontWeight);
     const badgeX = x + cellPadX + indent + labelTextWidth + BADGE.GAP;
     const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, readBodyFamily(cssVars), 600);
-    const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
+    const badgeWidth = badgeTextWidth + BADGE.PADDING_X * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
 
     const accentColor = readAccentDefault(cssVars);
