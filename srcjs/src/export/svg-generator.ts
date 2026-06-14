@@ -3648,6 +3648,13 @@ function layoutHasHorizontal(layout: string): boolean {
   return layout === "horizontal" || layout === "grid";
 }
 
+/** Are vertical column dividers drawn under the current layout? (grid =
+ *  boxed). The DOM paints these as each cell's border-right; the export
+ *  must match (Bug B follow-up, 2026-06-13). */
+function layoutHasVertical(layout: string): boolean {
+  return layout === "vertical" || layout === "grid";
+}
+
 // ============================================================================
 // Validation
 // ============================================================================
@@ -5220,11 +5227,40 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     }
   });
 
+  const resolvedBorders = resolveBorders(theme.authoringInputs?.border_preset,
+    readDividerStrong(cssVars), readDividerSubtle(cssVars));
+
+  // Internal vertical column dividers — only under a grid layout (boxed).
+  // The DOM paints these as each cell's border-right; without them the
+  // export showed only horizontal rules + the outer frame, so `boxed`
+  // rendered a different table in each path (Bug B follow-up, 2026-06-13).
+  // One line per column boundary in `columnPositions` (the label|col0
+  // boundary + each col|col boundary), spanning the table region (header
+  // top → last row bottom). The label boundary honors the first-column
+  // rule (minor by default, the strong rule when first_column_style="bold");
+  // the rest use the minor divider — the same source as the row dividers.
+  if (layoutHasVertical(resolvedBorders.layout)) {
+    const vTopY = layout.mainY;
+    const vBotY = rowsY + layout.rowsHeight;
+    const vLeftX = padding;
+    const vRightX = layout.totalWidth - padding;
+    const firstColRule = readVar(cssVars, "--tv-first-col-rule", resolvedBorders.minor.color);
+    for (let i = 0; i < columnPositions.length; i++) {
+      const x = columnPositions[i]!;
+      // Skip any boundary that coincides with an outer frame edge (e.g. the
+      // first boundary when there is no label column) — the frame draws it.
+      if (x <= vLeftX + 0.5 || x >= vRightX - 0.5) continue;
+      const isLabelBoundary = i === 0 && layout.labelWidth > 0;
+      const spec = (isLabelBoundary && firstColRule && firstColRule !== "transparent")
+        ? { ...resolvedBorders.minor, color: firstColRule }
+        : resolvedBorders.minor;
+      parts.push(borderLineSvg(x, vTopY, x, vBotY, spec));
+    }
+  }
+
   // Table outer edge — `borders.table` always paints when layout !=
   // "none" and thickness > 0. The rect spans from the header top to the
   // last row bottom; horizontal sides paint twice for "double" style.
-  const resolvedBorders = resolveBorders(theme.authoringInputs?.border_preset,
-    readDividerStrong(cssVars), readDividerSubtle(cssVars));
   if (resolvedBorders.layout !== "none" && resolvedBorders.table.thickness > 0) {
     const t = resolvedBorders.table;
     const topY = layout.mainY;
