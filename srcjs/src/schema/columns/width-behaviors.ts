@@ -21,7 +21,7 @@ type PictogramOpts = {
     valueLabel?: boolean;
   };
 };
-type StarsOpts = { stars?: { maxStars?: number } };
+type StarsOpts = { stars?: { maxGlyphs?: number } };
 type IconOpts  = { icon?:  { size?: "sm" | "base" | "lg" | "xl" } };
 type RingOpts  = {
   ring?: { size?: "sm" | "base" | "lg"; showLabel?: boolean };
@@ -66,7 +66,7 @@ registerBehaviors("pictogram", {
 
 registerBehaviors("stars", {
   naturalWidth: (column) => {
-    const max = (column.options as StarsOpts).stars?.maxStars ?? 5;
+    const max = (column.options as StarsOpts).stars?.maxGlyphs ?? 5;
     return max * CELL_GEOMETRY.stars.glyphPx + Math.max(0, max - 1) * CELL_GEOMETRY.stars.gap;
   },
 });

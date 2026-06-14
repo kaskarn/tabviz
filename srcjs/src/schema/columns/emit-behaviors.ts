@@ -172,7 +172,7 @@ registerBehaviors("stars", {
     name: "colStars",
     typeArgs: dropDefaults(
       { field: col.field, ...bucket(col, "stars") },
-      { maxStars: 5, halfStars: false, domain: null, size: "base" },
+      { maxGlyphs: 5, halfGlyphs: false, domain: null, size: "base" },
     ),
   }),
 });

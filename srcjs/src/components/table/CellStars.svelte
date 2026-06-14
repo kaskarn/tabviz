@@ -10,10 +10,10 @@
 
   const { value, options, naText }: Props = $props();
 
-  const maxStars = $derived(Math.max(1, Math.min(20, options?.maxStars ?? 5)));
+  const maxStars = $derived(Math.max(1, Math.min(20, options?.maxGlyphs ?? 5)));
   const filledColor = $derived(options?.color ?? "#f59e0b");
   const emptyColor = $derived(options?.emptyColor ?? "#d1d5db");
-  const halfStars = $derived(options?.halfStars ?? false);
+  const halfStars = $derived(options?.halfGlyphs ?? false);
   const domain = $derived(options?.domain ?? null);
   const size = $derived(options?.size ?? "base");
   const sizeClass = $derived(

@@ -62,8 +62,8 @@ describe("naturalWidth — stars", () => {
     expect(dispatch(c)).toBe(68);
   });
 
-  test("maxStars override", () => {
-    const c = col("stars", { stars: { maxStars: 3 } });
+  test("maxGlyphs override", () => {
+    const c = col("stars", { stars: { maxGlyphs: 3 } });
     expect(dispatch(c)).toBe(3 * 12 + 2 * 2);
   });
 });

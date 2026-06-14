@@ -277,11 +277,16 @@ export interface BadgeColumnOptions {
 }
 
 export interface StarsColumnOptions {
-  maxStars?: number;
+  // Wire keys are maxGlyphs/halfGlyphs (R `max_glyphs`/`half_glyphs`; JS
+  // `colStars(maxStars=)` is author-sugar mapped to maxGlyphs at authoring
+  // time). The DOM + this type previously read maxStars/halfStars — names
+  // the wire never carries, so a configured cap/half-fill was inert in the
+  // widget while the export honored it (DOM↔export bug, 2026-06-14).
+  maxGlyphs?: number;
   color?: string;  // Filled star color
   emptyColor?: string;  // Empty star color
-  halfStars?: boolean;
-  domain?: [number, number] | null;  // Remap raw values from [lo, hi] → [0, maxStars]
+  halfGlyphs?: boolean;
+  domain?: [number, number] | null;  // Remap raw values from [lo, hi] → [0, maxGlyphs]
   size?: "sm" | "base" | "lg";       // Star glyph size
 }
 
