@@ -2162,7 +2162,7 @@
                   x2={colScale(annotation.x)}
                   y1={0}
                   y2={rowsAreaHeight}
-                  stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
+                  stroke={annotation.color ?? "var(--tv-border)"}
                   stroke-width={annotation.width ?? 1.5}
                   stroke-opacity={annotation.opacity ?? 0.6}
                   stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2335,7 +2335,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
+                      stroke={annotation.color ?? "var(--tv-border)"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2424,7 +2424,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
+                      stroke={annotation.color ?? "var(--tv-border)"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2513,7 +2513,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-border, var(--tv-border))"}
+                      stroke={annotation.color ?? "var(--tv-border)"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -3465,7 +3465,7 @@
 
   .row-summary {
     font-weight: var(--tv-font-weight-bold, 600);
-    border-top: 2px solid var(--tv-border, var(--tv-border));
+    border-top: 2px solid var(--tv-border);
   }
   /* Summary rows visually span all columns (one "Overall" value
      across the row). Column dividers on data cells would slice the

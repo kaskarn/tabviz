@@ -30,6 +30,7 @@
   import { DEFAULT_TYPE_ROLES, type TypeRoleName, type TypeRole } from "$lib/theme/typography";
   import { TYPE_ROLE_NAMES } from "$lib/theme/scale-roles";
   import { KNOWN_UNCONSUMED } from "$lib/theme/component-tokens";
+  import { TYPE_FAMILY_VALUES, TYPE_SIZE_VALUES, TYPE_WEIGHT_VALUES } from "$lib/theme/theme-validate";
   import { roleElementHint } from "./role-element-hint";
 
   interface Props { store: TabvizStore; }
@@ -84,10 +85,10 @@
   // absent from most figures.
   let typeRoleSel = $state<TypeRoleName>("cell");
   const TYPE_ROLE_OPTS = TYPE_ROLE_NAMES.map((r) => ({ value: r, label: r }));
-  const TYPE_FAMILY_OPTS = ["display", "body", "mono", "numeric"].map((v) => ({ value: v, label: v }));
-  const TYPE_SIZE_OPTS = ["label", "foot", "body", "head", "subtitle", "title", "display"]
-    .map((v) => ({ value: v, label: v }));
-  const TYPE_WEIGHT_OPTS = ["regular", "medium", "semibold", "bold"].map((v) => ({ value: v, label: v }));
+  // Derived from the validator's canonical enums (one source — no drift).
+  const TYPE_FAMILY_OPTS = TYPE_FAMILY_VALUES.map((v) => ({ value: v, label: v }));
+  const TYPE_SIZE_OPTS = TYPE_SIZE_VALUES.map((v) => ({ value: v, label: v }));
+  const TYPE_WEIGHT_OPTS = TYPE_WEIGHT_VALUES.map((v) => ({ value: v, label: v }));
   const effectiveTypeRole = $derived<TypeRole>({
     ...DEFAULT_TYPE_ROLES[typeRoleSel],
     ...(inputs?.type_roles?.[typeRoleSel] ?? {}),

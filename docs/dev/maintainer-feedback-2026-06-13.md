@@ -165,6 +165,31 @@ DOM-only token is browser-only or parallel-agrees; first-col, header, and
 group-rule are all wired into the export. The export WYSIWYG cluster is closed,
 and the ledger gate keeps it that way.
 
+## Hunt #13 — dead-surface sweep (2026-06-14)
+
+Cleared the vestigial trivia (zero behavior change except the documented Knob
+fix):
+- **Deleted dead props**: `Accordion.summary` (renderer + `.head-summary` CSS),
+  `Field.tight` (prop + `.field.tight` grid variant), `EnumRow.disabled`
+  (forward to Pill) — all declared, no producer.
+- **`Knob` chipWidth**: the `mode === "track" ? 56 : 56` dead ternary always
+  returned 56, so track knobs were NEVER 64 (the JSDoc lied). Simplified to
+  `width ?? 56` + corrected the doc to match reality (no untested behavior
+  change).
+- **Self-fallback typo**: `var(--tv-border, var(--tv-border))` → `var(--tv-border)`
+  ×5 (annotation strokes, TabvizPlot).
+- **#10 roster drift**: StylingTab's `TYPE_FAMILY/SIZE/WEIGHT_OPTS` now derive
+  from the validator's exported `TYPE_*_VALUES` (one source — add a size to the
+  scale and the picker tracks it).
+
+LEFT (deliberately): `TextInput.ariaDescribedby/ariaInvalid` (live in the
+dormant studio), `Tooltip.id` (redundant — hint already SR-announced via the i
+mark), the glow / ink2 var() self-fallbacks (harmless, identical to their
+fallback target). Deleting these is churn for no gain.
+
+Verified: svelte-check 0 + primitive-wiring clean; lint clean; full suite 1416
+bun + 301 vitest; build green.
+
 ## Remaining
 
 - (Bug B prior scoping retained below for history; superseded by B9.)

@@ -24,10 +24,6 @@
     open?: boolean;
     /** Mute when all options are at default. */
     dim?: boolean;
-    /** Free-form snippet rendered in the header's right slot. Use this
-     *  for per-item summaries (color chip, font signature, token preview)
-     *  when count isn't the right shape. */
-    summary?: Snippet;
     /** Fires on user-toggle (click on header). Parents enforcing
      *  single-open accordion semantics own the truth and pass `open`
      *  back; without this they can't detect a peer toggle. */
@@ -44,7 +40,6 @@
     count,
     open = $bindable(true),
     dim,
-    summary,
     onchange,
     children,
   }: Props = $props();
@@ -80,9 +75,7 @@
         {/if}
       </h3>
     </div>
-    {#if summary}
-      <span class="head-summary">{@render summary()}</span>
-    {:else if count != null && count > 0}
+    {#if count != null && count > 0}
       <span class="head-count" title="{count} overridden">
         <span class="count-dot"></span>
         {count}
@@ -204,25 +197,6 @@
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-ink-2, #4a463c);
     font-variant-numeric: tabular-nums;
-  }
-  .head-summary {
-    grid-column: 3;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    /* min-width: fit-content lets the auto grid track expand to the
-       summary's intrinsic width even when the title (1fr column 2) is
-       trying to consume all available space. Without this, narrow
-       panels collapse the summary column to 0px and chip previews
-       disappear. */
-    min-width: fit-content;
-    font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
-    overflow: hidden;
-    max-width: calc(100% - 100px);
-    white-space: nowrap;
-    text-overflow: ellipsis;
   }
   .count-dot {
     width: 5px;

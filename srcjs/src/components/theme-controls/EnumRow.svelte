@@ -19,13 +19,12 @@
     segments: PillSegment<T>[];
     pinned?: boolean;
     onreset?: () => void;
-    disabled?: boolean;
     onchange: (next: T) => void;
   }
 
-  const { label, hint, value, segments, pinned, onreset, disabled, onchange }: Props = $props();
+  const { label, hint, value, segments, pinned, onreset, onchange }: Props = $props();
 </script>
 
 <Field {label} {hint} {pinned} {onreset}>
-  <Pill {value} {segments} {disabled} ariaLabel={label} onchange={(v) => onchange(v)} />
+  <Pill {value} {segments} ariaLabel={label} onchange={(v) => onchange(v)} />
 </Field>

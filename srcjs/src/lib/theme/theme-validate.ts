@@ -219,9 +219,12 @@ const BANDING_START_VALUES = ["band", "plain"] as const;
 const TYPE_ROLE_VALUES = [
   "title", "subtitle", "body", "numeric", "label", "caption", "footnote", "cell", "tick",
 ] as const;
-const TYPE_FAMILY_VALUES = ["display", "body", "mono", "numeric"] as const;
-const TYPE_SIZE_VALUES = ["label", "foot", "body", "head", "subtitle", "title", "display"] as const;
-const TYPE_WEIGHT_VALUES = ["regular", "medium", "semibold", "bold"] as const;
+// Exported so the settings panel's type-role pickers derive their options
+// from the SAME list the validator enforces — add a size to the scale and
+// the picker tracks it, no drift (hunt #10, 2026-06-13).
+export const TYPE_FAMILY_VALUES = ["display", "body", "mono", "numeric"] as const;
+export const TYPE_SIZE_VALUES = ["label", "foot", "body", "head", "subtitle", "title", "display"] as const;
+export const TYPE_WEIGHT_VALUES = ["regular", "medium", "semibold", "bold"] as const;
 
 function checkTriple(triple: OklchTriple | undefined, name: string, problems: ThemeIssue[], required: boolean): void {
   if (triple === undefined) {

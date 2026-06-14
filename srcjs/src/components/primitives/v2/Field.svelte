@@ -31,8 +31,6 @@
     mono?: boolean;
     /** True when value differs from schema default — shows hot dot. */
     pinned?: boolean;
-    /** Hand control width to caller via min-content vs flex. */
-    tight?: boolean;
     /** Click handler on the gutter dot — usually a reset-to-default. */
     onreset?: () => void;
     children?: Snippet;
@@ -44,7 +42,7 @@
   // at every call site); a native `for=` was also wrong here because it would
   // ACTIVATE a button-based control (Pill segment) on label-click, not just
   // focus it.
-  const { label, hint, glyph, mono, pinned, tight, onreset, children }: Props = $props();
+  const { label, hint, glyph, mono, pinned, onreset, children }: Props = $props();
 </script>
 
 <!--
@@ -55,7 +53,7 @@
   disclosure on hover/focus is a better default. Native title is the
   baseline; a Tooltip primitive can replace it later for richer surfaces.
 -->
-<div class="field" class:tight>
+<div class="field">
   <button
     class="gutter"
     type="button"
@@ -108,9 +106,6 @@
     align-items: center;
     column-gap: var(--v2-gap-mid, 8px);
     row-gap: 0;
-  }
-  .field.tight {
-    grid-template-columns: 8px 72px max-content 1fr;
   }
 
   /* ── Gutter (override dot / reset button) ───────────────── */

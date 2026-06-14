@@ -44,7 +44,7 @@
     pinned?: boolean;
     disabled?: boolean;
     id?: string;
-    /** Explicit chip width in px. Default 56 (plain/scrub), 64 (track). */
+    /** Explicit chip width in px. Default 56 for every mode. */
     width?: number;
     /** Fires whenever the committed value changes — drag end, type+blur,
      *  Enter, or palette pick. Parents that don't use `bind:value` MUST
@@ -84,7 +84,7 @@
   const mode = $derived<"plain" | "scrub" | "track">(
     hasRange ? (track ? "track" : "scrub") : "plain",
   );
-  const chipWidth = $derived(width ?? (mode === "track" ? 56 : 56));
+  const chipWidth = $derived(width ?? 56);
 
   // Local raw value for in-flight typing (committed on blur/Enter).
   // CRITICAL: the sync effect must NOT track `raw`. If it does, the
