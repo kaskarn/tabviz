@@ -38,6 +38,7 @@ import pixelmatch from "pixelmatch";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
 import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 import { generateSVG, computeLayoutMetrics } from "../../src/export/svg-generator";
+import { bootBuiltinBehaviors } from "../../src/schema/init";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_HTML = path.join(__dirname, "fixtures.html");
@@ -107,7 +108,7 @@ const GLYPH_COLS: GlyphCol[] = [
   { key: "progress", field: "prog", col: { id: "progress", type: "progress", field: "prog", header: "Prog", options: { progress: { showLabel: true } } } },
   { key: "ring", field: "ringv", col: { id: "ring", type: "ring", field: "ringv", header: "Ring", options: { ring: { showLabel: true } } } },
   { key: "stars", field: "starsv", col: { id: "stars", type: "stars", field: "starsv", header: "Stars", options: { pictogram: { maxGlyphs: 5, halfGlyphs: true, glyph: "star" } } } },
-  { key: "pictogram", field: "picto", col: { id: "pictogram", type: "pictogram", field: "picto", header: "Picto", options: { pictogram: { maxGlyphs: 5, glyph: "circle" } } } },
+  { key: "pictogram", field: "picto", col: { id: "pictogram", type: "pictogram", field: "picto", header: "Picto", options: { pictogram: { maxGlyphs: 5, glyph: "dot" } } } },
   { key: "icon", field: "iconv", col: { id: "icon", type: "icon", field: "iconv", header: "Icon", options: { icon: { map: { up: "arrow-up" } } } } },
   { key: "bar", field: "barv", col: { id: "bar", type: "bar", field: "barv", header: "Bar", options: { bar: { max: 1, showLabel: true } } } },
   { key: "sparkline", field: "sparkv", col: { id: "sparkline", type: "sparkline", field: "sparkv", header: "Spark", options: { sparkline: {} } } },
@@ -190,6 +191,11 @@ async function main() {
 
   try { fs.writeFileSync(TRACE, ""); } catch { /* ignore */ }
   trace("start");
+  // Register the built-in cell SVG renderers — WITHOUT this, generateSVG
+  // text-degrades every visual cell (ring/heatmap/pictogram render the raw
+  // value, inflating the diff). Same boot wysiwyg-diff calls; the split-boot
+  // trap in CLAUDE.md ("svg renderer registered only via a Svelte module").
+  bootBuiltinBehaviors();
   const spec = buildSpec(cols);
   const svgStr = generateSVG(spec as never, { width: NOMINAL_WIDTH });
   const metrics = computeLayoutMetrics(spec as never, { width: NOMINAL_WIDTH });
