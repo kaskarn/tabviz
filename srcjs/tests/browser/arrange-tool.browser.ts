@@ -5,7 +5,8 @@
  * pointer-capture drags can't be simulated with synthetic events.
  *
  * Asserts:
- *   1. Conservative default: no arrange button when enableArrange is unset.
+ *   1. Opt-out: no arrange button when enableArrange is EXPLICITLY false
+ *      (D9 reversal 2026-06-13: enableArrange defaults ON; unset ⇒ shown).
  *   2. With interaction.enableArrange: the toolbar shows the arrange button;
  *      arming it reveals row-kind handles + armed spacing seams.
  *   3. Hovering a row handle ghost-highlights every row of that KIND.
@@ -56,7 +57,10 @@ function buildSpec(opts: { arrange: boolean }): unknown {
     theme: THEME,
     interaction: {
       enableExport: false, enableThemes: null,
-      ...(opts.arrange ? { enableArrange: true } : {}),
+      // D9 reversal (2026-06-13): enableArrange now defaults ON (maximal
+      // interaction defaults), so the OFF state must be set EXPLICITLY to
+      // test that the button is absent — an unset flag resolves to ON.
+      enableArrange: opts.arrange === true,
     },
     layout: { plotWidth: "auto" },
   };
@@ -114,10 +118,11 @@ async function run() {
   await page.addScriptTag({ path: path.resolve(__dirname, "../../node_modules/jquery/dist/jquery.min.js") }).catch(() => {});
   await page.addScriptTag({ path: DEFAULT_BUNDLE });
 
-  // ── 1. Conservative default: no arrange button without the flag ────────
+  // ── 1. Opt-out: no arrange button when enableArrange is explicitly false
+  //      (D9 reversal: arrange defaults ON, so OFF must be explicit) ──────
   await mount(page, buildSpec({ arrange: false }));
-  if (await page.$(".arrange-btn")) fail("arrange button rendered without enableArrange");
-  ok("conservative default: no arrange button without enableArrange");
+  if (await page.$(".arrange-btn")) fail("arrange button rendered with enableArrange: false");
+  ok("opt-out: no arrange button when enableArrange: false");
 
   // ── 2. Arm the tool ─────────────────────────────────────────────────────
   await mount(page, buildSpec({ arrange: true }));
