@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="376.311"
-  viewBox="0 0 374 281.481">
+  width="500" height="343.27"
+  viewBox="0 0 410 281.481">
 <style>
   /* Numeric figure style follows the theme token (WYSIWYG review pass:
      tabular-nums was forced on ALL text — proportional-figure themes
@@ -41,77 +41,77 @@
       font-size="22.37px"
       font-weight="600"
       fill="#191312">Trial Enrollment by Department</text>
-<line x1="12" x2="362"
+<line x1="12" x2="398"
       y1="55.481" y2="55.481"
-      stroke="#6B6565" stroke-width="2"/>
+      stroke="#4A4444" stroke-width="2"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="71.481"
         font-family="'Lora', Georgia, serif"
         font-size="14.7px"
         font-weight="400"
-        fill="#16100F">Department</text>
-<text class="cell-text" dominant-baseline="central" x="214" y="71.481"
+        fill="#191312">Department</text>
+<text class="cell-text" dominant-baseline="central" x="250" y="71.481"
           font-family="'Lora', Georgia, serif"
           font-size="14.7px"
           font-weight="400"
           text-anchor="middle"
-          fill="#16100F">Enrollment</text>
-<text class="cell-text" dominant-baseline="central" x="314" y="71.481"
+          fill="#191312">Enrollment</text>
+<text class="cell-text" dominant-baseline="central" x="350" y="71.481"
           font-family="'Lora', Georgia, serif"
           font-size="14.7px"
           font-weight="400"
           text-anchor="start"
-          fill="#16100F">N</text>
-<line x1="12" x2="362"
+          fill="#191312">N</text>
+<line x1="12" x2="398"
         y1="87.481" y2="87.481"
-        stroke="#6B6565" stroke-width="2"/>
+        stroke="#4A4444" stroke-width="2"/>
 <rect x="12" y="87.481"
-            width="350" height="24"
+            width="386" height="24"
             fill="#FAF5F4"/>
 <rect x="12" y="135.481"
-            width="350" height="24"
+            width="386" height="24"
             fill="#FAF5F4"/>
-<defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="136" y="87.481" width="156" height="96"/></clipPath></defs>
+<defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="172" y="87.481" width="156" height="96"/></clipPath></defs>
 <g clip-path="url(#viz-clip-viz_bar_enrollment)">
 
 <rect
-      x="136" y="91.08099999999999"
+      x="172" y="91.08099999999999"
       width="109.2" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="136" y="115.08099999999999"
+      x="172" y="115.08099999999999"
       width="139.06285714285715" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="136" y="139.081"
+      x="172" y="139.081"
       width="84.24000000000001" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="136" y="163.081"
+      x="172" y="163.081"
       width="69.53142857142858" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 </g>
 <g transform="translate(0, 195.481)">
-<line x1="124" x2="304"
+<line x1="160" x2="340"
     y1="0" y2="0" stroke="#4A4444" stroke-width="1"/>
-<line x1="136" x2="136" y1="0" y2="4" stroke="#4A4444" stroke-width="1"/>
-<text x="138" y="13"
+<line x1="172" x2="172" y1="0" y2="4" stroke="#4A4444" stroke-width="1"/>
+<text x="174" y="13"
       text-anchor="start"
       font-family="'Lora', Georgia, serif"
       font-size="10.71px"
       font-weight="400"
       fill="#4A4444">0</text>
-<line x1="225.14285714285714" x2="225.14285714285714" y1="0" y2="4" stroke="#4A4444" stroke-width="1"/>
-<text x="225.14285714285714" y="13"
+<line x1="261.1428571428571" x2="261.1428571428571" y1="0" y2="4" stroke="#4A4444" stroke-width="1"/>
+<text x="261.1428571428571" y="13"
       text-anchor="middle"
       font-family="'Lora', Georgia, serif"
       font-size="10.71px"
       font-weight="400"
       fill="#4A4444">200</text>
-<text x="214" y="26"
+<text x="250" y="26"
       text-anchor="middle"
       font-family="ui-monospace, SFMono-Regular, monospace"
       font-size="10.71px"
@@ -124,36 +124,36 @@
     font-weight="400"
     font-style="normal"
     fill="#191312">Cardiology</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(314 91.08099999999999)"><text y="8.40" dominant-baseline="central">245.00</text></g>
-<line x1="12" x2="362" y1="111.481" y2="111.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(350 91.08099999999999)"><text y="8.40" dominant-baseline="central">245.00</text></g>
+<line x1="12" x2="398" y1="111.481" y2="111.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="123.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">Oncology</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(314 115.08099999999999)"><text y="8.40" dominant-baseline="central">312.00</text></g>
-<line x1="12" x2="362" y1="135.481" y2="135.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(350 115.08099999999999)"><text y="8.40" dominant-baseline="central">312.00</text></g>
+<line x1="12" x2="398" y1="135.481" y2="135.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="147.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">Neurology</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(314 139.081)"><text y="8.40" dominant-baseline="central">189.00</text></g>
-<line x1="12" x2="362" y1="159.481" y2="159.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(350 139.081)"><text y="8.40" dominant-baseline="central">189.00</text></g>
+<line x1="12" x2="398" y1="159.481" y2="159.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="171.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">Pediatrics</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(314 163.081)"><text y="8.40" dominant-baseline="central">156.00</text></g>
-<line x1="12" x2="362" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
-<line x1="12" x2="362" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="12" x2="362" y1="183.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(350 163.081)"><text y="8.40" dominant-baseline="central">156.00</text></g>
+<line x1="12" x2="398" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
+<line x1="12" x2="398" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="12" x2="398" y1="183.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
 <line x1="12" x2="12" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="362" x2="362" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="398" x2="398" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2"/>
 
 
 </svg>

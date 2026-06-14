@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="700" height="348.836"
-  viewBox="0 0 613 305.481">
+  width="700" height="341.592"
+  viewBox="0 0 626 305.481">
 <style>
   /* Numeric figure style follows the theme token (WYSIWYG review pass:
      tabular-nums was forced on ALL text — proportional-figure themes
@@ -41,99 +41,99 @@
       font-size="22.37px"
       font-weight="600"
       fill="#191312">GLP-1 Agonist Cardiovascular Outcomes</text>
-<line x1="12" x2="601"
+<line x1="12" x2="614"
       y1="55.481" y2="55.481"
-      stroke="#6B6565" stroke-width="2"/>
+      stroke="#4A4444" stroke-width="2"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="71.481"
         font-family="'Lora', Georgia, serif"
         font-size="14.7px"
         font-weight="400"
-        fill="#16100F">Study</text>
-<text class="cell-text" dominant-baseline="central" x="122" y="71.481"
+        fill="#191312">Study</text>
+<text class="cell-text" dominant-baseline="central" x="147" y="71.481"
           font-family="'Lora', Georgia, serif"
           font-size="14.7px"
           font-weight="400"
           text-anchor="start"
-          fill="#16100F">Drug</text>
-<text class="cell-text" dominant-baseline="central" x="472" y="71.481"
+          fill="#191312">Drug</text>
+<text class="cell-text" dominant-baseline="central" x="497" y="71.481"
           font-family="'Lora', Georgia, serif"
           font-size="14.7px"
           font-weight="400"
           text-anchor="start"
-          fill="#16100F">HR (95% CI)</text>
-<line x1="12" x2="601"
+          fill="#191312">HR (95% CI)</text>
+<line x1="12" x2="614"
         y1="87.481" y2="87.481"
-        stroke="#6B6565" stroke-width="2"/>
+        stroke="#4A4444" stroke-width="2"/>
 <rect x="12" y="87.481"
-            width="589" height="24"
+            width="602" height="24"
             fill="#FAF5F4"/>
 <rect x="12" y="135.481"
-            width="589" height="24"
+            width="602" height="24"
             fill="#FAF5F4"/>
 <rect x="12" y="183.481"
-            width="589" height="24"
+            width="602" height="24"
             fill="#FAF5F4"/>
-<line x1="415.8264423936589" x2="415.8264423936589" y1="87.481" y2="207.481"
+<line x1="440.8264423936589" x2="440.8264423936589" y1="87.481" y2="207.481"
     stroke="#6B6565" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="322.3563693822416" x2="407.0249942788056" y1="99.481" y2="99.481"
+          <line x1="347.3563693822416" x2="432.0249942788056" y1="99.481" y2="99.481"
             stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="322.3563693822416" x2="322.3563693822416" y1="96.481" y2="102.481" stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="407.0249942788056" x2="407.0249942788056" y1="96.481" y2="102.481" stroke="#3E0003" stroke-width="1.5"/>
-          <circle cx="364.15963325419756" cy="99.481" r="6" fill="#690009"/>
+          <line x1="347.3563693822416" x2="347.3563693822416" y1="96.481" y2="102.481" stroke="#3E0003" stroke-width="1.5"/>
+          <line x1="432.0249942788056" x2="432.0249942788056" y1="96.481" y2="102.481" stroke="#3E0003" stroke-width="1.5"/>
+          <circle cx="389.15963325419756" cy="99.481" r="6" fill="#690009"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="319.3721094914878" x2="433.7336419820042" y1="123.481" y2="123.481"
+          <line x1="344.3721094914878" x2="458.7336419820042" y1="123.481" y2="123.481"
             stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="319.3721094914878" x2="319.3721094914878" y1="120.481" y2="126.481" stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="433.7336419820042" x2="433.7336419820042" y1="120.481" y2="126.481" stroke="#3E0003" stroke-width="1.5"/>
-          <circle cx="375.37870136298346" cy="123.481" r="6" fill="#690009"/>
+          <line x1="344.3721094914878" x2="344.3721094914878" y1="120.481" y2="126.481" stroke="#3E0003" stroke-width="1.5"/>
+          <line x1="458.7336419820042" x2="458.7336419820042" y1="120.481" y2="126.481" stroke="#3E0003" stroke-width="1.5"/>
+          <circle cx="400.37870136298346" cy="123.481" r="6" fill="#690009"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="373.19280404925894" x2="410.59992813878034" y1="147.481" y2="147.481"
+          <line x1="398.19280404925894" x2="435.59992813878034" y1="147.481" y2="147.481"
             stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="373.19280404925894" x2="373.19280404925894" y1="144.481" y2="150.481" stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="410.59992813878034" x2="410.59992813878034" y1="144.481" y2="150.481" stroke="#3E0003" stroke-width="1.5"/>
-          <circle cx="391.9303781100482" cy="147.481" r="6" fill="#690009"/>
+          <line x1="398.19280404925894" x2="398.19280404925894" y1="144.481" y2="150.481" stroke="#3E0003" stroke-width="1.5"/>
+          <line x1="435.59992813878034" x2="435.59992813878034" y1="144.481" y2="150.481" stroke="#3E0003" stroke-width="1.5"/>
+          <circle cx="416.9303781100482" cy="147.481" r="6" fill="#690009"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="375.37870136298346" x2="414.10189904724996" y1="171.481" y2="171.481"
+          <line x1="400.37870136298346" x2="439.10189904724996" y1="171.481" y2="171.481"
             stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="375.37870136298346" x2="375.37870136298346" y1="168.481" y2="174.481" stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="414.10189904724996" x2="414.10189904724996" y1="168.481" y2="174.481" stroke="#3E0003" stroke-width="1.5"/>
-          <circle cx="393.89143509640684" cy="171.481" r="6" fill="#690009"/>
+          <line x1="400.37870136298346" x2="400.37870136298346" y1="168.481" y2="174.481" stroke="#3E0003" stroke-width="1.5"/>
+          <line x1="439.10189904724996" x2="439.10189904724996" y1="168.481" y2="174.481" stroke="#3E0003" stroke-width="1.5"/>
+          <circle cx="418.89143509640684" cy="171.481" r="6" fill="#690009"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="383.85403480517357" x2="415.8264423936589" y1="195.481" y2="195.481"
+          <line x1="408.85403480517357" x2="440.8264423936589" y1="195.481" y2="195.481"
             stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="383.85403480517357" x2="383.85403480517357" y1="192.481" y2="198.481" stroke="#3E0003" stroke-width="1.5"/>
-          <line x1="415.8264423936589" x2="415.8264423936589" y1="192.481" y2="198.481" stroke="#3E0003" stroke-width="1.5"/>
-          <circle cx="399.6436145610181" cy="195.481" r="6" fill="#690009"/>
+          <line x1="408.85403480517357" x2="408.85403480517357" y1="192.481" y2="198.481" stroke="#3E0003" stroke-width="1.5"/>
+          <line x1="440.8264423936589" x2="440.8264423936589" y1="192.481" y2="198.481" stroke="#3E0003" stroke-width="1.5"/>
+          <circle cx="424.6436145610181" cy="195.481" r="6" fill="#690009"/>
         </g>
-<g transform="translate(0, 219.481)"><line x1="282" x2="462"
+<g transform="translate(0, 219.481)"><line x1="307" x2="487"
     y1="0" y2="0" stroke="#4A4444" stroke-width="1"/>
-<line x1="328.1735576063411" x2="328.1735576063411" y1="0" y2="4"
+<line x1="353.1735576063411" x2="353.1735576063411" y1="0" y2="4"
       stroke="#4A4444" stroke-width="1"/>
-<text x="328.1735576063411" y="15" text-anchor="middle"
+<text x="353.1735576063411" y="15" text-anchor="middle"
       font-family="'Lora', Georgia, serif"
       font-size="10.71px"
       font-weight="400"
       font-style="normal"
       fill="#4A4444">0.60</text>
-<line x1="415.8264423936589" x2="415.8264423936589" y1="0" y2="4"
+<line x1="440.8264423936589" x2="440.8264423936589" y1="0" y2="4"
       stroke="#4A4444" stroke-width="1"/>
-<text x="415.8264423936589" y="15" text-anchor="middle"
+<text x="440.8264423936589" y="15" text-anchor="middle"
       font-family="'Lora', Georgia, serif"
       font-size="10.71px"
       font-weight="400"
       font-style="normal"
       fill="#4A4444">1.00</text>
-<text x="372" y="26"
+<text x="397" y="26"
       text-anchor="middle"
       font-family="ui-monospace, SFMono-Regular, monospace"
       font-size="10.71px"
@@ -146,49 +146,49 @@
     font-weight="400"
     font-style="normal"
     fill="#191312">SUSTAIN-6</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(122 91.08099999999999)"><text y="8.40" dominant-baseline="central">Semaglutide 1mg</text></g>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(472 91.08099999999999)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.58</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.95</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="601" y1="111.481" y2="111.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(147 91.08099999999999)"><text y="8.40" dominant-baseline="central">Semaglutide 1mg</text></g>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(497 91.08099999999999)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.58</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">0.95</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="614" y1="111.481" y2="111.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="123.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">PIONEER 6</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(122 115.08099999999999)"><text y="8.40" dominant-baseline="central">Oral Semaglutide</text></g>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(472 115.08099999999999)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.57</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">1.11</text></g><g transform="translate(64.39999999999999 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="601" y1="135.481" y2="135.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(147 115.08099999999999)"><text y="8.40" dominant-baseline="central">Oral Semaglutide</text></g>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(497 115.08099999999999)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.57</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">1.11</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="614" y1="135.481" y2="135.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="147.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">LEADER</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(122 139.081)"><text y="8.40" dominant-baseline="central">Liraglutide</text></g>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(472 139.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.78</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.97</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="601" y1="159.481" y2="159.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(147 139.081)"><text y="8.40" dominant-baseline="central">Liraglutide</text></g>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(497 139.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.78</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">0.97</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="614" y1="159.481" y2="159.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="171.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">REWIND</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(122 163.081)"><text y="8.40" dominant-baseline="central">Dulaglutide</text></g>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(472 163.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(74.9 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="601" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(147 163.081)"><text y="8.40" dominant-baseline="central">Dulaglutide</text></g>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(497 163.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="614" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
 <text class="cell-text" dominant-baseline="central" x="22" y="195.481"
     font-family="'Lora', Georgia, serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#191312">EXSCEL</text>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(122 187.081)"><text y="8.40" dominant-baseline="central">Exenatide QW</text></g>
-<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(472 187.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.91</text></g><g transform="translate(26.6 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.5 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.8999999999999995 0)"><text y="8.40" dominant-baseline="central">0.83</text></g><g transform="translate(35 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(44.8 0)"><text y="8.40" dominant-baseline="central">1.00</text></g><g transform="translate(71.4 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
-<line x1="12" x2="601" y1="207.481" y2="207.481" stroke="#958F8E" stroke-width="1"/>
-<line x1="12" x2="601" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="12" x2="601" y1="207.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(147 187.081)"><text y="8.40" dominant-baseline="central">Exenatide QW</text></g>
+<g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(497 187.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.91</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.83</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">1.00</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
+<line x1="12" x2="614" y1="207.481" y2="207.481" stroke="#958F8E" stroke-width="1"/>
+<line x1="12" x2="614" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="12" x2="614" y1="207.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
 <line x1="12" x2="12" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="601" x2="601" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="614" x2="614" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
 
 
 </svg>
