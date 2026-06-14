@@ -10,6 +10,7 @@ import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { parseFontSize } from "../../lib/typography-layout";
+import { measureTextWidth } from "../../lib/width-utils";
 import { normalizeValue } from "../../lib/scale-utils";
 import { BAR, SPACING } from "../../lib/rendering-constants";
 import {
@@ -66,7 +67,13 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
   // Label draws at the `label` type-role — the SAME token the DOM reads
   // (CellBar.svelte `var(--tv-text-label-size)`). Role, not `* BAR.LABEL_SCALE`.
   const labelFontSize = parseFontSize(readLabelSize(cssVars));
-  const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
+  const labelText = showLabel ? formatBarLabel(value) : "";
+  // Reserve GAP + max(floor, MEASURED label) so a wide value doesn't overrun
+  // the bar (the DOM flex row grows the label past its min-width). LABEL_MIN_WIDTH
+  // is the floor, not a fixed reservation.
+  const labelReserved = showLabel
+    ? BAR.GAP + Math.max(BAR.LABEL_MIN_WIDTH, measureTextWidth(labelText, labelFontSize, readBodyFamily(cssVars), 400))
+    : 0;
   const cellWidth = ctx?.cellWidth ?? 100;
   const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
   const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
@@ -87,7 +94,6 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
     `fill="${color}" rx="${BAR.RADIUS}"/>`,
   );
   if (showLabel) {
-    const labelText = formatBarLabel(value);
     const totalWidth = cellWidth - cellPadX * 2;
     pieces.push(
       `<text class="cell-text" dominant-baseline="central" ` +

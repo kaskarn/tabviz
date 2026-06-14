@@ -13,6 +13,7 @@ import { registerRenderers } from "../extend";
 import { normalizeValue } from "../../lib/scale-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { parseFontSize } from "../../lib/typography-layout";
+import { measureTextWidth } from "../../lib/width-utils";
 import { SPACING, PROGRESS } from "../../lib/rendering-constants";
 import {
   getCssVars, readVarPx,
@@ -28,7 +29,7 @@ interface ProgressOptions {
 }
 
 const PROGRESS_BAR_HEIGHT = PROGRESS.BAR_HEIGHT;
-const PROGRESS_LABEL_WIDTH = PROGRESS.LABEL_WIDTH;
+const PROGRESS_LABEL_MIN_WIDTH = PROGRESS.LABEL_MIN_WIDTH;
 const PROGRESS_BAR_RADIUS = PROGRESS.BAR_RADIUS;
 
 function resolveProgressColor(
@@ -66,13 +67,19 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const cssVars = getCssVars(theme);
   const cellWidth = ctx?.cellWidth ?? 100;
   const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
-  const labelReserved = showLabel ? PROGRESS_LABEL_WIDTH : 0;
-  const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
-  const barWidth = Math.max(0, ratio * barAreaWidth);
-  const totalWidth = cellWidth - cellPadX * 2;
   // Label draws at the `label` type-role — the SAME token the DOM reads
   // (CellProgress.svelte `var(--tv-text-label-size)`). Role, not multiplier.
   const labelFontSize = parseFontSize(readLabelSize(cssVars));
+  const labelText = `${Math.round(pct)}%`;
+  // Reserve max(floor, MEASURED label width) — a wide label ("100%", or a
+  // larger label-size theme) must not overrun the bar; the DOM flex row grows
+  // the label past its min-width the same way. A fixed reservation was chancy.
+  const labelReserved = showLabel
+    ? Math.max(PROGRESS_LABEL_MIN_WIDTH, measureTextWidth(labelText, labelFontSize, readBodyFamily(cssVars), 400))
+    : 0;
+  const barAreaWidth = Math.max(0, cellWidth - cellPadX * 2 - labelReserved);
+  const barWidth = Math.max(0, ratio * barAreaWidth);
+  const totalWidth = cellWidth - cellPadX * 2;
   const height = Math.max(PROGRESS_BAR_HEIGHT, showLabel ? labelFontSize : PROGRESS_BAR_HEIGHT);
 
   const pieces: string[] = [];
@@ -92,7 +99,7 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
       `x="${totalWidth}" y="${height / 2}" ` +
       `font-family="${readBodyFamily(cssVars)}" ` +
       `font-size="${labelFontSize}px" font-weight="400" ` +
-      `text-anchor="end" fill="${readContentPrimary(cssVars)}">${Math.round(pct)}%</text>`,
+      `text-anchor="end" fill="${readContentPrimary(cssVars)}">${labelText}</text>`,
     );
   }
   return { kind: "svg", markup: pieces.join(""), width: totalWidth, height };
@@ -105,4 +112,4 @@ export function registerProgressRenderer(): void {
 
 registerProgressRenderer();
 
-export const __testing = { resolveProgressColor, PROGRESS_BAR_HEIGHT, PROGRESS_LABEL_WIDTH, PROGRESS_BAR_RADIUS };
+export const __testing = { resolveProgressColor, PROGRESS_BAR_HEIGHT, PROGRESS_LABEL_MIN_WIDTH, PROGRESS_BAR_RADIUS };

@@ -122,8 +122,12 @@ export const PROGRESS = {
   BAR_HEIGHT: 10,
   /** Track corner radius (CSS: border-radius: 5px) */
   BAR_RADIUS: 5,
-  /** Label cell reservation (CSS: .progress-label min-width: 32px) */
-  LABEL_WIDTH: 32,
+  /** Label reservation FLOOR (CSS: .progress-label min-width: 32px). The
+   *  renderer reserves max(this, measured label width) so a wide label
+   *  ("100%", or a larger label-size theme) doesn't overrun the bar — the DOM
+   *  flex row grows the label past this min the same way. A fixed reservation
+   *  was the latent overlap. */
+  LABEL_MIN_WIDTH: 32,
   /** Track fill opacity over the border color (CSS: color-mix(border 50%, transparent)) */
   TRACK_OPACITY: 0.5,
   // NOTE: the label FONT SIZE is NOT a constant here — it's the `label`
