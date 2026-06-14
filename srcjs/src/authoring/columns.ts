@@ -570,7 +570,11 @@ export interface ColPictogramArgs extends CommonColumnArgs {
 export function colPictogram({
   field, glyph = "person", glyphField = null, maxGlyphs = null, domain = null,
   halfGlyphs = false, color = null, emptyColor = null, size = "base",
-  layout = "row", valueLabel = false, labelFormat = null, labelDecimals = 0,
+  // labelDecimals default is 1 to match R col_pictogram/col_stars AND both
+  // renderer fallbacks (CellPictogram / pictogram-svg-renderer ?? 1); this was
+  // 0 — the lone outlier, so a TS-authored pictogram showed "4" where R showed
+  // "4.0" (R↔TS default drift, 2026-06-14). colStars delegates here.
+  layout = "row", valueLabel = false, labelFormat = null, labelDecimals = 1,
   naText, ...common
 }: ColPictogramArgs): ColumnSpec {
   const pictogram: PictogramColumnOptions = {
@@ -622,7 +626,9 @@ export interface ColImgArgs extends CommonColumnArgs {
 }
 
 export function colImg({
-  field, height = 40, maxWidth, fallback, shape = "square", naText, ...common
+  // fallback default "[img]" matches R col_img (shown when an image URL fails
+  // to load) — was undefined here, an R↔TS default drift (2026-06-14).
+  field, height = 40, maxWidth, fallback = "[img]", shape = "square", naText, ...common
 }: ColImgArgs): ColumnSpec {
   const img: ImgColumnOptions = { height, maxWidth, fallback, shape };
   const options = { img, ...(naText != null ? { naText } : {}) };

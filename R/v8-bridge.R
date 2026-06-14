@@ -120,7 +120,11 @@ delegate_to_web_col <- function(builder_name, ts_args, type = NULL, na_text = NU
   if (!is.null(shape$align))       args$align        <- shape$align
   if (!is.null(shape$headerAlign)) args$header_align <- shape$headerAlign
   if (!is.null(shape$showHeader))  args$show_header  <- shape$showHeader
-  if (!is.null(shape$wrap))        args$wrap         <- as.logical(shape$wrap)
+  # `wrap` is boolean OR a numeric line-count — preserve numerics (as.logical(3)
+  # would truncate a 3-line cap to TRUE). Latent today (no builder bakes a
+  # numeric wrap default); guarded so a future one can't silently lose it.
+  if (!is.null(shape$wrap))
+    args$wrap <- if (is.numeric(shape$wrap)) shape$wrap else as.logical(shape$wrap)
   if (!is.null(shape$sortable))    args$sortable     <- shape$sortable
   if (!is.null(shape$flex))        args$flex         <- shape$flex
   args[names(extra_args)] <- extra_args
