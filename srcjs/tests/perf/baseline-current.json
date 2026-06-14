@@ -1,54 +1,54 @@
 {
   "meta": {
-    "date": "2026-06-11",
-    "calibrationMs": 7.866250000000036,
+    "date": "2026-06-14",
+    "calibrationMs": 2.5588330000000497,
     "note": "Regenerate with: bun run tests/perf/run-bench.ts --write-baseline (commit alongside any intentional perf change)."
   },
   "results": [
     {
       "scenario": "measure.estimator",
       "fixture": "small_mixed",
-      "medianMs": 0.255
+      "medianMs": 0.142
     },
     {
       "scenario": "measure.rankTopK",
       "fixture": "small_mixed",
-      "medianMs": 0.163
+      "medianMs": 0.114
     },
     {
       "scenario": "measure.estimator",
       "fixture": "medium_mixed",
-      "medianMs": 2.512
+      "medianMs": 1.495
     },
     {
       "scenario": "measure.rankTopK",
       "fixture": "medium_mixed",
-      "medianMs": 2.408
+      "medianMs": 1.298
     },
     {
       "scenario": "measure.estimator",
       "fixture": "large_mixed",
-      "medianMs": 11.9
+      "medianMs": 6.136
     },
     {
       "scenario": "measure.rankTopK",
       "fixture": "large_mixed",
-      "medianMs": 11.983
+      "medianMs": 7.457
     },
     {
       "scenario": "measure.estimator",
       "fixture": "xl_mixed",
-      "medianMs": 45.765
+      "medianMs": 21.638
     },
     {
       "scenario": "measure.rankTopK",
       "fixture": "xl_mixed",
-      "medianMs": 45.67
+      "medianMs": 22.912
     },
     {
       "scenario": "theme.resolve",
       "fixture": "-",
-      "medianMs": 0.724
+      "medianMs": 0.856
     },
     {
       "scenario": "theme.cssBuild",
@@ -63,27 +63,27 @@
     {
       "scenario": "split.measure",
       "fixture": "split_small",
-      "medianMs": 1.929
+      "medianMs": 1.408
     },
     {
       "scenario": "split.themeBuild",
       "fixture": "split_small",
-      "medianMs": 0.002
+      "medianMs": 0.003
     },
     {
       "scenario": "split.measure",
       "fixture": "split_medium",
-      "medianMs": 9.53
+      "medianMs": 7.045
     },
     {
       "scenario": "split.themeBuild",
       "fixture": "split_medium",
-      "medianMs": 0.005
+      "medianMs": 0.007
     },
     {
       "scenario": "split.measure",
       "fixture": "split_large",
-      "medianMs": 8.88
+      "medianMs": 6.421
     },
     {
       "scenario": "split.themeBuild",

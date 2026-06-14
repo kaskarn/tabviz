@@ -110,26 +110,47 @@ function isSerifFamily(family: string | undefined | null): boolean {
  * → the serif/sans/mono class fallback. Residual vs a real canvas is
  * kerning only (~1–2%, which a class model could never reach).
  */
+/** Resolved metric source for a family string: the mono advance (if mono)
+ *  or the proportional table + serif/sans class. Memoized because resolving
+ *  it costs a `split` + two regexes, and a whole column measures hundreds of
+ *  cells with the SAME family — the per-call resolution dominated the hot
+ *  loop for short strings. The cached refs are READ-ONLY (PROP_FONTS /
+ *  FALLBACK module tables), never mutated, so sharing them is safe. */
+interface ResolvedFamily { monoAdv: number | null; tbl: PropAdvances; serif: boolean; }
+const FAMILY_CACHE = new Map<string, ResolvedFamily>();
+
+function resolveFamilyMetrics(family: string | undefined): ResolvedFamily {
+  const key = family ?? "";
+  const hit = FAMILY_CACHE.get(key);
+  if (hit) return hit;
+  const name = primaryFamily(family);
+  const monoAdv = MONO_ADVANCE_BY_FONT[name] ?? (isMonospaceFamily(family) ? FALLBACK.monoAdvance : null);
+  const serif = isSerifFamily(family);
+  const tbl: PropAdvances = PROP_FONTS[name] ?? PROP_FONTS[serif ? FALLBACK.serif : FALLBACK.sans];
+  const r: ResolvedFamily = { monoAdv, tbl, serif };
+  FAMILY_CACHE.set(key, r);
+  return r;
+}
+
 export function estimateTextWidth(
   text: string,
   fontSize: number,
   weight: number = 400,
   family?: string,
 ): number {
-  const name = primaryFamily(family);
+  const rf = resolveFamilyMetrics(family);
 
   // Monospace: one fixed, weight-independent advance per face (true mono
   // bold has the same advance). Known face → measured; else class fallback.
-  const monoAdv = MONO_ADVANCE_BY_FONT[name] ?? (isMonospaceFamily(family) ? FALLBACK.monoAdvance : null);
-  if (monoAdv != null) {
-    return [...text].length * fontSize * monoAdv;
+  if (rf.monoAdv != null) {
+    return [...text].length * fontSize * rf.monoAdv;
   }
 
   // Proportional: per-font table if measured, else the serif/sans fallback.
   // The lowercase-mean default (for exotic glyphs absent from the table)
   // follows the face's class.
-  const serif = isSerifFamily(family);
-  const tbl: PropAdvances = PROP_FONTS[name] ?? PROP_FONTS[serif ? FALLBACK.serif : FALLBACK.sans];
+  const serif = rf.serif;
+  const tbl: PropAdvances = rf.tbl;
   const def = serif ? FALLBACK.serifDefault : FALLBACK.sansDefault;
 
   // Per-glyph weight interpolation: t=0 at 400, 1 at 700; clamp the
@@ -137,13 +158,25 @@ export function estimateTextWidth(
   const t = Math.max(-1, Math.min(2,
     (weight - FONT_METRIC_WEIGHTS.lo) / (FONT_METRIC_WEIGHTS.hi - FONT_METRIC_WEIGHTS.lo)));
 
-  let width = 0;
-  for (const char of text) {
-    const a = tbl.w400[char] ?? def.w400;
-    const b = tbl.w700[char] ?? def.w700;
-    width += fontSize * (a + (b - a) * t);
+  // Hot path (V8/export, every cell). Hoist the table + default refs, sum
+  // raw advances and multiply by fontSize ONCE, and take the weight-400 fast
+  // lane (no w700 lookup, no interpolation) — the overwhelmingly common
+  // case. Indexed loop over BMP code units (the metric tables are all BMP).
+  const w400 = tbl.w400, def400 = def.w400;
+  const n = text.length;
+  let adv = 0;
+  if (t === 0) {
+    for (let i = 0; i < n; i++) adv += w400[text[i]!] ?? def400;
+  } else {
+    const w700 = tbl.w700, def700 = def.w700;
+    for (let i = 0; i < n; i++) {
+      const c = text[i]!;
+      const a = w400[c] ?? def400;
+      const b = w700[c] ?? def700;
+      adv += a + (b - a) * t;
+    }
   }
-  return width;
+  return adv * fontSize;
 }
 
 /**
