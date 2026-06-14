@@ -113,6 +113,7 @@ import {
   AXIS,
   ASPECT,
   DEFAULT_WATERMARK_OPACITY,
+  VIZ_DEFAULT_SERIES_COLORS,
 } from "$lib/rendering-constants";
 import {
   formatNumber,
@@ -2375,7 +2376,7 @@ function renderVizBar(
   const barHeight = Math.max(4, adjustedBarHeight);
 
   // Default colors from theme
-  const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const defaultColors = theme.series.map(s => s.fill) ?? VIZ_DEFAULT_SERIES_COLORS;
 
   effects.forEach((effect, idx) => {
     const value = row.metadata[effect.value] as number | undefined;
@@ -2472,7 +2473,7 @@ function renderVizBoxplot(
   const boxHeight = Math.max(8, (totalHeight - (numEffects - 1) * boxGap) / numEffects);
 
   // Default colors
-  const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const defaultColors = theme.series.map(s => s.fill) ?? VIZ_DEFAULT_SERIES_COLORS;
   const lineColor = readContentPrimary(cssVars) ?? "#1a1a1a";
   const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
   const outlierR = readVarPx(cssVars, "--tv-plot-point-size", 6) * 0.4;
@@ -2608,7 +2609,7 @@ function renderVizViolin(
   const maxWidth = violinHeight / 2;
 
   // Default colors
-  const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const defaultColors = theme.series.map(s => s.fill) ?? VIZ_DEFAULT_SERIES_COLORS;
   const lineColor = readContentPrimary(cssVars) ?? "#1a1a1a";
   const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
   // Violin outline reads thinner than a forest-plot stroke by convention;

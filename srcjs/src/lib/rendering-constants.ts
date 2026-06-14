@@ -495,6 +495,15 @@ export const BADGE_VARIANTS = {
 } as const;
 
 /**
+ * Fallback series palette for viz_bar/boxplot/violin when the theme carries no
+ * resolved series fills. ONE source — was duplicated inline at three call sites
+ * in svg-generator.ts.
+ */
+export const VIZ_DEFAULT_SERIES_COLORS = [
+  "#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6",
+] as const;
+
+/**
  * Calculate vertical offset for each effect (centered around yPosition).
  * When multiple effects are shown on the same row, they are vertically
  * stacked with EFFECT.SPACING pixels between them, centered on the row.
