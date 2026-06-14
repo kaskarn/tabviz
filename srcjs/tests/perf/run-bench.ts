@@ -270,9 +270,16 @@ const BASELINE_PATH = new URL("./baseline-current.json", import.meta.url).pathna
  *  speed; 1.75× absorbs JIT/allocator variance while still catching the
  *  real bug class (an accidental O(n²) lands at 10×+). */
 const GATE_FACTOR = 1.75;
-/** Scenarios faster than this at baseline are pure noise — informational
- *  only, never gate. */
-const NOISE_FLOOR_MS = 1;
+/** Scenarios faster than this at baseline are noise-DOMINATED — their
+ *  relative variance swamps the GATE_FACTOR, so they flake (a scenario
+ *  passes on one commit and breaches on the next with IDENTICAL code —
+ *  observed 2026-06-13 on estimator/medium_mixed). Informational only,
+ *  never gate. Set to 3ms: there is a clean ~1.5ms→6ms gap in the baseline
+ *  medians, so this excludes the sub-2ms scenarios (estimator/rankTopK
+ *  _mixed, split_small) while keeping every stable ≥6ms scenario — the
+ *  large/xl ones where a real algorithmic regression lands clearly and
+ *  consistently. */
+const NOISE_FLOOR_MS = 3;
 
 interface BaselineFile {
   meta: { date: string; calibrationMs: number; note: string };
