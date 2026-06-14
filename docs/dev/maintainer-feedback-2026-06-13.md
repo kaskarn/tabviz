@@ -134,6 +134,22 @@ Verified: full suite 1416 bun + 301 vitest; svelte-check 0 warnings; lint clean;
 build green. (Per-anchor dot reactivity mirrors the existing working
 `anchorTriple` helper pattern.)
 
+## Hunt #2 + #12 (export reconcile, LANDED 2026-06-13)
+
+- **#2 — first-column BOLD styling in export**: `renderUnifiedTableRow` now
+  paints `--tv-first-col-bg` over the label cell + folds `--tv-first-col-fg`/
+  `-weight` into the label text as its base (per-row styles still win). Eyeballed
+  a boxed+bold export PNG (bold + tinted + strong divider, matches the DOM). The
+  3 tokens left the divergence ledger. Commit 73ab91f.
+- **#12 — header two-path divergence RECONCILED**: the export read header
+  bg/fg/rule from the legacy `theme.header` cluster (`activeHeaderVariant`), a
+  SEPARATE path from the DOM's v4 `--tv-header-bg/-fg/-rule` tokens. Measured the
+  gap: bg agreed everywhere; fg differed subtly; rule differed visibly (e.g. nejm
+  #6B6565 vs #4A4444). New `headerHexes(theme, cssVars)` reads the v4 tokens (v3
+  fallback) and all 8 export sites route through it — so DOM and export agree by
+  construction (one source). `--tv-header-bg/-fg/-rule` consumedBy now includes
+  the export; fg/rule left the ledger. wysiwyg 0 breaches; R 46/0.
+
 ## Remaining
 
 - (Bug B prior scoping retained below for history; superseded by B9.)

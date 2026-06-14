@@ -38,8 +38,9 @@ const DOM_ONLY_LEDGER: Record<string, string> = {
   "--tv-border-col-style": "parallel: export gates internal verticals on resolveBorders(...).layout (grid).",
   "--tv-container-border": "parallel: export draws the container border from the --tv-container-border var directly.",
   "--tv-container-border-radius": "parallel: export reads the radius via resolveContainerBorder.",
-  "--tv-header-fg": "parallel: export uses activeHeaderVariant(theme) for header text (RISK: no parity gate — hunt #12).",
-  "--tv-header-rule": "parallel: export uses activeHeaderVariant(theme) for the header rule (RISK: hunt #12).",
+  // (hunt #12 RESOLVED 2026-06-13: --tv-header-fg/-rule are now read directly by
+  //  the export via headerHexes() — the SAME v4 tokens the DOM reads — instead
+  //  of the legacy activeHeaderVariant cluster, so they left this ledger.)
   // ── PENDING export work ──────────────────────────────────────────────
   "--tv-row-group-rule": "PENDING: export draws the group rule from borders.major; COLOR differs (neutral[7] vs border role) — hunt #B4.",
   // (hunt #2 RESOLVED 2026-06-13: --tv-first-col-bg/fg/weight are now drawn by

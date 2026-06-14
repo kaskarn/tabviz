@@ -3042,7 +3042,7 @@ function renderUnifiedColumnHeaders(
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(labelHeader)}</text>`);
+        fill="${(headerHexes(theme, cssVars).fg)}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -3063,7 +3063,7 @@ function renderUnifiedColumnHeaders(
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
           text-anchor="middle"
-          fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(col.header)}</text>`);
+          fill="${(headerHexes(theme, cssVars).fg)}">${escapeXml(col.header)}</text>`);
         groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
         currentX += groupWidth;
       } else {
@@ -3078,7 +3078,7 @@ function renderUnifiedColumnHeaders(
             font-size="${fontSize}px"
             font-weight="${fontWeight}"
             text-anchor="${anchor}"
-            fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(truncatedHeader)}</text>`);
+            fill="${(headerHexes(theme, cssVars).fg)}">${escapeXml(truncatedHeader)}</text>`);
         }
         currentX += width;
       }
@@ -3109,7 +3109,7 @@ function renderUnifiedColumnHeaders(
                 font-size="${fontSize}px"
                 font-weight="${fontWeight}"
                 text-anchor="${anchor}"
-                fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(sub.header)}</text>`);
+                fill="${(headerHexes(theme, cssVars).fg)}">${escapeXml(sub.header)}</text>`);
             }
             currentX += width;
           }
@@ -3127,7 +3127,7 @@ function renderUnifiedColumnHeaders(
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(labelHeader)}</text>`);
+        fill="${(headerHexes(theme, cssVars).fg)}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -3146,7 +3146,7 @@ function renderUnifiedColumnHeaders(
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
           text-anchor="${anchor}"
-          fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(truncatedHeader)}</text>`);
+          fill="${(headerHexes(theme, cssVars).fg)}">${escapeXml(truncatedHeader)}</text>`);
       }
       currentX += width;
     }
@@ -3673,6 +3673,22 @@ function layoutHasHorizontal(layout: string): boolean {
  *  must match (Bug B follow-up, 2026-06-13). */
 function layoutHasVertical(layout: string): boolean {
   return layout === "vertical" || layout === "grid";
+}
+
+/** Active leaf-header bg/fg/rule from the CANONICAL v4 tokens — the SAME
+ *  source the DOM reads (`--tv-header-bg/-fg/-rule`, the header-active
+ *  resolver group), falling back to the legacy `theme.header` cluster only
+ *  if a token is somehow absent. The export used to read the legacy cluster
+ *  directly (`activeHeaderVariant`), a SEPARATE resolution path that
+ *  disagreed with the DOM on header fg + rule color (hunt #12, 2026-06-13).
+ *  Routing both through the v4 tokens makes them agree by construction. */
+function headerHexes(theme: WebTheme, cssVars: Record<string, string>): { bg?: string; fg?: string; rule?: string } {
+  const v3 = activeHeaderVariant(theme);
+  return {
+    bg: readVar(cssVars, "--tv-header-bg", v3.bg ?? "") || v3.bg,
+    fg: readVar(cssVars, "--tv-header-fg", v3.fg ?? "") || v3.fg,
+    rule: readVar(cssVars, "--tv-header-rule", v3.rule ?? "") || v3.rule,
+  };
 }
 
 // ============================================================================
@@ -4644,7 +4660,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Themed header rule width (set_borders major thickness + the HC bump
   // ride --tv-header-border-width; this was hardcoded 2).
   const headerBorderW = readVarPx(cssVars, "--tv-header-border-width", 2);
-  const headerVariantRule = activeHeaderVariant(theme).rule
+  const headerVariantRule = headerHexes(theme, cssVars).rule
     ?? readDividerStrong(cssVars)
     ?? readDividerSubtle(cssVars);
   if (headerBorderW > 0) {
@@ -4661,7 +4677,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // Paint the header-row background band first so subsequent cells can
     // draw text on top. Uses colors.headerBg (which cascades from rowBg in
     // set_colors so existing themes render identically).
-    const headerBg = activeHeaderVariant(theme).bg;
+    const headerBg = headerHexes(theme, cssVars).bg;
     if (headerBg && headerBg !== surfaceBgResolved) {
       parts.push(`<rect x="${padding}" y="${headerY}"
         width="${layout.totalWidth - padding * 2}" height="${layout.headerHeight}"
