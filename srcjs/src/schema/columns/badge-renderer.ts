@@ -35,6 +35,7 @@ import { BADGE, BADGE_VARIANTS } from "../../lib/rendering-constants";
 import { parseFontSize } from "../../lib/typography-layout";
 import { measureTextWidth } from "../../lib/width-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { buildThresholdStops } from "../../lib/color-resolution";
 import { escapeXml } from "../../lib/svg-text-utils";
 import {
   getCssVars, readAccentDefault, readContentMuted,
@@ -79,18 +80,9 @@ function resolveBadgeColor(
   const variants = opts?.variants;
 
   if (Array.isArray(thresholds) && thresholds.length > 0 && typeof value === "number") {
-    const stops: string[] = (() => {
-      if (Array.isArray(customColors) && customColors.length === thresholds.length + 1) {
-        return customColors;
-      }
-      if (thresholds.length === 1) return [glyphDefault, theme.status?.negative ?? glyphDefault];
-      if (thresholds.length === 2) return [
-        theme.status?.positive ?? glyphDefault,
-        theme.status?.warning ?? glyphDefault,
-        theme.status?.negative ?? glyphDefault,
-      ];
-      return [glyphDefault];
-    })();
+    const stops = buildThresholdStops(
+      thresholds, Array.isArray(customColors) ? customColors : undefined, theme, glyphDefault,
+    );
     let idx = 0;
     for (const t of thresholds) { if (value >= t) idx++; else break; }
     color = stops[Math.min(idx, stops.length - 1)] ?? glyphDefault;

@@ -16,8 +16,9 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { resolveMarkerColor } from "../../lib/color-resolution";
 import { computeSparklinePoints, catmullRomPath } from "../../lib/sparkline-utils";
-import { getCssVars, readVarPx, readAccentDefault } from "../../lib/theme/consumer-bridge";
+import { getCssVars, readVarPx } from "../../lib/theme/consumer-bridge";
 import { SPARKLINE, SPACING } from "../../lib/rendering-constants";
 
 interface SparklineOptions {
@@ -32,13 +33,7 @@ function resolveSparkColor(
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): string {
-  const cellBundle = resolveSemanticBundle(cellStyle, theme);
-  const rowBundle = resolveSemanticBundle(rowStyle, theme);
-  return opts?.color
-    ?? cellBundle?.markerFill
-    ?? rowBundle?.markerFill
-    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`.
-    ?? readAccentDefault(getCssVars(theme));
+  return resolveMarkerColor(opts?.color, cellStyle, rowStyle, theme);
 }
 
 function buildBarMarkup(points: [number, number][], sparkH: number, x: number, y: number, w: number, color: string): string {

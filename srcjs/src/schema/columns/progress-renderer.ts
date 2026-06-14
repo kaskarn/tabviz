@@ -12,12 +12,13 @@ import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { normalizeValue } from "../../lib/scale-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { resolveMarkerColor } from "../../lib/color-resolution";
 import { parseFontSize } from "../../lib/typography-layout";
 import { measureTextWidth } from "../../lib/width-utils";
 import { SPACING, PROGRESS } from "../../lib/rendering-constants";
 import {
   getCssVars, readVarPx,
-  readAccentDefault, readDividerStrong, readContentPrimary,
+  readDividerStrong, readContentPrimary,
   readBodyFamily, readLabelSize,
 } from "../../lib/theme/consumer-bridge";
 
@@ -38,13 +39,7 @@ function resolveProgressColor(
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): string {
-  const cellBundle = resolveSemanticBundle(cellStyle, theme);
-  const rowBundle = resolveSemanticBundle(rowStyle, theme);
-  return opts?.color
-    ?? cellBundle?.markerFill
-    ?? rowBundle?.markerFill
-    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`.
-    ?? readAccentDefault(getCssVars(theme));
+  return resolveMarkerColor(opts?.color, cellStyle, rowStyle, theme);
 }
 
 const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {

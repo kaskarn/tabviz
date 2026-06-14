@@ -12,7 +12,8 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
-import { CELL_GEOMETRY } from "../../lib/rendering-constants";
+import { buildThresholdStops } from "../../lib/color-resolution";
+import { CELL_GEOMETRY, TYPOGRAPHY } from "../../lib/rendering-constants";
 import {
   getCssVars, readAccentDefault, readContentMuted, readContentPrimary,
 } from "../../lib/theme/consumer-bridge";
@@ -53,16 +54,9 @@ function resolveFilledColor(
     else if (Array.isArray(colorOpt) && colorOpt.length === 1) filledColor = colorOpt[0];
     return filledColor;
   }
-  const stops: string[] = (() => {
-    if (Array.isArray(colorOpt) && colorOpt.length === thresholds.length + 1) return colorOpt;
-    if (thresholds.length === 1) return [glyphDefault, theme.status?.negative ?? glyphDefault];
-    if (thresholds.length === 2) return [
-      theme.status?.positive ?? glyphDefault,
-      theme.status?.warning ?? glyphDefault,
-      theme.status?.negative ?? glyphDefault,
-    ];
-    return [glyphDefault];
-  })();
+  const stops = buildThresholdStops(
+    thresholds, Array.isArray(colorOpt) ? colorOpt : undefined, theme, glyphDefault,
+  );
   let idx = 0;
   for (const t of thresholds) { if (value >= t) idx++; else break; }
   return stops[Math.min(idx, stops.length - 1)] ?? glyphDefault;
@@ -110,7 +104,7 @@ const ringSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
 
   const labelFontPx = LABEL_FONT_PX[size];
   const labelText = formatLabel(value, fraction, labelFormat, labelDecimals);
-  const labelW = showLabel ? labelText.length * (labelFontPx * 0.55) + 4 : 0;
+  const labelW = showLabel ? labelText.length * (labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO) + 4 : 0;
   const totalW = diameter + (showLabel ? labelW + 4 : 0);
 
   const pieces: string[] = [];

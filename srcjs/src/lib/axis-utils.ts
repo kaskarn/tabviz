@@ -502,15 +502,3 @@ function computeLogTicks(
 
   return selected.sort((a, b) => a - b);
 }
-
-/**
- * Check if a CI bound is clipped (extends beyond axis limits)
- */
-export function isClipped(
-  value: number,
-  axisLimits: [number, number]
-): "left" | "right" | null {
-  if (value < axisLimits[0]) return "left";
-  if (value > axisLimits[1]) return "right";
-  return null;
-}

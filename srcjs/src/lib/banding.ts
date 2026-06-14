@@ -32,16 +32,6 @@ export function parseBandingString(s: string): BandingSpec {
 }
 
 /**
- * Serialize a BandingSpec back to the user-facing string form — used to
- * round-trip through a single "current value" in the settings UI.
- */
-export function bandingSpecToString(spec: BandingSpec): string {
-  if (spec.mode === "none" || spec.mode === "row") return spec.mode;
-  if (spec.level == null) return "group";
-  return `group-${spec.level}`;
-}
-
-/**
  * Compute the maximum group depth present in a spec (1-based; matches the
  * `group-n` grammar). Returns 0 if there are no groups.
  */

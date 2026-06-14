@@ -11,7 +11,7 @@
 // cell components' absolute-px CSS.
 
 import { registerBehaviors } from "../extend";
-import { CELL_GEOMETRY } from "../../lib/rendering-constants";
+import { CELL_GEOMETRY, TYPOGRAPHY } from "../../lib/rendering-constants";
 
 type PictogramOpts = {
   pictogram?: {
@@ -57,7 +57,7 @@ registerBehaviors("pictogram", {
 
     if (opts?.valueLabel) {
       const labelFontPx = sizeKey === "sm" ? 11 : sizeKey === "lg" ? 14 : 12;
-      const labelW = 5 * labelFontPx * 0.55;
+      const labelW = 5 * labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO;
       return trackW + 4 + labelW;
     }
     return trackW;
@@ -86,7 +86,7 @@ registerBehaviors("ring", {
     if (!(opts?.showLabel ?? true)) return diameter;
     const labelFontPx = sizeKey === "sm" ? 9 : sizeKey === "lg" ? 12 : 11;
     // "100%" is the widest typical label (4 chars).
-    const labelW = 4 * labelFontPx * 0.55;
+    const labelW = 4 * labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO;
     return diameter + 4 + labelW;
   },
 });

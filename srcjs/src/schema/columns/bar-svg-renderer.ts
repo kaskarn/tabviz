@@ -9,13 +9,14 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { resolveMarkerColor } from "../../lib/color-resolution";
 import { parseFontSize } from "../../lib/typography-layout";
 import { measureTextWidth } from "../../lib/width-utils";
 import { normalizeValue } from "../../lib/scale-utils";
 import { BAR, SPACING } from "../../lib/rendering-constants";
 import {
   getCssVars, readVarPx,
-  readAccentDefault, readDividerSubtle, readContentPrimary,
+  readDividerSubtle, readContentPrimary,
   readBodyFamily, readLabelSize,
 } from "../../lib/theme/consumer-bridge";
 
@@ -32,14 +33,7 @@ function resolveBarColor(
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): string {
-  const cellBundle = resolveSemanticBundle(cellStyle, theme);
-  const rowBundle = resolveSemanticBundle(rowStyle, theme);
-  return opts?.color
-    ?? cellBundle?.markerFill
-    ?? rowBundle?.markerFill
-    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`. Brand is now
-    // the identity default; v4 routes brand-derived color through accent.
-    ?? readAccentDefault(getCssVars(theme));
+  return resolveMarkerColor(opts?.color, cellStyle, rowStyle, theme);
 }
 
 function formatBarLabel(value: number): string {

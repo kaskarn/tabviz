@@ -24,8 +24,3 @@ export function registerCellComponent(name: string, c: Component<never>): void {
 export function getCellComponent(name: string): Component<Record<string, unknown>> | undefined {
   return components.get(name);
 }
-
-/** Test helper — clear the registry. Production code never calls this. */
-export function __resetCellComponents(): void {
-  components.clear();
-}

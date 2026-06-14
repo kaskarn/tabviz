@@ -200,18 +200,6 @@ export function computeEffectiveBanks(spec: SpecLike): EffectiveBanks {
 }
 
 /**
- * Look up a condition by id from effective banks. Returns null when
- * not found — callers (renderers) treat as "value not set" / theme
- * default.
- */
-export function findCondition(
-  banks: EffectiveBanks,
-  name: string,
-): ConditionEntry | null {
-  return banks.conditions.find((c) => c.id === name || c.label === name) ?? null;
-}
-
-/**
  * Find all schemas that could own a column. A column has one PRIMARY
  * concrete schema (matched by `type` + optional `bucket-in-options`),
  * plus any user-registered schemas explicitly extending it (Phase 7

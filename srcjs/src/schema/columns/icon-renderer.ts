@@ -19,8 +19,9 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { resolveMarkerColor } from "../../lib/color-resolution";
 import { escapeXml } from "../../lib/svg-text-utils";
-import { getCssVars, readAccentDefault, readBodyFamily } from "../../lib/theme/consumer-bridge";
+import { getCssVars, readBodyFamily } from "../../lib/theme/consumer-bridge";
 import { CELL_GEOMETRY } from "../../lib/rendering-constants";
 
 interface IconOptions {
@@ -37,13 +38,7 @@ function resolveIconColor(
   rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): string {
-  const cellBundle = resolveSemanticBundle(cellStyle, theme);
-  const rowBundle = resolveSemanticBundle(rowStyle, theme);
-  return iconOpts?.color
-    ?? cellBundle?.markerFill
-    ?? rowBundle?.markerFill
-    // V3→V4: was `theme.inputs.primary ?? theme.accent.default`.
-    ?? readAccentDefault(getCssVars(theme));
+  return resolveMarkerColor(iconOpts?.color, cellStyle, rowStyle, theme);
 }
 
 function resolveIconText(

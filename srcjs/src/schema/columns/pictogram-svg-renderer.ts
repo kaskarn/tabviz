@@ -12,10 +12,11 @@
 import type { ColumnOptions, WebTheme } from "../../types";
 import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
-import { getCssVars, readAccentDefault, readContentMuted } from "../../lib/theme/consumer-bridge";
+import { getCssVars, readContentMuted } from "../../lib/theme/consumer-bridge";
+import { resolveMarkerColor } from "../../lib/color-resolution";
 import { resolveGlyph } from "../../lib/glyph-registry";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
-import { CELL_GEOMETRY } from "../../lib/rendering-constants";
+import { CELL_GEOMETRY, TYPOGRAPHY } from "../../lib/rendering-constants";
 
 export interface PictogramOptions {
   glyph?: string | Record<string, string>;
@@ -43,14 +44,11 @@ export function resolvePictoColors(
   theme: WebTheme,
 ): { filled: string; empty: string } {
   // V3→V4: was `inputs.secondary ?? inputs.primary ?? theme.accent.default`.
-  const cssVars = getCssVars(theme);
-  const glyphDefault = readAccentDefault(cssVars);
-  const cellBundle = resolveSemanticBundle(cellStyle, theme);
-  const rowBundle = resolveSemanticBundle(rowStyle, theme);
-  const override = cellBundle?.markerFill ?? rowBundle?.markerFill ?? null;
   return {
-    filled: opts.color ?? override ?? glyphDefault,
-    empty: opts.emptyColor ?? readContentMuted(cssVars),
+    // Filled = the shared marker cascade (option > cell paint > row paint >
+    // accent default). Empty = explicit emptyColor or the muted content role.
+    filled: resolveMarkerColor(opts.color, cellStyle, rowStyle, theme),
+    empty: opts.emptyColor ?? readContentMuted(getCssVars(theme)),
   };
 }
 
@@ -173,7 +171,7 @@ export const pictogramSvgRenderer: CellFormatter = (value, options, ctx): Render
         : null;
   const labelFontPx = LABEL_FONT_PX[size];
   const labelText = labelPos ? buildLabelText(value, opts) : "";
-  const labelW = labelText ? labelText.length * (labelFontPx * 0.55) + 4 : 0;
+  const labelW = labelText ? labelText.length * (labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO) + 4 : 0;
 
   const trackW = isStack ? glyphPx : slots.length * glyphPx + Math.max(0, slots.length - 1) * GLYPH_GAP;
   const trackH = isStack ? slots.length * glyphPx : glyphPx;
