@@ -112,6 +112,28 @@ lint clean, build green.
   also PENDING in the ledger — common (grouped tables) but a subtle gray shade;
   follow-up.
 
+## Hunt batch C (a11y / dead-capability cluster, 2026-06-13)
+
+The a11y findings were OVER-rated by the hunt: every control already carries an
+`ariaLabel` (wired at the call sites), so screen-reader naming was never
+actually broken. That reframed the cluster:
+- **#4 `Field.forId` — DELETED (not wired)**: the dead prop's purpose
+  (label↔control association) is already served by `ariaLabel`, and a native
+  `<label for=…>` would have ACTIVATED a button-based control (Pill segment) on
+  label-click, not just focused it. Honest rationalization — remove the
+  vestigial capability rather than add a marginal, linter-hostile click handler.
+- **#7 `AnchorRow` reset dot — WIRED (real feature)**: the override dot +
+  "reset to preset" gutter that AnchorRow always rendered but no live call site
+  lit. IdentityTab now passes `pinned` (anchor differs from `store.initialTheme`)
+  + `onreset` for the 4 identity anchors AND the 4 status colors. The one
+  genuinely-missing FEATURE in the cluster.
+- **#11 `Tooltip.id` (aria-describedby) — LEFT**: the hint is already
+  SR-announced via the `i` mark's `aria-label={hint}`; the Tooltip id would be
+  redundant. Harmless optional prop; not worth churn.
+Verified: full suite 1416 bun + 301 vitest; svelte-check 0 warnings; lint clean;
+build green. (Per-anchor dot reactivity mirrors the existing working
+`anchorTriple` helper pattern.)
+
 ## Remaining
 
 - (Bug B prior scoping retained below for history; superseded by B9.)

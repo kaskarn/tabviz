@@ -35,12 +35,16 @@
     tight?: boolean;
     /** Click handler on the gutter dot — usually a reset-to-default. */
     onreset?: () => void;
-    /** id for label `for=` association. */
-    forId?: string;
     children?: Snippet;
   }
 
-  const { label, hint, glyph, mono, pinned, tight, onreset, forId, children }: Props = $props();
+  // NOTE: the long-dead `forId` prop (a `<label for=…>` id that NO call site
+  // ever set) was removed (hunt #4, 2026-06-13). Label↔control association
+  // for screen readers is carried by each control's own `ariaLabel` (wired
+  // at every call site); a native `for=` was also wrong here because it would
+  // ACTIVATE a button-based control (Pill segment) on label-click, not just
+  // focus it.
+  const { label, hint, glyph, mono, pinned, tight, onreset, children }: Props = $props();
 </script>
 
 <!--
@@ -63,7 +67,7 @@
     <span class="dot" class:on={pinned}></span>
   </button>
 
-  <label class="label" for={forId} class:mono>
+  <label class="label" class:mono>
     {#if glyph}
       <span class="label-glyph" aria-hidden="true">{glyphChar(glyph)}</span>
     {/if}

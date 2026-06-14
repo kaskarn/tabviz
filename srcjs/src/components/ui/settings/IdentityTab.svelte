@@ -77,6 +77,27 @@
     delete (next as Record<string, unknown>)[key];
     commit({ ...inputs!, anchors: next });
   }
+  // Override dot + "reset to preset" gutter for the 4 identity anchors —
+  // the affordance AnchorRow has always rendered but no live call site lit
+  // (hunt #7, 2026-06-13). Baseline = the theme captured at setSpec/setTheme
+  // (store.initialTheme); an anchor is pinned when it differs from that, and
+  // reset restores it (or clears an optional anchor back to inheriting).
+  function initialAnchors() {
+    return store.initialTheme?.authoringInputs?.anchors;
+  }
+  function anchorPinned(key: AnchorKey): boolean {
+    const init = initialAnchors();
+    if (!init) return false;
+    return JSON.stringify(inputs!.anchors[key]) !== JSON.stringify(init[key]);
+  }
+  function resetAnchor(key: AnchorKey): void {
+    const init = initialAnchors();
+    if (!init) return;
+    const next = { ...inputs!.anchors };
+    if (init[key] === undefined) delete (next as Record<string, unknown>)[key];
+    else next[key] = init[key];
+    commit({ ...inputs!, anchors: next });
+  }
 
   // ── Status anchors ───────────────────────────────────────────────────
   type StatusKey = "positive" | "negative" | "warning" | "info";
@@ -99,6 +120,13 @@
   }
   function withStatus(key: StatusKey, t: OklchTriple): ThemeInputs {
     return { ...inputs!, status: { ...inputs!.status, [key]: t } };
+  }
+  // A status color is an override when explicitly set (else it inherits the
+  // derived default). Reset clears it back to inheriting.
+  function resetStatus(key: StatusKey): void {
+    const next = { ...inputs!.status };
+    delete (next as Record<string, unknown>)[key];
+    commit({ ...inputs!, status: next });
   }
   const statusSummary = $derived.by(() => {
     const n = Object.keys(inputs?.status ?? {}).length;
@@ -200,6 +228,8 @@
           expanded={openAnchor === row.key}
           onexpand={(o) => (openAnchor = o ? row.key : null)}
           mirrored={anchorMirrored(row.key)}
+          pinned={anchorPinned(row.key)}
+          onreset={anchorPinned(row.key) ? () => resetAnchor(row.key) : undefined}
           onclear={row.optional && !anchorMirrored(row.key)
             ? () => clearAnchor(row.key as "accent")
             : undefined}
@@ -217,6 +247,8 @@
           expanded={openAnchor === `status-${row.key}`}
           onexpand={(o) => (openAnchor = o ? `status-${row.key}` : null)}
           mirrored={!inputs.status?.[row.key]}
+          pinned={Boolean(inputs.status?.[row.key])}
+          onreset={inputs.status?.[row.key] ? () => resetStatus(row.key) : undefined}
           oncommit={(t) => commit(withStatus(row.key, t))}
           onpreview={(t) => preview(withStatus(row.key, t))}
         />
