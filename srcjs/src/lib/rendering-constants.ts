@@ -56,6 +56,18 @@ export const TEXT_MEASUREMENT = {
 // Badge Constants (for label column width measurement)
 // ============================================================================
 
+/** Heatmap VALUE-text contrast colors. Theme-INDEPENDENT by design: the
+ *  text overlays a DATA-DRIVEN cell color (the palette), so contrast is
+ *  chosen against that cell, not the theme — a near-black on light cells,
+ *  near-white on dark. ONE source for the DOM + SVG export. (The SVG used
+ *  the theme's `readContentPrimary` for the dark text, which is LIGHT in a
+ *  dark theme → unreadable light-on-light heatmap text in exports —
+ *  cell-parity review, 2026-06-14.) */
+export const HEATMAP_TEXT = {
+  DARK: "#1a1a1a",
+  LIGHT: "#ffffff",
+} as const;
+
 export const BADGE = {
   /** Font size multiplier relative to base font */
   FONT_SCALE: 0.8,

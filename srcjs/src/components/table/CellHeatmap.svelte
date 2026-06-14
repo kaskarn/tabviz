@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { HeatmapColumnOptions, WebTheme } from "$types";
   import { normalizeValue } from "$lib/scale-utils";
+  import { HEATMAP_TEXT } from "$lib/rendering-constants";
   import { getCssVars, readAccentDefault, readSurfaceBg } from "$lib/theme/consumer-bridge";
 
   interface Props {
@@ -100,7 +101,7 @@
     const b = c1[2] + (c2[2] - c1[2]) * t;
     // Relative luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.5 ? "#1a1a1a" : "#ffffff";
+    return luminance > 0.5 ? HEATMAP_TEXT.DARK : HEATMAP_TEXT.LIGHT;
   });
 
   const isNa = $derived(value === undefined || value === null || Number.isNaN(value as number));

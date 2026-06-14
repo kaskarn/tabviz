@@ -7,10 +7,11 @@ import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import {
   getCssVars, readAccentDefault, readSurfaceBg,
-  readContentPrimary, readBodyFamily, readBodySize,
+  readBodyFamily, readBodySize,
 } from "../../lib/theme/consumer-bridge";
 import { normalizeValue } from "../../lib/scale-utils";
 import { parseFontSize } from "../../lib/typography-layout";
+import { HEATMAP_TEXT } from "../../lib/rendering-constants";
 
 interface HeatmapOptions {
   palette?: string[];
@@ -82,7 +83,10 @@ export const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSv
   const { hex: bgColor, rgb } = interpolatePalette(palette, normalized);
   const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
   const cssVars = getCssVars(theme);
-  const textColor = luminance > 0.5 ? readContentPrimary(cssVars) : "#ffffff";
+  // Theme-INDEPENDENT contrast against the data-driven cell color (was
+  // readContentPrimary — LIGHT in a dark theme → unreadable light-on-light
+  // text in exports; cell-parity review #3, 2026-06-14).
+  const textColor = luminance > 0.5 ? HEATMAP_TEXT.DARK : HEATMAP_TEXT.LIGHT;
 
   const fontSize = parseFontSize(readBodySize(cssVars));
   const cellWidth = ctx?.cellWidth ?? 100;
