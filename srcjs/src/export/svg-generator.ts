@@ -3201,9 +3201,27 @@ function renderUnifiedTableRow(
   const indentPerLevel = theme.rowGroup?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL;
   const indent = depth * indentPerLevel + (row.style?.indent ?? 0) * indentPerLevel;
   const semBundle = resolveSemanticBundle(row.style, theme);
+
+  // First-column "bold" treatment (first_column_style="bold"): the label cell
+  // gets a tinted bg + ink fg + bold weight. The DOM applies it via the
+  // .primary-cell first-column vars; the export drew NONE of it (hunt #2,
+  // 2026-06-13). These resolve to transparent/inherit when not bold, so the
+  // non-bold path is unchanged. Per-row styles (paint tokens, semantic
+  // bundles) still WIN — first-col is only the cell's base, matching the DOM
+  // where inline row styles override the .primary-cell defaults.
+  const firstColBg = readVar(cssVars, "--tv-first-col-bg", "transparent");
+  const firstColFg = readVar(cssVars, "--tv-first-col-fg", "inherit");
+  const firstColWeightRaw = readVar(cssVars, "--tv-first-col-weight", "inherit");
+  const firstColWeight = (firstColWeightRaw !== "inherit" && firstColWeightRaw !== "")
+    ? Number(firstColWeightRaw) : null;
+  const firstColBold = !!firstColBg && firstColBg !== "transparent" && firstColBg !== "none";
+  if (firstColBold) {
+    lines.push(`<rect x="${x}" y="${y}" width="${labelWidth}" height="${rowHeight}" fill="${firstColBg}"/>`);
+  }
+
   const fontWeight =
     semBundle?.fontWeight ??
-    ((row.style?.bold ?? false) ? 600 : 400);
+    ((row.style?.bold ?? false) ? 600 : (firstColWeight ?? 400));
   const fontStyle =
     semBundle?.fontStyle ??
     (row.style?.italic ? "italic" : "normal");
@@ -3212,6 +3230,8 @@ function renderUnifiedTableRow(
     textColor = row.style.color;
   } else if (semBundle?.fg) {
     textColor = semBundle.fg;
+  } else if (firstColFg && firstColFg !== "inherit") {
+    textColor = firstColFg;
   } else {
     textColor = cellFgDefault;
   }

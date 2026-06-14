@@ -42,9 +42,9 @@ const DOM_ONLY_LEDGER: Record<string, string> = {
   "--tv-header-rule": "parallel: export uses activeHeaderVariant(theme) for the header rule (RISK: hunt #12).",
   // ── PENDING export work ──────────────────────────────────────────────
   "--tv-row-group-rule": "PENDING: export draws the group rule from borders.major; COLOR differs (neutral[7] vs border role) — hunt #B4.",
-  "--tv-first-col-bg": "PENDING: export omits the bold first-column fill — hunt #2 (no preset sets first_column_style=bold).",
-  "--tv-first-col-fg": "PENDING: export omits the bold first-column text color — hunt #2.",
-  "--tv-first-col-weight": "PENDING: export omits the bold first-column weight — hunt #2.",
+  // (hunt #2 RESOLVED 2026-06-13: --tv-first-col-bg/fg/weight are now drawn by
+  //  the export too — renderUnifiedTableRow's first-col bold treatment — so they
+  //  left this ledger.)
 };
 
 function domOnlyTokens(): string[] {
