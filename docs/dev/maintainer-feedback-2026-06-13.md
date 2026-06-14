@@ -90,6 +90,28 @@ the trivial/low-risk wins:
 Verified: full suite 1413 bun + 301 vitest, check (incl. primitive-wiring) +
 lint clean, build green.
 
+## Hunt batch B (export WYSIWYG cluster, LANDED 2026-06-13)
+
+- **#1 — export draws boxed internal vertical dividers**: under border_preset=
+  boxed the DOM painted a full ruled grid but the export drew only horizontal
+  rules + the outer frame — the whole interior vertical set was missing.
+  Export-side fix (new `layoutHasVertical` + a vertical-divider pass over
+  `columnPositions`, label boundary honoring `--tv-first-col-rule`). Eyeballed
+  boxed export PNG = matches the DOM; wysiwyg 0 breaches. `--tv-first-col-rule`
+  consumedBy now includes the export. Commit 4d01728.
+- **#3 — DOM↔export divergence-ledger GATE** (`dom-export-divergence.test.ts`):
+  every token consumed ONLY by the DOM (`consumedBy === ["svelte/TabvizPlot
+  .svelte"]`) must now carry a justification (browser-only / parallel / PENDING)
+  in a ratcheted ledger — a new unjustified DOM-only token fails the gate
+  (forcing: draw it in the export, or document why not), and the ledger only
+  shrinks. Turns the Bug-B class from reactive to gated. 16 tokens bootstrapped.
+- **#2 — first-column BOLD styling in export (bg/fg/weight)**: tracked as PENDING
+  in the ledger, NOT done — no preset uses `first_column_style=bold`, so it's
+  explicit-opt-in only. The bold DIVIDER is already correct (rides #1). The
+  group-header rule COLOR divergence (neutral[7] DOM vs border role export) is
+  also PENDING in the ledger — common (grouped tables) but a subtle gray shade;
+  follow-up.
+
 ## Remaining
 
 - (Bug B prior scoping retained below for history; superseded by B9.)
