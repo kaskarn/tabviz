@@ -112,6 +112,7 @@ import {
   getEffectYOffset,
   AXIS,
   ASPECT,
+  DEFAULT_WATERMARK_OPACITY,
 } from "$lib/rendering-constants";
 import {
   formatNumber,
@@ -4780,7 +4781,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // back to foreground @ 0.07 for specs authored before those fields
       // existed.
       const wmFill = spec.watermarkColor ?? readContentPrimary(cssVars);
-      const wmOpacity = spec.watermarkOpacity ?? 0.07;
+      const wmOpacity = spec.watermarkOpacity ?? DEFAULT_WATERMARK_OPACITY;
       parts.push(
         `<text x="${cx}" y="${cy}" ` +
         `transform="rotate(${angleDeg.toFixed(2)} ${cx} ${cy})" ` +

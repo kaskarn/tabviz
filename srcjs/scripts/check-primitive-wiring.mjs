@@ -33,7 +33,6 @@ const PRIMITIVES = [
   "Slider",
   "FontFamily",
   "Toggle",
-  "Select",
 ];
 
 // Files that are themselves wrappers around the primitives (forward

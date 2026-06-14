@@ -19,6 +19,7 @@
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeInputs, OklchTriple } from "$types/theme-inputs";
   import { useThemeInputs } from "./theme-inputs.svelte";
+  import { DEFAULT_RADIUS, DEFAULT_BORDER_WIDTH } from "$lib/theme/resolve-theme";
   import AnchorRow from "$components/theme-controls/AnchorRow.svelte";
   import { EnumRow } from "$components/theme-controls";
   import Field from "$components/primitives/v2/Field.svelte";
@@ -284,12 +285,12 @@
                  segments={["fine", "normal", "strong", ...(currentRules === "custom" ? ["custom"] : [])].map((v) => ({ value: v, label: v }))}
                  onchange={(v) => v !== "custom" && applyRules(v as RuleSlot)} />
       </div>
-      <Field label="Radius sm"><Slider value={inputs.geometry?.radius?.sm ?? 2} min={0} max={24} step={1} suffix="px" ariaLabel="Radius sm" onchange={(v) => writeGeometry(preview, "radius", "sm", v)} oncommit={(v) => writeGeometry(commit, "radius", "sm", v)} /></Field>
-      <Field label="Radius md"><Slider value={inputs.geometry?.radius?.md ?? 6} min={0} max={32} step={1} suffix="px" ariaLabel="Radius md" onchange={(v) => writeGeometry(preview, "radius", "md", v)} oncommit={(v) => writeGeometry(commit, "radius", "md", v)} /></Field>
-      <Field label="Radius lg"><Slider value={inputs.geometry?.radius?.lg ?? 10} min={0} max={48} step={1} suffix="px" ariaLabel="Radius lg" onchange={(v) => writeGeometry(preview, "radius", "lg", v)} oncommit={(v) => writeGeometry(commit, "radius", "lg", v)} /></Field>
-      <Field label="Rule hair"><Slider value={inputs.geometry?.border_width?.hair ?? 0.5} min={0} max={3} step={0.25} suffix="px" ariaLabel="Border width hair" onchange={(v) => writeGeometry(preview, "border_width", "hair", v)} oncommit={(v) => writeGeometry(commit, "border_width", "hair", v)} /></Field>
-      <Field label="Rule thin"><Slider value={inputs.geometry?.border_width?.thin ?? 1} min={0} max={4} step={0.25} suffix="px" ariaLabel="Border width thin" onchange={(v) => writeGeometry(preview, "border_width", "thin", v)} oncommit={(v) => writeGeometry(commit, "border_width", "thin", v)} /></Field>
-      <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? 2.5} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" onchange={(v) => writeGeometry(preview, "border_width", "thick", v)} oncommit={(v) => writeGeometry(commit, "border_width", "thick", v)} /></Field>
+      <Field label="Radius sm"><Slider value={inputs.geometry?.radius?.sm ?? DEFAULT_RADIUS.sm} min={0} max={24} step={1} suffix="px" ariaLabel="Radius sm" onchange={(v) => writeGeometry(preview, "radius", "sm", v)} oncommit={(v) => writeGeometry(commit, "radius", "sm", v)} /></Field>
+      <Field label="Radius md"><Slider value={inputs.geometry?.radius?.md ?? DEFAULT_RADIUS.md} min={0} max={32} step={1} suffix="px" ariaLabel="Radius md" onchange={(v) => writeGeometry(preview, "radius", "md", v)} oncommit={(v) => writeGeometry(commit, "radius", "md", v)} /></Field>
+      <Field label="Radius lg"><Slider value={inputs.geometry?.radius?.lg ?? DEFAULT_RADIUS.lg} min={0} max={48} step={1} suffix="px" ariaLabel="Radius lg" onchange={(v) => writeGeometry(preview, "radius", "lg", v)} oncommit={(v) => writeGeometry(commit, "radius", "lg", v)} /></Field>
+      <Field label="Rule hair"><Slider value={inputs.geometry?.border_width?.hair ?? DEFAULT_BORDER_WIDTH.hair} min={0} max={3} step={0.25} suffix="px" ariaLabel="Border width hair" onchange={(v) => writeGeometry(preview, "border_width", "hair", v)} oncommit={(v) => writeGeometry(commit, "border_width", "hair", v)} /></Field>
+      <Field label="Rule thin"><Slider value={inputs.geometry?.border_width?.thin ?? DEFAULT_BORDER_WIDTH.thin} min={0} max={4} step={0.25} suffix="px" ariaLabel="Border width thin" onchange={(v) => writeGeometry(preview, "border_width", "thin", v)} oncommit={(v) => writeGeometry(commit, "border_width", "thin", v)} /></Field>
+      <Field label="Rule thick"><Slider value={inputs.geometry?.border_width?.thick ?? DEFAULT_BORDER_WIDTH.thick} min={0} max={6} step={0.25} suffix="px" ariaLabel="Border width thick" onchange={(v) => writeGeometry(preview, "border_width", "thick", v)} oncommit={(v) => writeGeometry(commit, "border_width", "thick", v)} /></Field>
     </DisclosureField>
 
     <!-- Type-role rebinds + carried-overrides release moved to the

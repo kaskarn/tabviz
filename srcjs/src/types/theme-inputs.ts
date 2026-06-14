@@ -164,7 +164,7 @@ export interface ThemeInputs {
   type_roles?: Partial<Record<
     "title" | "subtitle" | "body" | "numeric" | "label" | "caption" | "footnote" | "cell" | "tick",
     {
-      family?: "display" | "body" | "mono";
+      family?: "display" | "body" | "mono" | "numeric";
       size?: "label" | "foot" | "body" | "head" | "subtitle" | "title" | "display";
       weight?: "regular" | "medium" | "semibold" | "bold";
     }

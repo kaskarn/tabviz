@@ -27,7 +27,6 @@ const VALUE_PRIMITIVES = [
   "Pill.svelte",
   "Slider.svelte",
   "FontFamily.svelte",
-  "Select.svelte",
 ];
 
 // Strip HTML comments so example-syntax in docstrings doesn't confuse

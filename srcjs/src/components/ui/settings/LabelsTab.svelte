@@ -22,6 +22,7 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
+  import { DEFAULT_WATERMARK_OPACITY } from "$lib/rendering-constants";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import Swatch from "$components/primitives/v2/Swatch.svelte";
@@ -42,7 +43,7 @@
   // ── Watermark (figure state; moved here from the figure band) ───────
   const wmText = $derived(store.spec?.watermark ?? "");
   const wmColor = $derived(store.spec?.watermarkColor ?? null);
-  const wmOpacity = $derived(store.spec?.watermarkOpacity ?? 0.08);
+  const wmOpacity = $derived(store.spec?.watermarkOpacity ?? DEFAULT_WATERMARK_OPACITY);
 </script>
 
 <div class="labels-tab">

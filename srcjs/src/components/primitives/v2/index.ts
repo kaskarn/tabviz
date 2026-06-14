@@ -22,7 +22,6 @@ export { default as Picker }    from "./Picker.svelte";
 export { default as Mode }      from "./Mode.svelte";
 export { default as Swatch }    from "./Swatch.svelte";
 export { default as Slider }    from "./Slider.svelte";
-export { default as Select }    from "./Select.svelte";
 export { default as FontFamily } from "./FontFamily.svelte";
 export { default as VariantPicker } from "./VariantPicker.svelte";
 export { default as ColumnPreview } from "./ColumnPreview.svelte";

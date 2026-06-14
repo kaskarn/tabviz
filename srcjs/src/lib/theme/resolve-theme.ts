@@ -820,13 +820,16 @@ function resolveTypographyComputed(
 // ────────────────────────────────────────────────────────────────────────────
 
 /** Default radius scale (px). Editorial-soft baseline; brutalist-style
- *  presets pin smaller values per-key. */
-const DEFAULT_RADIUS: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["radius"]>> = {
+ *  presets pin smaller values per-key. EXPORTED so the settings panel's
+ *  geometry sliders show the SAME default for an unset theme that the
+ *  resolver applies (was 6 inline literals duplicating these — drift). */
+export const DEFAULT_RADIUS: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["radius"]>> = {
   sm: 2, md: 6, lg: 10, pill: 999,
 };
 
-/** Default border-width scale (px). Newspaper-hairline baseline. */
-const DEFAULT_BORDER_WIDTH: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["border_width"]>> = {
+/** Default border-width scale (px). Newspaper-hairline baseline. Exported
+ *  for the panel sliders (see DEFAULT_RADIUS). */
+export const DEFAULT_BORDER_WIDTH: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["border_width"]>> = {
   hair: 0.5, thin: 1, regular: 1.5, thick: 2.5,
 };
 

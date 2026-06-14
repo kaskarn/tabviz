@@ -69,6 +69,27 @@ at top of each item.
   preset uses a double table border; documentable WYSIWYG nuance if one ever
   does.)
 
+## Hunt batch A (quick wins, LANDED 2026-06-13)
+
+A systematic hunt (3 parallel agents) after the reactive pass found ~15 more
+instances of the same brittleness classes — answering "did we catch
+everything?" with a clear NO. Triaged by importance × difficulty; Batch A =
+the trivial/low-risk wins:
+- **Watermark opacity drift**: panel showed 0.08 while DOM + export rendered
+  0.07. Centralized to `DEFAULT_WATERMARK_OPACITY` (rendering-constants) used
+  by all three. (the magic-`8` class)
+- **Geometry slider defaults**: 6 inline literals in IdentityTab duplicated the
+  resolver's `DEFAULT_RADIUS`/`DEFAULT_BORDER_WIDTH` — now exported + imported.
+- **Dead `Select.svelte` deleted** (residue of the B4 Dropdown swap) + its 3
+  references (barrel export, primitive-contract list, check-primitive-wiring
+  list).
+- **`type_roles.family` type** gained `"numeric"` (the validator + resolver
+  already accept it; the TS type lied).
+- **Badge `warning` fallback hex** `#f59e0b` → `#d97706` (matches BADGE_VARIANTS
+  + the export; the DOM was the outlier).
+Verified: full suite 1413 bun + 301 vitest, check (incl. primitive-wiring) +
+lint clean, build green.
+
 ## Remaining
 
 - (Bug B prior scoping retained below for history; superseded by B9.)

@@ -8,6 +8,7 @@
   import { onMount } from "svelte";
   import type { WebTheme } from "../../types/index.js";
   import { getCssVars, readContentPrimary, readBodyFamily } from "../../lib/theme/consumer-bridge";
+  import { DEFAULT_WATERMARK_OPACITY } from "$lib/rendering-constants";
 
   const {
     text,
@@ -83,7 +84,7 @@
         font-size={fontSize.toFixed(1)}
         font-weight="700"
         fill={fillColor}
-        fill-opacity={opacity ?? 0.07}
+        fill-opacity={opacity ?? DEFAULT_WATERMARK_OPACITY}
       >{text}</text>
     </svg>
   {/if}

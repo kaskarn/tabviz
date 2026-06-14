@@ -60,7 +60,7 @@
       const variant = variants[strValue];
       switch (variant) {
         case "success": return "var(--tv-status-positive, #16a34a)";
-        case "warning": return "var(--tv-status-warning, #f59e0b)";
+        case "warning": return "var(--tv-status-warning, #d97706)"; // ≡ BADGE_VARIANTS.warning (was #f59e0b — disagreed with export)
         case "error":   return "var(--tv-status-negative, #dc2626)";
         case "info":    return "var(--tv-status-info, #2563eb)";
         case "muted":   return "var(--tv-text-subtle, #64748b)";
