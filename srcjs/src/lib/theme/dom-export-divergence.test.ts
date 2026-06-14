@@ -42,10 +42,12 @@ const DOM_ONLY_LEDGER: Record<string, string> = {
   //  the export via headerHexes() — the SAME v4 tokens the DOM reads — instead
   //  of the legacy activeHeaderVariant cluster, so they left this ledger.)
   // ── PENDING export work ──────────────────────────────────────────────
-  "--tv-row-group-rule": "PENDING: export draws the group rule from borders.major; COLOR differs (neutral[7] vs border role) — hunt #B4.",
-  // (hunt #2 RESOLVED 2026-06-13: --tv-first-col-bg/fg/weight are now drawn by
-  //  the export too — renderUnifiedTableRow's first-col bold treatment — so they
-  //  left this ledger.)
+  // (none — the export WYSIWYG cluster is closed. RESOLVED 2026-06-13:
+  //  --tv-first-col-bg/fg/weight (hunt #2, renderUnifiedTableRow bold
+  //  treatment), --tv-header-fg/-rule (hunt #12, headerHexes), and
+  //  --tv-row-group-rule (hunt #B4, the group-header rule now reads the token
+  //  instead of borders.major) all left this ledger when the export wired
+  //  them.)
 };
 
 function domOnlyTokens(): string[] {

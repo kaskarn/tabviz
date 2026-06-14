@@ -150,6 +150,21 @@ build green. (Per-anchor dot reactivity mirrors the existing working
   construction (one source). `--tv-header-bg/-fg/-rule` consumedBy now includes
   the export; fg/rule left the ledger. wysiwyg 0 breaches; R 46/0.
 
+## Hunt #B4 — group-rule reconciled; export cluster CLOSED (2026-06-13)
+
+The group-header underline read `borders.major` (border role) in the export but
+`--tv-row-group-rule` (neutral[7]) in the DOM — a visible gray-shade divergence
+on every grouped table. The export's row-border loop now draws group-header rows
+with `--tv-row-group-rule` + `--tv-group-border-width` (matching the DOM's `.group`
+separator), via the same canonical-token reconcile as #12. Eyeballed a grouped
+export PNG (North/South headers with correct underlines). `--tv-row-group-rule`
+consumedBy now includes the export.
+
+**The DOM↔export divergence ledger now has ZERO PENDING entries** — every
+DOM-only token is browser-only or parallel-agrees; first-col, header, and
+group-rule are all wired into the export. The export WYSIWYG cluster is closed,
+and the ledger gate keeps it that way.
+
 ## Remaining
 
 - (Bug B prior scoping retained below for history; superseded by B9.)

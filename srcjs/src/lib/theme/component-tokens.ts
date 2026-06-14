@@ -1250,7 +1250,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     resolverGroup: "ramp-direct",
     kind: "paint-stroke",
     source: { tier: "computed", note: "ramp:neutral[7] — the v3 rule_strong recipe, unwalked (pixel-faithful port)" },
-    consumedBy: ["svelte/TabvizPlot.svelte"],
+    consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
     binding: { region: "rows", component: "group-header", channel: "rule" },
     description: "Row-group header underline",
   },

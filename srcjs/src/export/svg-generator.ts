@@ -5258,6 +5258,16 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       if (!isSpacerRow && drawRowDividers) {
         parts.push(borderLineSvg(x1, y + rowHeight, x2, y + rowHeight, borders.minor));
       }
+    } else if (displayRow.type === "group_header") {
+      // Group-header bottom rule — match the DOM's `.group` separator
+      // (TabvizPlot: --tv-row-group-rule color + --tv-group-border-width),
+      // NOT the generic borders.major. The colors disagreed: neutral[7]
+      // (DOM) vs the border role (export) — hunt #B4, 2026-06-13.
+      parts.push(borderLineSvg(x1, y + rowHeight, x2, y + rowHeight, {
+        thickness: readVarPx(cssVars, "--tv-group-border-width", borders.major.thickness),
+        style: borders.major.style,
+        color: readVar(cssVars, "--tv-row-group-rule", borders.major.color) || borders.major.color,
+      }));
     } else {
       parts.push(borderLineSvg(x1, y + rowHeight, x2, y + rowHeight, borders.major));
     }
