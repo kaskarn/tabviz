@@ -25,6 +25,15 @@ SVG export path (a `schema/columns/*-renderer.ts` module or inline in
 1. **The drift gate (`schema/columns/drift.test.ts`) only checks an option HAS a
    `consumedBy` label + a `kind`** — NOT that BOTH renderers read it, nor that
    the value is honored equivalently. So a key-mismatch (stars below) passes it.
+   **PARTLY CLOSED (2026-06-14, `types/option-type-parity.assert.ts`)**: a
+   compile-time gate now asserts each hand-written `*ColumnOptions` (what the DOM
+   cells import) is a key-SUBSET of the schema-generated `*BucketOptions` — so a
+   hand-written type can't declare an option the schema lacks (the stars
+   `maxStars` root). Covers the 15 PURE-OPTION types. FOLLOW-UP it surfaced: the
+   6 field-carrying types (forest/interval/range/viz*) CONFLATE data fields +
+   discriminator + internal keys with options in their hand-written
+   `*ColumnOptions` — a design smell worth separating (fields vs options) so they
+   too can be gated.
 2. **No DOM↔export VISUAL parity coverage for any glyph cell.**
    `forest-marks.browser.ts` covers forest mark x-positions only; the wysiwyg
    matrix covers text/numeric/forest/pvalue/bar and measures font attrs + box
