@@ -2087,6 +2087,24 @@
           {/each}
         {/if}
 
+        <!-- Outer table frame (D26, border_preset=frame/boxed): a 4-side
+             border spanning the TABLE region only — header top → last data
+             row bottom — and STOPPING ABOVE THE AXIS (the axis is plot
+             scaffold, not table; grid-row ends at axisRowNum). Drawn as a
+             grid-overlay with box-shadow inset so it adds ZERO layout space
+             (a real border would shift content + break flush parity), exactly
+             like the export's frame rect (svg-generator: mainY → rowsY+
+             rowsHeight). Gated by --tv-table-border-width (0 ⇒ invisible).
+             pointer-events:none — purely decorative. -->
+        {#if displayRows.length > 0}
+          <div
+            class="table-frame"
+            aria-hidden="true"
+            style:grid-row="1 / {effectiveHeaderDepth + 1 + displayRows.length}"
+            style:grid-column="1 / -1"
+          ></div>
+        {/if}
+
         <!-- SVG overlays: one per forest column -->
         {#each forestColumns as fc (fc.column.id)}
           {@const forestOpts = fc.column.options?.forest}
@@ -3037,10 +3055,25 @@
      .tabviz-main, which would put it below the axis).
      Major is reserved for INTERNAL major rules only (header bottom,
      group/summary breaks). Table default thickness 0 = no frame. */
-  .tabviz-main {
-    border-top-width: var(--tv-table-border-width, 0);
-    border-top-style: var(--tv-table-border-style, none);
-    border-top-color: var(--tv-border-table-color, transparent);
+  /* Outer table frame (D26): box-shadow inset draws all 4 edges at the
+     overlay's grid bounds (header top → last data row bottom, all columns)
+     with ZERO layout impact — supersedes the old `.tabviz-main` border-top,
+     which drew only the top edge AND reserved 2px of layout the export's
+     overlay rect never did. Table frames are always `single` style across
+     presets (borders.ts), so an inset shadow is exact. */
+  .table-frame {
+    /* position:absolute takes the frame OUT of grid track sizing. A spanning
+       IN-FLOW grid item (grid-column: 1/-1) defeats the grid's
+       `width: max-content` shrink-wrap and stretches it to the container (the
+       wysiwyg width divergence caught 2026-06-13). An ABSOLUTELY-positioned
+       grid item still uses its grid area (the grid-row/grid-column set on the
+       element) as its containing block, so `inset:0` fills exactly the table
+       region with ZERO effect on track sizing. */
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 var(--tv-table-border-width, 0) var(--tv-border-table-color, transparent);
+    z-index: 2;
   }
 
   /* Base grid cell styles. Row + column dividers both obey

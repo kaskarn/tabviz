@@ -155,6 +155,12 @@ const CASES: MatrixCase[] = [
   { id: "ledger",           preset: "ledger" },
   { id: "aurora",           preset: "aurora" },
   { id: "dwarven",          preset: "dwarven" },
+  // D26 (2026-06-13): boxed = full grid (row + column dividers + outer
+  // frame). Exercises the table-frame parity — the DOM frame is a
+  // box-shadow grid-overlay stopping above the axis; the export rect spans
+  // mainY → rowsY+rowsHeight. Geometry must stay in lockstep under the grid
+  // layout (internal verticals + the 4-side frame).
+  { id: "nejm-boxed",       preset: "nejm", patch: { border_preset: "boxed" } },
 ];
 
 // ── Fixture spec (authoring path, canonical theme resolution) ───────────────

@@ -49,10 +49,30 @@ at top of each item.
   (`writeBanding` commitNow flag). Slider inconsistency fully closed. Commit
   4a0151e.
 
+- **B9 (LANDED) — Bug B fixed: complete DOM table frame, stops above the axis
+  (D26).** Key correction during implementation: the EXPORT was already correct
+  (its table-frame rect spans mainY→rowsY+rowsHeight, i.e. already above the
+  axis — the earlier diagnosis conflated it with the full-figure CONTAINER
+  border). So Bug B was DOM-only: the DOM drew only a top edge + accidental cell
+  edges, no left edge. Added a `.table-frame` overlay spanning the table grid
+  area (rows 1 / axisRowNum, all columns) with an inset box-shadow (4 edges,
+  zero layout impact); removed the old `.tabviz-main` border-top. CAUGHT BY THE
+  GATE: an in-flow spanning grid item (grid-column: 1/-1) defeats the grid's
+  `width: max-content` shrink-wrap → stretched the DOM to the container (huge
+  width divergence). Fixed with `position: absolute; inset: 0` (an abspos grid
+  item uses its grid area as containing block but is OUT of track sizing). Added
+  a `nejm-boxed` case to the wysiwyg matrix. Verified: wysiwyg 0 breaches incl.
+  boxed, layout-metrics 26/0 (export untouched), forest-marks + measure-rows
+  green, full suite green, + eyeballed boxed/frame screenshots (complete frame,
+  left edge present, stops above the axis). Commit pending. (Note: double-style
+  table frames render as solid in the DOM — box-shadow can't do double — but no
+  preset uses a double table border; documentable WYSIWYG nuance if one ever
+  does.)
+
 ## Remaining
 
-- **Bug B — boxed DOM↔export frame divergence** (the last clear fix; SCOPED,
-  not yet done — needs careful geometry + a working wysiwyg gate):
+- (Bug B prior scoping retained below for history; superseded by B9.)
+- **Bug B — boxed DOM↔export frame divergence** (DONE in B9; original scoping):
   - The DOM "frame" is STRUCTURALLY INCOMPLETE. `--tv-table-border-*` drives
     ONLY the top edge (`.tabviz-main` border-top, TabvizPlot.svelte:3040-3044).
     The right + bottom edges are ACCIDENTAL — they appear only when the cell
