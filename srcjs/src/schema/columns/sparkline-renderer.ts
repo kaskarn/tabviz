@@ -93,7 +93,7 @@ const sparklineSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => 
 
   const opts = (options as ColumnOptions | undefined)?.sparkline as SparklineOptions | undefined;
   const type = opts?.type ?? "line";
-  const height = opts?.height ?? 16;
+  const height = opts?.height ?? SPARKLINE.DEFAULT_HEIGHT;
   const color = resolveSparkColor(opts, ctx?.cellStyle, undefined, theme);
 
   // Layout box. The legacy branch deducts a left+right pad from cell

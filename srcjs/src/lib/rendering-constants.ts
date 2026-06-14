@@ -91,6 +91,14 @@ export const BAR = {
  * Sparkline (col_sparkline) geometry. Mirrors CellSparkline.svelte.
  */
 export const SPARKLINE = {
+  /** Default chart height (px) when the column sets none. ONE source for
+   *  the DOM (CellSparkline) + the SVG export — they disagreed (20 vs 16),
+   *  so unset sparklines rendered a different height in widget vs export. */
+  DEFAULT_HEIGHT: 20,
+  /** Fallback chart width (px) before the DOM cell measures its column;
+   *  the live sparkline fills the column (like the export), this is only
+   *  the pre-measure default. */
+  DEFAULT_WIDTH: 60,
   /** Stroke width for line and area variants */
   STROKE_WIDTH: 1.5,
   /** Inner padding so stroke isn't clipped at edges */

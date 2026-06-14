@@ -75,7 +75,7 @@ describe("sparkline renderer — input handling", () => {
   test("empty data array emits empty markup but reserves dims", () => {
     const node = callSpark([]);
     expect(node.markup).toBe("");
-    expect(node.height).toBe(16);
+    expect(node.height).toBe(20); // SPARKLINE.DEFAULT_HEIGHT (centralized, was 16)
   });
 });
 
