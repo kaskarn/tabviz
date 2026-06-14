@@ -200,13 +200,23 @@ export function applySpacingPins(
   cssVars: Record<string, string>,
   theme: WebTheme,
 ): Record<string, string> {
-  const s = theme.spacing;
   // Each pin: only override when the field is set (preserves authoringInputs
   // density when no override exists).
   const pin = (cssVar: string, value: number | undefined): void => {
     if (value === undefined) return;
     cssVars[cssVar] = `${value}px`;
   };
+  // Defense-in-depth: a D13 SLIM envelope ({name, authoringInputs, …} — no
+  // resolved `spacing` cluster) carries authoringInputs, so it slips past
+  // getCssVars's `!theme?.authoringInputs` guard and lands here. Reading
+  // `s.rowHeight` off an undefined `spacing` is what crashed the theme
+  // switcher ("Cannot read properties of undefined (reading 'rowHeight')").
+  // Callers should resolve via buildTheme first (ThemeSwitcher now does);
+  // skipping the spacing pins when unresolved keeps every other getCssVars
+  // caller crash-proof too — same robustness contract as computeLiveConfigVars
+  // tolerating an absent `layout`.
+  const s = theme.spacing;
+  if (!s) return cssVars;
   pin("--tv-spacing-row-height", s.rowHeight);
   pin("--tv-spacing-header-height", s.headerHeight);
   pin("--tv-spacing-padding", s.padding);

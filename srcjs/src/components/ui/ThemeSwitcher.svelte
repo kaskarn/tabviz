@@ -96,21 +96,56 @@
     });
   });
 
-  // Locate a theme across the wire-shape (handles both flat and categorized).
-  // When `availableThemes` is undefined (host didn't pass an enable_themes
-  // payload — common in the studio's JS-authored spec), fall back to the
-  // built-in TS preset registry. Without this fallback `themeColors()` would
-  // hit its hardcoded default for every entry and render every dropdown
-  // swatch identical pale-blue (B1).
-  function lookupTheme(name: string): WebTheme | undefined {
-    if (!availableThemes) return THEME_PRESETS[name as ThemeName];
-    if (categorized) {
-      for (const cat of Object.values(availableThemes as CategorizedThemes)) {
-        if (name in cat) return cat[name];
+  // Resolve a D13 SLIM envelope ({name, authoringInputs, roleOverrides?,
+  // components?, pins?, webFonts?} — no spacing/layout/row cluster) to a full
+  // WebTheme. EVERY consumer here reads resolved fields: `getCssVars` →
+  // `applySpacingPins` reads `theme.spacing.rowHeight`, and `applyTheme` hands
+  // the theme to renderers that read its cluster fields. Passing a slim
+  // envelope straight through crashed the dropdown-open path ("Cannot read
+  // properties of undefined (reading 'rowHeight')") — the same partial-theme
+  // class as the B1 containerBorder crash, one read deeper. Full blobs (older
+  // wires, JS-authored rosters, the TS preset registry) already carry `row`
+  // and pass through untouched. Memoized by name: `availableThemes` is the
+  // static roster for a widget instance, so the rebuild is amortized across
+  // every dropdown re-render (themeColors + fontFor call this per theme).
+  const resolvedCache = new Map<string, WebTheme>();
+  function resolveSlim(name: string, raw: WebTheme): WebTheme {
+    if ((raw as { row?: unknown }).row || !raw.authoringInputs) return raw;
+    let built = resolvedCache.get(name);
+    if (!built) {
+      const slim = raw as WebTheme & { webFonts?: { family: string; url: string }[] };
+      built = buildTheme(slim.authoringInputs!, {
+        name: slim.name ?? name,
+        roleOverrides: slim.roleOverrides ?? {},
+        pins: slim.pins ?? {},
+        components: slim.components ?? {},
+      });
+      if (Array.isArray(slim.webFonts) && slim.webFonts.length > 0) {
+        (built as { webFonts?: unknown }).webFonts = slim.webFonts;
       }
-      return undefined;
+      resolvedCache.set(name, built);
     }
-    return (availableThemes as FlatThemes)[name];
+    return built;
+  }
+
+  // Locate a theme across the wire-shape (handles both flat and categorized),
+  // RESOLVED to a full WebTheme (see resolveSlim). When `availableThemes` is
+  // undefined (host didn't pass an enable_themes payload — common in the
+  // studio's JS-authored spec), fall back to the built-in TS preset registry.
+  // Without this fallback `themeColors()` would hit its hardcoded default for
+  // every entry and render every dropdown swatch identical pale-blue (B1).
+  function lookupTheme(name: string): WebTheme | undefined {
+    let raw: WebTheme | undefined;
+    if (!availableThemes) {
+      raw = THEME_PRESETS[name as ThemeName];
+    } else if (categorized) {
+      for (const cat of Object.values(availableThemes as CategorizedThemes)) {
+        if (name in cat) { raw = cat[name]; break; }
+      }
+    } else {
+      raw = (availableThemes as FlatThemes)[name];
+    }
+    return raw ? resolveSlim(name, raw) : undefined;
   }
 
   // Extract identity pair + bg/fg for a theme so the dropdown row can
@@ -177,27 +212,12 @@
   let pendingTheme = $state<string | null>(null);
 
   function applyTheme(themeName: string) {
-    // Prefer the wire-shape theme from availableThemes when present.
-    // Since D13 (2026-06-11) the roster carries SLIM envelopes ({name,
-    // authoringInputs, roleOverrides?, components?, pins?, webFonts?} —
-    // 10x lighter on the wire); expand to a full WebTheme in-widget
-    // before the swap, because renderers read spec.theme's cluster
-    // fields. Full blobs (older wires, JS-authored rosters) pass
-    // through unchanged.
-    let theme = lookupTheme(themeName);
-    if (theme && !(theme as { row?: unknown }).row && theme.authoringInputs) {
-      const slim = theme as WebTheme & { webFonts?: { family: string; url: string }[] };
-      const built = buildTheme(slim.authoringInputs!, {
-        name: slim.name ?? themeName,
-        roleOverrides: slim.roleOverrides ?? {},
-        pins: slim.pins ?? {},
-        components: slim.components ?? {},
-      });
-      if (Array.isArray(slim.webFonts) && slim.webFonts.length > 0) {
-        (built as { webFonts?: unknown }).webFonts = slim.webFonts;
-      }
-      theme = built;
-    }
+    // lookupTheme returns a fully-resolved WebTheme — the D13 slim-envelope
+    // expansion now happens centrally in resolveSlim (so the dropdown's
+    // swatch/font previews resolve identically and don't crash on the slim
+    // shape). Renderers read spec.theme's cluster fields, so the resolved
+    // blob is exactly what setThemeObject needs.
+    const theme = lookupTheme(themeName);
     if (theme && store.spec) {
       store.setThemeObject(theme);
       onThemeChange?.(themeName as ThemeName, theme);
