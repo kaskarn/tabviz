@@ -32,6 +32,20 @@ feedback, real layout) can be verified. Two kinds live here:
     drifting (e.g. back onto `axisLimits`).
     Run: `bun run tests/browser/forest-marks.browser.ts [--bundle <p>] [--headed]`.
 
+  - `glyph-cell-parity.browser.ts` — the **glyph-cell DOM↔export** pixel
+    parity gate (cell-render-parity-review.md gap #2). For each visual column
+    (badge/progress/ring/stars/pictogram/icon/bar/sparkline/heatmap) it crops
+    the SAME fixed-width cell from the live widget (scale-1) and from a raster
+    of `generateSVG(spec)` and pixel-diffs the glyph — the layer the numeric
+    wysiwyg-diff is blind to. Per-column budgets encode the review's
+    known-open ranks (badge/progress/heatmap) and only shrink; `--gate` fails
+    on new/widened divergence. **Needs a healthy headless Chrome**: the
+    widget-DOM screenshot hangs under the local capture flake, so locally it
+    SKIPS (reports `⊘`, exits 0) — it MEASURES + gates in CI, the same
+    screenshot mechanism `settings-consequence` proves works there. Budgets
+    need one healthy run to calibrate before flipping CI to `--gate`.
+    Run: `bun run tests/browser/glyph-cell-parity.browser.ts [--gate] [--only <col>] [--headed]`.
+
 ## Run
 
 ```bash

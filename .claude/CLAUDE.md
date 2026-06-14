@@ -568,6 +568,20 @@ Manual tests in `tests/manual/`; visual regression in `tests/visual/`.
   measurement: mounts the widget at scale-1 vs `generateSVG` of the same
   spec across a theme/density/shell matrix; numeric geometry+typography
   diffs + side-by-side PNGs in /tmp/wysiwyg. The WYSIWYG regression net.
+- `srcjs/tests/browser/glyph-cell-parity.browser.ts` — the GLYPH-LAYER
+  twin of wysiwyg-diff (cell-render-parity-review.md gap #2): pixel-diffs
+  each visual column's cell (badge/progress/ring/stars/pictogram/icon/bar/
+  sparkline/heatmap) DOM-vs-`generateSVG` raster — the layer the numeric
+  wysiwyg gate is blind to. Fixed column widths so cell boxes match;
+  per-column budgets encode the review's open ranks, only shrink; `--gate`
+  fails on new/widened divergence. TRAP: the widget-DOM `page.screenshot`
+  HANGS under the local headless-Chrome capture flake (blocks bun's loop —
+  withTimeout/protocolTimeout only break it when the loop isn't fully
+  jammed), so locally it SKIPS (⊘, exit 0) and only MEASURES in CI. Recipe
+  that works for widget screenshots (mirrors settings-consequence):
+  `--force-device-scale-factor=1` + reduced-motion + foreground tab +
+  bounded close + a hard watchdog. NOT yet CI-wired — needs one healthy
+  run to calibrate budgets before `--gate`.
 - `srcjs/tests/browser/studio-shot.mjs` — DORMANT with the studio (not
   in CI; keep passing if touched, don't extend). Was the ONLY way to eyeball the
   studio without launching R (it's a Shiny gadget). Serves `inst/studio/`

@@ -38,11 +38,18 @@ SVG export path (a `schema/columns/*-renderer.ts` module or inline in
    `forest-marks.browser.ts` covers forest mark x-positions only; the wysiwyg
    matrix covers text/numeric/forest/pvalue/bar and measures font attrs + box
    geometry, NOT glyph rendering. sparkline/pictogram/stars/ring/badge/heatmap/
-   icon/progress/img/viz_* have NO parity gate. **Recommended structural fix: a
-   glyph-cell parity harness — mount `Cell*.svelte` at scale-1 vs
-   `schemaRenderCell(…,"svg")`, pixel-diff.** It would have caught every rank 1–8
-   item below. (Needs a non-contended browser env to develop — local Chrome was
-   flaking 2026-06-13/14.)
+   icon/progress/img/viz_* had NO parity gate.
+   **BUILT 2026-06-14: `srcjs/tests/browser/glyph-cell-parity.browser.ts`** —
+   mounts the widget at scale-1, rasters `generateSVG(spec)`, pixel-diffs each
+   visual column's (fixed-width) cell. Per-column budgets encode the open ranks
+   below; `--gate` fails on new/widened divergence. It would have caught every
+   rank 1–8 item. CAVEAT: the widget-DOM screenshot hangs under the local
+   headless-Chrome capture flake (deadlocks bun's loop — see the harness
+   docstring + CLAUDE.md trap), so it SKIPS locally and only MEASURES in CI
+   (same screenshot path `settings-consequence` proves works there). Needs one
+   healthy run to calibrate budgets before it's wired into the blocking CI gate
+   — and that healthy run is the prerequisite for fixing ranks 3–6 verified
+   (the "which value is canonical" eyeball this harness provides).
 
 ## Findings (ranked by user-visible WYSIWYG impact)
 
