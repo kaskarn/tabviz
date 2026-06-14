@@ -94,10 +94,10 @@ const BUDGETS: Record<string, { max: number; why: string }> = {
   stars:     { max: AA_FLOOR, why: "rank 2: star glyphs match; 7.4% AA" },
   icon:      { max: AA_FLOOR, why: "rank 6: 6.5% AA at default rem" },
   sparkline: { max: 0.15, why: "rank 1: 8.9% — responsive width reconciled (2336d3b); residual path AA" },
-  progress:  { max: 0.16, why: "rank 4 OPEN: 9.2% — label width 32 vs 40; label font 0.75 vs 0.9; track color" },
-  badge:     { max: 0.22, why: "rank 5 OPEN: 13.4% — pill h-padding DOM 10px vs SVG 4px; font 0.77 vs 0.8; size ignored in SVG" },
-  bar:       { max: 0.22, why: "rank 9: 14.2% — track-color default + fill-width AA (SVG reads BAR.*; DOM re-hardcodes)" },
-  heatmap:   { max: 0.33, why: "rank 3: 23.8% — value-text font 0.75 vs 0.9 + SVG 2px inset gutter vs DOM fill" },
+  progress:  { max: 0.14, why: "rank 4: 10.1% — label font + width + track RECONCILED to label-role/measured/--tv-border; residual is bar-fill AA" },
+  badge:     { max: 0.14, why: "rank 5: 9.7% — RECONCILED (PADDING_X 10 matches DOM pill; FONT_SCALE 0.77); was 13.4%" },
+  bar:       { max: 0.18, why: "rank 9: 14.3% — label is label-role now; RESIDUAL OPEN: track reads --tv-cell-border vs the DOM bar track color" },
+  heatmap:   { max: 0.33, why: "rank 3: 24.1% — value font is label-role now; RESIDUAL OPEN: SVG 2px inset gutter vs DOM 100% fill (the dominant diff)" },
 };
 
 // One row, many glyph columns. Values chosen so each glyph has visible content.
