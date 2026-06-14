@@ -146,15 +146,13 @@ jobs:
       - name: 'Gate: interaction QA (sort/collapse/paint/edit/zoom)'
         run: bun run tests/browser/interaction-qa.browser.ts
 
-      # REPORT-ONLY (no --gate): the widget-DOM screenshot hangs on the local
-      # capture flake but works on CI hardware (settings-consequence proves it),
-      # so CI is the calibration run. Reads the real per-column pixelmatch
-      # numbers into the log; budgets get tuned + the gate flipped to --gate in
-      # a follow-up. `continue-on-error` so a calibration surprise never reds
-      # main before budgets are confirmed.
-      - name: 'Report: glyph-cell DOM↔export parity (calibration, non-blocking)'
-        continue-on-error: true
-        run: bun run tests/browser/glyph-cell-parity.browser.ts
+      # Budgets CALIBRATED from run 27512901960 (measured × ~1.6); a real
+      # regression (a renderer text-degrading jumps a cell to 50–70%) trips
+      # the gate while curved-glyph AA variance stays under. The widget-DOM
+      # screenshot hangs on the LOCAL capture flake but works on CI hardware
+      # (settings-consequence proves it), so this only gates here.
+      - name: 'Gate: glyph-cell DOM↔export parity'
+        run: bun run tests/browser/glyph-cell-parity.browser.ts --gate
 
       - name: Upload glyph-parity crops (calibration)
         if: always()

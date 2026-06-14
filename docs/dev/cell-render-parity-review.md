@@ -46,10 +46,19 @@ SVG export path (a `schema/columns/*-renderer.ts` module or inline in
    rank 1–8 item. CAVEAT: the widget-DOM screenshot hangs under the local
    headless-Chrome capture flake (deadlocks bun's loop — see the harness
    docstring + CLAUDE.md trap), so it SKIPS locally and only MEASURES in CI
-   (same screenshot path `settings-consequence` proves works there). Needs one
-   healthy run to calibrate budgets before it's wired into the blocking CI gate
-   — and that healthy run is the prerequisite for fixing ranks 3–6 verified
-   (the "which value is canonical" eyeball this harness provides).
+   (same screenshot path `settings-consequence` proves works there).
+   **CALIBRATED + GATING 2026-06-14** (CI run 27512901960). First clean run
+   measured (DPR-1 crops, curved-edge AA puts a perfect match at 4–8%):
+   pictogram 4.2 · icon 6.5 · ring 7.4 · stars 7.4 · sparkline 8.9 ·
+   progress 9.2 · badge 13.4 · bar 14.2 · heatmap 23.8 (%). All visually
+   verified from the `glyph-parity-crops` artifact — the curved-glyph cells
+   (ring/stars/pictogram) MATCH; the residual is AA, not divergence. Budgets =
+   measured × ~1.6 and only shrink. The first run also caught + fixed two
+   HARNESS bugs (missing `bootBuiltinBehaviors` text-degraded the SVG →
+   heatmap read 71%; an invalid `glyph:"circle"` fixture) — so no real export
+   bug was hiding behind the big numbers. The ranks 3–5 reconciles below now
+   have their verification tool: fix → the cell's measured % drops → shrink its
+   budget to lock it.
 
 ## Findings (ranked by user-visible WYSIWYG impact)
 

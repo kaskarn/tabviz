@@ -580,8 +580,13 @@ Manual tests in `tests/manual/`; visual regression in `tests/visual/`.
   jammed), so locally it SKIPS (⊘, exit 0) and only MEASURES in CI. Recipe
   that works for widget screenshots (mirrors settings-consequence):
   `--force-device-scale-factor=1` + reduced-motion + foreground tab +
-  bounded close + a hard watchdog. NOT yet CI-wired — needs one healthy
-  run to calibrate budgets before `--gate`.
+  bounded close + a hard watchdog. MUST call `bootBuiltinBehaviors()`
+  before generateSVG or every visual cell text-degrades (the split-boot
+  trap — inflated heatmap to 71%). CI-GATED in browser-gates (budgets
+  calibrated 2026-06-14 from run 27512901960, measured×1.6); locally it
+  SKIPS (screenshot flake) — download the `glyph-parity-crops` artifact to
+  eyeball. Budgets only shrink (drop to new floor when a rank-3/4/5
+  reconcile lands).
 - `srcjs/tests/browser/studio-shot.mjs` — DORMANT with the studio (not
   in CI; keep passing if touched, don't extend). Was the ONLY way to eyeball the
   studio without launching R (it's a Shiny gadget). Serves `inst/studio/`

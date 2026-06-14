@@ -18,8 +18,15 @@
  *
  * Side-by-side PNGs land in /tmp/glyph-parity/<col>-{dom,svg,diff}.png for
  * eyeballing. `--gate` fails when a column's mismatch exceeds its budget; new or
- * over-budget divergences block. Budgets are annotated with the review rank /
- * decision-register id they encode, exactly like wysiwyg-diff.
+ * over-budget divergences block. Budgets are CALIBRATED from a clean CI run
+ * (see BUDGETS) and GATE in CI's browser-gates job.
+ *
+ * NOTE — the widget-DOM `page.screenshot` HANGS under the local headless-Chrome
+ * capture flake (deadlocks bun's loop — see armWatchdog / the CLAUDE.md trap),
+ * so LOCALLY every column SKIPS (⊘, exit 0) and you can't measure here. It
+ * MEASURES + gates in CI (same screenshot path settings-consequence proves
+ * works on CI hardware). To eyeball locally, download the `glyph-parity-crops`
+ * artifact from a CI run.
  *
  * Run:
  *   cd srcjs && bun run tests/browser/glyph-cell-parity.browser.ts
@@ -73,23 +80,24 @@ function parseArgs() {
 }
 
 // Per-column mismatch budget (fraction of cropped cell pixels that may differ).
-// A glyph cell is small (~40×24 px × DPR²); anti-aliasing on text/curves makes a
-// few-percent floor honest even for a perfect match. Budgets ABOVE the
-// AA-floor encode a KNOWN divergence (review rank) until it's reconciled — they
-// only shrink. New/over-budget columns fail --gate.
-const AA_FLOOR = 0.06;
+// CALIBRATED against the first clean CI run (2026-06-14, run 27512901960 —
+// glyph cells are small + DPR-1, so curved-edge AA puts even a perfect match at
+// 4–8%). Each budget ≈ measured × 1.6: generous enough to absorb run-to-run AA
+// variance, tight enough that a real regression (a renderer text-degrading
+// jumps a cell to 50–70%, as the missing-boot bug proved) trips it. Budgets
+// only SHRINK — when a rank-3/4/5 reconcile lands, drop the budget to the new
+// measured floor so it can't silently regress.
+const AA_FLOOR = 0.12;        // pictogram 4.2 · icon 6.5 · ring 7.4 · stars 7.4 (all visually matched; pure AA)
 const BUDGETS: Record<string, { max: number; why: string }> = {
-  // Reconciled / near-exemplary in the review — only AA noise expected.
-  ring:      { max: AA_FLOOR, why: "rank 7: geometry identical (shared CELL_GEOMETRY)" },
-  pictogram: { max: AA_FLOOR, why: "rank 8: slot/remap/half logic identical" },
-  bar:       { max: 0.10, why: "rank 9: SVG reads BAR.*; DOM re-hardcodes matching literals + track-color default" },
-  stars:     { max: AA_FLOOR, why: "rank 2: maxGlyphs/halfGlyphs reconciled (5cef797)" },
-  icon:      { max: AA_FLOOR, why: "rank 6: equal at default rem" },
-  // KNOWN-OPEN divergences (review rank 3–5) — budgeted high until reconciled.
-  badge:     { max: 0.40, why: "rank 5 OPEN: pill h-padding DOM 10px vs SVG 4px; font-scale 0.77 vs 0.8; size ignored in SVG" },
-  progress:  { max: 0.40, why: "rank 4 OPEN: label width 32 vs 40; label font 0.75 vs 0.9; track color" },
-  heatmap:   { max: 0.30, why: "rank 3: value-text font 0.75 vs 0.9; SVG 2px inset gutter vs DOM fill" },
-  sparkline: { max: 0.25, why: "rank 1: responsive width reconciled (2336d3b); residual path AA" },
+  ring:      { max: AA_FLOOR, why: "rank 7: ring + label match; 7.4% curved-edge AA" },
+  pictogram: { max: AA_FLOOR, why: "rank 8: dot glyphs match; 4.2% AA" },
+  stars:     { max: AA_FLOOR, why: "rank 2: star glyphs match; 7.4% AA" },
+  icon:      { max: AA_FLOOR, why: "rank 6: 6.5% AA at default rem" },
+  sparkline: { max: 0.15, why: "rank 1: 8.9% — responsive width reconciled (2336d3b); residual path AA" },
+  progress:  { max: 0.16, why: "rank 4 OPEN: 9.2% — label width 32 vs 40; label font 0.75 vs 0.9; track color" },
+  badge:     { max: 0.22, why: "rank 5 OPEN: 13.4% — pill h-padding DOM 10px vs SVG 4px; font 0.77 vs 0.8; size ignored in SVG" },
+  bar:       { max: 0.22, why: "rank 9: 14.2% — track-color default + fill-width AA (SVG reads BAR.*; DOM re-hardcodes)" },
+  heatmap:   { max: 0.33, why: "rank 3: 23.8% — value-text font 0.75 vs 0.9 + SVG 2px inset gutter vs DOM fill" },
 };
 
 // One row, many glyph columns. Values chosen so each glyph has visible content.
