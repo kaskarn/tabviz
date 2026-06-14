@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Troubleshooting – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#quick-diagnostic-checklist" id="toc-quick-diagnostic-checklist" class="nav-link active" data-scroll-target="#quick-diagnostic-checklist">Quick Diagnostic Checklist</a></li>
+  <li><a href="#data-issues" id="toc-data-issues" class="nav-link" data-scroll-target="#data-issues">Data Issues</a>
+  <ul class="collapse">
+  <li><a href="#column-not-found-in-data" id="toc-column-not-found-in-data" class="nav-link" data-scroll-target="#column-not-found-in-data">“Column not found in data”</a></li>
+  <li><a href="#unexpected-nas-in-plot" id="toc-unexpected-nas-in-plot" class="nav-link" data-scroll-target="#unexpected-nas-in-plot">Unexpected NAs in Plot</a></li>
+  <li><a href="#groups-not-displaying-correctly" id="toc-groups-not-displaying-correctly" class="nav-link" data-scroll-target="#groups-not-displaying-correctly">Groups Not Displaying Correctly</a></li>
+  <li><a href="#data-rows-mixed-with-headers" id="toc-data-rows-mixed-with-headers" class="nav-link" data-scroll-target="#data-rows-mixed-with-headers">Data Rows Mixed with Headers</a></li>
+  </ul></li>
+  <li><a href="#scale-and-axis-issues" id="toc-scale-and-axis-issues" class="nav-link" data-scroll-target="#scale-and-axis-issues">Scale and Axis Issues</a>
+  <ul class="collapse">
+  <li><a href="#log-scale-with-non-positive-values" id="toc-log-scale-with-non-positive-values" class="nav-link" data-scroll-target="#log-scale-with-non-positive-values">Log Scale with Non-Positive Values</a></li>
+  <li><a href="#axis-range-too-wide" id="toc-axis-range-too-wide" class="nav-link" data-scroll-target="#axis-range-too-wide">Axis Range Too Wide</a></li>
+  <li><a href="#axis-range-too-narrow" id="toc-axis-range-too-narrow" class="nav-link" data-scroll-target="#axis-range-too-narrow">Axis Range Too Narrow</a></li>
+  <li><a href="#tick-marks-not-appearing" id="toc-tick-marks-not-appearing" class="nav-link" data-scroll-target="#tick-marks-not-appearing">Tick Marks Not Appearing</a></li>
+  </ul></li>
+  <li><a href="#export-failures" id="toc-export-failures" class="nav-link" data-scroll-target="#export-failures">Export Failures</a>
+  <ul class="collapse">
+  <li><a href="#v8-not-installed" id="toc-v8-not-installed" class="nav-link" data-scroll-target="#v8-not-installed">V8 Not Installed</a></li>
+  <li><a href="#rsvg-issues" id="toc-rsvg-issues" class="nav-link" data-scroll-target="#rsvg-issues">rsvg Issues</a></li>
+  <li><a href="#svg-generator-javascript-file-not-found" id="toc-svg-generator-javascript-file-not-found" class="nav-link" data-scroll-target="#svg-generator-javascript-file-not-found">“SVG generator JavaScript file not found”</a></li>
+  <li><a href="#colors-differ-between-display-and-export" id="toc-colors-differ-between-display-and-export" class="nav-link" data-scroll-target="#colors-differ-between-display-and-export">Colors Differ Between Display and Export</a></li>
+  </ul></li>
+  <li><a href="#widget-rendering-issues" id="toc-widget-rendering-issues" class="nav-link" data-scroll-target="#widget-rendering-issues">Widget Rendering Issues</a>
+  <ul class="collapse">
+  <li><a href="#blank-output-in-rstudio-viewer" id="toc-blank-output-in-rstudio-viewer" class="nav-link" data-scroll-target="#blank-output-in-rstudio-viewer">Blank Output in RStudio Viewer</a></li>
+  <li><a href="#widget-not-sizing-correctly" id="toc-widget-not-sizing-correctly" class="nav-link" data-scroll-target="#widget-not-sizing-correctly">Widget Not Sizing Correctly</a></li>
+  <li><a href="#shiny-proxy-not-working" id="toc-shiny-proxy-not-working" class="nav-link" data-scroll-target="#shiny-proxy-not-working">Shiny: Proxy Not Working</a></li>
+  </ul></li>
+  <li><a href="#theme-and-styling-issues" id="toc-theme-and-styling-issues" class="nav-link" data-scroll-target="#theme-and-styling-issues">Theme and Styling Issues</a>
+  <ul class="collapse">
+  <li><a href="#styles-not-applying" id="toc-styles-not-applying" class="nav-link" data-scroll-target="#styles-not-applying">Styles Not Applying</a></li>
+  <li><a href="#font-not-loading" id="toc-font-not-loading" class="nav-link" data-scroll-target="#font-not-loading">Font Not Loading</a></li>
+  </ul></li>
+  <li><a href="#debug-patterns" id="toc-debug-patterns" class="nav-link" data-scroll-target="#debug-patterns">Debug Patterns</a>
+  <ul class="collapse">
+  <li><a href="#inspecting-a-webspec" id="toc-inspecting-a-webspec" class="nav-link" data-scroll-target="#inspecting-a-webspec">Inspecting a WebSpec</a></li>
+  <li><a href="#check-export-output" id="toc-check-export-output" class="nav-link" data-scroll-target="#check-export-output">Check Export Output</a></li>
+  <li><a href="#browser-developer-tools" id="toc-browser-developer-tools" class="nav-link" data-scroll-target="#browser-developer-tools">Browser Developer Tools</a></li>
+  <li><a href="#minimal-reproducible-example" id="toc-minimal-reproducible-example" class="nav-link" data-scroll-target="#minimal-reproducible-example">Minimal Reproducible Example</a></li>
+  </ul></li>
+  <li><a href="#pagination" id="toc-pagination" class="nav-link" data-scroll-target="#pagination">Pagination</a>
+  <ul class="collapse">
+  <li><a href="#why-didnt-my-paginate-spec-page-my-png" id="toc-why-didnt-my-paginate-spec-page-my-png" class="nav-link" data-scroll-target="#why-didnt-my-paginate-spec-page-my-png">“Why didn’t my paginate spec page my PNG?”</a></li>
+  <li><a href="#multi-page-pdf-wrote-a-numbered-series-instead-of-one-file" id="toc-multi-page-pdf-wrote-a-numbered-series-instead-of-one-file" class="nav-link" data-scroll-target="#multi-page-pdf-wrote-a-numbered-series-instead-of-one-file">Multi-page PDF wrote a numbered series instead of one file</a></li>
+  <li><a href="#my-splitforest-paginate-didnt-cascade" id="toc-my-splitforest-paginate-didnt-cascade" class="nav-link" data-scroll-target="#my-splitforest-paginate-didnt-cascade">“My SplitForest paginate didn’t cascade”</a></li>
+  </ul></li>
+  <li><a href="#widget-rendering-in-knitr" id="toc-widget-rendering-in-knitr" class="nav-link" data-scroll-target="#widget-rendering-in-knitr">Widget rendering in knitr</a>
+  <ul class="collapse">
+  <li><a href="#my-split_table-widget-rendered-as-a-wall-of-specs-list-of-6-text" id="toc-my-split_table-widget-rendered-as-a-wall-of-specs-list-of-6-text" class="nav-link" data-scroll-target="#my-split_table-widget-rendered-as-a-wall-of-specs-list-of-6-text">“My split_table widget rendered as a wall of <code>@ specs : List of 6</code> text”</a></li>
+  </ul></li>
+  <li><a href="#getting-help" id="toc-getting-help" class="nav-link" data-scroll-target="#getting-help">Getting Help</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Troubleshooting</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This guide covers common issues and their solutions when using tabviz.</p>
+<section id="quick-diagnostic-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="quick-diagnostic-checklist">Quick Diagnostic Checklist</h2>
+<p>When something isn’t working, check:</p>
+<ol type="1">
+<li><strong>Column names</strong> — Are they spelled correctly and exist in the data?</li>
+<li><strong>Data types</strong> — Are numeric columns actually numeric?</li>
+<li><strong>NAs</strong> — Are there unexpected missing values?</li>
+<li><strong>Scale</strong> — Using <code>scale = "log"</code> with non-positive values?</li>
+<li><strong>Dependencies</strong> — Is <code>V8</code> installed (always required) and <code>rsvg</code> (for PNG/PDF)?</li>
+<li><strong>Deprecated arguments</strong> — <code>tabviz(axis_range / axis_ticks / axis_gridlines / zoom / auto_fit / weight)</code> were deprecated in 0.9.0; pass them to <code>viz_forest()</code> (axis_*) or pipe through <code>set_zoom()</code> instead. <code>forest_plot()</code> keeps the axis args native.</li>
+</ol>
+</section>
+<section id="data-issues" class="level2">
+<h2 class="anchored" data-anchor-id="data-issues">Data Issues</h2>
+<section id="column-not-found-in-data" class="level3">
+<h3 class="anchored" data-anchor-id="column-not-found-in-data">“Column not found in data”</h3>
+<p><strong>Symptom:</strong> Error message about missing column.</p>
+<p><strong>Cause:</strong> Column name typo or the column doesn’t exist.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check what columns exist</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(your_data)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Common mistake: using wrong case</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"HR"</span>, ...)  <span class="co"># Wrong: "HR"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, ...)  <span class="co"># Correct: "hr"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="unexpected-nas-in-plot" class="level3">
+<h3 class="anchored" data-anchor-id="unexpected-nas-in-plot">Unexpected NAs in Plot</h3>
+<p><strong>Symptom:</strong> Rows appear without intervals or with missing values.</p>
+<p><strong>Cause:</strong> Columns contain NA values or wrong data types.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for NAs</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(your_data)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check column types - character columns won't work for numeric fields</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(your_data, class)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix character columns that should be numeric</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>your_data<span class="sc">$</span>hr <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(your_data<span class="sc">$</span>hr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="groups-not-displaying-correctly" class="level3">
+<h3 class="anchored" data-anchor-id="groups-not-displaying-correctly">Groups Not Displaying Correctly</h3>
+<p><strong>Symptom:</strong> Hierarchical groups appear flat or have wrong nesting.</p>
+<p><strong>Cause:</strong> Group column contains unexpected values or ID collisions.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check unique group values</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(your_data<span class="sc">$</span>region)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(your_data<span class="sc">$</span>subregion)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure nested groups have consistent parent values</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>your_data <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(region, subregion) <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="data-rows-mixed-with-headers" class="level3">
+<h3 class="anchored" data-anchor-id="data-rows-mixed-with-headers">Data Rows Mixed with Headers</h3>
+<p><strong>Symptom:</strong> Header rows show intervals, or data rows appear as headers.</p>
+<p><strong>Cause:</strong> <code>row_type</code> column has incorrect values.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Valid row_type values</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>valid_types <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check your values</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>your_data <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(row_type)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure header/spacer rows have NA for estimates</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>your_data <span class="ot">&lt;-</span> your_data <span class="sc">|&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">if_else</span>(row_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"spacer"</span>), <span class="cn">NA_real_</span>, hr),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">lower =</span> <span class="fu">if_else</span>(row_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"spacer"</span>), <span class="cn">NA_real_</span>, lower),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">upper =</span> <span class="fu">if_else</span>(row_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"spacer"</span>), <span class="cn">NA_real_</span>, upper)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="scale-and-axis-issues" class="level2">
+<h2 class="anchored" data-anchor-id="scale-and-axis-issues">Scale and Axis Issues</h2>
+<section id="log-scale-with-non-positive-values" class="level3">
+<h3 class="anchored" data-anchor-id="log-scale-with-non-positive-values">Log Scale with Non-Positive Values</h3>
+<p><strong>Symptom:</strong> Error or unexpected axis range when using <code>scale = "log"</code>.</p>
+<p><strong>Cause:</strong> Data contains zero or negative values, which are undefined on log scale.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find problematic rows</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>your_data <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hr <span class="sc">&lt;=</span> <span class="dv">0</span> <span class="sc">|</span> lower <span class="sc">&lt;=</span> <span class="dv">0</span> <span class="sc">|</span> upper <span class="sc">&lt;=</span> <span class="dv">0</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 1: Filter out invalid rows</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>valid_data <span class="ot">&lt;-</span> your_data <span class="sc">|&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hr <span class="sc">&gt;</span> <span class="dv">0</span>, lower <span class="sc">&gt;</span> <span class="dv">0</span>, upper <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 2: Use linear scale instead</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ..., <span class="at">scale =</span> <span class="st">"linear"</span>, <span class="at">null_value =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="axis-range-too-wide" class="level3">
+<h3 class="anchored" data-anchor-id="axis-range-too-wide">Axis Range Too Wide</h3>
+<p><strong>Symptom:</strong> Data points are compressed into a small portion of the axis.</p>
+<p><strong>Cause:</strong> Outliers or automatic axis calculation including extreme values.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check data range</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(your_data<span class="sc">$</span>hr, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(your_data<span class="sc">$</span>lower, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(your_data<span class="sc">$</span>upper, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 1: Override axis range</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_range =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">2.0</span>)  <span class="co"># Focus on relevant range</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 2: Filter outliers</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>filtered <span class="ot">&lt;-</span> your_data <span class="sc">|&gt;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">between</span>(hr, <span class="fl">0.3</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="axis-range-too-narrow" class="level3">
+<h3 class="anchored" data-anchor-id="axis-range-too-narrow">Axis Range Too Narrow</h3>
+<p><strong>Symptom:</strong> Confidence intervals extend beyond axis bounds.</p>
+<p><strong>Cause:</strong> Manual axis range doesn’t accommodate all data.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the actual data extent</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>min_val <span class="ot">&lt;-</span> <span class="fu">min</span>(your_data<span class="sc">$</span>lower, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>max_val <span class="ot">&lt;-</span> <span class="fu">max</span>(your_data<span class="sc">$</span>upper, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">"Data range: "</span>, <span class="fu">round</span>(min_val, <span class="dv">2</span>), <span class="st">" to "</span>, <span class="fu">round</span>(max_val, <span class="dv">2</span>))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust axis_range to include all data</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_range =</span> <span class="fu">c</span>(min_val <span class="sc">*</span> <span class="fl">0.9</span>, max_val <span class="sc">*</span> <span class="fl">1.1</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="tick-marks-not-appearing" class="level3">
+<h3 class="anchored" data-anchor-id="tick-marks-not-appearing">Tick Marks Not Appearing</h3>
+<p><strong>Symptom:</strong> Axis shows but has no tick marks or unexpected tick positions.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify explicit tick positions</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_ticks =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.7</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>)  <span class="co"># Explicit ticks</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Or use theme settings</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_nejm</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"tick_count"</span>), <span class="dv">5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"gridlines"</span>), <span class="cn">TRUE</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>On <code>tabviz()</code> (vs <code>forest_plot()</code>)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>tabviz()</code> no longer takes <code>axis_range</code>, <code>axis_ticks</code>, <code>axis_gridlines</code> (deprecated in 0.9.0). Pass them to <code>viz_forest()</code> on the forest column instead:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">axis_range =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">2.0</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">axis_ticks =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.7</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>forest_plot()</code> keeps these as native top-level arguments and forwards them to the auto-built forest column.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="export-failures" class="level2">
+<h2 class="anchored" data-anchor-id="export-failures">Export Failures</h2>
+<section id="v8-not-installed" class="level3">
+<h3 class="anchored" data-anchor-id="v8-not-installed">V8 Not Installed</h3>
+<p><strong>Symptom:</strong> Error when calling <code>save_plot()</code>: “Package V8 is required”</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install V8</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"V8"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># On some systems, you may need system libraries first:</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># macOS: brew install v8</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Ubuntu: sudo apt-get install libv8-dev</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="rsvg-issues" class="level3">
+<h3 class="anchored" data-anchor-id="rsvg-issues">rsvg Issues</h3>
+<p><strong>Symptom:</strong> PDF/PNG export fails with rsvg errors.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install rsvg</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"rsvg"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># On macOS, you may need:</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># brew install librsvg</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># On Ubuntu:</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># sudo apt-get install librsvg2-dev</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="svg-generator-javascript-file-not-found" class="level3">
+<h3 class="anchored" data-anchor-id="svg-generator-javascript-file-not-found">“SVG generator JavaScript file not found”</h3>
+<p><strong>Symptom:</strong> Export fails with message about missing JS file.</p>
+<p><strong>Cause:</strong> Package installation is incomplete.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reinstall the package</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"kaskarn/tabviz"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">"js/svg-generator.js"</span>, <span class="at">package =</span> <span class="st">"tabviz"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Should return a path, not ""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="colors-differ-between-display-and-export" class="level3">
+<h3 class="anchored" data-anchor-id="colors-differ-between-display-and-export">Colors Differ Between Display and Export</h3>
+<p><strong>Symptom:</strong> Exported SVG/PNG has different colors than the interactive widget.</p>
+<p><strong>Cause:</strong> Theme not applied consistently to both.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same theme for display and export</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>my_theme <span class="ot">&lt;-</span> <span class="fu">web_theme_nejm</span>()</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Interactive</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">theme =</span> my_theme)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Export</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data, ..., <span class="at">theme =</span> my_theme)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"output.svg"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="widget-rendering-issues" class="level2">
+<h2 class="anchored" data-anchor-id="widget-rendering-issues">Widget Rendering Issues</h2>
+<section id="blank-output-in-rstudio-viewer" class="level3">
+<h3 class="anchored" data-anchor-id="blank-output-in-rstudio-viewer">Blank Output in RStudio Viewer</h3>
+<p><strong>Symptom:</strong> Plot doesn’t appear in RStudio’s Viewer pane.</p>
+<p><strong>Cause:</strong> Viewer pane size or rendering issues.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Try in browser instead</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> <span class="fu">forest_plot</span>(your_data, ...)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>htmltools<span class="sc">::</span><span class="fu">browsable</span>(plot)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Or save to file and open</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>htmlwidgets<span class="sc">::</span><span class="fu">saveWidget</span>(plot, <span class="st">"temp.html"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">browseURL</span>(<span class="st">"temp.html"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="widget-not-sizing-correctly" class="level3">
+<h3 class="anchored" data-anchor-id="widget-not-sizing-correctly">Widget Not Sizing Correctly</h3>
+<p><strong>Symptom:</strong> Plot is too small, cut off, or doesn’t fill container.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify explicit dimensions</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">900</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">600</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># For Shiny, use CSS units</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tabvizOutput</span>(<span class="st">"plot"</span>, <span class="at">width =</span> <span class="st">"100%"</span>, <span class="at">height =</span> <span class="st">"600px"</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Constrain max size via set_zoom() (replaces deprecated tabviz(max_width=)/(max_height=))</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(your_data, ...) <span class="sc">|&gt;</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_zoom</span>(<span class="at">max_width =</span> <span class="dv">1000</span>, <span class="at">auto_fit =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="shiny-proxy-not-working" class="level3">
+<h3 class="anchored" data-anchor-id="shiny-proxy-not-working">Shiny: Proxy Not Working</h3>
+<p><strong>Symptom:</strong> <code>tabviz_proxy()</code> calls don’t update the plot.</p>
+<p><strong>Cause:</strong> Proxy created outside reactive context.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Wrong: proxy at top level</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># proxy &lt;- tabviz_proxy("plot")  # This will fail!</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Correct: proxy inside reactive context</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">observeEvent</span>(input<span class="sc">$</span>button, {</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  proxy <span class="ot">&lt;-</span> <span class="fu">tabviz_proxy</span>(<span class="st">"plot"</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sort_rows</span>(proxy, <span class="st">"hr"</span>, <span class="st">"asc"</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="theme-and-styling-issues" class="level2">
+<h2 class="anchored" data-anchor-id="theme-and-styling-issues">Theme and Styling Issues</h2>
+<section id="styles-not-applying" class="level3">
+<h3 class="anchored" data-anchor-id="styles-not-applying">Styles Not Applying</h3>
+<p><strong>Symptom:</strong> Bold, color, or other styles don’t appear.</p>
+<p><strong>Cause:</strong> Passing values directly instead of column names.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Wrong: passing values directly</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">"#ff0000"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Correct: passing column names that contain the values</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="st">"is_bold"</span>, <span class="at">color =</span> <span class="st">"hr_color"</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># The data must have these columns:</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_bold =</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>,</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr_color =</span> <span class="fu">if_else</span>(hr <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#dc2626"</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="font-not-loading" class="level3">
+<h3 class="anchored" data-anchor-id="font-not-loading">Font Not Loading</h3>
+<p><strong>Symptom:</strong> Text appears in wrong font.</p>
+<p><strong>Cause:</strong> Custom font not available on system.</p>
+<p><strong>Solution:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use web-safe fallback fonts</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">web_theme_nejm</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_inputs</span>(<span class="at">fonts_body =</span> <span class="st">"Georgia, 'Times New Roman', serif"</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># For exports, fonts must be installed on the rendering system</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="debug-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="debug-patterns">Debug Patterns</h2>
+<section id="inspecting-a-webspec" class="level3">
+<h3 class="anchored" data-anchor-id="inspecting-a-webspec">Inspecting a WebSpec</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a spec without rendering (use .spec_only = TRUE on tabviz())</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_n</span>(<span class="st">"n"</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">.spec_only =</span> <span class="cn">TRUE</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(spec)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;tabviz::WebSpec&gt;
+ @ data                :'data.frame':   2 obs. of  3 variables:
+ .. $ study: chr  "A" "B"
+ .. $ hr   : num  0.8 1.2
+ .. $ n    : num  100 200
+ @ group_col           : chr NA
+ @ group_cols          : chr(0) 
+ @ columns             :List of 2
+ .. $ : &lt;tabviz::ColumnSpec&gt;
+ ..  ..@ id            : chr "numeric_hr"
+ ..  ..@ header        : chr "HR"
+ ..  ..@ field         : chr "hr"
+ ..  ..@ type          : chr "numeric"
+ ..  ..@ width         : chr "auto"
+ ..  ..@ align         : chr "left"
+ ..  ..@ header_align  : chr NA
+ ..  ..@ show_header   : logi NA
+ ..  ..@ wrap          : logi FALSE
+ ..  ..@ sortable      : logi TRUE
+ ..  ..@ flex          : logi FALSE
+ ..  ..@ options       :List of 1
+ .. .. .. $ numeric:List of 3
+ .. .. ..  ..$ decimals    : int 2
+ .. .. ..  ..$ thousandsSep: logi FALSE
+ .. .. ..  ..$ abbreviate  : logi FALSE
+ ..  ..@ style_bold    : chr NA
+ ..  ..@ style_italic  : chr NA
+ ..  ..@ style_color   : chr NA
+ ..  ..@ style_bg      : chr NA
+ ..  ..@ style_badge   : chr NA
+ ..  ..@ style_icon    : chr NA
+ ..  ..@ style_emphasis: chr NA
+ ..  ..@ style_muted   : chr NA
+ ..  ..@ style_accent  : chr NA
+ ..  ..@ style_tooltip : chr NA
+ ..  ..@ formatter     : NULL
+ .. $ : &lt;tabviz::ColumnSpec&gt;
+ ..  ..@ id            : chr "numeric_n"
+ ..  ..@ header        : chr "N"
+ ..  ..@ field         : chr "n"
+ ..  ..@ type          : chr "numeric"
+ ..  ..@ width         : chr "auto"
+ ..  ..@ align         : chr "left"
+ ..  ..@ header_align  : chr NA
+ ..  ..@ show_header   : logi NA
+ ..  ..@ wrap          : logi FALSE
+ ..  ..@ sortable      : logi TRUE
+ ..  ..@ flex          : logi FALSE
+ ..  ..@ options       :List of 1
+ .. .. .. $ numeric:List of 3
+ .. .. ..  ..$ decimals    : int 0
+ .. .. ..  ..$ thousandsSep: chr ","
+ .. .. ..  ..$ abbreviate  : logi FALSE
+ ..  ..@ style_bold    : chr NA
+ ..  ..@ style_italic  : chr NA
+ ..  ..@ style_color   : chr NA
+ ..  ..@ style_bg      : chr NA
+ ..  ..@ style_badge   : chr NA
+ ..  ..@ style_icon    : chr NA
+ ..  ..@ style_emphasis: chr NA
+ ..  ..@ style_muted   : chr NA
+ ..  ..@ style_accent  : chr NA
+ ..  ..@ style_tooltip : chr NA
+ ..  ..@ formatter     : NULL
+ @ label_column        : &lt;tabviz::ColumnSpec&gt;
+ .. @ id            : chr "label"
+ .. @ header        : chr "Study"
+ .. @ field         : chr "study"
+ .. @ type          : chr "text"
+ .. @ width         : chr "auto"
+ .. @ align         : chr "left"
+ .. @ header_align  : chr NA
+ .. @ show_header   : logi NA
+ .. @ wrap          : logi FALSE
+ .. @ sortable      : logi TRUE
+ .. @ flex          : logi FALSE
+ .. @ options       : Named list()
+ .. @ style_bold    : NULL
+ .. @ style_italic  : NULL
+ .. @ style_color   : NULL
+ .. @ style_bg      : NULL
+ .. @ style_badge   : NULL
+ .. @ style_icon    : NULL
+ .. @ style_emphasis: NULL
+ .. @ style_muted   : NULL
+ .. @ style_accent  : NULL
+ .. @ style_tooltip : NULL
+ .. @ formatter     : NULL
+ @ extra_columns       : list()
+ @ available_exclude   : chr(0) 
+ @ groups              : list()
+ @ summaries           : list()
+ @ notes               : list()
+ @ overall_summary     : &lt;tabviz::GroupSummary&gt;
+ .. @ group_id: chr(0) 
+ .. @ point   : int(0) 
+ .. @ lower   : int(0) 
+ .. @ upper   : int(0) 
+ .. @ metadata: list()
+ @ theme               : &lt;tabviz::WebTheme&gt;
+ .. @ name          : chr "nejm"
+ .. @ web_fonts     :List of 1
+ .. .. $ :List of 2
+ .. ..  ..$ family: chr "Lora"
+ .. ..  ..$ url   : chr "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap"
+ .. @ inputs        : &lt;tabviz::ThemeInputs&gt;
+ .. .. @ anchors_paper_L                    : num 0.987
+ .. .. @ anchors_paper_C                    : num 0.005
+ .. .. @ anchors_paper_H                    : num 25.8
+ .. .. @ anchors_ink_L                      : num 0.18
+ .. .. @ anchors_ink_C                      : num 0.01
+ .. .. @ anchors_ink_H                      : num 25.8
+ .. .. @ anchors_brand_L                    : num 0.529
+ .. .. @ anchors_brand_C                    : num 0.179
+ .. .. @ anchors_brand_H                    : num 25.8
+ .. .. @ anchors_accent_L                   : num 0.424
+ .. .. @ anchors_accent_C                   : num 0.0828
+ .. .. @ anchors_accent_H                   : num 241
+ .. .. @ polarity                           : chr "light"
+ .. .. @ monochrome                         : logi FALSE
+ .. .. @ mode                               : chr "standard"
+ .. .. @ categorical                        : chr "okabe_ito"
+ .. .. @ sequential                         : chr "viridis"
+ .. .. @ diverging                          : chr "rdbu"
+ .. .. @ status_positive_L                  : num NA
+ .. .. @ status_positive_C                  : num NA
+ .. .. @ status_positive_H                  : num NA
+ .. .. @ status_negative_L                  : num NA
+ .. .. @ status_negative_C                  : num NA
+ .. .. @ status_negative_H                  : num NA
+ .. .. @ status_warning_L                   : num NA
+ .. .. @ status_warning_C                   : num NA
+ .. .. @ status_warning_H                   : num NA
+ .. .. @ status_info_L                      : num NA
+ .. .. @ status_info_C                      : num NA
+ .. .. @ status_info_H                      : num NA
+ .. .. @ fonts_body                         : chr "'Lora', Georgia, serif"
+ .. .. @ fonts_display                      : chr "'Lora', Georgia, serif"
+ .. .. @ fonts_mono                         : chr NA
+ .. .. @ fonts_numeric                      : chr NA
+ .. .. @ density                            : chr "comfortable"
+ .. .. @ density_factor                     : num 1
+ .. .. @ shell_mode                         : chr NA
+ .. .. @ shell_texture                      : chr NA
+ .. .. @ slot_style                         : chr NA
+ .. .. @ border_preset                      : chr "frame"
+ .. .. @ banding                            : chr NA
+ .. .. @ banding_start                      : chr NA
+ .. .. @ curves_neutral                     : chr "ease"
+ .. .. @ curves_brand                       : chr "smooth"
+ .. .. @ curves_accent                      : chr NA
+ .. .. @ type_base_size                     : num NA
+ .. .. @ type_scale_ratio                   : num 1.25
+ .. .. @ type_weights_regular               : num NA
+ .. .. @ type_weights_medium                : num NA
+ .. .. @ type_weights_semibold              : num NA
+ .. .. @ type_weights_bold                  : num NA
+ .. .. @ type_roles                         : list()
+ .. .. @ geometry_radius_sm                 : num NA
+ .. .. @ geometry_radius_md                 : num NA
+ .. .. @ geometry_radius_lg                 : num NA
+ .. .. @ geometry_radius_pill               : num NA
+ .. .. @ geometry_border_width_hair         : num NA
+ .. .. @ geometry_border_width_thin         : num NA
+ .. .. @ geometry_border_width_regular      : num NA
+ .. .. @ geometry_border_width_thick        : num NA
+ .. .. @ effects_glow_intensity             : chr NA
+ .. .. @ effects_glow_anchor                : chr NA
+ .. .. @ effects_gradient_shell_intensity   : chr NA
+ .. .. @ effects_gradient_shell_angle       : num NA
+ .. .. @ effects_elevation                  : chr NA
+ .. .. @ effects_caption_style              : chr NA
+ .. .. @ effects_glass                      : chr NA
+ .. .. @ header_style                       : chr NA
+ .. .. @ first_column_style                 : chr NA
+ .. .. @ effects_title_style                : chr NA
+ .. .. @ marks_point_shape                  : chr NA
+ .. .. @ marks_interval_weight              : chr NA
+ .. .. @ row_kinds_data_height_ratio        : num NA
+ .. .. @ row_kinds_group_header_height_ratio: num NA
+ .. .. @ row_kinds_spacer_height_ratio      : num NA
+ .. .. @ row_kinds_summary_height_ratio     : num NA
+ .. .. @ row_kinds_header_height_ratio      : num NA
+ .. .. @ row_kinds_panel_height_ratio       : num NA
+ .. .. @ series_overrides                   : list()
+ .. .. @ column_defaults                    :List of 2
+ .. .. .. $ pvalue:List of 2
+ .. .. ..  ..$ stars           : logi TRUE
+ .. .. ..  ..$ significantStyle: chr "pill"
+ .. .. .. $ badge :List of 1
+ .. .. ..  ..$ outline: logi TRUE
+ .. .. @ interaction_defaults               : list()
+ .. @ role_overrides: list()
+ .. @ pins          : list()
+ .. @ components    : list()
+ .. @ accent        : &lt;tabviz::AccentRoles&gt;
+ .. .. @ default    : chr "#3F759A"
+ .. .. @ muted      : chr "#F2F4F6"
+ .. .. @ tint_subtle: chr "#F2F4F6"
+ .. .. @ tint_medium: chr "#C9D9E5"
+ .. @ status        : &lt;tabviz::StatusColors&gt;
+ .. .. @ positive: chr "#27762F"
+ .. .. @ negative: chr "#B02A2D"
+ .. .. @ warning : chr "#C57C28"
+ .. .. @ info    : chr "#006A9D"
+ .. @ series        :List of 5
+ .. .. $ : &lt;tabviz::SlotRole&gt;
+ .. ..  ..@ fill      : chr "#690009"
+ .. ..  ..@ stroke    : chr "#3E0003"
+ .. ..  ..@ fill_dim  : chr "#CEA5A0"
+ .. ..  ..@ stroke_dim: chr "#AE8682"
+ .. ..  ..@ fill_hot  : chr "#530005"
+ .. ..  ..@ stroke_hot: chr "#170001"
+ .. ..  ..@ text_fg   : chr "#16100F"
+ .. ..  ..@ shape     : chr NA
+ .. .. $ : &lt;tabviz::SlotRole&gt;
+ .. ..  ..@ fill      : chr "#000000"
+ .. ..  ..@ stroke    : chr "#000000"
+ .. ..  ..@ fill_dim  : chr "#8E8C8B"
+ .. ..  ..@ stroke_dim: chr "#706F6E"
+ .. ..  ..@ fill_hot  : chr "#000000"
+ .. ..  ..@ stroke_hot: chr "#000000"
+ .. ..  ..@ text_fg   : chr "#16100F"
+ .. ..  ..@ shape     : chr NA
+ .. .. $ : &lt;tabviz::SlotRole&gt;
+ .. ..  ..@ fill      : chr "#E69F00"
+ .. ..  ..@ stroke    : chr "#BE8300"
+ .. ..  ..@ fill_dim  : chr "#F6DCB5"
+ .. ..  ..@ stroke_dim: chr "#D5BC96"
+ .. ..  ..@ fill_hot  : chr "#D29100"
+ .. ..  ..@ stroke_hot: chr "#986800"
+ .. ..  ..@ text_fg   : chr "#16100F"
+ .. ..  ..@ shape     : chr NA
+ .. .. $ : &lt;tabviz::SlotRole&gt;
+ .. ..  ..@ fill      : chr "#56B4E9"
+ .. ..  ..@ stroke    : chr "#3294C8"
+ .. ..  ..@ fill_dim  : chr "#C3E3F8"
+ .. ..  ..@ stroke_dim: chr "#A3C3D7"
+ .. ..  ..@ fill_hot  : chr "#45A4D8"
+ .. ..  ..@ stroke_hot: chr "#0076A7"
+ .. ..  ..@ text_fg   : chr "#16100F"
+ .. ..  ..@ shape     : chr NA
+ .. .. $ : &lt;tabviz::SlotRole&gt;
+ .. ..  ..@ fill      : chr "#009E73"
+ .. ..  ..@ stroke    : chr "#007C5A"
+ .. ..  ..@ fill_dim  : chr "#B4DBC9"
+ .. ..  ..@ stroke_dim: chr "#95BBA9"
+ .. ..  ..@ fill_hot  : chr "#008D66"
+ .. ..  ..@ stroke_hot: chr "#005C41"
+ .. ..  ..@ text_fg   : chr "#16100F"
+ .. ..  ..@ shape     : chr NA
+ .. @ spacing       : &lt;tabviz::SpacingTokens&gt;
+ .. .. @ row_height          : num 24
+ .. .. @ header_height       : num 32
+ .. .. @ padding             : num 12
+ .. .. @ container_padding   : num 0
+ .. .. @ axis_gap            : num 12
+ .. .. @ column_group_padding: num 8
+ .. .. @ row_group_padding   : num 12
+ .. .. @ cell_padding_x      : num 10
+ .. .. @ footer_gap          : num 8
+ .. .. @ title_subtitle_gap  : num 13
+ .. .. @ header_gap          : num 12
+ .. .. @ bottom_margin       : num 16
+ .. .. @ indent_per_level    : num 16
+ .. @ header        : &lt;tabviz::HeaderCluster&gt;
+ .. .. @ light: &lt;tabviz::HeaderVariant&gt;
+ .. .. .. @ bg  : chr "#FEFAF9"
+ .. .. .. @ fg  : chr "#16100F"
+ .. .. .. @ rule: chr "#6B6565"
+ .. .. @ tint : &lt;tabviz::HeaderVariant&gt;
+ .. .. .. @ bg  : chr "#F9F3F2"
+ .. .. .. @ fg  : chr "#16100F"
+ .. .. .. @ rule: chr "#6B6565"
+ .. .. @ bold : &lt;tabviz::HeaderVariant&gt;
+ .. .. .. @ bg  : chr "#690009"
+ .. .. .. @ fg  : chr "#FEFAF9"
+ .. .. .. @ rule: chr "#C79994"
+ .. .. @ text : &lt;tabviz::TextRole&gt;
+ .. .. .. @ family : chr "'Lora', Georgia, serif"
+ .. .. .. @ size   : chr "0.875rem"
+ .. .. .. @ weight : num 400
+ .. .. .. @ figures: chr "tabular"
+ .. .. .. @ fg     : chr "#16100F"
+ .. .. .. @ italic : logi FALSE
+ .. @ row_group     : &lt;tabviz::RowGroupCluster&gt;
+ .. .. @ L1              : &lt;tabviz::RowGroupTier&gt;
+ .. .. .. @ bg           : chr "#F9F3F2"
+ .. .. .. @ fg           : chr "#16100F"
+ .. .. .. @ rule         : chr "#6B6565"
+ .. .. .. @ text         : &lt;tabviz::TextRole&gt;
+ .. .. .. .. @ family : chr "'Lora', Georgia, serif"
+ .. .. .. .. @ size   : chr "0.875rem"
+ .. .. .. .. @ weight : num 600
+ .. .. .. .. @ figures: chr "tabular"
+ .. .. .. .. @ fg     : chr "#16100F"
+ .. .. .. .. @ italic : logi FALSE
+ .. .. .. @ border_bottom: logi FALSE
+ .. .. @ L2              : &lt;tabviz::RowGroupTier&gt;
+ .. .. .. @ bg           : chr "#FAF5F4"
+ .. .. .. @ fg           : chr "#191312"
+ .. .. .. @ rule         : chr "#958F8E"
+ .. .. .. @ text         : &lt;tabviz::TextRole&gt;
+ .. .. .. .. @ family : chr "'Lora', Georgia, serif"
+ .. .. .. .. @ size   : chr "0.875rem"
+ .. .. .. .. @ weight : num 500
+ .. .. .. .. @ figures: chr "tabular"
+ .. .. .. .. @ fg     : chr "#16100F"
+ .. .. .. .. @ italic : logi FALSE
+ .. .. .. @ border_bottom: logi FALSE
+ .. .. @ L3              : &lt;tabviz::RowGroupTier&gt;
+ .. .. .. @ bg           : chr NA
+ .. .. .. @ fg           : chr "#221C1B"
+ .. .. .. @ rule         : chr NA
+ .. .. .. @ text         : &lt;tabviz::TextRole&gt;
+ .. .. .. .. @ family : chr "'Lora', Georgia, serif"
+ .. .. .. .. @ size   : chr "0.875rem"
+ .. .. .. .. @ weight : num 400
+ .. .. .. .. @ figures: chr "tabular"
+ .. .. .. .. @ fg     : chr "#16100F"
+ .. .. .. .. @ italic : logi FALSE
+ .. .. .. @ border_bottom: logi FALSE
+ .. .. @ indent_per_level: num 16
+ .. @ row           : &lt;tabviz::RowCluster&gt;
+ .. .. @ base               : &lt;tabviz::RowState&gt;
+ .. .. .. @ bg: chr "#FEFAF9"
+ .. .. .. @ fg: chr "#16100F"
+ .. .. @ alt                : &lt;tabviz::RowState&gt;
+ .. .. .. @ bg: chr "#FAF5F4"
+ .. .. .. @ fg: chr "#16100F"
+ .. .. @ hover              : &lt;tabviz::RowState&gt;
+ .. .. .. @ bg: chr "#F2F4F6"
+ .. .. .. @ fg: chr "#16100F"
+ .. .. @ selected           : &lt;tabviz::RowState&gt;
+ .. .. .. @ bg: chr "#F2F4F6"
+ .. .. .. @ fg: chr "#16100F"
+ .. .. @ emphasis           : &lt;tabviz::RowSemantic&gt;
+ .. .. .. @ bg           : chr NA
+ .. .. .. @ fg           : chr "#16100F"
+ .. .. .. @ border       : chr NA
+ .. .. .. @ marker_fill  : chr "#16100F"
+ .. .. .. @ marker_stroke: chr "#16100F"
+ .. .. .. @ font_weight  : num 600
+ .. .. .. @ font_style   : chr NA
+ .. .. @ muted              : &lt;tabviz::RowSemantic&gt;
+ .. .. .. @ bg           : chr NA
+ .. .. .. @ fg           : chr "#191312"
+ .. .. .. @ border       : chr NA
+ .. .. .. @ marker_fill  : chr "#191312"
+ .. .. .. @ marker_stroke: chr "#050202"
+ .. .. .. @ font_weight  : num NA
+ .. .. .. @ font_style   : chr NA
+ .. .. @ accent             : &lt;tabviz::RowSemantic&gt;
+ .. .. .. @ bg           : chr NA
+ .. .. .. @ fg           : chr "#3F759A"
+ .. .. .. @ border       : chr NA
+ .. .. .. @ marker_fill  : chr "#3F759A"
+ .. .. .. @ marker_stroke: chr "#3F759A"
+ .. .. .. @ font_weight  : num 600
+ .. .. .. @ font_style   : chr NA
+ .. .. @ bold               : &lt;tabviz::RowSemantic&gt;
+ .. .. .. @ bg           : chr NA
+ .. .. .. @ fg           : chr NA
+ .. .. .. @ border       : chr NA
+ .. .. .. @ marker_fill  : chr NA
+ .. .. .. @ marker_stroke: chr NA
+ .. .. .. @ font_weight  : num 600
+ .. .. .. @ font_style   : chr NA
+ .. .. @ fill               : &lt;tabviz::RowSemantic&gt;
+ .. .. .. @ bg           : chr "#F2F4F6"
+ .. .. .. @ fg           : chr NA
+ .. .. .. @ border       : chr NA
+ .. .. .. @ marker_fill  : chr NA
+ .. .. .. @ marker_stroke: chr NA
+ .. .. .. @ font_weight  : num 600
+ .. .. .. @ font_style   : chr NA
+ .. .. @ banding            : chr "group"
+ .. .. @ selected_edge_width: num 2
+ .. .. @ border_width       : num 1
+ .. @ plot          : &lt;tabviz::PlotScaffold&gt;
+ .. .. @ bg              : chr NA
+ .. .. @ axis_line       : chr "#6B6565"
+ .. .. @ tick_mark       : chr "#6B6565"
+ .. .. @ gridline        : chr "#958F8E"
+ .. .. @ reference       : chr "#6B6565"
+ .. .. @ axis_label      : &lt;tabviz::TextRole&gt;
+ .. .. .. @ family : chr "'Lora', Georgia, serif"
+ .. .. .. @ size   : chr "0.8125rem"
+ .. .. .. @ weight : num 400
+ .. .. .. @ figures: chr "tabular"
+ .. .. .. @ fg     : chr "#191312"
+ .. .. .. @ italic : logi FALSE
+ .. .. @ tick_label      : &lt;tabviz::TextRole&gt;
+ .. .. .. @ family : chr "'Lora', Georgia, serif"
+ .. .. .. @ size   : chr "0.75rem"
+ .. .. .. @ weight : num 400
+ .. .. .. @ figures: chr "tabular"
+ .. .. .. @ fg     : chr "#221C1B"
+ .. .. .. @ italic : logi FALSE
+ .. .. @ tick_mark_length: num 4
+ .. .. @ line_width      : num 1.5
+ .. .. @ point_size      : num 6
+ .. @ axis          : &lt;tabviz::AxisConfig&gt;
+ .. .. @ range_min     : num NA
+ .. .. @ range_max     : num NA
+ .. .. @ tick_count    : num NA
+ .. .. @ tick_values   : NULL
+ .. .. @ gridlines     : logi FALSE
+ .. .. @ gridline_style: chr "dotted"
+ .. .. @ ci_clip_factor: num 2
+ .. .. @ include_null  : logi TRUE
+ .. .. @ symmetric     : NULL
+ .. .. @ null_tick     : logi TRUE
+ .. .. @ marker_margin : logi TRUE
+ .. @ layout        : &lt;tabviz::Layout&gt;
+ .. .. @ plot_width             : chr "auto"
+ .. .. @ container_border       : logi FALSE
+ .. .. @ container_border_radius: num 8
+ @ interaction         : &lt;tabviz::InteractionSpec&gt;
+ .. @ show_filters          : logi NA
+ .. @ show_legend           : logi NA
+ .. @ enable_sort           : logi NA
+ .. @ enable_collapse       : logi NA
+ .. @ enable_select         : logi NA
+ .. @ enable_hover          : logi NA
+ .. @ enable_resize         : logi NA
+ .. @ enable_export         : logi NA
+ .. @ enable_theme_edit     : logi NA
+ .. @ enable_filters        : logi NA
+ .. @ enable_reorder_rows   : logi NA
+ .. @ enable_reorder_columns: logi NA
+ .. @ enable_edit           : logi NA
+ .. @ enable_axis_zoom      : logi NA
+ .. @ enable_arrange        : logi NA
+ .. @ show_group_counts     : logi NA
+ .. @ tooltip_fields        : NULL
+ .. @ enable_themes         : chr "default"
+ @ initial_state       : NULL
+ @ labels              : NULL
+ @ watermark           : chr NA
+ @ watermark_color     : chr NA
+ @ watermark_opacity   : num NA
+ @ row_bold_col        : chr NA
+ @ row_italic_col      : chr NA
+ @ row_color_col       : chr NA
+ @ row_bg_col          : chr NA
+ @ row_badge_col       : chr NA
+ @ row_icon_col        : chr NA
+ @ row_indent_col      : chr NA
+ @ row_type_col        : chr NA
+ @ row_emphasis_col    : chr NA
+ @ row_muted_col       : chr NA
+ @ row_accent_col      : chr NA
+ @ row_fill_col        : chr NA
+ @ details_col         : chr NA
+ @ marker_color_col    : chr NA
+ @ marker_shape_col    : chr NA
+ @ marker_opacity_col  : chr NA
+ @ marker_size_col     : chr NA
+ @ weight_col          : chr NA
+ @ original_call       : chr "tabviz(data = data.frame(study = c(\"A\", \"B\"), hr = c(0.8, 1.2), n = c(100, 200)), label = \"study\", column"| __truncated__
+ @ paginate            : NULL
+ @ target_aspect       : num NA
+ @ target_aspect_anchor: chr "width"
+ @ conditions          : list()
+ @ figure_layout       : NULL</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Access components (S7 — use @)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  study  hr   n
+1     A 0.8 100
+2     B 1.2 200</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>columns</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+&lt;tabviz::ColumnSpec&gt;
+ @ id            : chr "numeric_hr"
+ @ header        : chr "HR"
+ @ field         : chr "hr"
+ @ type          : chr "numeric"
+ @ width         : chr "auto"
+ @ align         : chr "left"
+ @ header_align  : chr NA
+ @ show_header   : logi NA
+ @ wrap          : logi FALSE
+ @ sortable      : logi TRUE
+ @ flex          : logi FALSE
+ @ options       :List of 1
+ .. $ numeric:List of 3
+ ..  ..$ decimals    : int 2
+ ..  ..$ thousandsSep: logi FALSE
+ ..  ..$ abbreviate  : logi FALSE
+ @ style_bold    : chr NA
+ @ style_italic  : chr NA
+ @ style_color   : chr NA
+ @ style_bg      : chr NA
+ @ style_badge   : chr NA
+ @ style_icon    : chr NA
+ @ style_emphasis: chr NA
+ @ style_muted   : chr NA
+ @ style_accent  : chr NA
+ @ style_tooltip : chr NA
+ @ formatter     : NULL
+
+[[2]]
+&lt;tabviz::ColumnSpec&gt;
+ @ id            : chr "numeric_n"
+ @ header        : chr "N"
+ @ field         : chr "n"
+ @ type          : chr "numeric"
+ @ width         : chr "auto"
+ @ align         : chr "left"
+ @ header_align  : chr NA
+ @ show_header   : logi NA
+ @ wrap          : logi FALSE
+ @ sortable      : logi TRUE
+ @ flex          : logi FALSE
+ @ options       :List of 1
+ .. $ numeric:List of 3
+ ..  ..$ decimals    : int 0
+ ..  ..$ thousandsSep: chr ","
+ ..  ..$ abbreviate  : logi FALSE
+ @ style_bold    : chr NA
+ @ style_italic  : chr NA
+ @ style_color   : chr NA
+ @ style_bg      : chr NA
+ @ style_badge   : chr NA
+ @ style_icon    : chr NA
+ @ style_emphasis: chr NA
+ @ style_muted   : chr NA
+ @ style_accent  : chr NA
+ @ style_tooltip : chr NA
+ @ formatter     : NULL</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>theme<span class="sc">@</span>name</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "nejm"</code></pre>
+</div>
+</div>
+</section>
+<section id="check-export-output" class="level3">
+<h3 class="anchored" data-anchor-id="check-export-output">Check Export Output</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate SVG and check structure</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"debug.svg"</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Read and inspect the SVG</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>svg_content <span class="ot">&lt;-</span> <span class="fu">readLines</span>(<span class="st">"debug.svg"</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(svg_content, <span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="browser-developer-tools" class="level3">
+<h3 class="anchored" data-anchor-id="browser-developer-tools">Browser Developer Tools</h3>
+<p>For debugging interactive widgets:</p>
+<ol type="1">
+<li>Right-click the widget → “Inspect”</li>
+<li>Check Console tab for JavaScript errors</li>
+<li>Check Elements tab for DOM structure</li>
+<li>Check Network tab for failed resources</li>
+</ol>
+</section>
+<section id="minimal-reproducible-example" class="level3">
+<h3 class="anchored" data-anchor-id="minimal-reproducible-example">Minimal Reproducible Example</h3>
+<p>When reporting issues, create a minimal example:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal data that reproduces the problem</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>),</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.9</span>),</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.6</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal code</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(test_data,</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Include session info</span></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="pagination" class="level2">
+<h2 class="anchored" data-anchor-id="pagination">Pagination</h2>
+<section id="why-didnt-my-paginate-spec-page-my-png" class="level3">
+<h3 class="anchored" data-anchor-id="why-didnt-my-paginate-spec-page-my-png">“Why didn’t my paginate spec page my PNG?”</h3>
+<p><code>save_plot(&lt;paginated spec&gt;, "out.png")</code> warns and flattens by default — single-image formats can’t represent multiple pages. To silence the warning when you want a flattened image:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"out.png"</span>, <span class="at">paginate =</span> <span class="cn">NULL</span>)  <span class="co"># explicit "flatten this render"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Or save to PDF for true multi-page output:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"out.pdf"</span>)  <span class="co"># multi-page PDF via qpdf::pdf_combine</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="multi-page-pdf-wrote-a-numbered-series-instead-of-one-file" class="level3">
+<h3 class="anchored" data-anchor-id="multi-page-pdf-wrote-a-numbered-series-instead-of-one-file">Multi-page PDF wrote a numbered series instead of one file</h3>
+<p><code>save_plot(*.pdf, paginate = ...)</code> merges per-page PDFs via <code>qpdf::pdf_combine()</code>. When the <code>qpdf</code> package isn’t installed, it falls back to writing <code>out_p01.pdf</code>, <code>out_p02.pdf</code>, … and emits a warning. Install <code>qpdf</code> to merge into one file:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"qpdf"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>qpdf</code> is in <code>Suggests</code> (lightweight C++ binding, ~3 MB).</p>
+</section>
+<section id="my-splitforest-paginate-didnt-cascade" class="level3">
+<h3 class="anchored" data-anchor-id="my-splitforest-paginate-didnt-cascade">“My SplitForest paginate didn’t cascade”</h3>
+<p>Pagination cascades into every subview when set on the underlying <code>tabviz()</code> call. If you constructed the spec without <code>paginate</code>, then piped through <code>split_table()</code>, the subviews carry no pagination. Either set <code>paginate</code> on the original <code>tabviz()</code> call (recommended), or pipe <code>paginate()</code> after split:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>sf <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(data, ..., <span class="at">paginate =</span> <span class="fu">paginate_letter</span>(),</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">split_by =</span> <span class="st">"region"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="widget-rendering-in-knitr" class="level2">
+<h2 class="anchored" data-anchor-id="widget-rendering-in-knitr">Widget rendering in knitr</h2>
+<section id="my-split_table-widget-rendered-as-a-wall-of-specs-list-of-6-text" class="level3">
+<h3 class="anchored" data-anchor-id="my-split_table-widget-rendered-as-a-wall-of-specs-list-of-6-text">“My split_table widget rendered as a wall of <code>@ specs : List of 6</code> text”</h3>
+<p>Fixed in this audit cycle. <code>SplitForest</code> (the object returned by <code>split_table()</code> and by <code>tabviz(..., .spec_only = TRUE) |&gt; split_table(...)</code>) now carries a registered <code>knit_print</code> method, so a chunk whose last value is one renders as the live interactive widget. Same for <code>WebSpec</code> from <code>tabviz(..., .spec_only = TRUE)</code>.</p>
+<p>If you still see the structure dump in your own project, you’re likely on an old install. Reinstall:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"kaskarn/tabviz"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="getting-help" class="level2">
+<h2 class="anchored" data-anchor-id="getting-help">Getting Help</h2>
+<p>If you’ve tried the above and still have issues:</p>
+<ol type="1">
+<li>Check <a href="https://github.com/kaskarn/tabviz/issues">GitHub Issues</a> for similar problems</li>
+<li>Create a minimal reproducible example</li>
+<li>Include <code>sessionInfo()</code> output</li>
+<li>Open a new issue with your example and session info</li>
+</ol>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Troubleshooting"</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>This guide covers common issues and their solutions when using tabviz.</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Quick Diagnostic Checklist</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>When something isn't working, check:</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Column names** — Are they spelled correctly and exist in the data?</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Data types** — Are numeric columns actually numeric?</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**NAs** — Are there unexpected missing values?</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Scale** — Using <span class="in">`scale = "log"`</span> with non-positive values?</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Dependencies** — Is <span class="in">`V8`</span> installed (always required) and <span class="in">`rsvg`</span> (for PNG/PDF)?</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**Deprecated arguments** — <span class="in">`tabviz(axis_range / axis_ticks / axis_gridlines / zoom / auto_fit / weight)`</span> were deprecated in 0.9.0; pass them to <span class="in">`viz_forest()`</span> (axis_*) or pipe through <span class="in">`set_zoom()`</span> instead. <span class="in">`forest_plot()`</span> keeps the axis args native.</span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Issues</span></span>
+<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a><span class="fu">### "Column not found in data"</span></span>
+<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a>**Symptom:** Error message about missing column.</span>
+<span id="cb34-31"><a href="#cb34-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-32"><a href="#cb34-32" aria-hidden="true" tabindex="-1"></a>**Cause:** Column name typo or the column doesn't exist.</span>
+<span id="cb34-33"><a href="#cb34-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-34"><a href="#cb34-34" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-37"><a href="#cb34-37" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-38"><a href="#cb34-38" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-39"><a href="#cb34-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Check what columns exist</span></span>
+<span id="cb34-40"><a href="#cb34-40" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(your_data)</span>
+<span id="cb34-41"><a href="#cb34-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-42"><a href="#cb34-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Common mistake: using wrong case</span></span>
+<span id="cb34-43"><a href="#cb34-43" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"HR"</span>, ...)  <span class="co"># Wrong: "HR"</span></span>
+<span id="cb34-44"><a href="#cb34-44" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, ...)  <span class="co"># Correct: "hr"</span></span>
+<span id="cb34-45"><a href="#cb34-45" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-46"><a href="#cb34-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-47"><a href="#cb34-47" aria-hidden="true" tabindex="-1"></a><span class="fu">### Unexpected NAs in Plot</span></span>
+<span id="cb34-48"><a href="#cb34-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-49"><a href="#cb34-49" aria-hidden="true" tabindex="-1"></a>**Symptom:** Rows appear without intervals or with missing values.</span>
+<span id="cb34-50"><a href="#cb34-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-51"><a href="#cb34-51" aria-hidden="true" tabindex="-1"></a>**Cause:** Columns contain NA values or wrong data types.</span>
+<span id="cb34-52"><a href="#cb34-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-53"><a href="#cb34-53" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-56"><a href="#cb34-56" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-57"><a href="#cb34-57" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-58"><a href="#cb34-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for NAs</span></span>
+<span id="cb34-59"><a href="#cb34-59" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(your_data)</span>
+<span id="cb34-60"><a href="#cb34-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-61"><a href="#cb34-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Check column types - character columns won't work for numeric fields</span></span>
+<span id="cb34-62"><a href="#cb34-62" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(your_data, class)</span>
+<span id="cb34-63"><a href="#cb34-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-64"><a href="#cb34-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix character columns that should be numeric</span></span>
+<span id="cb34-65"><a href="#cb34-65" aria-hidden="true" tabindex="-1"></a>your_data<span class="sc">$</span>hr <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(your_data<span class="sc">$</span>hr)</span>
+<span id="cb34-66"><a href="#cb34-66" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-67"><a href="#cb34-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-68"><a href="#cb34-68" aria-hidden="true" tabindex="-1"></a><span class="fu">### Groups Not Displaying Correctly</span></span>
+<span id="cb34-69"><a href="#cb34-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-70"><a href="#cb34-70" aria-hidden="true" tabindex="-1"></a>**Symptom:** Hierarchical groups appear flat or have wrong nesting.</span>
+<span id="cb34-71"><a href="#cb34-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-72"><a href="#cb34-72" aria-hidden="true" tabindex="-1"></a>**Cause:** Group column contains unexpected values or ID collisions.</span>
+<span id="cb34-73"><a href="#cb34-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-74"><a href="#cb34-74" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-77"><a href="#cb34-77" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-78"><a href="#cb34-78" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-79"><a href="#cb34-79" aria-hidden="true" tabindex="-1"></a><span class="co"># Check unique group values</span></span>
+<span id="cb34-80"><a href="#cb34-80" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(your_data<span class="sc">$</span>region)</span>
+<span id="cb34-81"><a href="#cb34-81" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(your_data<span class="sc">$</span>subregion)</span>
+<span id="cb34-82"><a href="#cb34-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-83"><a href="#cb34-83" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure nested groups have consistent parent values</span></span>
+<span id="cb34-84"><a href="#cb34-84" aria-hidden="true" tabindex="-1"></a>your_data <span class="sc">|&gt;</span></span>
+<span id="cb34-85"><a href="#cb34-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(region, subregion) <span class="sc">|&gt;</span></span>
+<span id="cb34-86"><a href="#cb34-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span>
+<span id="cb34-87"><a href="#cb34-87" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-88"><a href="#cb34-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-89"><a href="#cb34-89" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Rows Mixed with Headers</span></span>
+<span id="cb34-90"><a href="#cb34-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-91"><a href="#cb34-91" aria-hidden="true" tabindex="-1"></a>**Symptom:** Header rows show intervals, or data rows appear as headers.</span>
+<span id="cb34-92"><a href="#cb34-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-93"><a href="#cb34-93" aria-hidden="true" tabindex="-1"></a>**Cause:** <span class="in">`row_type`</span> column has incorrect values.</span>
+<span id="cb34-94"><a href="#cb34-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-95"><a href="#cb34-95" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-98"><a href="#cb34-98" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-99"><a href="#cb34-99" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-100"><a href="#cb34-100" aria-hidden="true" tabindex="-1"></a><span class="co"># Valid row_type values</span></span>
+<span id="cb34-101"><a href="#cb34-101" aria-hidden="true" tabindex="-1"></a>valid_types <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>)</span>
+<span id="cb34-102"><a href="#cb34-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-103"><a href="#cb34-103" aria-hidden="true" tabindex="-1"></a><span class="co"># Check your values</span></span>
+<span id="cb34-104"><a href="#cb34-104" aria-hidden="true" tabindex="-1"></a>your_data <span class="sc">|&gt;</span></span>
+<span id="cb34-105"><a href="#cb34-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(row_type)</span>
+<span id="cb34-106"><a href="#cb34-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-107"><a href="#cb34-107" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure header/spacer rows have NA for estimates</span></span>
+<span id="cb34-108"><a href="#cb34-108" aria-hidden="true" tabindex="-1"></a>your_data <span class="ot">&lt;-</span> your_data <span class="sc">|&gt;</span></span>
+<span id="cb34-109"><a href="#cb34-109" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb34-110"><a href="#cb34-110" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">if_else</span>(row_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"spacer"</span>), <span class="cn">NA_real_</span>, hr),</span>
+<span id="cb34-111"><a href="#cb34-111" aria-hidden="true" tabindex="-1"></a>    <span class="at">lower =</span> <span class="fu">if_else</span>(row_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"spacer"</span>), <span class="cn">NA_real_</span>, lower),</span>
+<span id="cb34-112"><a href="#cb34-112" aria-hidden="true" tabindex="-1"></a>    <span class="at">upper =</span> <span class="fu">if_else</span>(row_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"spacer"</span>), <span class="cn">NA_real_</span>, upper)</span>
+<span id="cb34-113"><a href="#cb34-113" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-114"><a href="#cb34-114" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-115"><a href="#cb34-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-116"><a href="#cb34-116" aria-hidden="true" tabindex="-1"></a><span class="fu">## Scale and Axis Issues</span></span>
+<span id="cb34-117"><a href="#cb34-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-118"><a href="#cb34-118" aria-hidden="true" tabindex="-1"></a><span class="fu">### Log Scale with Non-Positive Values</span></span>
+<span id="cb34-119"><a href="#cb34-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-120"><a href="#cb34-120" aria-hidden="true" tabindex="-1"></a>**Symptom:** Error or unexpected axis range when using <span class="in">`scale = "log"`</span>.</span>
+<span id="cb34-121"><a href="#cb34-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-122"><a href="#cb34-122" aria-hidden="true" tabindex="-1"></a>**Cause:** Data contains zero or negative values, which are undefined on log scale.</span>
+<span id="cb34-123"><a href="#cb34-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-124"><a href="#cb34-124" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-127"><a href="#cb34-127" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-128"><a href="#cb34-128" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-129"><a href="#cb34-129" aria-hidden="true" tabindex="-1"></a><span class="co"># Find problematic rows</span></span>
+<span id="cb34-130"><a href="#cb34-130" aria-hidden="true" tabindex="-1"></a>your_data <span class="sc">|&gt;</span></span>
+<span id="cb34-131"><a href="#cb34-131" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hr <span class="sc">&lt;=</span> <span class="dv">0</span> <span class="sc">|</span> lower <span class="sc">&lt;=</span> <span class="dv">0</span> <span class="sc">|</span> upper <span class="sc">&lt;=</span> <span class="dv">0</span>)</span>
+<span id="cb34-132"><a href="#cb34-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-133"><a href="#cb34-133" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 1: Filter out invalid rows</span></span>
+<span id="cb34-134"><a href="#cb34-134" aria-hidden="true" tabindex="-1"></a>valid_data <span class="ot">&lt;-</span> your_data <span class="sc">|&gt;</span></span>
+<span id="cb34-135"><a href="#cb34-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hr <span class="sc">&gt;</span> <span class="dv">0</span>, lower <span class="sc">&gt;</span> <span class="dv">0</span>, upper <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb34-136"><a href="#cb34-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-137"><a href="#cb34-137" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 2: Use linear scale instead</span></span>
+<span id="cb34-138"><a href="#cb34-138" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ..., <span class="at">scale =</span> <span class="st">"linear"</span>, <span class="at">null_value =</span> <span class="dv">0</span>)</span>
+<span id="cb34-139"><a href="#cb34-139" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-140"><a href="#cb34-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-141"><a href="#cb34-141" aria-hidden="true" tabindex="-1"></a><span class="fu">### Axis Range Too Wide</span></span>
+<span id="cb34-142"><a href="#cb34-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-143"><a href="#cb34-143" aria-hidden="true" tabindex="-1"></a>**Symptom:** Data points are compressed into a small portion of the axis.</span>
+<span id="cb34-144"><a href="#cb34-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-145"><a href="#cb34-145" aria-hidden="true" tabindex="-1"></a>**Cause:** Outliers or automatic axis calculation including extreme values.</span>
+<span id="cb34-146"><a href="#cb34-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-147"><a href="#cb34-147" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-150"><a href="#cb34-150" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-151"><a href="#cb34-151" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-152"><a href="#cb34-152" aria-hidden="true" tabindex="-1"></a><span class="co"># Check data range</span></span>
+<span id="cb34-153"><a href="#cb34-153" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(your_data<span class="sc">$</span>hr, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-154"><a href="#cb34-154" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(your_data<span class="sc">$</span>lower, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-155"><a href="#cb34-155" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(your_data<span class="sc">$</span>upper, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-156"><a href="#cb34-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-157"><a href="#cb34-157" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 1: Override axis range</span></span>
+<span id="cb34-158"><a href="#cb34-158" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb34-159"><a href="#cb34-159" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_range =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">2.0</span>)  <span class="co"># Focus on relevant range</span></span>
+<span id="cb34-160"><a href="#cb34-160" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-161"><a href="#cb34-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-162"><a href="#cb34-162" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 2: Filter outliers</span></span>
+<span id="cb34-163"><a href="#cb34-163" aria-hidden="true" tabindex="-1"></a>filtered <span class="ot">&lt;-</span> your_data <span class="sc">|&gt;</span></span>
+<span id="cb34-164"><a href="#cb34-164" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">between</span>(hr, <span class="fl">0.3</span>, <span class="dv">3</span>))</span>
+<span id="cb34-165"><a href="#cb34-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-166"><a href="#cb34-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-167"><a href="#cb34-167" aria-hidden="true" tabindex="-1"></a><span class="fu">### Axis Range Too Narrow</span></span>
+<span id="cb34-168"><a href="#cb34-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-169"><a href="#cb34-169" aria-hidden="true" tabindex="-1"></a>**Symptom:** Confidence intervals extend beyond axis bounds.</span>
+<span id="cb34-170"><a href="#cb34-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-171"><a href="#cb34-171" aria-hidden="true" tabindex="-1"></a>**Cause:** Manual axis range doesn't accommodate all data.</span>
+<span id="cb34-172"><a href="#cb34-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-173"><a href="#cb34-173" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-176"><a href="#cb34-176" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-177"><a href="#cb34-177" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-178"><a href="#cb34-178" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the actual data extent</span></span>
+<span id="cb34-179"><a href="#cb34-179" aria-hidden="true" tabindex="-1"></a>min_val <span class="ot">&lt;-</span> <span class="fu">min</span>(your_data<span class="sc">$</span>lower, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-180"><a href="#cb34-180" aria-hidden="true" tabindex="-1"></a>max_val <span class="ot">&lt;-</span> <span class="fu">max</span>(your_data<span class="sc">$</span>upper, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-181"><a href="#cb34-181" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">"Data range: "</span>, <span class="fu">round</span>(min_val, <span class="dv">2</span>), <span class="st">" to "</span>, <span class="fu">round</span>(max_val, <span class="dv">2</span>))</span>
+<span id="cb34-182"><a href="#cb34-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-183"><a href="#cb34-183" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust axis_range to include all data</span></span>
+<span id="cb34-184"><a href="#cb34-184" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb34-185"><a href="#cb34-185" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_range =</span> <span class="fu">c</span>(min_val <span class="sc">*</span> <span class="fl">0.9</span>, max_val <span class="sc">*</span> <span class="fl">1.1</span>)</span>
+<span id="cb34-186"><a href="#cb34-186" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-187"><a href="#cb34-187" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-188"><a href="#cb34-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-189"><a href="#cb34-189" aria-hidden="true" tabindex="-1"></a><span class="fu">### Tick Marks Not Appearing</span></span>
+<span id="cb34-190"><a href="#cb34-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-191"><a href="#cb34-191" aria-hidden="true" tabindex="-1"></a>**Symptom:** Axis shows but has no tick marks or unexpected tick positions.</span>
+<span id="cb34-192"><a href="#cb34-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-193"><a href="#cb34-193" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-196"><a href="#cb34-196" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-197"><a href="#cb34-197" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-198"><a href="#cb34-198" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify explicit tick positions</span></span>
+<span id="cb34-199"><a href="#cb34-199" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb34-200"><a href="#cb34-200" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>,</span>
+<span id="cb34-201"><a href="#cb34-201" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_ticks =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.7</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>)  <span class="co"># Explicit ticks</span></span>
+<span id="cb34-202"><a href="#cb34-202" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-203"><a href="#cb34-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-204"><a href="#cb34-204" aria-hidden="true" tabindex="-1"></a><span class="co"># Or use theme settings</span></span>
+<span id="cb34-205"><a href="#cb34-205" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb34-206"><a href="#cb34-206" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_nejm</span>() <span class="sc">|&gt;</span></span>
+<span id="cb34-207"><a href="#cb34-207" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"tick_count"</span>), <span class="dv">5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb34-208"><a href="#cb34-208" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"gridlines"</span>), <span class="cn">TRUE</span>)</span>
+<span id="cb34-209"><a href="#cb34-209" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-210"><a href="#cb34-210" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-211"><a href="#cb34-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-212"><a href="#cb34-212" aria-hidden="true" tabindex="-1"></a>:::{.callout-note}</span>
+<span id="cb34-213"><a href="#cb34-213" aria-hidden="true" tabindex="-1"></a><span class="fu">## On `tabviz()` (vs `forest_plot()`)</span></span>
+<span id="cb34-214"><a href="#cb34-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-215"><a href="#cb34-215" aria-hidden="true" tabindex="-1"></a><span class="in">`tabviz()`</span> no longer takes <span class="in">`axis_range`</span>, <span class="in">`axis_ticks`</span>, <span class="in">`axis_gridlines`</span> (deprecated in 0.9.0). Pass them to <span class="in">`viz_forest()`</span> on the forest column instead:</span>
+<span id="cb34-216"><a href="#cb34-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-217"><a href="#cb34-217" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb34-218"><a href="#cb34-218" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb34-219"><a href="#cb34-219" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb34-220"><a href="#cb34-220" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>,</span>
+<span id="cb34-221"><a href="#cb34-221" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb34-222"><a href="#cb34-222" aria-hidden="true" tabindex="-1"></a>               <span class="at">axis_range =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">2.0</span>),</span>
+<span id="cb34-223"><a href="#cb34-223" aria-hidden="true" tabindex="-1"></a>               <span class="at">axis_ticks =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.7</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>))</span>
+<span id="cb34-224"><a href="#cb34-224" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-225"><a href="#cb34-225" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-226"><a href="#cb34-226" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-227"><a href="#cb34-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-228"><a href="#cb34-228" aria-hidden="true" tabindex="-1"></a><span class="in">`forest_plot()`</span> keeps these as native top-level arguments and forwards them to the auto-built forest column.</span>
+<span id="cb34-229"><a href="#cb34-229" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb34-230"><a href="#cb34-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-231"><a href="#cb34-231" aria-hidden="true" tabindex="-1"></a><span class="fu">## Export Failures</span></span>
+<span id="cb34-232"><a href="#cb34-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-233"><a href="#cb34-233" aria-hidden="true" tabindex="-1"></a><span class="fu">### V8 Not Installed</span></span>
+<span id="cb34-234"><a href="#cb34-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-235"><a href="#cb34-235" aria-hidden="true" tabindex="-1"></a>**Symptom:** Error when calling <span class="in">`save_plot()`</span>: "Package V8 is required"</span>
+<span id="cb34-236"><a href="#cb34-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-237"><a href="#cb34-237" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-240"><a href="#cb34-240" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-241"><a href="#cb34-241" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-242"><a href="#cb34-242" aria-hidden="true" tabindex="-1"></a><span class="co"># Install V8</span></span>
+<span id="cb34-243"><a href="#cb34-243" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"V8"</span>)</span>
+<span id="cb34-244"><a href="#cb34-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-245"><a href="#cb34-245" aria-hidden="true" tabindex="-1"></a><span class="co"># On some systems, you may need system libraries first:</span></span>
+<span id="cb34-246"><a href="#cb34-246" aria-hidden="true" tabindex="-1"></a><span class="co"># macOS: brew install v8</span></span>
+<span id="cb34-247"><a href="#cb34-247" aria-hidden="true" tabindex="-1"></a><span class="co"># Ubuntu: sudo apt-get install libv8-dev</span></span>
+<span id="cb34-248"><a href="#cb34-248" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-249"><a href="#cb34-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-250"><a href="#cb34-250" aria-hidden="true" tabindex="-1"></a><span class="fu">### rsvg Issues</span></span>
+<span id="cb34-251"><a href="#cb34-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-252"><a href="#cb34-252" aria-hidden="true" tabindex="-1"></a>**Symptom:** PDF/PNG export fails with rsvg errors.</span>
+<span id="cb34-253"><a href="#cb34-253" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-254"><a href="#cb34-254" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-257"><a href="#cb34-257" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-258"><a href="#cb34-258" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-259"><a href="#cb34-259" aria-hidden="true" tabindex="-1"></a><span class="co"># Install rsvg</span></span>
+<span id="cb34-260"><a href="#cb34-260" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"rsvg"</span>)</span>
+<span id="cb34-261"><a href="#cb34-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-262"><a href="#cb34-262" aria-hidden="true" tabindex="-1"></a><span class="co"># On macOS, you may need:</span></span>
+<span id="cb34-263"><a href="#cb34-263" aria-hidden="true" tabindex="-1"></a><span class="co"># brew install librsvg</span></span>
+<span id="cb34-264"><a href="#cb34-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-265"><a href="#cb34-265" aria-hidden="true" tabindex="-1"></a><span class="co"># On Ubuntu:</span></span>
+<span id="cb34-266"><a href="#cb34-266" aria-hidden="true" tabindex="-1"></a><span class="co"># sudo apt-get install librsvg2-dev</span></span>
+<span id="cb34-267"><a href="#cb34-267" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-268"><a href="#cb34-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-269"><a href="#cb34-269" aria-hidden="true" tabindex="-1"></a><span class="fu">### "SVG generator JavaScript file not found"</span></span>
+<span id="cb34-270"><a href="#cb34-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-271"><a href="#cb34-271" aria-hidden="true" tabindex="-1"></a>**Symptom:** Export fails with message about missing JS file.</span>
+<span id="cb34-272"><a href="#cb34-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-273"><a href="#cb34-273" aria-hidden="true" tabindex="-1"></a>**Cause:** Package installation is incomplete.</span>
+<span id="cb34-274"><a href="#cb34-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-275"><a href="#cb34-275" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-278"><a href="#cb34-278" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-279"><a href="#cb34-279" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-280"><a href="#cb34-280" aria-hidden="true" tabindex="-1"></a><span class="co"># Reinstall the package</span></span>
+<span id="cb34-281"><a href="#cb34-281" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"kaskarn/tabviz"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-282"><a href="#cb34-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-283"><a href="#cb34-283" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
+<span id="cb34-284"><a href="#cb34-284" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">"js/svg-generator.js"</span>, <span class="at">package =</span> <span class="st">"tabviz"</span>)</span>
+<span id="cb34-285"><a href="#cb34-285" aria-hidden="true" tabindex="-1"></a><span class="co"># Should return a path, not ""</span></span>
+<span id="cb34-286"><a href="#cb34-286" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-287"><a href="#cb34-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-288"><a href="#cb34-288" aria-hidden="true" tabindex="-1"></a><span class="fu">### Colors Differ Between Display and Export</span></span>
+<span id="cb34-289"><a href="#cb34-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-290"><a href="#cb34-290" aria-hidden="true" tabindex="-1"></a>**Symptom:** Exported SVG/PNG has different colors than the interactive widget.</span>
+<span id="cb34-291"><a href="#cb34-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-292"><a href="#cb34-292" aria-hidden="true" tabindex="-1"></a>**Cause:** Theme not applied consistently to both.</span>
+<span id="cb34-293"><a href="#cb34-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-294"><a href="#cb34-294" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-297"><a href="#cb34-297" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-298"><a href="#cb34-298" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-299"><a href="#cb34-299" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same theme for display and export</span></span>
+<span id="cb34-300"><a href="#cb34-300" aria-hidden="true" tabindex="-1"></a>my_theme <span class="ot">&lt;-</span> <span class="fu">web_theme_nejm</span>()</span>
+<span id="cb34-301"><a href="#cb34-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-302"><a href="#cb34-302" aria-hidden="true" tabindex="-1"></a><span class="co"># Interactive</span></span>
+<span id="cb34-303"><a href="#cb34-303" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">theme =</span> my_theme)</span>
+<span id="cb34-304"><a href="#cb34-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-305"><a href="#cb34-305" aria-hidden="true" tabindex="-1"></a><span class="co"># Export</span></span>
+<span id="cb34-306"><a href="#cb34-306" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data, ..., <span class="at">theme =</span> my_theme)</span>
+<span id="cb34-307"><a href="#cb34-307" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"output.svg"</span>)</span>
+<span id="cb34-308"><a href="#cb34-308" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-309"><a href="#cb34-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-310"><a href="#cb34-310" aria-hidden="true" tabindex="-1"></a><span class="fu">## Widget Rendering Issues</span></span>
+<span id="cb34-311"><a href="#cb34-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-312"><a href="#cb34-312" aria-hidden="true" tabindex="-1"></a><span class="fu">### Blank Output in RStudio Viewer</span></span>
+<span id="cb34-313"><a href="#cb34-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-314"><a href="#cb34-314" aria-hidden="true" tabindex="-1"></a>**Symptom:** Plot doesn't appear in RStudio's Viewer pane.</span>
+<span id="cb34-315"><a href="#cb34-315" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-316"><a href="#cb34-316" aria-hidden="true" tabindex="-1"></a>**Cause:** Viewer pane size or rendering issues.</span>
+<span id="cb34-317"><a href="#cb34-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-318"><a href="#cb34-318" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-321"><a href="#cb34-321" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-322"><a href="#cb34-322" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-323"><a href="#cb34-323" aria-hidden="true" tabindex="-1"></a><span class="co"># Try in browser instead</span></span>
+<span id="cb34-324"><a href="#cb34-324" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> <span class="fu">forest_plot</span>(your_data, ...)</span>
+<span id="cb34-325"><a href="#cb34-325" aria-hidden="true" tabindex="-1"></a>htmltools<span class="sc">::</span><span class="fu">browsable</span>(plot)</span>
+<span id="cb34-326"><a href="#cb34-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-327"><a href="#cb34-327" aria-hidden="true" tabindex="-1"></a><span class="co"># Or save to file and open</span></span>
+<span id="cb34-328"><a href="#cb34-328" aria-hidden="true" tabindex="-1"></a>htmlwidgets<span class="sc">::</span><span class="fu">saveWidget</span>(plot, <span class="st">"temp.html"</span>)</span>
+<span id="cb34-329"><a href="#cb34-329" aria-hidden="true" tabindex="-1"></a><span class="fu">browseURL</span>(<span class="st">"temp.html"</span>)</span>
+<span id="cb34-330"><a href="#cb34-330" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-331"><a href="#cb34-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-332"><a href="#cb34-332" aria-hidden="true" tabindex="-1"></a><span class="fu">### Widget Not Sizing Correctly</span></span>
+<span id="cb34-333"><a href="#cb34-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-334"><a href="#cb34-334" aria-hidden="true" tabindex="-1"></a>**Symptom:** Plot is too small, cut off, or doesn't fill container.</span>
+<span id="cb34-335"><a href="#cb34-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-336"><a href="#cb34-336" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-339"><a href="#cb34-339" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-340"><a href="#cb34-340" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-341"><a href="#cb34-341" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify explicit dimensions</span></span>
+<span id="cb34-342"><a href="#cb34-342" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(your_data, ...,</span>
+<span id="cb34-343"><a href="#cb34-343" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">900</span>,</span>
+<span id="cb34-344"><a href="#cb34-344" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">600</span></span>
+<span id="cb34-345"><a href="#cb34-345" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-346"><a href="#cb34-346" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-347"><a href="#cb34-347" aria-hidden="true" tabindex="-1"></a><span class="co"># For Shiny, use CSS units</span></span>
+<span id="cb34-348"><a href="#cb34-348" aria-hidden="true" tabindex="-1"></a><span class="fu">tabvizOutput</span>(<span class="st">"plot"</span>, <span class="at">width =</span> <span class="st">"100%"</span>, <span class="at">height =</span> <span class="st">"600px"</span>)</span>
+<span id="cb34-349"><a href="#cb34-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-350"><a href="#cb34-350" aria-hidden="true" tabindex="-1"></a><span class="co"># Constrain max size via set_zoom() (replaces deprecated tabviz(max_width=)/(max_height=))</span></span>
+<span id="cb34-351"><a href="#cb34-351" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(your_data, ...) <span class="sc">|&gt;</span></span>
+<span id="cb34-352"><a href="#cb34-352" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_zoom</span>(<span class="at">max_width =</span> <span class="dv">1000</span>, <span class="at">auto_fit =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-353"><a href="#cb34-353" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-354"><a href="#cb34-354" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-355"><a href="#cb34-355" aria-hidden="true" tabindex="-1"></a><span class="fu">### Shiny: Proxy Not Working</span></span>
+<span id="cb34-356"><a href="#cb34-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-357"><a href="#cb34-357" aria-hidden="true" tabindex="-1"></a>**Symptom:** <span class="in">`tabviz_proxy()`</span> calls don't update the plot.</span>
+<span id="cb34-358"><a href="#cb34-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-359"><a href="#cb34-359" aria-hidden="true" tabindex="-1"></a>**Cause:** Proxy created outside reactive context.</span>
+<span id="cb34-360"><a href="#cb34-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-361"><a href="#cb34-361" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-364"><a href="#cb34-364" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-365"><a href="#cb34-365" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-366"><a href="#cb34-366" aria-hidden="true" tabindex="-1"></a><span class="co"># Wrong: proxy at top level</span></span>
+<span id="cb34-367"><a href="#cb34-367" aria-hidden="true" tabindex="-1"></a><span class="co"># proxy &lt;- tabviz_proxy("plot")  # This will fail!</span></span>
+<span id="cb34-368"><a href="#cb34-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-369"><a href="#cb34-369" aria-hidden="true" tabindex="-1"></a><span class="co"># Correct: proxy inside reactive context</span></span>
+<span id="cb34-370"><a href="#cb34-370" aria-hidden="true" tabindex="-1"></a><span class="fu">observeEvent</span>(input<span class="sc">$</span>button, {</span>
+<span id="cb34-371"><a href="#cb34-371" aria-hidden="true" tabindex="-1"></a>  proxy <span class="ot">&lt;-</span> <span class="fu">tabviz_proxy</span>(<span class="st">"plot"</span>)</span>
+<span id="cb34-372"><a href="#cb34-372" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sort_rows</span>(proxy, <span class="st">"hr"</span>, <span class="st">"asc"</span>)</span>
+<span id="cb34-373"><a href="#cb34-373" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb34-374"><a href="#cb34-374" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-375"><a href="#cb34-375" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-376"><a href="#cb34-376" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme and Styling Issues</span></span>
+<span id="cb34-377"><a href="#cb34-377" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-378"><a href="#cb34-378" aria-hidden="true" tabindex="-1"></a><span class="fu">### Styles Not Applying</span></span>
+<span id="cb34-379"><a href="#cb34-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-380"><a href="#cb34-380" aria-hidden="true" tabindex="-1"></a>**Symptom:** Bold, color, or other styles don't appear.</span>
+<span id="cb34-381"><a href="#cb34-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-382"><a href="#cb34-382" aria-hidden="true" tabindex="-1"></a>**Cause:** Passing values directly instead of column names.</span>
+<span id="cb34-383"><a href="#cb34-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-384"><a href="#cb34-384" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-387"><a href="#cb34-387" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-388"><a href="#cb34-388" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-389"><a href="#cb34-389" aria-hidden="true" tabindex="-1"></a><span class="co"># Wrong: passing values directly</span></span>
+<span id="cb34-390"><a href="#cb34-390" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">"#ff0000"</span>)</span>
+<span id="cb34-391"><a href="#cb34-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-392"><a href="#cb34-392" aria-hidden="true" tabindex="-1"></a><span class="co"># Correct: passing column names that contain the values</span></span>
+<span id="cb34-393"><a href="#cb34-393" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="st">"is_bold"</span>, <span class="at">color =</span> <span class="st">"hr_color"</span>)</span>
+<span id="cb34-394"><a href="#cb34-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-395"><a href="#cb34-395" aria-hidden="true" tabindex="-1"></a><span class="co"># The data must have these columns:</span></span>
+<span id="cb34-396"><a href="#cb34-396" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span></span>
+<span id="cb34-397"><a href="#cb34-397" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb34-398"><a href="#cb34-398" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_bold =</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>,</span>
+<span id="cb34-399"><a href="#cb34-399" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr_color =</span> <span class="fu">if_else</span>(hr <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#dc2626"</span>)</span>
+<span id="cb34-400"><a href="#cb34-400" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-401"><a href="#cb34-401" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-402"><a href="#cb34-402" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-403"><a href="#cb34-403" aria-hidden="true" tabindex="-1"></a><span class="fu">### Font Not Loading</span></span>
+<span id="cb34-404"><a href="#cb34-404" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-405"><a href="#cb34-405" aria-hidden="true" tabindex="-1"></a>**Symptom:** Text appears in wrong font.</span>
+<span id="cb34-406"><a href="#cb34-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-407"><a href="#cb34-407" aria-hidden="true" tabindex="-1"></a>**Cause:** Custom font not available on system.</span>
+<span id="cb34-408"><a href="#cb34-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-409"><a href="#cb34-409" aria-hidden="true" tabindex="-1"></a>**Solution:**</span>
+<span id="cb34-412"><a href="#cb34-412" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-413"><a href="#cb34-413" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-414"><a href="#cb34-414" aria-hidden="true" tabindex="-1"></a><span class="co"># Use web-safe fallback fonts</span></span>
+<span id="cb34-415"><a href="#cb34-415" aria-hidden="true" tabindex="-1"></a><span class="fu">web_theme_nejm</span>() <span class="sc">|&gt;</span></span>
+<span id="cb34-416"><a href="#cb34-416" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_inputs</span>(<span class="at">fonts_body =</span> <span class="st">"Georgia, 'Times New Roman', serif"</span>)</span>
+<span id="cb34-417"><a href="#cb34-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-418"><a href="#cb34-418" aria-hidden="true" tabindex="-1"></a><span class="co"># For exports, fonts must be installed on the rendering system</span></span>
+<span id="cb34-419"><a href="#cb34-419" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-420"><a href="#cb34-420" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-421"><a href="#cb34-421" aria-hidden="true" tabindex="-1"></a><span class="fu">## Debug Patterns</span></span>
+<span id="cb34-422"><a href="#cb34-422" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-423"><a href="#cb34-423" aria-hidden="true" tabindex="-1"></a><span class="fu">### Inspecting a WebSpec</span></span>
+<span id="cb34-424"><a href="#cb34-424" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-427"><a href="#cb34-427" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-428"><a href="#cb34-428" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a spec without rendering (use .spec_only = TRUE on tabviz())</span></span>
+<span id="cb34-429"><a href="#cb34-429" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(</span>
+<span id="cb34-430"><a href="#cb34-430" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb34-431"><a href="#cb34-431" aria-hidden="true" tabindex="-1"></a>    <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),</span>
+<span id="cb34-432"><a href="#cb34-432" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
+<span id="cb34-433"><a href="#cb34-433" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>)</span>
+<span id="cb34-434"><a href="#cb34-434" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb34-435"><a href="#cb34-435" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb34-436"><a href="#cb34-436" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb34-437"><a href="#cb34-437" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb34-438"><a href="#cb34-438" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_n</span>(<span class="st">"n"</span>)</span>
+<span id="cb34-439"><a href="#cb34-439" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb34-440"><a href="#cb34-440" aria-hidden="true" tabindex="-1"></a>  <span class="at">.spec_only =</span> <span class="cn">TRUE</span></span>
+<span id="cb34-441"><a href="#cb34-441" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-442"><a href="#cb34-442" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-443"><a href="#cb34-443" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary</span></span>
+<span id="cb34-444"><a href="#cb34-444" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(spec)</span>
+<span id="cb34-445"><a href="#cb34-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-446"><a href="#cb34-446" aria-hidden="true" tabindex="-1"></a><span class="co"># Access components (S7 — use @)</span></span>
+<span id="cb34-447"><a href="#cb34-447" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>data</span>
+<span id="cb34-448"><a href="#cb34-448" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>columns</span>
+<span id="cb34-449"><a href="#cb34-449" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>theme<span class="sc">@</span>name</span>
+<span id="cb34-450"><a href="#cb34-450" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-451"><a href="#cb34-451" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-452"><a href="#cb34-452" aria-hidden="true" tabindex="-1"></a><span class="fu">### Check Export Output</span></span>
+<span id="cb34-453"><a href="#cb34-453" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-456"><a href="#cb34-456" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-457"><a href="#cb34-457" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-458"><a href="#cb34-458" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate SVG and check structure</span></span>
+<span id="cb34-459"><a href="#cb34-459" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"debug.svg"</span>)</span>
+<span id="cb34-460"><a href="#cb34-460" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-461"><a href="#cb34-461" aria-hidden="true" tabindex="-1"></a><span class="co"># Read and inspect the SVG</span></span>
+<span id="cb34-462"><a href="#cb34-462" aria-hidden="true" tabindex="-1"></a>svg_content <span class="ot">&lt;-</span> <span class="fu">readLines</span>(<span class="st">"debug.svg"</span>)</span>
+<span id="cb34-463"><a href="#cb34-463" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(svg_content, <span class="dv">20</span>)</span>
+<span id="cb34-464"><a href="#cb34-464" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-465"><a href="#cb34-465" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-466"><a href="#cb34-466" aria-hidden="true" tabindex="-1"></a><span class="fu">### Browser Developer Tools</span></span>
+<span id="cb34-467"><a href="#cb34-467" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-468"><a href="#cb34-468" aria-hidden="true" tabindex="-1"></a>For debugging interactive widgets:</span>
+<span id="cb34-469"><a href="#cb34-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-470"><a href="#cb34-470" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Right-click the widget → "Inspect"</span>
+<span id="cb34-471"><a href="#cb34-471" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Check Console tab for JavaScript errors</span>
+<span id="cb34-472"><a href="#cb34-472" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Check Elements tab for DOM structure</span>
+<span id="cb34-473"><a href="#cb34-473" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Check Network tab for failed resources</span>
+<span id="cb34-474"><a href="#cb34-474" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-475"><a href="#cb34-475" aria-hidden="true" tabindex="-1"></a><span class="fu">### Minimal Reproducible Example</span></span>
+<span id="cb34-476"><a href="#cb34-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-477"><a href="#cb34-477" aria-hidden="true" tabindex="-1"></a>When reporting issues, create a minimal example:</span>
+<span id="cb34-478"><a href="#cb34-478" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-481"><a href="#cb34-481" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb34-482"><a href="#cb34-482" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb34-483"><a href="#cb34-483" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal data that reproduces the problem</span></span>
+<span id="cb34-484"><a href="#cb34-484" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb34-485"><a href="#cb34-485" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>),</span>
+<span id="cb34-486"><a href="#cb34-486" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
+<span id="cb34-487"><a href="#cb34-487" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.9</span>),</span>
+<span id="cb34-488"><a href="#cb34-488" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.6</span>)</span>
+<span id="cb34-489"><a href="#cb34-489" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-490"><a href="#cb34-490" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-491"><a href="#cb34-491" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal code</span></span>
+<span id="cb34-492"><a href="#cb34-492" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(test_data,</span>
+<span id="cb34-493"><a href="#cb34-493" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb34-494"><a href="#cb34-494" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span></span>
+<span id="cb34-495"><a href="#cb34-495" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-496"><a href="#cb34-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-497"><a href="#cb34-497" aria-hidden="true" tabindex="-1"></a><span class="co"># Include session info</span></span>
+<span id="cb34-498"><a href="#cb34-498" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb34-499"><a href="#cb34-499" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-500"><a href="#cb34-500" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-501"><a href="#cb34-501" aria-hidden="true" tabindex="-1"></a><span class="fu">## Pagination</span></span>
+<span id="cb34-502"><a href="#cb34-502" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-503"><a href="#cb34-503" aria-hidden="true" tabindex="-1"></a><span class="fu">### "Why didn't my paginate spec page my PNG?"</span></span>
+<span id="cb34-504"><a href="#cb34-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-505"><a href="#cb34-505" aria-hidden="true" tabindex="-1"></a><span class="in">`save_plot(&lt;paginated spec&gt;, "out.png")`</span> warns and flattens by default — single-image formats can't represent multiple pages. To silence the warning when you want a flattened image:</span>
+<span id="cb34-506"><a href="#cb34-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-507"><a href="#cb34-507" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb34-508"><a href="#cb34-508" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"out.png"</span>, <span class="at">paginate =</span> <span class="cn">NULL</span>)  <span class="co"># explicit "flatten this render"</span></span>
+<span id="cb34-509"><a href="#cb34-509" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-510"><a href="#cb34-510" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-511"><a href="#cb34-511" aria-hidden="true" tabindex="-1"></a>Or save to PDF for true multi-page output:</span>
+<span id="cb34-512"><a href="#cb34-512" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-513"><a href="#cb34-513" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb34-514"><a href="#cb34-514" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"out.pdf"</span>)  <span class="co"># multi-page PDF via qpdf::pdf_combine</span></span>
+<span id="cb34-515"><a href="#cb34-515" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-516"><a href="#cb34-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-517"><a href="#cb34-517" aria-hidden="true" tabindex="-1"></a><span class="fu">### Multi-page PDF wrote a numbered series instead of one file</span></span>
+<span id="cb34-518"><a href="#cb34-518" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-519"><a href="#cb34-519" aria-hidden="true" tabindex="-1"></a><span class="in">`save_plot(*.pdf, paginate = ...)`</span> merges per-page PDFs via <span class="in">`qpdf::pdf_combine()`</span>. When the <span class="in">`qpdf`</span> package isn't installed, it falls back to writing <span class="in">`out_p01.pdf`</span>, <span class="in">`out_p02.pdf`</span>, ... and emits a warning. Install <span class="in">`qpdf`</span> to merge into one file:</span>
+<span id="cb34-520"><a href="#cb34-520" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-521"><a href="#cb34-521" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb34-522"><a href="#cb34-522" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"qpdf"</span>)</span>
+<span id="cb34-523"><a href="#cb34-523" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-524"><a href="#cb34-524" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-525"><a href="#cb34-525" aria-hidden="true" tabindex="-1"></a><span class="in">`qpdf`</span> is in <span class="in">`Suggests`</span> (lightweight C++ binding, ~3 MB).</span>
+<span id="cb34-526"><a href="#cb34-526" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-527"><a href="#cb34-527" aria-hidden="true" tabindex="-1"></a><span class="fu">### "My SplitForest paginate didn't cascade"</span></span>
+<span id="cb34-528"><a href="#cb34-528" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-529"><a href="#cb34-529" aria-hidden="true" tabindex="-1"></a>Pagination cascades into every subview when set on the underlying <span class="in">`tabviz()`</span> call. If you constructed the spec without <span class="in">`paginate`</span>, then piped through <span class="in">`split_table()`</span>, the subviews carry no pagination. Either set <span class="in">`paginate`</span> on the original <span class="in">`tabviz()`</span> call (recommended), or pipe <span class="in">`paginate()`</span> after split:</span>
+<span id="cb34-530"><a href="#cb34-530" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-531"><a href="#cb34-531" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb34-532"><a href="#cb34-532" aria-hidden="true" tabindex="-1"></a>sf <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(data, ..., <span class="at">paginate =</span> <span class="fu">paginate_letter</span>(),</span>
+<span id="cb34-533"><a href="#cb34-533" aria-hidden="true" tabindex="-1"></a>             <span class="at">split_by =</span> <span class="st">"region"</span>)</span>
+<span id="cb34-534"><a href="#cb34-534" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-535"><a href="#cb34-535" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-536"><a href="#cb34-536" aria-hidden="true" tabindex="-1"></a><span class="fu">## Widget rendering in knitr</span></span>
+<span id="cb34-537"><a href="#cb34-537" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-538"><a href="#cb34-538" aria-hidden="true" tabindex="-1"></a><span class="fu">### "My split_table widget rendered as a wall of `@ specs : List of 6` text"</span></span>
+<span id="cb34-539"><a href="#cb34-539" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-540"><a href="#cb34-540" aria-hidden="true" tabindex="-1"></a>Fixed in this audit cycle. <span class="in">`SplitForest`</span> (the object returned by <span class="in">`split_table()`</span> and by <span class="in">`tabviz(..., .spec_only = TRUE) |&gt; split_table(...)`</span>) now carries a registered <span class="in">`knit_print`</span> method, so a chunk whose last value is one renders as the live interactive widget. Same for <span class="in">`WebSpec`</span> from <span class="in">`tabviz(..., .spec_only = TRUE)`</span>.</span>
+<span id="cb34-541"><a href="#cb34-541" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-542"><a href="#cb34-542" aria-hidden="true" tabindex="-1"></a>If you still see the structure dump in your own project, you're likely on an old install. Reinstall:</span>
+<span id="cb34-543"><a href="#cb34-543" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-544"><a href="#cb34-544" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb34-545"><a href="#cb34-545" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"kaskarn/tabviz"</span>)</span>
+<span id="cb34-546"><a href="#cb34-546" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb34-547"><a href="#cb34-547" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-548"><a href="#cb34-548" aria-hidden="true" tabindex="-1"></a><span class="fu">## Getting Help</span></span>
+<span id="cb34-549"><a href="#cb34-549" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-550"><a href="#cb34-550" aria-hidden="true" tabindex="-1"></a>If you've tried the above and still have issues:</span>
+<span id="cb34-551"><a href="#cb34-551" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-552"><a href="#cb34-552" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Check <span class="co">[</span><span class="ot">GitHub Issues</span><span class="co">](https://github.com/kaskarn/tabviz/issues)</span> for similar problems</span>
+<span id="cb34-553"><a href="#cb34-553" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create a minimal reproducible example</span>
+<span id="cb34-554"><a href="#cb34-554" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Include <span class="in">`sessionInfo()`</span> output</span>
+<span id="cb34-555"><a href="#cb34-555" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Open a new issue with your example and session info</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

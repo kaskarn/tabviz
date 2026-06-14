@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>decision-register – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#decision-register" id="toc-decision-register" class="nav-link active" data-scroll-target="#decision-register">Decision register</a>
+  <ul class="collapse">
+  <li><a href="#open" id="toc-open" class="nav-link" data-scroll-target="#open">Open</a></li>
+  <li><a href="#decided" id="toc-decided" class="nav-link" data-scroll-target="#decided">Decided</a></li>
+  <li><a href="#process-notes" id="toc-process-notes" class="nav-link" data-scroll-target="#process-notes">Process notes</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="decision-register" class="level1">
+<h1>Decision register</h1>
+<p>Status: <strong>living ledger</strong> (stood up 2026-06-10). The tidy-keeping half of <code>docs/dev/ship-roadmap.md</code>.</p>
+<p><strong>The rule:</strong> any work that defers a product decision MUST add an entry here instead of deferring silently. Every entry carries a <strong>default-if-undecided</strong> — what ships if nobody decides — and a <strong>decide-by</strong> milestone. At each milestone review, entries due are decided (moved to the Decided section with a one-line rationale) or explicitly re-dated. The register must be empty of pre-1.0 rows at ship.</p>
+<p>Entry format: <code>ID | question | options | default if undecided | decide by</code>.</p>
+<section id="open" class="level2">
+<h2 class="anchored" data-anchor-id="open">Open</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 17%">
+<col style="width: 16%">
+<col style="width: 39%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Question</th>
+<th>Options</th>
+<th>Default if undecided</th>
+<th>Decide by</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>D25</td>
+<td><strong>Per-token detailed spacing in the Styling tab needs a sanctioned write channel.</strong> The settings-redesign layer model puts “detailed spacing (moved from L2)” in Styling, but per-token spacing edits (individual rowHeight / padding / gap tokens) currently go ONLY through <code>writeThemePath</code>/<code>setThemeField</code> — which the DT-11 boundary gate (<code>settings-band-contract.test.ts</code>, marked “still-true” in CLAUDE.md) forbids the panel from calling. Phase 5 shipped the SANCTIONED spacing surface instead: the <code>density</code> preset (Variations) + the continuous <code>density_factor</code> dial (Styling, where the Variations density signpost points) — both theme inputs via <code>setAuthoringInputs</code>, DT-11-clean. The open question is whether per-TOKEN spacing override is worth a new sanctioned verb (a <code>setSpacingOverride(token, value)</code> that re-resolves through inputs, analogous to <code>setThemeRoleOverride</code>) or stays studio/R-only.</td>
+<td>(a) ship with density+factor only [default] · (b) add a sanctioned per-token spacing-override verb · (c) relax DT-11 for the Styling tab</td>
+<td>(a) — density + density_factor cover the common case; per-token is expert-grade and R/<code>set_spacing()</code> already serves it</td>
+<td>post-1.0, on user demand</td>
+</tr>
+<tr class="even">
+<td>D20</td>
+<td><strong>Label-column ontology shed</strong> (maintainer 2026-06-11: “on thin ice ontologically… shed the special behaviors” — then: “we’ll get to those later; start with a discussion, some could be kept, most will be shed”). The WIDTH path is already unified (8f98b05); the remaining special-behavior INVENTORY for that discussion: (1) the separate <code>labelColumn</code> wire field vs being <code>columns[0]</code> (wire-frozen — removal is a major); (2) <code>Row.label</code> as a privileged slot vs an ordinary metadata field; (3) primary-cell chrome ownership (row drag surface, group toggle, indent, badge/icon, the row’s single keyboard tab stop per C54, paint target); (4) export-side <code>labelWidth</code> scalar threading + primary excluded from <code>allColumns</code> — <strong>WIDTH-THREADING HALF DONE (2026-06-13, 7edcf73, maintainer-authorized “let’s do it”): the primary column now joins the export flex set (<code>flexColSpecs.unshift</code>) so it FLEXES from-scratch and PINS under provided widths exactly like the widget’s layout-zoom grid; this closed the WYSIWYG flex-parity gap (D8). The remaining structural piece — making primary truly <code>columns[0]</code> rather than added separately — stays coupled to item (1)’s wire-frozen <code>labelColumn</code> field and is post-1.0</strong>; (5) the LABEL_MAX clamp (400) vs AUTO_WIDTH.MAX (480); (6) <code>tabviz(label=, label_header=)</code> authoring sugar; (7) <code>getLabelWidth</code>/<code>getLabelFlex</code> legacy helpers; (8) the figureLayout reconcile’s labelColumn slot.</td>
+<td>per-behavior keep/shed, decided in a maintainer discussion</td>
+<td>no further sheds before the discussion; chrome ownership (3) likely keeps, wire/threading (1, 4, 7) likely shed</td>
+<td>post-1.0 discussion</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="decided" class="level2">
+<h2 class="anchored" data-anchor-id="decided">Decided</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 32%">
+<col style="width: 35%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Decision</th>
+<th>Rationale</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>D26</td>
+<td><strong>Outer frame STOPS ABOVE THE AXIS</strong> (maintainer, 2026-06-13). <code>border_preset=frame</code>/<code>boxed</code> frames the TABLE region (header top → last data row bottom), not the axis scaffold band below it. The DOM frame’s existing intent was correct; the EXPORT changes to match (its rect spanned the full figure incl.&nbsp;axis). Implementation: a non-layout-affecting 4-side DOM frame (grid-overlay, inset box-shadow, gated on <code>--tv-table-border</code>) + the export rect clipped to the table-bottom Y + a <code>boxed</code>/<code>frame</code> visual case added to the wysiwyg matrix. Closes Bug B (docs/dev/maintainer-feedback-2026-06-13.md).</td>
+<td>The frame reads as “the table’s edge”; the axis is a separate scaffold band</td>
+<td>2026-06-13</td>
+</tr>
+<tr class="even">
+<td>D9</td>
+<td><strong>REVERSED to MAXIMAL interaction defaults</strong> (maintainer, 2026-06-13): the prior conservative split (author-grade OFF) is dropped — <code>BAKED_INTERACTION_DEFAULTS</code> now sets enableEdit / enableReorderRows / enableReorderColumns / enableAxisZoom / enableArrange ON (showGroupCounts stays off — it’s a display opinion, not a tinker affordance; showFilters stays off — legacy alias). The package’s primary users are developers who want every affordance available without re-enabling it per spec. Edits are LOCAL (never persist to the doc), so default-on is low-cost; a publisher targeting passive readers opts out per-spec / per-theme / via the global tier (4-tier chain unchanged). Reaches R/JS/Shiny uniformly because all consumers leave flags NA/absent and fall to the baked tier. Gates updated: interaction-resolve.test, tabviz.test; roster unchanged. REVISIT at actual ship if the audience broadens to embedded published figures (the enableThemeEdit-cog-for-readers question folds into that review).</td>
+<td>Maintainer: “Table users are developers of the package and want to be able to check/tinker without remembering to set each time”</td>
+<td>2026-06-13</td>
+</tr>
+<tr class="odd">
+<td>D23</td>
+<td><strong>Polarity flip: ALL 9 PRESETS BLESS the derived flip — no pins.</strong> 9-preset flipped battery rendered (width 380, V8 export path) and eyeballed individually: nejm/ledger/brutalist/newsprint/blueprint dark + aurora/terminal/synthwave/dwarven light are all legible and identity-coherent; the strongest are terminal-light, aurora-light, ledger-dark. One soft note: synthwave-light’s bg gradient drifts olive in one corner — acceptable, revisit only if users complain. The Variations polarity control therefore shows on every preset, derive-by-default via <code>applyPolarityToInputs</code>; the pin mechanism stays available for future themes whose flip is nonsense. The battery’s first run also caught a real export regression (labelWidth fallback chain missing the explicit-width rung after R’s systemfonts injection) — fixed in svg-generator before the verdicts were taken.</td>
+<td>Battery evidence; derive-by-default was already the register default and the renders confirm it</td>
+<td>2026-06-12</td>
+</tr>
+<tr class="even">
+<td>D21</td>
+<td><strong>Settings UX total redesign locked</strong> — five surfaces (Variations · Labels · Edit-theme{Identity · Plots · Styling}) per the maintainer’s layer taxonomy; old panel + studio presentation SUPERSEDED (substrate unchanged); first principles + phased plan in docs/dev/settings-redesign.md. Phase 0 = removal before any new frontend element; build tab-by-tab with a consequence gate (visible-pixel delta, not DOM-fingerprint liveness).</td>
+<td>Maintainer review found the accreted panel failing on every axis; salvage = redesign with sunk-cost gravity</td>
+<td>2026-06-12</td>
+</tr>
+<tr class="odd">
+<td>D22</td>
+<td><strong>Studio DORMANT</strong> — de-documented (CTA + nav removed, dormancy notice on page); harness kept passing, not extended; reborn after core settings UX with the round-trip + validate-matrix lessons.</td>
+<td>Maintainer: “officially dead. Will be reborn once we finish the core UX”</td>
+<td>2026-06-12</td>
+</tr>
+<tr class="even">
+<td>D24</td>
+<td><strong>A11y POLISH deferred to immediately-before-CRAN</strong> (the landed ARIA floor stays). Placeholder-title-regions idea TABLED.</td>
+<td>Maintainer: a11y iteration needs user feedback, which needs a stable design basis</td>
+<td>2026-06-12</td>
+</tr>
+<tr class="odd">
+<td>D19</td>
+<td><strong>Growth requires an absorber</strong> (maintainer-prompted, 2026-06-11): a table with NO flex/plot column and no pinned aspect sizes to its CONTENT (grid falls back to max-content; the max-content scalable hugs + centers on the shell); tables WITH a forest/viz/explicit-flex column keep filling the container. Shrink-to-fit stays universal. This re-aligns the DOM with the EXPORT’s long-standing contract (“a plain table shrinks to its content” — svg-generator widthFloor), which the multi-flex arc silently broke by giving every column DEFAULT_FLEX_WEIGHT=1 against a container-width target.</td>
+<td>Maintainer: “do tables <em>need</em> to fit the whole div? goofy for narrow tables” — and the export already answered no</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D18</td>
+<td><strong>Delegated-authoring principle for theme column_defaults</strong> (maintainer ruling, 2026-06-11): authorship is DIVIDED — theme writers (institutions) are the delegated half of authoring, theme consumers (individuals) the other. Themes are afforded BROAD latitude by default; the value-equality author-wins rule (“at schema default ⇒ themeable”, including the #65 re-base epsilon where an author explicitly choosing the outgoing theme’s default gets re-based) is the SOUND contract, not a deficiency to engineer away with provenance marks. Provenance stays a non-goal unless real consumer complaints surface.</td>
+<td>Maintainer ruling on propagation-readiness flag #4: institutions delegate house style to themes deliberately; an individual who fights the house style states a NON-default value, which always wins</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D15</td>
+<td>Export title-block arithmetic RESOLVED: headerBand.top max|Δ| 7.6 → 2.0 (budget tightened 8 → 3; the per-term metrics all read exact at ≤1). The closed-form model: exact line boxes (no per-line ceil) + title chrome (2.4 plain / 3 textured-knockout / +3 underline border) + the texture-knockout chain (2.5 replaces the themed gap on ruled/grid/dotted shells) + 1.5 under textured subtitles. Found via three instrumentation rounds (truth-to-truth metrics → ancestor var trail → computed-padding probe: the theme-runtime texture rule’s <code>padding: 1.5px 7px</code> shorthand replaces the caption chains). One documented consequence: the caption fix unmasked ~0.7px of measure-loop residual on brutalist (height budget 10→11, cause annotated in the gate). Remaining +2 nejm-family residual tracked inside the tightened budget.</td>
+<td>Closed by instrumentation — the measure-first discipline end-to-end</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D13</td>
+<td>enable_themes roster: MEASURED (the register’s ask) — the resolved 9-preset roster rides interaction.enableThemes at 43.9kB ≈ 88.8% of a small widget’s payload. DECIDED: switch to INPUTS-form wire envelopes resolved in-widget (~10× smaller; the widget ships the full resolver). <strong>IMPLEMENTED same day</strong>: serialize_theme_slim emits the roster; ThemeSwitcher expands picks via buildTheme in-widget. Measured: roster 43.9kB → 8.4kB; total widget payload 49.4kB → 14.2kB (3.5×). interaction-qa’s real-input theme-switch leg green</td>
+<td>UNILATERAL (delegated): the measurement makes keep untenable and lazy-load needless — inputs-form is strictly better on every axis</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D12</td>
+<td>Default-paginate threshold IMPLEMENTED: NULL past 200 rows auto-paginates (200 rows/page, break on group, once-per-session hint); <code>paginate = FALSE</code> is the documented opt-out; explicit specs untouched</td>
+<td>UNILATERAL (delegated): the register default applied verbatim; pagination is the honest scale story (the DOM mount degrades before the algorithms do — bench-backed)</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D17</td>
+<td>Role-roster names KEPT as-is</td>
+<td>UNILATERAL (delegated): the names now ship on wire 1.5–1.10 envelopes and the Stage-2/3 UI displays them daily without complaints surfacing; renaming would break existing envelopes for marginal legibility</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D3</td>
+<td><code>effects.elevation</code> KEPT (it paints — shell-paper consumes it as figure-wide depth, decided 2026-06-05); the four orphan <code>--tv-shadow-raised/overlay-*</code> tokens + the elevation resolver group + the orphaned elevation.ts module DELETED</td>
+<td>UNILATERAL (delegated): option (b) — the honesty rule (D2/D11 precedent); the quartet had zero consumers and TODO flags</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D4</td>
+<td>Portaled-popover neutral chrome ACCEPTED for 1.0</td>
+<td>UNILATERAL (delegated): default (b) — consistent neutral chrome is defensible; revisit on dark-theme adoption feedback</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D5</td>
+<td>Row-height pins stay PER-KIND only</td>
+<td>UNILATERAL (delegated): re-confirmed — the measure loop covers per-row overflow; no new evidence since the interactivity arc</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D6</td>
+<td>Keyboard column reorder: SHIP WITHOUT, documented gap</td>
+<td>UNILATERAL (delegated): default — expensive, rarely exercised; the a11y floor (area J) ships without it</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D7</td>
+<td>Pagination-export contract: EXPORT = WHOLE TABLE, documented</td>
+<td>UNILATERAL (delegated): default (a) — the right semantic (a figure is the dataset, a page is a view); needs the save_plot docs sentence + WYSIWYG exception-list line when area G writes them</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D8</td>
+<td>Estimator-vs-canvas widths on raw generateSVG: <strong>RESOLVED</strong> (2026-06-13) — both halves closed, not merely budgeted. MEASUREMENT: the hand-tuned character-class multipliers (a magic-number accretion that over-budgeted ~7%) were replaced by REAL per-glyph advance tables measured offline from every preset’s actual webfonts at anchor weights 400/700 (<code>font-metrics.generated.ts</code>, regen via <code>npm run regen:font-metrics</code>), with serif/sans/mono class fallbacks for unknown families and per-glyph weight interpolation across the continuous axis — residual vs canvas is kerning only (~1–2%). FLEX-PARITY: the estimator fix unmasked a real divergence (the label column flexed in the DOM but was a separate scalar in the export, and viz naturals mismatched), root-caused to D20 item-4 and fixed there. The WYSIWYG gate now passes the raw-generateSVG path at <strong>0 breaches</strong> (155 findings, down from 178).</td>
+<td>the over-budget was a bug, not a boundary; empirical measurement + flex unification dissolved it</td>
+<td>2026-06-13</td>
+</tr>
+<tr class="odd">
+<td>D10</td>
+<td>Group-header banding/chevron: VERIFIED ALIGNED by measurement (2026-06-11) — a new permanent matrix metric (groupLabel.x, DOM post-chevron vs SVG text x) agrees within 1.5px across all 12 cases; the export’s banding coordination already exists (renderGroupHeader’s renderBackground handshake). The 2026-06-10 premise was closed by the intervening WYSIWYG pass + W4 ports. The probe guards regressions from here.</td>
+<td>UNILATERAL (delegated): measurement preempted implementation</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D16</td>
+<td>Settings panel single-scroll RESTORED + IMPLEMENTED: compact layout renders all four sections in one scroll with the bar as sticky jump-links (role=navigation); the studio (roomy) keeps real tabs; the liveness harness rewritten for the new IA — 70 controls verified live (up from 68), reset gutter green</td>
+<td>UNILATERAL (delegated): default (a) — the settings-overhaul lock had reviewed rationale</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D18</td>
+<td>Title color bound to role <code>text</code> (option a); the last text-cluster bridge row deleted</td>
+<td>UNILATERAL (user-delegated 2026-06-11, flagged for review): the v3 value was the raw ink ANCHOR — pre-cascade special-casing, not a role; deltas vs <code>text</code> are small (spot-rendered nejm + terminal: coherent); brand-text would re-identity all 9 presets; a new role for one consumer bloats the curated roster. Chromatic titles stay one re-route away.</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D11</td>
+<td>consumedBy annotation arc EXECUTED as one dedicated arc: all 119 grandfathered rows cleared (annotated against verified consumers, or deleted as dead — found currency:symbol/position dead editor menus + viz_violin:maxWidth)</td>
+<td>The sweep itself caught 3 more dead options — exactly the audit dividend the one-arc approach promised</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="odd">
+<td>D2</td>
+<td>The 6 authored-but-ignored column options DELETED (<code>range:showBar</code>, <code>viz_bar:{barWidth,barGap,orientation}</code>, <code>viz_boxplot:{boxWidth,whiskerType}</code>) — schema rows, typed fields, authoring args (TS + R), emit defaults, docs, drift-gate grandfather rows</td>
+<td>Register default applied at M1: unread knobs violate the honesty rule; renderers compute these locally (VizBar hardcodes its own gap) and never read the options; plausible features can return post-1.0 WITH readers</td>
+<td>2026-06-11</td>
+</tr>
+<tr class="even">
+<td>D1</td>
+<td>HC-fidelity vertical KILLED (rules + <code>--tv-hc-*</code> tokens + resolver group + test deleted)</td>
+<td>Designed but never wired to any markup; the a11y floor (roadmap J) lands without it — HC mode’s live behavior (wash drops, border bump, contrast re-resolve) is untouched</td>
+<td>2026-06-10</td>
+</tr>
+<tr class="odd">
+<td>D14</td>
+<td><code>theme_blend()</code> + SplitForest static-knit path CUT from 1.0 scope</td>
+<td>Neither is started; neither blocks the 1.0 identity; post-1.0 backlog</td>
+<td>2026-06-10</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="process-notes" class="level2">
+<h2 class="anchored" data-anchor-id="process-notes">Process notes</h2>
+<ul>
+<li>The register is for PRODUCT decisions (behavior, scope, defaults), not engineering choices an arc can settle locally.</li>
+<li>“Default if undecided” is binding: if the decide-by milestone closes without a decision, the default ships. This is what makes deferral safe.</li>
+<li>Sources feeding the initial population: interactivity-UX arc deferrals, WYSIWYG fidelity pass residuals, 2026-06-10 cleanup audit “kept for decision” items, 1.0 strategy locks.</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Decision register</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>Status: **living ledger** (stood up 2026-06-10). The tidy-keeping half of</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="in">`docs/dev/ship-roadmap.md`</span>.</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>**The rule:** any work that defers a product decision MUST add an entry</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>here instead of deferring silently. Every entry carries a</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>**default-if-undecided** — what ships if nobody decides — and a</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>**decide-by** milestone. At each milestone review, entries due are decided</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>(moved to the Decided section with a one-line rationale) or explicitly</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>re-dated. The register must be empty of pre-1.0 rows at ship.</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>Entry format: <span class="in">`ID | question | options | default if undecided | decide by`</span>.</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Open</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> Question <span class="pp">|</span> Options <span class="pp">|</span> Default if undecided <span class="pp">|</span> Decide by <span class="pp">|</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|----------|---------|----------------------|-----------|</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D25 <span class="pp">|</span> **Per-token detailed spacing in the Styling tab needs a sanctioned write channel.** The settings-redesign layer model puts "detailed spacing (moved from L2)" in Styling, but per-token spacing edits (individual rowHeight / padding / gap tokens) currently go ONLY through <span class="in">`writeThemePath`</span>/<span class="in">`setThemeField`</span> — which the DT-11 boundary gate (<span class="in">`settings-band-contract.test.ts`</span>, marked "still-true" in CLAUDE.md) forbids the panel from calling. Phase 5 shipped the SANCTIONED spacing surface instead: the <span class="in">`density`</span> preset (Variations) + the continuous <span class="in">`density_factor`</span> dial (Styling, where the Variations density signpost points) — both theme inputs via <span class="in">`setAuthoringInputs`</span>, DT-11-clean. The open question is whether per-TOKEN spacing override is worth a new sanctioned verb (a <span class="in">`setSpacingOverride(token, value)`</span> that re-resolves through inputs, analogous to <span class="in">`setThemeRoleOverride`</span>) or stays studio/R-only. <span class="pp">|</span> (a) ship with density+factor only <span class="co">[</span><span class="ot">default</span><span class="co">]</span> · (b) add a sanctioned per-token spacing-override verb · (c) relax DT-11 for the Styling tab <span class="pp">|</span> (a) — density + density_factor cover the common case; per-token is expert-grade and R/<span class="in">`set_spacing()`</span> already serves it <span class="pp">|</span> post-1.0, on user demand <span class="pp">|</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D20 <span class="pp">|</span> **Label-column ontology shed** (maintainer 2026-06-11: "on thin ice ontologically... shed the special behaviors" — then: "we'll get to those later; start with a discussion, some could be kept, most will be shed"). The WIDTH path is already unified (8f98b05); the remaining special-behavior INVENTORY for that discussion: (1) the separate `labelColumn` wire field vs being `columns[0]` (wire-frozen — removal is a major); (2) `Row.label` as a privileged slot vs an ordinary metadata field; (3) primary-cell chrome ownership (row drag surface, group toggle, indent, badge/icon, the row's single keyboard tab stop per C54, paint target); (4) export-side `labelWidth` scalar threading + primary excluded from `allColumns` — **WIDTH-THREADING HALF DONE (2026-06-13, 7edcf73, maintainer-authorized "let's do it"): the primary column now joins the export flex set (`flexColSpecs.unshift`) so it FLEXES from-scratch and PINS under provided widths exactly like the widget's layout-zoom grid; this closed the WYSIWYG flex-parity gap (D8). The remaining structural piece — making primary truly `columns[0]` rather than added separately — stays coupled to item (1)'s wire-frozen `labelColumn` field and is post-1.0**; (5) the LABEL_MAX clamp (400) vs AUTO_WIDTH.MAX (480); (6) <span class="in">`tabviz(label=, label_header=)`</span> authoring sugar; (7) <span class="in">`getLabelWidth`</span>/<span class="in">`getLabelFlex`</span> legacy helpers; (8) the figureLayout reconcile's labelColumn slot. <span class="pp">|</span> per-behavior keep/shed, decided in a maintainer discussion <span class="pp">|</span> no further sheds before the discussion; chrome ownership (3) likely keeps, wire/threading (1, 4, 7) likely shed <span class="pp">|</span> post-1.0 discussion <span class="pp">|</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Decided</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> Decision <span class="pp">|</span> Rationale <span class="pp">|</span> Date <span class="pp">|</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|----------|-----------|------|</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D26 <span class="pp">|</span> **Outer frame STOPS ABOVE THE AXIS** (maintainer, 2026-06-13). <span class="in">`border_preset=frame`</span>/<span class="in">`boxed`</span> frames the TABLE region (header top → last data row bottom), not the axis scaffold band below it. The DOM frame's existing intent was correct; the EXPORT changes to match (its rect spanned the full figure incl. axis). Implementation: a non-layout-affecting 4-side DOM frame (grid-overlay, inset box-shadow, gated on <span class="in">`--tv-table-border`</span>) + the export rect clipped to the table-bottom Y + a <span class="in">`boxed`</span>/<span class="in">`frame`</span> visual case added to the wysiwyg matrix. Closes Bug B (docs/dev/maintainer-feedback-2026-06-13.md). <span class="pp">|</span> The frame reads as "the table's edge"; the axis is a separate scaffold band <span class="pp">|</span> 2026-06-13 <span class="pp">|</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D9 <span class="pp">|</span> **REVERSED to MAXIMAL interaction defaults** (maintainer, 2026-06-13): the prior conservative split (author-grade OFF) is dropped — <span class="in">`BAKED_INTERACTION_DEFAULTS`</span> now sets enableEdit / enableReorderRows / enableReorderColumns / enableAxisZoom / enableArrange ON (showGroupCounts stays off — it's a display opinion, not a tinker affordance; showFilters stays off — legacy alias). The package's primary users are developers who want every affordance available without re-enabling it per spec. Edits are LOCAL (never persist to the doc), so default-on is low-cost; a publisher targeting passive readers opts out per-spec / per-theme / via the global tier (4-tier chain unchanged). Reaches R/JS/Shiny uniformly because all consumers leave flags NA/absent and fall to the baked tier. Gates updated: interaction-resolve.test, tabviz.test; roster unchanged. REVISIT at actual ship if the audience broadens to embedded published figures (the enableThemeEdit-cog-for-readers question folds into that review). <span class="pp">|</span> Maintainer: "Table users are developers of the package and want to be able to check/tinker without remembering to set each time" <span class="pp">|</span> 2026-06-13 <span class="pp">|</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D23 <span class="pp">|</span> **Polarity flip: ALL 9 PRESETS BLESS the derived flip — no pins.** 9-preset flipped battery rendered (width 380, V8 export path) and eyeballed individually: nejm/ledger/brutalist/newsprint/blueprint dark + aurora/terminal/synthwave/dwarven light are all legible and identity-coherent; the strongest are terminal-light, aurora-light, ledger-dark. One soft note: synthwave-light's bg gradient drifts olive in one corner — acceptable, revisit only if users complain. The Variations polarity control therefore shows on every preset, derive-by-default via <span class="in">`applyPolarityToInputs`</span>; the pin mechanism stays available for future themes whose flip is nonsense. The battery's first run also caught a real export regression (labelWidth fallback chain missing the explicit-width rung after R's systemfonts injection) — fixed in svg-generator before the verdicts were taken. <span class="pp">|</span> Battery evidence; derive-by-default was already the register default and the renders confirm it <span class="pp">|</span> 2026-06-12 <span class="pp">|</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D21 <span class="pp">|</span> **Settings UX total redesign locked** — five surfaces (Variations · Labels · Edit-theme{Identity · Plots · Styling}) per the maintainer's layer taxonomy; old panel + studio presentation SUPERSEDED (substrate unchanged); first principles + phased plan in docs/dev/settings-redesign.md. Phase 0 = removal before any new frontend element; build tab-by-tab with a consequence gate (visible-pixel delta, not DOM-fingerprint liveness). <span class="pp">|</span> Maintainer review found the accreted panel failing on every axis; salvage = redesign with sunk-cost gravity <span class="pp">|</span> 2026-06-12 <span class="pp">|</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D22 <span class="pp">|</span> **Studio DORMANT** — de-documented (CTA + nav removed, dormancy notice on page); harness kept passing, not extended; reborn after core settings UX with the round-trip + validate-matrix lessons. <span class="pp">|</span> Maintainer: "officially dead. Will be reborn once we finish the core UX" <span class="pp">|</span> 2026-06-12 <span class="pp">|</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D24 <span class="pp">|</span> **A11y POLISH deferred to immediately-before-CRAN** (the landed ARIA floor stays). Placeholder-title-regions idea TABLED. <span class="pp">|</span> Maintainer: a11y iteration needs user feedback, which needs a stable design basis <span class="pp">|</span> 2026-06-12 <span class="pp">|</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D19 <span class="pp">|</span> **Growth requires an absorber** (maintainer-prompted, 2026-06-11): a table with NO flex/plot column and no pinned aspect sizes to its CONTENT (grid falls back to max-content; the max-content scalable hugs + centers on the shell); tables WITH a forest/viz/explicit-flex column keep filling the container. Shrink-to-fit stays universal. This re-aligns the DOM with the EXPORT's long-standing contract ("a plain table shrinks to its content" — svg-generator widthFloor), which the multi-flex arc silently broke by giving every column DEFAULT_FLEX_WEIGHT=1 against a container-width target. <span class="pp">|</span> Maintainer: "do tables *need* to fit the whole div? goofy for narrow tables" — and the export already answered no <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D18 <span class="pp">|</span> **Delegated-authoring principle for theme column_defaults** (maintainer ruling, 2026-06-11): authorship is DIVIDED — theme writers (institutions) are the delegated half of authoring, theme consumers (individuals) the other. Themes are afforded BROAD latitude by default; the value-equality author-wins rule ("at schema default ⇒ themeable", including the #65 re-base epsilon where an author explicitly choosing the outgoing theme's default gets re-based) is the SOUND contract, not a deficiency to engineer away with provenance marks. Provenance stays a non-goal unless real consumer complaints surface. <span class="pp">|</span> Maintainer ruling on propagation-readiness flag #4: institutions delegate house style to themes deliberately; an individual who fights the house style states a NON-default value, which always wins <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D15 <span class="pp">|</span> Export title-block arithmetic RESOLVED: headerBand.top max<span class="sc">\|</span>Δ<span class="sc">\|</span> 7.6 → 2.0 (budget tightened 8 → 3; the per-term metrics all read exact at ≤1). The closed-form model: exact line boxes (no per-line ceil) + title chrome (2.4 plain / 3 textured-knockout / +3 underline border) + the texture-knockout chain (2.5 replaces the themed gap on ruled/grid/dotted shells) + 1.5 under textured subtitles. Found via three instrumentation rounds (truth-to-truth metrics → ancestor var trail → computed-padding probe: the theme-runtime texture rule's <span class="in">`padding: 1.5px 7px`</span> shorthand replaces the caption chains). One documented consequence: the caption fix unmasked ~0.7px of measure-loop residual on brutalist (height budget 10→11, cause annotated in the gate). Remaining +2 nejm-family residual tracked inside the tightened budget. <span class="pp">|</span> Closed by instrumentation — the measure-first discipline end-to-end <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D13 <span class="pp">|</span> enable_themes roster: MEASURED (the register's ask) — the resolved 9-preset roster rides interaction.enableThemes at 43.9kB ≈ 88.8% of a small widget's payload. DECIDED: switch to INPUTS-form wire envelopes resolved in-widget (~10× smaller; the widget ships the full resolver). **IMPLEMENTED same day**: serialize_theme_slim emits the roster; ThemeSwitcher expands picks via buildTheme in-widget. Measured: roster 43.9kB → 8.4kB; total widget payload 49.4kB → 14.2kB (3.5×). interaction-qa's real-input theme-switch leg green <span class="pp">|</span> UNILATERAL (delegated): the measurement makes keep untenable and lazy-load needless — inputs-form is strictly better on every axis <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D12 <span class="pp">|</span> Default-paginate threshold IMPLEMENTED: NULL past 200 rows auto-paginates (200 rows/page, break on group, once-per-session hint); <span class="in">`paginate = FALSE`</span> is the documented opt-out; explicit specs untouched <span class="pp">|</span> UNILATERAL (delegated): the register default applied verbatim; pagination is the honest scale story (the DOM mount degrades before the algorithms do — bench-backed) <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D17 <span class="pp">|</span> Role-roster names KEPT as-is <span class="pp">|</span> UNILATERAL (delegated): the names now ship on wire 1.5–1.10 envelopes and the Stage-2/3 UI displays them daily without complaints surfacing; renaming would break existing envelopes for marginal legibility <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D3 <span class="pp">|</span> <span class="in">`effects.elevation`</span> KEPT (it paints — shell-paper consumes it as figure-wide depth, decided 2026-06-05); the four orphan <span class="in">`--tv-shadow-raised/overlay-*`</span> tokens + the elevation resolver group + the orphaned elevation.ts module DELETED <span class="pp">|</span> UNILATERAL (delegated): option (b) — the honesty rule (D2/D11 precedent); the quartet had zero consumers and TODO flags <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D4 <span class="pp">|</span> Portaled-popover neutral chrome ACCEPTED for 1.0 <span class="pp">|</span> UNILATERAL (delegated): default (b) — consistent neutral chrome is defensible; revisit on dark-theme adoption feedback <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D5 <span class="pp">|</span> Row-height pins stay PER-KIND only <span class="pp">|</span> UNILATERAL (delegated): re-confirmed — the measure loop covers per-row overflow; no new evidence since the interactivity arc <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D6 <span class="pp">|</span> Keyboard column reorder: SHIP WITHOUT, documented gap <span class="pp">|</span> UNILATERAL (delegated): default — expensive, rarely exercised; the a11y floor (area J) ships without it <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D7 <span class="pp">|</span> Pagination-export contract: EXPORT = WHOLE TABLE, documented <span class="pp">|</span> UNILATERAL (delegated): default (a) — the right semantic (a figure is the dataset, a page is a view); needs the save_plot docs sentence + WYSIWYG exception-list line when area G writes them <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D8 <span class="pp">|</span> Estimator-vs-canvas widths on raw generateSVG: **RESOLVED** (2026-06-13) — both halves closed, not merely budgeted. MEASUREMENT: the hand-tuned character-class multipliers (a magic-number accretion that over-budgeted ~7%) were replaced by REAL per-glyph advance tables measured offline from every preset's actual webfonts at anchor weights 400/700 (`font-metrics.generated.ts`, regen via `npm run regen:font-metrics`), with serif/sans/mono class fallbacks for unknown families and per-glyph weight interpolation across the continuous axis — residual vs canvas is kerning only (~1–2%). FLEX-PARITY: the estimator fix unmasked a real divergence (the label column flexed in the DOM but was a separate scalar in the export, and viz naturals mismatched), root-caused to D20 item-4 and fixed there. The WYSIWYG gate now passes the raw-generateSVG path at **0 breaches** (155 findings, down from 178). <span class="pp">|</span> the over-budget was a bug, not a boundary; empirical measurement + flex unification dissolved it <span class="pp">|</span> 2026-06-13 <span class="pp">|</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D10 <span class="pp">|</span> Group-header banding/chevron: VERIFIED ALIGNED by measurement (2026-06-11) — a new permanent matrix metric (groupLabel.x, DOM post-chevron vs SVG text x) agrees within 1.5px across all 12 cases; the export's banding coordination already exists (renderGroupHeader's renderBackground handshake). The 2026-06-10 premise was closed by the intervening WYSIWYG pass + W4 ports. The probe guards regressions from here. <span class="pp">|</span> UNILATERAL (delegated): measurement preempted implementation <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D16 <span class="pp">|</span> Settings panel single-scroll RESTORED + IMPLEMENTED: compact layout renders all four sections in one scroll with the bar as sticky jump-links (role=navigation); the studio (roomy) keeps real tabs; the liveness harness rewritten for the new IA — 70 controls verified live (up from 68), reset gutter green <span class="pp">|</span> UNILATERAL (delegated): default (a) — the settings-overhaul lock had reviewed rationale <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D18 <span class="pp">|</span> Title color bound to role <span class="in">`text`</span> (option a); the last text-cluster bridge row deleted <span class="pp">|</span> UNILATERAL (user-delegated 2026-06-11, flagged for review): the v3 value was the raw ink ANCHOR — pre-cascade special-casing, not a role; deltas vs <span class="in">`text`</span> are small (spot-rendered nejm + terminal: coherent); brand-text would re-identity all 9 presets; a new role for one consumer bloats the curated roster. Chromatic titles stay one re-route away. <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D11 <span class="pp">|</span> consumedBy annotation arc EXECUTED as one dedicated arc: all 119 grandfathered rows cleared (annotated against verified consumers, or deleted as dead — found currency:symbol/position dead editor menus + viz_violin:maxWidth) <span class="pp">|</span> The sweep itself caught 3 more dead options — exactly the audit dividend the one-arc approach promised <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D2 <span class="pp">|</span> The 6 authored-but-ignored column options DELETED (<span class="in">`range:showBar`</span>, <span class="in">`viz_bar:{barWidth,barGap,orientation}`</span>, <span class="in">`viz_boxplot:{boxWidth,whiskerType}`</span>) — schema rows, typed fields, authoring args (TS + R), emit defaults, docs, drift-gate grandfather rows <span class="pp">|</span> Register default applied at M1: unread knobs violate the honesty rule; renderers compute these locally (VizBar hardcodes its own gap) and never read the options; plausible features can return post-1.0 WITH readers <span class="pp">|</span> 2026-06-11 <span class="pp">|</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D1 <span class="pp">|</span> HC-fidelity vertical KILLED (rules + <span class="in">`--tv-hc-*`</span> tokens + resolver group + test deleted) <span class="pp">|</span> Designed but never wired to any markup; the a11y floor (roadmap J) lands without it — HC mode's live behavior (wash drops, border bump, contrast re-resolve) is untouched <span class="pp">|</span> 2026-06-10 <span class="pp">|</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> D14 <span class="pp">|</span> <span class="in">`theme_blend()`</span> + SplitForest static-knit path CUT from 1.0 scope <span class="pp">|</span> Neither is started; neither blocks the 1.0 identity; post-1.0 backlog <span class="pp">|</span> 2026-06-10 <span class="pp">|</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="fu">## Process notes</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The register is for PRODUCT decisions (behavior, scope, defaults), not</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  engineering choices an arc can settle locally.</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>"Default if undecided" is binding: if the decide-by milestone closes</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  without a decision, the default ships. This is what makes deferral safe.</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Sources feeding the initial population: interactivity-UX arc deferrals,</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>  WYSIWYG fidelity pass residuals, 2026-06-10 cleanup audit "kept for</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>  decision" items, 1.0 strategy locks.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

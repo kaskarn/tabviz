@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>x-bilingual-devblog – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#post-0.2-retrospective-bilingual-authoring-closing-the-oklab-gap" id="toc-post-0.2-retrospective-bilingual-authoring-closing-the-oklab-gap" class="nav-link active" data-scroll-target="#post-0.2-retrospective-bilingual-authoring-closing-the-oklab-gap">Post-0.2 retrospective: bilingual authoring + closing the OKLab gap</a>
+  <ul class="collapse">
+  <li><a href="#what-we-were-trying-to-do" id="toc-what-we-were-trying-to-do" class="nav-link" data-scroll-target="#what-we-were-trying-to-do">What we were trying to do</a></li>
+  <li><a href="#what-landed-in-0.2.0" id="toc-what-landed-in-0.2.0" class="nav-link" data-scroll-target="#what-landed-in-0.2.0">What landed in 0.2.0</a></li>
+  <li><a href="#the-oklab-precision-discovery" id="toc-the-oklab-precision-discovery" class="nav-link" data-scroll-target="#the-oklab-precision-discovery">The OKLab precision discovery</a></li>
+  <li><a href="#the-0.2.1-round-canonization-r-streamlining" id="toc-the-0.2.1-round-canonization-r-streamlining" class="nav-link" data-scroll-target="#the-0.2.1-round-canonization-r-streamlining">The 0.2.1 round: canonization + R streamlining</a></li>
+  <li><a href="#the-bilingual-docs-page-becoming-actually-bilingual" id="toc-the-bilingual-docs-page-becoming-actually-bilingual" class="nav-link" data-scroll-target="#the-bilingual-docs-page-becoming-actually-bilingual">The bilingual docs page becoming actually bilingual</a></li>
+  <li><a href="#the-hover-legibility-class-of-bugs" id="toc-the-hover-legibility-class-of-bugs" class="nav-link" data-scroll-target="#the-hover-legibility-class-of-bugs">The hover-legibility class of bugs</a></li>
+  <li><a href="#the-rts-delegation-pilot" id="toc-the-rts-delegation-pilot" class="nav-link" data-scroll-target="#the-rts-delegation-pilot">The R→TS delegation pilot</a></li>
+  <li><a href="#the-rts-column-parity-test-harness" id="toc-the-rts-column-parity-test-harness" class="nav-link" data-scroll-target="#the-rts-column-parity-test-harness">The R↔︎TS column parity test harness</a></li>
+  <li><a href="#spec-modifiers-srcjssrcauthoringmodifiers.ts" id="toc-spec-modifiers-srcjssrcauthoringmodifiers.ts" class="nav-link" data-scroll-target="#spec-modifiers-srcjssrcauthoringmodifiers.ts">Spec modifiers (<code>srcjs/src/authoring/modifiers.ts</code>)</a></li>
+  <li><a href="#what-didnt-ship" id="toc-what-didnt-ship" class="nav-link" data-scroll-target="#what-didnt-ship">What didn’t ship</a></li>
+  <li><a href="#numbers" id="toc-numbers" class="nav-link" data-scroll-target="#numbers">Numbers</a></li>
+  <li><a href="#closing-notes" id="toc-closing-notes" class="nav-link" data-scroll-target="#closing-notes">Closing notes</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="post-0.2-retrospective-bilingual-authoring-closing-the-oklab-gap" class="level1">
+<h1>Post-0.2 retrospective: bilingual authoring + closing the OKLab gap</h1>
+<p><strong>Posted:</strong> 2026-05-19 <strong>Author:</strong> Claude (via Antoine) <strong>Status:</strong> Closing notes for the 0.2.x line — <code>@tabviz/core@0.2.0</code> through <code>0.2.1</code> and the R companion <code>tabviz@0.31.2</code>. Companion to - <code>docs/dev/phase0-devblog.md</code> (pre-split paydown) - <code>docs/dev/post-publish-devblog.md</code> (Phase 1 through the npm publish) - <code>docs/dev/r-ts-parity-notes.md</code> (per-helper R↔︎TS parity tracker)</p>
+<p>The post-publish devblog ended with <code>@tabviz/core@0.1.1</code> on npm — a runtime-only package. This entry covers what happened next: the JS side becoming a first-class <strong>authoring target</strong>, the OKLab precision gap we discovered while porting the theme cascade, and three rounds of opportunistic R-side cleanup that fell out of the parity work. By the end the npm package shipped a 1:1 TypeScript mirror of <code>tabviz()</code> / <code>col_*()</code> / <code>viz_*()</code> / <code>theme_*()</code>, the View Source panel emitted compact builder code instead of 200-line JSON dumps, and the Quarto docs gallery had two pages live-rendering the same plot from both R and TypeScript on the same page.</p>
+<hr>
+<section id="what-we-were-trying-to-do" class="level2">
+<h2 class="anchored" data-anchor-id="what-we-were-trying-to-do">What we were trying to do</h2>
+<p>The 0.1.x line proved you could load <code>@tabviz/core</code> from npm and mount a server-built <code>WebSpec</code> into a DOM node. Useful for consumers who had R generating specs, but it left the JS side as a <em>consumer</em> of payloads constructed elsewhere. The natural next question — “can I author a spec from TypeScript without R in the loop?” — required mirroring the R authoring surface (<code>tabviz()</code>, <code>col_text()</code>, <code>viz_forest()</code>, <code>web_theme_lancet()</code>, the spec modifiers) in TS.</p>
+<p>Three goals for 0.2.0:</p>
+<ol type="1">
+<li><strong>TS authoring builders mirroring R 1:1.</strong> <code>colText({ field: "x" })</code> should produce the same wire shape as <code>col_text("x")</code>, with matching argument names + defaults (snake_case ↔︎ camelCase translation, but nothing else surprising).</li>
+<li><strong>A real theme story JS-side.</strong> The R-side cascade resolver (<code>R/utils-theme-resolve.R</code>, ~680 lines of 3-tier OKLCH derivation) needed a TS counterpart so <code>{ theme: { extend: "lancet", overrides: { inputs: { primary: "#..." } } } }</code> could re-derive every Tier 2/3 leaf JS-side instead of forcing an R round-trip. This was the long-deferred Phase 0c-C5 work item.</li>
+<li><strong>A View Source panel that didn’t lie.</strong> The pre-0.2 JS tab in the in-widget source modal dumped the resolved <code>WebSpec</code> as a JSON literal — accurate, but a poor advertisement for the new authoring API. Targets: hide data behind a placeholder, emit <code>theme: "lancet"</code> when a preset matched, drop arguments at their defaults, use the new function builders.</li>
+</ol>
+<p>Plus a bilingual docs example to prove the whole story end-to-end.</p>
+<hr>
+</section>
+<section id="what-landed-in-0.2.0" class="level2">
+<h2 class="anchored" data-anchor-id="what-landed-in-0.2.0">What landed in 0.2.0</h2>
+<p>The whole 0.2.0 round came in under a single working day of session time, ~4,500 lines added across 28 files. The pieces:</p>
+<p><strong>Cascade resolver port</strong> (<code>srcjs/src/lib/theme-resolve.ts</code>). Direct port of <code>R/utils-theme-resolve.R</code>’s <code>resolve_theme()</code> pipeline — Tier 1 mirror chain → chrome derivation → data slot bundles → text role derivation → density-driven spacing → Tier 3 cluster fills → construction-time contrast validation. The TS port came in at ~600 lines (vs the R original’s ~680) — slightly tighter because TS’s <code>obj.field ?? defaults.field</code> syntax is shorter than R’s <code>fill_na(obj, list(...))</code> indirection. Already-existing TS-side OKLCH helpers in <code>oklch.ts</code> (Björn Ottosson’s transform from sRGB) got two new functions — <code>contrastRatio</code> (WCAG 2.1) and <code>ensureContrast</code> (walk L until the target ratio is met) — to back the validator.</p>
+<p><strong>22 column builders</strong> (<code>srcjs/src/authoring/columns.ts</code>). One per R <code>col_*()</code> helper: <code>colText</code>, <code>colNumeric</code>, <code>colN</code>, <code>colInterval</code>, <code>colPvalue</code>, <code>colBar</code>, <code>colSparkline</code>, <code>colBadge</code>, <code>colIcon</code>, <code>colStars</code>, <code>colPictogram</code>, <code>colRing</code>, <code>colImg</code>, <code>colReference</code>, <code>colRange</code>, <code>colHeatmap</code>, <code>colProgress</code>, <code>colCurrency</code>, <code>colPercent</code>, <code>colEvents</code>, <code>colGroup</code>, plus <code>colLabel</code>. Each takes a single options object (R-positional <code>field</code> argument becomes TS-named <code>{ field }</code>); defaults match R verbatim where possible.</p>
+<p><strong>Viz builders + reference lines.</strong> <code>vizForest</code>, <code>vizBar</code>, <code>vizBoxplot</code>, <code>vizViolin</code>, plus <code>effectForest</code> / <code>effectBar</code> / <code>effectBoxplot</code> / <code>effectViolin</code> for multi-effect plots, and <code>refline</code> for annotations. Same pattern.</p>
+<p><strong>Theme API</strong> (<code>srcjs/src/lib/theme-api.ts</code>). <code>webTheme(args)</code> constructor, <code>setInputs</code> / <code>setVariants</code> / <code>setSpacing</code> / <code>setThemeField</code> modifiers, <code>resolveThemeRef</code> for the name-string-or-extend-object resolution path. Seven preset constructors covering the four journal themes (Cochrane, Lancet, JAMA, Dark) plus three LOTR easter-egg themes (Dwarven, Elvish, Hobbit) ported from <code>R/themes-lotr.R</code>.</p>
+<p><strong>Top-level <code>tabviz()</code></strong> (<code>srcjs/src/authoring/tabviz.ts</code>). Takes a row array + column array + theme reference + labels/interaction toggles, returns a fully-formed <code>WebSpec</code>. Mounted with the existing <code>createTabviz(node, spec)</code> runtime factory.</p>
+<p><strong>View Source rewrite</strong> (<code>srcjs/src/lib/source-emit.ts</code>). Replaces the 200-line JSON dump with a pure <code>emitJsSource(spec, opLog)</code> function that walks the spec, infers which builder produced each column, drops arguments at their builder defaults, emits <code>theme: "lancet"</code> for preset matches, and hides the data array behind a <code>tabvizData</code> placeholder. Same op-log replay below the spec block.</p>
+<p><strong>Bilingual gallery example</strong> (<code>docs/gallery/genetic-association.qmd</code>). One Quarto page, two renders of the same forest plot — R chunk above, TypeScript reference below. The TS block was initially <code>eval: false</code> (reference only); we’d make it live in 0.2.1.</p>
+<hr>
+</section>
+<section id="the-oklab-precision-discovery" class="level2">
+<h2 class="anchored" data-anchor-id="the-oklab-precision-discovery">The OKLab precision discovery</h2>
+<p>The cascade-resolver port produced the resolved Tier 2/3 leaves, and we wanted to verify byte-equality against the R-resolved snapshot (<code>theme-presets-v2.json</code> was captured from <code>tabviz:::serialize_theme( web_theme_cochrane())</code> and friends). The first test of cochrane against the snapshot:</p>
+<pre><code>chrome — surface (within OKLab precision)        PASS
+chrome — content                                  PASS
+chrome — divider                                  PASS
+chrome — accent                                   FAIL
+  fillEmphasis: TS "#0089B7" vs R "#008ACF"  (B channel differs by 24)
+  stroke:       TS "#0079A2" vs R "#007AAC"  (10-channel drift)</code></pre>
+<p>The differences clustered on chroma-related derivations near gamut boundaries. Pure mixes (surface.muted, divider.subtle) matched exactly or within a single channel. Anything that ran through <code>oklch_chroma()</code> (slot bundle <code>fillEmphasis</code> / <code>strokeEmphasis</code>, accent muted/tints near the saturation edge) drifted by 5-25 channels per pixel.</p>
+<p>After about an hour of investigation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">R</span><span class="op">&gt;</span> farver::convert_colour<span class="er">(</span><span class="ex">farver::decode_colour</span><span class="er">(</span><span class="st">"#0099CC"</span><span class="kw">)</span><span class="ex">,</span> <span class="st">"rgb"</span>, <span class="st">"oklch"</span><span class="kw">)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[1,]</span>  0.6405375  0.1292621  231.0822</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">TS</span><span class="op">&gt;</span> hexToOklch<span class="er">(</span><span class="st">"#0099CC"</span><span class="kw">)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">{</span> <span class="ex">L:</span> 0.640533, C: 0.129199, H: 231.05493 }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>R’s <code>farver</code> and our hand-rolled Ottosson transform produced OKLCH triples that differed by ~5e-6 L / ~6e-5 C / ~0.03° H. Negligible in isolation. But OKLab→sRGB gamut clipping bisects on chroma when the result is out-of-gamut, and tiny precision differences amplify dramatically when the result sits <em>at</em> the gamut boundary — which is exactly where a freshly chroma-boosted color tends to land.</p>
+<p>Three paths considered: profile farver against Ottosson to find the coefficient delta and tune TS to match (cheapest if the delta turned out to be a single threshold); swap to a third-party OKLab implementation that matched farver (adds a dependency); or invert the parity direction — make TS canonical for the JSON snapshot, leave R’s runtime cascade alone, accept that each runtime produces internally consistent (but pairwise sub-perceptual-different) output.</p>
+<p>For 0.2.0 we shipped option C in a relaxed form: tolerance-based parity test (per-channel delta ≤ 25), <code>r-ts-parity-notes.md</code> documenting the gap, and a flag that the canonization would be the next round’s work. Released. Moved on.</p>
+<hr>
+</section>
+<section id="the-0.2.1-round-canonization-r-streamlining" class="level2">
+<h2 class="anchored" data-anchor-id="the-0.2.1-round-canonization-r-streamlining">The 0.2.1 round: canonization + R streamlining</h2>
+<p>0.2.0 was Tuesday morning’s work. By Tuesday afternoon we were revisiting the parity gap with fresh eyes.</p>
+<p>The canonization itself was four steps:</p>
+<ol type="1">
+<li>Write <code>srcjs/scripts/regenerate-theme-presets.ts</code> — a Bun script that calls <code>resolveTheme()</code> on each of the seven preset Tier 1 input drafts and writes <code>theme-presets-v2.json</code>.</li>
+<li>Run it. The new snapshot looks structurally identical to the old one; individual hex values drift 1-25 channels on the chroma-related leaves.</li>
+<li>Tighten <code>theme-resolve.test.ts</code> from tolerance-based comparison to byte-exact <code>toEqual</code> — the parity test is now “does the resolver still produce the same shape it did when we last regenerated the snapshot.”</li>
+<li>Rebuild the JS bundle. The R-side resolver continues to run for R-rendered widgets; the snapshot is consumed only by the JS-side theme switcher and the View Source emitter’s preset-name matching.</li>
+</ol>
+<p>The argument that <em>each runtime is canonical in its own context</em> fell out naturally: R-rendered widgets ship the wire with R-resolved values verbatim, so JS reads them as-is and renders without consulting any snapshot; JS-side programmatic authoring (<code>tabviz({ theme: "lancet" })</code> and friends) and the in-widget theme switcher use the snapshot, so they get the TS values consistently. The two paths only meet in the specific scenario of “R-rendered widget, user clicks Lancet in the switcher” — and the difference there is sub-perceptual.</p>
+<p>While porting the resolver to TS, we noticed three patterns in the R code that were paper-thin candidates for cleanup. They went into the 0.2.1 round along with the canonization:</p>
+<p><strong>Deduped legacy-input migration.</strong> <code>web_theme()</code> and <code>set_inputs()</code> both hand-rolled the same <code>brand</code>/<code>tertiary</code> v1→v2 deprecation block (the deprecated input field names that the v2 cascade rework removed). Extracted to a single <code>check_legacy_inputs(args, arg_hint)</code> helper in <code>R/themes-api.R</code>; the two callsites pass their respective migration-tip text. Saved ~18 lines.</p>
+<p><strong>Unified <code>fill_na()</code> and <code>compose_text()</code>.</strong> Both iterated S7 property names and wrote where the current value was <code>NA</code>. The difference: <code>fill_na</code> read defaults from a named list, <code>compose_text</code> from another S7 object. Collapsed into a single <code>fill_na(obj, source)</code> that dispatches on <code>inherits(source, "S7_object")</code>; the older <code>compose_text(over, under)</code> remains as a thin alias for callsite readability.</p>
+<p><strong>Dropped a defensive guard at the old line 583</strong> of <code>R/utils-theme-resolve.R</code>. <code>resolve_components</code> had an <code>if (is.na(theme@inputs@secondary_deep)) primary_deep else secondary_deep</code> fallback — but <code>resolve_components</code> runs AFTER <code>resolve_inputs_mirrors</code>, which guarantees <code>secondary_deep</code> is non-NA. The guard was unreachable. Removed; full R test suite (~600 tests) verified no regression.</p>
+<p>All three landed in commit <code>63af90e</code> along with the canonization.</p>
+<hr>
+</section>
+<section id="the-bilingual-docs-page-becoming-actually-bilingual" class="level2">
+<h2 class="anchored" data-anchor-id="the-bilingual-docs-page-becoming-actually-bilingual">The bilingual docs page becoming actually bilingual</h2>
+<p>The genetic-association page that shipped with 0.2.0 had the TS block as <code>eval: false</code> text — reference, not rendering. The next session opened with the question: can Quarto actually run the TS side?</p>
+<p>Four candidate paths surfaced:</p>
+<ol type="1">
+<li><strong><code>ojs</code> chunks.</strong> Quarto’s native ObservableJS engine, runs JS in the browser at page load. Dynamic-import <code>@tabviz/core</code> from esm.sh; share data from R via <code>ojs_define()</code> + <code>transpose()</code>; mount via <code>createTabviz(host, spec)</code> into a host div the cell creates.</li>
+<li>Pre-render to SVG via <code>@tabviz/core/export</code> at site-build time.</li>
+<li>Standalone HTML file loaded via <code>&lt;iframe&gt;</code>.</li>
+<li>A custom Quarto Lua extension that natively understands <code>tabviz-ts</code> blocks.</li>
+</ol>
+<p>Option 1 won on the integration vs.&nbsp;effort tradeoff. The first implementation came in about 30 lines of ojs + 5 lines of R-side <code>ojs_define()</code>. The first deploy attempt failed three times in sequence, each surfacing a real issue:</p>
+<ul>
+<li><code>ojs_define() cannot be cached</code> — fixed by <code>#| cache: false</code> on the R chunk.</li>
+<li><code>TypeError: e.validate_each_keys is not a function</code> — Svelte version drift. The 0.2.1 dist was compiled against <code>svelte@5.46.1</code> (per <code>srcjs/package-lock.json</code>); esm.sh’s default resolution of <code>^5.0.0</code> pulled <code>5.55.8</code>, whose runtime had reshuffled internal helpers. Fixed by pinning the version in the esm.sh import URL via <code>?deps=svelte@5.46.1</code>.</li>
+<li>A 502 from <code>github.com/quarto-dev/quarto-cli/releases/download/...</code> — unrelated infra hiccup. Re-ran the workflow.</li>
+</ul>
+<p>After landing the fix we noticed the hardcoded <code>5.46.1</code> would break silently the next time anyone bumped Svelte in <code>srcjs/package.json</code>. Auto-pinned: the R chunk reads <code>srcjs/package-lock.json::packages["node_modules/svelte"]$version</code> and exposes it via <code>ojs_define(svelte_version = ...)</code>; the ojs import template-literals it in. Future Svelte bumps now propagate to the docs on the next quarto render automatically.</p>
+<p>A second bilingual gallery page (<code>docs/gallery/bilingual-dashboard.qmd</code>) followed the same pattern for the <em>non-forest</em> column family — bars / sparklines / badges / rings / stars — to demonstrate that the bilingual claim covers more than forest plots.</p>
+<hr>
+</section>
+<section id="the-hover-legibility-class-of-bugs" class="level2">
+<h2 class="anchored" data-anchor-id="the-hover-legibility-class-of-bugs">The hover-legibility class of bugs</h2>
+<p>While reviewing the new theme switcher behavior we noticed JAMA hovers were illegible — black-on-black on multiple menu items and toolbar buttons. The root cause: CSS rules using bare identity tokens (<code>var(--tv-border)</code>, <code>var(--tv-accent)</code>, <code>var(--tv-primary-deep)</code>) as hover backgrounds. Fine when those tokens are mid-tone, broken when a theme pins them dark — JAMA’s <code>accent: #000000</code> and <code>divider.subtle: #000000</code>, dark theme’s <code>primary_deep: #2E5290</code>.</p>
+<p>The pre-0.2 codebase had already established the right pattern in some places via <code>color-mix(in srgb, var(--tv-accent) 12%, var(--tv-bg))</code> for hover backgrounds (a 12% accent tint that’s guaranteed legible because it tints into the surface). The fix: codify the convention, introduce a single <code>--tv-hover-bg</code> derived variable at the <code>ForestPlot.svelte</code> variable declaration block, audit all <code>:hover</code> / <code>:active</code> / <code>.open</code> rules for bare-identity-token backgrounds, and migrate them. Result: 13 sites migrated across <code>ZoomControls</code>, <code>ThemeSwitcher</code>, <code>TokenPicker</code>, five button components, three controls components, and two popovers. The decorative-divider uses of <code>--tv-border</code> (1px lines, bar-track backgrounds) stayed put — those don’t carry text on top.</p>
+<hr>
+</section>
+<section id="the-rts-delegation-pilot" class="level2">
+<h2 class="anchored" data-anchor-id="the-rts-delegation-pilot">The R→TS delegation pilot</h2>
+<p>The original Phase 2 plan was R helpers delegating construction to the TS authoring builders via V8 — the “single source of truth” move. The initial sketch had a V8-when-available pattern: delegate if <code>V8</code> was loaded (Suggests), fall back to the hand-rolled R path otherwise.</p>
+<p>The pushback from the user — “let’s not maintain parallel stacks” — landed quickly. Three changes:</p>
+<ol type="1">
+<li><strong>V8 promoted from Suggests → Imports.</strong> <code>DESCRIPTION</code> updated. V8 is now a hard runtime dep; the R package always has access to the JS runtime.</li>
+<li><strong><code>R/v8-bridge.R</code></strong> — a singleton V8 context, lazy-initialized, plus a <code>ts_call(builder_name, args)</code> helper that dispatches via <code>inst/js/svg-generator.js</code>’s new <code>callBuilder(name, argsJson)</code> global (added to <code>srcjs/src/export/v8-entry.ts</code> so the same bundle covers SVG export + authoring delegation).</li>
+<li><strong><code>col_text()</code> refactored to delegate.</strong> The R-side helper now pushes argument validation through <code>checkmate</code>, then calls <code>ts_call("colText", ts_args)</code> to compute the wire shape (id, header default, options bundle), then wraps the result in an S7 <code>ColumnSpec</code> via <code>web_col()</code> for R-side style mappings + formatter slot compatibility.</li>
+</ol>
+<p>The <code>do.call</code> boilerplate inside <code>col_text</code> was a small let-the-caller-override dance: when <code>tabviz()</code> internally calls <code>col_text(field = "study", id = "label")</code> to construct the row-label column, the explicit <code>id = "label"</code> arg arrives via <code>...</code> and needs to shadow the TS-computed default. <code>do.call(web_col, list(...) &lt;- overrides)</code> was cleaner than parameter juggling.</p>
+<p>Only <code>col_text</code> got the treatment in this round — pilot rather than fleet refactor. The pattern is now established; the other 21 column builders + 4 viz builders can follow when there’s value.</p>
+<hr>
+</section>
+<section id="the-rts-column-parity-test-harness" class="level2">
+<h2 class="anchored" data-anchor-id="the-rts-column-parity-test-harness">The R↔︎TS column parity test harness</h2>
+<p>The other 21 helpers staying R-only is fine <em>because</em> the parity harness now catches drift mechanically. <code>tests/testthat/test-parity-columns.R</code> exercises each column helper R-side and TS-side with the same args via <code>ts_call(...)</code>, then asserts key wire-shape fields (id, field, header, type, options structure) match.</p>
+<p>It caught three real drifts in its first run:</p>
+<p><strong><code>col_stars</code> vs <code>colStars</code>.</strong> R implements stars as a thin wrapper over <code>col_pictogram(glyph = "star")</code> — wire type is “pictogram”, not “stars”. TS <code>colStars</code> was building its own “stars”-typed column. Aligned TS by making <code>colStars</code> defer to <code>colPictogram</code>.</p>
+<p><strong><code>col_interval</code> field naming.</strong> R uses synthetic <code>_interval_&lt;point&gt;</code> field names so two interval columns sharing the same point estimate get distinct ids. TS was using the bare <code>point</code> as the field. Mirrored the synthetic prefix convention.</p>
+<p><strong><code>col_sparkline</code> default header.</strong> R defaults <code>header = "Trend"</code> (literal); TS had it falling through to the field name. Mirrored.</p>
+<p>Each was a one-line fix on the TS side. The drift detection paid for itself within ten minutes of writing the harness.</p>
+<hr>
+</section>
+<section id="spec-modifiers-srcjssrcauthoringmodifiers.ts" class="level2">
+<h2 class="anchored" data-anchor-id="spec-modifiers-srcjssrcauthoringmodifiers.ts">Spec modifiers (<code>srcjs/src/authoring/modifiers.ts</code>)</h2>
+<p>The R API has fluent <code>set_*</code> modifiers that work on either a static <code>WebSpec</code> or a Shiny proxy: <code>set_title()</code>, <code>set_subtitle()</code>, <code>set_caption()</code>, <code>set_footnote()</code>, <code>set_theme()</code>, <code>set_zoom()</code>, <code>add_column()</code>, <code>remove_column()</code>, <code>update_column()</code>, plus <code>paint_row()</code>, <code>paint_cell()</code>, <code>sort_rows()</code>, <code>filter_rows()</code>.</p>
+<p>The static-spec subset got TS mirrors in 0.2.1’s follow-up round — pure functions, immutable, composable. Runtime control of a mounted widget continues to use the instance methods returned by <code>createTabviz</code> (<code>instance.sortBy(...)</code> etc); the modifier API here is for spec authoring, not live updates. The Shiny proxy variant stays R-only — purely an R-concern.</p>
+<hr>
+</section>
+<section id="what-didnt-ship" class="level2">
+<h2 class="anchored" data-anchor-id="what-didnt-ship">What didn’t ship</h2>
+<p>The 0.2.x line’s “out of scope” list got smaller over the round but isn’t empty:</p>
+<ul>
+<li><strong>Full R→TS delegation across all builders.</strong> The <code>col_text</code> pilot validated the pattern; the remaining 21 column helpers + 4 viz helpers + theme constructors still hand-roll their wire shapes R-side. The parity tests catch drift; full delegation can come when there’s concrete value or when the maintenance burden of two implementations starts to bite.</li>
+<li><strong>Shiny proxy in TS.</strong> The R-side proxy API (<code>tabviz_proxy(session, output_id) |&gt; set_title(...) |&gt; ...</code>) is fundamentally an R-concern (Shiny is an R runtime); there’s no obvious analog in pure TS. Not on the radar.</li>
+<li><strong>Bilingual conversion of the older gallery pages.</strong> Two new bilingual pages got added (genetic-association + bilingual-dashboard). The existing meta-analysis / clinical / dashboards / viz-glyphs pages stay R-only for now — retrofitting them is real time investment with diminishing returns past the first couple of examples.</li>
+</ul>
+<hr>
+</section>
+<section id="numbers" class="level2">
+<h2 class="anchored" data-anchor-id="numbers">Numbers</h2>
+<ul>
+<li><strong>Commits</strong>: 4 on <code>main</code> between <code>0cc9f75</code> (the 0.31.1 tag) and whatever lands after this devblog.</li>
+<li><strong>Lines added</strong>: ~6,500 across the two rounds (4,500 in 0.2.0, ~2,000 in 0.2.1’s follow-up).</li>
+<li><strong>Test suite</strong>: 252 → 262 TS tests + the full R suite + the new R parity test file. All green.</li>
+<li><strong>Bundle size</strong>: main npm entry 5.3 KB gzipped (≈ unchanged from 0.1.5 after the authoring layer landed; the cascade resolver + presets-inputs added ~22 KB to the IIFE which is within the bumped size budget).</li>
+<li><strong>Tagged</strong>: <code>v0.31.2</code> on <code>main</code>, <code>@tabviz/core@0.2.0</code> and <code>@0.2.1</code> on the npm registry.</li>
+</ul>
+<hr>
+</section>
+<section id="closing-notes" class="level2">
+<h2 class="anchored" data-anchor-id="closing-notes">Closing notes</h2>
+<p>The 0.2.x line was conceived as “make the JS side a first-class authoring target.” That happened. The OKLab gap discovery and its eventual resolution were the most interesting detour: it surfaced an architectural choice that hadn’t been forced before (which runtime owns the canonical theme snapshot?), and the answer that fell out — each runtime canonical in its own context — generalizes to other R↔︎TS divergences that might surface later. The bilingual gallery pages exist as proof, not just claim. And the hover-legibility cleanup was a pure quality-of-life win that came along for free because the audit framework (grep for bare identity tokens, migrate to a single new variable) was straightforward once the convention was named.</p>
+<p>Next obvious extensions: more <code>col_*</code> helpers delegated through V8 if the maintenance burden warrants it; more bilingual gallery pages if authors want them; potentially a custom Quarto extension that natively understands <code>tabviz-ts</code> blocks so future bilingual pages don’t need the ojs + esm.sh + svelte-version-pin scaffolding by hand. But none of those are urgent. The 0.2.x line is shipped.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../dev";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Post-0.2 retrospective: bilingual authoring + closing the OKLab gap</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>**Posted:** 2026-05-19</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>**Author:** Claude (via Antoine)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>**Status:** Closing notes for the 0.2.x line — <span class="in">`@tabviz/core@0.2.0`</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>through <span class="in">`0.2.1`</span> and the R companion <span class="in">`tabviz@0.31.2`</span>. Companion to</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`docs/dev/phase0-devblog.md`</span> (pre-split paydown)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`docs/dev/post-publish-devblog.md`</span> (Phase 1 through the npm publish)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`docs/dev/r-ts-parity-notes.md`</span> (per-helper R↔TS parity tracker)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>The post-publish devblog ended with <span class="in">`@tabviz/core@0.1.1`</span> on npm — a</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>runtime-only package. This entry covers what happened next: the JS side</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>becoming a first-class **authoring target**, the OKLab precision gap we</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>discovered while porting the theme cascade, and three rounds of</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>opportunistic R-side cleanup that fell out of the parity work. By the</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>end the npm package shipped a 1:1 TypeScript mirror of <span class="in">`tabviz()`</span> /</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="in">`col_*()`</span> / <span class="in">`viz_*()`</span> / <span class="in">`theme_*()`</span>, the View Source panel emitted</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>compact builder code instead of 200-line JSON dumps, and the Quarto</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>docs gallery had two pages live-rendering the same plot from both R</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>and TypeScript on the same page.</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## What we were trying to do</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>The 0.1.x line proved you could load <span class="in">`@tabviz/core`</span> from npm and mount</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>a server-built <span class="in">`WebSpec`</span> into a DOM node. Useful for consumers who had</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>R generating specs, but it left the JS side as a *consumer* of payloads</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>constructed elsewhere. The natural next question — "can I author a</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>spec from TypeScript without R in the loop?" — required mirroring the</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>R authoring surface (<span class="in">`tabviz()`</span>, <span class="in">`col_text()`</span>, <span class="in">`viz_forest()`</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="in">`web_theme_lancet()`</span>, the spec modifiers) in TS.</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>Three goals for 0.2.0:</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**TS authoring builders mirroring R 1:1.** <span class="in">`colText({ field: "x" })`</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>   should produce the same wire shape as <span class="in">`col_text("x")`</span>, with</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>   matching argument names + defaults (snake_case ↔ camelCase</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>   translation, but nothing else surprising).</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**A real theme story JS-side.** The R-side cascade resolver</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`R/utils-theme-resolve.R`</span>, ~680 lines of 3-tier OKLCH derivation)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>   needed a TS counterpart so `{ theme: { extend: "lancet", overrides:</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>   { inputs: { primary: "#..." } } } }` could re-derive every Tier 2/3</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>   leaf JS-side instead of forcing an R round-trip. This was the</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>   long-deferred Phase 0c-C5 work item.</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**A View Source panel that didn't lie.** The pre-0.2 JS tab in the</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>   in-widget source modal dumped the resolved <span class="in">`WebSpec`</span> as a JSON</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>   literal — accurate, but a poor advertisement for the new authoring</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>   API. Targets: hide data behind a placeholder, emit <span class="in">`theme: "lancet"`</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>   when a preset matched, drop arguments at their defaults, use the</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>   new function builders.</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>Plus a bilingual docs example to prove the whole story end-to-end.</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## What landed in 0.2.0</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>The whole 0.2.0 round came in under a single working day of session</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>time, ~4,500 lines added across 28 files. The pieces:</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>**Cascade resolver port** (<span class="in">`srcjs/src/lib/theme-resolve.ts`</span>). Direct</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>port of <span class="in">`R/utils-theme-resolve.R`</span>'s <span class="in">`resolve_theme()`</span> pipeline — Tier 1</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>mirror chain → chrome derivation → data slot bundles → text role</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>derivation → density-driven spacing → Tier 3 cluster fills →</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>construction-time contrast validation. The TS port came in at ~600</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>lines (vs the R original's ~680) — slightly tighter because TS's</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="in">`obj.field ?? defaults.field`</span> syntax is shorter than R's</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="in">`fill_na(obj, list(...))`</span> indirection. Already-existing TS-side OKLCH</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>helpers in <span class="in">`oklch.ts`</span> (Björn Ottosson's transform from sRGB) got two</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>new functions — <span class="in">`contrastRatio`</span> (WCAG 2.1) and <span class="in">`ensureContrast`</span> (walk</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>L until the target ratio is met) — to back the validator.</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>**22 column builders** (<span class="in">`srcjs/src/authoring/columns.ts`</span>). One per R</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a><span class="in">`col_*()`</span> helper: <span class="in">`colText`</span>, <span class="in">`colNumeric`</span>, <span class="in">`colN`</span>, <span class="in">`colInterval`</span>,</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a><span class="in">`colPvalue`</span>, <span class="in">`colBar`</span>, <span class="in">`colSparkline`</span>, <span class="in">`colBadge`</span>, <span class="in">`colIcon`</span>,</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a><span class="in">`colStars`</span>, <span class="in">`colPictogram`</span>, <span class="in">`colRing`</span>, <span class="in">`colImg`</span>, <span class="in">`colReference`</span>,</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a><span class="in">`colRange`</span>, <span class="in">`colHeatmap`</span>, <span class="in">`colProgress`</span>, <span class="in">`colCurrency`</span>, <span class="in">`colPercent`</span>,</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a><span class="in">`colEvents`</span>, <span class="in">`colGroup`</span>, plus <span class="in">`colLabel`</span>. Each takes a single options</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>object (R-positional <span class="in">`field`</span> argument becomes TS-named <span class="in">`{ field }`</span>);</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>defaults match R verbatim where possible.</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>**Viz builders + reference lines.** <span class="in">`vizForest`</span>, <span class="in">`vizBar`</span>,</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a><span class="in">`vizBoxplot`</span>, <span class="in">`vizViolin`</span>, plus <span class="in">`effectForest`</span> / <span class="in">`effectBar`</span> /</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a><span class="in">`effectBoxplot`</span> / <span class="in">`effectViolin`</span> for multi-effect plots, and <span class="in">`refline`</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>for annotations. Same pattern.</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>**Theme API** (<span class="in">`srcjs/src/lib/theme-api.ts`</span>). <span class="in">`webTheme(args)`</span></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>constructor, <span class="in">`setInputs`</span> / <span class="in">`setVariants`</span> / <span class="in">`setSpacing`</span> /</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a><span class="in">`setThemeField`</span> modifiers, <span class="in">`resolveThemeRef`</span> for the</span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>name-string-or-extend-object resolution path. Seven preset constructors</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>covering the four journal themes (Cochrane, Lancet, JAMA, Dark) plus</span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>three LOTR easter-egg themes (Dwarven, Elvish, Hobbit) ported from</span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a><span class="in">`R/themes-lotr.R`</span>.</span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>**Top-level `tabviz()`** (<span class="in">`srcjs/src/authoring/tabviz.ts`</span>). Takes a row</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>array + column array + theme reference + labels/interaction toggles,</span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>returns a fully-formed <span class="in">`WebSpec`</span>. Mounted with the existing</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a><span class="in">`createTabviz(node, spec)`</span> runtime factory.</span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>**View Source rewrite** (<span class="in">`srcjs/src/lib/source-emit.ts`</span>). Replaces the</span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>200-line JSON dump with a pure <span class="in">`emitJsSource(spec, opLog)`</span> function</span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>that walks the spec, infers which builder produced each column, drops</span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>arguments at their builder defaults, emits <span class="in">`theme: "lancet"`</span> for</span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>preset matches, and hides the data array behind a <span class="in">`tabvizData`</span></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>placeholder. Same op-log replay below the spec block.</span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>**Bilingual gallery example**</span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>(<span class="in">`docs/gallery/genetic-association.qmd`</span>). One Quarto page, two</span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>renders of the same forest plot — R chunk above, TypeScript reference</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>below. The TS block was initially <span class="in">`eval: false`</span> (reference only); we'd</span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>make it live in 0.2.1.</span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a><span class="fu">## The OKLab precision discovery</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>The cascade-resolver port produced the resolved Tier 2/3 leaves, and</span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>we wanted to verify byte-equality against the R-resolved snapshot</span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>(<span class="in">`theme-presets-v2.json`</span> was captured from `tabviz:::serialize_theme(</span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>web_theme_cochrane())` and friends). The first test of cochrane</span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>against the snapshot:</span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a><span class="in">chrome — surface (within OKLab precision)        PASS</span></span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a><span class="in">chrome — content                                  PASS</span></span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a><span class="in">chrome — divider                                  PASS</span></span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a><span class="in">chrome — accent                                   FAIL</span></span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a><span class="in">  fillEmphasis: TS "#0089B7" vs R "#008ACF"  (B channel differs by 24)</span></span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a><span class="in">  stroke:       TS "#0079A2" vs R "#007AAC"  (10-channel drift)</span></span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>The differences clustered on chroma-related derivations near gamut</span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>boundaries. Pure mixes (surface.muted, divider.subtle) matched exactly</span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>or within a single channel. Anything that ran through <span class="in">`oklch_chroma()`</span></span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>(slot bundle <span class="in">`fillEmphasis`</span> / <span class="in">`strokeEmphasis`</span>, accent muted/tints</span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>near the saturation edge) drifted by 5-25 channels per pixel.</span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>After about an hour of investigation:</span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a><span class="in">```sh</span></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a><span class="ex">R</span><span class="op">&gt;</span> farver::convert_colour<span class="er">(</span><span class="ex">farver::decode_colour</span><span class="er">(</span><span class="st">"#0099CC"</span><span class="kw">)</span><span class="ex">,</span> <span class="st">"rgb"</span>, <span class="st">"oklch"</span><span class="kw">)</span></span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a><span class="ex">[1,]</span>  0.6405375  0.1292621  231.0822</span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a><span class="ex">TS</span><span class="op">&gt;</span> hexToOklch<span class="er">(</span><span class="st">"#0099CC"</span><span class="kw">)</span></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a><span class="kw">{</span> <span class="ex">L:</span> 0.640533, C: 0.129199, H: 231.05493 }</span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a><span class="kw">```</span></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a><span class="ex">R</span><span class="st">'s `farver` and our hand-rolled Ottosson transform produced OKLCH</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a><span class="st">triples that differed by ~5e-6 L / ~6e-5 C / ~0.03° H. Negligible in</span></span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a><span class="st">isolation. But OKLab→sRGB gamut clipping bisects on chroma when the</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a><span class="st">result is out-of-gamut, and tiny precision differences amplify</span></span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a><span class="st">dramatically when the result sits *at* the gamut boundary — which is</span></span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a><span class="st">exactly where a freshly chroma-boosted color tends to land.</span></span>
+<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a><span class="st">Three paths considered: profile farver against Ottosson to find the</span></span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a><span class="st">coefficient delta and tune TS to match (cheapest if the delta turned</span></span>
+<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a><span class="st">out to be a single threshold); swap to a third-party OKLab</span></span>
+<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a><span class="st">implementation that matched farver (adds a dependency); or invert the</span></span>
+<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a><span class="st">parity direction — make TS canonical for the JSON snapshot, leave R'</span><span class="ex">s</span></span>
+<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a><span class="ex">runtime</span> cascade alone, accept that each runtime produces internally</span>
+<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a><span class="ex">consistent</span> <span class="er">(</span><span class="ex">but</span> pairwise sub-perceptual-different<span class="kw">)</span> <span class="ex">output.</span></span>
+<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a><span class="ex">For</span> 0.2.0 we shipped option C in a relaxed form: tolerance-based</span>
+<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a><span class="ex">parity</span> test <span class="er">(</span><span class="ex">per-channel</span> delta ≤ 25<span class="kw">)</span><span class="ex">,</span> <span class="kw">`</span>r-ts-parity-notes.md<span class="kw">`</span></span>
+<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a><span class="ex">documenting</span> the gap, and a flag that the canonization would be the</span>
+<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a><span class="ex">next</span> round<span class="st">'s work. Released. Moved on.</span></span>
+<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a><span class="st">## The 0.2.1 round: canonization + R streamlining</span></span>
+<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a><span class="st">0.2.0 was Tuesday morning'</span>s work. By Tuesday afternoon we were</span>
+<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a><span class="ex">revisiting</span> the parity gap with fresh eyes.</span>
+<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a><span class="ex">The</span> canonization itself was four steps:</span>
+<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-178"><a href="#cb3-178" aria-hidden="true" tabindex="-1"></a><span class="ex">1.</span> Write <span class="kw">`</span>srcjs/scripts/regenerate-theme-presets.ts<span class="kw">`</span> <span class="ex">—</span> a Bun script</span>
+<span id="cb3-179"><a href="#cb3-179" aria-hidden="true" tabindex="-1"></a>   <span class="ex">that</span> calls <span class="kw">`</span>resolveTheme<span class="er">(</span><span class="kw">)`</span> <span class="ex">on</span> each of the seven preset Tier 1</span>
+<span id="cb3-180"><a href="#cb3-180" aria-hidden="true" tabindex="-1"></a>   <span class="ex">input</span> drafts and writes <span class="kw">`</span>theme-presets-v2.json<span class="kw">`</span><span class="bu">.</span></span>
+<span id="cb3-181"><a href="#cb3-181" aria-hidden="true" tabindex="-1"></a><span class="ex">2.</span> Run it. The new snapshot looks structurally identical to the old</span>
+<span id="cb3-182"><a href="#cb3-182" aria-hidden="true" tabindex="-1"></a>   <span class="ex">one</span><span class="kw">;</span> <span class="ex">individual</span> hex values drift 1-25 channels on the</span>
+<span id="cb3-183"><a href="#cb3-183" aria-hidden="true" tabindex="-1"></a>   <span class="ex">chroma-related</span> leaves.</span>
+<span id="cb3-184"><a href="#cb3-184" aria-hidden="true" tabindex="-1"></a><span class="ex">3.</span> Tighten <span class="kw">`</span>theme-resolve.test.ts<span class="kw">`</span> <span class="ex">from</span> tolerance-based comparison</span>
+<span id="cb3-185"><a href="#cb3-185" aria-hidden="true" tabindex="-1"></a>   <span class="ex">to</span> byte-exact <span class="kw">`</span>toEqual<span class="kw">`</span> <span class="ex">—</span> the parity test is now <span class="st">"does the</span></span>
+<span id="cb3-186"><a href="#cb3-186" aria-hidden="true" tabindex="-1"></a><span class="st">   resolver still produce the same shape it did when we last</span></span>
+<span id="cb3-187"><a href="#cb3-187" aria-hidden="true" tabindex="-1"></a><span class="st">   regenerated the snapshot."</span></span>
+<span id="cb3-188"><a href="#cb3-188" aria-hidden="true" tabindex="-1"></a><span class="ex">4.</span> Rebuild the JS bundle. The R-side resolver continues to run for</span>
+<span id="cb3-189"><a href="#cb3-189" aria-hidden="true" tabindex="-1"></a>   <span class="ex">R-rendered</span> widgets<span class="kw">;</span> <span class="ex">the</span> snapshot is consumed only by the JS-side</span>
+<span id="cb3-190"><a href="#cb3-190" aria-hidden="true" tabindex="-1"></a>   <span class="ex">theme</span> switcher and the View Source emitter<span class="st">'s preset-name matching.</span></span>
+<span id="cb3-191"><a href="#cb3-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-192"><a href="#cb3-192" aria-hidden="true" tabindex="-1"></a><span class="st">The argument that *each runtime is canonical in its own context* fell</span></span>
+<span id="cb3-193"><a href="#cb3-193" aria-hidden="true" tabindex="-1"></a><span class="st">out naturally: R-rendered widgets ship the wire with R-resolved values</span></span>
+<span id="cb3-194"><a href="#cb3-194" aria-hidden="true" tabindex="-1"></a><span class="st">verbatim, so JS reads them as-is and renders without consulting any</span></span>
+<span id="cb3-195"><a href="#cb3-195" aria-hidden="true" tabindex="-1"></a><span class="st">snapshot; JS-side programmatic authoring (`tabviz({ theme: "lancet"</span></span>
+<span id="cb3-196"><a href="#cb3-196" aria-hidden="true" tabindex="-1"></a><span class="st">})` and friends) and the in-widget theme switcher use the snapshot, so</span></span>
+<span id="cb3-197"><a href="#cb3-197" aria-hidden="true" tabindex="-1"></a><span class="st">they get the TS values consistently. The two paths only meet in the</span></span>
+<span id="cb3-198"><a href="#cb3-198" aria-hidden="true" tabindex="-1"></a><span class="st">specific scenario of "R-rendered widget, user clicks Lancet in the</span></span>
+<span id="cb3-199"><a href="#cb3-199" aria-hidden="true" tabindex="-1"></a><span class="st">switcher" — and the difference there is sub-perceptual.</span></span>
+<span id="cb3-200"><a href="#cb3-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-201"><a href="#cb3-201" aria-hidden="true" tabindex="-1"></a><span class="st">While porting the resolver to TS, we noticed three patterns in the R</span></span>
+<span id="cb3-202"><a href="#cb3-202" aria-hidden="true" tabindex="-1"></a><span class="st">code that were paper-thin candidates for cleanup. They went into the</span></span>
+<span id="cb3-203"><a href="#cb3-203" aria-hidden="true" tabindex="-1"></a><span class="st">0.2.1 round along with the canonization:</span></span>
+<span id="cb3-204"><a href="#cb3-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-205"><a href="#cb3-205" aria-hidden="true" tabindex="-1"></a><span class="st">**Deduped legacy-input migration.** `web_theme()` and `set_inputs()`</span></span>
+<span id="cb3-206"><a href="#cb3-206" aria-hidden="true" tabindex="-1"></a><span class="st">both hand-rolled the same `brand`/`tertiary` v1→v2 deprecation block</span></span>
+<span id="cb3-207"><a href="#cb3-207" aria-hidden="true" tabindex="-1"></a><span class="st">(the deprecated input field names that the v2 cascade rework</span></span>
+<span id="cb3-208"><a href="#cb3-208" aria-hidden="true" tabindex="-1"></a><span class="st">removed). Extracted to a single `check_legacy_inputs(args, arg_hint)`</span></span>
+<span id="cb3-209"><a href="#cb3-209" aria-hidden="true" tabindex="-1"></a><span class="st">helper in `R/themes-api.R`; the two callsites pass their respective</span></span>
+<span id="cb3-210"><a href="#cb3-210" aria-hidden="true" tabindex="-1"></a><span class="st">migration-tip text. Saved ~18 lines.</span></span>
+<span id="cb3-211"><a href="#cb3-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-212"><a href="#cb3-212" aria-hidden="true" tabindex="-1"></a><span class="st">**Unified `fill_na()` and `compose_text()`.** Both iterated S7</span></span>
+<span id="cb3-213"><a href="#cb3-213" aria-hidden="true" tabindex="-1"></a><span class="st">property names and wrote where the current value was `NA`. The</span></span>
+<span id="cb3-214"><a href="#cb3-214" aria-hidden="true" tabindex="-1"></a><span class="st">difference: `fill_na` read defaults from a named list,</span></span>
+<span id="cb3-215"><a href="#cb3-215" aria-hidden="true" tabindex="-1"></a><span class="st">`compose_text` from another S7 object. Collapsed into a single</span></span>
+<span id="cb3-216"><a href="#cb3-216" aria-hidden="true" tabindex="-1"></a><span class="st">`fill_na(obj, source)` that dispatches on</span></span>
+<span id="cb3-217"><a href="#cb3-217" aria-hidden="true" tabindex="-1"></a><span class="st">`inherits(source, "S7_object")`; the older `compose_text(over, under)`</span></span>
+<span id="cb3-218"><a href="#cb3-218" aria-hidden="true" tabindex="-1"></a><span class="st">remains as a thin alias for callsite readability.</span></span>
+<span id="cb3-219"><a href="#cb3-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-220"><a href="#cb3-220" aria-hidden="true" tabindex="-1"></a><span class="st">**Dropped a defensive guard at the old line 583** of</span></span>
+<span id="cb3-221"><a href="#cb3-221" aria-hidden="true" tabindex="-1"></a><span class="st">`R/utils-theme-resolve.R`. `resolve_components` had an</span></span>
+<span id="cb3-222"><a href="#cb3-222" aria-hidden="true" tabindex="-1"></a><span class="st">`if (is.na(theme@inputs@secondary_deep)) primary_deep else</span></span>
+<span id="cb3-223"><a href="#cb3-223" aria-hidden="true" tabindex="-1"></a><span class="st">secondary_deep` fallback — but `resolve_components` runs AFTER</span></span>
+<span id="cb3-224"><a href="#cb3-224" aria-hidden="true" tabindex="-1"></a><span class="st">`resolve_inputs_mirrors`, which guarantees `secondary_deep` is</span></span>
+<span id="cb3-225"><a href="#cb3-225" aria-hidden="true" tabindex="-1"></a><span class="st">non-NA. The guard was unreachable. Removed; full R test suite (~600</span></span>
+<span id="cb3-226"><a href="#cb3-226" aria-hidden="true" tabindex="-1"></a><span class="st">tests) verified no regression.</span></span>
+<span id="cb3-227"><a href="#cb3-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-228"><a href="#cb3-228" aria-hidden="true" tabindex="-1"></a><span class="st">All three landed in commit `63af90e` along with the canonization.</span></span>
+<span id="cb3-229"><a href="#cb3-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-230"><a href="#cb3-230" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-231"><a href="#cb3-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-232"><a href="#cb3-232" aria-hidden="true" tabindex="-1"></a><span class="st">## The bilingual docs page becoming actually bilingual</span></span>
+<span id="cb3-233"><a href="#cb3-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-234"><a href="#cb3-234" aria-hidden="true" tabindex="-1"></a><span class="st">The genetic-association page that shipped with 0.2.0 had the TS</span></span>
+<span id="cb3-235"><a href="#cb3-235" aria-hidden="true" tabindex="-1"></a><span class="st">block as `eval: false` text — reference, not rendering. The next</span></span>
+<span id="cb3-236"><a href="#cb3-236" aria-hidden="true" tabindex="-1"></a><span class="st">session opened with the question: can Quarto actually run the TS</span></span>
+<span id="cb3-237"><a href="#cb3-237" aria-hidden="true" tabindex="-1"></a><span class="st">side?</span></span>
+<span id="cb3-238"><a href="#cb3-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-239"><a href="#cb3-239" aria-hidden="true" tabindex="-1"></a><span class="st">Four candidate paths surfaced:</span></span>
+<span id="cb3-240"><a href="#cb3-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-241"><a href="#cb3-241" aria-hidden="true" tabindex="-1"></a><span class="st">1. **`ojs` chunks.** Quarto'</span>s native ObservableJS engine, runs JS in</span>
+<span id="cb3-242"><a href="#cb3-242" aria-hidden="true" tabindex="-1"></a>   <span class="ex">the</span> browser at page load. Dynamic-import <span class="kw">`</span>@tabviz/core<span class="kw">`</span> <span class="ex">from</span></span>
+<span id="cb3-243"><a href="#cb3-243" aria-hidden="true" tabindex="-1"></a>   <span class="ex">esm.sh</span><span class="kw">;</span> <span class="ex">share</span> data from R via <span class="kw">`</span>ojs_define<span class="er">(</span><span class="kw">)`</span> <span class="ex">+</span> <span class="kw">`</span>transpose<span class="er">(</span><span class="kw">)`;</span></span>
+<span id="cb3-244"><a href="#cb3-244" aria-hidden="true" tabindex="-1"></a>   <span class="fu">mount</span> via <span class="kw">`</span>createTabviz<span class="er">(</span><span class="ex">host,</span> spec<span class="kw">)`</span> <span class="ex">into</span> a host div the cell</span>
+<span id="cb3-245"><a href="#cb3-245" aria-hidden="true" tabindex="-1"></a>   <span class="ex">creates.</span></span>
+<span id="cb3-246"><a href="#cb3-246" aria-hidden="true" tabindex="-1"></a><span class="ex">2.</span> Pre-render to SVG via <span class="kw">`</span>@tabviz/core/export<span class="kw">`</span> <span class="ex">at</span> site-build time.</span>
+<span id="cb3-247"><a href="#cb3-247" aria-hidden="true" tabindex="-1"></a><span class="ex">3.</span> Standalone HTML file loaded via <span class="kw">`</span><span class="op">&lt;</span>iframe<span class="op">&gt;</span><span class="kw">`</span><span class="bu">.</span></span>
+<span id="cb3-248"><a href="#cb3-248" aria-hidden="true" tabindex="-1"></a><span class="ex">4.</span> A custom Quarto Lua extension that natively understands</span>
+<span id="cb3-249"><a href="#cb3-249" aria-hidden="true" tabindex="-1"></a>   <span class="kw">`</span>tabviz-ts<span class="kw">`</span> <span class="ex">blocks.</span></span>
+<span id="cb3-250"><a href="#cb3-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-251"><a href="#cb3-251" aria-hidden="true" tabindex="-1"></a><span class="ex">Option</span> 1 won on the integration vs. effort tradeoff. The first</span>
+<span id="cb3-252"><a href="#cb3-252" aria-hidden="true" tabindex="-1"></a><span class="ex">implementation</span> came in about 30 lines of ojs + 5 lines of R-side</span>
+<span id="cb3-253"><a href="#cb3-253" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span>ojs_define<span class="er">(</span><span class="kw">)`</span><span class="bu">.</span> The first deploy attempt failed three times in</span>
+<span id="cb3-254"><a href="#cb3-254" aria-hidden="true" tabindex="-1"></a><span class="ex">sequence,</span> each surfacing a real issue:</span>
+<span id="cb3-255"><a href="#cb3-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-256"><a href="#cb3-256" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> <span class="kw">`</span>ojs_define<span class="er">(</span><span class="kw">)</span> <span class="ex">cannot</span> be cached<span class="kw">`</span> <span class="ex">—</span> fixed by <span class="kw">`</span><span class="co">#| cache: false` on the</span></span>
+<span id="cb3-257"><a href="#cb3-257" aria-hidden="true" tabindex="-1"></a>  <span class="ex">R</span> chunk.</span>
+<span id="cb3-258"><a href="#cb3-258" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> <span class="kw">`</span><span class="ex">TypeError:</span> e.validate_each_keys is not a function<span class="kw">`</span> — Svelte</span>
+<span id="cb3-259"><a href="#cb3-259" aria-hidden="true" tabindex="-1"></a>  <span class="ex">version</span> drift. The 0.2.1 dist was compiled against</span>
+<span id="cb3-260"><a href="#cb3-260" aria-hidden="true" tabindex="-1"></a>  <span class="kw">`</span><span class="ex">svelte@5.46.1</span><span class="kw">`</span> <span class="er">(</span><span class="ex">per</span> <span class="kw">`</span><span class="ex">srcjs/package-lock.json</span><span class="kw">`);</span> <span class="ex">esm.sh</span><span class="st">'s default</span></span>
+<span id="cb3-261"><a href="#cb3-261" aria-hidden="true" tabindex="-1"></a><span class="st">  resolution of `^5.0.0` pulled `5.55.8`, whose runtime had</span></span>
+<span id="cb3-262"><a href="#cb3-262" aria-hidden="true" tabindex="-1"></a><span class="st">  reshuffled internal helpers. Fixed by pinning the version in the</span></span>
+<span id="cb3-263"><a href="#cb3-263" aria-hidden="true" tabindex="-1"></a><span class="st">  esm.sh import URL via `?deps=svelte@5.46.1`.</span></span>
+<span id="cb3-264"><a href="#cb3-264" aria-hidden="true" tabindex="-1"></a><span class="st">- A 502 from `github.com/quarto-dev/quarto-cli/releases/download/...`</span></span>
+<span id="cb3-265"><a href="#cb3-265" aria-hidden="true" tabindex="-1"></a><span class="st">  — unrelated infra hiccup. Re-ran the workflow.</span></span>
+<span id="cb3-266"><a href="#cb3-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-267"><a href="#cb3-267" aria-hidden="true" tabindex="-1"></a><span class="st">After landing the fix we noticed the hardcoded `5.46.1` would break</span></span>
+<span id="cb3-268"><a href="#cb3-268" aria-hidden="true" tabindex="-1"></a><span class="st">silently the next time anyone bumped Svelte in `srcjs/package.json`.</span></span>
+<span id="cb3-269"><a href="#cb3-269" aria-hidden="true" tabindex="-1"></a><span class="st">Auto-pinned: the R chunk reads</span></span>
+<span id="cb3-270"><a href="#cb3-270" aria-hidden="true" tabindex="-1"></a><span class="st">`srcjs/package-lock.json::packages["node_modules/svelte"]$version`</span></span>
+<span id="cb3-271"><a href="#cb3-271" aria-hidden="true" tabindex="-1"></a><span class="st">and exposes it via `ojs_define(svelte_version = ...)`; the ojs</span></span>
+<span id="cb3-272"><a href="#cb3-272" aria-hidden="true" tabindex="-1"></a><span class="st">import template-literals it in. Future Svelte bumps now propagate</span></span>
+<span id="cb3-273"><a href="#cb3-273" aria-hidden="true" tabindex="-1"></a><span class="st">to the docs on the next quarto render automatically.</span></span>
+<span id="cb3-274"><a href="#cb3-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-275"><a href="#cb3-275" aria-hidden="true" tabindex="-1"></a><span class="st">A second bilingual gallery page</span></span>
+<span id="cb3-276"><a href="#cb3-276" aria-hidden="true" tabindex="-1"></a><span class="st">(`docs/gallery/bilingual-dashboard.qmd`) followed the same pattern</span></span>
+<span id="cb3-277"><a href="#cb3-277" aria-hidden="true" tabindex="-1"></a><span class="st">for the *non-forest* column family — bars / sparklines / badges /</span></span>
+<span id="cb3-278"><a href="#cb3-278" aria-hidden="true" tabindex="-1"></a><span class="st">rings / stars — to demonstrate that the bilingual claim covers more</span></span>
+<span id="cb3-279"><a href="#cb3-279" aria-hidden="true" tabindex="-1"></a><span class="st">than forest plots.</span></span>
+<span id="cb3-280"><a href="#cb3-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-281"><a href="#cb3-281" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-282"><a href="#cb3-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-283"><a href="#cb3-283" aria-hidden="true" tabindex="-1"></a><span class="st">## The hover-legibility class of bugs</span></span>
+<span id="cb3-284"><a href="#cb3-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-285"><a href="#cb3-285" aria-hidden="true" tabindex="-1"></a><span class="st">While reviewing the new theme switcher behavior we noticed JAMA</span></span>
+<span id="cb3-286"><a href="#cb3-286" aria-hidden="true" tabindex="-1"></a><span class="st">hovers were illegible — black-on-black on multiple menu items and</span></span>
+<span id="cb3-287"><a href="#cb3-287" aria-hidden="true" tabindex="-1"></a><span class="st">toolbar buttons. The root cause: CSS rules using bare identity</span></span>
+<span id="cb3-288"><a href="#cb3-288" aria-hidden="true" tabindex="-1"></a><span class="st">tokens (`var(--tv-border)`, `var(--tv-accent)`,</span></span>
+<span id="cb3-289"><a href="#cb3-289" aria-hidden="true" tabindex="-1"></a><span class="st">`var(--tv-primary-deep)`) as hover backgrounds. Fine when those</span></span>
+<span id="cb3-290"><a href="#cb3-290" aria-hidden="true" tabindex="-1"></a><span class="st">tokens are mid-tone, broken when a theme pins them dark — JAMA'</span><span class="ex">s</span></span>
+<span id="cb3-291"><a href="#cb3-291" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">accent:</span> <span class="co">#000000</span><span class="kw">`</span> and <span class="kw">`</span><span class="ex">divider.subtle:</span> <span class="co">#000000</span><span class="kw">`</span>, dark theme<span class="st">'s</span></span>
+<span id="cb3-292"><a href="#cb3-292" aria-hidden="true" tabindex="-1"></a><span class="st">`primary_deep: #2E5290`.</span></span>
+<span id="cb3-293"><a href="#cb3-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-294"><a href="#cb3-294" aria-hidden="true" tabindex="-1"></a><span class="st">The pre-0.2 codebase had already established the right pattern in</span></span>
+<span id="cb3-295"><a href="#cb3-295" aria-hidden="true" tabindex="-1"></a><span class="st">some places via `color-mix(in srgb, var(--tv-accent) 12%, var(--tv-bg))`</span></span>
+<span id="cb3-296"><a href="#cb3-296" aria-hidden="true" tabindex="-1"></a><span class="st">for hover backgrounds (a 12% accent tint that'</span>s guaranteed legible</span>
+<span id="cb3-297"><a href="#cb3-297" aria-hidden="true" tabindex="-1"></a><span class="ex">because</span> it tints into the surface<span class="er">)</span><span class="bu">.</span> The fix: codify the convention,</span>
+<span id="cb3-298"><a href="#cb3-298" aria-hidden="true" tabindex="-1"></a><span class="ex">introduce</span> a single <span class="kw">`</span><span class="ex">--tv-hover-bg</span><span class="kw">`</span> derived variable at the</span>
+<span id="cb3-299"><a href="#cb3-299" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">ForestPlot.svelte</span><span class="kw">`</span> variable declaration block, audit all <span class="kw">`</span><span class="ex">:hover</span><span class="kw">`</span> /</span>
+<span id="cb3-300"><a href="#cb3-300" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">:active</span><span class="kw">`</span> / <span class="kw">`</span><span class="ex">.open</span><span class="kw">`</span> rules for bare-identity-token backgrounds, and</span>
+<span id="cb3-301"><a href="#cb3-301" aria-hidden="true" tabindex="-1"></a><span class="ex">migrate</span> them. Result: 13 sites migrated across <span class="kw">`</span><span class="ex">ZoomControls</span><span class="kw">`</span>,</span>
+<span id="cb3-302"><a href="#cb3-302" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">ThemeSwitcher</span><span class="kw">`</span>, <span class="kw">`</span><span class="ex">TokenPicker</span><span class="kw">`</span>, five button components, three</span>
+<span id="cb3-303"><a href="#cb3-303" aria-hidden="true" tabindex="-1"></a><span class="ex">controls</span> components, and two popovers. The decorative-divider uses</span>
+<span id="cb3-304"><a href="#cb3-304" aria-hidden="true" tabindex="-1"></a><span class="ex">of</span> <span class="kw">`</span><span class="ex">--tv-border</span><span class="kw">`</span> <span class="er">(</span><span class="ex">1px</span> lines, bar-track backgrounds<span class="kw">)</span> <span class="ex">stayed</span> put —</span>
+<span id="cb3-305"><a href="#cb3-305" aria-hidden="true" tabindex="-1"></a><span class="ex">those</span> don<span class="st">'t carry text on top.</span></span>
+<span id="cb3-306"><a href="#cb3-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-307"><a href="#cb3-307" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-308"><a href="#cb3-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-309"><a href="#cb3-309" aria-hidden="true" tabindex="-1"></a><span class="st">## The R→TS delegation pilot</span></span>
+<span id="cb3-310"><a href="#cb3-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-311"><a href="#cb3-311" aria-hidden="true" tabindex="-1"></a><span class="st">The original Phase 2 plan was R helpers delegating construction to</span></span>
+<span id="cb3-312"><a href="#cb3-312" aria-hidden="true" tabindex="-1"></a><span class="st">the TS authoring builders via V8 — the "single source of truth"</span></span>
+<span id="cb3-313"><a href="#cb3-313" aria-hidden="true" tabindex="-1"></a><span class="st">move. The initial sketch had a V8-when-available pattern: delegate</span></span>
+<span id="cb3-314"><a href="#cb3-314" aria-hidden="true" tabindex="-1"></a><span class="st">if `V8` was loaded (Suggests), fall back to the hand-rolled R path</span></span>
+<span id="cb3-315"><a href="#cb3-315" aria-hidden="true" tabindex="-1"></a><span class="st">otherwise.</span></span>
+<span id="cb3-316"><a href="#cb3-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-317"><a href="#cb3-317" aria-hidden="true" tabindex="-1"></a><span class="st">The pushback from the user — "let'</span>s not maintain parallel stacks<span class="st">" —</span></span>
+<span id="cb3-318"><a href="#cb3-318" aria-hidden="true" tabindex="-1"></a><span class="st">landed quickly. Three changes:</span></span>
+<span id="cb3-319"><a href="#cb3-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-320"><a href="#cb3-320" aria-hidden="true" tabindex="-1"></a><span class="st">1. **V8 promoted from Suggests → Imports.** </span><span class="kw">`</span><span class="ex">DESCRIPTION</span><span class="kw">`</span><span class="st"> updated.</span></span>
+<span id="cb3-321"><a href="#cb3-321" aria-hidden="true" tabindex="-1"></a><span class="st">   V8 is now a hard runtime dep; the R package always has access</span></span>
+<span id="cb3-322"><a href="#cb3-322" aria-hidden="true" tabindex="-1"></a><span class="st">   to the JS runtime.</span></span>
+<span id="cb3-323"><a href="#cb3-323" aria-hidden="true" tabindex="-1"></a><span class="st">2. **</span><span class="kw">`</span><span class="ex">R/v8-bridge.R</span><span class="kw">`</span><span class="st">** — a singleton V8 context, lazy-initialized,</span></span>
+<span id="cb3-324"><a href="#cb3-324" aria-hidden="true" tabindex="-1"></a><span class="st">   plus a </span><span class="kw">`</span><span class="ex">ts_call</span><span class="er">(</span><span class="ex">builder_name,</span> args<span class="kw">)`</span><span class="st"> helper that dispatches via</span></span>
+<span id="cb3-325"><a href="#cb3-325" aria-hidden="true" tabindex="-1"></a><span class="st">   </span><span class="kw">`</span><span class="ex">inst/js/svg-generator.js</span><span class="kw">`</span><span class="st">'s new </span><span class="kw">`</span><span class="ex">callBuilder</span><span class="er">(</span><span class="ex">name,</span> argsJson<span class="kw">)`</span></span>
+<span id="cb3-326"><a href="#cb3-326" aria-hidden="true" tabindex="-1"></a><span class="st">   global (added to </span><span class="kw">`</span><span class="ex">srcjs/src/export/v8-entry.ts</span><span class="kw">`</span><span class="st"> so the same</span></span>
+<span id="cb3-327"><a href="#cb3-327" aria-hidden="true" tabindex="-1"></a><span class="st">   bundle covers SVG export + authoring delegation).</span></span>
+<span id="cb3-328"><a href="#cb3-328" aria-hidden="true" tabindex="-1"></a><span class="st">3. **</span><span class="kw">`</span><span class="fu">col_text()</span><span class="kw">`</span><span class="st"> refactored to delegate.** The R-side helper now</span></span>
+<span id="cb3-329"><a href="#cb3-329" aria-hidden="true" tabindex="-1"></a><span class="st">   pushes argument validation through </span><span class="kw">`</span><span class="ex">checkmate</span><span class="kw">`</span><span class="st">, then calls</span></span>
+<span id="cb3-330"><a href="#cb3-330" aria-hidden="true" tabindex="-1"></a><span class="st">   </span><span class="kw">`</span><span class="ex">ts_call</span><span class="er">(</span><span class="st">"colText"</span><span class="ex">,</span> ts_args<span class="kw">)`</span><span class="st"> to compute the wire shape (id,</span></span>
+<span id="cb3-331"><a href="#cb3-331" aria-hidden="true" tabindex="-1"></a><span class="st">   header default, options bundle), then wraps the result in an</span></span>
+<span id="cb3-332"><a href="#cb3-332" aria-hidden="true" tabindex="-1"></a><span class="st">   S7 </span><span class="kw">`</span><span class="ex">ColumnSpec</span><span class="kw">`</span><span class="st"> via </span><span class="kw">`</span><span class="fu">web_col()</span><span class="kw">`</span><span class="st"> for R-side style mappings +</span></span>
+<span id="cb3-333"><a href="#cb3-333" aria-hidden="true" tabindex="-1"></a><span class="st">   formatter slot compatibility.</span></span>
+<span id="cb3-334"><a href="#cb3-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-335"><a href="#cb3-335" aria-hidden="true" tabindex="-1"></a><span class="st">The </span><span class="kw">`</span><span class="ex">do.call</span><span class="kw">`</span><span class="st"> boilerplate inside </span><span class="kw">`</span><span class="ex">col_text</span><span class="kw">`</span><span class="st"> was a small</span></span>
+<span id="cb3-336"><a href="#cb3-336" aria-hidden="true" tabindex="-1"></a><span class="st">let-the-caller-override dance: when </span><span class="kw">`</span><span class="fu">tabviz()</span><span class="kw">`</span><span class="st"> internally calls</span></span>
+<span id="cb3-337"><a href="#cb3-337" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">col_text</span><span class="er">(</span><span class="ex">field</span> = <span class="st">"study"</span>, id = <span class="st">"label"</span><span class="kw">)`</span><span class="st"> to construct the row-label</span></span>
+<span id="cb3-338"><a href="#cb3-338" aria-hidden="true" tabindex="-1"></a><span class="st">column, the explicit </span><span class="kw">`</span><span class="fu">id</span> = <span class="st">"label"</span><span class="kw">`</span><span class="st"> arg arrives via </span><span class="kw">`</span><span class="ex">...</span><span class="kw">`</span><span class="st"> and needs</span></span>
+<span id="cb3-339"><a href="#cb3-339" aria-hidden="true" tabindex="-1"></a><span class="st">to shadow the TS-computed default. </span><span class="kw">`</span><span class="ex">do.call</span><span class="er">(</span><span class="ex">web_col,</span> list<span class="er">(</span><span class="ex">...</span><span class="kw">)</span> <span class="op">&lt;</span>-</span>
+<span id="cb3-340"><a href="#cb3-340" aria-hidden="true" tabindex="-1"></a><span class="ex">overrides</span><span class="kw">)`</span><span class="st"> was cleaner than parameter juggling.</span></span>
+<span id="cb3-341"><a href="#cb3-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-342"><a href="#cb3-342" aria-hidden="true" tabindex="-1"></a><span class="st">Only </span><span class="kw">`</span><span class="ex">col_text</span><span class="kw">`</span><span class="st"> got the treatment in this round — pilot rather than</span></span>
+<span id="cb3-343"><a href="#cb3-343" aria-hidden="true" tabindex="-1"></a><span class="st">fleet refactor. The pattern is now established; the other 21 column</span></span>
+<span id="cb3-344"><a href="#cb3-344" aria-hidden="true" tabindex="-1"></a><span class="st">builders + 4 viz builders can follow when there's value.</span></span>
+<span id="cb3-345"><a href="#cb3-345" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-346"><a href="#cb3-346" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-347"><a href="#cb3-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-348"><a href="#cb3-348" aria-hidden="true" tabindex="-1"></a><span class="st">## The R↔TS column parity test harness</span></span>
+<span id="cb3-349"><a href="#cb3-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-350"><a href="#cb3-350" aria-hidden="true" tabindex="-1"></a><span class="st">The other 21 helpers staying R-only is fine *because* the parity</span></span>
+<span id="cb3-351"><a href="#cb3-351" aria-hidden="true" tabindex="-1"></a><span class="st">harness now catches drift mechanically. </span><span class="kw">`</span><span class="ex">tests/testthat/test-parity-columns.R</span><span class="kw">`</span></span>
+<span id="cb3-352"><a href="#cb3-352" aria-hidden="true" tabindex="-1"></a><span class="st">exercises each column helper R-side and TS-side with the same args</span></span>
+<span id="cb3-353"><a href="#cb3-353" aria-hidden="true" tabindex="-1"></a><span class="st">via </span><span class="kw">`</span><span class="ex">ts_call</span><span class="er">(</span><span class="ex">...</span><span class="kw">)`</span><span class="st">, then asserts key wire-shape fields (id, field,</span></span>
+<span id="cb3-354"><a href="#cb3-354" aria-hidden="true" tabindex="-1"></a><span class="st">header, type, options structure) match.</span></span>
+<span id="cb3-355"><a href="#cb3-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-356"><a href="#cb3-356" aria-hidden="true" tabindex="-1"></a><span class="st">It caught three real drifts in its first run:</span></span>
+<span id="cb3-357"><a href="#cb3-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-358"><a href="#cb3-358" aria-hidden="true" tabindex="-1"></a><span class="st">**</span><span class="kw">`</span><span class="ex">col_stars</span><span class="kw">`</span><span class="st"> vs </span><span class="kw">`</span><span class="ex">colStars</span><span class="kw">`</span><span class="st">.** R implements stars as a thin wrapper</span></span>
+<span id="cb3-359"><a href="#cb3-359" aria-hidden="true" tabindex="-1"></a><span class="st">over </span><span class="kw">`</span><span class="ex">col_pictogram</span><span class="er">(</span><span class="ex">glyph</span> = <span class="st">"star"</span><span class="kw">)`</span><span class="st"> — wire type is "</span>pictogram<span class="st">", not</span></span>
+<span id="cb3-360"><a href="#cb3-360" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>stars<span class="st">". TS </span><span class="kw">`</span><span class="ex">colStars</span><span class="kw">`</span><span class="st"> was building its own "</span>stars<span class="st">"-typed column.</span></span>
+<span id="cb3-361"><a href="#cb3-361" aria-hidden="true" tabindex="-1"></a><span class="st">Aligned TS by making </span><span class="kw">`</span><span class="ex">colStars</span><span class="kw">`</span><span class="st"> defer to </span><span class="kw">`</span><span class="ex">colPictogram</span><span class="kw">`</span><span class="st">.</span></span>
+<span id="cb3-362"><a href="#cb3-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-363"><a href="#cb3-363" aria-hidden="true" tabindex="-1"></a><span class="st">**</span><span class="kw">`</span><span class="ex">col_interval</span><span class="kw">`</span><span class="st"> field naming.** R uses synthetic </span><span class="kw">`</span><span class="ex">_interval_</span><span class="op">&lt;</span>point<span class="op">&gt;</span><span class="kw">`</span></span>
+<span id="cb3-364"><a href="#cb3-364" aria-hidden="true" tabindex="-1"></a><span class="st">field names so two interval columns sharing the same point estimate</span></span>
+<span id="cb3-365"><a href="#cb3-365" aria-hidden="true" tabindex="-1"></a><span class="st">get distinct ids. TS was using the bare </span><span class="kw">`</span><span class="ex">point</span><span class="kw">`</span><span class="st"> as the field. Mirrored</span></span>
+<span id="cb3-366"><a href="#cb3-366" aria-hidden="true" tabindex="-1"></a><span class="st">the synthetic prefix convention.</span></span>
+<span id="cb3-367"><a href="#cb3-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-368"><a href="#cb3-368" aria-hidden="true" tabindex="-1"></a><span class="st">**</span><span class="kw">`</span><span class="ex">col_sparkline</span><span class="kw">`</span><span class="st"> default header.** R defaults </span><span class="kw">`</span><span class="ex">header</span> = <span class="st">"Trend"</span><span class="kw">`</span></span>
+<span id="cb3-369"><a href="#cb3-369" aria-hidden="true" tabindex="-1"></a><span class="st">(literal); TS had it falling through to the field name. Mirrored.</span></span>
+<span id="cb3-370"><a href="#cb3-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-371"><a href="#cb3-371" aria-hidden="true" tabindex="-1"></a><span class="st">Each was a one-line fix on the TS side. The drift detection paid</span></span>
+<span id="cb3-372"><a href="#cb3-372" aria-hidden="true" tabindex="-1"></a><span class="st">for itself within ten minutes of writing the harness.</span></span>
+<span id="cb3-373"><a href="#cb3-373" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-374"><a href="#cb3-374" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-375"><a href="#cb3-375" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-376"><a href="#cb3-376" aria-hidden="true" tabindex="-1"></a><span class="st">## Spec modifiers (</span><span class="kw">`</span><span class="ex">srcjs/src/authoring/modifiers.ts</span><span class="kw">`</span><span class="st">)</span></span>
+<span id="cb3-377"><a href="#cb3-377" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-378"><a href="#cb3-378" aria-hidden="true" tabindex="-1"></a><span class="st">The R API has fluent </span><span class="kw">`</span><span class="ex">set_*</span><span class="kw">`</span><span class="st"> modifiers that work on either a static</span></span>
+<span id="cb3-379"><a href="#cb3-379" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">WebSpec</span><span class="kw">`</span><span class="st"> or a Shiny proxy: </span><span class="kw">`</span><span class="fu">set_title()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">set_subtitle()</span><span class="kw">`</span><span class="st">,</span></span>
+<span id="cb3-380"><a href="#cb3-380" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="fu">set_caption()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">set_footnote()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">set_theme()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">set_zoom()</span><span class="kw">`</span><span class="st">,</span></span>
+<span id="cb3-381"><a href="#cb3-381" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="fu">add_column()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">remove_column()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">update_column()</span><span class="kw">`</span><span class="st">, plus</span></span>
+<span id="cb3-382"><a href="#cb3-382" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="fu">paint_row()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">paint_cell()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">sort_rows()</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="fu">filter_rows()</span><span class="kw">`</span><span class="st">.</span></span>
+<span id="cb3-383"><a href="#cb3-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-384"><a href="#cb3-384" aria-hidden="true" tabindex="-1"></a><span class="st">The static-spec subset got TS mirrors in 0.2.1's follow-up round —</span></span>
+<span id="cb3-385"><a href="#cb3-385" aria-hidden="true" tabindex="-1"></a><span class="st">pure functions, immutable, composable. Runtime control of a mounted</span></span>
+<span id="cb3-386"><a href="#cb3-386" aria-hidden="true" tabindex="-1"></a><span class="st">widget continues to use the instance methods returned by</span></span>
+<span id="cb3-387"><a href="#cb3-387" aria-hidden="true" tabindex="-1"></a><span class="kw">`</span><span class="ex">createTabviz</span><span class="kw">`</span><span class="st"> (</span><span class="kw">`</span><span class="ex">instance.sortBy</span><span class="er">(</span><span class="ex">...</span><span class="kw">)`</span><span class="st"> etc); the modifier API here</span></span>
+<span id="cb3-388"><a href="#cb3-388" aria-hidden="true" tabindex="-1"></a><span class="st">is for spec authoring, not live updates. The Shiny proxy variant</span></span>
+<span id="cb3-389"><a href="#cb3-389" aria-hidden="true" tabindex="-1"></a><span class="st">stays R-only — purely an R-concern.</span></span>
+<span id="cb3-390"><a href="#cb3-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-391"><a href="#cb3-391" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-392"><a href="#cb3-392" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-393"><a href="#cb3-393" aria-hidden="true" tabindex="-1"></a><span class="st">## What didn't ship</span></span>
+<span id="cb3-394"><a href="#cb3-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-395"><a href="#cb3-395" aria-hidden="true" tabindex="-1"></a><span class="st">The 0.2.x line's "</span>out of scope<span class="st">" list got smaller over the round but</span></span>
+<span id="cb3-396"><a href="#cb3-396" aria-hidden="true" tabindex="-1"></a><span class="st">isn't empty:</span></span>
+<span id="cb3-397"><a href="#cb3-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-398"><a href="#cb3-398" aria-hidden="true" tabindex="-1"></a><span class="st">- **Full R→TS delegation across all builders.** The </span><span class="kw">`</span><span class="ex">col_text</span><span class="kw">`</span><span class="st"> pilot</span></span>
+<span id="cb3-399"><a href="#cb3-399" aria-hidden="true" tabindex="-1"></a><span class="st">  validated the pattern; the remaining 21 column helpers + 4 viz</span></span>
+<span id="cb3-400"><a href="#cb3-400" aria-hidden="true" tabindex="-1"></a><span class="st">  helpers + theme constructors still hand-roll their wire shapes</span></span>
+<span id="cb3-401"><a href="#cb3-401" aria-hidden="true" tabindex="-1"></a><span class="st">  R-side. The parity tests catch drift; full delegation can come</span></span>
+<span id="cb3-402"><a href="#cb3-402" aria-hidden="true" tabindex="-1"></a><span class="st">  when there's concrete value or when the maintenance burden of two</span></span>
+<span id="cb3-403"><a href="#cb3-403" aria-hidden="true" tabindex="-1"></a><span class="st">  implementations starts to bite.</span></span>
+<span id="cb3-404"><a href="#cb3-404" aria-hidden="true" tabindex="-1"></a><span class="st">- **Shiny proxy in TS.** The R-side proxy API</span></span>
+<span id="cb3-405"><a href="#cb3-405" aria-hidden="true" tabindex="-1"></a><span class="st">  (</span><span class="kw">`</span><span class="ex">tabviz_proxy</span><span class="er">(</span><span class="ex">session,</span> output_id<span class="kw">)</span> <span class="kw">|</span><span class="op">&gt;</span> set_title<span class="kw">(</span><span class="ex">...</span><span class="kw">)</span> <span class="kw">|</span><span class="op">&gt;</span> ...<span class="kw">`</span><span class="st">) is</span></span>
+<span id="cb3-406"><a href="#cb3-406" aria-hidden="true" tabindex="-1"></a><span class="st">  fundamentally an R-concern (Shiny is an R runtime); there's no</span></span>
+<span id="cb3-407"><a href="#cb3-407" aria-hidden="true" tabindex="-1"></a><span class="st">  obvious analog in pure TS. Not on the radar.</span></span>
+<span id="cb3-408"><a href="#cb3-408" aria-hidden="true" tabindex="-1"></a><span class="st">- **Bilingual conversion of the older gallery pages.** Two new</span></span>
+<span id="cb3-409"><a href="#cb3-409" aria-hidden="true" tabindex="-1"></a><span class="st">  bilingual pages got added (genetic-association +</span></span>
+<span id="cb3-410"><a href="#cb3-410" aria-hidden="true" tabindex="-1"></a><span class="st">  bilingual-dashboard). The existing meta-analysis / clinical /</span></span>
+<span id="cb3-411"><a href="#cb3-411" aria-hidden="true" tabindex="-1"></a><span class="st">  dashboards / viz-glyphs pages stay R-only for now — retrofitting</span></span>
+<span id="cb3-412"><a href="#cb3-412" aria-hidden="true" tabindex="-1"></a><span class="st">  them is real time investment with diminishing returns past the</span></span>
+<span id="cb3-413"><a href="#cb3-413" aria-hidden="true" tabindex="-1"></a><span class="st">  first couple of examples.</span></span>
+<span id="cb3-414"><a href="#cb3-414" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-415"><a href="#cb3-415" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-416"><a href="#cb3-416" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-417"><a href="#cb3-417" aria-hidden="true" tabindex="-1"></a><span class="st">## Numbers</span></span>
+<span id="cb3-418"><a href="#cb3-418" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-419"><a href="#cb3-419" aria-hidden="true" tabindex="-1"></a><span class="st">- **Commits**: 4 on </span><span class="kw">`</span><span class="ex">main</span><span class="kw">`</span><span class="st"> between </span><span class="kw">`</span><span class="ex">0cc9f75</span><span class="kw">`</span><span class="st"> (the 0.31.1 tag) and</span></span>
+<span id="cb3-420"><a href="#cb3-420" aria-hidden="true" tabindex="-1"></a><span class="st">  whatever lands after this devblog.</span></span>
+<span id="cb3-421"><a href="#cb3-421" aria-hidden="true" tabindex="-1"></a><span class="st">- **Lines added**: ~6,500 across the two rounds (4,500 in 0.2.0,</span></span>
+<span id="cb3-422"><a href="#cb3-422" aria-hidden="true" tabindex="-1"></a><span class="st">  ~2,000 in 0.2.1's follow-up).</span></span>
+<span id="cb3-423"><a href="#cb3-423" aria-hidden="true" tabindex="-1"></a><span class="st">- **Test suite**: 252 → 262 TS tests + the full R suite + the new R</span></span>
+<span id="cb3-424"><a href="#cb3-424" aria-hidden="true" tabindex="-1"></a><span class="st">  parity test file. All green.</span></span>
+<span id="cb3-425"><a href="#cb3-425" aria-hidden="true" tabindex="-1"></a><span class="st">- **Bundle size**: main npm entry 5.3 KB gzipped (≈ unchanged from</span></span>
+<span id="cb3-426"><a href="#cb3-426" aria-hidden="true" tabindex="-1"></a><span class="st">  0.1.5 after the authoring layer landed; the cascade resolver +</span></span>
+<span id="cb3-427"><a href="#cb3-427" aria-hidden="true" tabindex="-1"></a><span class="st">  presets-inputs added ~22 KB to the IIFE which is within the</span></span>
+<span id="cb3-428"><a href="#cb3-428" aria-hidden="true" tabindex="-1"></a><span class="st">  bumped size budget).</span></span>
+<span id="cb3-429"><a href="#cb3-429" aria-hidden="true" tabindex="-1"></a><span class="st">- **Tagged**: </span><span class="kw">`</span><span class="ex">v0.31.2</span><span class="kw">`</span><span class="st"> on </span><span class="kw">`</span><span class="ex">main</span><span class="kw">`</span><span class="st">, </span><span class="kw">`</span><span class="ex">@tabviz/core@0.2.0</span><span class="kw">`</span><span class="st"> and </span><span class="kw">`</span><span class="ex">@0.2.1</span><span class="kw">`</span></span>
+<span id="cb3-430"><a href="#cb3-430" aria-hidden="true" tabindex="-1"></a><span class="st">  on the npm registry.</span></span>
+<span id="cb3-431"><a href="#cb3-431" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-432"><a href="#cb3-432" aria-hidden="true" tabindex="-1"></a><span class="st">---</span></span>
+<span id="cb3-433"><a href="#cb3-433" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-434"><a href="#cb3-434" aria-hidden="true" tabindex="-1"></a><span class="st">## Closing notes</span></span>
+<span id="cb3-435"><a href="#cb3-435" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-436"><a href="#cb3-436" aria-hidden="true" tabindex="-1"></a><span class="st">The 0.2.x line was conceived as "</span>make the JS side a first-class</span>
+<span id="cb3-437"><a href="#cb3-437" aria-hidden="true" tabindex="-1"></a><span class="ex">authoring</span> target.<span class="st">" That happened. The OKLab gap discovery and its</span></span>
+<span id="cb3-438"><a href="#cb3-438" aria-hidden="true" tabindex="-1"></a><span class="st">eventual resolution were the most interesting detour: it surfaced an</span></span>
+<span id="cb3-439"><a href="#cb3-439" aria-hidden="true" tabindex="-1"></a><span class="st">architectural choice that hadn't been forced before (which runtime</span></span>
+<span id="cb3-440"><a href="#cb3-440" aria-hidden="true" tabindex="-1"></a><span class="st">owns the canonical theme snapshot?), and the answer that fell out —</span></span>
+<span id="cb3-441"><a href="#cb3-441" aria-hidden="true" tabindex="-1"></a><span class="st">each runtime canonical in its own context — generalizes to other</span></span>
+<span id="cb3-442"><a href="#cb3-442" aria-hidden="true" tabindex="-1"></a><span class="st">R↔TS divergences that might surface later. The bilingual gallery</span></span>
+<span id="cb3-443"><a href="#cb3-443" aria-hidden="true" tabindex="-1"></a><span class="st">pages exist as proof, not just claim. And the hover-legibility cleanup</span></span>
+<span id="cb3-444"><a href="#cb3-444" aria-hidden="true" tabindex="-1"></a><span class="st">was a pure quality-of-life win that came along for free because the</span></span>
+<span id="cb3-445"><a href="#cb3-445" aria-hidden="true" tabindex="-1"></a><span class="st">audit framework (grep for bare identity tokens, migrate to a single</span></span>
+<span id="cb3-446"><a href="#cb3-446" aria-hidden="true" tabindex="-1"></a><span class="st">new variable) was straightforward once the convention was named.</span></span>
+<span id="cb3-447"><a href="#cb3-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-448"><a href="#cb3-448" aria-hidden="true" tabindex="-1"></a><span class="st">Next obvious extensions: more </span><span class="kw">`</span><span class="ex">col_*</span><span class="kw">`</span><span class="st"> helpers delegated through V8 if</span></span>
+<span id="cb3-449"><a href="#cb3-449" aria-hidden="true" tabindex="-1"></a><span class="st">the maintenance burden warrants it; more bilingual gallery pages if</span></span>
+<span id="cb3-450"><a href="#cb3-450" aria-hidden="true" tabindex="-1"></a><span class="st">authors want them; potentially a custom Quarto extension that</span></span>
+<span id="cb3-451"><a href="#cb3-451" aria-hidden="true" tabindex="-1"></a><span class="st">natively understands </span><span class="kw">`</span><span class="ex">tabviz-ts</span><span class="kw">`</span><span class="st"> blocks so future bilingual pages</span></span>
+<span id="cb3-452"><a href="#cb3-452" aria-hidden="true" tabindex="-1"></a><span class="st">don't need the ojs + esm.sh + svelte-version-pin scaffolding by hand.</span></span>
+<span id="cb3-453"><a href="#cb3-453" aria-hidden="true" tabindex="-1"></a><span class="st">But none of those are urgent. The 0.2.x line is shipped.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

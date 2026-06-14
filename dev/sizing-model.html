@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>sizing-model – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-sizing-model-a-theory-of-everything-for-tabviz-layout-dimensions" id="toc-the-sizing-model-a-theory-of-everything-for-tabviz-layout-dimensions" class="nav-link active" data-scroll-target="#the-sizing-model-a-theory-of-everything-for-tabviz-layout-dimensions">The Sizing Model — a theory of everything for tabviz layout dimensions</a>
+  <ul class="collapse">
+  <li><a href="#the-thesis" id="toc-the-thesis" class="nav-link" data-scroll-target="#the-thesis">0. The thesis</a></li>
+  <li><a href="#current-reality-evidence" id="toc-current-reality-evidence" class="nav-link" data-scroll-target="#current-reality-evidence">1. Current reality (evidence)</a>
+  <ul class="collapse">
+  <li><a href="#the-spacingtokens-schema-srcjssrctypestheme-resolved.ts230" id="toc-the-spacingtokens-schema-srcjssrctypestheme-resolved.ts230" class="nav-link" data-scroll-target="#the-spacingtokens-schema-srcjssrctypestheme-resolved.ts230">1.1 The <code>SpacingTokens</code> schema (<code>srcjs/src/types/theme-resolved.ts:230</code>)</a></li>
+  <li><a href="#smoking-guns-tokens-that-dont-arrive-are-multiply-sourced" id="toc-smoking-guns-tokens-that-dont-arrive-are-multiply-sourced" class="nav-link" data-scroll-target="#smoking-guns-tokens-that-dont-arrive-are-multiply-sourced">1.2 Smoking guns (tokens that don’t arrive / are multiply-sourced)</a></li>
+  <li><a href="#density-is-already-a-cascade-tier-the-proposed-model-already-exists" id="toc-density-is-already-a-cascade-tier-the-proposed-model-already-exists" class="nav-link" data-scroll-target="#density-is-already-a-cascade-tier-the-proposed-model-already-exists">1.3 Density IS already a cascade tier (the proposed model already exists)</a></li>
+  <li><a href="#row-height-adaptation-is-narrow-opt-in-capped-predicted-text-only" id="toc-row-height-adaptation-is-narrow-opt-in-capped-predicted-text-only" class="nav-link" data-scroll-target="#row-height-adaptation-is-narrow-opt-in-capped-predicted-text-only">1.4 Row-height adaptation is narrow (opt-in, capped, predicted, text-only)</a></li>
+  <li><a href="#the-box-model-is-all-global-scalars-no-granularity" id="toc-the-box-model-is-all-global-scalars-no-granularity" class="nav-link" data-scroll-target="#the-box-model-is-all-global-scalars-no-granularity">1.5 The box model is all global scalars (no granularity)</a></li>
+  <li><a href="#the-aspect-ladder-layout-zoom.svelte.ts198-321" id="toc-the-aspect-ladder-layout-zoom.svelte.ts198-321" class="nav-link" data-scroll-target="#the-aspect-ladder-layout-zoom.svelte.ts198-321">1.6 The aspect ladder (<code>layout-zoom.svelte.ts:198-321</code>)</a></li>
+  </ul></li>
+  <li><a href="#token-taxonomy" id="toc-token-taxonomy" class="nav-link" data-scroll-target="#token-taxonomy">2. Token taxonomy</a></li>
+  <li><a href="#density-cascade-exists-whats-left" id="toc-density-cascade-exists-whats-left" class="nav-link" data-scroll-target="#density-cascade-exists-whats-left">3. Density cascade — exists; what’s left</a></li>
+  <li><a href="#the-connection-web" id="toc-the-connection-web" class="nav-link" data-scroll-target="#the-connection-web">4. The connection web</a></li>
+  <li><a href="#implications-to-keep-tracked" id="toc-implications-to-keep-tracked" class="nav-link" data-scroll-target="#implications-to-keep-tracked">5. Implications to keep tracked</a></li>
+  <li><a href="#b.-group-header-band-height-decided-2026-05-29" id="toc-b.-group-header-band-height-decided-2026-05-29" class="nav-link" data-scroll-target="#b.-group-header-band-height-decided-2026-05-29">5b. Group-header band height — decided 2026-05-29</a></li>
+  <li><a href="#open-decisions-carry-forward" id="toc-open-decisions-carry-forward" class="nav-link" data-scroll-target="#open-decisions-carry-forward">6. Open decisions (carry forward)</a></li>
+  <li><a href="#c.-measured-height-commit-invariant-b2-postmortem-closed-2026-06-05" id="toc-c.-measured-height-commit-invariant-b2-postmortem-closed-2026-06-05" class="nav-link" data-scroll-target="#c.-measured-height-commit-invariant-b2-postmortem-closed-2026-06-05">6c. Measured-height commit invariant — B2 postmortem (CLOSED 2026-06-05)</a></li>
+  <li><a href="#d.-surface-air-ownership-the-spacing-rework-landed-2026-06-05" id="toc-d.-surface-air-ownership-the-spacing-rework-landed-2026-06-05" class="nav-link" data-scroll-target="#d.-surface-air-ownership-the-spacing-rework-landed-2026-06-05">6d. Surface-air ownership — the spacing rework (LANDED 2026-06-05)</a></li>
+  <li><a href="#b.-verification-harness-built-the-numeric-half-of-debug-shapes" id="toc-b.-verification-harness-built-the-numeric-half-of-debug-shapes" class="nav-link" data-scroll-target="#b.-verification-harness-built-the-numeric-half-of-debug-shapes">6b. Verification harness (built — the numeric half of “debug-shapes”)</a></li>
+  <li><a href="#cheap-wins-resolved-audited-2026-06-02" id="toc-cheap-wins-resolved-audited-2026-06-02" class="nav-link" data-scroll-target="#cheap-wins-resolved-audited-2026-06-02">7. Cheap wins — RESOLVED (audited 2026-06-02)</a></li>
+  <li><a href="#ontology-of-interactive-row-height-drag-resize" id="toc-ontology-of-interactive-row-height-drag-resize" class="nav-link" data-scroll-target="#ontology-of-interactive-row-height-drag-resize">8. Ontology of interactive row-height drag-resize</a>
+  <ul class="collapse">
+  <li><a href="#a.-full-row-kind-height-cascade-built-stage-1-landed-2026-06-03" id="toc-a.-full-row-kind-height-cascade-built-stage-1-landed-2026-06-03" class="nav-link" data-scroll-target="#a.-full-row-kind-height-cascade-built-stage-1-landed-2026-06-03">8a. Full row-kind height cascade — BUILT (Stage 1 LANDED 2026-06-03)</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="the-sizing-model-a-theory-of-everything-for-tabviz-layout-dimensions" class="level1">
+<h1>The Sizing Model — a theory of everything for tabviz layout dimensions</h1>
+<p>Status: <strong>living design record — mostly shipped (re-audited 2026-06-02).</strong> The core is built: shared <code>table-metrics.ts</code> helpers (both backends), content-driven row height via <strong>measure-then-commit</strong> (<code>setMeasuredRowHeights</code> → <code>mergeMeasuredHeights</code>), the aspect ladder as a <strong>compartmentalized post-pass</strong> (<code>lib/layout/aspect-ladder.ts::computeAspectLadder</code>, both backends, auto-wrap loop), the <code>RowKind</code> registry (<code>lib/layout/row-kind.ts</code>, Phase-1 form), multi-flex column widths (<code>forestWidth</code> scalar retired), and the full verification harness (<code>computeLayoutMetrics</code> + <code>debug-shapes</code> + <code>debug-layout</code>). The §7 cheap wins are all resolved. <strong>The remaining frontier is the RowKind <em>expansion</em></strong> — region-tree + kind/traits/scope + per-context forest scale — which unlocks faceting + details (see <code>row-types.md</code> §6). Open design questions: density <code>factor</code> vs profiles (§6), row drag-resize ontology (§8). This is the durable cross-session record of how tabviz determines, computes, and applies every size in a table — row/column dimensions, padding, borders, gaps, density, and the aspect-ratio reshape. Read it before touching <code>layout-zoom.svelte.ts</code>, <code>columns.svelte.ts</code>, <code>width-utils.ts</code>, <code>rendering-constants.ts</code>, <code>export/svg-generator.ts</code>, or the <code>SpacingTokens</code> schema.</p>
+<blockquote class="blockquote">
+<p>Companion docs: <code>architecture-map.md</code>, <code>column-schema-system.md</code>, <code>r-ts-parity-notes.md</code>. The theme <strong>resolution</strong> rework (T1 inputs / role unification) is tracked separately and was in flight when this was written — this doc is about <em>consuming</em> <code>theme.spacing</code>, downstream of resolution.</p>
+</blockquote>
+<hr>
+<section id="the-thesis" class="level2">
+<h2 class="anchored" data-anchor-id="the-thesis">0. The thesis</h2>
+<p>Every sizing quantity should be <strong>one token, resolved through one cascade, consumed by one metrics pass, and rendered identically by both backends (DOM + V8/SVG).</strong> Today none of those four “ones” hold:</p>
+<ul>
+<li>tokens are defined in 2–3 places and some never reach the renderer;</li>
+<li>there is no single resolution cascade for spacing (density is a destructive pre-mutation, not a tier);</li>
+<li>the metrics computation is duplicated between <code>layout-zoom.svelte.ts</code> (DOM) and <code>export/svg-generator.ts</code> (SVG);</li>
+<li>row height is <em>predicted from text</em>, not measured, and only for text.</li>
+</ul>
+<p>The target pipeline:</p>
+<pre><code>density profile  ⊕  theme.spacing  ⊕  per-column/row-type override  ⊕  interactive pin
+        │  (resolve — NA fills downstream, pins survive; idempotent, like the theme cascade)
+        ▼
+   resolved sizing tokens
+        │  ⊕ content measurement (text wrap + per-cell naturalHeight)
+        ▼
+   per-row heights / per-column widths / chrome dims     ← computeTableMetrics (SHARED DOM/SVG)
+        │
+        ▼
+   rowPositions / markerCenters / geometry
+        │  (aspect reshape — reads REAL heights + density-derived floors; fixpoint if it reflows)
+        ▼
+   final layout</code></pre>
+<hr>
+</section>
+<section id="current-reality-evidence" class="level2">
+<h2 class="anchored" data-anchor-id="current-reality-evidence">1. Current reality (evidence)</h2>
+<section id="the-spacingtokens-schema-srcjssrctypestheme-resolved.ts230" class="level3">
+<h3 class="anchored" data-anchor-id="the-spacingtokens-schema-srcjssrctypestheme-resolved.ts230">1.1 The <code>SpacingTokens</code> schema (<code>srcjs/src/types/theme-resolved.ts:230</code>)</h3>
+<pre><code>rowHeight, headerHeight, cellPaddingX, cellPaddingY, padding,
+groupPadding, rowGroupPadding, axisGap, headerGap,
+titleSubtitleGap?, footerGap?, spacerRowHeight?, indentPerLevel?</code></pre>
+<p>Defaults: <code>srcjs/src/lib/theme/theme-resolve.ts:86-100</code> (rowHeight 28, headerHeight 36, cellPaddingX 10, cellPaddingY 0, padding 16, groupPadding 8, rowGroupPadding 0, axisGap 12, headerGap 12, indentPerLevel 16, spacerRowHeight 20, …).</p>
+</section>
+<section id="smoking-guns-tokens-that-dont-arrive-are-multiply-sourced" class="level3">
+<h3 class="anchored" data-anchor-id="smoking-guns-tokens-that-dont-arrive-are-multiply-sourced">1.2 Smoking guns (tokens that don’t arrive / are multiply-sourced)</h3>
+<ul>
+<li><strong><code>spacerRowHeight</code> is inert.</strong> Schema default 20; <strong>not</strong> in any density preset; renderer hardcodes <code>rowHeight / 2</code> (<code>layout-zoom.svelte.ts:358</code>; SVG <code>svg-generator.ts:794</code>). Setting it does nothing. <strong>Fix:</strong> <code>h = spec.theme.spacing.spacerRowHeight ?? rowHeight / 2</code> in <em>both</em> backends, and add it to the density presets.</li>
+<li><strong><code>cellPaddingY</code> is inert.</strong> Schema default 0; <strong>not</strong> in any density preset; renderer never adds it to row height — vertical breathing is faked by a magic <code>+6</code> in the wrap formula (<code>layout-zoom.svelte.ts:363</code>). theme-css also emits <code>--tv-cell-padding-y: 0px</code>. This is the token to revive if rows are to breathe per density.</li>
+<li><strong><code>indent_per_level</code> is dropped.</strong> Density sets it (14/16/20) and the schema carries it, but the renderer uses hardcoded <code>SPACING.INDENT_PER_LEVEL = 12</code> (<code>rendering-constants.ts:181</code>) — triple-sourced (theme / constant / rowGroup).</li>
+<li><strong><code>indentPerLevel</code> is triple-sourced:</strong> theme <code>spacing.indentPerLevel</code> (16), the hardcoded <code>SPACING.INDENT_PER_LEVEL</code> (12, <code>rendering-constants.ts:181</code>), and a <code>rowGroup.indentPerLevel</code>. Different measurement paths read different ones.</li>
+<li><strong>Hardcoded band heights that should be tokens:</strong> summary/overall row = <code>rowHeight * 1.5</code> (<code>layout-zoom.svelte.ts:390</code>); group-header row = <code>rowHeight</code> (no own token); header min = <code>ceil(bodyFont * 1.05 * 1.5) + 6</code>.</li>
+</ul>
+</section>
+<section id="density-is-already-a-cascade-tier-the-proposed-model-already-exists" class="level3">
+<h3 class="anchored" data-anchor-id="density-is-already-a-cascade-tier-the-proposed-model-already-exists">1.3 Density IS already a cascade tier (the proposed model already exists)</h3>
+<p><code>density</code> is a Tier-1 input (<code>R/classes-theme.R:89</code>, default “comfortable”, validated to compact/comfortable/spacious; <code>set_density</code> sets <code>inputs@density</code>, <code>R/themes-api.R:225</code>). It resolves to Tier-2 spacing numerics via a preset table (canonical: <code>srcjs/src/lib/theme/theme-adapter.ts::DENSITY_SPACING</code>; mirrored for parity tests in <code>R/utils-theme-resolve.R:7-26</code>, guarded by <code>test-theme-roster-sync.R</code>). The mirror’s exact values:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>token</th>
+<th>compact</th>
+<th>comfortable</th>
+<th>spacious</th>
+<th>renderer status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>row_height</td>
+<td>20</td>
+<td>24</td>
+<td>30</td>
+<td>✅ honored</td>
+</tr>
+<tr class="even">
+<td>header_height</td>
+<td>26</td>
+<td>32</td>
+<td>40</td>
+<td>✅ honored</td>
+</tr>
+<tr class="odd">
+<td>padding</td>
+<td>8</td>
+<td>12</td>
+<td>16</td>
+<td>✅ honored</td>
+</tr>
+<tr class="even">
+<td>axis_gap</td>
+<td>8</td>
+<td>12</td>
+<td>16</td>
+<td>✅ honored</td>
+</tr>
+<tr class="odd">
+<td>cell_padding_x</td>
+<td>8</td>
+<td>10</td>
+<td>14</td>
+<td>⚠️ honored in <em>measure</em>; SVG <em>render</em> inset hardcodes 10 (§1.5)</td>
+</tr>
+<tr class="even">
+<td>column_group_padding</td>
+<td>6</td>
+<td>8</td>
+<td>12</td>
+<td>✅ honored</td>
+</tr>
+<tr class="odd">
+<td>row_group_padding</td>
+<td><strong>0</strong></td>
+<td><strong>0</strong></td>
+<td><strong>0</strong></td>
+<td>✅ honored, but density never varies it → all presets identical</td>
+</tr>
+<tr class="even">
+<td>indent_per_level</td>
+<td>14</td>
+<td>16</td>
+<td>20</td>
+<td>❌ renderer uses hardcoded <code>SPACING.INDENT_PER_LEVEL=12</code></td>
+</tr>
+<tr class="odd">
+<td>footer_gap / title_subtitle_gap / header_gap / bottom_margin</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>(chrome gaps)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Two distinct breakage classes — both illustrate the thesis:</strong></p>
+<ol type="1">
+<li><strong>Density sets it, renderer drops it:</strong> <code>indent_per_level</code> (14/16/20 → renderer ignores, uses 12). <code>cell_padding_x</code> partially (SVG render inset).</li>
+<li><strong>In the schema but density never sets it AND renderer ignores it:</strong> <code>cellPaddingY</code> (schema default 0; faked by hardcoded <code>+6</code>) and <code>spacerRowHeight</code> (schema default 20; faked by <code>rowHeight/2</code>). These two are the requested “easy settings” candidates and are currently <em>fully inert</em>.</li>
+</ol>
+<p>Also note <code>row_group_padding</code> is in the preset but <strong>0 across all three densities</strong> — so “group-row vertical padding” exists end-to-end yet is invisible because no preset ever sets it nonzero. That’s the cheapest possible win: give it real per-density values.</p>
+<p>So the architecture the §0 thesis wants (density → spacing via an idempotent cascade) <strong>is in place on the input/resolution side.</strong> The gaps are downstream: some density tokens are dropped by the renderer, two useful tokens are inert, and there is no <em>interactive</em> layer to depart a preset and pin individual tokens (§8).</p>
+</section>
+<section id="row-height-adaptation-is-narrow-opt-in-capped-predicted-text-only" class="level3">
+<h3 class="anchored" data-anchor-id="row-height-adaptation-is-narrow-opt-in-capped-predicted-text-only">1.4 Row-height adaptation is narrow (opt-in, capped, predicted, text-only)</h3>
+<p><code>layout-zoom.svelte.ts:354-369</code>, wrap counting <code>columns.svelte.ts:792-846</code>:</p>
+<ul>
+<li><strong>opt-in:</strong> only columns with <code>wrap: true|N</code> inflate height; otherwise one line, ellipsis-truncated.</li>
+<li><strong>capped:</strong> <code>wrap:true</code> → 2 lines, <code>wrap:N</code> → N+1.</li>
+<li><strong>predicted, not measured:</strong> line count = <code>ceil(estimateTextWidth(seg) / contentWidth)</code> — the character-class estimator, never the real rendered box.</li>
+<li><strong>text only:</strong> tall pictograms, multi-line badges, <code>col_img</code> heights, sparklines, and <strong>multi-effect forest rows</strong> (stacked at <code>EFFECT.SPACING=6</code>) do <strong>not</strong> contribute to row height → they clip/overflow.</li>
+</ul>
+<p><code>rowHeight</code> is effectively a global scalar with three local deviations: spacer (½), wrap (taller, text-only), group-padding (taller).</p>
+<p>The symmetric fix already half-exists: cell schemas dispatch <code>naturalWidth</code> (<code>width-utils.ts:172</code>). Add <strong><code>naturalHeight(col, row)</code></strong> on the same dispatch; then <code>rowHeight_i = max(themeRowHeight, max-cell naturalHeight, wrapHeight) + paddingY</code>. Browser path may additionally measure-then-commit (offsetHeight); V8 path keeps estimator + naturalHeight.</p>
+</section>
+<section id="the-box-model-is-all-global-scalars-no-granularity" class="level3">
+<h3 class="anchored" data-anchor-id="the-box-model-is-all-global-scalars-no-granularity">1.5 The box model is all global scalars (no granularity)</h3>
+<p>No per-side horizontal padding (left == right), no per-column padding, no per-row-type padding, no vertical padding. Padding <code>cellPaddingX</code> is consumed in <strong>three</strong> places that must agree — width budget (<code>width-utils.ts:238</code>), wrap <code>contentWidth</code> (<code>columns.svelte.ts:815</code>), and render inset — and the SVG render inset currently reads a <strong>hardcoded <code>SPACING.TEXT_PADDING=10</code></strong> instead of the theme value, so any non-default <code>cellPaddingX</code> (and any future granular padding) silently fails to apply in exports.</p>
+</section>
+<section id="the-aspect-ladder-layout-zoom.svelte.ts198-321" class="level3">
+<h3 class="anchored" data-anchor-id="the-aspect-ladder-layout-zoom.svelte.ts198-321">1.6 The aspect ladder (<code>layout-zoom.svelte.ts:198-321</code>)</h3>
+<p>Pins <code>width/height == targetAspect</code> via three coupled levers (forest flex → non-forest column scale → row+chrome height) with magic caps (<code>FLEX_CAP=2</code>, floors <code>0.25</code>/<code>0.4</code>, <code>CHROME_SHARE=0.35</code>, <code>8×</code> width cap). Three structural problems:</p>
+<ol type="1">
+<li><strong>Solved on a fiction:</strong> <code>approxRowsHeight = effectiveRowSlots * naturalRowHeight</code> (<code>:217</code>) assumes every row is the natural height — ignores wrap inflation, spacer ½-rows, group padding. Target ≠ rendered whenever any row deviates.</li>
+<li><strong>Width-scaling induces the wrap it ignores:</strong> shrinking columns (<code>aspectNonForestScale</code>, <code>:277</code>) narrows <code>contentWidth</code> → more wrap → taller rows → height changes → the just-solved aspect is wrong. <strong>Width and height are circularly dependent but solved in one forward pass.</strong></li>
+<li><strong>Duplicated:</strong> reimplemented in <code>svg-generator.ts</code> (<code>generateSVGForAspectTarget</code>) — two copies of a ~110-line algorithm.</li>
+<li>The <code>MIN_ROW_HEIGHT</code> floor (<code>:288</code>) ignores density.</li>
+</ol>
+<p><strong>Open fork:</strong> is aspect a <em>reflow</em> target (change geometry) or a <em>scale-to-fit</em> target (CSS transform into a frame)? It currently reflows, which is what makes it fight content. If scale-to-fit, most of the ladder deletes. If reflow, it must read real post-wrap heights and iterate to a fixpoint.</p>
+<hr>
+</section>
+</section>
+<section id="token-taxonomy" class="level2">
+<h2 class="anchored" data-anchor-id="token-taxonomy">2. Token taxonomy</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Class</th>
+<th>Tokens</th>
+<th>Status / gap</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Band heights</td>
+<td><code>rowHeight</code>, <code>headerHeight</code>, <code>spacerRowHeight</code>, group-header, summary/overall</td>
+<td>spacerRowHeight <strong>dead</strong>; summary <code>*1.5</code> hardcoded; group-header no token</td>
+</tr>
+<tr class="even">
+<td>Inter-band gaps</td>
+<td><code>rowGroupPadding</code>, <code>headerGap</code>, <code>axisGap</code>, <code>titleSubtitleGap</code>, <code>footerGap</code></td>
+<td>wired ✓ (rowGroupPadding default 0)</td>
+</tr>
+<tr class="odd">
+<td>Intra-cell padding</td>
+<td><code>cellPaddingX</code>, <code>cellPaddingY</code></td>
+<td>cellPaddingY <strong>set by density but ignored by renderer</strong>; single scalar; no per-side/per-column</td>
+</tr>
+<tr class="even">
+<td>Indent</td>
+<td><code>indentPerLevel</code></td>
+<td><strong>triple-sourced</strong> (16 / 12 / rowGroup)</td>
+</tr>
+<tr class="odd">
+<td>Container</td>
+<td><code>padding</code></td>
+<td>wired ✓</td>
+</tr>
+<tr class="even">
+<td>Content-driven</td>
+<td>wrap height, per-cell <code>naturalHeight</code>, multi-effect stack</td>
+<td>wrap text-only/opt-in; naturalHeight <strong>missing</strong>; multi-effect doesn’t drive height</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="density-cascade-exists-whats-left" class="level2">
+<h2 class="anchored" data-anchor-id="density-cascade-exists-whats-left">3. Density cascade — exists; what’s left</h2>
+<p>The cascade is already:</p>
+<pre><code>density preset (compact|comfortable|spacious)  →  theme.spacing  →  (column/row-type override — MISSING)  →  interactive pin (MISSING)</code></pre>
+<p>The first two arrows exist (§1.3). <strong>Status (2026-06-02): the dead-token items below are RESOLVED</strong> — see §7 (cellPaddingX sourced; cellPaddingY deliberately <code>0</code> under the <code>+6</code> line-height model; indentPerLevel single-sourced; spacer = <code>rowHeight/2</code> consistent). Remaining work:</p>
+<ul>
+<li><del>Honor <code>indent_per_level</code> / SVG <code>cell_padding_x</code>; revive <code>cellPaddingY</code> / <code>spacerRowHeight</code>.</del> RESOLVED (§7).</li>
+<li><label><input type="checkbox" checked=""><strong><code>row_group_padding</code> real per-density values — DONE 2026-06-02.</strong> Was 0/0/0 (inert); now 8/12/16 (compact/comfortable/spacious) in both <code>DENSITY_SPACING</code> + the R <code>DENSITY_PRESETS</code> mirror. Top-level groups get a half-row separator gap that scales with density (and the density factor).</label></li>
+<li><strong>Per-column / per-row-type override tier</strong> — does not exist yet; the cascade jumps straight from theme to render.</li>
+<li><strong>Interactive pins</strong> — a settings-panel slider or drag edit should pin that token so density stops controlling it (pin-survives rule, mirroring the <code>userResizedIds</code> precedent for column widths). See §8.</li>
+<li><strong>Per-token density behaviour is already encoded by omission</strong> (horizontal padding isn’t in the preset). If granular padding lands (§1.5), each new token must decide its density membership the same way.</li>
+</ul>
+<p>The two requested “easy settings”: - <strong>group-row vertical padding</strong> = <code>rowGroupPadding</code> — fully wired end-to-end but the presets set it to 0 everywhere. Win = nonzero per-density values + a settings-panel slider. Cheapest possible (no renderer change). - <strong>spacer row height</strong> = <code>spacerRowHeight</code> — revive the inert renderer read (§1.2) + add to presets, then it’s a real density-aware knob.</p>
+<hr>
+</section>
+<section id="the-connection-web" class="level2">
+<h2 class="anchored" data-anchor-id="the-connection-web">4. The connection web</h2>
+<pre><code>density profile ─┐
+theme.spacing ───┼─► resolved tokens ─► cellPaddingX ─► colWidth measure ─► wrap contentWidth ─┐
+overrides/pins ──┘            │                                                                  │
+                             ├─► rowHeight, spacerRowHeight, rowGroupPadding ──────────┐         │
+                             └─► headerHeight, axisGap, padding ─► chrome dims         ▼         ▼
+per-cell naturalHeight ───────────────────────────────────────► rowHeights ◄──── wrap line count
+                                                                     │
+                                                  rowPositions / markerCenters / forest+viz geometry
+                                                                     │
+                          sum(rowHeights)+chrome ─► natural height ─► ASPECT LADDER ─┐
+                                                                     ▲               │ mutates rowHeight
+                                                                     └───────────────┘ + column scale → re-wraps (CYCLE)
+
+interactive:  resize → contentWidth → wrap → rowHeights ;  spacing slider → tokens → all ;  density → tokens → all</code></pre>
+<p>The only cycle is aspect ↔︎ (column scale → wrap → rowHeight). Everything else is a clean DAG once density is a tier and tokens stop leaking.</p>
+<hr>
+</section>
+<section id="implications-to-keep-tracked" class="level2">
+<h2 class="anchored" data-anchor-id="implications-to-keep-tracked">5. Implications to keep tracked</h2>
+<ol type="1">
+<li><strong>Parity is the gate.</strong> Any new/revived token must arrive in BOTH DOM and SVG. <code>spacerRowHeight</code> is the cautionary tale → land a shared <code>computeTableMetrics</code> <em>before</em> expanding the token set, or new knobs won’t export. Add a parity test per token.</li>
+<li><strong>One spacing vocabulary.</strong> Retire the hardcoded twins in <code>rendering-constants.ts</code> that shadow <code>theme.spacing</code> defaults (<code>TEXT_PADDING</code>=cellPaddingX, <code>INDENT_PER_LEVEL</code>, <code>COLUMN_GROUP.PADDING</code>, axis-height/gap). SVG render must read theme padding, not the constant.</li>
+<li><strong>Order of operations is load-bearing:</strong> resolve(density) → content(wrap + naturalHeight) → aspect(reshape, density-aware floor). Aspect last, on real heights.</li>
+<li><strong>Granular padding feeds wrap, not just render.</strong> Per-side/per-column padding must reach <code>contentWidth</code> in the wrap counter, or wrap drifts.</li>
+<li><strong>Reintroducing vertical padding</strong> retires the magic <code>+6</code> and lets rows breathe instead of faking it; it’s the token that makes density visually real.</li>
+</ol>
+<hr>
+</section>
+<section id="b.-group-header-band-height-decided-2026-05-29" class="level2">
+<h2 class="anchored" data-anchor-id="b.-group-header-band-height-decided-2026-05-29">5b. Group-header band height — decided 2026-05-29</h2>
+<p>Direction (confirmed with author):</p>
+<ul>
+<li><strong>Decouple from <code>rowHeight</code></strong> — the current <code>h = rowHeight</code> for group headers (<code>layout-zoom.svelte.ts:360</code>) is incidental. A group header is a labeled structural separator, ontologically closer to the column-header strip.</li>
+<li><strong>Band height is derived from the group label’s own typography</strong> (font role + padding), like <code>minHeaderRowHeight</code> does for the column header — with an optional tier value as override/floor. Content (<code>naturalHeight</code>, label wrap) still floors it.</li>
+<li><strong>Uniform across depth — NOT per-depth height.</strong> Depth hierarchy is signaled by typography (font size), background tint, and indent, which already exist (<code>rowGroup.L1/L2/L3</code>). Height does not carry hierarchy → no per-depth height tier. (This rejects the per-depth half of the earlier “C” option.)</li>
+<li><strong>Separation is the primary group lever, not band height.</strong> Rework <code>rowGroupPadding</code> from its current “trailing pad on the previous data row, top-level groups only” model (<code>layout-zoom.svelte.ts:341-352</code>) into a proper depth-aware leading/trailing <strong>group margin</strong> that works at every nesting level and on the first group. Most “make groups stand out” intent is separation, not a taller bar.</li>
+<li><strong>Drag</strong> on a group header edits the group-band height token (table-wide) and pins it — per §8.</li>
+</ul>
+</section>
+<section id="open-decisions-carry-forward" class="level2">
+<h2 class="anchored" data-anchor-id="open-decisions-carry-forward">6. Open decisions (carry forward)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked=""><strong>Aspect: reflow (not scale-to-fit) — DECIDED 2026-06.</strong> Keep reflow semantics (aspect reshapes geometry: forest flex, column scale, rowHeight), NOT a CSS transform. <strong>But compartmentalize it.</strong> The aspect↔︎content-height interaction is delicate and will be tweaked repeatedly, so it must live behind a clean seam, not be entangled with the base layout:</label>
+<ul>
+<li>Base layout (<code>computeTableMetrics</code> / <code>computeRowLayout</code>) computes <strong>content-true</strong> row heights with NO aspect awareness — the honest natural layout. This is the stable core; content-driven height extends it freely.</li>
+<li>The aspect ladder becomes a <strong>separate, explicit post-pass</strong> that takes the content-true natural metrics as input and reshapes toward the target. When it shrinks rows it must read the <em>real</em> per-row heights (not <code>rows × naturalRowHeight</code>) and, because narrowing columns can reflow text taller, <strong>iterate to a fixpoint</strong> (solve → recompute content reflow → re-solve, capped). Both backends call the same post-pass.</li>
+<li>Acceptance: changing aspect behavior must touch only the post-pass, never the base metrics. (Circular dep is contained inside the iterating post-pass instead of smeared across the layout.)</li>
+</ul></li>
+<li><label><input type="checkbox" checked=""><strong>Row height: measure-then-commit — DECIDED 2026-06 (do it right).</strong> Browser path measures <strong>real</strong> rendered row heights (offsetHeight / ResizeObserver) and commits them back into the layout; V8/export path uses the estimator + per-cell <code>naturalHeight</code>. Both feed ONE content-height contract (a <code>Record&lt;rowId, px&gt;</code> summed in <code>computeRowLayout</code>, the same seam <code>wrapLineCounts</code> uses today). The measured map supersedes the predicted map on the browser when available, so DOM is exact and SVG stays predicted-but-close; the prediction is the floor that prevents first-paint jump. (See §1.4.)</label></li>
+<li><label><input type="checkbox" checked=""><strong>Density: continuous <code>factor</code> alongside named profiles — DECIDED + BUILT 2026-06-02.</strong> A <code>densityFactor</code> (theme input, clamped [0.5, 2]) multiplies the chosen profile’s spacing tokens — a fine dial on top of the curated named profile. Applied in <code>theme-adapter.ts::scaleSpacing</code> at density→spacing resolution (default 1 = identity); surfaced R-side via <code>web_theme(density_factor=)</code> + <code>set_density(theme, factor=)</code>. Precedence: named profile → × factor → (future per-token override → pin).</label></li>
+<li><label><input type="checkbox" checked=""><strong><code>computeTableMetrics</code> (shared DOM/SVG)</strong> — BUILT 2026-06 as <code>srcjs/src/lib/layout/table-metrics.ts</code>. Both backends (layout-zoom <code>$derived</code>, svg-generator <code>computeLayout</code>) now call shared pure helpers for the formulas they used to hand-mirror: <code>computeRowLayout</code> (heights/positions/marker-centers/ rowPaddedAfter), <code>computeHeaderHeight</code>, <code>computeAxisHeight</code>, <code>computeScalableChromeHeight</code> + named constants (<code>HEADER_FONT_SCALE</code>, <code>LINE_HEIGHT</code>, <code>HEADER_ROW_PADDING</code>, <code>DEFAULT_AXIS_GAP</code>). <strong>Two divergences converged on the more-correct SVG formula</strong> (axisHeight gate: pure tables now reserve 0 axis, forest tables get density-scaled axis not flat 32 — also fixed the stale <code>ComputedLayout.axisHeight = LAYOUT.AXIS_HEIGHT</code> bug; chrome-scale denominator: precise conditional sum, fixing DOM aspect over-scaling). <strong>One divergence deliberately kept</strong> (<code>forestWidth</code>: container-responsive DOM vs fixed-canvas SVG — correct context-dependence, documented on both sides). Gated by the snapshot harness + 16 table-metrics unit tests + R export tests.</label></li>
+</ul>
+<hr>
+</section>
+<section id="c.-measured-height-commit-invariant-b2-postmortem-closed-2026-06-05" class="level2">
+<h2 class="anchored" data-anchor-id="c.-measured-height-commit-invariant-b2-postmortem-closed-2026-06-05">6c. Measured-height commit invariant — B2 postmortem (CLOSED 2026-06-05)</h2>
+<p><strong>The invariant: <code>measuredRowHeights</code> holds CONTENT heights, never grid-track echoes.</strong> The full chain is <code>estimator → mergeMeasuredHeights(max) → computeRowLayout(+pads) → grid tracks</code>, and <code>computeRowLayout</code> ADDS trailing <code>rowGroupPadding</code> to the last row of each group. Any committed measurement that already contains that pad gets the pad re-added on the next render — a positive feedback loop.</p>
+<p><strong>The B2 bug</strong> (open since the rgc_v4 audit; root-caused via the live docs hero): the DOM measure loop committed <code>cell.scrollHeight</code> for every cell, assuming scrollHeight reports content extent independent of the pinned track. For a NON-overflowing cell it just echoes the track back — so every <code>row-padded-after</code> cell fed <code>height + pad</code> into the map, the track re-added the pad, and the loop ratcheted ~12px/frame unbounded (homepage hero: 6,284px container for 11 rows; grid tracks of 2,500px; growth proportional to page lifetime, re-armed by any widget change).</p>
+<p><strong>The two-part enforcement</strong> (commit <code>4d4c281</code>, both halves required):</p>
+<ol type="1">
+<li><em>Overflow-only commits</em> (<code>TabvizPlot</code> measure loop): report a row only when <code>scrollHeight &gt; clientHeight + 1</code> — i.e.&nbsp;content genuinely exceeds the pinned track, which is the only case where scrollHeight measures content. (+1 absorbs integer rounding between the two metrics.)</li>
+<li><em>Grow-merge commits</em> (<code>layout-zoom.svelte.ts::growMergeHeights</code>, pure + exported): because settled rows are now ABSENT from each report, replacing the map would drop their committed heights → shrink → overflow → re-grow oscillation. Per-key <code>Math.max</code> keeps the “rows only grow” design; a no-growth report returns the same reference so the commit loop settles.</li>
+</ol>
+<p><strong>Deliberate non-fix:</strong> the pad stays folded into the row’s grid track. Splitting it into its own track would renumber every <code>grid-row</code> index and fork DOM vs SVG-export geometry (<code>computeRowLayout</code> is the shared source); the row-resize drag handles also deliberately anchor the height + pad handles on the same row.</p>
+<p><strong>Gates:</strong> <code>tests/browser/measure-rows.browser.ts</code> carries the B2 regression gate — a grouped fixture asserting container-height stability over a 2s window and a sane max-track bound. Verified to FAIL against the pre-fix bundle (1,298→3,300px in the window) and pass post-fix (rock-stable 264px, maxTrack exactly rowHeight+pad). <code>grow-merge-heights.test.ts</code> pins the commit semantics.</p>
+</section>
+<section id="d.-surface-air-ownership-the-spacing-rework-landed-2026-06-05" class="level2">
+<h2 class="anchored" data-anchor-id="d.-surface-air-ownership-the-spacing-rework-landed-2026-06-05">6d. Surface-air ownership — the spacing rework (LANDED 2026-06-05)</h2>
+<p>Three-agent review (geometry audit / rgc_v4 aesthetics / spacing architecture) found the wire-audit shell graft incoherent with the density substrate: four padding layers (two dead), a hand-tuned <code>shellExtrasPad = 30</code> chip-height constant, fixed-px chrome invisible to density, and the strip rendered as a top cap instead of the lab’s caption↔︎data seam. The consolidated model:</p>
+<ul>
+<li><strong>One rule for height accounting</strong>: everything that contributes height lives INSIDE <code>.tabviz-scalable</code> (caption block, strip, paper with its padding, footer) and is covered by the ResizeObserver. The ONLY out-of-band term is the shell’s own padding, read from the resolved <code>--tv-shell-padding</code> cssVar (never re-derived from the recipe). If you add new chrome, put it inside the scalable — do not extend the height formula.</li>
+<li><strong>Air ownership</strong>: SHELL = the figure’s outer air (density-scaled, mode-gated in <code>shell-paper.ts</code>: raised 14/20/26 × density_factor; float pads too so the drop shadow breathes; flush/transparent 0 — geometric inertness contract). PAPER = inner mat (10/14/18). <code>containerPadding</code> = page-gutter escape hatch, 0 everywhere by default (preset, CSS fallback, and JS formula all agree — was a 0-vs-16 triple-source incoherence).</li>
+<li><strong>Why the shell/paper pad scales are NOT in DENSITY_PX</strong>: every DENSITY_PX entry emits a <code>--tv-spacing-*</code> wire token unconditionally; shell/paper padding is mode-gated (flush MUST stay 0), so the scale belongs to the shell recipe — “inline at the resolver” is the sanctioned canonical home for a mode-dependent axis.</li>
+<li><strong>Aspect ladder</strong>: includes <code>2 × --tv-shell-padding</code> in its chrome estimate (figure-internal air belongs in the pinned aspect); <code>containerPadding</code> deliberately excluded (page gutter).</li>
+<li><strong>Axis descent</strong>: <code>computeAxisLayout</code> reserves <code>0.6 × tickFont</code> below the last baseline (was 0.4 — under-reserved by one descender; the geometry audit measured 2–3px of overshoot on every preset, masked only by container padding).</li>
+<li><strong>Gate</strong>: <code>tests/browser/theme-screenshots.browser.ts</code> asserts the wrap chain, the strip’s seam position (after caption, before paper), flush inertness (0/0), and density-scaled band/mat presence per archetype.</li>
+</ul>
+</section>
+<section id="b.-verification-harness-built-the-numeric-half-of-debug-shapes" class="level2">
+<h2 class="anchored" data-anchor-id="b.-verification-harness-built-the-numeric-half-of-debug-shapes">6b. Verification harness (built — the numeric half of “debug-shapes”)</h2>
+<p>The regression substrate the RowKind + <code>computeTableMetrics</code> refactors are validated against.</p>
+<ul>
+<li><p><strong><code>computeLayoutMetrics(spec, opts?)</code></strong> (<code>srcjs/src/export/svg-generator.ts</code>) — pure, no render. Flat <code>LayoutMetrics</code>: per-row <code>{kind, depth, height, top, markerCenter}</code>, per-column <code>{id, type, width}</code>, chrome dims, and a <strong>spacing-token echo</strong> (records WHICH token value was consumed → catches dead-token / density-not-applied regressions, not only geometry drift). Runs the real <code>computeLayout</code>, so it captures the actual SVG/V8 path.</p></li>
+<li><p><strong><code>sizing-fixtures.ts</code></strong> — deterministic matrix (density / overall / wrap / indent / spacers / groups / mixed columns). <strong>Stub themes with explicit spacing</strong> (mirrors <code>DENSITY_PRESETS</code>), not the resolver — runs under bun, immune to in-flight theme-resolution churn. density→spacing fidelity stays the R <code>DENSITY_PRESETS</code> parity mirror’s job (deliberate separation).</p></li>
+<li><p><strong><code>layout-metrics.test.ts</code></strong> — snapshot per fixture + box-model invariants (density monotonicity, spacer&lt;data, wrap inflation, monotonic positions, positive widths). 31 tests.</p></li>
+<li><p><strong><code>debug-shapes.ts</code></strong> (the <strong>visual half</strong>, built) — <code>renderDebugShapes(spec)</code> emits an SVG that draws each cell’s allocated box, horizontal padding regions (pink), text-anchor inset (red dot), row marker-center (blue dash), per-row indent inset (amber), and row-kind (fill) — content stripped so the box model itself is visible. A <em>pure function of <code>computeLayoutMetrics</code></em> (the column <code>x</code> / <code>mainY</code> it needs were added to the metrics), so the visual and numeric views agree by construction. Drive it from R via <code>render_debug_shapes(spec, "out.png")</code> (V8 + rsvg) for eyeball review; <code>debug-shapes.test.ts</code> guards the SVG contract. Per-backend rendering of the same metrics is the future DOM↔︎SVG parity view.</p></li>
+</ul>
+<p>BUILT (2026-06): the DOM <code>debug-layout.ts</code> (predicted-vs-actual overlay) draws from the same metrics, giving a live in-widget version of the box model.</p>
+</section>
+<section id="cheap-wins-resolved-audited-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="cheap-wins-resolved-audited-2026-06-02">7. Cheap wins — RESOLVED (audited 2026-06-02)</h2>
+<p>All five are now done, obsolete, or dissolved by dead-code removal:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" checked=""><strong>SVG text inset reads <code>cellPaddingX</code>.</strong> <code>svg-generator</code> sources <code>theme.spacing.cellPaddingX</code> at every inset site (≥8). The hardcoded <code>SPACING.TEXT_PADDING</code> is gone. The export drift bug is fixed.</label></li>
+<li><label><input type="checkbox" checked=""><strong><code>cellPaddingY</code> sourced — but deliberately <code>0</code>.</strong> The token exists (<code>theme-resolved.ts</code>); all density presets set it to <code>0</code> and the renderer reads <code>theme.spacing.cellPaddingY ?? 0</code>. Vertical padding was superseded by the <code>+6</code> line-height model (now a <em>named</em> shared constant in <code>table-metrics.ts</code>), so the original “honor cellPaddingY from density” win is obsolete, not pending.</label></li>
+<li><label><input type="checkbox" checked=""><strong><code>rowGroupPadding</code> exposed</strong> in <code>SpacingControl.svelte</code> + <code>LayoutControl.svelte</code>.</label></li>
+<li><label><input type="checkbox" checked=""><strong><code>spacerRowHeight</code> — no token; consistent <code>rowHeight/2</code>.</strong> Both backends compute spacer height as <code>rowHeight/2</code> through the shared <code>computeRowLayout</code> seam, so the DOM↔︎SVG drift this item feared no longer exists. (Introducing an actual <code>spacerRowHeight</code> token is a <em>feature</em>, not a drift fix — moved to §6 density questions if wanted.)</label></li>
+<li><label><input type="checkbox" checked=""><strong><code>indentPerLevel</code> double-source dissolved by dead-code removal (2026-06-02).</strong> The live paths already read <code>theme.rowGroup.indentPerLevel</code> (SVG <code>svg-generator</code>, DOM <code>columns.svelte.ts</code>). The only remaining raw <code>SPACING.INDENT_PER_LEVEL</code> references lived in <code>width-utils.ts</code>’s <strong>dead</strong> legacy auto-width cluster (<code>calculateColumnAutoWidth</code> / <code>calculateAllAutoWidths</code> / <code>calculateLabelColumnWidth</code></label>
+<ul>
+<li><code>getEffectiveColumnWidth</code> — 0 external refs, 0 in the bundle, superseded by the schema-driven resolver). Those were deleted, taking the stale constant with them.</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="ontology-of-interactive-row-height-drag-resize" class="level2">
+<h2 class="anchored" data-anchor-id="ontology-of-interactive-row-height-drag-resize">8. Ontology of interactive row-height drag-resize</h2>
+<blockquote class="blockquote">
+<p><strong>Mechanism + UI BOTH BUILT 2026-06-03.</strong> The override/pin layer + the drag-resize UI shipped in Stage 1 of the cascade rework. <code>computeRowLayout</code> honors a per-<code>RowKind</code> <code>rowKindHeights</code> map; the layout-zoom slice holds the map + <code>setRowKindHeight(kind, h)</code> / <code>resetRowKindHeights()</code>. The drag-resize UI is <code>RowEdgeHandles.svelte</code> (pointer-capture mechanics matching the column-width drag) and the settings-panel pin control is <code>RowKindHeightsControl.svelte</code>.</p>
+</blockquote>
+<section id="a.-full-row-kind-height-cascade-built-stage-1-landed-2026-06-03" class="level3">
+<h3 class="anchored" data-anchor-id="a.-full-row-kind-height-cascade-built-stage-1-landed-2026-06-03">8a. Full row-kind height cascade — BUILT (Stage 1 LANDED 2026-06-03)</h3>
+<p>The shipped <code>rowKindHeights</code> map is only the <strong>pin layer</strong>. The full per-kind height resolution should be a cascade beneath it (low → high precedence):</p>
+<ol type="1">
+<li><strong>Intrinsic kind ratio</strong> — each <code>RowKind</code> as a <em>ratio</em> of the density <code>rowHeight</code> (data 1.0, group_header 1.0, summary 1.0, section-header 1.0, spacer 0.5). Ratios (not absolutes) so they scale with density <strong>and</strong> the density factor for free.</li>
+<li><strong>Inheritance</strong> — a kind with no value inherits its <em>parent</em>: <code>summary → data</code>, <code>section-header → group_header</code>. Shallow, fixed graph (not arbitrary). So raising data’s height propagates to summary unless summary is set.</li>
+<li><strong>Theme-level default</strong> — a theme sets a kind’s ratio (e.g.&nbsp;editorial theme <code>summary = 1.25×</code>). Scales with density.</li>
+<li><strong>Constructor override</strong> — authored per-kind at construction (<code>row_heights</code>). Keep it a <em>ratio</em> for cascade-consistency (an absolute would be a second unit fighting density).</li>
+<li><strong>Interactive pin</strong> (BUILT) — drag / settings-panel writes an <strong>absolute</strong> px that bypasses the ratio chain and survives density (the user dragged to <em>that</em> pixel and means it). Highest precedence.</li>
+</ol>
+<p><strong>Crux tension:</strong> ratios everywhere <em>except</em> the pin. <code>resolvedHeight = pin ?? (rowHeight × resolveRatio(kind))</code>, where <code>resolveRatio</code> walks constructor → theme → inherited-parent → intrinsic. “Reset” clears the pin → re-enters the cascade. Both affordances (settings-panel control + drag handle, DECIDED to build both) write the pin; the settings panel additionally needs a “reset to default” to drop back into the cascade.</p>
+<p><strong>Implications for the build:</strong> the shipped <code>rowKindHeights</code> (absolute) is layer 5. Layers 1–4 (ratios + inheritance + theme + constructor) are unbuilt — they land with the affordances. The drag-UI DOM wrinkle (rows have no wrapper element → handles need an absolutely-positioned overlay layer) is still the open build-time question for the drag affordance specifically.</p>
+<p><strong>Question:</strong> when a user drags a row’s bottom edge, what are they editing?</p>
+<p><strong>The column precedent (why rows are different).</strong> Column drag-resize writes a <strong>per-column</strong> width pin (<code>columnWidths[col.id]</code> + <code>userResizedIds</code>, <code>columns.svelte.ts</code>). That’s correct <em>because columns are heterogeneous by nature</em> — each has its own width, stable identity, and independent meaning. Rows are the opposite: <strong>homogeneous by design</strong> (uniform row height is what makes the grid read as a grid and keeps forest marker-centers aligned) and <strong>data-lifecycle-transient</strong> (rows appear/vanish under sort/filter/paginate).</p>
+<p><strong>Therefore the per-row interpretation is the tempting-but-wrong default.</strong> Pinning “row #5 = 40px” raises two problems: (a) it breaks the homogeneity invariant and the marker-center alignment that assumes a single <code>rowHeight</code>; (b) after a sort/filter the pin either follows <code>row.id</code> into a now-arbitrary position or is orphaned — neither is what the user meant by “make rows taller.”</p>
+<p><strong>Ontologically correct: drag edits the band-type’s height TOKEN, table-wide, and pins it.</strong> The unit of resize should match the unit of natural variation — columns vary per-column, rows vary per <em>band type</em>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>dragging a…</th>
+<th>edits token</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data row</td>
+<td><code>rowHeight</code></td>
+<td>all data rows</td>
+</tr>
+<tr class="even">
+<td>spacer row</td>
+<td><code>spacerRowHeight</code></td>
+<td>all spacers</td>
+</tr>
+<tr class="odd">
+<td>group-header row</td>
+<td>(new) group-header height token</td>
+<td>all group headers</td>
+</tr>
+<tr class="even">
+<td>header</td>
+<td><code>headerHeight</code></td>
+<td>the header strip</td>
+</tr>
+</tbody>
+</table>
+<p>This makes drag a <strong>direct-manipulation editor for a spacing token</strong>, which composes cleanly with everything else:</p>
+<ul>
+<li><strong>Density:</strong> dragging pins the token → density stops controlling it (departs the preset into “custom”), exactly the <code>userResizedIds</code> pin-survives rule. Changing density afterward leaves the pinned token alone.</li>
+<li><strong>Content-driven height (§1.4):</strong> the token is a <strong>floor</strong> (<code>max(rowHeight, contentHeight)</code>). Drag-up always works; drag-down clamps at the per-row content minimum (with feedback), since you can’t shrink below content without clipping.</li>
+<li><strong>Aspect ladder (§1.6):</strong> an explicit drag is a stronger signal than the aspect target. The dragged height token becomes user-pinned and is <strong>excluded from the aspect row-height ladder</strong> — same precedent as <code>aspectNonForestScale</code> skipping user-resized columns. Aspect then absorbs via forest/chrome only, or releases.</li>
+<li><strong>Parity:</strong> because drag mutates a token (not per-row data), both DOM and SVG consume it through the same path — no per-row special case to keep in sync.</li>
+</ul>
+<p><strong>Escape hatch for the genuine per-row case</strong> (a deliberate “hero” row): that’s better expressed as authored content (a taller cell / <code>naturalHeight</code>) or an explicit <code>row.style.height</code>, not interactive drag. If per-row drag is ever wanted, it must answer the sort/filter-identity question first.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># The Sizing Model — a theory of everything for tabviz layout dimensions</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>Status: **living design record — mostly shipped (re-audited 2026-06-02).** The</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>core is built: shared <span class="in">`table-metrics.ts`</span> helpers (both backends), content-driven</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>row height via **measure-then-commit** (<span class="in">`setMeasuredRowHeights`</span> →</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="in">`mergeMeasuredHeights`</span>), the aspect ladder as a **compartmentalized post-pass**</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>(<span class="in">`lib/layout/aspect-ladder.ts::computeAspectLadder`</span>, both backends, auto-wrap</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>loop), the <span class="in">`RowKind`</span> registry (<span class="in">`lib/layout/row-kind.ts`</span>, Phase-1 form),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>multi-flex column widths (<span class="in">`forestWidth`</span> scalar retired), and the full</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>verification harness (<span class="in">`computeLayoutMetrics`</span> + <span class="in">`debug-shapes`</span> + <span class="in">`debug-layout`</span>).</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>The §7 cheap wins are all resolved. **The remaining frontier is the RowKind</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>*expansion*** — region-tree + kind/traits/scope + per-context forest scale —</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>which unlocks faceting + details (see <span class="in">`row-types.md`</span> §6). Open design questions:</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>density <span class="in">`factor`</span> vs profiles (§6), row drag-resize ontology (§8). This is the durable</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>cross-session record of how tabviz determines, computes, and applies every size</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>in a table — row/column dimensions, padding, borders, gaps, density, and the</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>aspect-ratio reshape. Read it before touching <span class="in">`layout-zoom.svelte.ts`</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="in">`columns.svelte.ts`</span>, <span class="in">`width-utils.ts`</span>, <span class="in">`rendering-constants.ts`</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="in">`export/svg-generator.ts`</span>, or the <span class="in">`SpacingTokens`</span> schema.</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Companion docs: </span><span class="in">`architecture-map.md`</span><span class="at">, </span><span class="in">`column-schema-system.md`</span><span class="at">,</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="in">`r-ts-parity-notes.md`</span><span class="at">. The theme **resolution** rework (T1 inputs / role</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; unification) is tracked separately and was in flight when this was written —</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; this doc is about *consuming* </span><span class="in">`theme.spacing`</span><span class="at">, downstream of resolution.</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0. The thesis</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>Every sizing quantity should be **one token, resolved through one cascade,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>consumed by one metrics pass, and rendered identically by both backends (DOM +</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>V8/SVG).** Today none of those four "ones" hold:</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>tokens are defined in 2–3 places and some never reach the renderer;</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>there is no single resolution cascade for spacing (density is a destructive</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>  pre-mutation, not a tier);</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the metrics computation is duplicated between <span class="in">`layout-zoom.svelte.ts`</span> (DOM)</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  and <span class="in">`export/svg-generator.ts`</span> (SVG);</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>row height is *predicted from text*, not measured, and only for text.</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>The target pipeline:</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="in">density profile  ⊕  theme.spacing  ⊕  per-column/row-type override  ⊕  interactive pin</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="in">        │  (resolve — NA fills downstream, pins survive; idempotent, like the theme cascade)</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="in">        ▼</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="in">   resolved sizing tokens</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="in">        │  ⊕ content measurement (text wrap + per-cell naturalHeight)</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="in">        ▼</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="in">   per-row heights / per-column widths / chrome dims     ← computeTableMetrics (SHARED DOM/SVG)</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="in">        │</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="in">        ▼</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="in">   rowPositions / markerCenters / geometry</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="in">        │  (aspect reshape — reads REAL heights + density-derived floors; fixpoint if it reflows)</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="in">        ▼</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="in">   final layout</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Current reality (evidence)</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 The `SpacingTokens` schema (`srcjs/src/types/theme-resolved.ts:230`)</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="in">rowHeight, headerHeight, cellPaddingX, cellPaddingY, padding,</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="in">groupPadding, rowGroupPadding, axisGap, headerGap,</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="in">titleSubtitleGap?, footerGap?, spacerRowHeight?, indentPerLevel?</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>Defaults: <span class="in">`srcjs/src/lib/theme/theme-resolve.ts:86-100`</span> (rowHeight 28, headerHeight 36,</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>cellPaddingX 10, cellPaddingY 0, padding 16, groupPadding 8, rowGroupPadding 0,</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>axisGap 12, headerGap 12, indentPerLevel 16, spacerRowHeight 20, …).</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 Smoking guns (tokens that don't arrive / are multiply-sourced)</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`spacerRowHeight` is inert.** Schema default 20; **not** in any density</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>  preset; renderer hardcodes <span class="in">`rowHeight / 2`</span> (<span class="in">`layout-zoom.svelte.ts:358`</span>; SVG</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>  <span class="in">`svg-generator.ts:794`</span>). Setting it does nothing.</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>  **Fix:** <span class="in">`h = spec.theme.spacing.spacerRowHeight ?? rowHeight / 2`</span> in *both*</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>  backends, and add it to the density presets.</span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`cellPaddingY` is inert.** Schema default 0; **not** in any density preset;</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>  renderer never adds it to row height — vertical breathing is faked by a magic</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>  <span class="in">`+6`</span> in the wrap formula (<span class="in">`layout-zoom.svelte.ts:363`</span>). theme-css also emits</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>  <span class="in">`--tv-cell-padding-y: 0px`</span>. This is the token to revive if rows are to breathe</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>  per density.</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`indent_per_level` is dropped.** Density sets it (14/16/20) and the schema</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>  carries it, but the renderer uses hardcoded <span class="in">`SPACING.INDENT_PER_LEVEL = 12`</span></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`rendering-constants.ts:181`</span>) — triple-sourced (theme / constant / rowGroup).</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`indentPerLevel` is triple-sourced:** theme <span class="in">`spacing.indentPerLevel`</span> (16),</span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>  the hardcoded <span class="in">`SPACING.INDENT_PER_LEVEL`</span> (12, <span class="in">`rendering-constants.ts:181`</span>),</span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>  and a <span class="in">`rowGroup.indentPerLevel`</span>. Different measurement paths read different ones.</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Hardcoded band heights that should be tokens:** summary/overall row =</span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>  <span class="in">`rowHeight * 1.5`</span> (<span class="in">`layout-zoom.svelte.ts:390`</span>); group-header row = <span class="in">`rowHeight`</span></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>  (no own token); header min = <span class="in">`ceil(bodyFont * 1.05 * 1.5) + 6`</span>.</span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.3 Density IS already a cascade tier (the proposed model already exists)</span></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a><span class="in">`density`</span> is a Tier-1 input (<span class="in">`R/classes-theme.R:89`</span>, default "comfortable",</span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>validated to compact/comfortable/spacious; <span class="in">`set_density`</span> sets <span class="in">`inputs@density`</span>,</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a><span class="in">`R/themes-api.R:225`</span>). It resolves to Tier-2 spacing numerics via a preset table</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a>(canonical: <span class="in">`srcjs/src/lib/theme/theme-adapter.ts::DENSITY_SPACING`</span>; mirrored for</span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a>parity tests in <span class="in">`R/utils-theme-resolve.R:7-26`</span>, guarded by</span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a><span class="in">`test-theme-roster-sync.R`</span>). The mirror's exact values:</span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> token <span class="pp">|</span> compact <span class="pp">|</span> comfortable <span class="pp">|</span> spacious <span class="pp">|</span> renderer status <span class="pp">|</span></span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|</span></span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> row_height <span class="pp">|</span> 20 <span class="pp">|</span> 24 <span class="pp">|</span> 30 <span class="pp">|</span> ✅ honored <span class="pp">|</span></span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> header_height <span class="pp">|</span> 26 <span class="pp">|</span> 32 <span class="pp">|</span> 40 <span class="pp">|</span> ✅ honored <span class="pp">|</span></span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> padding <span class="pp">|</span> 8 <span class="pp">|</span> 12 <span class="pp">|</span> 16 <span class="pp">|</span> ✅ honored <span class="pp">|</span></span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> axis_gap <span class="pp">|</span> 8 <span class="pp">|</span> 12 <span class="pp">|</span> 16 <span class="pp">|</span> ✅ honored <span class="pp">|</span></span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> cell_padding_x <span class="pp">|</span> 8 <span class="pp">|</span> 10 <span class="pp">|</span> 14 <span class="pp">|</span> ⚠️ honored in *measure*; SVG *render* inset hardcodes 10 (§1.5) <span class="pp">|</span></span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> column_group_padding <span class="pp">|</span> 6 <span class="pp">|</span> 8 <span class="pp">|</span> 12 <span class="pp">|</span> ✅ honored <span class="pp">|</span></span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> row_group_padding <span class="pp">|</span> **0** | **0** | **0** <span class="pp">|</span> ✅ honored, but density never varies it → all presets identical <span class="pp">|</span></span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> indent_per_level <span class="pp">|</span> 14 <span class="pp">|</span> 16 <span class="pp">|</span> 20 <span class="pp">|</span> ❌ renderer uses hardcoded <span class="in">`SPACING.INDENT_PER_LEVEL=12`</span> <span class="pp">|</span></span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> footer_gap / title_subtitle_gap / header_gap / bottom_margin <span class="pp">|</span> … <span class="pp">|</span> … <span class="pp">|</span> … <span class="pp">|</span> (chrome gaps) <span class="pp">|</span></span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>**Two distinct breakage classes — both illustrate the thesis:**</span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Density sets it, renderer drops it:** <span class="in">`indent_per_level`</span> (14/16/20 →</span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a>   renderer ignores, uses 12). <span class="in">`cell_padding_x`</span> partially (SVG render inset).</span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**In the schema but density never sets it AND renderer ignores it:**</span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>   <span class="in">`cellPaddingY`</span> (schema default 0; faked by hardcoded <span class="in">`+6`</span>) and</span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>   <span class="in">`spacerRowHeight`</span> (schema default 20; faked by <span class="in">`rowHeight/2`</span>). These two are</span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>   the requested "easy settings" candidates and are currently *fully inert*.</span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>Also note <span class="in">`row_group_padding`</span> is in the preset but **0 across all three</span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>densities** — so "group-row vertical padding" exists end-to-end yet is invisible</span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a>because no preset ever sets it nonzero. That's the cheapest possible win: give it</span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>real per-density values.</span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>So the architecture the §0 thesis wants (density → spacing via an idempotent</span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>cascade) **is in place on the input/resolution side.** The gaps are downstream:</span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>some density tokens are dropped by the renderer, two useful tokens are inert, and</span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>there is no *interactive* layer to depart a preset and pin individual tokens (§8).</span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.4 Row-height adaptation is narrow (opt-in, capped, predicted, text-only)</span></span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a><span class="in">`layout-zoom.svelte.ts:354-369`</span>, wrap counting <span class="in">`columns.svelte.ts:792-846`</span>:</span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**opt-in:** only columns with <span class="in">`wrap: true|N`</span> inflate height; otherwise one</span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a>  line, ellipsis-truncated.</span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**capped:** <span class="in">`wrap:true`</span> → 2 lines, <span class="in">`wrap:N`</span> → N+1.</span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**predicted, not measured:** line count = `ceil(estimateTextWidth(seg) /</span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>  contentWidth)` — the character-class estimator, never the real rendered box.</span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**text only:** tall pictograms, multi-line badges, <span class="in">`col_img`</span> heights,</span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a>  sparklines, and **multi-effect forest rows** (stacked at <span class="in">`EFFECT.SPACING=6`</span>)</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a>  do **not** contribute to row height → they clip/overflow.</span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a><span class="in">`rowHeight`</span> is effectively a global scalar with three local deviations: spacer</span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>(½), wrap (taller, text-only), group-padding (taller).</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a>The symmetric fix already half-exists: cell schemas dispatch <span class="in">`naturalWidth`</span></span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a>(<span class="in">`width-utils.ts:172`</span>). Add **`naturalHeight(col, row)`** on the same dispatch;</span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a>then `rowHeight_i = max(themeRowHeight, max-cell naturalHeight, wrapHeight) +</span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a>paddingY`. Browser path may additionally measure-then-commit (offsetHeight); V8</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a>path keeps estimator + naturalHeight.</span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.5 The box model is all global scalars (no granularity)</span></span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a>No per-side horizontal padding (left == right), no per-column padding, no</span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a>per-row-type padding, no vertical padding. Padding <span class="in">`cellPaddingX`</span> is consumed in</span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>**three** places that must agree — width budget (<span class="in">`width-utils.ts:238`</span>), wrap</span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a><span class="in">`contentWidth`</span> (<span class="in">`columns.svelte.ts:815`</span>), and render inset — and the SVG render</span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>inset currently reads a **hardcoded `SPACING.TEXT_PADDING=10`** instead of the</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a>theme value, so any non-default <span class="in">`cellPaddingX`</span> (and any future granular padding)</span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>silently fails to apply in exports.</span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.6 The aspect ladder (`layout-zoom.svelte.ts:198-321`)</span></span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>Pins <span class="in">`width/height == targetAspect`</span> via three coupled levers (forest flex →</span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>non-forest column scale → row+chrome height) with magic caps (<span class="in">`FLEX_CAP=2`</span>,</span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a>floors <span class="in">`0.25`</span>/<span class="in">`0.4`</span>, <span class="in">`CHROME_SHARE=0.35`</span>, <span class="in">`8×`</span> width cap). Three structural</span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>problems:</span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Solved on a fiction:** `approxRowsHeight = effectiveRowSlots *</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>   naturalRowHeight<span class="in">` (`</span>:217`) assumes every row is the natural height — ignores</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a>   wrap inflation, spacer ½-rows, group padding. Target ≠ rendered whenever any</span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>   row deviates.</span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Width-scaling induces the wrap it ignores:** shrinking columns</span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`aspectNonForestScale`</span>, <span class="in">`:277`</span>) narrows <span class="in">`contentWidth`</span> → more wrap → taller</span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a>   rows → height changes → the just-solved aspect is wrong. **Width and height</span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a>   are circularly dependent but solved in one forward pass.**</span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Duplicated:** reimplemented in <span class="in">`svg-generator.ts`</span></span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`generateSVGForAspectTarget`</span>) — two copies of a ~110-line algorithm.</span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>The <span class="in">`MIN_ROW_HEIGHT`</span> floor (<span class="in">`:288`</span>) ignores density.</span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a>**Open fork:** is aspect a *reflow* target (change geometry) or a *scale-to-fit*</span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a>target (CSS transform into a frame)? It currently reflows, which is what makes</span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a>it fight content. If scale-to-fit, most of the ladder deletes. If reflow, it</span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a>must read real post-wrap heights and iterate to a fixpoint.</span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Token taxonomy</span></span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Class <span class="pp">|</span> Tokens <span class="pp">|</span> Status / gap <span class="pp">|</span></span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Band heights <span class="pp">|</span> <span class="in">`rowHeight`</span>, <span class="in">`headerHeight`</span>, <span class="in">`spacerRowHeight`</span>, group-header, summary/overall <span class="pp">|</span> spacerRowHeight **dead**; summary <span class="in">`*1.5`</span> hardcoded; group-header no token <span class="pp">|</span></span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Inter-band gaps <span class="pp">|</span> <span class="in">`rowGroupPadding`</span>, <span class="in">`headerGap`</span>, <span class="in">`axisGap`</span>, <span class="in">`titleSubtitleGap`</span>, <span class="in">`footerGap`</span> <span class="pp">|</span> wired ✓ (rowGroupPadding default 0) <span class="pp">|</span></span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Intra-cell padding <span class="pp">|</span> <span class="in">`cellPaddingX`</span>, <span class="in">`cellPaddingY`</span> <span class="pp">|</span> cellPaddingY **set by density but ignored by renderer**; single scalar; no per-side/per-column <span class="pp">|</span></span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Indent <span class="pp">|</span> <span class="in">`indentPerLevel`</span> <span class="pp">|</span> **triple-sourced** (16 / 12 / rowGroup) <span class="pp">|</span></span>
+<span id="cb5-202"><a href="#cb5-202" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Container <span class="pp">|</span> <span class="in">`padding`</span> <span class="pp">|</span> wired ✓ <span class="pp">|</span></span>
+<span id="cb5-203"><a href="#cb5-203" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Content-driven <span class="pp">|</span> wrap height, per-cell <span class="in">`naturalHeight`</span>, multi-effect stack <span class="pp">|</span> wrap text-only/opt-in; naturalHeight **missing**; multi-effect doesn't drive height <span class="pp">|</span></span>
+<span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-205"><a href="#cb5-205" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-207"><a href="#cb5-207" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Density cascade — exists; what's left</span></span>
+<span id="cb5-208"><a href="#cb5-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-209"><a href="#cb5-209" aria-hidden="true" tabindex="-1"></a>The cascade is already:</span>
+<span id="cb5-210"><a href="#cb5-210" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-211"><a href="#cb5-211" aria-hidden="true" tabindex="-1"></a><span class="in">density preset (compact|comfortable|spacious)  →  theme.spacing  →  (column/row-type override — MISSING)  →  interactive pin (MISSING)</span></span>
+<span id="cb5-212"><a href="#cb5-212" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-213"><a href="#cb5-213" aria-hidden="true" tabindex="-1"></a>The first two arrows exist (§1.3). **Status (2026-06-02): the dead-token items</span>
+<span id="cb5-214"><a href="#cb5-214" aria-hidden="true" tabindex="-1"></a>below are RESOLVED** — see §7 (cellPaddingX sourced; cellPaddingY deliberately</span>
+<span id="cb5-215"><a href="#cb5-215" aria-hidden="true" tabindex="-1"></a><span class="in">`0`</span> under the <span class="in">`+6`</span> line-height model; indentPerLevel single-sourced; spacer =</span>
+<span id="cb5-216"><a href="#cb5-216" aria-hidden="true" tabindex="-1"></a><span class="in">`rowHeight/2`</span> consistent). Remaining work:</span>
+<span id="cb5-217"><a href="#cb5-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-218"><a href="#cb5-218" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>~~Honor <span class="in">`indent_per_level`</span> / SVG <span class="in">`cell_padding_x`</span>; revive <span class="in">`cellPaddingY`</span> /</span>
+<span id="cb5-219"><a href="#cb5-219" aria-hidden="true" tabindex="-1"></a>  <span class="in">`spacerRowHeight`</span>.~~ RESOLVED (§7).</span>
+<span id="cb5-220"><a href="#cb5-220" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **`row_group_padding` real per-density values — DONE 2026-06-02.** Was</span>
+<span id="cb5-221"><a href="#cb5-221" aria-hidden="true" tabindex="-1"></a>  0/0/0 (inert); now 8/12/16 (compact/comfortable/spacious) in both</span>
+<span id="cb5-222"><a href="#cb5-222" aria-hidden="true" tabindex="-1"></a>  <span class="in">`DENSITY_SPACING`</span> + the R <span class="in">`DENSITY_PRESETS`</span> mirror. Top-level groups get a</span>
+<span id="cb5-223"><a href="#cb5-223" aria-hidden="true" tabindex="-1"></a>  half-row separator gap that scales with density (and the density factor).</span>
+<span id="cb5-224"><a href="#cb5-224" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Per-column / per-row-type override tier** — does not exist yet; the cascade</span>
+<span id="cb5-225"><a href="#cb5-225" aria-hidden="true" tabindex="-1"></a>  jumps straight from theme to render.</span>
+<span id="cb5-226"><a href="#cb5-226" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Interactive pins** — a settings-panel slider or drag edit should pin that</span>
+<span id="cb5-227"><a href="#cb5-227" aria-hidden="true" tabindex="-1"></a>  token so density stops controlling it (pin-survives rule, mirroring the</span>
+<span id="cb5-228"><a href="#cb5-228" aria-hidden="true" tabindex="-1"></a>  <span class="in">`userResizedIds`</span> precedent for column widths). See §8.</span>
+<span id="cb5-229"><a href="#cb5-229" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Per-token density behaviour is already encoded by omission** (horizontal</span>
+<span id="cb5-230"><a href="#cb5-230" aria-hidden="true" tabindex="-1"></a>  padding isn't in the preset). If granular padding lands (§1.5), each new token</span>
+<span id="cb5-231"><a href="#cb5-231" aria-hidden="true" tabindex="-1"></a>  must decide its density membership the same way.</span>
+<span id="cb5-232"><a href="#cb5-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-233"><a href="#cb5-233" aria-hidden="true" tabindex="-1"></a>The two requested "easy settings":</span>
+<span id="cb5-234"><a href="#cb5-234" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**group-row vertical padding** = <span class="in">`rowGroupPadding`</span> — fully wired end-to-end but</span>
+<span id="cb5-235"><a href="#cb5-235" aria-hidden="true" tabindex="-1"></a>  the presets set it to 0 everywhere. Win = nonzero per-density values + a</span>
+<span id="cb5-236"><a href="#cb5-236" aria-hidden="true" tabindex="-1"></a>  settings-panel slider. Cheapest possible (no renderer change).</span>
+<span id="cb5-237"><a href="#cb5-237" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**spacer row height** = <span class="in">`spacerRowHeight`</span> — revive the inert renderer read</span>
+<span id="cb5-238"><a href="#cb5-238" aria-hidden="true" tabindex="-1"></a>  (§1.2) + add to presets, then it's a real density-aware knob.</span>
+<span id="cb5-239"><a href="#cb5-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-240"><a href="#cb5-240" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-241"><a href="#cb5-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-242"><a href="#cb5-242" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. The connection web</span></span>
+<span id="cb5-243"><a href="#cb5-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-244"><a href="#cb5-244" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-245"><a href="#cb5-245" aria-hidden="true" tabindex="-1"></a><span class="in">density profile ─┐</span></span>
+<span id="cb5-246"><a href="#cb5-246" aria-hidden="true" tabindex="-1"></a><span class="in">theme.spacing ───┼─► resolved tokens ─► cellPaddingX ─► colWidth measure ─► wrap contentWidth ─┐</span></span>
+<span id="cb5-247"><a href="#cb5-247" aria-hidden="true" tabindex="-1"></a><span class="in">overrides/pins ──┘            │                                                                  │</span></span>
+<span id="cb5-248"><a href="#cb5-248" aria-hidden="true" tabindex="-1"></a><span class="in">                             ├─► rowHeight, spacerRowHeight, rowGroupPadding ──────────┐         │</span></span>
+<span id="cb5-249"><a href="#cb5-249" aria-hidden="true" tabindex="-1"></a><span class="in">                             └─► headerHeight, axisGap, padding ─► chrome dims         ▼         ▼</span></span>
+<span id="cb5-250"><a href="#cb5-250" aria-hidden="true" tabindex="-1"></a><span class="in">per-cell naturalHeight ───────────────────────────────────────► rowHeights ◄──── wrap line count</span></span>
+<span id="cb5-251"><a href="#cb5-251" aria-hidden="true" tabindex="-1"></a><span class="in">                                                                     │</span></span>
+<span id="cb5-252"><a href="#cb5-252" aria-hidden="true" tabindex="-1"></a><span class="in">                                                  rowPositions / markerCenters / forest+viz geometry</span></span>
+<span id="cb5-253"><a href="#cb5-253" aria-hidden="true" tabindex="-1"></a><span class="in">                                                                     │</span></span>
+<span id="cb5-254"><a href="#cb5-254" aria-hidden="true" tabindex="-1"></a><span class="in">                          sum(rowHeights)+chrome ─► natural height ─► ASPECT LADDER ─┐</span></span>
+<span id="cb5-255"><a href="#cb5-255" aria-hidden="true" tabindex="-1"></a><span class="in">                                                                     ▲               │ mutates rowHeight</span></span>
+<span id="cb5-256"><a href="#cb5-256" aria-hidden="true" tabindex="-1"></a><span class="in">                                                                     └───────────────┘ + column scale → re-wraps (CYCLE)</span></span>
+<span id="cb5-257"><a href="#cb5-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-258"><a href="#cb5-258" aria-hidden="true" tabindex="-1"></a><span class="in">interactive:  resize → contentWidth → wrap → rowHeights ;  spacing slider → tokens → all ;  density → tokens → all</span></span>
+<span id="cb5-259"><a href="#cb5-259" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-260"><a href="#cb5-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-261"><a href="#cb5-261" aria-hidden="true" tabindex="-1"></a>The only cycle is aspect ↔ (column scale → wrap → rowHeight). Everything else is</span>
+<span id="cb5-262"><a href="#cb5-262" aria-hidden="true" tabindex="-1"></a>a clean DAG once density is a tier and tokens stop leaking.</span>
+<span id="cb5-263"><a href="#cb5-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-264"><a href="#cb5-264" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-265"><a href="#cb5-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-266"><a href="#cb5-266" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Implications to keep tracked</span></span>
+<span id="cb5-267"><a href="#cb5-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-268"><a href="#cb5-268" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Parity is the gate.** Any new/revived token must arrive in BOTH DOM and</span>
+<span id="cb5-269"><a href="#cb5-269" aria-hidden="true" tabindex="-1"></a>   SVG. <span class="in">`spacerRowHeight`</span> is the cautionary tale → land a shared</span>
+<span id="cb5-270"><a href="#cb5-270" aria-hidden="true" tabindex="-1"></a>   <span class="in">`computeTableMetrics`</span> *before* expanding the token set, or new knobs won't</span>
+<span id="cb5-271"><a href="#cb5-271" aria-hidden="true" tabindex="-1"></a>   export. Add a parity test per token.</span>
+<span id="cb5-272"><a href="#cb5-272" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**One spacing vocabulary.** Retire the hardcoded twins in</span>
+<span id="cb5-273"><a href="#cb5-273" aria-hidden="true" tabindex="-1"></a>   <span class="in">`rendering-constants.ts`</span> that shadow <span class="in">`theme.spacing`</span> defaults</span>
+<span id="cb5-274"><a href="#cb5-274" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`TEXT_PADDING`</span>=cellPaddingX, <span class="in">`INDENT_PER_LEVEL`</span>, <span class="in">`COLUMN_GROUP.PADDING`</span>,</span>
+<span id="cb5-275"><a href="#cb5-275" aria-hidden="true" tabindex="-1"></a>   axis-height/gap). SVG render must read theme padding, not the constant.</span>
+<span id="cb5-276"><a href="#cb5-276" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Order of operations is load-bearing:** resolve(density) → content(wrap +</span>
+<span id="cb5-277"><a href="#cb5-277" aria-hidden="true" tabindex="-1"></a>   naturalHeight) → aspect(reshape, density-aware floor). Aspect last, on real</span>
+<span id="cb5-278"><a href="#cb5-278" aria-hidden="true" tabindex="-1"></a>   heights.</span>
+<span id="cb5-279"><a href="#cb5-279" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Granular padding feeds wrap, not just render.** Per-side/per-column padding</span>
+<span id="cb5-280"><a href="#cb5-280" aria-hidden="true" tabindex="-1"></a>   must reach <span class="in">`contentWidth`</span> in the wrap counter, or wrap drifts.</span>
+<span id="cb5-281"><a href="#cb5-281" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Reintroducing vertical padding** retires the magic <span class="in">`+6`</span> and lets rows</span>
+<span id="cb5-282"><a href="#cb5-282" aria-hidden="true" tabindex="-1"></a>   breathe instead of faking it; it's the token that makes density visually real.</span>
+<span id="cb5-283"><a href="#cb5-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-284"><a href="#cb5-284" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-285"><a href="#cb5-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-286"><a href="#cb5-286" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5b. Group-header band height — decided 2026-05-29</span></span>
+<span id="cb5-287"><a href="#cb5-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-288"><a href="#cb5-288" aria-hidden="true" tabindex="-1"></a>Direction (confirmed with author):</span>
+<span id="cb5-289"><a href="#cb5-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-290"><a href="#cb5-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Decouple from `rowHeight`** — the current <span class="in">`h = rowHeight`</span> for group headers</span>
+<span id="cb5-291"><a href="#cb5-291" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`layout-zoom.svelte.ts:360`</span>) is incidental. A group header is a labeled</span>
+<span id="cb5-292"><a href="#cb5-292" aria-hidden="true" tabindex="-1"></a>  structural separator, ontologically closer to the column-header strip.</span>
+<span id="cb5-293"><a href="#cb5-293" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Band height is derived from the group label's own typography** (font role +</span>
+<span id="cb5-294"><a href="#cb5-294" aria-hidden="true" tabindex="-1"></a>  padding), like <span class="in">`minHeaderRowHeight`</span> does for the column header — with an</span>
+<span id="cb5-295"><a href="#cb5-295" aria-hidden="true" tabindex="-1"></a>  optional tier value as override/floor. Content (<span class="in">`naturalHeight`</span>, label wrap)</span>
+<span id="cb5-296"><a href="#cb5-296" aria-hidden="true" tabindex="-1"></a>  still floors it.</span>
+<span id="cb5-297"><a href="#cb5-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Uniform across depth — NOT per-depth height.** Depth hierarchy is signaled</span>
+<span id="cb5-298"><a href="#cb5-298" aria-hidden="true" tabindex="-1"></a>  by typography (font size), background tint, and indent, which already exist</span>
+<span id="cb5-299"><a href="#cb5-299" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`rowGroup.L1/L2/L3`</span>). Height does not carry hierarchy → no per-depth height</span>
+<span id="cb5-300"><a href="#cb5-300" aria-hidden="true" tabindex="-1"></a>  tier. (This rejects the per-depth half of the earlier "C" option.)</span>
+<span id="cb5-301"><a href="#cb5-301" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Separation is the primary group lever, not band height.** Rework</span>
+<span id="cb5-302"><a href="#cb5-302" aria-hidden="true" tabindex="-1"></a>  <span class="in">`rowGroupPadding`</span> from its current "trailing pad on the previous data row,</span>
+<span id="cb5-303"><a href="#cb5-303" aria-hidden="true" tabindex="-1"></a>  top-level groups only" model (<span class="in">`layout-zoom.svelte.ts:341-352`</span>) into a proper</span>
+<span id="cb5-304"><a href="#cb5-304" aria-hidden="true" tabindex="-1"></a>  depth-aware leading/trailing **group margin** that works at every nesting level</span>
+<span id="cb5-305"><a href="#cb5-305" aria-hidden="true" tabindex="-1"></a>  and on the first group. Most "make groups stand out" intent is separation, not</span>
+<span id="cb5-306"><a href="#cb5-306" aria-hidden="true" tabindex="-1"></a>  a taller bar.</span>
+<span id="cb5-307"><a href="#cb5-307" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Drag** on a group header edits the group-band height token (table-wide) and</span>
+<span id="cb5-308"><a href="#cb5-308" aria-hidden="true" tabindex="-1"></a>  pins it — per §8.</span>
+<span id="cb5-309"><a href="#cb5-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-310"><a href="#cb5-310" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Open decisions (carry forward)</span></span>
+<span id="cb5-311"><a href="#cb5-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-312"><a href="#cb5-312" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **Aspect: reflow (not scale-to-fit) — DECIDED 2026-06.** Keep reflow</span>
+<span id="cb5-313"><a href="#cb5-313" aria-hidden="true" tabindex="-1"></a>  semantics (aspect reshapes geometry: forest flex, column scale, rowHeight),</span>
+<span id="cb5-314"><a href="#cb5-314" aria-hidden="true" tabindex="-1"></a>  NOT a CSS transform. **But compartmentalize it.** The aspect↔content-height</span>
+<span id="cb5-315"><a href="#cb5-315" aria-hidden="true" tabindex="-1"></a>  interaction is delicate and will be tweaked repeatedly, so it must live behind</span>
+<span id="cb5-316"><a href="#cb5-316" aria-hidden="true" tabindex="-1"></a>  a clean seam, not be entangled with the base layout:</span>
+<span id="cb5-317"><a href="#cb5-317" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Base layout (<span class="in">`computeTableMetrics`</span> / <span class="in">`computeRowLayout`</span>) computes</span>
+<span id="cb5-318"><a href="#cb5-318" aria-hidden="true" tabindex="-1"></a>    **content-true** row heights with NO aspect awareness — the honest natural</span>
+<span id="cb5-319"><a href="#cb5-319" aria-hidden="true" tabindex="-1"></a>    layout. This is the stable core; content-driven height extends it freely.</span>
+<span id="cb5-320"><a href="#cb5-320" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The aspect ladder becomes a **separate, explicit post-pass** that takes the</span>
+<span id="cb5-321"><a href="#cb5-321" aria-hidden="true" tabindex="-1"></a>    content-true natural metrics as input and reshapes toward the target. When</span>
+<span id="cb5-322"><a href="#cb5-322" aria-hidden="true" tabindex="-1"></a>    it shrinks rows it must read the *real* per-row heights (not</span>
+<span id="cb5-323"><a href="#cb5-323" aria-hidden="true" tabindex="-1"></a>    <span class="in">`rows × naturalRowHeight`</span>) and, because narrowing columns can reflow text</span>
+<span id="cb5-324"><a href="#cb5-324" aria-hidden="true" tabindex="-1"></a>    taller, **iterate to a fixpoint** (solve → recompute content reflow →</span>
+<span id="cb5-325"><a href="#cb5-325" aria-hidden="true" tabindex="-1"></a>    re-solve, capped). Both backends call the same post-pass.</span>
+<span id="cb5-326"><a href="#cb5-326" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Acceptance: changing aspect behavior must touch only the post-pass, never</span>
+<span id="cb5-327"><a href="#cb5-327" aria-hidden="true" tabindex="-1"></a>    the base metrics. (Circular dep is contained inside the iterating post-pass</span>
+<span id="cb5-328"><a href="#cb5-328" aria-hidden="true" tabindex="-1"></a>    instead of smeared across the layout.)</span>
+<span id="cb5-329"><a href="#cb5-329" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **Row height: measure-then-commit — DECIDED 2026-06 (do it right).**</span>
+<span id="cb5-330"><a href="#cb5-330" aria-hidden="true" tabindex="-1"></a>  Browser path measures **real** rendered row heights (offsetHeight /</span>
+<span id="cb5-331"><a href="#cb5-331" aria-hidden="true" tabindex="-1"></a>  ResizeObserver) and commits them back into the layout; V8/export path uses the</span>
+<span id="cb5-332"><a href="#cb5-332" aria-hidden="true" tabindex="-1"></a>  estimator + per-cell <span class="in">`naturalHeight`</span>. Both feed ONE content-height contract</span>
+<span id="cb5-333"><a href="#cb5-333" aria-hidden="true" tabindex="-1"></a>  (a <span class="in">`Record&lt;rowId, px&gt;`</span> summed in <span class="in">`computeRowLayout`</span>, the same seam</span>
+<span id="cb5-334"><a href="#cb5-334" aria-hidden="true" tabindex="-1"></a>  <span class="in">`wrapLineCounts`</span> uses today). The measured map supersedes the predicted map on</span>
+<span id="cb5-335"><a href="#cb5-335" aria-hidden="true" tabindex="-1"></a>  the browser when available, so DOM is exact and SVG stays predicted-but-close;</span>
+<span id="cb5-336"><a href="#cb5-336" aria-hidden="true" tabindex="-1"></a>  the prediction is the floor that prevents first-paint jump. (See §1.4.)</span>
+<span id="cb5-337"><a href="#cb5-337" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **Density: continuous <span class="in">`factor`</span> alongside named profiles — DECIDED + BUILT</span>
+<span id="cb5-338"><a href="#cb5-338" aria-hidden="true" tabindex="-1"></a>  2026-06-02.** A <span class="in">`densityFactor`</span> (theme input, clamped <span class="co">[</span><span class="ot">0.5, 2</span><span class="co">]</span>) multiplies the</span>
+<span id="cb5-339"><a href="#cb5-339" aria-hidden="true" tabindex="-1"></a>  chosen profile's spacing tokens — a fine dial on top of the curated named</span>
+<span id="cb5-340"><a href="#cb5-340" aria-hidden="true" tabindex="-1"></a>  profile. Applied in <span class="in">`theme-adapter.ts::scaleSpacing`</span> at density→spacing</span>
+<span id="cb5-341"><a href="#cb5-341" aria-hidden="true" tabindex="-1"></a>  resolution (default 1 = identity); surfaced R-side via</span>
+<span id="cb5-342"><a href="#cb5-342" aria-hidden="true" tabindex="-1"></a>  <span class="in">`web_theme(density_factor=)`</span> + <span class="in">`set_density(theme, factor=)`</span>. Precedence:</span>
+<span id="cb5-343"><a href="#cb5-343" aria-hidden="true" tabindex="-1"></a>  named profile → × factor → (future per-token override → pin).</span>
+<span id="cb5-344"><a href="#cb5-344" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **`computeTableMetrics` (shared DOM/SVG)** — BUILT 2026-06 as</span>
+<span id="cb5-345"><a href="#cb5-345" aria-hidden="true" tabindex="-1"></a>  <span class="in">`srcjs/src/lib/layout/table-metrics.ts`</span>. Both backends (layout-zoom <span class="in">`$derived`</span>,</span>
+<span id="cb5-346"><a href="#cb5-346" aria-hidden="true" tabindex="-1"></a>  svg-generator <span class="in">`computeLayout`</span>) now call shared pure helpers for the formulas</span>
+<span id="cb5-347"><a href="#cb5-347" aria-hidden="true" tabindex="-1"></a>  they used to hand-mirror: <span class="in">`computeRowLayout`</span> (heights/positions/marker-centers/</span>
+<span id="cb5-348"><a href="#cb5-348" aria-hidden="true" tabindex="-1"></a>  rowPaddedAfter), <span class="in">`computeHeaderHeight`</span>, <span class="in">`computeAxisHeight`</span>,</span>
+<span id="cb5-349"><a href="#cb5-349" aria-hidden="true" tabindex="-1"></a>  <span class="in">`computeScalableChromeHeight`</span> + named constants (<span class="in">`HEADER_FONT_SCALE`</span>,</span>
+<span id="cb5-350"><a href="#cb5-350" aria-hidden="true" tabindex="-1"></a>  <span class="in">`LINE_HEIGHT`</span>, <span class="in">`HEADER_ROW_PADDING`</span>, <span class="in">`DEFAULT_AXIS_GAP`</span>). **Two divergences</span>
+<span id="cb5-351"><a href="#cb5-351" aria-hidden="true" tabindex="-1"></a>  converged on the more-correct SVG formula** (axisHeight gate: pure tables now</span>
+<span id="cb5-352"><a href="#cb5-352" aria-hidden="true" tabindex="-1"></a>  reserve 0 axis, forest tables get density-scaled axis not flat 32 — also fixed</span>
+<span id="cb5-353"><a href="#cb5-353" aria-hidden="true" tabindex="-1"></a>  the stale <span class="in">`ComputedLayout.axisHeight = LAYOUT.AXIS_HEIGHT`</span> bug; chrome-scale</span>
+<span id="cb5-354"><a href="#cb5-354" aria-hidden="true" tabindex="-1"></a>  denominator: precise conditional sum, fixing DOM aspect over-scaling). **One</span>
+<span id="cb5-355"><a href="#cb5-355" aria-hidden="true" tabindex="-1"></a>  divergence deliberately kept** (<span class="in">`forestWidth`</span>: container-responsive DOM vs</span>
+<span id="cb5-356"><a href="#cb5-356" aria-hidden="true" tabindex="-1"></a>  fixed-canvas SVG — correct context-dependence, documented on both sides).</span>
+<span id="cb5-357"><a href="#cb5-357" aria-hidden="true" tabindex="-1"></a>  Gated by the snapshot harness + 16 table-metrics unit tests + R export tests.</span>
+<span id="cb5-358"><a href="#cb5-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-359"><a href="#cb5-359" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-360"><a href="#cb5-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-361"><a href="#cb5-361" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6c. Measured-height commit invariant — B2 postmortem (CLOSED 2026-06-05)</span></span>
+<span id="cb5-362"><a href="#cb5-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-363"><a href="#cb5-363" aria-hidden="true" tabindex="-1"></a>**The invariant: <span class="in">`measuredRowHeights`</span> holds CONTENT heights, never grid-track</span>
+<span id="cb5-364"><a href="#cb5-364" aria-hidden="true" tabindex="-1"></a>echoes.** The full chain is</span>
+<span id="cb5-365"><a href="#cb5-365" aria-hidden="true" tabindex="-1"></a><span class="in">`estimator → mergeMeasuredHeights(max) → computeRowLayout(+pads) → grid tracks`</span>,</span>
+<span id="cb5-366"><a href="#cb5-366" aria-hidden="true" tabindex="-1"></a>and <span class="in">`computeRowLayout`</span> ADDS trailing <span class="in">`rowGroupPadding`</span> to the last row of each</span>
+<span id="cb5-367"><a href="#cb5-367" aria-hidden="true" tabindex="-1"></a>group. Any committed measurement that already contains that pad gets the pad</span>
+<span id="cb5-368"><a href="#cb5-368" aria-hidden="true" tabindex="-1"></a>re-added on the next render — a positive feedback loop.</span>
+<span id="cb5-369"><a href="#cb5-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-370"><a href="#cb5-370" aria-hidden="true" tabindex="-1"></a>**The B2 bug** (open since the rgc_v4 audit; root-caused via the live docs</span>
+<span id="cb5-371"><a href="#cb5-371" aria-hidden="true" tabindex="-1"></a>hero): the DOM measure loop committed <span class="in">`cell.scrollHeight`</span> for every cell,</span>
+<span id="cb5-372"><a href="#cb5-372" aria-hidden="true" tabindex="-1"></a>assuming scrollHeight reports content extent independent of the pinned track.</span>
+<span id="cb5-373"><a href="#cb5-373" aria-hidden="true" tabindex="-1"></a>For a NON-overflowing cell it just echoes the track back — so every</span>
+<span id="cb5-374"><a href="#cb5-374" aria-hidden="true" tabindex="-1"></a><span class="in">`row-padded-after`</span> cell fed <span class="in">`height + pad`</span> into the map, the track re-added</span>
+<span id="cb5-375"><a href="#cb5-375" aria-hidden="true" tabindex="-1"></a>the pad, and the loop ratcheted ~12px/frame unbounded (homepage hero: 6,284px</span>
+<span id="cb5-376"><a href="#cb5-376" aria-hidden="true" tabindex="-1"></a>container for 11 rows; grid tracks of 2,500px; growth proportional to page</span>
+<span id="cb5-377"><a href="#cb5-377" aria-hidden="true" tabindex="-1"></a>lifetime, re-armed by any widget change).</span>
+<span id="cb5-378"><a href="#cb5-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-379"><a href="#cb5-379" aria-hidden="true" tabindex="-1"></a>**The two-part enforcement** (commit <span class="in">`4d4c281`</span>, both halves required):</span>
+<span id="cb5-380"><a href="#cb5-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-381"><a href="#cb5-381" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>*Overflow-only commits* (<span class="in">`TabvizPlot`</span> measure loop): report a row only when</span>
+<span id="cb5-382"><a href="#cb5-382" aria-hidden="true" tabindex="-1"></a>   <span class="in">`scrollHeight &gt; clientHeight + 1`</span> — i.e. content genuinely exceeds the</span>
+<span id="cb5-383"><a href="#cb5-383" aria-hidden="true" tabindex="-1"></a>   pinned track, which is the only case where scrollHeight measures content.</span>
+<span id="cb5-384"><a href="#cb5-384" aria-hidden="true" tabindex="-1"></a>   (+1 absorbs integer rounding between the two metrics.)</span>
+<span id="cb5-385"><a href="#cb5-385" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>*Grow-merge commits* (<span class="in">`layout-zoom.svelte.ts::growMergeHeights`</span>, pure +</span>
+<span id="cb5-386"><a href="#cb5-386" aria-hidden="true" tabindex="-1"></a>   exported): because settled rows are now ABSENT from each report, replacing</span>
+<span id="cb5-387"><a href="#cb5-387" aria-hidden="true" tabindex="-1"></a>   the map would drop their committed heights → shrink → overflow → re-grow</span>
+<span id="cb5-388"><a href="#cb5-388" aria-hidden="true" tabindex="-1"></a>   oscillation. Per-key <span class="in">`Math.max`</span> keeps the "rows only grow" design; a</span>
+<span id="cb5-389"><a href="#cb5-389" aria-hidden="true" tabindex="-1"></a>   no-growth report returns the same reference so the commit loop settles.</span>
+<span id="cb5-390"><a href="#cb5-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-391"><a href="#cb5-391" aria-hidden="true" tabindex="-1"></a>**Deliberate non-fix:** the pad stays folded into the row's grid track.</span>
+<span id="cb5-392"><a href="#cb5-392" aria-hidden="true" tabindex="-1"></a>Splitting it into its own track would renumber every <span class="in">`grid-row`</span> index and</span>
+<span id="cb5-393"><a href="#cb5-393" aria-hidden="true" tabindex="-1"></a>fork DOM vs SVG-export geometry (<span class="in">`computeRowLayout`</span> is the shared source);</span>
+<span id="cb5-394"><a href="#cb5-394" aria-hidden="true" tabindex="-1"></a>the row-resize drag handles also deliberately anchor the height + pad</span>
+<span id="cb5-395"><a href="#cb5-395" aria-hidden="true" tabindex="-1"></a>handles on the same row.</span>
+<span id="cb5-396"><a href="#cb5-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-397"><a href="#cb5-397" aria-hidden="true" tabindex="-1"></a>**Gates:** <span class="in">`tests/browser/measure-rows.browser.ts`</span> carries the B2 regression</span>
+<span id="cb5-398"><a href="#cb5-398" aria-hidden="true" tabindex="-1"></a>gate — a grouped fixture asserting container-height stability over a 2s</span>
+<span id="cb5-399"><a href="#cb5-399" aria-hidden="true" tabindex="-1"></a>window and a sane max-track bound. Verified to FAIL against the pre-fix</span>
+<span id="cb5-400"><a href="#cb5-400" aria-hidden="true" tabindex="-1"></a>bundle (1,298→3,300px in the window) and pass post-fix (rock-stable 264px,</span>
+<span id="cb5-401"><a href="#cb5-401" aria-hidden="true" tabindex="-1"></a>maxTrack exactly rowHeight+pad). <span class="in">`grow-merge-heights.test.ts`</span> pins the</span>
+<span id="cb5-402"><a href="#cb5-402" aria-hidden="true" tabindex="-1"></a>commit semantics.</span>
+<span id="cb5-403"><a href="#cb5-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-404"><a href="#cb5-404" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6d. Surface-air ownership — the spacing rework (LANDED 2026-06-05)</span></span>
+<span id="cb5-405"><a href="#cb5-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-406"><a href="#cb5-406" aria-hidden="true" tabindex="-1"></a>Three-agent review (geometry audit / rgc_v4 aesthetics / spacing</span>
+<span id="cb5-407"><a href="#cb5-407" aria-hidden="true" tabindex="-1"></a>architecture) found the wire-audit shell graft incoherent with the</span>
+<span id="cb5-408"><a href="#cb5-408" aria-hidden="true" tabindex="-1"></a>density substrate: four padding layers (two dead), a hand-tuned</span>
+<span id="cb5-409"><a href="#cb5-409" aria-hidden="true" tabindex="-1"></a><span class="in">`shellExtrasPad = 30`</span> chip-height constant, fixed-px chrome invisible to</span>
+<span id="cb5-410"><a href="#cb5-410" aria-hidden="true" tabindex="-1"></a>density, and the strip rendered as a top cap instead of the lab's</span>
+<span id="cb5-411"><a href="#cb5-411" aria-hidden="true" tabindex="-1"></a>caption↔data seam. The consolidated model:</span>
+<span id="cb5-412"><a href="#cb5-412" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-413"><a href="#cb5-413" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**One rule for height accounting**: everything that contributes height</span>
+<span id="cb5-414"><a href="#cb5-414" aria-hidden="true" tabindex="-1"></a>  lives INSIDE <span class="in">`.tabviz-scalable`</span> (caption block, strip, paper with its</span>
+<span id="cb5-415"><a href="#cb5-415" aria-hidden="true" tabindex="-1"></a>  padding, footer) and is covered by the ResizeObserver. The ONLY</span>
+<span id="cb5-416"><a href="#cb5-416" aria-hidden="true" tabindex="-1"></a>  out-of-band term is the shell's own padding, read from the resolved</span>
+<span id="cb5-417"><a href="#cb5-417" aria-hidden="true" tabindex="-1"></a>  <span class="in">`--tv-shell-padding`</span> cssVar (never re-derived from the recipe). If you</span>
+<span id="cb5-418"><a href="#cb5-418" aria-hidden="true" tabindex="-1"></a>  add new chrome, put it inside the scalable — do not extend the height</span>
+<span id="cb5-419"><a href="#cb5-419" aria-hidden="true" tabindex="-1"></a>  formula.</span>
+<span id="cb5-420"><a href="#cb5-420" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Air ownership**: SHELL = the figure's outer air (density-scaled,</span>
+<span id="cb5-421"><a href="#cb5-421" aria-hidden="true" tabindex="-1"></a>  mode-gated in <span class="in">`shell-paper.ts`</span>: raised 14/20/26 × density_factor;</span>
+<span id="cb5-422"><a href="#cb5-422" aria-hidden="true" tabindex="-1"></a>  float pads too so the drop shadow breathes; flush/transparent 0 —</span>
+<span id="cb5-423"><a href="#cb5-423" aria-hidden="true" tabindex="-1"></a>  geometric inertness contract). PAPER = inner mat (10/14/18).</span>
+<span id="cb5-424"><a href="#cb5-424" aria-hidden="true" tabindex="-1"></a>  <span class="in">`containerPadding`</span> = page-gutter escape hatch, 0 everywhere by default</span>
+<span id="cb5-425"><a href="#cb5-425" aria-hidden="true" tabindex="-1"></a>  (preset, CSS fallback, and JS formula all agree — was a 0-vs-16</span>
+<span id="cb5-426"><a href="#cb5-426" aria-hidden="true" tabindex="-1"></a>  triple-source incoherence).</span>
+<span id="cb5-427"><a href="#cb5-427" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Why the shell/paper pad scales are NOT in DENSITY_PX**: every</span>
+<span id="cb5-428"><a href="#cb5-428" aria-hidden="true" tabindex="-1"></a>  DENSITY_PX entry emits a <span class="in">`--tv-spacing-*`</span> wire token unconditionally;</span>
+<span id="cb5-429"><a href="#cb5-429" aria-hidden="true" tabindex="-1"></a>  shell/paper padding is mode-gated (flush MUST stay 0), so the scale</span>
+<span id="cb5-430"><a href="#cb5-430" aria-hidden="true" tabindex="-1"></a>  belongs to the shell recipe — "inline at the resolver" is the</span>
+<span id="cb5-431"><a href="#cb5-431" aria-hidden="true" tabindex="-1"></a>  sanctioned canonical home for a mode-dependent axis.</span>
+<span id="cb5-432"><a href="#cb5-432" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Aspect ladder**: includes <span class="in">`2 × --tv-shell-padding`</span> in its chrome</span>
+<span id="cb5-433"><a href="#cb5-433" aria-hidden="true" tabindex="-1"></a>  estimate (figure-internal air belongs in the pinned aspect);</span>
+<span id="cb5-434"><a href="#cb5-434" aria-hidden="true" tabindex="-1"></a>  <span class="in">`containerPadding`</span> deliberately excluded (page gutter).</span>
+<span id="cb5-435"><a href="#cb5-435" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Axis descent**: <span class="in">`computeAxisLayout`</span> reserves <span class="in">`0.6 × tickFont`</span> below</span>
+<span id="cb5-436"><a href="#cb5-436" aria-hidden="true" tabindex="-1"></a>  the last baseline (was 0.4 — under-reserved by one descender; the</span>
+<span id="cb5-437"><a href="#cb5-437" aria-hidden="true" tabindex="-1"></a>  geometry audit measured 2–3px of overshoot on every preset, masked</span>
+<span id="cb5-438"><a href="#cb5-438" aria-hidden="true" tabindex="-1"></a>  only by container padding).</span>
+<span id="cb5-439"><a href="#cb5-439" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Gate**: <span class="in">`tests/browser/theme-screenshots.browser.ts`</span> asserts the</span>
+<span id="cb5-440"><a href="#cb5-440" aria-hidden="true" tabindex="-1"></a>  wrap chain, the strip's seam position (after caption, before paper),</span>
+<span id="cb5-441"><a href="#cb5-441" aria-hidden="true" tabindex="-1"></a>  flush inertness (0/0), and density-scaled band/mat presence per</span>
+<span id="cb5-442"><a href="#cb5-442" aria-hidden="true" tabindex="-1"></a>  archetype.</span>
+<span id="cb5-443"><a href="#cb5-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-444"><a href="#cb5-444" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6b. Verification harness (built — the numeric half of "debug-shapes")</span></span>
+<span id="cb5-445"><a href="#cb5-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-446"><a href="#cb5-446" aria-hidden="true" tabindex="-1"></a>The regression substrate the RowKind + <span class="in">`computeTableMetrics`</span> refactors are</span>
+<span id="cb5-447"><a href="#cb5-447" aria-hidden="true" tabindex="-1"></a>validated against.</span>
+<span id="cb5-448"><a href="#cb5-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-449"><a href="#cb5-449" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`computeLayoutMetrics(spec, opts?)`** (<span class="in">`srcjs/src/export/svg-generator.ts`</span>)</span>
+<span id="cb5-450"><a href="#cb5-450" aria-hidden="true" tabindex="-1"></a>  — pure, no render. Flat <span class="in">`LayoutMetrics`</span>: per-row `{kind, depth, height, top,</span>
+<span id="cb5-451"><a href="#cb5-451" aria-hidden="true" tabindex="-1"></a>  markerCenter}<span class="in">`, per-column `</span>{id, type, width}`, chrome dims, and a</span>
+<span id="cb5-452"><a href="#cb5-452" aria-hidden="true" tabindex="-1"></a>  **spacing-token echo** (records WHICH token value was consumed → catches</span>
+<span id="cb5-453"><a href="#cb5-453" aria-hidden="true" tabindex="-1"></a>  dead-token / density-not-applied regressions, not only geometry drift). Runs</span>
+<span id="cb5-454"><a href="#cb5-454" aria-hidden="true" tabindex="-1"></a>  the real <span class="in">`computeLayout`</span>, so it captures the actual SVG/V8 path.</span>
+<span id="cb5-455"><a href="#cb5-455" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`sizing-fixtures.ts`** — deterministic matrix (density / overall / wrap /</span>
+<span id="cb5-456"><a href="#cb5-456" aria-hidden="true" tabindex="-1"></a>  indent / spacers / groups / mixed columns). **Stub themes with explicit</span>
+<span id="cb5-457"><a href="#cb5-457" aria-hidden="true" tabindex="-1"></a>  spacing** (mirrors <span class="in">`DENSITY_PRESETS`</span>), not the resolver — runs under bun,</span>
+<span id="cb5-458"><a href="#cb5-458" aria-hidden="true" tabindex="-1"></a>  immune to in-flight theme-resolution churn. density→spacing fidelity stays the</span>
+<span id="cb5-459"><a href="#cb5-459" aria-hidden="true" tabindex="-1"></a>  R <span class="in">`DENSITY_PRESETS`</span> parity mirror's job (deliberate separation).</span>
+<span id="cb5-460"><a href="#cb5-460" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`layout-metrics.test.ts`** — snapshot per fixture + box-model invariants</span>
+<span id="cb5-461"><a href="#cb5-461" aria-hidden="true" tabindex="-1"></a>  (density monotonicity, spacer&lt;data, wrap inflation, monotonic positions,</span>
+<span id="cb5-462"><a href="#cb5-462" aria-hidden="true" tabindex="-1"></a>  positive widths). 31 tests.</span>
+<span id="cb5-463"><a href="#cb5-463" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-464"><a href="#cb5-464" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`debug-shapes.ts`** (the **visual half**, built) — <span class="in">`renderDebugShapes(spec)`</span></span>
+<span id="cb5-465"><a href="#cb5-465" aria-hidden="true" tabindex="-1"></a>  emits an SVG that draws each cell's allocated box, horizontal padding regions</span>
+<span id="cb5-466"><a href="#cb5-466" aria-hidden="true" tabindex="-1"></a>  (pink), text-anchor inset (red dot), row marker-center (blue dash), per-row</span>
+<span id="cb5-467"><a href="#cb5-467" aria-hidden="true" tabindex="-1"></a>  indent inset (amber), and row-kind (fill) — content stripped so the box model</span>
+<span id="cb5-468"><a href="#cb5-468" aria-hidden="true" tabindex="-1"></a>  itself is visible. A *pure function of `computeLayoutMetrics`* (the column <span class="in">`x`</span></span>
+<span id="cb5-469"><a href="#cb5-469" aria-hidden="true" tabindex="-1"></a>  / <span class="in">`mainY`</span> it needs were added to the metrics), so the visual and numeric views</span>
+<span id="cb5-470"><a href="#cb5-470" aria-hidden="true" tabindex="-1"></a>  agree by construction. Drive it from R via <span class="in">`render_debug_shapes(spec, "out.png")`</span></span>
+<span id="cb5-471"><a href="#cb5-471" aria-hidden="true" tabindex="-1"></a>  (V8 + rsvg) for eyeball review; <span class="in">`debug-shapes.test.ts`</span> guards the SVG contract.</span>
+<span id="cb5-472"><a href="#cb5-472" aria-hidden="true" tabindex="-1"></a>  Per-backend rendering of the same metrics is the future DOM↔SVG parity view.</span>
+<span id="cb5-473"><a href="#cb5-473" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-474"><a href="#cb5-474" aria-hidden="true" tabindex="-1"></a>BUILT (2026-06): the DOM <span class="in">`debug-layout.ts`</span> (predicted-vs-actual overlay)</span>
+<span id="cb5-475"><a href="#cb5-475" aria-hidden="true" tabindex="-1"></a>draws from the same metrics, giving a live in-widget version of the box model.</span>
+<span id="cb5-476"><a href="#cb5-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-477"><a href="#cb5-477" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Cheap wins — RESOLVED (audited 2026-06-02)</span></span>
+<span id="cb5-478"><a href="#cb5-478" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-479"><a href="#cb5-479" aria-hidden="true" tabindex="-1"></a>All five are now done, obsolete, or dissolved by dead-code removal:</span>
+<span id="cb5-480"><a href="#cb5-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-481"><a href="#cb5-481" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **SVG text inset reads `cellPaddingX`.** <span class="in">`svg-generator`</span> sources</span>
+<span id="cb5-482"><a href="#cb5-482" aria-hidden="true" tabindex="-1"></a>  <span class="in">`theme.spacing.cellPaddingX`</span> at every inset site (≥8). The hardcoded</span>
+<span id="cb5-483"><a href="#cb5-483" aria-hidden="true" tabindex="-1"></a>  <span class="in">`SPACING.TEXT_PADDING`</span> is gone. The export drift bug is fixed.</span>
+<span id="cb5-484"><a href="#cb5-484" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **`cellPaddingY` sourced — but deliberately `0`.** The token exists</span>
+<span id="cb5-485"><a href="#cb5-485" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`theme-resolved.ts`</span>); all density presets set it to <span class="in">`0`</span> and the renderer reads</span>
+<span id="cb5-486"><a href="#cb5-486" aria-hidden="true" tabindex="-1"></a>  <span class="in">`theme.spacing.cellPaddingY ?? 0`</span>. Vertical padding was superseded by the <span class="in">`+6`</span></span>
+<span id="cb5-487"><a href="#cb5-487" aria-hidden="true" tabindex="-1"></a>  line-height model (now a *named* shared constant in <span class="in">`table-metrics.ts`</span>), so the</span>
+<span id="cb5-488"><a href="#cb5-488" aria-hidden="true" tabindex="-1"></a>  original "honor cellPaddingY from density" win is obsolete, not pending.</span>
+<span id="cb5-489"><a href="#cb5-489" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **`rowGroupPadding` exposed** in <span class="in">`SpacingControl.svelte`</span> + <span class="in">`LayoutControl.svelte`</span>.</span>
+<span id="cb5-490"><a href="#cb5-490" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **`spacerRowHeight` — no token; consistent `rowHeight/2`.** Both backends</span>
+<span id="cb5-491"><a href="#cb5-491" aria-hidden="true" tabindex="-1"></a>  compute spacer height as <span class="in">`rowHeight/2`</span> through the shared <span class="in">`computeRowLayout`</span></span>
+<span id="cb5-492"><a href="#cb5-492" aria-hidden="true" tabindex="-1"></a>  seam, so the DOM↔SVG drift this item feared no longer exists. (Introducing an</span>
+<span id="cb5-493"><a href="#cb5-493" aria-hidden="true" tabindex="-1"></a>  actual <span class="in">`spacerRowHeight`</span> token is a *feature*, not a drift fix — moved to §6</span>
+<span id="cb5-494"><a href="#cb5-494" aria-hidden="true" tabindex="-1"></a>  density questions if wanted.)</span>
+<span id="cb5-495"><a href="#cb5-495" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> **`indentPerLevel` double-source dissolved by dead-code removal (2026-06-02).**</span>
+<span id="cb5-496"><a href="#cb5-496" aria-hidden="true" tabindex="-1"></a>  The live paths already read <span class="in">`theme.rowGroup.indentPerLevel`</span> (SVG <span class="in">`svg-generator`</span>,</span>
+<span id="cb5-497"><a href="#cb5-497" aria-hidden="true" tabindex="-1"></a>  DOM <span class="in">`columns.svelte.ts`</span>). The only remaining raw <span class="in">`SPACING.INDENT_PER_LEVEL`</span></span>
+<span id="cb5-498"><a href="#cb5-498" aria-hidden="true" tabindex="-1"></a>  references lived in <span class="in">`width-utils.ts`</span>'s **dead** legacy auto-width cluster</span>
+<span id="cb5-499"><a href="#cb5-499" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`calculateColumnAutoWidth`</span> / <span class="in">`calculateAllAutoWidths`</span> / <span class="in">`calculateLabelColumnWidth`</span></span>
+<span id="cb5-500"><a href="#cb5-500" aria-hidden="true" tabindex="-1"></a><span class="ss">  + </span><span class="in">`getEffectiveColumnWidth`</span> — 0 external refs, 0 in the bundle, superseded by the</span>
+<span id="cb5-501"><a href="#cb5-501" aria-hidden="true" tabindex="-1"></a>  schema-driven resolver). Those were deleted, taking the stale constant with them.</span>
+<span id="cb5-502"><a href="#cb5-502" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-503"><a href="#cb5-503" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-504"><a href="#cb5-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-505"><a href="#cb5-505" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Ontology of interactive row-height drag-resize</span></span>
+<span id="cb5-506"><a href="#cb5-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-507"><a href="#cb5-507" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **Mechanism + UI BOTH BUILT 2026-06-03.** The override/pin layer + the</span></span>
+<span id="cb5-508"><a href="#cb5-508" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; drag-resize UI shipped in Stage 1 of the cascade rework. </span><span class="in">`computeRowLayout`</span></span>
+<span id="cb5-509"><a href="#cb5-509" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; honors a per-</span><span class="in">`RowKind`</span><span class="at"> </span><span class="in">`rowKindHeights`</span><span class="at"> map; the layout-zoom slice holds</span></span>
+<span id="cb5-510"><a href="#cb5-510" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; the map + </span><span class="in">`setRowKindHeight(kind, h)`</span><span class="at"> / </span><span class="in">`resetRowKindHeights()`</span><span class="at">. The</span></span>
+<span id="cb5-511"><a href="#cb5-511" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; drag-resize UI is </span><span class="in">`RowEdgeHandles.svelte`</span><span class="at"> (pointer-capture mechanics</span></span>
+<span id="cb5-512"><a href="#cb5-512" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; matching the column-width drag) and the settings-panel pin control is</span></span>
+<span id="cb5-513"><a href="#cb5-513" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="in">`RowKindHeightsControl.svelte`</span><span class="at">.</span></span>
+<span id="cb5-514"><a href="#cb5-514" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-515"><a href="#cb5-515" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8a. Full row-kind height cascade — BUILT (Stage 1 LANDED 2026-06-03)</span></span>
+<span id="cb5-516"><a href="#cb5-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-517"><a href="#cb5-517" aria-hidden="true" tabindex="-1"></a>The shipped <span class="in">`rowKindHeights`</span> map is only the **pin layer**. The full per-kind</span>
+<span id="cb5-518"><a href="#cb5-518" aria-hidden="true" tabindex="-1"></a>height resolution should be a cascade beneath it (low → high precedence):</span>
+<span id="cb5-519"><a href="#cb5-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-520"><a href="#cb5-520" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Intrinsic kind ratio** — each <span class="in">`RowKind`</span> as a *ratio* of the density</span>
+<span id="cb5-521"><a href="#cb5-521" aria-hidden="true" tabindex="-1"></a>   <span class="in">`rowHeight`</span> (data 1.0, group_header 1.0, summary 1.0, section-header 1.0,</span>
+<span id="cb5-522"><a href="#cb5-522" aria-hidden="true" tabindex="-1"></a>   spacer 0.5). Ratios (not absolutes) so they scale with density **and** the</span>
+<span id="cb5-523"><a href="#cb5-523" aria-hidden="true" tabindex="-1"></a>   density factor for free.</span>
+<span id="cb5-524"><a href="#cb5-524" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Inheritance** — a kind with no value inherits its *parent*: <span class="in">`summary → data`</span>,</span>
+<span id="cb5-525"><a href="#cb5-525" aria-hidden="true" tabindex="-1"></a>   <span class="in">`section-header → group_header`</span>. Shallow, fixed graph (not arbitrary). So</span>
+<span id="cb5-526"><a href="#cb5-526" aria-hidden="true" tabindex="-1"></a>   raising data's height propagates to summary unless summary is set.</span>
+<span id="cb5-527"><a href="#cb5-527" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Theme-level default** — a theme sets a kind's ratio (e.g. editorial theme</span>
+<span id="cb5-528"><a href="#cb5-528" aria-hidden="true" tabindex="-1"></a>   <span class="in">`summary = 1.25×`</span>). Scales with density.</span>
+<span id="cb5-529"><a href="#cb5-529" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Constructor override** — authored per-kind at construction (<span class="in">`row_heights`</span>).</span>
+<span id="cb5-530"><a href="#cb5-530" aria-hidden="true" tabindex="-1"></a>   Keep it a *ratio* for cascade-consistency (an absolute would be a second unit</span>
+<span id="cb5-531"><a href="#cb5-531" aria-hidden="true" tabindex="-1"></a>   fighting density).</span>
+<span id="cb5-532"><a href="#cb5-532" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Interactive pin** (BUILT) — drag / settings-panel writes an **absolute** px</span>
+<span id="cb5-533"><a href="#cb5-533" aria-hidden="true" tabindex="-1"></a>   that bypasses the ratio chain and survives density (the user dragged to *that*</span>
+<span id="cb5-534"><a href="#cb5-534" aria-hidden="true" tabindex="-1"></a>   pixel and means it). Highest precedence.</span>
+<span id="cb5-535"><a href="#cb5-535" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-536"><a href="#cb5-536" aria-hidden="true" tabindex="-1"></a>**Crux tension:** ratios everywhere *except* the pin.</span>
+<span id="cb5-537"><a href="#cb5-537" aria-hidden="true" tabindex="-1"></a><span class="in">`resolvedHeight = pin ?? (rowHeight × resolveRatio(kind))`</span>, where <span class="in">`resolveRatio`</span></span>
+<span id="cb5-538"><a href="#cb5-538" aria-hidden="true" tabindex="-1"></a>walks constructor → theme → inherited-parent → intrinsic. "Reset" clears the pin</span>
+<span id="cb5-539"><a href="#cb5-539" aria-hidden="true" tabindex="-1"></a>→ re-enters the cascade. Both affordances (settings-panel control + drag handle,</span>
+<span id="cb5-540"><a href="#cb5-540" aria-hidden="true" tabindex="-1"></a>DECIDED to build both) write the pin; the settings panel additionally needs a</span>
+<span id="cb5-541"><a href="#cb5-541" aria-hidden="true" tabindex="-1"></a>"reset to default" to drop back into the cascade.</span>
+<span id="cb5-542"><a href="#cb5-542" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-543"><a href="#cb5-543" aria-hidden="true" tabindex="-1"></a>**Implications for the build:** the shipped <span class="in">`rowKindHeights`</span> (absolute) is layer</span>
+<span id="cb5-544"><a href="#cb5-544" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Layers 1–4 (ratios + inheritance + theme + constructor) are unbuilt — they</span>
+<span id="cb5-545"><a href="#cb5-545" aria-hidden="true" tabindex="-1"></a>land with the affordances. The drag-UI DOM wrinkle (rows have no wrapper element</span>
+<span id="cb5-546"><a href="#cb5-546" aria-hidden="true" tabindex="-1"></a>→ handles need an absolutely-positioned overlay layer) is still the open</span>
+<span id="cb5-547"><a href="#cb5-547" aria-hidden="true" tabindex="-1"></a>build-time question for the drag affordance specifically.</span>
+<span id="cb5-548"><a href="#cb5-548" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-549"><a href="#cb5-549" aria-hidden="true" tabindex="-1"></a>**Question:** when a user drags a row's bottom edge, what are they editing?</span>
+<span id="cb5-550"><a href="#cb5-550" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-551"><a href="#cb5-551" aria-hidden="true" tabindex="-1"></a>**The column precedent (why rows are different).** Column drag-resize writes a</span>
+<span id="cb5-552"><a href="#cb5-552" aria-hidden="true" tabindex="-1"></a>**per-column** width pin (<span class="in">`columnWidths[col.id]`</span> + <span class="in">`userResizedIds`</span>,</span>
+<span id="cb5-553"><a href="#cb5-553" aria-hidden="true" tabindex="-1"></a><span class="in">`columns.svelte.ts`</span>). That's correct *because columns are heterogeneous by</span>
+<span id="cb5-554"><a href="#cb5-554" aria-hidden="true" tabindex="-1"></a>nature* — each has its own width, stable identity, and independent meaning.</span>
+<span id="cb5-555"><a href="#cb5-555" aria-hidden="true" tabindex="-1"></a>Rows are the opposite: **homogeneous by design** (uniform row height is what</span>
+<span id="cb5-556"><a href="#cb5-556" aria-hidden="true" tabindex="-1"></a>makes the grid read as a grid and keeps forest marker-centers aligned) and</span>
+<span id="cb5-557"><a href="#cb5-557" aria-hidden="true" tabindex="-1"></a>**data-lifecycle-transient** (rows appear/vanish under sort/filter/paginate).</span>
+<span id="cb5-558"><a href="#cb5-558" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-559"><a href="#cb5-559" aria-hidden="true" tabindex="-1"></a>**Therefore the per-row interpretation is the tempting-but-wrong default.**</span>
+<span id="cb5-560"><a href="#cb5-560" aria-hidden="true" tabindex="-1"></a>Pinning "row #5 = 40px" raises two problems: (a) it breaks the homogeneity</span>
+<span id="cb5-561"><a href="#cb5-561" aria-hidden="true" tabindex="-1"></a>invariant and the marker-center alignment that assumes a single <span class="in">`rowHeight`</span>;</span>
+<span id="cb5-562"><a href="#cb5-562" aria-hidden="true" tabindex="-1"></a>(b) after a sort/filter the pin either follows <span class="in">`row.id`</span> into a now-arbitrary</span>
+<span id="cb5-563"><a href="#cb5-563" aria-hidden="true" tabindex="-1"></a>position or is orphaned — neither is what the user meant by "make rows taller."</span>
+<span id="cb5-564"><a href="#cb5-564" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-565"><a href="#cb5-565" aria-hidden="true" tabindex="-1"></a>**Ontologically correct: drag edits the band-type's height TOKEN, table-wide,</span>
+<span id="cb5-566"><a href="#cb5-566" aria-hidden="true" tabindex="-1"></a>and pins it.** The unit of resize should match the unit of natural variation —</span>
+<span id="cb5-567"><a href="#cb5-567" aria-hidden="true" tabindex="-1"></a>columns vary per-column, rows vary per *band type*:</span>
+<span id="cb5-568"><a href="#cb5-568" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-569"><a href="#cb5-569" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> dragging a… <span class="pp">|</span> edits token <span class="pp">|</span> effect <span class="pp">|</span></span>
+<span id="cb5-570"><a href="#cb5-570" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb5-571"><a href="#cb5-571" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> data row <span class="pp">|</span> <span class="in">`rowHeight`</span> <span class="pp">|</span> all data rows <span class="pp">|</span></span>
+<span id="cb5-572"><a href="#cb5-572" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> spacer row <span class="pp">|</span> <span class="in">`spacerRowHeight`</span> <span class="pp">|</span> all spacers <span class="pp">|</span></span>
+<span id="cb5-573"><a href="#cb5-573" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> group-header row <span class="pp">|</span> (new) group-header height token <span class="pp">|</span> all group headers <span class="pp">|</span></span>
+<span id="cb5-574"><a href="#cb5-574" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> header <span class="pp">|</span> <span class="in">`headerHeight`</span> <span class="pp">|</span> the header strip <span class="pp">|</span></span>
+<span id="cb5-575"><a href="#cb5-575" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-576"><a href="#cb5-576" aria-hidden="true" tabindex="-1"></a>This makes drag a **direct-manipulation editor for a spacing token**, which</span>
+<span id="cb5-577"><a href="#cb5-577" aria-hidden="true" tabindex="-1"></a>composes cleanly with everything else:</span>
+<span id="cb5-578"><a href="#cb5-578" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-579"><a href="#cb5-579" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Density:** dragging pins the token → density stops controlling it (departs</span>
+<span id="cb5-580"><a href="#cb5-580" aria-hidden="true" tabindex="-1"></a>  the preset into "custom"), exactly the <span class="in">`userResizedIds`</span> pin-survives rule.</span>
+<span id="cb5-581"><a href="#cb5-581" aria-hidden="true" tabindex="-1"></a>  Changing density afterward leaves the pinned token alone.</span>
+<span id="cb5-582"><a href="#cb5-582" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Content-driven height (§1.4):** the token is a **floor**</span>
+<span id="cb5-583"><a href="#cb5-583" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`max(rowHeight, contentHeight)`</span>). Drag-up always works; drag-down clamps at</span>
+<span id="cb5-584"><a href="#cb5-584" aria-hidden="true" tabindex="-1"></a>  the per-row content minimum (with feedback), since you can't shrink below</span>
+<span id="cb5-585"><a href="#cb5-585" aria-hidden="true" tabindex="-1"></a>  content without clipping.</span>
+<span id="cb5-586"><a href="#cb5-586" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Aspect ladder (§1.6):** an explicit drag is a stronger signal than the</span>
+<span id="cb5-587"><a href="#cb5-587" aria-hidden="true" tabindex="-1"></a>  aspect target. The dragged height token becomes user-pinned and is **excluded</span>
+<span id="cb5-588"><a href="#cb5-588" aria-hidden="true" tabindex="-1"></a>  from the aspect row-height ladder** — same precedent as <span class="in">`aspectNonForestScale`</span></span>
+<span id="cb5-589"><a href="#cb5-589" aria-hidden="true" tabindex="-1"></a>  skipping user-resized columns. Aspect then absorbs via forest/chrome only, or</span>
+<span id="cb5-590"><a href="#cb5-590" aria-hidden="true" tabindex="-1"></a>  releases.</span>
+<span id="cb5-591"><a href="#cb5-591" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Parity:** because drag mutates a token (not per-row data), both DOM and SVG</span>
+<span id="cb5-592"><a href="#cb5-592" aria-hidden="true" tabindex="-1"></a>  consume it through the same path — no per-row special case to keep in sync.</span>
+<span id="cb5-593"><a href="#cb5-593" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-594"><a href="#cb5-594" aria-hidden="true" tabindex="-1"></a>**Escape hatch for the genuine per-row case** (a deliberate "hero" row): that's</span>
+<span id="cb5-595"><a href="#cb5-595" aria-hidden="true" tabindex="-1"></a>better expressed as authored content (a taller cell / <span class="in">`naturalHeight`</span>) or an</span>
+<span id="cb5-596"><a href="#cb5-596" aria-hidden="true" tabindex="-1"></a>explicit <span class="in">`row.style.height`</span>, not interactive drag. If per-row drag is ever</span>
+<span id="cb5-597"><a href="#cb5-597" aria-hidden="true" tabindex="-1"></a>wanted, it must answer the sort/filter-identity question first.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
