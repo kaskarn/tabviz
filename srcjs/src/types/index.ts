@@ -697,12 +697,6 @@ export interface BandingSpec {
   level: number | null;
 }
 
-export interface LayoutConfig {
-  plotWidth: number | "auto";
-  containerBorder: boolean;
-  containerBorderRadius: number;
-  banding: BandingSpec;
-}
 
 /**
  * Visual bundle for one semantic token (emphasis / muted / accent).
@@ -736,15 +730,6 @@ export type SemanticToken =
   | "bold" | "fill";
 
 export type Semantics = Record<SemanticToken, SemanticBundle>;
-
-/**
- * Tier-2 named token colors. theme.semantic.fill drives the default bg of
- * the fill RowSemantic bundle; defaults to an accent-derived pastel tint
- * at R-side resolve time.
- */
-export interface SemanticInputs {
-  fill: string;
-}
 
 export interface GroupHeaderStyles {
   level1FontSize: string;
@@ -1277,14 +1262,6 @@ export interface ZoomState {
    *  persisted but the a11y choice didn't). */
   contrastOverride?: "auto" | "more";
   version: number;
-}
-
-// Per-column pan/zoom override for a viz column's x-axis. Session-only;
-// reset via double-click or the axis reset affordance. Domain is stored
-// directly so it can be fed to d3 scales, tick generators, and the export
-// PrecomputedLayout without extra math.
-export interface AxisZoom {
-  domain: [number, number];
 }
 
 // ============================================================================

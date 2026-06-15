@@ -40,9 +40,6 @@ export function textureKeyForCssVar(cssVar: string): keyof TextureColors | null 
   }
 }
 
-/** Stage 2 §3 surface texture name. */
-export type ShellTexture = "none" | "ruled" | "grid" | "dotted" | "grain";
-
 /** Mix a hex color with white at the given opacity. Used to pre-resolve
  *  the texture knockout pad (`shell-bg @ 78%` against page white). */
 function premixOnWhite(hex: string, opacity: number): string {

@@ -518,15 +518,18 @@ Additional gates from `srcjs/`:
   `npx --yes knip@5` — do NOT vendor knip as a devDep: it pulls native
   `@emnapi/*` transitives that broke `npm ci` lock parity on the Linux
   runner (2026-06-15). For a DEEPER one-off audit run
-  `npx knip --include dependencies,files,unlisted,unresolved` — that's how
-  the 2026-06-15 sweep found 3 phantom d3 deps (`d3-array`/`d3-format`/
-  `d3-interpolate`, unused since only `d3-scale`/`d3-shape` are imported —
-  NOT yet removed: a `package-lock.json` regen churns `eslint-plugin-svelte`
-  to a newer a11y-stricter version that fails the zero-warning lint gate, so
-  do it as its OWN pinned-version PR) + a broken `elevation.ts` import in
-  `scripts/classify-resolver-groups.mjs` (orphan analysis script, not in CI).
-  Drive `exports` to zero; raw `npx knip` with no config reports ~286 false
-  positives (it can't see the barrels).
+  `npx knip --include dependencies,files,unlisted,unresolved`. LOCKFILE TRAP
+  (paid twice): to change deps, edit package.json then run
+  `npm install --package-lock-only` (SURGICAL — keeps every other version
+  pinned) + `bun install`. NEVER `rm package-lock.json && npm install` — a
+  full regen bumps `eslint-plugin-svelte`/`svelte` within their `^` ranges to
+  a11y-stricter versions whose `svelte/valid-compile` rules fail the
+  zero-warning lint gate on pre-existing components. KNIP-INVISIBLE
+  CONSUMERS: an export consumed only by an R-side regex (e.g.
+  `SHINY_EVENT_FIELDS`, read by `test-wire-version.R`) looks dead to knip but
+  isn't — always trace WHY before deleting. Drive `exports` to zero; raw
+  `npx knip` with no config reports ~286 false positives (it can't see the
+  barrels).
 - `npm run lint` — eslint (flat config, `eslint.config.js`). **ZERO-WARNING baseline, every rule `error`, CI-gated** (paydown completed 2026-06-12; the sweep deleted real dead code: the legacy plot-resize trio, getLabelWidth/getLabelFlex (D20 item 7), a vestigial polarity reflection in buildTheme). `prefer-const` is OFF for `*.svelte`/`*.svelte.ts` — the rule doesn't understand the Svelte 5 runes idiom `let {x} = $props()`; plugin v3's runes-aware svelte/prefer-const is the re-enable path. `no-undef` off (TS handles it).
 - `scripts/screenshot.js` — headless browser screenshot generator
 - `scripts/dist-smoke.mjs` — smoke test for the published npm dist (runs in `build:npm`)

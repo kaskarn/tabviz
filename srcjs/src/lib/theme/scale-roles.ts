@@ -31,8 +31,6 @@ import {
 } from "./typography";
 import type { ThemeInputs } from "../../types/theme-inputs";
 
-export type ScaleDomain = "type" | "geometry" | "spacing";
-
 // ── TYPE ────────────────────────────────────────────────────────────────
 export const TYPE_ROLE_NAMES = Object.keys(DEFAULT_TYPE_ROLES) as TypeRoleName[];
 

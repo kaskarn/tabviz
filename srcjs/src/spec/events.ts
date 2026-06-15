@@ -127,4 +127,7 @@ export const SHINY_EVENT_FIELDS = [
   "visible_rows",
 ] as const;
 
+// Typed projection of the roster above. The const is the source of truth for
+// the R↔JS sync gate (test-wire-version.R reads it via regex — invisible to
+// the TS import graph / knip), and this is its field-name union.
 export type ShinyEventField = (typeof SHINY_EVENT_FIELDS)[number];

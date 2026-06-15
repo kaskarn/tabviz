@@ -426,6 +426,28 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-15 — **DEAD-CODE RATIONALIZATION pt.2 (low-risk follow-ups, with
+  root-cause for each).** Cleared the deferred items from pt.1, understanding
+  WHY each existed: (a) 3 phantom d3 deps (`d3-array`/`d3-format`/
+  `d3-interpolate`) — added in the INITIAL commit and never imported once in
+  the entire git history (the codebase always used custom pure-JS:
+  `data-schemes.ts::lerpHex`, custom formatters/scale math); removed via the
+  SURGICAL `npm install --package-lock-only` (not a full regen — that was the
+  pt.1 CI break). (b) `scripts/classify-resolver-groups.mjs` — completed
+  one-shot scaffolding from wire-audit Pass 0d-i whose output (per-token
+  `resolverGroup`) is baked into the `component-tokens.ts` manifest; it
+  bit-rotted when `elevation.ts` folded into `shell-paper.ts`; deleted. (c) 5
+  refactor-orphaned exported TYPES (`ScaleDomain`, `ShellTexture`,
+  `LayoutConfig`, `SemanticInputs`, `AxisZoom`) — residue of the V4
+  cascade/type-graph refactors that migrated consumers to new shapes but left
+  the old `export interface` behind; the ROOT cause is that no gate caught
+  unused exported types until the knip harness (svelte-check/eslint pass them).
+  The "understand why" discipline EARNED its keep: removing `ShinyEventField`
+  exposed `SHINY_EVENT_FIELDS` as the source-of-truth for the R↔JS roster-sync
+  gate (read by `test-wire-version.R` via regex, invisible to knip) — restored
+  it as the live roster's typed companion. All green: 1441 bun + 316 vitest,
+  lint/check/build clean, npm ci valid, lockfile parity green.
+
 - 2026-06-15 — **DEAD-CODE RATIONALIZATION via a new knip harness.** Stood
   up `srcjs/knip.json` configured with the REAL entry graph (5 npm barrels +
   4 runtime boots + tests) — raw knip reported 286 false positives (it
