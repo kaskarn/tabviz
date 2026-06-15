@@ -95,21 +95,23 @@ export const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSv
   const rowH = ctx?.rowHeight ?? 24;
 
   const pieces: string[] = [];
-  // Fill the cell CONTENT box — inset by the cell-padding tokens, matching the
-  // DOM `.cell-heatmap` (width/height:100% INSIDE the padded grid-cell). The
-  // old flat `x=2` inset over-drew horizontally: the DOM heat gutters ≈ cellPadX
-  // (~10px) while the export showed ~2px, so the export block ran wider than the
-  // widget (measured DOM 76px wide vs SVG ~92 — the dominant heatmap divergence).
+  // Fill the cell CONTENT box, matching the DOM `.cell-heatmap` (width/
+  // height:100% INSIDE the padded grid-cell). The caller already translates the
+  // cell group by cellPadX (left-padded text origin), so the rect starts at
+  // x=0 and only needs to inset its RIGHT edge by 2·padX — the old flat
+  // `width=cellWidth-4` over-drew ~cellPadX past the content box (measured DOM
+  // 76px wide vs SVG ~92, the dominant heatmap divergence).
   const padX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
   const padY = readVarPx(cssVars, "--tv-spacing-cell-padding-y", 2);
+  const contentW = Math.max(0, cellWidth - padX * 2);
   pieces.push(
-    `<rect x="${padX}" y="${padY}" width="${Math.max(0, cellWidth - padX * 2)}" height="${Math.max(0, rowH - padY * 2)}" ` +
+    `<rect x="0" y="${padY}" width="${contentW}" height="${Math.max(0, rowH - padY * 2)}" ` +
     `fill="${bgColor}" rx="2"/>`,
   );
   if (showValue) {
     pieces.push(
       `<text class="cell-text" dominant-baseline="central" ` +
-      `x="${cellWidth / 2}" y="${rowH / 2}" ` +
+      `x="${contentW / 2}" y="${rowH / 2}" ` +
       `font-family="${readBodyFamily(cssVars)}" ` +
       `font-size="${labelFontSize}px" font-weight="400" ` +
       `text-anchor="middle" fill="${textColor}">${value.toFixed(decimals)}</text>`,
