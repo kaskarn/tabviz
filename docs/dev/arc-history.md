@@ -11,6 +11,25 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-15 — systematic R-serialization review (found SOUND) + I()-array lock
+
+Full correctness/brittleness review of the R wire serializer (`utils-serialize.R`
++ the S7 classes it serializes) against the TS wire shape — the
+wrapper-over-runtime boundary where R↔TS DIVERGENCE is the highest-stakes bug
+class. VERDICT: **no RANK-1 divergence** — every wire key is correctly
+camelCased and shape-accurate (columns/data/groups/interaction/pagination/
+split all match the TS interfaces). The risk is RANK-2: several CORRECT-but-
+UNGUARDED paths (no parity test) where a future change could drift silently —
+`serialize_figure_layout`, `serialize_annotation` (forest reflines), the
+cell/row-style recipe DICTs (new `style_*` props silently dropped if the
+hand-coded recipe isn't updated), theme role_overrides/pins/components on the
+resolved blob, `cond_ref` unwrap, and the **`I()`-wrapped length-1 array
+fields** (tooltipFields / hiddenColumns / expandedRows / splitVars — the
+jsonlite `auto_unbox` collapse trap). Locked the last one
+(`test-wire-arrays.R`, teeth-verified: stripping an `I()` fails it); the others
+are documented gaps for when those areas next change. The serializer is sound
+today — this is regression insurance for the precious R↔TS parity guardrail.
+
 ## 2026-06-15 — systematic store/slices review (found SOUND) + cleanup arcs
 
 A full brittleness review of the interactive-state heart — `tabvizStore`
