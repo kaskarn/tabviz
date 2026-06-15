@@ -2,6 +2,7 @@ import type { SplitForestPayload, NavTreeNode, WebSpec, WebTheme, ColumnDef, Col
 import { createTabvizStore } from "./tabvizStore.svelte";
 import { type ThemeName } from "$lib/theme/theme-presets";
 import { ops } from "$lib/op-recorder";
+import { assertValidSpec } from "$spec/validate.ts";
 
 // Column types whose width is driven by the visualization itself, not its
 // data text content. We skip these when estimating shared widths — their
@@ -148,12 +149,28 @@ export function createSplitTabvizStore() {
       const base = p.base;
       const merged: Record<string, WebSpec> = {};
       for (const [key, override] of Object.entries(p.specs)) {
-        merged[key] = { ...base, ...(override as Partial<WebSpec>) } as WebSpec;
+        // Stamp the payload-root wire version onto each reconstituted pane:
+        // R hoists `version` to the payload root (not into `base`), and the
+        // per-pane override carries only data/labels — so a merged spec would
+        // otherwise lack `version` and fail the ingress wall below.
+        merged[key] = { ...base, ...(override as Partial<WebSpec>), version: p.version } as WebSpec;
       }
       payload = { ...p, specs: merged };
     } else {
       // No hoisted base — wire specs are already full WebSpecs.
       payload = p as MergedSplitPayload;
+    }
+    // Ingress wall (mirrors createTabviz): every reconstituted pane spec is
+    // validated BEFORE the column-width snapshot derefs `spec.columns`, so a
+    // malformed pane throws the clear SpecValidationError (keyed by pane name)
+    // instead of crashing cryptically in leafColumns().
+    for (const [key, spec] of Object.entries(payload.specs)) {
+      try {
+        assertValidSpec(spec);
+      } catch (e) {
+        if (e instanceof Error) e.message = `split pane "${key}": ${e.message}`;
+        throw e;
+      }
     }
     // Snapshot original per-spec column widths. When the R arg
     // `shared_column_widths = TRUE` was passed, the widths stamped by the

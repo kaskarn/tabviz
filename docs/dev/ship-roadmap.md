@@ -426,6 +426,30 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-15 — **INGRESS-WALL HARDENING (Area D — "any language can drive
+  the wire").** A systematic robustness sweep of the public spec/theme
+  ingress surface found a class of "deref-before-validate" / "no-validate"
+  gaps where a malformed wire spec crashed cryptically ("Cannot read
+  properties of null") instead of failing with the intentional error. Fixed:
+  (1) all THREE SVG-export entrypoints (`generateSVG` /
+  `computeLayoutMetrics` / `computeNaturalDimensions`) validated `spec` only
+  AFTER the transform pipeline had dereferenced it — `validateSpec` moved to
+  the first line of each (gate: `svg-robustness.runes.ts`, 9 cases). (2) The
+  live htmlwidget proxy `updateData` now validates-and-SKIPS on error-severity
+  issues (logs a clear diagnostic; never corrupts the running widget) rather
+  than crashing in setSpec's group walk. (3) `createTabviz.update()` now
+  applies the same `assertValidSpec` ingress wall as the constructor. (4) The
+  split store `setPayload` validates every reconstituted pane spec
+  (pane-keyed clear error) — and the sweep CAUGHT A REAL BUG: R hoists the
+  wire `version` to the payload ROOT, not into `base`, so merged panes lacked
+  `version`; the merge now stamps it (gate: `split-payload-ingress.runes.ts`).
+  Skipped deliberately: `buildTheme` (called very frequently with trusted
+  preset-derived inputs; the real untrusted wall is `parseThemeWire`, already
+  validating). The internal reactivity choke point `setSpec` is left
+  unguarded ON PURPOSE — it fires on every paint/drag frame, so heavy
+  per-call validation would be a perf regression; validation stays at the
+  EXTERNAL boundary.
+
 - 2026-06-13 — **MAINTAINER FEEDBACK PASS (settings/roles/borders) — batch
   1: crash fix + D9 reversal.** A live-testing pass surfaced ~11 issues,
   several pointing at brittle/hardcoded substrate. Landed first: (1) the

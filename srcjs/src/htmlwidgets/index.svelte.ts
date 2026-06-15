@@ -4,6 +4,7 @@ import { createTabviz, type TabvizInstance } from "$core/createTabviz";
 import { exportToSVG, exportToPNG } from "$export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { normalize } from "$spec/proxy-args.ts";
+import { validateSpec } from "$spec/validate.ts";
 import { EVENT_TO_SHINY_FIELD } from "$spec/events.ts";
 import {
   exposeDevHook,
@@ -44,6 +45,16 @@ export const proxyMethods: Record<string, (store: TabvizStore, args: Record<stri
   updateData: (store, raw) => {
     const a = normalize.updateData(raw);
     if (!a) return;
+    // Live ingress wall: a malformed proxy spec must NOT corrupt the running
+    // widget. Unlike the constructor (which throws to fail the mount), the
+    // live path validates and SKIPS on error-severity issues, logging a clear
+    // diagnostic instead of crashing cryptically inside setSpec's group walk.
+    const errors = validateSpec(a.spec).filter((i) => i.severity === "error");
+    if (errors.length > 0) {
+      // eslint-disable-next-line no-console
+      console.error("[tabviz] proxy updateData rejected — invalid spec:", errors);
+      return;
+    }
     store.setSpec(a.spec);
   },
   toggleGroup: (store, raw) => {

@@ -56,10 +56,28 @@ function dispatch(method: string, args: Record<string, unknown>, store: ReturnTy
 }
 
 describe("proxyMethods dispatch", () => {
-  test("updateData -> setSpec", () => {
+  test("updateData -> setSpec (valid spec)", () => {
     const s = makeFakeStore();
-    dispatch("updateData", { spec: { data: { rows: [] } } }, s);
+    dispatch("updateData", { spec: { version: "1.10", data: { rows: [], groups: [] } } }, s);
     expect((s.calls as { method: string }[]).map((c) => c.method)).toContain("setSpec");
+  });
+
+  test("updateData rejects an invalid spec — no setSpec, clear console.error", () => {
+    const s = makeFakeStore();
+    const errs: unknown[][] = [];
+    const orig = console.error;
+    console.error = (...a: unknown[]) => { errs.push(a); };
+    try {
+      // Missing `version` + malformed `data` → error-severity validation issues.
+      dispatch("updateData", { spec: { data: { rows: "nope" } } }, s);
+    } finally {
+      console.error = orig;
+    }
+    // The live ingress wall must SKIP (never corrupt the running widget) and
+    // log a clear diagnostic instead of crashing in setSpec's group walk.
+    expect((s.calls as { method: string }[]).map((c) => c.method)).not.toContain("setSpec");
+    expect(errs.length).toBeGreaterThan(0);
+    expect(String(errs[0]?.[0])).toContain("invalid spec");
   });
 
   test("toggleGroup -> toggleGroup", () => {

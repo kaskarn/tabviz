@@ -199,6 +199,14 @@ export function createTabviz(
   return {
     update(nextSpec) {
       validateSpecVersion(nextSpec as { version?: unknown }, "WebSpec");
+      // Same ingress wall as the constructor: a host re-render with a
+      // malformed spec must throw the clear SpecValidationError, not crash
+      // cryptically inside setSpec's compileVariants/group walk.
+      const w = assertValidSpec(nextSpec);
+      if (w.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn("[tabviz] spec warnings:", w);
+      }
       store.setSpec(nextSpec);
     },
     sortBy({ column, direction }) {
