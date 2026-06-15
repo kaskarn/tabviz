@@ -3817,8 +3817,8 @@ export function computeNaturalDimensions(spec: WebSpec): {
   height: number;
   aspect: number;
 } {
-  spec = normalizeLabelColumn(spec);
   validateSpec(spec);
+  spec = normalizeLabelColumn(spec);
   const layout = computeLayout(spec, {});
   return {
     width:  layout.totalWidth,
@@ -3901,10 +3901,13 @@ export function computeLayoutMetrics(
   spec: WebSpec,
   options: ExportOptions = {},
 ): LayoutMetrics {
+  // Validate FIRST — before any transform dereferences `spec` — so an
+  // invalid/null spec fails with the clear SVGGeneratorError, not a cryptic
+  // "Cannot read properties of null" deep in normalizeLabelColumn.
+  validateSpec(spec);
   spec = normalizeLabelColumn(spec);
   spec = applyThemeColumnDefaultsToSpec(spec);
   spec = compileVariants(spec);
-  validateSpec(spec);
 
   const theme = spec.theme;
   const cssVars = getCssVars(theme);
@@ -4417,6 +4420,10 @@ function shellTexturePatternDefs(
  *    - Single forest area between left/right tables
  */
 export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string {
+  // Validate FIRST — before any transform dereferences `spec` — so a null /
+  // structurally-invalid spec fails with the clear SVGGeneratorError instead of
+  // a cryptic "Cannot read properties of null" inside normalizeLabelColumn.
+  validateSpec(spec);
   // Normalize the labelColumn slot into the columns array so all
   // downstream layout / drawing reads from a single uniform shape.
   spec = normalizeLabelColumn(spec);
@@ -4433,8 +4440,6 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // row-kind pins from the same block are consumed inside computeLayout.
   // Idempotent when the live widget already baked the order into columns.
   spec = applyFigureLayoutColumnOrder(spec);
-  // Validate input
-  validateSpec(spec);
 
   // Mode 3 (aspect-changed) lever ladder. R-side passes targetWidth +
   // targetHeight + flexCap; we precompute natural dims, scale rowHeight
