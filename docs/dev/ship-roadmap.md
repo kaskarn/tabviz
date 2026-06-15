@@ -438,11 +438,15 @@ Clinical/regulatory audience makes this table stakes.
   TS "mirrors" of CSS-local color-mix percentages), `DOMAIN_PADDING`,
   `ALL_ANCHORS`; consolidated `ALL_CURVES` (curves.test.ts now imports the
   canonical roster instead of a local copy). Fixed three stale comments that
-  CLAIMED consumers (the dead-code's calling cards). Also dropped 3 phantom
-  d3 deps (`d3-array`/`d3-format`/`d3-interpolate` — only `d3-scale`/`d3-shape`
-  are imported) + their `@types`; lockfiles regenerated, parity gate green.
-  `npm run knip` is now a discoverable dead-code harness (exports category at
-  zero). 1441 bun + 316 vitest green, check/lint/build clean.
+  CLAIMED consumers (the dead-code's calling cards). `npm run knip`
+  (`npx --yes knip@5`, NOT a vendored devDep — that broke `npm ci` lock
+  parity via native @emnapi transitives) is now a discoverable dead-code
+  harness (exports category at zero). 1441 bun + 316 vitest green,
+  check/lint/build clean. DEFERRED: 3 phantom d3 deps
+  (`d3-array`/`d3-format`/`d3-interpolate`) are unused but removing them needs
+  a full lock regen, which churns `eslint-plugin-svelte` to an a11y-stricter
+  version that fails the zero-warning lint gate on pre-existing components —
+  so that's its own pinned-version follow-up, not bundled here.
 
 - 2026-06-15 — **XSS EGRESS WALL on exported SVG (Area D / G — security).**
   Follow-on to the ingress sweep, on the OTHER end of the untrusted-wire

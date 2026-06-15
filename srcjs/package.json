@@ -108,6 +108,9 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tailwindcss/vite": "^4.0.0",
+    "@types/d3-array": "^3.2.0",
+    "@types/d3-format": "^3.0.0",
+    "@types/d3-interpolate": "^3.0.0",
     "@types/d3-scale": "^4.0.0",
     "@types/d3-shape": "^3.1.0",
     "@vitest/browser": "^4.1.6",
@@ -129,6 +132,9 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
+    "d3-array": "^3.0.0",
+    "d3-format": "^3.0.0",
+    "d3-interpolate": "^3.0.0",
     "d3-scale": "^4.0.0",
     "d3-shape": "^3.0.0"
   }
