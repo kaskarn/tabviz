@@ -256,3 +256,36 @@ test_that("split_by × paginate propagates paginate into every sub-spec", {
     expect_equal(sf@specs[[key]]@paginate@rows, 10L)
   }
 })
+
+test_that("TS computePageBreaks() matches R compute_page_breaks() (V8 parity)", {
+  skip_if_not_installed("V8")
+  # Same fixtures as the R-side cases above, run through BOTH implementations on
+  # IDENTICAL group-id vectors so the algorithms cannot silently drift. R is
+  # 1-based (page_starts/ends); the TS wire is 0-based (pages[].startIdx/endIdx).
+  cases <- list(
+    list(gids = rep(NA_character_, 60),                 rows = 20, keep = TRUE,  orphan = 0),
+    list(gids = rep(c("A","B","C","D"), c(20,25,18,10)), rows = 30, keep = TRUE,  orphan = 0),
+    list(gids = rep(c("A","B","C","D"), c(20,25,18,10)), rows = 30, keep = FALSE, orphan = 0),
+    list(gids = rep(c("A","B"), c(35,15)),               rows = 20, keep = TRUE,  orphan = 0),
+    list(gids = rep(NA_character_, 61),                 rows = 30, keep = TRUE,  orphan = 3),
+    list(gids = rep(NA_character_, 14),                 rows = 12, keep = TRUE,  orphan = 10)
+  )
+  for (cs in cases) {
+    grouped <- !all(is.na(cs$gids))
+    df <- data.frame(study = paste0("s", seq_along(cs$gids)), stringsAsFactors = FALSE)
+    if (grouped) df$grp <- cs$gids
+    spec <- tabviz(df, label = "study",
+                   group = if (grouped) "grp" else NULL, .spec_only = TRUE)
+    spec@paginate <- paginate_spec(rows = cs$rows, keep_groups = cs$keep, orphan_min = cs$orphan)
+    r_br <- suppressMessages(compute_page_breaks(spec))
+
+    ts <- ts_call("computePageBreaks", as.list(cs$gids),
+                  list(rows = cs$rows, keepGroups = cs$keep, orphanMin = cs$orphan))
+
+    expect_equal(ts$nPages, r_br$n_pages)
+    ts_starts <- vapply(ts$pages, function(p) p$startIdx, numeric(1))
+    ts_ends   <- vapply(ts$pages, function(p) p$endIdx,   numeric(1))
+    expect_equal(ts_starts, as.numeric(r_br$page_starts - 1L))
+    expect_equal(ts_ends,   as.numeric(r_br$page_ends   - 1L))
+  }
+})
