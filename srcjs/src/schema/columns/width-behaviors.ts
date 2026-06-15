@@ -84,7 +84,7 @@ registerBehaviors("ring", {
     const sizeKey = opts?.size ?? "base";
     const diameter = CELL_GEOMETRY.ring.diameter[sizeKey];
     if (!(opts?.showLabel ?? true)) return diameter;
-    const labelFontPx = sizeKey === "sm" ? 9 : sizeKey === "lg" ? 12 : 11;
+    const labelFontPx = CELL_GEOMETRY.labelFontPx[sizeKey];
     // "100%" is the widest typical label (4 chars).
     const labelW = 4 * labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO;
     return diameter + 4 + labelW;

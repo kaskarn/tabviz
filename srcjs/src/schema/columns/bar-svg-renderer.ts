@@ -10,6 +10,7 @@ import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { resolveMarkerColor } from "../../lib/color-resolution";
+import { formatBarValue } from "../../lib/formatters";
 import { parseFontSize } from "../../lib/typography-layout";
 import { measureTextWidth } from "../../lib/width-utils";
 import { normalizeValue } from "../../lib/scale-utils";
@@ -36,12 +37,6 @@ function resolveBarColor(
   return resolveMarkerColor(opts?.color, cellStyle, rowStyle, theme);
 }
 
-function formatBarLabel(value: number): string {
-  // Mirrors CellBar.svelte's formattedValue().
-  if (value >= 100) return value.toFixed(0);
-  if (value >= 10) return value.toFixed(1);
-  return value.toFixed(2);
-}
 
 export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -61,7 +56,7 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
   // Label draws at the `label` type-role — the SAME token the DOM reads
   // (CellBar.svelte `var(--tv-text-label-size)`). Role, not `* BAR.LABEL_SCALE`.
   const labelFontSize = parseFontSize(readLabelSize(cssVars));
-  const labelText = showLabel ? formatBarLabel(value) : "";
+  const labelText = showLabel ? formatBarValue(value) : "";
   // Reserve GAP + max(floor, MEASURED label) so a wide value doesn't overrun
   // the bar (the DOM flex row grows the label past its min-width). LABEL_MIN_WIDTH
   // is the floor, not a fixed reservation.
@@ -111,4 +106,4 @@ export function registerBarSvgRenderer(): void {
 
 registerBarSvgRenderer();
 
-export const __svgTesting = { resolveBarColor, formatBarLabel };
+export const __svgTesting = { resolveBarColor, formatBarValue };

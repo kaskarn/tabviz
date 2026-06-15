@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { BarColumnOptions } from "$types";
   import { normalizeValue } from "$lib/scale-utils";
+  import { formatBarValue } from "$lib/formatters";
 
   interface Props {
     value: number | undefined | null;
@@ -30,12 +31,7 @@
     normalizeValue(value, 0, effectiveMax, scale) * 100
   );
 
-  const formattedValue = $derived(() => {
-    if (value === undefined || value === null) return "";
-    if (value >= 100) return value.toFixed(0);
-    if (value >= 10) return value.toFixed(1);
-    return value.toFixed(2);
-  });
+  const formattedValue = $derived(() => formatBarValue(value));
 </script>
 
 {#if value !== undefined && value !== null}

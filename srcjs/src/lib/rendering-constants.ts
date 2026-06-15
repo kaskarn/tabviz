@@ -219,13 +219,6 @@ export const TYPOGRAPHY = {
   /** Point to pixel conversion factor (1pt = 1/72 inch, at 96dpi = 96/72 ≈ 1.333px) */
   PT_TO_PX: 96 / 72,
 
-  /**
-   * Baseline adjustment factor for vertical text centering.
-   * @deprecated Use dominant-baseline="central" in SVG instead for proper centering.
-   * Kept for backwards compatibility with legacy positioning code.
-   */
-  TEXT_BASELINE_ADJUSTMENT: 0.35,
-
   /** Average character width as ratio of font size (for rough text width estimation) */
   AVG_CHAR_WIDTH_RATIO: 0.55,
 } as const;
@@ -375,6 +368,32 @@ export const GROUP_HEADER = {
 
   /** Safety margin for group header width calculation (accounts for rendering variance) */
   SAFETY_MARGIN: 8,
+
+  /** Background-tint opacity per nesting level (1-based: L1/L2/L3+) for the SVG
+   *  export's group-header band. Indexed by `level-1`, clamped to the last. */
+  LEVEL_TINT_OPACITY: [0.15, 0.10, 0.06],
+} as const;
+
+/**
+ * Forest/viz legend strip geometry (SVG export). Positioning constants for the
+ * single-row legend drawn in the axis band — names over bare literals; the
+ * `*_ASCENT_RATIO` values are font-box metrics (text top / baseline offsets),
+ * NOT type sizes, so they stay multipliers.
+ */
+export const LEGEND = {
+  /** Glyph swatch box (px). */
+  GLYPH_PX: 9,
+  /** Left inset from the band padding (px). */
+  START_OFFSET: 4,
+  /** Gap after the glyph, before its label (px). */
+  GLYPH_LABEL_GAP: 5,
+  /** Gap after a label, before the next entry (px). */
+  ENTRY_GAP: 16,
+  /** Label-size ascent ratio for the band's vertical midpoint. */
+  BAND_ASCENT_RATIO: 0.85,
+  /** Baseline nudge for the text + glyph vertical centering (× fontSize). */
+  TEXT_ASCENT_RATIO: 0.35,
+  GLYPH_ASCENT_RATIO: 0.3,
 } as const;
 
 // ============================================================================
@@ -433,6 +452,11 @@ export const CELL_GEOMETRY = {
     px: { sm: 12, base: 14, lg: 16, xl: 26 },
     fontScale: { sm: 0.75, base: 0.875, lg: 1, xl: 1.6 },
   },
+  /** Glyph-cell label font px, scaled by glyph size — shared by the ring +
+   *  pictogram renderers (was duplicated in each). NOTE: a label drawn at the
+   *  `label` type-role × glyph-size factor would be more themeable than these
+   *  fixed px (see feedback_type_roles_not_multipliers) — a future refinement. */
+  labelFontPx: { sm: 9, base: 11, lg: 12 },
 } as const;
 
 // ============================================================================

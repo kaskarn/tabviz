@@ -108,6 +108,7 @@ import {
   RENDERING,
   AUTO_WIDTH,
   GROUP_HEADER,
+  LEGEND,
   TEXT_MEASUREMENT,
   BADGE,
   getEffectYOffset,
@@ -1623,17 +1624,17 @@ function renderLegend(
   const footerGap = readVarPx(cssVars, "--tv-spacing-footer-gap", 8);
   // Vertical middle of the axis band.
   const bandBottom = layout.footerY - footerGap
-    - Math.round(parseFontSize(readLabelSize(cssVars)) * 0.85);
-  const y = bandBottom - layout.axisHeight / 2 + fontSize * 0.35;
-  const glyph = 9;
+    - Math.round(parseFontSize(readLabelSize(cssVars)) * LEGEND.BAND_ASCENT_RATIO);
+  const y = bandBottom - layout.axisHeight / 2 + fontSize * LEGEND.TEXT_ASCENT_RATIO;
+  const glyph = LEGEND.GLYPH_PX;
   const parts: string[] = [];
-  let x = padding + 4;
+  let x = padding + LEGEND.START_OFFSET;
   for (const e of entries) {
-    parts.push(legendGlyphSvg(e.shape, x + glyph / 2, y - fontSize * 0.3, glyph, e.color));
-    x += glyph + 5;
+    parts.push(legendGlyphSvg(e.shape, x + glyph / 2, y - fontSize * LEGEND.GLYPH_ASCENT_RATIO, glyph, e.color));
+    x += glyph + LEGEND.GLYPH_LABEL_GAP;
     parts.push(`<text x="${x}" y="${y}" font-family="${readBodyFamily(cssVars)}"
       font-size="${fontSize}px" fill="${fg}">${escapeXml(e.label)}</text>`);
-    x += estimateTextWidth(e.label, fontSize) + 16;
+    x += estimateTextWidth(e.label, fontSize) + LEGEND.ENTRY_GAP;
   }
   return parts.join("\n");
 }
@@ -1765,7 +1766,7 @@ function renderGroupHeader(
   // cascade dropped per CLAUDE.md V4 vocabulary).
   if (!background) {
     const tint = readAccentDefault(cssVars);
-    const opacity = level === 1 ? 0.15 : level === 2 ? 0.10 : 0.06;
+    const opacity = GROUP_HEADER.LEVEL_TINT_OPACITY[Math.min(level - 1, GROUP_HEADER.LEVEL_TINT_OPACITY.length - 1)];
     const hex = tint.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);

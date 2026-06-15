@@ -9,7 +9,7 @@ import { __testing } from "./bar-renderer";
 import type { RenderSvg, RenderComponent, RenderContext } from "../render-types";
 import "../init-dom";
 
-const { resolveBarColor, formatBarLabel } = __testing;
+const { resolveBarColor, formatBarValue } = __testing;
 
 beforeEach(() => {
   bootBuiltinBehaviors();
@@ -46,13 +46,13 @@ describe("bar renderer — color cascade", () => {
 
 describe("bar renderer — label format", () => {
   test(">= 100 → no decimals", () => {
-    expect(formatBarLabel(123.456)).toBe("123");
+    expect(formatBarValue(123.456)).toBe("123");
   });
   test(">= 10 → 1 decimal", () => {
-    expect(formatBarLabel(45.67)).toBe("45.7");
+    expect(formatBarValue(45.67)).toBe("45.7");
   });
   test("< 10 → 2 decimals", () => {
-    expect(formatBarLabel(3.456)).toBe("3.46");
+    expect(formatBarValue(3.456)).toBe("3.46");
   });
 });
 
@@ -75,7 +75,7 @@ describe("bar renderer — svg slot", () => {
     const node = callSvg(50, { bar: { maxValue: 100 } });
     expect((node.markup.match(/<rect/g) ?? []).length).toBe(2);
     expect(node.markup).toContain("<text");
-    // formatBarLabel: 50 ≥ 10, < 100 → 1 decimal → "50.0".
+    // formatBarValue: 50 ≥ 10, < 100 → 1 decimal → "50.0".
     expect(node.markup).toContain(">50.0<");
   });
 

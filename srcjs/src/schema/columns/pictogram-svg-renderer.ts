@@ -34,7 +34,6 @@ export interface PictogramOptions {
 }
 
 const GLYPH_PX = CELL_GEOMETRY.pictogram.glyphPx;
-const LABEL_FONT_PX: Record<"sm" | "base" | "lg", number> = { sm: 9, base: 11, lg: 12 };
 const GLYPH_GAP = CELL_GEOMETRY.pictogram.gap;
 
 export function resolvePictoColors(
@@ -169,7 +168,7 @@ export const pictogramSvgRenderer: CellFormatter = (value, options, ctx): Render
     : valueLabel === "leading" ? "leading"
       : valueLabel === "trailing" ? "trailing"
         : null;
-  const labelFontPx = LABEL_FONT_PX[size];
+  const labelFontPx = CELL_GEOMETRY.labelFontPx[size];
   const labelText = labelPos ? buildLabelText(value, opts) : "";
   const labelW = labelText ? labelText.length * (labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO) + 4 : 0;
 
@@ -222,5 +221,5 @@ registerPictogramSvgRenderer();
 
 export const __testing = {
   resolvePictoColors, resolveGlyphSpec, buildSlots, applyDomainRemap, buildLabelText,
-  GLYPH_PX, LABEL_FONT_PX, GLYPH_GAP,
+  GLYPH_PX, GLYPH_GAP,
 };

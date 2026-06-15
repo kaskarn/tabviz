@@ -31,7 +31,6 @@ interface RingOptions {
 }
 
 const DIAMETER = CELL_GEOMETRY.ring.diameter;
-const LABEL_FONT_PX: Record<"sm" | "base" | "lg", number> = { sm: 9, base: 11, lg: 12 };
 
 function resolveFilledColor(
   value: number,
@@ -102,7 +101,7 @@ const ringSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const dashLen = circumference * fraction;
   const dashGap = circumference - dashLen;
 
-  const labelFontPx = LABEL_FONT_PX[size];
+  const labelFontPx = CELL_GEOMETRY.labelFontPx[size];
   const labelText = formatLabel(value, fraction, labelFormat, labelDecimals);
   const labelW = showLabel ? labelText.length * (labelFontPx * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO) + 4 : 0;
   const totalW = diameter + (showLabel ? labelW + 4 : 0);
@@ -137,4 +136,4 @@ export function registerRingRenderer(): void {
 
 registerRingRenderer();
 
-export const __testing = { resolveFilledColor, formatLabel, DIAMETER, LABEL_FONT_PX };
+export const __testing = { resolveFilledColor, formatLabel, DIAMETER };

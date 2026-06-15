@@ -43,4 +43,4 @@ export function registerBarRenderer(): void {
 
 registerBarRenderer();
 
-export const __testing = { resolveBarColor: __svgTesting.resolveBarColor, formatBarLabel: __svgTesting.formatBarLabel };
+export const __testing = { resolveBarColor: __svgTesting.resolveBarColor, formatBarValue: __svgTesting.formatBarValue };

@@ -404,6 +404,19 @@ function _formatPvalueImpl(value: number | undefined | null, options?: ColumnOpt
 // ============================================================================
 
 /**
+ * Magnitude-adaptive label for inline-bar (col_bar) values: ≥100 → integer,
+ * ≥10 → one decimal, else two. ONE source shared by the DOM cell
+ * (CellBar.svelte) and the SVG export (bar-svg-renderer.ts) so the label can't
+ * drift between widget and download.
+ */
+export function formatBarValue(value: number | undefined | null): string {
+  if (value === undefined || value === null) return "";
+  if (value >= 100) return value.toFixed(0);
+  if (value >= 10) return value.toFixed(1);
+  return value.toFixed(2);
+}
+
+/**
  * Get the display text for a column cell, used for width measurement.
  * This must match exactly what's rendered in the cell.
  */
