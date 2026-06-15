@@ -69,6 +69,7 @@ import {
   readBodyFamily, readBodySize, readLabelSize, readCellSize,
 } from "$lib/theme/consumer-bridge";
 import { resolveBorders } from "$lib/theme/borders";
+import { resolveBorderWidths } from "$lib/theme/resolve-theme";
 
 /** SVG-boundary defense-in-depth (round-2 robustness review P0): cssVar
  *  values are interpolated into double-quoted SVG attributes throughout
@@ -5245,7 +5246,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // (summary top, group-header bottom) ignore `layout` since they
     // demarcate structure rather than data-row stride.
     const borders = resolveBorders(theme.authoringInputs?.border_preset,
-      readDividerStrong(cssVars), readDividerSubtle(cssVars));
+      readDividerStrong(cssVars), readDividerSubtle(cssVars), resolveBorderWidths(theme.authoringInputs));
     const drawRowDividers = layoutHasHorizontal(borders.layout);
     const x1 = padding;
     const x2 = layout.totalWidth - padding;
@@ -5275,7 +5276,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   });
 
   const resolvedBorders = resolveBorders(theme.authoringInputs?.border_preset,
-    readDividerStrong(cssVars), readDividerSubtle(cssVars));
+    readDividerStrong(cssVars), readDividerSubtle(cssVars), resolveBorderWidths(theme.authoringInputs));
 
   // Internal vertical column dividers — only under a grid layout (boxed).
   // The DOM paints these as each cell's border-right; without them the

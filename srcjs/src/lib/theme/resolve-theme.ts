@@ -33,7 +33,7 @@
 import type { ThemeInputs, OklchTriple, TokenRamps } from "../../types/theme-inputs";
 import type { RoleName } from "../../types/theme-roles";
 import type { ThemeWire } from "./theme-wire";
-import { resolveBorders } from "./borders";
+import { resolveBorders, type BorderWidths } from "./borders";
 import {
   componentRoleOverride,
   componentChannelOverride,
@@ -541,13 +541,16 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
     const reroute = componentRoleOverride(t, ctx.components);
     if (reroute) return ctx.roles[reroute];
     const b = resolveBorders(ctx.inputs.border_preset,
-      ctx.roles["border"], ctx.roles["border-subtle"]);
+      ctx.roles["border"], ctx.roles["border-subtle"], resolveBorderWidths(ctx.inputs));
     const dbl = (style: string | undefined, thickness: number, floor = 0): number =>
       style === "double" ? Math.max(3, thickness * 3) : Math.max(thickness, floor);
     switch (t.cssVar) {
+      // Widths now come from the geometry slots via resolveBorders (header→
+      // regular, group/row→thin) — the old header floor of 2 is the regular
+      // slot's default, so it's gone (the slot IS the floor + is tunable).
       case "--tv-row-border-width":    return `${dbl(b.minor.style, b.minor.thickness)}px`;
-      case "--tv-header-border-width": return `${dbl(b.major.style, b.major.thickness, 2)}px`;
-      case "--tv-group-border-width":  return `${dbl(b.major.style, b.major.thickness)}px`;
+      case "--tv-header-border-width": return `${dbl(b.major.style, b.major.thickness)}px`;
+      case "--tv-group-border-width":  return `${dbl(b.group.style, b.group.thickness)}px`;
       case "--tv-border-major-color":  return b.major.color;
       case "--tv-border-minor-color":  return b.minor.color;
       case "--tv-border-table-color":  return b.table.color;
@@ -589,7 +592,7 @@ const RESOLVERS: ReadonlyMap<ResolverGroup, ResolverFn> = new Map<ResolverGroup,
       case "--tv-first-col-rule":   return bold
         ? rampStep(ctx.ramps.neutral, 6)
         : resolveBorders(ctx.inputs.border_preset,
-            ctx.roles["border"], ctx.roles["border-subtle"]).minor.color;
+            ctx.roles["border"], ctx.roles["border-subtle"], resolveBorderWidths(ctx.inputs)).minor.color;
     }
     return tokenResolveBug(t.cssVar, t.source.tier,
       "resolverGroup=first-col but cssVar is not a first-col token");
@@ -830,8 +833,23 @@ export const DEFAULT_RADIUS: Required<NonNullable<NonNullable<ThemeInputs["geome
 /** Default border-width scale (px). Newspaper-hairline baseline. Exported
  *  for the panel sliders (see DEFAULT_RADIUS). */
 export const DEFAULT_BORDER_WIDTH: Required<NonNullable<NonNullable<ThemeInputs["geometry"]>["border_width"]>> = {
-  hair: 0.5, thin: 1, regular: 1.5, thick: 2.5,
+  // regular = the header-rule width (the prior hard floor was 2px; matching it
+  // here keeps headers unchanged now that resolveBorders sources widths from
+  // these slots — see borders.ts).
+  hair: 0.5, thin: 1, regular: 2, thick: 2.5,
 };
+
+/** Merge a theme's geometry border-width pins over the defaults → the resolved
+ *  slot widths resolveBorders consumes. */
+export function resolveBorderWidths(inputs: ThemeInputs | undefined): BorderWidths {
+  const g = inputs?.geometry?.border_width;
+  return {
+    hair:    g?.hair    ?? DEFAULT_BORDER_WIDTH.hair,
+    thin:    g?.thin    ?? DEFAULT_BORDER_WIDTH.thin,
+    regular: g?.regular ?? DEFAULT_BORDER_WIDTH.regular,
+    thick:   g?.thick   ?? DEFAULT_BORDER_WIDTH.thick,
+  };
+}
 
 /** Direct projection of inputs.geometry into the four radius + four
  *  border-width cssVars.

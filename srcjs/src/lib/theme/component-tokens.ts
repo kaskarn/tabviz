@@ -1143,7 +1143,7 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     kind: "border-width",
     source: { tier: "input", input: "geometry" },
     consumedBy: ["svelte/TabvizPlot.svelte", "export/svg-generator.ts"],
-    description: "Regular width — header rules. Default 1.5px.",
+    description: "Regular width — header rules + 'ruled' group rules. Default 2px.",
   },
   {
     cssVar: "--tv-border-width-thick",
