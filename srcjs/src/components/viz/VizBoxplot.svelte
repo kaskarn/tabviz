@@ -4,6 +4,7 @@
   import { computeBoxplotStats } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
+  import { VIZ } from "$lib/rendering-constants";
   import { getCssVars, readContentPrimary } from "$lib/theme/consumer-bridge";
 
   interface Props {
@@ -67,7 +68,7 @@
   // Box dimensions
   const boxConfig = $derived.by(() => {
     const numEffects = options.effects.length;
-    const totalHeight = rowHeight * 0.7;
+    const totalHeight = rowHeight * VIZ.BOXPLOT_HEIGHT_RATIO;
     const boxHeight = (totalHeight - (numEffects - 1) * 2) / numEffects;
 
     return {
@@ -94,7 +95,7 @@
   }
 
   function getEffectOpacity(effect: VizBoxplotEffect): number {
-    const base = effect.opacity ?? effect.fillOpacity ?? 0.7;
+    const base = effect.opacity ?? effect.fillOpacity ?? VIZ.BOXPLOT_OPACITY;
     return rowOpacityOverride !== null ? rowOpacityOverride : base;
   }
 </script>

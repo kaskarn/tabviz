@@ -528,6 +528,26 @@ export const VIZ_DEFAULT_SERIES_COLORS = [
 ] as const;
 
 /**
+ * viz_bar / viz_boxplot / viz_violin mark geometry. Each value is HARD-MIRRORED
+ * between the DOM component (components/viz/Viz*.svelte) and the SVG export
+ * (svg-generator.ts) — they were duplicated literals in both. One source now;
+ * the wysiwyg gate guards the DOM↔export equality.
+ */
+export const VIZ = {
+  /** Mark block height as a fraction of the row height. */
+  BAR_HEIGHT_RATIO: 0.7,
+  BOXPLOT_HEIGHT_RATIO: 0.7,
+  VIOLIN_HEIGHT_RATIO: 0.8,
+  /** Default per-effect fill opacity (when the effect pins none). */
+  BAR_OPACITY: 0.85,
+  BOXPLOT_OPACITY: 0.7,
+  VIOLIN_OPACITY: 0.5,
+  /** Violin outline / quartile stroke as a fraction of theme.plot.lineWidth. */
+  VIOLIN_STROKE_RATIO: 0.33,
+  VIOLIN_QUARTILE_STROKE_RATIO: 0.67,
+} as const;
+
+/**
  * Calculate vertical offset for each effect (centered around yPosition).
  * When multiple effects are shown on the same row, they are vertically
  * stacked with EFFECT.SPACING pixels between them, centered on the row.

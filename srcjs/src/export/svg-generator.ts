@@ -116,6 +116,7 @@ import {
   ASPECT,
   DEFAULT_WATERMARK_OPACITY,
   VIZ_DEFAULT_SERIES_COLORS,
+  VIZ,
 } from "$lib/rendering-constants";
 import {
   formatNumber,
@@ -2372,7 +2373,7 @@ function renderVizBar(
   if (!hasValidData) return "";
 
   // Bar dimensions (matching VizBar.svelte)
-  const totalBarHeight = rowHeight * 0.7;
+  const totalBarHeight = rowHeight * VIZ.BAR_HEIGHT_RATIO;
   const barGap = numEffects > 1 ? 2 : 0;
   const adjustedBarHeight = (totalBarHeight - barGap * (numEffects - 1)) / numEffects;
   const barHeight = Math.max(4, adjustedBarHeight);
@@ -2391,7 +2392,7 @@ function renderVizBar(
     const baseColor = effect.color ?? defaultColors[idx % defaultColors.length];
     const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
     const rowOpacity = row.markerStyle?.opacity ?? null;
-    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? 0.85);
+    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? VIZ.BAR_OPACITY);
     const mutedOp = semanticMarkOpacity(row.style);
     const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
     const strokeOpAttr = mutedOp && mutedOp.stroke < 1 ? ` stroke-opacity="${mutedOp.stroke}"` : "";
@@ -2470,7 +2471,7 @@ function renderVizBoxplot(
   if (!hasValidData) return "";
 
   // Box dimensions (matching VizBoxplot.svelte)
-  const totalHeight = rowHeight * 0.7;
+  const totalHeight = rowHeight * VIZ.BOXPLOT_HEIGHT_RATIO;
   const boxGap = numEffects > 1 ? 2 : 0;
   const boxHeight = Math.max(8, (totalHeight - (numEffects - 1) * boxGap) / numEffects);
 
@@ -2490,7 +2491,7 @@ function renderVizBoxplot(
     const baseColor = effect.color ?? defaultColors[idx % defaultColors.length];
     const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
     const rowOpacity = row.markerStyle?.opacity ?? null;
-    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.7);
+    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? VIZ.BOXPLOT_OPACITY);
     const strokeColor = ms.stroke ?? lineColor;
     // Theme's shapes.lineWidth drives the whisker/box outlines by default.
     // Per-effect stroke overrides via ms.stroke still win, as before.
@@ -2605,7 +2606,7 @@ function renderVizViolin(
   if (!hasValidData) return "";
 
   // Violin dimensions (matching VizViolin.svelte)
-  const totalHeight = rowHeight * 0.8;
+  const totalHeight = rowHeight * VIZ.VIOLIN_HEIGHT_RATIO;
   const violinGap = numEffects > 1 ? 2 : 0;
   const violinHeight = Math.max(10, (totalHeight - (numEffects - 1) * violinGap) / numEffects);
   const maxWidth = violinHeight / 2;
@@ -2616,9 +2617,9 @@ function renderVizViolin(
   const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
   // Violin outline reads thinner than a forest-plot stroke by convention;
   // scale from theme so bumping shapes.lineWidth still thickens the violin.
-  const violinStrokeDefault = themeLineWidth * 0.33;
+  const violinStrokeDefault = themeLineWidth * VIZ.VIOLIN_STROKE_RATIO;
   const medianStrokeW = Math.max(1, themeLineWidth * 1.3);
-  const quartileStrokeW = Math.max(0.5, themeLineWidth * 0.67);
+  const quartileStrokeW = Math.max(0.5, themeLineWidth * VIZ.VIOLIN_QUARTILE_STROKE_RATIO);
 
   effects.forEach((effect, idx) => {
     const kde = effectKDEs[idx];
@@ -2630,7 +2631,7 @@ function renderVizViolin(
     const baseColor = effect.color ?? defaultColors[idx % defaultColors.length];
     const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
     const rowOpacity = row.markerStyle?.opacity ?? null;
-    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.5);
+    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? VIZ.VIOLIN_OPACITY);
     const violinStroke = ms.stroke ?? lineColor;
     const violinStrokeW = ms.stroke ? ms.strokeWidth : violinStrokeDefault;
     const mutedOp = semanticMarkOpacity(row.style);

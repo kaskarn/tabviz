@@ -4,6 +4,7 @@
   import { computeKDE, computeQuartiles, normalizeKDE } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
+  import { VIZ } from "$lib/rendering-constants";
   import { getCssVars, readContentPrimary } from "$lib/theme/consumer-bridge";
 
   interface Props {
@@ -49,7 +50,7 @@
   // Violin dimensions
   const violinConfig = $derived.by(() => {
     const numEffects = options.effects.length;
-    const totalHeight = rowHeight * 0.8;
+    const totalHeight = rowHeight * VIZ.VIOLIN_HEIGHT_RATIO;
     const violinHeight = (totalHeight - (numEffects - 1) * 2) / numEffects;
 
     return {
@@ -77,7 +78,7 @@
   }
 
   function getEffectOpacity(effect: VizViolinEffect): number {
-    const base = effect.opacity ?? effect.fillOpacity ?? 0.5;
+    const base = effect.opacity ?? effect.fillOpacity ?? VIZ.VIOLIN_OPACITY;
     return rowOpacityOverride !== null ? rowOpacityOverride : base;
   }
 
@@ -124,7 +125,7 @@
         {@const defaultLineColor = theme ? readContentPrimary(getCssVars(theme)) : "#1a1a1a"}
         {@const lineColor = ms.stroke ?? defaultLineColor}
         {@const themeLineWidth = theme?.plot?.lineWidth ?? 1.5}
-        {@const violinStrokeW = ms.stroke ? ms.strokeWidth : themeLineWidth * 0.33}
+        {@const violinStrokeW = ms.stroke ? ms.strokeWidth : themeLineWidth * VIZ.VIOLIN_STROKE_RATIO}
         {@const medianStrokeW = Math.max(1, themeLineWidth * 1.3)}
         {@const quartileStrokeW = Math.max(0.5, themeLineWidth * 0.67)}
         {@const mutedOp = semanticMarkOpacity(row.style)}

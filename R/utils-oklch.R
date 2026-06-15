@@ -74,7 +74,7 @@ from_oklch <- function(lch) {
   if (any(rgb < 0) || any(rgb > 255)) {
     lo <- 0
     hi <- lch[1, 2]
-    for (i in seq_len(40)) {
+    for (i in seq_len(OKLCH_GAMUT_BISECT_ITERS)) {
       mid <- (lo + hi) / 2
       probe <- lch
       probe[1, 2] <- mid
@@ -127,6 +127,15 @@ oklch_darken <- function(hex, by) {
 # is also low so the visible hue is faint, but at least it's faint
 # along the right direction rather than wandering randomly.
 CHROMA_ACHROMATIC <- 0.02
+
+# Max chroma-bisection iterations in `from_oklch` gamut clipping. The C halving
+# converges on the [0,255] sRGB boundary well within this; the cap is a
+# guaranteed terminator.
+OKLCH_GAMUT_BISECT_ITERS <- 40L
+
+# Lightness search granularity in `ensure_contrast` — step the L channel by this
+# toward the contrasting end until the WCAG target is met (<=50 steps over [0,1]).
+CONTRAST_SEARCH_STEP <- 0.02
 
 oklch_mix <- function(a, b, t) {
   checkmate::assert_string(a)
@@ -191,13 +200,13 @@ ensure_contrast <- function(fg, bg, target = 4.5) {
   bg_l <- to_oklch(bg)[1, 1]
   lch <- to_oklch(fg)
   direction <- if (bg_l > 0.5) -1 else 1
-  step <- 0.02
+  step <- CONTRAST_SEARCH_STEP
   while (step <= 1) {
     candidate <- lch
     candidate[1, 1] <- max(0, min(1, lch[1, 1] + direction * step))
     candidate_hex <- from_oklch(candidate)
     if (contrast_ratio(candidate_hex, bg) >= target) return(candidate_hex)
-    step <- step + 0.02
+    step <- step + CONTRAST_SEARCH_STEP
   }
   candidate <- lch
   candidate[1, 1] <- if (direction < 0) 0 else 1

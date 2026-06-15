@@ -3,6 +3,7 @@
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
+  import { VIZ } from "$lib/rendering-constants";
 
   interface Props {
     row: Row;
@@ -23,7 +24,7 @@
   // Compute bar dimensions
   const barConfig = $derived.by(() => {
     const numEffects = options.effects.length;
-    const totalBarHeight = rowHeight * 0.7; // Use 70% of row height
+    const totalBarHeight = rowHeight * VIZ.BAR_HEIGHT_RATIO;
     const barGap = numEffects > 1 ? 2 : 0;
     const adjustedBarHeight = (totalBarHeight - barGap * (numEffects - 1)) / numEffects;
 
@@ -52,7 +53,7 @@
 
   // Opacity is orthogonal to color cascade
   function getEffectOpacity(effect: VizBarEffect): number {
-    const base = effect.opacity ?? 0.85;
+    const base = effect.opacity ?? VIZ.BAR_OPACITY;
     return rowOpacityOverride !== null ? rowOpacityOverride : base;
   }
 
