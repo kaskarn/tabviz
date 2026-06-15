@@ -3,7 +3,7 @@
 // Two distinct concerns, kept together because they share the VISUAL_TYPES
 // metadata table:
 //   1. Editor-facing slot compatibility (slotCompatibleFields, isTypeSatisfiable,
-//      autoPairSlots, getVisualTypeDef) — used by ColumnEditorPopover and
+//      getVisualTypeDef) — used by ColumnEditorPopover and
 //      ColumnTypeMenu in components/controls/.
 //   2. Cross-cutting column-type predicates and helpers (isVizType,
 //      resolveShowHeader) — used by the store, TabvizPlot, and svg-generator.
@@ -346,39 +346,3 @@ export function isTypeSatisfiable(
   return true;
 }
 
-// Strip a numeric-prefix suffix like "_2" off an auto-paired field stem,
-// so that "hr_2" still matches "hr_lo".
-function stemOf(field: string): string {
-  return field.replace(/_\d+$/, "");
-}
-
-// Given a user-picked primary field, walk each OTHER slot's autoPair
-// suffixes and pick the first available field whose name looks like
-// `<stem><suffix>`. Returns a partial slot -> field map.
-export function autoPairSlots(
-  def: VisualTypeDef,
-  primarySlotKey: string,
-  primaryField: string,
-  available: AvailableField[],
-): Record<string, string> {
-  const out: Record<string, string> = { [primarySlotKey]: primaryField };
-  const stem = stemOf(primaryField);
-  const byName = new Map(available.map((f) => [f.field, f]));
-
-  for (const slot of def.slots) {
-    if (slot.key === primarySlotKey) continue;
-    if (!slot.autoPair) continue;
-    const compatible = new Set(
-      slotCompatibleFields(slot, available).map((f) => f.field),
-    );
-    for (const suffix of slot.autoPair.suffixes) {
-      const candidate = stem + suffix;
-      if (byName.has(candidate) && compatible.has(candidate)) {
-        out[slot.key] = candidate;
-        break;
-      }
-    }
-  }
-
-  return out;
-}

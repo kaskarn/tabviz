@@ -2836,14 +2836,13 @@
 
 <style>
   /*
-   * IMPORTANT: Opacity percentages in color-mix() below must match the shared
-   * rendering constants in src/lib/rendering-constants.ts:
-   *
-   *   5%  = GROUP_HEADER_OPACITY (0.05)
-   *  12%  = ROW_HOVER_OPACITY (0.12)
-   *
-   * CSS color-mix() doesn't support CSS custom properties for the percentage,
-   * so these values are hardcoded but should be kept in sync with the constants.
+   * Opacity percentages in color-mix() below are CSS-local by necessity:
+   * color-mix() doesn't accept a CSS custom property for the percentage, so
+   * they can't be driven from a token or a TS constant. The two values are:
+   *   5%  group-header row background tint (primary)
+   *  12%  hovered row tint
+   * (The former TS "mirror" constants were unconsumed dead weight — removed
+   * 2026-06-15. These CSS values are now the single source.)
    */
 
   /* Ensure consistent box-sizing for all elements */

@@ -1512,21 +1512,6 @@ export const TOKENS_BY_ROLE: ReadonlyMap<RoleName, readonly ComponentToken[]> = 
   return m;
 })();
 
-/** Index by consumer file path. The drift gate's per-file validation uses
- *  this to check that each file's actual --tv-* references match its
- *  declared consumedBy. */
-export const TOKENS_BY_CONSUMER: ReadonlyMap<string, readonly ComponentToken[]> = (() => {
-  const m = new Map<string, ComponentToken[]>();
-  for (const t of COMPONENT_TOKENS) {
-    for (const f of t.consumedBy) {
-      const arr = m.get(f) ?? [];
-      arr.push(t);
-      m.set(f, arr);
-    }
-  }
-  return m;
-})();
-
 // ============================================================================
 // GRANDFATHER ALLOW-LIST — initially all entries because no consumers have
 // migrated yet. Shrinks as Step 6 (consumer migration) progresses.

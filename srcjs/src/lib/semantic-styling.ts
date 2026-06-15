@@ -24,20 +24,6 @@ import type {
   RowStyle, CellStyle, SemanticBundle, SemanticToken, WebTheme,
 } from "$types";
 
-/** True if at least one field in the bundle is non-null. */
-export function bundleIsActive(b: SemanticBundle | null | undefined): boolean {
-  if (!b) return false;
-  return (
-    b.fg != null ||
-    b.bg != null ||
-    b.border != null ||
-    b.markerFill != null ||
-    b.markerStroke != null ||
-    b.fontWeight != null ||
-    b.fontStyle != null
-  );
-}
-
 /**
  * Which semantic token (if any) applies to this style, respecting precedence.
  * Exported so the marker cascade can know *which* bundle to reach for without

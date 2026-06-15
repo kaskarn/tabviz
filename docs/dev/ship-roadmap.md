@@ -426,6 +426,24 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-15 — **DEAD-CODE RATIONALIZATION via a new knip harness.** Stood
+  up `srcjs/knip.json` configured with the REAL entry graph (5 npm barrels +
+  4 runtime boots + tests) — raw knip reported 286 false positives (it
+  flagged the whole public `col_*`/`viz_*` API); the configured run cut that
+  to 10 genuinely-dead exports. Removed all 10 (verified zero repo-wide
+  consumers first): `bundleIsActive` (dead duplicate of the `roles.ts` one),
+  `getCellText`, `readSeriesAnchors` (+ its now-orphaned `applyPolarityToInputs`/
+  `buildRamps`/`rampStep` imports), `autoPairSlots` (+ `stemOf`),
+  `TOKENS_BY_CONSUMER`, `GROUP_HEADER_OPACITY`/`ROW_HOVER_OPACITY` (unconsumed
+  TS "mirrors" of CSS-local color-mix percentages), `DOMAIN_PADDING`,
+  `ALL_ANCHORS`; consolidated `ALL_CURVES` (curves.test.ts now imports the
+  canonical roster instead of a local copy). Fixed three stale comments that
+  CLAIMED consumers (the dead-code's calling cards). Also dropped 3 phantom
+  d3 deps (`d3-array`/`d3-format`/`d3-interpolate` — only `d3-scale`/`d3-shape`
+  are imported) + their `@types`; lockfiles regenerated, parity gate green.
+  `npm run knip` is now a discoverable dead-code harness (exports category at
+  zero). 1441 bun + 316 vitest green, check/lint/build clean.
+
 - 2026-06-15 — **XSS EGRESS WALL on exported SVG (Area D / G — security).**
   Follow-on to the ingress sweep, on the OTHER end of the untrusted-wire
   contract: the SVG export is string-concatenated (no DOM auto-escaping) and

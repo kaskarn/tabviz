@@ -129,8 +129,8 @@ export function buildTheme(
   const fontBody = inputs.fonts?.body ?? DEFAULT_FONT_BODY;
   const fontDisplay = inputs.fonts?.display ?? fontBody;
   // Series anchor palette — drives the 5 SlotRole bundles below. The v3
-  // ResolvedInputs.seriesAnchors field that mirrored this array was
-  // deleted (consumers now derive via `readSeriesAnchors(theme)`).
+  // ResolvedInputs.seriesAnchors field that mirrored this array was deleted;
+  // the brand/accent ramp grades are derived inline here at build time.
   //
   // A pinned `categorical` scheme supplies the ADDITIONAL series (slots
   // 1+); slot 0 always keeps the theme's identity color (brand solid) so

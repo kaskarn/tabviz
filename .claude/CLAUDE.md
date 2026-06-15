@@ -508,6 +508,18 @@ Additional gates from `srcjs/`:
 - `npm run check` — svelte-check type-check
 - `npm run check:size` — bundle-size budget (`bundle-size-budget.json`)
 - `npm run check:lockfiles` — npm + bun lockfile parity
+- `npm run knip` — DEAD-CODE harness (`knip.json`). Models the REAL entry
+  graph (the 5 npm barrels + 4 runtime boots + tests) so it reports only
+  TRUE unused exports, not the public API. Scoped to dead *values* (the
+  `exports`/`nsExports` categories — currently ZERO); `types` and
+  `duplicates` are OFF on purpose (the published type vocabulary in
+  `types/index.ts` isn't internally consumed, and intentional aliases like
+  `escapeAttr`=`escapeXml` are not dups). For a DEEPER one-off audit run
+  `npx knip --include dependencies,files,unlisted,unresolved` — that's how
+  the 2026-06-15 sweep found 3 phantom d3 deps + a broken `elevation.ts`
+  import in `scripts/classify-resolver-groups.mjs` (orphan analysis script,
+  still unfixed — not in CI). Drive `exports` to zero; raw `npx knip` with
+  no config reports ~286 false positives (it can't see the barrels).
 - `npm run lint` — eslint (flat config, `eslint.config.js`). **ZERO-WARNING baseline, every rule `error`, CI-gated** (paydown completed 2026-06-12; the sweep deleted real dead code: the legacy plot-resize trio, getLabelWidth/getLabelFlex (D20 item 7), a vestigial polarity reflection in buildTheme). `prefer-const` is OFF for `*.svelte`/`*.svelte.ts` — the rule doesn't understand the Svelte 5 runes idiom `let {x} = $props()`; plugin v3's runes-aware svelte/prefer-const is the re-enable path. `no-undef` off (TS handles it).
 - `scripts/screenshot.js` — headless browser screenshot generator
 - `scripts/dist-smoke.mjs` — smoke test for the published npm dist (runs in `build:npm`)

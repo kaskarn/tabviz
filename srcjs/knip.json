@@ -1,0 +1,35 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/core/index.ts",
+    "src/svelte/index.ts",
+    "src/export/index.ts",
+    "src/spec/index.ts",
+    "src/extend/index.ts",
+    "src/htmlwidgets/index.svelte.ts",
+    "src/htmlwidgets/index-split.svelte.ts",
+    "src/export/v8-entry.ts",
+    "src/studio/index.ts",
+    "scripts/mcp-server.mjs",
+    "src/**/*.test.ts",
+    "src/**/*.runes.ts",
+    "tests/**/*.{ts,mjs}",
+    "scripts/**/*.{ts,mjs}"
+  ],
+  "project": ["src/**/*.{ts,svelte}"],
+  "ignoreExportsUsedInFile": true,
+  "rules": {
+    "exports": "error",
+    "nsExports": "error",
+    "types": "off",
+    "nsTypes": "off",
+    "duplicates": "off",
+    "classMembers": "off",
+    "enumMembers": "off",
+    "dependencies": "off",
+    "devDependencies": "off",
+    "unlisted": "off",
+    "unresolved": "off",
+    "files": "off"
+  }
+}

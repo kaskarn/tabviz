@@ -9,29 +9,12 @@
  * nothing consumed the vars.)
  */
 
-// ============================================================================
-// Group Header Opacity
-// ============================================================================
-
-/** Opacity for group header row backgrounds (uses primary color) */
-export const GROUP_HEADER_OPACITY = 0.05; // 5%
-
 /** Default watermark fill-opacity when `spec.watermarkOpacity` is unset.
  *  ONE source for the DOM renderer (Watermark.svelte), the SVG export
  *  (svg-generator), AND the settings panel slider's displayed start value —
  *  the panel was showing 0.08 while both renderers used 0.07, so opening
  *  Labels misrepresented the rendered value (drift, 2026-06-13). */
 export const DEFAULT_WATERMARK_OPACITY = 0.07;
-
-// ============================================================================
-// Interactive State Opacity (web renderer only - SVG is static)
-// ============================================================================
-
-/** Opacity for hovered rows */
-export const ROW_HOVER_OPACITY = 0.12; // 12%
-
-// `GROUP_HEADER_HOVER_OPACITY` removed in Phase 0c-C6 (orphan; no
-// consumers in CSS or TS).
 
 // ============================================================================
 // Text Measurement Constants

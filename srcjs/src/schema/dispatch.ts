@@ -250,21 +250,3 @@ export function extractText(node: RenderNode | null): string {
     case "component": return "";
   }
 }
-
-/**
- * Convenience: dispatch a column's renderer (svg target by default)
- * and extract the plain text. Returns `null` if no schema renderer
- * is registered — callers fall back to their legacy formatter.
- */
-export function getCellText(
-  col: ColumnSpec,
-  value: unknown,
-  ctx: RenderContext,
-  target: RenderTarget = "svg",
-): string | null {
-  const schema = findSchemaForColumn(col);
-  if (!schema) return null;
-  const fn = dispatchRenderer(schema.key, target);
-  if (!fn) return null;
-  return extractText(fn(value, col.options, ctx));
-}

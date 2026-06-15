@@ -2,9 +2,8 @@
 
 import { describe, it, expect } from "bun:test";
 import { CURVES, curveFn, DEFAULT_RAMP_CURVES } from "./curves";
-import type { CurveName } from "../../types/theme-roles";
-
-const ALL_CURVES: CurveName[] = ["linear", "ease", "smooth", "log", "exp"];
+// Use the canonical roster (single source of truth) rather than a local copy.
+import { ALL_CURVES } from "../../types/theme-roles";
 
 describe("CURVES — five functions", () => {
   it("exports all five curve names", () => {

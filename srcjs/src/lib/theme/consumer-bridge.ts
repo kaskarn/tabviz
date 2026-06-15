@@ -433,22 +433,3 @@ export function readCellSize(cssVars: Record<string, string>): string {
 // the v4 ramps. These give consumers a clean alternative to the v3
 // `ResolvedInputs` compat shim (theme-resolved.ts).
 
-import { applyPolarityToInputs } from "./resolve-theme";
-import { buildRamps } from "./theme-resolve";
-import { rampStep } from "../oklch";
-
-/** Series anchor palette — 5 brand/accent ramp grades that drive the
- *  pooled-effect series-slot fills. Replaces v3 `theme.inputs.seriesAnchors`.
- *  Returns an empty array when authoringInputs is unavailable. */
-export function readSeriesAnchors(theme: WebTheme | null | undefined): string[] {
-  if (!theme?.authoringInputs) return [];
-  const reflected = applyPolarityToInputs(theme.authoringInputs);
-  const ramps = buildRamps(reflected);
-  return [
-    rampStep(ramps.brand, 9),
-    rampStep(ramps.accent, 9),
-    rampStep(ramps.brand, 7),
-    rampStep(ramps.accent, 7),
-    rampStep(ramps.brand, 5),
-  ];
-}

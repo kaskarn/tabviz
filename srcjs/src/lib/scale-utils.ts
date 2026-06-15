@@ -134,9 +134,6 @@ function niceLinearDomain(domain: [number, number]): [number, number] {
   ];
 }
 
-/** Domain padding constant - how much extra space to add beyond data range */
-export const DOMAIN_PADDING = 0.08;
-
 /** Scale type used by bar / progress / heatmap cells to map values into [0, 1] */
 export type NormalizeScale = "linear" | "log" | "sqrt";
 

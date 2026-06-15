@@ -172,13 +172,7 @@ export const ALL_ROLES: readonly RoleName[] =
 /** All ramp names enumerated. */
 export const ALL_RAMPS: readonly RampName[] = ["neutral", "brand", "accent"];
 
-/** All curve names enumerated. */
+/** All curve names enumerated (canonical roster; consumed by curves.test.ts). */
 export const ALL_CURVES: readonly CurveName[] = [
   "linear", "ease", "smooth", "log", "exp",
-];
-
-/** All anchor names enumerated. */
-export const ALL_ANCHORS: readonly AnchorName[] = [
-  "paper", "ink", "brand", "accent-anchor",
-  "status-positive", "status-negative", "status-warning", "status-info",
 ];
