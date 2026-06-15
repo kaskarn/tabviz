@@ -173,11 +173,15 @@ rowEmphasis, rowMuted, rowAccent, markerColor, markerShape, markerOpacity,
 markerSize })` — each is a DATA FIELD NAME, extracted per-row into
 `row.style`/`row.markerStyle` with the same type coercion R uses (bold/italic/
 emphasis/muted/accent→bool, color/bg/badge/icon→string, opacity/size→number;
-false IS emitted, NA/missing skipped, no styles → no `style`). row-style.test.ts
-asserts the shape. STILL R-ONLY (lower-value): `row_fill`/`row_indent`/
-`row_type`/`row_height` (structural) and the `cond()`-form / static / theme
-StyleOverride variants (a field-name string is the 90%% case; the tagged-union
-forms stay on the per-column `ColumnSpec.styleMapping`).
+false IS emitted, NA/missing skipped, no styles → no `style`). ALL 12 RowStyle
+fields are covered — incl. the structural `rowFill` (bool), `rowIndent`
+(number), `rowType` (enum string). V8 PARITY-GATED: `test-parity-row-style.R`
+runs R `serialize_data` vs TS `tabviz` on identical data and asserts each row's
+`style`/`markerStyle` match (mapequal — wire key order is not semantic).
+STILL R-ONLY (lower-value): `row_height` (a row-kind height pin, distinct from
+style) and the `cond()`-form / static / theme StyleOverride variants (a
+field-name string is the 90%% case; the tagged-union forms stay on the
+per-column `ColumnSpec.styleMapping`).
 
 ## paginate (2026-06-11, area-F pager walk)
 

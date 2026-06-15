@@ -129,6 +129,12 @@ export interface TabvizArgs {
   rowEmphasis?: string;
   rowMuted?: string;
   rowAccent?: string;
+  /** Field → per-row pastel-accent row tint (boolean). */
+  rowFill?: string;
+  /** Field → per-row indent level (number). */
+  rowIndent?: string;
+  /** Field → per-row kind ("data" | "header" | "summary" | "spacer"). */
+  rowType?: string;
   // Per-row FOREST MARKER style mapping (mirrors R's `marker_*` args): the
   // named field's per-row value drives the marker's color/shape (strings) or
   // opacity/size (numbers), extracted into each row's markerStyle.
@@ -194,8 +200,10 @@ export function tabviz(args: TabvizArgs): WebSpec {
     bold: args.rowBold, italic: args.rowItalic, color: args.rowColor, bg: args.rowBg,
     badge: args.rowBadge, icon: args.rowIcon, emphasis: args.rowEmphasis,
     muted: args.rowMuted, accent: args.rowAccent,
+    fill: args.rowFill, indent: args.rowIndent, type: args.rowType,
   } as const;
-  const STYLE_BOOL: ReadonlySet<string> = new Set(["bold", "italic", "emphasis", "muted", "accent"]);
+  const STYLE_BOOL: ReadonlySet<string> = new Set(["bold", "italic", "emphasis", "muted", "accent", "fill"]);
+  const STYLE_NUM: ReadonlySet<string> = new Set(["indent"]);
   // Mirror R's as.logical: booleans pass through; numbers are 0=false; the
   // string-boolean forms ("TRUE"/"false"/"1") map sensibly (so "FALSE" → false,
   // which a bare Boolean() would get wrong).
@@ -210,7 +218,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
       if (field == null) continue;
       const raw = dataRow[field];
       if (raw == null) continue;
-      const val = STYLE_BOOL.has(key) ? toBool(raw) : String(raw);
+      const val = STYLE_BOOL.has(key) ? toBool(raw) : STYLE_NUM.has(key) ? Number(raw) : String(raw);
       (style ??= {} as RowStyle)[key as keyof RowStyle] = val as never;
     }
     return style;

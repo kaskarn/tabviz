@@ -27,6 +27,13 @@ describe("tabviz row-level style mapping", () => {
     expect(spec.data.rows[1].style).toEqual({ emphasis: false });
   });
 
+  test("structural mappings: fill (bool), indent (number), type (string)", () => {
+    const sdata = [{ study: "A", f: true, ind: 2, kind: "summary" }];
+    const spec = tabviz({ data: sdata, label: "study", columns: [colText({ field: "study" })],
+      rowFill: "f", rowIndent: "ind", rowType: "kind" });
+    expect(spec.data.rows[0].style).toEqual({ fill: true, indent: 2, type: "summary" });
+  });
+
   test("no row-style args → rows carry no style", () => {
     const spec = mk({});
     expect(spec.data.rows.every((r) => r.style === undefined)).toBe(true);
