@@ -124,7 +124,14 @@ const GLYPH_COLS: GlyphCol[] = [
 ];
 
 function buildSpec(cols: GlyphCol[]) {
-  const theme = buildTheme(NEJM, "nejm");
+  // Pin border_preset: "frame" so this gate's per-cell crop coordinates +
+  // pixel budgets (CALIBRATED 2026-06-14 against NEJM's then-default frame)
+  // stay valid as NEJM's SHIPPED default evolves. NEJM dropped its frame
+  // 2026-06-15; without this pin the removed 2.5px outer border shifts the
+  // table content offset, misaligning the bar crop DOM-vs-export (10.2%→14.3%)
+  // — a fixture-geometry artifact, NOT a cell-rendering regression. The gate
+  // measures CELL parity, so it pins a stable table geometry on purpose.
+  const theme = buildTheme({ ...NEJM, border_preset: "frame" }, "nejm");
   return {
     version: "1.0",
     data: { rows: [ROW], groups: [], summaries: [] },
