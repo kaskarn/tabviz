@@ -67,13 +67,13 @@
     flex: 1;
     height: 10px;
     background: color-mix(in srgb, var(--tv-border, #e2e8f0) 50%, transparent);
-    border-radius: 5px;
+    border-radius: var(--tv-radius-md, 5px);
     overflow: hidden;
   }
 
   .progress-fill {
     height: 100%;
-    border-radius: 5px;
+    border-radius: var(--tv-radius-md, 5px);
     transition: width 0.2s ease-out;
   }
 

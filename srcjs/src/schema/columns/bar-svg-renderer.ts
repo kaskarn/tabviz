@@ -75,17 +75,20 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
   const fillWidth = Math.max(0, fillRatio * barAreaWidth);
   const rowH = ctx?.rowHeight ?? BAR.HEIGHT;
   const barY = (rowH - BAR.HEIGHT) / 2;
+  // Corner radius from the geometry `radius-sm` slot (the cell-chip corner the
+  // settings "Corners" control drives); BAR.RADIUS is the fallback default.
+  const rx = readVarPx(cssVars, "--tv-radius-sm", BAR.RADIUS);
 
   const pieces: string[] = [];
   // Track
   pieces.push(
     `<rect x="0" y="${barY}" width="${barAreaWidth}" height="${BAR.HEIGHT}" ` +
-    `fill="${trackColor}" rx="${BAR.RADIUS}"/>`,
+    `fill="${trackColor}" rx="${rx}"/>`,
   );
   // Fill
   pieces.push(
     `<rect x="0" y="${barY}" width="${fillWidth}" height="${BAR.HEIGHT}" ` +
-    `fill="${color}" rx="${BAR.RADIUS}"/>`,
+    `fill="${color}" rx="${rx}"/>`,
   );
   if (showLabel) {
     const totalWidth = cellWidth - cellPadX * 2;

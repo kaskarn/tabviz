@@ -67,13 +67,13 @@
     flex: 1;
     height: 8px;
     background: var(--tv-border, #e2e8f0);
-    border-radius: 2px;
+    border-radius: var(--tv-radius-sm, 2px);
     overflow: hidden;
   }
 
   .bar-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: var(--tv-radius-sm, 2px);
     transition: width 0.2s ease-out;
   }
 

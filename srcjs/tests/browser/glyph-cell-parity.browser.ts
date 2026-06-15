@@ -97,7 +97,7 @@ const BUDGETS: Record<string, { max: number; why: string }> = {
   progress:  { max: 0.14, why: "rank 4: 10.1% — label font + width + track RECONCILED to label-role/measured/--tv-border; residual is bar-fill AA" },
   badge:     { max: 0.14, why: "rank 5: 9.7% — RECONCILED (PADDING_X 10 matches DOM pill; FONT_SCALE 0.77); was 13.4%" },
   bar:       { max: 0.18, why: "rank 9: 14.3% — label is label-role now; RESIDUAL OPEN: track reads --tv-cell-border vs the DOM bar track color" },
-  heatmap:   { max: 0.33, why: "rank 3: 24.1% — value font is label-role now; RESIDUAL OPEN: SVG 2px inset gutter vs DOM 100% fill (the dominant diff)" },
+  heatmap:   { max: 0.14, why: "rank 3: 10.2% — RECONCILED: value font→label-role + fill the content box (inset by cell padding, was a flat 2px gutter); was 24.1%" },
 };
 
 // One row, many glyph columns. Values chosen so each glyph has visible content.

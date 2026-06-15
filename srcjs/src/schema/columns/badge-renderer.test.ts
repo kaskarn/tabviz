@@ -102,9 +102,10 @@ describe("badge renderer — geometry", () => {
     expect(g.width).toBeGreaterThanOrEqual(g.height);
   });
 
-  test("square shape: small fixed corner radius", () => {
+  test("square shape: corner radius from the geometry radius-sm slot", () => {
+    // Wired to --tv-radius-sm (settings "Corners"); nejm's default is 2px.
     const g = computeBadgeGeometry("1", "square", theme);
-    expect(g.radius).toBe(3);
+    expect(g.radius).toBe(2);
   });
 });
 

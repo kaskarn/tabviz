@@ -127,7 +127,7 @@
   }
 
   .badge-square {
-    border-radius: 3px;
+    border-radius: var(--tv-radius-sm, 3px);
     aspect-ratio: 1;
     min-width: 1.6em;
     padding: 0 0.3em;

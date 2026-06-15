@@ -39,7 +39,7 @@ import { buildThresholdStops } from "../../lib/color-resolution";
 import { escapeXml } from "../../lib/svg-text-utils";
 import {
   getCssVars, readAccentDefault, readContentMuted,
-  readBodyFamily, readBodySize,
+  readBodyFamily, readBodySize, readVarPx,
 } from "../../lib/theme/consumer-bridge";
 
 interface BadgeOptions {
@@ -123,11 +123,11 @@ function computeBadgeGeometry(
   const width = aspectShape
     ? Math.max(height, textWidth + BADGE.PADDING_X)
     : textWidth + BADGE.PADDING_X * 2;
+  // Square badges take the geometry `radius-sm` slot (settings "Corners");
+  // circle/pill are definitionally fully-round (height/2).
   const radius = shape === "square"
-    ? 3
-    : shape === "circle"
-      ? height / 2
-      : height / 2;  // pill
+    ? readVarPx(cssVars, "--tv-radius-sm", 3)
+    : height / 2;
   return { width, height, radius, fontSize };
 }
 

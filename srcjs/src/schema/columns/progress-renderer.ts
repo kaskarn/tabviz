@@ -76,17 +76,20 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const barWidth = Math.max(0, ratio * barAreaWidth);
   const totalWidth = cellWidth - cellPadX * 2;
   const height = Math.max(PROGRESS_BAR_HEIGHT, showLabel ? labelFontSize : PROGRESS_BAR_HEIGHT);
+  // Track corner radius from the geometry `radius-md` slot (settings "Corners");
+  // the progress bar is more rounded than the small cell chips → md, not sm.
+  const rx = readVarPx(cssVars, "--tv-radius-md", PROGRESS_BAR_RADIUS);
 
   const pieces: string[] = [];
   // Track
   pieces.push(
     `<rect x="0" y="${(height - PROGRESS_BAR_HEIGHT) / 2}" width="${barAreaWidth}" height="${PROGRESS_BAR_HEIGHT}" ` +
-    `fill="${readDividerStrong(cssVars)}" opacity="${PROGRESS.TRACK_OPACITY}" rx="${PROGRESS_BAR_RADIUS}"/>`,
+    `fill="${readDividerStrong(cssVars)}" opacity="${PROGRESS.TRACK_OPACITY}" rx="${rx}"/>`,
   );
   // Fill
   pieces.push(
     `<rect x="0" y="${(height - PROGRESS_BAR_HEIGHT) / 2}" width="${barWidth}" height="${PROGRESS_BAR_HEIGHT}" ` +
-    `fill="${color}" rx="${PROGRESS_BAR_RADIUS}"/>`,
+    `fill="${color}" rx="${rx}"/>`,
   );
   if (showLabel) {
     pieces.push(

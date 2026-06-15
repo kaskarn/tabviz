@@ -133,7 +133,7 @@
     height: 100%;
     padding: 2px 6px;
     font-variant-numeric: tabular-nums;
-    border-radius: 2px;
+    border-radius: var(--tv-radius-sm, 2px);
     font-size: var(--tv-text-label-size, 0.75rem);
   }
 </style>

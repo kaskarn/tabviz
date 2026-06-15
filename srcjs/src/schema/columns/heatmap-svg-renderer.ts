@@ -104,9 +104,11 @@ export const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSv
   const padX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
   const padY = readVarPx(cssVars, "--tv-spacing-cell-padding-y", 2);
   const contentW = Math.max(0, cellWidth - padX * 2);
+  // Corner radius from the geometry `radius-sm` slot (settings "Corners").
+  const rx = readVarPx(cssVars, "--tv-radius-sm", 2);
   pieces.push(
     `<rect x="0" y="${padY}" width="${contentW}" height="${Math.max(0, rowH - padY * 2)}" ` +
-    `fill="${bgColor}" rx="2"/>`,
+    `fill="${bgColor}" rx="${rx}"/>`,
   );
   if (showValue) {
     pieces.push(
