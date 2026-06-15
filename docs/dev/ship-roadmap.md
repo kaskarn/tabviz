@@ -426,6 +426,20 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-15 — **SETTINGS-PANEL COVERAGE AUDIT + D29.** Diffed the full
+  `ThemeInputs`/role/token/mechanism surface against the five live tabs +
+  sanctioned store verbs to inventory every theme option with NO interactive
+  control (`docs/dev/settings-coverage-gaps.md`, grep-verified). Result: the
+  panel reaches most of Tier-1; the gaps are 8 Group-A inputs (curves,
+  sequential/diverging, type_weights, first_column_style, marks defaults,
+  mode), the 3 D25 mechanism gaps (per-token spacing, pin creation, component
+  re-routes), and 2 deliberately author-tier surfaces (interaction_defaults,
+  column_defaults). Whether to close the Group-A gaps is a curation-vs-
+  completeness PRODUCT call, so it's registered as **D29** (default: stay
+  curated, R is the complete surface) rather than silently built — the panel's
+  layer taxonomy (D21) and "expert-grade stays R-only" posture (D25) are
+  deliberate, and unilateral panel expansion would usurp that design authority.
+
 - 2026-06-15 — **DEAD-CODE RATIONALIZATION pt.2 (low-risk follow-ups, with
   root-cause for each).** Cleared the deferred items from pt.1, understanding
   WHY each existed: (a) 3 phantom d3 deps (`d3-array`/`d3-format`/
