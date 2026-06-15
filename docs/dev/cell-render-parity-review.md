@@ -72,7 +72,7 @@ SVG export path (a `schema/columns/*-renderer.ts` module or inline in
 | 6 | **icon** | magic-number (theme-conditional) | DOM sizes via CSS rem vars; SVG via absolute `CELL_GEOMETRY.icon.px`. Equal at default rem, drift when a theme overrides body/label font-size. `CellIcon.svelte:59-75` ↔ `icon-renderer.ts:32,72` | OPEN |
 | 7 | **ring** | minor | geometry IDENTICAL + shared `CELL_GEOMETRY`; drift only in label font (DOM `em` vs SVG absolute `LABEL_FONT_PX`) + track-color default | LOW |
 | 8 | **pictogram** | minor | slot/remap/half logic IDENTICAL + shared consts; drift only in the rare literal-char fallback half-state + empty-color default | LOW |
-| 9 | **bar** | minor | label font `*BAR.LABEL_SCALE`→**label-role** `readLabelSize`; label width now `max(32, MEASURED)` (b38d280/2c73219). 14.3%. RESIDUAL OPEN: track reads `--tv-cell-border` vs the DOM bar track color | LOW |
+| 9 | **bar** | minor | **RECONCILED**: label font→label-role `readLabelSize`; label width `max(32, MEASURED)` (b38d280/2c73219); track color `--tv-cell-border`→`--tv-border` to match the DOM `.bar-track` (da7f968). 14.3→10.2%, residual is fill-edge AA | OK |
 | 10 | **viz_bar/boxplot/violin** | uncovered | share the scale (`buildVizScale`) + `VIZ_MARGIN` but hand-code mark geometry twice; NO parity gate (forest-marks covers forest only) | OPEN (gate) |
 | 11 | **forest** | inline-vs-inline | best-tested (forest-marks); point size/whisker/multi-effect spacing shared | OK |
 | — | text/numeric/interval/events | — | each registers ONE renderer for both targets — divergence-proof | OK |

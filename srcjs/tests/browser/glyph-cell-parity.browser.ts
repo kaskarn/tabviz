@@ -96,7 +96,7 @@ const BUDGETS: Record<string, { max: number; why: string }> = {
   sparkline: { max: 0.15, why: "rank 1: 8.9% — responsive width reconciled (2336d3b); residual path AA" },
   progress:  { max: 0.14, why: "rank 4: 10.1% — label font + width + track RECONCILED to label-role/measured/--tv-border; residual is bar-fill AA" },
   badge:     { max: 0.14, why: "rank 5: 9.7% — RECONCILED (PADDING_X 10 matches DOM pill; FONT_SCALE 0.77); was 13.4%" },
-  bar:       { max: 0.18, why: "rank 9: 14.3% — label is label-role now; RESIDUAL OPEN: track reads --tv-cell-border vs the DOM bar track color" },
+  bar:       { max: 0.14, why: "rank 9: 10.2% — RECONCILED: label→label-role, track→--tv-border (da7f968); residual is fill-edge AA. was 14.3%" },
   heatmap:   { max: 0.14, why: "rank 3: 10.2% — RECONCILED: value font→label-role + fill the content box (inset by cell padding, was a flat 2px gutter); was 24.1%" },
 };
 
