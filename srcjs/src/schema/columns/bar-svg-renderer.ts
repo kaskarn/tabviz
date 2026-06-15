@@ -9,6 +9,7 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { escapeAttr } from "../../lib/svg-text-utils";
 import { resolveMarkerColor } from "../../lib/color-resolution";
 import { formatBarValue } from "../../lib/formatters";
 import { parseFontSize } from "../../lib/typography-layout";
@@ -50,7 +51,11 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
   const scale = opts?.scale ?? "linear";
   const showLabel = opts?.showLabel ?? true;
   const cssVars = getCssVars(theme);
-  const color = resolveBarColor(opts, ctx?.cellStyle, undefined, theme);
+  // Escape at the source: the resolved color folds in user-controlled
+  // opts.color / cellStyle.color, and SVG export concatenates it into a fill
+  // attribute (XSS egress wall — no-op on legitimate colors). DOM is safe
+  // (Svelte auto-escapes); this guards the string-built export only.
+  const color = escapeAttr(resolveBarColor(opts, ctx?.cellStyle, undefined, theme));
   // Track color matches the DOM `.bar-track { background: var(--tv-border) }`
   // (readDividerStrong = --tv-border), NOT --tv-cell-border — the residual
   // bar DOM↔export divergence (same class as the progress-track fix).

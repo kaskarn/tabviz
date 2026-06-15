@@ -14,6 +14,7 @@ import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { getCssVars, readContentMuted } from "../../lib/theme/consumer-bridge";
 import { resolveMarkerColor } from "../../lib/color-resolution";
+import { escapeAttr } from "../../lib/svg-text-utils";
 import { resolveGlyph } from "../../lib/glyph-registry";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { CELL_GEOMETRY, TYPOGRAPHY } from "../../lib/rendering-constants";
@@ -46,8 +47,10 @@ export function resolvePictoColors(
   return {
     // Filled = the shared marker cascade (option > cell paint > row paint >
     // accent default). Empty = explicit emptyColor or the muted content role.
-    filled: resolveMarkerColor(opts.color, cellStyle, rowStyle, theme),
-    empty: opts.emptyColor ?? readContentMuted(getCssVars(theme)),
+    // XSS egress wall (user opts.color/emptyColor + cellStyle → SVG fill/stroke
+    // attr in renderGlyph); escape once at the source. See bar. No-op on real colors.
+    filled: escapeAttr(resolveMarkerColor(opts.color, cellStyle, rowStyle, theme)),
+    empty: escapeAttr(opts.emptyColor ?? readContentMuted(getCssVars(theme))),
   };
 }
 

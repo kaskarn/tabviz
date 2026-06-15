@@ -12,6 +12,7 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { escapeAttr } from "../../lib/svg-text-utils";
 import { buildThresholdStops } from "../../lib/color-resolution";
 import { CELL_GEOMETRY, TYPOGRAPHY } from "../../lib/rendering-constants";
 import {
@@ -88,8 +89,10 @@ const ringSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const labelFormat = opts.labelFormat ?? "percent";
   const labelDecimals = opts.labelDecimals ?? 0;
   const cssVars = getCssVars(theme);
-  const trackColor = opts.trackColor ?? readContentMuted(cssVars);
-  const filledColor = resolveFilledColor(value, opts, theme, ctx?.cellStyle, undefined);
+  // XSS egress wall (user opts.trackColor / resolved cellStyle color → SVG
+  // stroke attr); see bar. No-op on legitimate colors.
+  const trackColor = escapeAttr(opts.trackColor ?? readContentMuted(cssVars));
+  const filledColor = escapeAttr(resolveFilledColor(value, opts, theme, ctx?.cellStyle, undefined));
   const fraction = maxV > minV ? Math.max(0, Math.min(1, (value - minV) / (maxV - minV))) : 0;
 
   const diameter = DIAMETER[size];

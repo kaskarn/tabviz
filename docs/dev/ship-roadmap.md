@@ -426,6 +426,24 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-15 — **XSS EGRESS WALL on exported SVG (Area D / G — security).**
+  Follow-on to the ingress sweep, on the OTHER end of the untrusted-wire
+  contract: the SVG export is string-concatenated (no DOM auto-escaping) and
+  embeds into HTML/Quarto, so any spec-DATA color reaching a `fill=`/`stroke=`
+  attribute was a stored-XSS vector (`#fff" onload="alert(1)`). A security
+  audit found the egress neutralizer (`getCssVars`) + ingress grammars
+  (`isValidPinValue`, series_overrides `isValidHex`) defended THEME colors and
+  pins, but spec-data colors had NO defense on either end — and only the badge
+  renderer escaped. Added `escapeAttr` (= escapeXml) at egress to every
+  spec-data color site: core renderer (forest marks/bars/box/violin via
+  `ms.fill`/`ms.stroke`/`style.fill`, cell text `cellColor`, `row.style.bg`,
+  reference-line + custom-annotation colors) AND the seven schema cell
+  renderers (bar/progress/ring/sparkline/pictogram/stars/icon — escaped at the
+  resolve-call definition; heatmap was already safe — computed hex). No-op on
+  legitimate colors (so glyph-cell-parity/wysiwyg pixel gates stay green).
+  Gate: `export/svg-xss.runes.ts` (payload reaches output escaped, never as a
+  live handler). CLAUDE.md trap added.
+
 - 2026-06-15 — **INGRESS-WALL HARDENING (Area D — "any language can drive
   the wire").** A systematic robustness sweep of the public spec/theme
   ingress surface found a class of "deref-before-validate" / "no-validate"

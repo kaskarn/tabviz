@@ -12,6 +12,7 @@ import type { ColumnOptions } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { CELL_GEOMETRY } from "../../lib/rendering-constants";
+import { escapeAttr } from "../../lib/svg-text-utils";
 
 // Option keys MUST match the schema's declared keys (pictogram parent:
 // maxGlyphs / halfGlyphs / domain / color / emptyColor). This renderer
@@ -64,8 +65,9 @@ const starsSvgRenderer: CellFormatter = (value, options, _ctx): RenderSvg => {
   }
   const opts = (options as ColumnOptions | undefined)?.stars as StarsOptions | undefined;
   const maxStars = Math.max(1, Math.min(20, opts?.maxGlyphs ?? 5));
-  const fillColor = opts?.color ?? DEFAULT_FILL;
-  const emptyColor = opts?.emptyColor ?? DEFAULT_EMPTY;
+  // XSS egress wall (user opts.color / opts.emptyColor → SVG fill attr); see bar.
+  const fillColor = escapeAttr(opts?.color ?? DEFAULT_FILL);
+  const emptyColor = escapeAttr(opts?.emptyColor ?? DEFAULT_EMPTY);
   const rating = ratingFor(value, opts, maxStars);
   const filled = Math.floor(rating);
   const hasHalf = (opts?.halfGlyphs ?? false) && (rating - filled) >= 0.5;

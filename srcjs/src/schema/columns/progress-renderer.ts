@@ -11,6 +11,7 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { normalizeValue } from "../../lib/scale-utils";
+import { escapeAttr } from "../../lib/svg-text-utils";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
 import { resolveMarkerColor } from "../../lib/color-resolution";
 import { parseFontSize } from "../../lib/typography-layout";
@@ -53,7 +54,8 @@ const progressSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   const maxValue = opts?.maxValue ?? 100;
   const showLabel = opts?.showLabel ?? true;
   const scale = opts?.scale ?? "linear";
-  const color = resolveProgressColor(opts, ctx?.cellStyle, undefined, theme);
+  // XSS egress wall (user opts/cellStyle color → SVG fill attr); see bar.
+  const color = escapeAttr(resolveProgressColor(opts, ctx?.cellStyle, undefined, theme));
   const pct = Math.min(100, Math.max(0, (value / maxValue) * 100));
   const ratio = normalizeValue(value, 0, maxValue, scale);
 

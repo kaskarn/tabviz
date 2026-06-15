@@ -16,6 +16,7 @@ import type { ColumnOptions, WebTheme } from "../../types";
 import type { CellFormatter, RenderSvg } from "../render-types";
 import { registerRenderers } from "../extend";
 import { resolveSemanticBundle } from "../../lib/semantic-styling";
+import { escapeAttr } from "../../lib/svg-text-utils";
 import { resolveMarkerColor } from "../../lib/color-resolution";
 import { computeSparklinePoints, catmullRomPath } from "../../lib/sparkline-utils";
 import { getCssVars, readVarPx } from "../../lib/theme/consumer-bridge";
@@ -89,7 +90,9 @@ const sparklineSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => 
   const opts = (options as ColumnOptions | undefined)?.sparkline as SparklineOptions | undefined;
   const type = opts?.type ?? "line";
   const height = opts?.height ?? SPARKLINE.DEFAULT_HEIGHT;
-  const color = resolveSparkColor(opts, ctx?.cellStyle, undefined, theme);
+  // XSS egress wall (user opts/cellStyle color → SVG fill/stroke attrs across
+  // bar/area/line markup); escape once at the source. See bar.
+  const color = escapeAttr(resolveSparkColor(opts, ctx?.cellStyle, undefined, theme));
 
   // Layout box. The legacy branch deducts a left+right pad from cell
   // width; mirror that here. The renderer emits at (0,0) so the box

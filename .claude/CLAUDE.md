@@ -316,6 +316,14 @@ One line each; the cost of ignoring these has already been paid once.
   don't put load-bearing affordances under it.
 - Shell/paper export work must preserve the flush-inertness invariant
   (pads 0 ⇒ byte-identical geometry).
+- XSS EGRESS WALL: any spec-DATA color (EffectSpec/marker/cellStyle/row.style.bg/
+  annotation/ReferenceLine + viz-renderer `opts.*Color`) reaching a `fill=`/
+  `stroke=` SVG attribute MUST pass `escapeAttr` (= escapeXml) at egress — the
+  export is string-concatenated (no DOM auto-escaping) and embeds into HTML, so
+  a `#fff" onload="…` value is stored XSS. The DOM path is safe (Svelte escapes);
+  THEME colors are safe (ingress isValidHex/getCssVars neutralizer). It's a no-op
+  on legitimate colors, so escape at the resolve-call definition in any new
+  *-renderer.ts. Gate: `export/svg-xss.runes.ts`.
 
 **R**
 - NEVER `new_property(X, default = SomeClass())` — always

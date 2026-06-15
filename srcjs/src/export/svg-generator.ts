@@ -124,7 +124,7 @@ import {
   truncateString,
 } from "$lib/formatters";
 import { estimateTextWidth, measureTextWidth, glyphNaturalWidth, computeContentHeights } from "$lib/width-utils";
-import { escapeXml } from "$lib/svg-text-utils";
+import { escapeXml, escapeAttr } from "$lib/svg-text-utils";
 import {
   computeVizBarDomain,
   computeVizBoxplotDomain,
@@ -2101,17 +2101,21 @@ function renderInterval(
     mutedOp?: { fill: number; stroke: number } | null,
   ): string {
     const { fill, stroke, strokeWidth, shape, opacity } = style;
+    // XSS egress wall: fill/stroke originate from spec data (EffectSpec.color /
+    // row.markerStyle.color) which has no ingress color-grammar gate — escape
+    // before it lands in an SVG attribute. No-op on legitimate colors.
+    const fillSafe = escapeAttr(fill);
     const fillOpacity = mutedOp ? opacity * mutedOp.fill : opacity;
     const fillOpacityAttr = fillOpacity < 1 ? ` fill-opacity="${fillOpacity}"` : "";
     const strokeOpacityAttr = mutedOp && mutedOp.stroke < 1
       ? ` stroke-opacity="${mutedOp.stroke}"` : "";
     const strokeAttr = stroke
-      ? ` stroke="${stroke}" stroke-width="${strokeWidth}"${strokeOpacityAttr}`
+      ? ` stroke="${escapeAttr(stroke)}" stroke-width="${strokeWidth}"${strokeOpacityAttr}`
       : "";
 
     switch (shape) {
       case "circle":
-        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
+        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
       case "diamond": {
         const pts = [
           `${cx},${effectY - size}`,
@@ -2119,7 +2123,7 @@ function renderInterval(
           `${cx},${effectY + size}`,
           `${cx - size},${effectY}`
         ].join(' ');
-        return `<polygon points="${pts}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
+        return `<polygon points="${pts}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
       }
       case "triangle": {
         const pts = [
@@ -2127,10 +2131,10 @@ function renderInterval(
           `${cx + size},${effectY + size}`,
           `${cx - size},${effectY + size}`
         ].join(' ');
-        return `<polygon points="${pts}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
+        return `<polygon points="${pts}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
       }
       default: // square
-        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
+        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
     }
   }
 
@@ -2177,7 +2181,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? accentDefault}" stroke-width="1"${mutedLineOpacityAttr}/>
+            fill="${escapeAttr(style.fill)}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? accentDefault}" stroke-width="1"${mutedLineOpacityAttr}/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -2331,7 +2335,7 @@ function renderVizAnnotations(
     const dash = ann.style === "dashed" ? "4,4" : ann.style === "dotted" ? "2,2" : "";
     parts.push(
       `<line x1="${x}" x2="${x}" y1="${plotY}" y2="${plotY + rowsHeight}" ` +
-      `stroke="${stroke}" stroke-width="${strokeWidth}" stroke-opacity="${opacity}" ` +
+      `stroke="${escapeAttr(stroke)}" stroke-width="${strokeWidth}" stroke-opacity="${opacity}" ` +
       `stroke-dasharray="${dash}"/>`
     );
   }
@@ -2389,12 +2393,12 @@ function renderVizBar(
     const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
     const strokeOpAttr = mutedOp && mutedOp.stroke < 1 ? ` stroke-opacity="${mutedOp.stroke}"` : "";
     const strokeAttr = ms.stroke
-      ? ` stroke="${ms.stroke}" stroke-width="${ms.strokeWidth}"${strokeOpAttr}` : "";
+      ? ` stroke="${escapeAttr(ms.stroke)}" stroke-width="${ms.strokeWidth}"${strokeOpAttr}` : "";
 
     parts.push(`<rect
       x="${barXStart}" y="${barY}"
       width="${Math.max(1, barW)}" height="${barHeight}"
-      fill="${ms.fill}" fill-opacity="${fillOp}"${strokeAttr} rx="2"
+      fill="${escapeAttr(ms.fill)}" fill-opacity="${fillOp}"${strokeAttr} rx="2"
       class="viz-bar-segment"/>`);
   });
 
@@ -2488,6 +2492,9 @@ function renderVizBoxplot(
     // Theme's shapes.lineWidth drives the whisker/box outlines by default.
     // Per-effect stroke overrides via ms.stroke still win, as before.
     const strokeWidth = ms.stroke ? ms.strokeWidth : themeLineWidth;
+    // XSS egress wall (spec-data colors → SVG attr; see renderMarker).
+    const fillSafe = escapeAttr(ms.fill);
+    const strokeSafe = escapeAttr(strokeColor);
     const mutedOp = semanticMarkOpacity(row.style);
     const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
     const strokeOp = mutedOp ? mutedOp.stroke : 1;
@@ -2498,37 +2505,37 @@ function renderVizBoxplot(
     parts.push(`<line
       x1="${vizX + xScale(stats.min)}" x2="${vizX + xScale(stats.q1)}"
       y1="${boxCenterY}" y2="${boxCenterY}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
+      stroke="${strokeSafe}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
     // Left whisker cap
     parts.push(`<line
       x1="${vizX + xScale(stats.min)}" x2="${vizX + xScale(stats.min)}"
       y1="${boxCenterY - boxHeight / 4}" y2="${boxCenterY + boxHeight / 4}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
+      stroke="${strokeSafe}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
 
     // Right whisker
     parts.push(`<line
       x1="${vizX + xScale(stats.q3)}" x2="${vizX + xScale(stats.max)}"
       y1="${boxCenterY}" y2="${boxCenterY}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
+      stroke="${strokeSafe}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
     // Right whisker cap
     parts.push(`<line
       x1="${vizX + xScale(stats.max)}" x2="${vizX + xScale(stats.max)}"
       y1="${boxCenterY - boxHeight / 4}" y2="${boxCenterY + boxHeight / 4}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
+      stroke="${strokeSafe}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
 
     // Box (Q1 to Q3)
     const boxW = Math.max(2, xScale(stats.q3) - xScale(stats.q1));
     parts.push(`<rect
       x="${vizX + xScale(stats.q1)}" y="${boxY}"
       width="${boxW}" height="${boxHeight}"
-      fill="${ms.fill}" fill-opacity="${fillOp}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
+      fill="${fillSafe}" fill-opacity="${fillOp}"
+      stroke="${strokeSafe}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
 
     // Median line
     parts.push(`<line
       x1="${vizX + xScale(stats.median)}" x2="${vizX + xScale(stats.median)}"
       y1="${boxY}" y2="${boxY + boxHeight}"
-      stroke="${strokeColor}" stroke-width="${Math.max(2, strokeWidth)}"${strokeOpAttr}/>`);
+      stroke="${strokeSafe}" stroke-width="${Math.max(2, strokeWidth)}"${strokeOpAttr}/>`);
 
     // Outliers — point size and stroke width scale with the theme's
     // shapes.pointSize / lineWidth so outliers match forest-plot markers.
@@ -2537,7 +2544,7 @@ function renderVizBoxplot(
         parts.push(`<circle
           cx="${vizX + xScale(outlier)}" cy="${boxCenterY}"
           r="${outlierR}"
-          fill="none" stroke="${ms.fill}" stroke-width="${themeLineWidth}"${strokeOpAttr}/>`);
+          fill="none" stroke="${fillSafe}" stroke-width="${themeLineWidth}"${strokeOpAttr}/>`);
       }
     }
   });
@@ -2651,7 +2658,7 @@ function renderVizViolin(
 
     parts.push(`<path
       d="${pathPoints.join(" ")}"
-      fill="${ms.fill}" fill-opacity="${fillOp}"
+      fill="${escapeAttr(ms.fill)}" fill-opacity="${fillOp}"
       stroke="${violinStroke}" stroke-width="${violinStrokeW}"${strokeOpAttr}/>`);
 
     // Median line
@@ -3373,7 +3380,7 @@ function renderUnifiedTableRow(
         const originY = textY - out.height / 2;
         lines.push(
           `<g font-family="${readBodyFamily(cssVars)}" font-size="${fontSize}px" ` +
-          `font-weight="${cellFontWeight}" font-style="${cellFontStyle}" fill="${cellColor}" ` +
+          `font-weight="${cellFontWeight}" font-style="${cellFontStyle}" fill="${escapeAttr(cellColor)}" ` +
           `transform="translate(${originX} ${originY})">${out.markup}</g>`,
         );
         continue;
@@ -3435,7 +3442,7 @@ function renderUnifiedTableRow(
           font-weight="${cellFontWeight}"
           font-style="${cellFontStyle}"
           text-anchor="${anchor}"
-          fill="${cellColor}">${escapeXml(wrappedLines[li])}</text>`);
+          fill="${escapeAttr(cellColor)}">${escapeXml(wrappedLines[li])}</text>`);
       }
     } else {
       // Ellipsize at the column width — the DOM clips no-wrap overflow
@@ -3450,7 +3457,7 @@ function renderUnifiedTableRow(
         font-weight="${cellFontWeight}"
         font-style="${cellFontStyle}"
         text-anchor="${anchor}"
-        fill="${cellColor}">${escapeXml(fitted)}</text>`);
+        fill="${escapeAttr(cellColor)}">${escapeXml(fitted)}</text>`);
     }
   }
 
@@ -3607,7 +3614,7 @@ function renderReferenceLine(
   const dashArray = style === "dashed" ? "6,4" : style === "dotted" ? "2,2" : "";
   const dashAttr = dashArray ? ` stroke-dasharray="${dashArray}"` : "";
   let svg = `<line x1="${x}" x2="${x}" y1="${y1}" y2="${y2}"
-    stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
+    stroke="${escapeAttr(color)}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
     const labelColor = readContentSecondary(cssVars);
@@ -4748,7 +4755,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       if (row.style?.bg) {
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-          fill="${row.style.bg}"/>`);
+          fill="${escapeAttr(row.style.bg)}"/>`);
       } else if (row.style?.type === "header") {
         // Header-type rows get a subtle muted background
         const headerRowFill = readContentMuted(cssVars);
@@ -4950,11 +4957,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             const aX = markerX + offset;
             const sz = 5 * (ann.size ?? 1);
             if (ann.shape === "circle") {
-              parts.push(`<circle cx="${aX}" cy="${annY}" r="${sz}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+              parts.push(`<circle cx="${aX}" cy="${annY}" r="${sz}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             } else if (ann.shape === "square") {
-              parts.push(`<rect x="${aX - sz}" y="${annY - sz}" width="${2*sz}" height="${2*sz}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+              parts.push(`<rect x="${aX - sz}" y="${annY - sz}" width="${2*sz}" height="${2*sz}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             } else if (ann.shape === "triangle") {
-              parts.push(`<polygon points="${aX},${annY - sz} ${aX - sz},${annY + sz} ${aX + sz},${annY + sz}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+              parts.push(`<polygon points="${aX},${annY - sz} ${aX - sz},${annY + sz} ${aX + sz},${annY + sz}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             } else if (ann.shape === "star") {
               const pts: string[] = [];
               for (let k = 0; k < 10; k++) {
@@ -4962,7 +4969,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
                 const a = Math.PI / 2 + k * Math.PI / 5;
                 pts.push(`${aX + rr * Math.cos(a)},${annY - rr * Math.sin(a)}`);
               }
-              parts.push(`<polygon points="${pts.join(" ")}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+              parts.push(`<polygon points="${pts.join(" ")}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             }
           });
         }

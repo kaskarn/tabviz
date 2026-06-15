@@ -65,7 +65,8 @@ const iconSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg => {
   }
   const sizeKey = iconOpts?.size ?? "base";
   const px = SIZE_PX[sizeKey];
-  const color = resolveIconColor(iconOpts, ctx?.cellStyle, undefined, theme);
+  // XSS egress wall (user iconOpts/cellStyle color → SVG fill attr); see bar.
+  const color = escapeXml(resolveIconColor(iconOpts, ctx?.cellStyle, undefined, theme));
 
   // Position the text so its baseline is in the middle; renderer emits
   // at origin (0,0) and the schema-dispatch wrapper translates to the
