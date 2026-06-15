@@ -17,7 +17,7 @@ import { normalizeValue } from "../../lib/scale-utils";
 import { BAR, SPACING } from "../../lib/rendering-constants";
 import {
   getCssVars, readVarPx,
-  readDividerSubtle, readContentPrimary,
+  readDividerStrong, readContentPrimary,
   readBodyFamily, readLabelSize,
 } from "../../lib/theme/consumer-bridge";
 
@@ -51,7 +51,10 @@ export const barSvgRenderer: CellFormatter = (value, options, ctx): RenderSvg =>
   const showLabel = opts?.showLabel ?? true;
   const cssVars = getCssVars(theme);
   const color = resolveBarColor(opts, ctx?.cellStyle, undefined, theme);
-  const trackColor = readDividerSubtle(cssVars);
+  // Track color matches the DOM `.bar-track { background: var(--tv-border) }`
+  // (readDividerStrong = --tv-border), NOT --tv-cell-border — the residual
+  // bar DOM↔export divergence (same class as the progress-track fix).
+  const trackColor = readDividerStrong(cssVars);
 
   // Label draws at the `label` type-role — the SAME token the DOM reads
   // (CellBar.svelte `var(--tv-text-label-size)`). Role, not `* BAR.LABEL_SCALE`.

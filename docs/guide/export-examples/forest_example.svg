@@ -185,10 +185,10 @@
 <g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(147 187.081)"><text y="8.40" dominant-baseline="central">Exenatide QW</text></g>
 <g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(497 187.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.91</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.83</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">1.00</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="614" y1="207.481" y2="207.481" stroke="#958F8E" stroke-width="1"/>
-<line x1="12" x2="614" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="12" x2="614" y1="207.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="12" x2="12" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
-<line x1="614" x2="614" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2"/>
+<line x1="12" x2="614" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2.5"/>
+<line x1="12" x2="614" y1="207.481" y2="207.481" stroke="#6B6565" stroke-width="2.5"/>
+<line x1="12" x2="12" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2.5"/>
+<line x1="614" x2="614" y1="55.481" y2="207.481" stroke="#6B6565" stroke-width="2.5"/>
 
 
 </svg>
