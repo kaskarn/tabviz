@@ -7,11 +7,11 @@ import type { RenderSvg, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import {
   getCssVars, readAccentDefault, readSurfaceBg,
-  readBodyFamily, readLabelSize,
+  readBodyFamily, readLabelSize, readVarPx,
 } from "../../lib/theme/consumer-bridge";
 import { normalizeValue } from "../../lib/scale-utils";
 import { parseFontSize } from "../../lib/typography-layout";
-import { HEATMAP_TEXT } from "../../lib/rendering-constants";
+import { HEATMAP_TEXT, SPACING } from "../../lib/rendering-constants";
 
 interface HeatmapOptions {
   palette?: string[];
@@ -95,9 +95,15 @@ export const heatmapSvgRenderer: CellFormatter = (value, options, ctx): RenderSv
   const rowH = ctx?.rowHeight ?? 24;
 
   const pieces: string[] = [];
-  // Background rect with 2px inset on every side (mirrors legacy).
+  // Fill the cell CONTENT box — inset by the cell-padding tokens, matching the
+  // DOM `.cell-heatmap` (width/height:100% INSIDE the padded grid-cell). The
+  // old flat `x=2` inset over-drew horizontally: the DOM heat gutters ≈ cellPadX
+  // (~10px) while the export showed ~2px, so the export block ran wider than the
+  // widget (measured DOM 76px wide vs SVG ~92 — the dominant heatmap divergence).
+  const padX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", SPACING.TEXT_PADDING);
+  const padY = readVarPx(cssVars, "--tv-spacing-cell-padding-y", 2);
   pieces.push(
-    `<rect x="2" y="2" width="${cellWidth - 4}" height="${rowH - 4}" ` +
+    `<rect x="${padX}" y="${padY}" width="${Math.max(0, cellWidth - padX * 2)}" height="${Math.max(0, rowH - padY * 2)}" ` +
     `fill="${bgColor}" rx="2"/>`,
   );
   if (showValue) {
