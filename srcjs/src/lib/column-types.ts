@@ -291,6 +291,28 @@ export function isVizType(type: string | undefined | null): boolean {
   return VIZ_TYPES.has(type);
 }
 
+/** Column types that draw an x-axis scaffold (forest + the viz_* family) — the
+ *  axis band's height is reserved only when one is present. */
+export function isAxisBearingColumn(col: { type: string }): boolean {
+  return col.type === "forest" || col.type === "viz_bar"
+    || col.type === "viz_boxplot" || col.type === "viz_violin";
+}
+
+/** The axis label an axis-bearing column declares, if any. Each type stores it
+ *  in its own options bucket whose key differs from the wire type (vizBar vs
+ *  viz_bar) — ONE source for the DOM (layout-zoom) + the SVG export, so a new
+ *  axis-bearing type is wired in exactly one place. */
+export function columnAxisLabel(col: { type: string; options?: unknown }): string | undefined {
+  const o = col.options as Record<string, { axisLabel?: string } | undefined> | undefined;
+  switch (col.type) {
+    case "forest":      return o?.forest?.axisLabel;
+    case "viz_bar":     return o?.vizBar?.axisLabel;
+    case "viz_boxplot": return o?.vizBoxplot?.axisLabel;
+    case "viz_violin":  return o?.vizViolin?.axisLabel;
+    default:            return undefined;
+  }
+}
+
 // Resolve the effective show-header flag given explicit `showHeader` (from
 // spec) and the column's header text. Returns true/false.
 export function resolveShowHeader(

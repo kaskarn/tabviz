@@ -46,7 +46,7 @@ import { getEffectValue } from "$lib/scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
-import { isVizType, resolveShowHeader } from "$lib/column-types";
+import { isVizType, resolveShowHeader, isAxisBearingColumn, columnAxisLabel } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveInteraction } from "$lib/interaction-resolve";
@@ -1011,21 +1011,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have
   // no bottom axis, so reserving ~76px of axis height caused truncation.
   const axisGap = readVarPx(cssVars, "--tv-spacing-axis-gap", DEFAULT_AXIS_GAP);
-  const hasAxisColumn = allColumns.some(
-    c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
-  );
+  const hasAxisColumn = allColumns.some(isAxisBearingColumn);
   // Axis layout is now derived from typography (was hardcoded 32 + 32 = 64
   // px regardless of font profile). Detect whether an axis label is set
   // on at least one of the present axis-bearing columns — used both to
   // pick the right region height here and to position the axis label
   // text in renderForestAxis.
-  const someColumnHasAxisLabel = allColumns.some(c => {
-    if (c.type === "forest") return !!c.options?.forest?.axisLabel;
-    if (c.type === "viz_bar") return !!c.options?.vizBar?.axisLabel;
-    if (c.type === "viz_boxplot") return !!c.options?.vizBoxplot?.axisLabel;
-    if (c.type === "viz_violin") return !!c.options?.vizViolin?.axisLabel;
-    return false;
-  });
+  const someColumnHasAxisLabel = allColumns.some(c => !!columnAxisLabel(c));
   const axisLayout = computeAxisLayout(
     { fontSizeSm: readLabelSize(cssVars), lineHeight: 1.5 },
     someColumnHasAxisLabel,

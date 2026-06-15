@@ -53,6 +53,7 @@ import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/layout/table-metrics";
 import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT } from "$lib/rendering-constants";
+import { isAxisBearingColumn, columnAxisLabel } from "$lib/column-types";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
 import {
@@ -305,16 +306,8 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // strip (forest or any viz_*). Converged with the SVG backend (2026-06):
     // previously the DOM reserved axis height unconditionally, over-tall for
     // plain tables.
-    const hasAxisColumn = allColumns.some(
-      (c) => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
-    );
-    const someColumnHasAxisLabel = allColumns.some((c) => {
-      if (c.type === "forest") return !!c.options?.forest?.axisLabel;
-      if (c.type === "viz_bar") return !!c.options?.vizBar?.axisLabel;
-      if (c.type === "viz_boxplot") return !!c.options?.vizBoxplot?.axisLabel;
-      if (c.type === "viz_violin") return !!c.options?.vizViolin?.axisLabel;
-      return false;
-    });
+    const hasAxisColumn = allColumns.some(isAxisBearingColumn);
+    const someColumnHasAxisLabel = allColumns.some((c) => !!columnAxisLabel(c));
     const axisGeom = computeAxisLayout(
       { fontSizeSm: readLabelSize(cssVars), lineHeight: 1.5 },
       someColumnHasAxisLabel,
