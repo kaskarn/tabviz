@@ -12,7 +12,7 @@
  */
 
 import type {
-  WebSpec, WebData, Row, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels, NoteSpec,
+  WebSpec, WebData, Row, RowStyle, MarkerStyle, MarkerShape, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels, NoteSpec,
   AvailableField, FieldCategory,
 } from "../types";
 import type {
@@ -116,6 +116,26 @@ export interface TabvizArgs {
   enableArrange?: boolean;
   showGroupCounts?: boolean;
   tooltipFields?: string[];
+  // Row-level style mapping (mirrors R's `row_*` args). Each value is a DATA
+  // FIELD NAME; the matching per-row value drives the style (bold/italic/
+  // emphasis/muted/accent read as booleans, color/bg/badge/icon as strings) —
+  // extracted into each row's style here, exactly as R does at serialize time.
+  rowBold?: string;
+  rowItalic?: string;
+  rowColor?: string;
+  rowBg?: string;
+  rowBadge?: string;
+  rowIcon?: string;
+  rowEmphasis?: string;
+  rowMuted?: string;
+  rowAccent?: string;
+  // Per-row FOREST MARKER style mapping (mirrors R's `marker_*` args): the
+  // named field's per-row value drives the marker's color/shape (strings) or
+  // opacity/size (numbers), extracted into each row's markerStyle.
+  markerColor?: string;
+  markerShape?: string;
+  markerOpacity?: string;
+  markerSize?: string;
   /** Paginate the table — a number (rows per page) or a `PaginateOptions`.
    *  Breakpoints (grouped breaks + orphan rules) are precomputed; the wire
    *  carries `paginate.pages`. Matches R `tabviz(paginate=)`. */
@@ -167,15 +187,68 @@ export function tabviz(args: TabvizArgs): WebSpec {
   // earlier TS path preferred `row[label]` / `row.id`, but that made R↔TS
   // wire shapes diverge for callers who happened to have an `id` field in
   // their data. R always uses positional ids; TS now does too.
+  // Row-style recipe: maps a RowStyle key → the data field whose per-row value
+  // drives it (mirrors R's row_*_col + .apply_style_recipe). Booleans are read
+  // as booleans; everything else as strings.
+  const styleFields = {
+    bold: args.rowBold, italic: args.rowItalic, color: args.rowColor, bg: args.rowBg,
+    badge: args.rowBadge, icon: args.rowIcon, emphasis: args.rowEmphasis,
+    muted: args.rowMuted, accent: args.rowAccent,
+  } as const;
+  const STYLE_BOOL: ReadonlySet<string> = new Set(["bold", "italic", "emphasis", "muted", "accent"]);
+  // Mirror R's as.logical: booleans pass through; numbers are 0=false; the
+  // string-boolean forms ("TRUE"/"false"/"1") map sensibly (so "FALSE" → false,
+  // which a bare Boolean() would get wrong).
+  const toBool = (raw: unknown): boolean => {
+    if (typeof raw === "string") { const s = raw.trim().toLowerCase(); return s === "true" || s === "t" || s === "1"; }
+    return Boolean(raw);
+  };
+  const hasRowStyles = Object.values(styleFields).some((f) => f != null);
+  const extractRowStyle = (dataRow: Record<string, unknown>): RowStyle | undefined => {
+    let style: RowStyle | undefined;
+    for (const [key, field] of Object.entries(styleFields)) {
+      if (field == null) continue;
+      const raw = dataRow[field];
+      if (raw == null) continue;
+      const val = STYLE_BOOL.has(key) ? toBool(raw) : String(raw);
+      (style ??= {} as RowStyle)[key as keyof RowStyle] = val as never;
+    }
+    return style;
+  };
+
+  // Per-row forest marker style (color/shape strings, opacity/size numbers).
+  const markerFields = {
+    color: args.markerColor, shape: args.markerShape,
+    opacity: args.markerOpacity, size: args.markerSize,
+  } as const;
+  const MARKER_NUM: ReadonlySet<string> = new Set(["opacity", "size"]);
+  const hasMarkerStyles = Object.values(markerFields).some((f) => f != null);
+  const extractMarkerStyle = (dataRow: Record<string, unknown>): MarkerStyle | undefined => {
+    let ms: MarkerStyle | undefined;
+    for (const [key, field] of Object.entries(markerFields)) {
+      if (field == null) continue;
+      const raw = dataRow[field];
+      if (raw == null) continue;
+      if (key === "shape") { (ms ??= {}).shape = String(raw) as MarkerShape; }
+      else if (MARKER_NUM.has(key)) { (ms ??= {})[key as "opacity" | "size"] = Number(raw); }
+      else { (ms ??= {}).color = String(raw); }
+    }
+    return ms;
+  };
+
   const rows: Row[] = args.data.map((row, i) => {
     const labelVal = args.label != null ? String(row[args.label] ?? "") : String(i + 1);
     const detailsVal = args.details != null ? String(row[args.details] ?? "").trim() : "";
+    const style = hasRowStyles ? extractRowStyle(row) : undefined;
+    const markerStyle = hasMarkerStyles ? extractMarkerStyle(row) : undefined;
     return {
       id: `row_${i + 1}`,
       label: labelVal,
       groupId: args.group != null ? String(row[args.group] ?? "") : null,
       metadata: { ...row },
       ...(detailsVal !== "" ? { details: detailsVal } : {}),
+      ...(style ? { style } : {}),
+      ...(markerStyle ? { markerStyle } : {}),
     };
   });
 

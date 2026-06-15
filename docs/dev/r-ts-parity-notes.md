@@ -160,6 +160,25 @@ R↔TS parity tests (`tests/testthat/test-parity-columns.R`) assert R's
 `col@options$<bucket>` matches TS's `shape$options$<bucket>`, so a bucket-name
 mismatch fails loudly.
 
+## Row / marker style mapping in TS authoring (CLOSED 2026-06-15)
+
+R `tabviz(row_bold = ~expr, marker_color = ~col, …)` resolves each to a column
+NAME (`row_bold_col`, `marker_color_col`) and EXTRACTS per-row values into each
+`Row.style` / `Row.markerStyle` at serialize time (`compile_row_style_recipe` +
+`.apply_style_recipe`). TS authoring had no equivalent — a JS author could only
+set `row.style` by hand.
+
+Closed: `tabviz({ rowBold, rowItalic, rowColor, rowBg, rowBadge, rowIcon,
+rowEmphasis, rowMuted, rowAccent, markerColor, markerShape, markerOpacity,
+markerSize })` — each is a DATA FIELD NAME, extracted per-row into
+`row.style`/`row.markerStyle` with the same type coercion R uses (bold/italic/
+emphasis/muted/accent→bool, color/bg/badge/icon→string, opacity/size→number;
+false IS emitted, NA/missing skipped, no styles → no `style`). row-style.test.ts
+asserts the shape. STILL R-ONLY (lower-value): `row_fill`/`row_indent`/
+`row_type`/`row_height` (structural) and the `cond()`-form / static / theme
+StyleOverride variants (a field-name string is the 90%% case; the tagged-union
+forms stay on the per-column `ColumnSpec.styleMapping`).
+
 ## paginate (2026-06-11, area-F pager walk)
 
 R `tabviz(paginate=)` accepts a count / `paginate_spec()` and precomputes
