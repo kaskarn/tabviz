@@ -40,6 +40,37 @@ const instance = createTabviz(document.querySelector("#plot")!, spec);
 mounts it. Every R helper has a TS mirror — argument names + defaults
 match; snake_case in R → camelCase in TS.
 
+## Conditional styling & pagination
+
+Point `tabviz()` at data fields to drive per-row styling, and paginate with
+precomputed breakpoints — both mirror R's `row_*` / `marker_*` / `paginate`
+arguments (and are verified against the R implementation by V8 parity tests):
+
+```ts
+const spec = tabviz({
+  data: rows,            // [{ study, hr, lcl, ucl, sig, status, region }, …]
+  label: "study",
+  group: "region",
+  columns: [
+    colText({ field: "study", header: "Study" }),
+    vizForest({ point: "hr", lower: "lcl", upper: "ucl", scale: "log" }),
+  ],
+
+  // Row-level style mapping: each value is a DATA FIELD NAME; the per-row
+  // value drives the style. Booleans → bold/italic/emphasis/muted/accent,
+  // strings → color/bg/badge/icon. Marker mappings drive the forest mark.
+  rowBold: "sig",          // bold rows where row.sig is truthy
+  rowColor: "status",      // text color from row.status
+  markerColor: "status",   // forest marker color per row
+  markerSize: "weight",    // marker size from a numeric field
+
+  // Pagination: a number (rows per page) or a PaginateOptions object
+  // ({ rows, keepGroups, orphanMin, … }). Grouped breaks + orphan rules are
+  // computed into spec.paginate.pages so the viewer/PDF never re-derive them.
+  paginate: { rows: 30, keepGroups: true },
+});
+```
+
 ## What this package will publish
 
 `@tabviz/core` exposes five subpaths over a single versioned npm
