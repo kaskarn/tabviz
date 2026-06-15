@@ -85,7 +85,12 @@ const MIN_PIXELS = 20;
 const LIVENESS_VERIFIED = new Set([
   "font-body", "font-display", "font-mono", "font-numeric", // Identity families (webfont)
   "type-family", "type-size", "type-weight",                // Styling type-role (webfont + small)
-  "corners", "rules",                                       // Identity geometry (small/conditional)
+  // Identity geometry: sub-100px footprint here, but WIRED (D28, 2026-06-14)
+  // and gated for real elsewhere — corner radii by glyph-cell-parity, rule
+  // widths by wysiwyg-diff (all 9 presets). They USED to be exempted as
+  // "small/conditional" while actually DEAD (drove only the panel preview);
+  // that's the bug D28 fixed, so this exemption is now honest, not a mask.
+  "corners", "rules",
 ]);
 
 const WIDGET_W = 950;

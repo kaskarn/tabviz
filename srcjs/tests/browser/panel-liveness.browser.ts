@@ -148,8 +148,15 @@ function installFingerprints(): void {
     //   2. the combined text of every <style> in the document — the RE-EMITTED
     //      theme CSS (a Tier-1 edit re-resolves the cascade → the --tv-* block
     //      changes), so a control that reaches the resolved theme registers
-    //      even when its specific token is visually subtle. A truly dead button
-    //      (no re-resolve, no DOM change) moves NEITHER and is caught;
+    //      even when its specific token is visually subtle.
+    //      BLIND SPOT (D28, 2026-06-14): this treats "the theme re-resolved" as
+    //      "the widget changed", but an EMIT-but-UNCONSUMED token (a --tv-*
+    //      nothing renders) moves the <style> text WITHOUT changing the table.
+    //      The geometry controls false-PASSED here for exactly this reason
+    //      while driving only the panel preview. So panel-liveness proves a
+    //      control REACHES the theme, NOT that the table consumes it — true
+    //      consequence is owned by the RENDER-measuring gates (settings-
+    //      consequence pixel-diff, glyph-cell-parity, wysiwyg-diff);
     //   3. laid-out geometry of the scalable subtree (density/scale/spacing).
     const html = cont?.outerHTML ?? "";
     const styleText = [...document.querySelectorAll("style")].map((s) => s.textContent ?? "").join("");

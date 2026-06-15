@@ -287,6 +287,16 @@ One line each; the cost of ignoring these has already been paid once.
   style text + geometry), drive dropdowns by real keyboard, never press
   Escape to dismiss (closes the whole panel), bound every evaluate with
   timeouts.
+- panel-liveness BLIND SPOT (D28): its widget fingerprint hashes ALL
+  `<style>` text (the re-emitted theme CSS), so a control that EMITS a
+  `--tv-*` token but whose token nothing RENDERS still moves the
+  fingerprint → false "live". The dead geometry controls passed it this
+  way (drove only the panel preview). panel-liveness proves a control
+  REACHES the theme, NOT that the table consumes it — for true consequence
+  trust the RENDER-measuring gates (settings-consequence pixel-diff,
+  glyph-cell-parity, wysiwyg-diff), which a stray token can't fool. When
+  adding a theme token, confirm a renderer reads it (not just the panel
+  preview).
 - Docs screenshots MUST be over HTTP — `file://` CORS breaks Quarto
   module scripts and fakes layout regressions.
 - Pinned systemfonts widths are narrower than the estimator — export
