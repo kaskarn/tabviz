@@ -8,7 +8,9 @@
 
 // Top-level constructor
 export { tabviz } from "./tabviz";
-export type { TabvizArgs } from "./tabviz";
+export type { TabvizArgs, PaginateOptions } from "./tabviz";
+export { computePageBreaks } from "./paginate";
+export type { PageBreakOptions, PageBreakResult } from "./paginate";
 
 // Column builders
 export {

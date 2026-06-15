@@ -22,6 +22,7 @@ import {
   evaluateConditions, type ConditionAuthoring,
 } from "../schema/conditions";
 import { CURRENT_VERSION } from "../spec";
+import { computePageBreaks } from "./paginate";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme/theme-api";
 import { applyThemeColumnDefaults } from "../lib/theme/column-defaults";
 import { colText } from "./columns";
@@ -37,6 +38,24 @@ function prettifyLabelHeader(field: string): string {
     .replace(/_/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Pagination options for `tabviz({ paginate })`. A bare number is shorthand
+ *  for `{ rows: n }`. Mirrors R `paginate_spec()`; breakpoints are precomputed
+ *  here (computePageBreaks) so the wire carries `paginate.pages`. */
+export interface PaginateOptions {
+  /** Rows per page (default 30). */
+  rows?: number;
+  /** Never split a group across pages (default true). */
+  keepGroups?: boolean;
+  /** Minimum rows on the trailing page (default 3). */
+  orphanMin?: number;
+  breakOn?: "split" | "group" | "none";
+  repeatHeader?: boolean;
+  repeatLegend?: boolean;
+  repeatTitle?: boolean;
+  footnotesOn?: "last" | "every";
+  pageLabel?: "x_of_y" | "x" | false;
 }
 
 export interface TabvizArgs {
@@ -97,6 +116,10 @@ export interface TabvizArgs {
   enableArrange?: boolean;
   showGroupCounts?: boolean;
   tooltipFields?: string[];
+  /** Paginate the table — a number (rows per page) or a `PaginateOptions`.
+   *  Breakpoints (grouped breaks + orphan rules) are precomputed; the wire
+   *  carries `paginate.pages`. Matches R `tabviz(paginate=)`. */
+  paginate?: number | PaginateOptions;
   // Layout
   plotWidth?: number | "auto";
   /** Target aspect ratio for export. `null` means natural. */
@@ -309,6 +332,29 @@ export function tabviz(args: TabvizArgs): WebSpec {
       filters: args.initialFilters,
       hiddenColumns: args.initialHiddenColumns,
     };
+  }
+
+  // Pagination — precompute breakpoints (computePageBreaks, the TS port of R's
+  // compute_page_breaks) over the rendered group ids so the wire carries the
+  // same `pages` shape an R author produces.
+  if (args.paginate != null) {
+    const p: PaginateOptions = typeof args.paginate === "number" ? { rows: args.paginate } : args.paginate;
+    const cfg = {
+      rows: p.rows ?? 30,
+      breakOn: p.breakOn ?? "split" as const,
+      keepGroups: p.keepGroups ?? true,
+      orphanMin: p.orphanMin ?? 3,
+      repeatHeader: p.repeatHeader ?? true,
+      repeatLegend: p.repeatLegend ?? true,
+      repeatTitle: p.repeatTitle ?? true,
+      footnotesOn: p.footnotesOn ?? "last" as const,
+      pageLabel: p.pageLabel ?? "x_of_y" as const,
+    };
+    const { pages, nPages } = computePageBreaks(
+      rows.map((r) => r.groupId ?? null),
+      { rows: cfg.rows, keepGroups: cfg.keepGroups, orphanMin: cfg.orphanMin },
+    );
+    spec.paginate = { ...cfg, pages, nPages };
   }
 
   // Widget banks — user-authored entries flow through; schema

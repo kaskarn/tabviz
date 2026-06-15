@@ -165,8 +165,11 @@ mismatch fails loudly.
 R `tabviz(paginate=)` accepts a count / `paginate_spec()` and precomputes
 page BREAKPOINTS at serialize time (`compute_page_breaks()` — grouped
 breaks, orphan rules); the wire carries `paginate.pages[{startIdx,endIdx}]`
-and the widget never re-derives them. TS authoring has NO `paginate`
-argument — a JS author must construct the wire block (incl. `pages` +
-`nPages`) by hand, as `interaction-qa.browser.ts::pager` does. Closing
-this means porting the breakpoint computation to TS (post-1.0 candidate;
-additive, wire already carries the shape).
+and the widget never re-derives them.
+
+**CLOSED 2026-06-15**: TS authoring now has `tabviz({ paginate })` (a number
+or `PaginateOptions`). `src/authoring/paginate.ts::computePageBreaks` is a
+byte-faithful port of R's algorithm (RLE group-runs → page-fill walk →
+oversized-group + orphan pull/merge); `paginate.test.ts` MIRRORS R's
+`test-paginate.R` fixtures (same inputs, same expected pages) so the two
+can't drift. Additive — no wire change.
