@@ -51,6 +51,27 @@ describe("Preset structural correctness (V4 anchors)", () => {
     expect(PRESETS.terminal!.polarity).toBe("dark");
     expect(PRESETS.synthwave!.polarity).toBe("dark");
   });
+
+  // Maintainer directives (2026-06-15): no shipped preset draws an OUTER
+  // table border (frame/boxed read as too thick/unsightly — only the default
+  // hairline/ruled horizontal-rule treatments), and no preset opts into the
+  // `first_column_style: "bold"` variant (its boxed-divider rendering is buggy
+  // and it's an author-only opt-in). These lock the directives so a future
+  // preset can't silently reintroduce either.
+  it("no preset uses an outer-border border_preset (frame/boxed)", () => {
+    for (const [name, inputs] of Object.entries(PRESETS)) {
+      // undefined (the hairline default) is fine — only frame/boxed draw an outer table border.
+      expect(["frame", "boxed"], `preset "${name}" must not draw an outer border`)
+        .not.toContain(inputs.border_preset);
+    }
+  });
+
+  it("no preset opts into the bold first-column variant", () => {
+    for (const [name, inputs] of Object.entries(PRESETS)) {
+      expect(inputs.first_column_style ?? "default", `preset "${name}" first_column_style`)
+        .toBe("default");
+    }
+  });
 });
 
 describe("Preset resolution — APCA invariants hold for every preset", () => {

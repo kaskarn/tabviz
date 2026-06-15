@@ -24,7 +24,7 @@ The open product decision on whether to close the Group-A gaps is **D29**.
 | `inputs.sequential` | sequential palette (viridis…) — drives heatmap/sequential cells | `set_sequential()` |
 | `inputs.diverging` | diverging palette (rdbu…) | `set_diverging()` |
 | `inputs.type_weights.{regular,medium,semibold,bold}` | the four numeric font-weight slots | `set_type_weights()` |
-| `inputs.first_column_style` | row-identifier column "bold" treatment (sibling of `header_style`, which IS in Variations → "Header"). NOT in the planned Variations scope per settings-redesign.md, so likely conscious, not accidental. | `set_first_column_style()` |
+| `inputs.first_column_style` | row-identifier column "bold" treatment (sibling of `header_style`). **Inert by default — no preset uses it** (guard: `theme-presets-inputs.test.ts`); the bold rendering is also currently buggy (boxed-divider Bug-A/B/C). LOWEST panel priority of Group A. | `set_first_column_style()` |
 | `inputs.marks.point_shape` | **theme-default** marker glyph. Per-series shape IS settable (Plots). | `web_theme(marks=)` |
 | `inputs.marks.interval_weight` | default CI line width | `web_theme(marks=)` |
 | `inputs.mode` | high-contrast / **reduced-transparency**. *Partial:* a view-level `ContrastButton` (auto/more) exists, but the theme `mode` input — esp. reduced-transparency — has no panel control. | `set_mode()` |

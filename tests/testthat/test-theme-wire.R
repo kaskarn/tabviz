@@ -77,10 +77,12 @@ test_that("set_border_preset expands into five distinct token signatures", {
   }
   sigs <- vapply(presets, function(p) sig(set_border_preset(web_theme_nejm(), p)), "")
   expect_length(unique(sigs), 5L)
-  # Re-applying a theme's OWN declared preset must be a no-op. nejm ships
-  # "frame" — applying "frame" again must not shift the tokens.
-  expect_identical(web_theme_nejm()@inputs@border_preset, "frame")
-  expect_identical(sig(web_theme_nejm()), sig(set_border_preset(web_theme_nejm(), "frame")))
+  # Re-applying an explicit preset must be a no-op (idempotent). Decoupled
+  # from any theme's default: no shipped preset draws an outer border now
+  # (nejm dropped its "frame" 2026-06-15 — thick outer borders read as
+  # unsightly), so we set one explicitly to test idempotency.
+  ruled <- set_border_preset(web_theme_nejm(), "ruled")
+  expect_identical(sig(ruled), sig(set_border_preset(ruled, "ruled")))
 })
 
 test_that("border_preset survives the inputs wire", {

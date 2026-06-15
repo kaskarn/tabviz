@@ -124,7 +124,11 @@ export const NEJM: ThemeInputs = defineInputs(
   { brand: "#BD2F2F", accent: "#1B5377" },
   {
     categorical: "okabe_ito",
-    border_preset: "frame",
+    // No `border_preset` → inherits the hairline default (horizontal rules,
+    // NO outer frame). The thick outer table border read as heavy/unsightly,
+    // and a frameless, horizontal-rules-only table is the more authentic
+    // medical-journal ("booktabs") look anyway. Keeps NEJM's internal rule
+    // weights identical to the prior frame (major regular / group+minor thin).
     type_scale_ratio: 1.25,
     fonts: {
       body: "'Lora', Georgia, serif",

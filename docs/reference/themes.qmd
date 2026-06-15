@@ -110,7 +110,7 @@ web_theme(
   fonts_body = NULL, fonts_display = NULL, fonts_mono = NULL,
   density = "comfortable",    # "compact" | "comfortable" | "spacious"
   header_style = "light",     # "light" | "tint" | "bold"
-  first_column_style = "default",  # "default" | "tint" | "bold"
+  first_column_style = "default",  # "default" | "bold"
   web_fonts = NULL,
   name = "custom"
 )
@@ -131,7 +131,7 @@ web_theme(
 | `fonts_body` / `fonts_display` / `fonts_mono` | string | `NULL` | Font stacks; `fonts_display` mirrors `fonts_body` when unset. |
 | `density` | string | `"comfortable"` | `"compact"` / `"comfortable"` / `"spacious"`. |
 | `header_style` | string | `"light"` | Header chrome variant: `"light"` / `"tint"` / `"bold"`. |
-| `first_column_style` | string | `"default"` | Label-column variant: `"default"` / `"tint"` / `"bold"`. |
+| `first_column_style` | string | `"default"` | Label-column variant: `"default"` / `"bold"`. |
 | `web_fonts` | list | `NULL` | Optional `web_font()` declarations to embed. |
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
 
@@ -212,7 +212,7 @@ set_first_column_style(theme, first_column_style)
 |---|---|---|
 | `set_density()` | `"compact"` / `"comfortable"` / `"spacious"` | Tier-1 input — re-resolves and drives every spacing token |
 | `set_header_style()` | `"light"` / `"tint"` / `"bold"` | Post-resolution variant: light header on muted surface, primary-tinted band, or bold header on `primary_deep` |
-| `set_first_column_style()` | `"default"` / `"tint"` / `"bold"` | Post-resolution variant: emphasized first (label) column |
+| `set_first_column_style()` | `"default"` / `"bold"` | Post-resolution variant: emphasized first (label) column |
 
 ### `set_spacing()` {#set_spacing}
 

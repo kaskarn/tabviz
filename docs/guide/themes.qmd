@@ -246,7 +246,7 @@ web_theme(
   brand              = "#1F3A5F",
   density            = "comfortable",   # compact | comfortable | spacious
   header_style       = "tint",          # light | tint | bold (legacy variant)
-  first_column_style = "bold",          # default | tint | bold (Excel-style)
+  first_column_style = "bold",          # default | bold (Excel-style; opt-in, no preset uses it)
   effects = list(header_style = "fill") # Tier-1 form — supersedes the variant
 )
 ```
