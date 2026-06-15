@@ -52,7 +52,7 @@ import type {
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/layout/table-metrics";
 import { computeContentHeights } from "$lib/width-utils";
-import { ASPECT } from "$lib/rendering-constants";
+import { ASPECT, LAYOUT } from "$lib/rendering-constants";
 import { isAxisBearingColumn, columnAxisLabel } from "$lib/column-types";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
@@ -439,7 +439,6 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     // natural this fills the container; with a pinned targetAspect it distributes
     // into the (possibly grown) layoutWidth, cap-bounded. Forest is a high-weight
     // column; pinned/user-resized columns are immovable. (docs/dev/multi-flex-columns.md)
-    const FLEX_DEFAULT_COL_WIDTH = 100;
     const flexCap = targetAspect != null ? ASPECT.FLEX_CAP : undefined;
     const flexSpecs: ColumnWidthSpec[] = allColumns.map((c) => {
       const measured = columnWidths[c.id];
@@ -451,7 +450,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         (userResized && typeof measured === "number" ? measured
           : typeof c.width === "number" ? c.width : null);
       const natural =
-        explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? FLEX_DEFAULT_COL_WIDTH;
+        explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
       return {
         id: c.id,
         naturalWidth: natural,
@@ -607,7 +606,6 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   const naturalContentWidth = $derived.by((): number => {
     const spec = deps.getSpec();
     if (!spec) return 800;
-    const DEFAULT_COLUMN_WIDTH = 100;
     const allColumns = deps.getAllColumns();
     const columnWidths = deps.getColumnWidths();
     const cssVars = getCssVars(spec.theme);
@@ -621,7 +619,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       const natural = (typeof col.width === "number" ? col.width : null)
         ?? columnWidths[col.id]
         ?? vizNaturalWidthForColumn(col)
-        ?? DEFAULT_COLUMN_WIDTH;
+        ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
       total += natural;
     }
     return total + readVarPx(cssVars, "--tv-spacing-padding", 8) * 2;

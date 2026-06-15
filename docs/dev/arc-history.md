@@ -11,6 +11,32 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-15 — systematic store/slices review (found SOUND) + cleanup arcs
+
+A full brittleness review of the interactive-state heart — `tabvizStore`
++ `forestStore` + every `slices/*.svelte.ts` (columns/layout-zoom/theme/
+data/semantics/…) + `splitTabvizStore` — focused on the #1 trap class:
+`spec` is `$state.raw`, so a deep mutation that skips `setSpec` is silently
+dead (the 2026-05-25 `previewThemeField` regression). VERDICT: **no genuine
+bugs.** Every `preview*`/`set*`/`apply*` path routes through `setSpec` /
+`writeThemePath` / a slice helper that does; the mutable-`$state` (non-raw)
+slices (`columnWidths`, `styleEdits`, `labelEdits`) mutate keys in place
+legitimately (deep-proxied, reactive). The flagged async-measure "race" in
+`doMeasurement` is a non-issue (single-threaded JS runs it atomically).
+Only durable note: `columnWidths` (columns slice) uses in-place key writes
+and carries a self-documented "convert to spread-and-reassign in Phase 5"
+debt comment — accepted; the ONLY watch-item is that a future swap to
+`$state.raw` there must convert the writers together. Acted on one genuine
+finding: two differently-named inline `100` constants in layout-zoom
+(`FLEX_DEFAULT_COL_WIDTH`, `DEFAULT_COLUMN_WIDTH`) both meant "default column
+width" — pointed both at the canonical `LAYOUT.DEFAULT_COLUMN_WIDTH` (which
+the renderer also uses), killing a layout-vs-renderer drift risk.
+
+This sat alongside the 2026-06-15 robustness/cleanup sweep (export
+validate-first → ingress-wall hardening → SVG XSS egress wall → knip
+dead-code harness + dead-export/dep/type removal); see the ship-roadmap
+status log for those.
+
 ## 2026-06-11 (evening) — first pushes, ship mechanics, and the sizing audit
 
 The 74-commit ship-readiness sweep went to GitHub (first real pushes).
