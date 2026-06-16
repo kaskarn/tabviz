@@ -399,7 +399,35 @@ export const LEGEND = {
 export const EFFECT = {
   /** Vertical spacing between multiple effects on the same row (pixels) */
   SPACING: 6,
+  /** Height of the summary-row diamond marker (px). Single source for the DOM
+   *  (RowInterval.svelte) + both export draw sites (svg-generator interval +
+   *  summary diamond) — was a bare `10` literal in all three. */
+  SUMMARY_DIAMOND_HEIGHT: 10,
 } as const;
+
+/**
+ * Forest marker pixel size from a raw weight-like value. The marker grows with
+ * `sqrt(weight)` between 0.5× and ~2× the base point size, floored at 3px and
+ * capped at 2.5× base so a column of large values can't blow markers up. THE
+ * single source: the DOM (RowInterval.svelte) and the SVG export
+ * (svg-generator getPointSize) hand-mirrored this exact formula 2× each — a
+ * WYSIWYG drift seam. `rawWeight` is `row.markerStyle.size` or a weight column.
+ */
+export function markerSizeFromWeight(rawWeight: number, baseSize: number): number {
+  const scale = 0.5 + Math.sqrt(rawWeight / 100) * 1.5;
+  return Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
+}
+
+/** Header font scale relative to body — the header rule/text renders 1.05× body.
+ *  Canonical source for the layout band reservation (table-metrics) AND the
+ *  paint paths (resolve-theme header-size token, svg-generator header
+ *  measurement) that bare-`* 1.05`'d it independently (a DOM↔export drift seam). */
+export const HEADER_FONT_SCALE = 1.05;
+
+/** Weight a cellStyle `bold` flag renders at in the export (semibold, not 700 —
+ *  matches the DOM `.bold` cell). Distinct from the weight-NAME table where the
+ *  name "bold" maps to 700. */
+export const BOLD_CELL_WEIGHT = 600;
 
 // ============================================================================
 // Cell glyph geometry — single source of truth

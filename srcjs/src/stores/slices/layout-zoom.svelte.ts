@@ -52,7 +52,7 @@ import type {
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 import { computeRowLayout, computeHeaderHeight, computeAxisHeight, computeScalableChromeHeight, DEFAULT_AXIS_GAP, LINE_HEIGHT, type ScalableChromeInput } from "$lib/layout/table-metrics";
 import { computeContentHeights } from "$lib/width-utils";
-import { ASPECT, LAYOUT } from "$lib/rendering-constants";
+import { ASPECT, LAYOUT, RENDERING } from "$lib/rendering-constants";
 import { isAxisBearingColumn, columnAxisLabel } from "$lib/column-types";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
 import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
@@ -337,7 +337,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     if (targetAspect != null) {
       const hasOverallForBudget = !!spec.data.overall;
       const effectiveRowSlots =
-        displayRows.length + (hasOverallForBudget ? 1.5 : 0);
+        displayRows.length + (hasOverallForBudget ? RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
       const approxRowsHeight = effectiveRowSlots * naturalRowHeight;
       // Shell padding is figure-internal air (spacing rework) so it
       // belongs in the aspect the user pins; containerPadding is page
@@ -526,7 +526,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       constructorRowHeights: spec.rowHeights,
     });
 
-    const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
+    const plotHeight = cumulativeY + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 
     const firstForest = forestColumns[0]?.column;
     const forestOptions = firstForest?.options?.forest;

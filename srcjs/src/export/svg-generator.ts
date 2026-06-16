@@ -115,7 +115,11 @@ import {
   LEGEND,
   TEXT_MEASUREMENT,
   BADGE,
+  EFFECT,
+  HEADER_FONT_SCALE,
+  BOLD_CELL_WEIGHT,
   getEffectYOffset,
+  markerSizeFromWeight,
   AXIS,
   ASPECT,
   DEFAULT_WATERMARK_OPACITY,
@@ -365,7 +369,7 @@ export function calculateSvgAutoWidths(
   // token, so the old v3-string-vs-v4-token divergence mode (the
   // wysiwyg gate's header.fontSize catch) is dead by construction.
   const headerFontSize = parseFontSize(readTypeSize(cssVarsLocal, "header",
-    `${Math.round(parseFontSize(bodySizeStr) * 1.05 * 100) / 100}px`));
+    `${Math.round(parseFontSize(bodySizeStr) * HEADER_FONT_SCALE * 100) / 100}px`));
   const headerWeight = readTypeWeight(cssVarsLocal, "header", 600);
   // Mono-aware estimation (maintainer catch 2026-06-11): mono themes
   // under-measured ~12% with the proportional character-class model,
@@ -2055,7 +2059,7 @@ function renderInterval(
   // Check if this is a summary row (should render diamond). summaryMarker is
   // the RowKind property owning this decision.
   const isSummaryRow = rowKindProps(resolveRowKind({ type: "data", row })).summaryMarker;
-  const diamondHeight = 10;
+  const diamondHeight = EFFECT.SUMMARY_DIAMOND_HEIGHT;
   const halfDiamondHeight = diamondHeight / 2;
 
   // Helper to get point size for an effect
@@ -2064,14 +2068,12 @@ function renderInterval(
     // raw weight-like value and normalized the same way as legacy weight —
     // keeps markers bounded even when users map a column with large values.
     if (isPrimary && row.markerStyle?.size != null) {
-      const scale = 0.5 + Math.sqrt(row.markerStyle.size / 100) * 1.5;
-      return Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
+      return markerSizeFromWeight(row.markerStyle.size, baseSize);
     }
     // Legacy weight column support
     const weight = weightCol ? (row.metadata[weightCol] as number | undefined) : undefined;
     if (weight) {
-      const scale = 0.5 + Math.sqrt(weight / 100) * 1.5;
-      return Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
+      return markerSizeFromWeight(weight, baseSize);
     }
     return baseSize;
   }
@@ -2333,7 +2335,7 @@ function renderDiamond(
   theme: WebTheme,
   cssVars: Record<string, string> = {},
 ): string {
-  const diamondHeight = 10;
+  const diamondHeight = EFFECT.SUMMARY_DIAMOND_HEIGHT;
   const halfHeight = diamondHeight / 2;
 
   // Get scale range bounds for clamping
@@ -3076,10 +3078,10 @@ function renderUnifiedColumnHeaders(
   // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
   const bodySizeStr = readBodySize(cssVars);
   const fontSize = parseFontSize(readTypeSize(cssVars, "header",
-    `${Math.round(parseFontSize(bodySizeStr) * 1.05 * 100) / 100}px`));
+    `${Math.round(parseFontSize(bodySizeStr) * HEADER_FONT_SCALE * 100) / 100}px`));
   const fontFamily = readTypeFamily(cssVars, "header", readBodyFamily(cssVars));
   const fontWeight = readTypeWeight(cssVars, "header", 600);
-  const boldWeight = 600;
+  const boldWeight = BOLD_CELL_WEIGHT;
   const cellPadX = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10);
   const hasGroups = hasColumnGroups(columnDefs);
 
@@ -3397,7 +3399,7 @@ function renderUnifiedTableRow(
           resolveSemanticBundle(cellSch, theme) ??
           resolveSemanticBundle(rowSch,  theme);
         let cellFontWeight = 400;
-        if (cellStyle?.bold) cellFontWeight = 600;
+        if (cellStyle?.bold) cellFontWeight = BOLD_CELL_WEIGHT;
         else if (cellSemBundle?.fontWeight != null) cellFontWeight = cellSemBundle.fontWeight;
         let cellFontStyle = "normal";
         if (cellStyle?.italic) cellFontStyle = "italic";
@@ -3456,7 +3458,7 @@ function renderUnifiedTableRow(
 
     let cellFontWeight = 400;
     if (cellStyle?.bold || rowStyle?.bold) {
-      cellFontWeight = 600;
+      cellFontWeight = BOLD_CELL_WEIGHT;
     } else if (cellSemBundle?.fontWeight != null) {
       cellFontWeight = cellSemBundle.fontWeight;
     }
@@ -4131,7 +4133,7 @@ function generateSVGForAspectTarget(
   // inputs; the apply step below consumes its outputs.
 
   // ----- Height ladder inputs (direction-aware) -----
-  const naturalRowHeight = spec.theme.spacing?.rowHeight ?? 32;
+  const naturalRowHeight = spec.theme.spacing?.rowHeight ?? 34; // align with the main-path fallback (was 32)
   const naturalPlotHeight = naturalLayout.plotHeight;
   const naturalChromeHeight = naturalLayout.totalHeight - naturalPlotHeight;
   // chromeScale's denominator is the *scalable* subset of natural
@@ -4348,7 +4350,7 @@ function generateSVGForAspectTarget(
   // chromeScale; rowHeight by rowHeightScale.
   if (adjustedSpec.theme?.spacing) {
     const sp = adjustedSpec.theme.spacing as unknown as Record<string, number | undefined>;
-    sp.rowHeight = (sp.rowHeight ?? 32) * rowHeightScale;
+    sp.rowHeight = (sp.rowHeight ?? 34) * rowHeightScale; // align with the main-path fallback (was 32)
     if (Math.abs(chromeScale - 1) > 1e-6) {
       // Vertical chrome contributors. headerGap / axisGap / footerGap /
       // headerHeight are the user-visible bands; padding is sliced

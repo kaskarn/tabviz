@@ -11,6 +11,33 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — magic-number consolidation (deep-review catalog, behavior-preserving)
+
+Collapsed the duplicated literals + DOM↔export drift seams the deep review
+cataloged into single sources in `rendering-constants.ts` — every one a no-op
+(same values), proven by unchanged resolver-dispatch + layout-metrics snapshots
+and a byte-identical forest render:
+- `HEADER_FONT_SCALE = 1.05` — was bare `* 1.05` at 3 PAINT sites
+  (resolve-theme header-size token, svg-generator header measurement ×2) +
+  table-metrics' own named-but-not-shared copy. A real DOM↔export drift seam
+  (the header band reservation vs the painted header size) — now one source.
+- `markerSizeFromWeight(rawWeight, baseSize)` — the `0.5+√(w/100)*1.5` clamp
+  `[3, base*2.5]` formula was hand-mirrored ×4 (DOM RowInterval + export
+  getPointSize, twice each). One helper, both backends.
+- `EFFECT.SUMMARY_DIAMOND_HEIGHT = 10` — summary-diamond height, was `10` ×3
+  (DOM + export interval + export summary).
+- `BOLD_CELL_WEIGHT = 600` — cellStyle-bold export weight, was `600` ×3 (named,
+  with a comment distinguishing it from the weight-NAME table's "bold"=700).
+- `RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER` — the DOM (layout-zoom) used bare
+  `1.5` ×2 where the export already had the named constant; now shared.
+- rowHeight fallback aligned `32`→`34` in the aspect ladder (matched the
+  main-path/DOM fallback; only bites degenerate no-rowHeight themes).
+
+Remaining deep-review items still open: the structural renderCell DOM/SVG
+consumedBy split (the anti-recurrence root), the pvalue export gap, the
+nested-group-header squash + flex-bound-inversion layout bugs, the axisRegion
+`+2` slack, StylingTab text-onsolid, and D31 (dead interaction flags).
+
 ## 2026-06-16 — DEEP review: unwired elements / fudge factors / magic numbers
 
 Maintainer: "we keep finding weird issues, unwired elements, fudging factors,

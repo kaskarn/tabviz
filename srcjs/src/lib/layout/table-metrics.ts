@@ -19,6 +19,10 @@
 
 import { resolveRowKind, type RowKind } from "./row-kind";
 import { resolveRowKindHeight } from "./row-kind-heights";
+import { HEADER_FONT_SCALE } from "../rendering-constants";
+// Re-export: this module historically owned HEADER_FONT_SCALE; the canonical
+// def now lives in rendering-constants (the leaf), shared with the paint paths.
+export { HEADER_FONT_SCALE };
 
 /**
  * Minimal structural row shape for layout — a superset of `ClassifiableRow`
@@ -201,9 +205,6 @@ export interface HeaderHeightInput {
   headerDepth: number;
 }
 
-/** Header-font scale-up applied to the body size for header rows (matches the
- *  `.header-cell` CSS and the SVG header font). */
-export const HEADER_FONT_SCALE = 1.05;
 /** Line-height used across header / wrapped-row vertical math. */
 export const LINE_HEIGHT = 1.5;
 /** Breathing room added to a header row over its single-line text height.

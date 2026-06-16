@@ -44,7 +44,7 @@ import { buildRamps } from "./theme-resolve";
 import { buildAlphaRamp } from "./alpha-ramp";
 import { reflectL } from "./polarity";
 import { pickInkOnBg, oklchToHex, contrastRatio, oklchMix, rampStep } from "../oklch";
-import { BADGE_VARIANTS } from "../rendering-constants";
+import { BADGE_VARIANTS, HEADER_FONT_SCALE } from "../rendering-constants";
 
 /** Reflect an OKLCH anchor across the polarity pivot. L flips, C and H stay. */
 function reflectAnchor(a: OklchTriple): OklchTriple {
@@ -785,7 +785,7 @@ function resolveTypographyComputed(
     const body = resolveTypeRole("body", typoH, effectiveTypeRoles(inputs));
     switch (prop) {
       case "family": return body.family;
-      case "size":   return `${Math.round(body.size * 1.05 * 100) / 100}px`;
+      case "size":   return `${Math.round(body.size * HEADER_FONT_SCALE * 100) / 100}px`;
       case "weight": return String(body.weight);
       default:       return null;
     }

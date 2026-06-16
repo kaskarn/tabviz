@@ -43,8 +43,8 @@ describe("export-option parity — SVG renderer reads the option (not DOM-only)"
 
   test("range `thousandsSep`: separator reaches the export output", () => {
     const opts = (sep: string | false) => ({ range: { minField: "lo", maxField: "hi", decimals: 0, thousandsSep: sep } });
-    const withSep = textOf(rangeSvgRenderer(null, opts(","), rangeCtx({ lo: 12000, hi: 34000 })));
-    const without = textOf(rangeSvgRenderer(null, opts(false), rangeCtx({ lo: 12000, hi: 34000 })));
+    const withSep = textOf(rangeSvgRenderer(null, opts(","), rangeCtx({ lo: 12000, hi: 34000 }), {}));
+    const without = textOf(rangeSvgRenderer(null, opts(false), rangeCtx({ lo: 12000, hi: 34000 }), {}));
     expect(withSep).toContain("12,000");
     expect(without).not.toContain("12,000");
     expect(withSep).not.toBe(without);
@@ -52,15 +52,15 @@ describe("export-option parity — SVG renderer reads the option (not DOM-only)"
 
   test("range `abbreviate`: abbreviation reaches the export output", () => {
     const opts = (ab: boolean) => ({ range: { minField: "lo", maxField: "hi", abbreviate: ab } });
-    const abbr = textOf(rangeSvgRenderer(null, opts(true), rangeCtx({ lo: 1200, hi: 3400000 })));
-    const plain = textOf(rangeSvgRenderer(null, opts(false), rangeCtx({ lo: 1200, hi: 3400000 })));
+    const abbr = textOf(rangeSvgRenderer(null, opts(true), rangeCtx({ lo: 1200, hi: 3400000 }), {}));
+    const plain = textOf(rangeSvgRenderer(null, opts(false), rangeCtx({ lo: 1200, hi: 3400000 }), {}));
     expect(abbr).not.toBe(plain);
     expect(abbr.toUpperCase()).toMatch(/[KM]/); // 3.4M / 1.2K
   });
 
   test("range NA: either bound missing → naText (matches CellRange), not a partial bound", () => {
     const opts = { range: { minField: "lo", maxField: "hi", decimals: 0 } };
-    const out = textOf(rangeSvgRenderer(null, opts, { cellWidth: 200, rowHeight: 20, row: { lo: 5, hi: null }, target: "svg", naText: "n/a" } as RenderContext));
+    const out = textOf(rangeSvgRenderer(null, opts, { cellWidth: 200, rowHeight: 20, row: { lo: 5, hi: null }, target: "svg", naText: "n/a" } as RenderContext, {}));
     expect(out).toBe("n/a");
   });
 });

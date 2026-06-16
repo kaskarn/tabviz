@@ -5,7 +5,7 @@
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
   import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
-  import { getEffectYOffset } from "$lib/rendering-constants";
+  import { getEffectYOffset, markerSizeFromWeight, EFFECT } from "$lib/rendering-constants";
   import { resolveMarkerStyle, semanticStrokeFor } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
 
@@ -149,8 +149,8 @@
   );
 
   // Diamond height for summary rows (fixed; theme override removed in
-  // v0.30 cleanup).
-  const diamondHeight = 10;
+  // v0.30 cleanup). Shared with the SVG export (svg-generator).
+  const diamondHeight = EFFECT.SUMMARY_DIAMOND_HEIGHT;
   const halfDiamondHeight = diamondHeight / 2;
 
   // Base point size from theme
@@ -161,16 +161,13 @@
     // Row-level marker size (only applies to primary effect). Treated as a
     // raw weight-like value and normalized the same way as legacy weight.
     if (isPrimary && row.markerStyle?.size != null) {
-      const scale = 0.5 + Math.sqrt(row.markerStyle.size / 100) * 1.5;
-      return Math.min(Math.max(basePointSize * scale, 3), basePointSize * 2.5);
+      return markerSizeFromWeight(row.markerStyle.size, basePointSize);
     }
 
     // Legacy weight column support
     const weight = weightCol ? (row.metadata[weightCol] as number | undefined) : undefined;
     if (weight) {
-      // Scale between 0.5x and 2x based on weight
-      const scale = 0.5 + Math.sqrt(weight / 100) * 1.5;
-      return Math.min(Math.max(basePointSize * scale, 3), basePointSize * 2.5);
+      return markerSizeFromWeight(weight, basePointSize);
     }
 
     return basePointSize;
