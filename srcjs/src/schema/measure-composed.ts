@@ -140,6 +140,14 @@ export function measureComposedColumnWidth(
       opts.target,
     );
     if (tree == null) continue; // NA / empty cell — nothing to lay out.
+    // A DOM-component cell (CellPvalue / CellBadge / … — `component(...)`) is
+    // NOT a tree-measurable text composition: `renderNodeToSvg` can't size it
+    // (falls back to width 0). Its width comes from the flat displayText (the
+    // component renders that same string) or glyphNaturalWidth. Bail to the
+    // caller's flat path. (Columns are uniform-type, so one component winner
+    // ⇒ the whole column is component-based.) Without this, pvalue/badge auto
+    // columns measured 0 → fell to the MIN floor → CLIPPED (hero P column).
+    if (tree.kind === "component") return null;
     // Track whether ANY winner is a real composition; a column whose cells are
     // all single un-styled text runs is flat-exact, so we hand back null and
     // the caller keeps its proven flat path (which splits bold candidates onto

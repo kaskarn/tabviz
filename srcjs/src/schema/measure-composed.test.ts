@@ -44,6 +44,21 @@ describe("measureComposedColumnWidth", () => {
     expect(w).toBeNull();
   });
 
+  test("DOM component-cell column (pvalue → CellPvalue) → null, NOT 0 (regression)", () => {
+    // pvalue's DOM renderer returns `component("CellPvalue")`; renderNodeToSvg
+    // can't size a RenderComponent (width 0). Before the fix this returned 0
+    // (not null), so the caller skipped the flat measure and the column fell to
+    // the MIN floor → CLIPPED (the hero "P" column: 6.0×10⁻⁴*** truncated).
+    const pvalueCol = {
+      id: "p", header: "P", field: "p", type: "pvalue",
+      align: "right", sortable: false, isGroup: false, width: "auto",
+      options: { pvalue: { stars: true } },
+    } as unknown as ColumnSpec;
+    const cells: ComposedCandidate[] = [{ text: "6.0×10⁻⁴***", metadata: { p: 0.0006 }, bold: false }];
+    const w = measureComposedColumnWidth(pvalueCol, cells, 14, resolver(), { target: "dom" });
+    expect(w).toBeNull(); // bail to the flat path — never 0
+  });
+
   test("empty candidate set → null", () => {
     expect(measureComposedColumnWidth(intervalCol(), [], 14, resolver(), { target: "svg" })).toBeNull();
   });
