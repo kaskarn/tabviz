@@ -7,6 +7,7 @@
 // runtime context — pure geometry, easy to test, easy to share.
 
 import { SPARKLINE } from "./rendering-constants";
+import { arrayMin, arrayMax } from "./scale-utils";
 
 export type SparklinePoint = [number, number];
 
@@ -36,8 +37,8 @@ export function computeSparklinePoints(
 
   const innerW = Math.max(0, width - padding * 2);
   const innerH = Math.max(0, height - padding * 2);
-  const min = Math.min(...validData);
-  const max = Math.max(...validData);
+  const min = arrayMin(validData);
+  const max = arrayMax(validData);
   const yPad = (max - min) * 0.1 || 1;
   const domainMin = min - yPad;
   const domainMax = max + yPad;

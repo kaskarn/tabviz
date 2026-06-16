@@ -5,6 +5,24 @@
  * and the pure-data SVG generator to ensure consistent axis scaling.
  */
 
+/**
+ * Min/max of a numeric array WITHOUT the `Math.min(...xs)` spread — distribution
+ * columns (violin/KDE/boxplot) carry raw per-row data of unbounded length, and
+ * spreading a large array into a call throws `RangeError: too many arguments`.
+ * Reduce-based, so it scales. Returns ±Infinity for an empty array (matching
+ * `Math.min()`/`Math.max()`).
+ */
+export function arrayMin(xs: readonly number[]): number {
+  let m = Infinity;
+  for (let i = 0; i < xs.length; i++) if (xs[i]! < m) m = xs[i]!;
+  return m;
+}
+export function arrayMax(xs: readonly number[]): number {
+  let m = -Infinity;
+  for (let i = 0; i < xs.length; i++) if (xs[i]! > m) m = xs[i]!;
+  return m;
+}
+
 /** Extended Wilkinson Q sequence for "nice" tick values */
 export const NICE_Q = [1, 5, 2, 2.5, 4, 3];
 

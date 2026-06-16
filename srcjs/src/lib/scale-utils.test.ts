@@ -1,6 +1,22 @@
 import { expect, test, describe } from "bun:test";
-import { normalizeValue } from "./scale-utils";
+import { normalizeValue, arrayMin, arrayMax } from "./scale-utils";
 import { truncateString } from "./formatters";
+
+describe("arrayMin / arrayMax — spread-free, large-array safe", () => {
+  test("matches Math.min/max on small input", () => {
+    expect(arrayMin([3, 1, 2])).toBe(1);
+    expect(arrayMax([3, 1, 2])).toBe(3);
+  });
+  test("empty array → ±Infinity (matches Math.min/max())", () => {
+    expect(arrayMin([])).toBe(Infinity);
+    expect(arrayMax([])).toBe(-Infinity);
+  });
+  test("handles arrays past the call-arg spread limit (no RangeError)", () => {
+    const big = new Array(300_000).fill(0).map((_, i) => i);
+    expect(arrayMin(big)).toBe(0);
+    expect(arrayMax(big)).toBe(299_999);
+  });
+});
 
 describe("normalizeValue", () => {
   test("linear: midpoint maps to 0.5", () => {

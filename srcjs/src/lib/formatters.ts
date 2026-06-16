@@ -64,9 +64,12 @@ export function truncateString(
 ): string {
   if (str == null) return "";
   if (maxChars == null || !Number.isFinite(maxChars) || maxChars <= 0) return str;
-  if (str.length <= maxChars) return str;
+  // Count by CODE POINT (matches estimateTextWidth's [...text]) so an astral
+  // char (emoji / CJK-ext) isn't split mid-surrogate into a broken "\ufffd".
+  const cps = [...str];
+  if (cps.length <= maxChars) return str;
   if (maxChars === 1) return "\u2026";
-  return str.slice(0, maxChars - 1) + "\u2026";
+  return cps.slice(0, maxChars - 1).join("") + "\u2026";
 }
 
 /**
@@ -386,6 +389,13 @@ function _formatPvalueImpl(value: number | undefined | null, options?: ColumnOpt
     return `<${abbrevThreshold}${starStr}`;
   }
 
+  // p-values live in (0, 1]. A 0 (underflow) renders as the "<expThreshold"
+  // floor; a negative is invalid. Guard BEFORE the scientific branch, whose
+  // log10(value) would NaN-poison the output ("NaN×10⁻ᴵⁿᶠⁱⁿⁱᵗʸ") otherwise.
+  if (value <= 0) {
+    return value < 0 ? (options?.naText ?? "") : `<${expThreshold}${starStr}`;
+  }
+
   // Use scientific notation with Unicode superscript for small values
   if (format === "scientific" || (format === "auto" && value < expThreshold)) {
     const exp = Math.floor(Math.log10(value));
@@ -497,10 +507,8 @@ export function getColumnDisplayText(
       if (options?.bar?.showLabel === false) return "";
       const barValue = row.metadata[field] as number;
       if (barValue === undefined || barValue === null) return "";
-      // Match CellBar.svelte label formatting
-      if (barValue >= 100) return barValue.toFixed(0);
-      if (barValue >= 10) return barValue.toFixed(1);
-      return barValue.toFixed(2);
+      // ONE source for the bar label (was a re-inlined copy of the ladder).
+      return formatBarValue(barValue);
     }
 
     case "text": {

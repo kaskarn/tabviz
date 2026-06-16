@@ -1,5 +1,29 @@
 import { expect, test, it, describe } from "bun:test";
-import { formatNumber } from "./formatters";
+import { formatNumber, formatPvalue, truncateString } from "./formatters";
+
+describe("formatPvalue — non-positive guard (regression)", () => {
+  it("p = 0 (underflow) renders the <threshold floor, NOT NaN×10⁻ᴵⁿᶠⁱⁿⁱᵗʸ", () => {
+    expect(formatPvalue(0)).toBe("<0.001");
+    expect(formatPvalue(0)).not.toContain("NaN");
+  });
+  it("negative p is invalid → naText", () => {
+    expect(formatPvalue(-0.5, { naText: "—" } as never)).toBe("—");
+    expect(formatPvalue(-0.5)).toBe("");
+  });
+  it("legitimate small p still uses scientific notation", () => {
+    expect(formatPvalue(0.0001)).toContain("×10");
+  });
+});
+
+describe("truncateString — code-point safety (regression)", () => {
+  it("does not split an astral char mid-surrogate", () => {
+    // 3 emoji = 3 code points (6 UTF-16 units); truncate to 2 → "👩‍?" must not
+    // emit a lone surrogate. Use distinct astral chars to avoid ZWJ subtleties.
+    const out = truncateString("🍎🍊🍋", 2);
+    expect(out).toBe("🍎…");
+    expect(out).not.toContain("�");
+  });
+});
 
 describe("formatNumber — prefix/suffix + abbreviate (regression for col_currency)", () => {
   test("abbreviate with currency prefix preserves the prefix", () => {

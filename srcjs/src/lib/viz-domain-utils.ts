@@ -10,6 +10,7 @@
 
 import type { Row, VizBarColumnOptions, VizBoxplotColumnOptions, VizViolinColumnOptions } from "../types";
 import { computeBoxplotStats } from "./viz-utils";
+import { arrayMin, arrayMax } from "./scale-utils";
 
 export interface VizDomain {
   min: number;
@@ -36,8 +37,8 @@ export function computeVizBarDomain(
     return { min: min ?? 0, max: max ?? 100 };
   }
   return {
-    min: min ?? Math.min(0, ...values),
-    max: max ?? Math.max(...values) * 1.1,
+    min: min ?? Math.min(0, arrayMin(values)),
+    max: max ?? arrayMax(values) * 1.1,
   };
 }
 
@@ -72,8 +73,8 @@ export function computeVizBoxplotDomain(
   if (values.length === 0) {
     return { min: min ?? 0, max: max ?? 100 };
   }
-  const dataMin = Math.min(...values);
-  const dataMax = Math.max(...values);
+  const dataMin = arrayMin(values);
+  const dataMax = arrayMax(values);
   const range = dataMax - dataMin;
   return {
     min: min ?? dataMin - range * 0.05,
@@ -103,8 +104,8 @@ export function computeVizViolinDomain(
     return { min: axisMin ?? 0, max: axisMax ?? 100 };
   }
   // 10% padding on the *data* extent, then axisRange pins win if present.
-  const dataMin = Math.min(...values);
-  const dataMax = Math.max(...values);
+  const dataMin = arrayMin(values);
+  const dataMax = arrayMax(values);
   const range = dataMax - dataMin;
   return {
     min: axisMin ?? dataMin - range * 0.1,

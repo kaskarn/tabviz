@@ -3,6 +3,7 @@
  */
 
 import type { BoxplotStats, KDEResult } from "$types";
+import { arrayMin, arrayMax } from "./scale-utils";
 
 /**
  * Compute quartiles and summary statistics for boxplot
@@ -147,8 +148,8 @@ export function computeKDE(
   const h = bandwidth ?? silvermanBandwidth(data);
 
   // Determine range with padding (extend by 3 bandwidths on each side)
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  const min = arrayMin(data);
+  const max = arrayMax(data);
   const padding = 3 * h;
   const rangeMin = min - padding;
   const rangeMax = max + padding;
@@ -181,7 +182,7 @@ export function computeKDE(
 export function normalizeKDE(kde: KDEResult, maxWidth: number): KDEResult {
   if (kde.y.length === 0) return kde;
 
-  const maxDensity = Math.max(...kde.y);
+  const maxDensity = arrayMax(kde.y);
   if (maxDensity === 0) return kde;
 
   const normalizedY = kde.y.map((v) => (v / maxDensity) * maxWidth);
