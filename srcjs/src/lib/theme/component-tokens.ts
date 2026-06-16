@@ -544,11 +544,12 @@ export const COMPONENT_TOKENS: readonly ComponentToken[] = [
     cssVar: "--tv-text-title-fg",
     resolverGroup: "role",
     kind: "paint-color",
-    // D18 (decided 2026-06-11): bound to `text`, not brand-text. The v3
-    // bridge had been masking this token with the raw ink ANCHOR; the
-    // nearest ROLE wins (one vocabulary). Chromatic titles are one
-    // re-route away: set_component("title", col = "brand-text").
-    source: { tier: "role", role: "text" },
+    // D18 REVERSED (maintainer, 2026-06-15): the title defaults to the BRAND
+    // scale (`brand-text` — the contrast-safe brand-colored text role), not
+    // neutral `text`. A chromatic title reads as the figure's identity; the
+    // neutral default looked unbranded. Themes that want a neutral title
+    // re-route the other way: set_component("title", col = "text").
+    source: { tier: "role", role: "brand-text" },
     consumedBy: ["export/svg-generator.ts", "components/forest/PlotHeader.svelte"],
     binding: { region: "captions", component: "title", channel: "col" },
     description: "Plot title text color",

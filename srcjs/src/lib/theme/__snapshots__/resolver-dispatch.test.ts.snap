@@ -152,7 +152,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) nejm / standar
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Lora', Georgia, serif",
-  "--tv-text-title-fg": "#191312",
+  "--tv-text-title-fg": "#4D0005",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "600",
 }
@@ -310,7 +310,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) nejm / high-co
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Lora', Georgia, serif",
-  "--tv-text-title-fg": "#191312",
+  "--tv-text-title-fg": "#4D0005",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "600",
 }
@@ -468,7 +468,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) nejm / reduced
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Lora', Georgia, serif",
-  "--tv-text-title-fg": "#191312",
+  "--tv-text-title-fg": "#4D0005",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "600",
 }
@@ -626,7 +626,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) ledger / stand
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Spectral', Georgia, serif",
-  "--tv-text-title-fg": "#19140D",
+  "--tv-text-title-fg": "#00383B",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -784,7 +784,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) ledger / high-
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Spectral', Georgia, serif",
-  "--tv-text-title-fg": "#19140D",
+  "--tv-text-title-fg": "#00383B",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -942,7 +942,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) ledger / reduc
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Spectral', Georgia, serif",
-  "--tv-text-title-fg": "#19140D",
+  "--tv-text-title-fg": "#00383B",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -1100,7 +1100,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) brutalist / st
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "500",
   "--tv-text-title-family": "'Darker Grotesque', 'Archivo Black', sans-serif",
-  "--tv-text-title-fg": "#272122",
+  "--tv-text-title-fg": "#303030",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "800",
 }
@@ -1258,7 +1258,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) brutalist / hi
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "500",
   "--tv-text-title-family": "'Darker Grotesque', 'Archivo Black', sans-serif",
-  "--tv-text-title-fg": "#272122",
+  "--tv-text-title-fg": "#303030",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "800",
 }
@@ -1416,7 +1416,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) brutalist / re
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "500",
   "--tv-text-title-family": "'Darker Grotesque', 'Archivo Black', sans-serif",
-  "--tv-text-title-fg": "#272122",
+  "--tv-text-title-fg": "#303030",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "800",
 }
@@ -1574,7 +1574,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) aurora / stand
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Outfit', -apple-system, system-ui, sans-serif",
-  "--tv-text-title-fg": "#E0DDE4",
+  "--tv-text-title-fg": "#D7B5FF",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -1732,7 +1732,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) aurora / high-
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Outfit', -apple-system, system-ui, sans-serif",
-  "--tv-text-title-fg": "#E0DDE4",
+  "--tv-text-title-fg": "#D7B5FF",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -1890,7 +1890,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) aurora / reduc
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Outfit', -apple-system, system-ui, sans-serif",
-  "--tv-text-title-fg": "#E0DDE4",
+  "--tv-text-title-fg": "#D7B5FF",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -2048,7 +2048,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) terminal / sta
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Space Mono', 'Courier New', monospace",
-  "--tv-text-title-fg": "#8BD59B",
+  "--tv-text-title-fg": "#BCFFC9",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -2206,7 +2206,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) terminal / hig
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Space Mono', 'Courier New', monospace",
-  "--tv-text-title-fg": "#8BD59B",
+  "--tv-text-title-fg": "#BCFFC9",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -2364,7 +2364,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) terminal / red
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Space Mono', 'Courier New', monospace",
-  "--tv-text-title-fg": "#8BD59B",
+  "--tv-text-title-fg": "#BCFFC9",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -2522,7 +2522,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) newsprint / st
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Crimson Pro', Georgia, 'Times New Roman', serif",
-  "--tv-text-title-fg": "#1C140E",
+  "--tv-text-title-fg": "#1C1C1C",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -2680,7 +2680,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) newsprint / hi
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Crimson Pro', Georgia, 'Times New Roman', serif",
-  "--tv-text-title-fg": "#1C140E",
+  "--tv-text-title-fg": "#1C1C1C",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -2838,7 +2838,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) newsprint / re
   "--tv-text-tick-size": "12.55px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Crimson Pro', Georgia, 'Times New Roman', serif",
-  "--tv-text-title-fg": "#1C140E",
+  "--tv-text-title-fg": "#1C1C1C",
   "--tv-text-title-size": "20.53px",
   "--tv-text-title-weight": "600",
 }
@@ -2996,7 +2996,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) blueprint / st
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
-  "--tv-text-title-fg": "#041920",
+  "--tv-text-title-fg": "#003647",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -3154,7 +3154,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) blueprint / hi
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
-  "--tv-text-title-fg": "#041920",
+  "--tv-text-title-fg": "#003647",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -3312,7 +3312,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) blueprint / re
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
-  "--tv-text-title-fg": "#041920",
+  "--tv-text-title-fg": "#003647",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -3470,7 +3470,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) synthwave / st
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
-  "--tv-text-title-fg": "#E8DAE2",
+  "--tv-text-title-fg": "#FF98DA",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -3628,7 +3628,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) synthwave / hi
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
-  "--tv-text-title-fg": "#E8DAE2",
+  "--tv-text-title-fg": "#FF98DA",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -3786,7 +3786,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) synthwave / re
   "--tv-text-tick-size": "11.65px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
-  "--tv-text-title-fg": "#E8DAE2",
+  "--tv-text-title-fg": "#FF98DA",
   "--tv-text-title-size": "19.06px",
   "--tv-text-title-weight": "600",
 }
@@ -3944,7 +3944,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) dwarven / stan
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Cinzel', 'EB Garamond', Georgia, serif",
-  "--tv-text-title-fg": "#DCD3CC",
+  "--tv-text-title-fg": "#FFE6D1",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "700",
 }
@@ -4102,7 +4102,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) dwarven / high
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Cinzel', 'EB Garamond', Georgia, serif",
-  "--tv-text-title-fg": "#DCD3CC",
+  "--tv-text-title-fg": "#FFE6D1",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "700",
 }
@@ -4260,7 +4260,7 @@ exports[`Pass 0d: full-cssVars snapshot lock (per preset × mode) dwarven / redu
   "--tv-text-tick-size": "12.25px",
   "--tv-text-tick-weight": "400",
   "--tv-text-title-family": "'Cinzel', 'EB Garamond', Georgia, serif",
-  "--tv-text-title-fg": "#DCD3CC",
+  "--tv-text-title-fg": "#FFE6D1",
   "--tv-text-title-size": "22.37px",
   "--tv-text-title-weight": "700",
 }
