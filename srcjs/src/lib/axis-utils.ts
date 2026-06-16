@@ -347,7 +347,20 @@ export function computePlotRegion(
 }
 
 /**
- * Generate tick positions within axis limits
+ * Format an axis tick value — SINGLE source shared by the DOM axis
+ * (EffectAxis.svelte) and the SVG export (svg-generator), so tick labels can't
+ * drift between widget and download. |v|<0.01 → "0", ≥100 → int, ≥10 → 1dp,
+ * else 2dp.
+ */
+export function formatAxisTick(value: number): string {
+  if (Math.abs(value) < 0.01) return "0";
+  if (Math.abs(value) >= 100) return value.toFixed(0);
+  if (Math.abs(value) >= 10) return value.toFixed(1);
+  return value.toFixed(2);
+}
+
+/**
+ * Generate axis tick values.
  *
  * Priority:
  * 1. Explicit tickValues (filtered to axis bounds)

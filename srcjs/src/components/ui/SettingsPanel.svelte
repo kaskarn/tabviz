@@ -1,20 +1,13 @@
 <script lang="ts">
-  // Settings panel — TOTAL OVERHAUL (settings-overhaul P2; plan:
-  // docs/dev/settings-overhaul-plan.md).
+  // Settings panel — the D21 redesign (docs/dev/settings-redesign.md), now
+  // COMPLETE. Tab spine: `variations | labels | edit theme | this figure`;
+  // "edit theme" is an inner EditThemeCluster (identity | plots | styling).
+  // The pre-redesign two-band interim shell + the 6-tab apparatus are retired;
+  // the studio is dormant (do not extend).
   //
-  // The old tab apparatus (6 tabs, 4 "advanced", three control dialects,
-  // a scroll-hint band-aid, hidden .sr-only shadow controls) is gone.
-  // The panel is a two-part document on one vertical scroll:
-  //
-  //   PANEL BAR     settings · [Reset theme] · ✕
-  //   THEME band    Tier-1 only — INTERIM shell while the D21 redesign
-  //                 builds Variations/Labels/Identity/Plots/Styling
-  //                 tab-by-tab (docs/dev/settings-redesign.md)
-  //   FIGURE band   per-spec state, with its OWN scoped reset
-  //
-  // Boundary law (DT-11): nothing in this tree writes a Tier-2/3 theme
-  // path — deep editing lives in the studio. The grep gate in
-  // settings-band-contract.test.ts enforces it.
+  // Boundary law (DT-11): nothing in this tree writes a Tier-2/3 theme path —
+  // only the sanctioned verbs (setAuthoringInputs / setThemeRoleOverride /
+  // clear*). The grep gate in settings-band-contract.test.ts enforces it.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
   import FigureBand from "./settings/FigureBand.svelte";

@@ -2,6 +2,8 @@
   import type { WebTheme, ComputedLayout } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeAxisLayout } from "$lib/typography-layout";
+  import { formatAxisTick } from "$lib/axis-utils";
+  import { AXIS } from "$lib/rendering-constants";
   import { getCssVars, readLabelSize } from "../../lib/theme/consumer-bridge";
   
   interface Props {
@@ -26,9 +28,10 @@
   const showGridlines = $derived(gridlines ?? axisConfig?.gridlines ?? false);
   const gridlineStyle = $derived(axisConfig?.gridlineStyle ?? "dotted");
 
-  // Edge threshold for text anchor adjustment (prevents clipping at boundaries)
-  // Should be >= VIZ_MARGIN to ensure edge labels are detected
-  const EDGE_THRESHOLD = 35;
+  // Edge threshold for text anchor adjustment (prevents clipping at boundaries).
+  // Sourced from the canonical AXIS constants (the export reads the same) so the
+  // DOM and SVG axis can't drift.
+  const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
 
   // Extract nullTick config (default: true)
   const shouldIncludeNullTick = $derived(axisConfig?.nullTick ?? true);
@@ -53,7 +56,7 @@
     }
 
     // Get base ticks: use precomputed baseTicks from axis-utils, or fall back to D3
-    const minSpacing = 50; // minimum pixels between tick labels
+    const minSpacing = AXIS.MIN_TICK_SPACING; // canonical (export reads the same)
     const maxTicks = Math.max(2, Math.floor(plotWidth / minSpacing));
     const requestedTicks = axisConfig?.tickCount ?? null;
     const tickCount = requestedTicks ?? Math.min(7, maxTicks);
@@ -219,7 +222,7 @@
         font-weight="var(--tv-text-tick-weight, 400)"
         font-style="normal"
       >
-        {formatTick(tick)}
+        {formatAxisTick(tick)}
       </text>
     </g>
   {/each}
@@ -240,15 +243,6 @@
     </text>
   {/if}
 </g>
-
-<script lang="ts" module>
-  function formatTick(value: number): string {
-    if (Math.abs(value) < 0.01) return "0";
-    if (Math.abs(value) >= 100) return value.toFixed(0);
-    if (Math.abs(value) >= 10) return value.toFixed(1);
-    return value.toFixed(2);
-  }
-</script>
 
 <style>
   .effect-axis text {

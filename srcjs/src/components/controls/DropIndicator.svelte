@@ -7,8 +7,12 @@
     y?: number;           // viewport coord for horizontal line (line Y)
     start?: number;       // perpendicular-axis start (vertical: top; horizontal: left)
     end?: number;         // perpendicular-axis end  (vertical: bottom; horizontal: right)
+    // Resolved accent, passed in because this element is portaled to body and
+    // can't read the `.tabviz-container`-scoped `--tv-accent` (D4). Falls back
+    // to the CSS var/literal when undefined.
+    color?: string;
   }
-  const { orientation, x = 0, y = 0, start = 0, end = 0 }: Props = $props();
+  const { orientation, x = 0, y = 0, start = 0, end = 0, color }: Props = $props();
 </script>
 
 <!--
@@ -23,6 +27,7 @@
     style:left="{x - 1}px"
     style:top="{start}px"
     style:height="{Math.max(0, end - start)}px"
+    style:background={color}
     use:portal
   ></div>
 {:else}
@@ -31,6 +36,7 @@
     style:top="{y - 1}px"
     style:left="{start}px"
     style:width="{Math.max(0, end - start)}px"
+    style:background={color}
     use:portal
   ></div>
 {/if}

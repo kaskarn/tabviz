@@ -1,9 +1,9 @@
 // ESLint flat config (ESLint 9). Lints src/ TypeScript + Svelte.
 //
-// Baseline is intentionally LENIENT: the recommended rule sets are wired up,
-// but the rules that currently fire across the codebase are set to "warn", not
-// "error", so `npm run lint` exits 0 today while still surfacing the count.
-// Tighten individual rules to "error" as the codebase is cleaned up.
+// Baseline is ZERO-WARNING: every wired rule is "error" and `npm run lint` is a
+// HARD CI gate (js-ci.yaml). The 2026-06-12 paydown drove the count to 0 (see
+// the inline notes on the rule block below); keep it there. (prefer-const is
+// off for *.svelte/*.svelte.ts — the rule misreads the Svelte 5 runes idiom.)
 //
 // Runner split note (see .claude/CLAUDE.md): this is a static linter only; it
 // does not run tests. svelte-check + tsc remain the type gates.

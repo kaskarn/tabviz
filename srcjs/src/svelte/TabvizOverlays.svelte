@@ -23,12 +23,20 @@
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import ColumnEditorPopover, { type EditorTarget } from "$components/column-editor-v2/ColumnEditorV2Popover.svelte";
   import { getVisualTypeDef, resolveShowHeader } from "$lib/column-types";
+  import { getCssVars, readVar } from "$lib/theme/consumer-bridge";
 
   interface Props {
     store: TabvizStore;
     containerRef: HTMLDivElement | undefined;
   }
   const { store, containerRef }: Props = $props();
+
+  // Resolved accent for the drop indicator — it portals to body and can't read
+  // the container-scoped --tv-accent (D4), so we resolve it here and pass it in.
+  const accentColor = $derived.by((): string => {
+    const theme = store.spec?.theme;
+    return (theme ? readVar(getCssVars(theme), "--tv-accent", "#2563eb") : "#2563eb") ?? "#2563eb";
+  });
 
   // Resolved interaction surface (4-tier defaults chain) — never read
   // spec.interaction directly; it is the sparse explicit tier only.
@@ -215,7 +223,7 @@
     {@const siblings = store.siblingsForColumnScope(store.dragState.scopeKey).map(s => s.id)}
     {@const band = computeColumnBand(siblings, store.dragState.indicatorIndex)}
     {#if band}
-      <DropIndicator orientation="vertical" x={band.x} start={band.start} end={band.end} />
+      <DropIndicator orientation="vertical" x={band.x} start={band.start} end={band.end} color={accentColor} />
     {/if}
   {:else}
     {@const indices = dragKind === "row"
@@ -223,7 +231,7 @@
       : (() => { const ids = new Set(store.siblingsForRowGroupScope(store.dragState.scopeKey)); const r: number[] = []; store.displayRows.forEach((dr, i) => { if (dr.type === "group_header" && ids.has(dr.group.id)) r.push(i); }); return r; })()}
     {@const band = computeRowBand(indices, store.dragState.indicatorIndex)}
     {#if band}
-      <DropIndicator orientation="horizontal" y={band.y} start={band.start} end={band.end} />
+      <DropIndicator orientation="horizontal" y={band.y} start={band.start} end={band.end} color={accentColor} />
     {/if}
   {/if}
 {/if}

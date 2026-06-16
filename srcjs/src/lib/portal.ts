@@ -8,9 +8,12 @@
 //   <div use:portal={document.body}>…</div>
 //   <div use:portal={"body"}>…</div>
 //
-// The element keeps its computed styles (no DOM-tree reparenting
-// would change inherited CSS variables since we move-to-body, not
-// detach-from-document).
+// TRAP (D4): moving to body DOES break inherited CSS variables. The tabviz
+// theme custom properties are scoped to `.tabviz-container` (applied as inline
+// style), so a portaled element loses them and falls back to its hardcoded
+// CSS-var defaults — portaled popovers render fallback chrome by design. If a
+// portaled element needs a live theme value (e.g. the accent), pass it in as an
+// inline style prop rather than relying on the unreachable var.
 
 export type PortalTarget = HTMLElement | "body" | undefined;
 

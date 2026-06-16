@@ -43,7 +43,7 @@ import type {
   Annotation,
 } from "$types";
 import { getEffectValue } from "$lib/scale-utils";
-import { computeAxis, generateTicks, VIZ_MARGIN } from "$lib/axis-utils";
+import { computeAxis, generateTicks, formatAxisTick, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
 import { isVizType, resolveShowHeader, isAxisBearingColumn, columnAxisLabel } from "$lib/column-types";
@@ -1446,18 +1446,10 @@ function truncateText(
   return text.slice(0, left) + ellipsis;
 }
 
-// Note: number/axis-tick formatters are imported from ./formatters; axis tick
-// labels use the local `formatTick` via `axisTickLabelSvg`.
+// Note: number formatters are imported from ./formatters; axis tick labels use
+// the SHARED formatAxisTick from axis-utils (one source with the DOM axis).
 // formatEvents / formatInterval / formatPvalue moved to per-schema
 // renderers under src/schema/columns/*-renderer.ts (Phase 4a-c).
-
-/** Format tick value for axis */
-function formatTick(value: number): string {
-  if (Math.abs(value) < 0.01) return "0";
-  if (Math.abs(value) >= 100) return value.toFixed(0);
-  if (Math.abs(value) >= 10) return value.toFixed(1);
-  return value.toFixed(2);
-}
 
 /**
  * Canonical axis tick-label `<text>` — the ONE source of truth shared by the
@@ -1486,7 +1478,7 @@ function axisTickLabelSvg(
     font-size="${fontSize}px"
     font-weight="${weight}"
     font-style="${style}"
-    fill="${fill}">${formatTick(value)}</text>`;
+    fill="${fill}">${formatAxisTick(value)}</text>`;
 }
 
 // ============================================================================
