@@ -4565,7 +4565,17 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Background
   const surfaceBgResolved = readSurfaceBg(cssVars);
   const bgColor = options.backgroundColor ?? surfaceBgResolved;
-  parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
+  // `float` / `transparent` shells are a paper card on a TRANSPARENT backdrop
+  // (DOM mirror: `.tabviz-container[data-shell-mode=float|transparent]` sets
+  // `background: transparent`). Skip the full-canvas surface fill for those two
+  // unless an explicit backgroundColor was passed — the paper card paints its
+  // own `--tv-paper-bg` below, and the host composites the rest.
+  const bgShellMode = theme.authoringInputs?.shell_mode ?? "flush";
+  const paintCanvasBg = options.backgroundColor != null
+    || (bgShellMode !== "float" && bgShellMode !== "transparent");
+  if (paintCanvasBg) {
+    parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
+  }
 
   // ── Shell chrome (band + gradient + texture; export parity) ──────────────
   // Mirrors theme-runtime.css's `.tv-shell` paint: bg + 1px outline + radius,

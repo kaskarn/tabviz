@@ -2911,6 +2911,19 @@
     contain-intrinsic-size: auto 600px;
   }
 
+  /* `float` / `transparent` shell modes are, by name, a paper card on a
+     TRANSPARENT backdrop (the host page shows through outside the table) —
+     `float` with a drop shadow, `transparent` without (shell-paper.ts). The
+     base rule paints --tv-surface-bg unconditionally, which made both modes
+     opaque (not true to their names). Drop the container fill for these two
+     so the surface only paints under flush/raised. The paper card still
+     paints its own --tv-paper-bg. (Export mirror: svg-generator skips the
+     full-canvas bg rect for these modes.) */
+  .tabviz-container[data-shell-mode="float"],
+  .tabviz-container[data-shell-mode="transparent"] {
+    background: transparent;
+  }
+
   /* Paint-tool hover affordance. Under the always-on painter (v0.26+)
      the historical row-scope dashed outline + crosshair cursor read as
      noisy chrome since `.paint-active` is permanent — they fired on
@@ -3270,7 +3283,15 @@
      .grid-cell unless the variant explicitly opts in. */
   .primary-cell {
     min-width: 120px;
-    background-color: var(--tv-first-col-bg, transparent);
+    /* Default (first_column_style != "bold") falls back to the ROW background,
+       NOT `transparent`. The first column must OCCLUDE the paper like every
+       other cell: with a flat paper `transparent` was invisible (transparent
+       over #FFF == #FFF), but a paper background-IMAGE (shell_texture: grain)
+       showed straight through this transparent cell while sibling .grid-cells'
+       opaque --tv-row-base-bg occluded it — the first column read as grainy
+       against an otherwise-clean table. Paper texture is a BACKDROP; it must
+       not bleed into the table rows. */
+    background-color: var(--tv-first-col-bg, var(--tv-row-base-bg, var(--tv-surface-bg)));
     color: var(--tv-first-col-fg, inherit);
     font-weight: var(--tv-first-col-weight, inherit);
     /* --tv-first-col-rule resolves to the strong rule when first_column_style
