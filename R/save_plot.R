@@ -529,9 +529,16 @@ save_plot <- function(x, file,
   }, error = function(e) 10)
   # Match TS measureAutoColumns: text width + cellPaddingX*2 + rendering buffer.
   cell_padding <- as.numeric(cell_padding_x) * 2
-  rendering_buffer <- 8  # TEXT_MEASUREMENT.RENDERING_BUFFER (TS constant)
-  auto_min <- 40         # AUTO_WIDTH.MIN
-  auto_max <- 480        # AUTO_WIDTH.MAX
+  # NOTE (D33): these DIVERGE from the TS constants the old comments claimed
+  # equality with (RENDERING_BUFFER=4, AUTO_WIDTH.MIN=60, MAX=600, label
+  # LABEL_MAX=400). The wider buffer may be deliberate — pinned systemfonts
+  # widths measure NARROWER than the estimator (CLAUDE.md trap), so extra pad
+  # guards against truncation — but the min/max likely drifted. Resolving needs
+  # a visual WYSIWYG check (truncation vs DOM-width parity), so NOT blindly
+  # realigned here. test-systemfonts-injection.R pins the current values.
+  rendering_buffer <- 8
+  auto_min <- 40
+  auto_max <- 480
   skip_types <- c("viz_bar", "viz_boxplot", "viz_violin", "forest")
 
   df <- spec@data

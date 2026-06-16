@@ -398,39 +398,25 @@ create_subset_spec <- function(base_spec, subset_data, label) {
     }
   }
 
-  WebSpec(
-    data = subset_data,
-    group_col = base_spec@group_col,
-    group_cols = base_spec@group_cols,
-    columns = base_spec@columns,
-    groups = filtered_groups,
-    summaries = filtered_summaries,
-    # overall_summary is not set - uses default (missing)
-    theme = base_spec@theme,
-    interaction = base_spec@interaction,
-    labels = new_labels,
-    watermark = base_spec@watermark,
-    row_bold_col = base_spec@row_bold_col,
-    row_italic_col = base_spec@row_italic_col,
-    row_color_col = base_spec@row_color_col,
-    row_bg_col = base_spec@row_bg_col,
-    row_badge_col = base_spec@row_badge_col,
-    row_icon_col = base_spec@row_icon_col,
-    row_indent_col = base_spec@row_indent_col,
-    row_type_col = base_spec@row_type_col,
-    row_emphasis_col = base_spec@row_emphasis_col,
-    row_muted_col = base_spec@row_muted_col,
-    row_accent_col = base_spec@row_accent_col,
-    weight_col = base_spec@weight_col,
-    # Carry the base spec's captured original call into every sub-spec so the
-    # "View source" panel can show the user's actual `tabviz()` line rather
-    # than the `tabviz(...)` placeholder.
-    original_call = base_spec@original_call,
-    # Pagination cascades to every subview. With `break_on = "split"` (the
-    # default), each subview is the page-break boundary by definition; the
-    # row-count budget then applies independently within each subview.
-    paginate = base_spec@paginate
-  )
+  # CLONE the base spec, then override ONLY the per-subset fields. Every other
+  # field — label_column, the marker_* and row_* style-mapping columns,
+  # row_fill_col, details_col, conditions, figure_layout, initial_state,
+  # watermark_color/opacity, extra_columns, notes, target_aspect* — is inherited
+  # automatically. The previous hand-enumerated copy silently DROPPED 17 fields
+  # (R3 review): e.g. `set_marker_style() |> split_table()` produced unstyled
+  # markers, and the canonical label_column slot fell back to columns[0]. A
+  # clone can't fall out of sync when WebSpec grows a new field. The original
+  # call + pagination ride along (carried by the clone). View-source / break-on
+  # behavior is unchanged.
+  spec <- base_spec
+  spec@data <- subset_data
+  spec@groups <- filtered_groups
+  spec@summaries <- filtered_summaries
+  spec@labels <- new_labels
+  # overall_summary needs no reset: it has no setter (constructor default only),
+  # so the base always carries the default sentinel the clone preserves — exactly
+  # what the prior explicit omission produced.
+  spec
 }
 
 #' Build hierarchical navigation tree from split values

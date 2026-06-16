@@ -211,6 +211,29 @@ as_paginate_spec <- function(x, arg = "paginate") {
 #   - rows beyond a group budget split naturally
 #   - `orphan_min` pulls rows back from the prior page if the trailing page
 #     would be too small
+# Per-row group IDs in the composite-key scheme serialize_data() emits
+# ("level1__level2" for hierarchical >1-col grouping; the bare value otherwise).
+# SINGLE source shared by compute_page_breaks and slice_spec_for_page so page
+# boundaries AND summary filtering both key on the same id GroupSummary@group_id
+# carries — slice_spec_for_page used to key on the single group_col, so under
+# hierarchical grouping no bare value ever matched a composite id and EVERY
+# group summary was dropped from every paginated page (R3 review).
+#' @noRd
+.row_group_ids <- function(spec, data = spec@data) {
+  n <- nrow(data)
+  if (is.na(spec@group_col) || !(spec@group_col %in% names(data))) {
+    return(rep(NA_character_, n))
+  }
+  if (length(spec@group_cols) > 1L && all(spec@group_cols %in% names(data))) {
+    parts <- vapply(spec@group_cols, function(col) as.character(data[[col]]),
+                    character(n))
+    if (is.matrix(parts)) apply(parts, 1, paste, collapse = "__")
+    else paste(parts, collapse = "__")  # single-row corner case
+  } else {
+    as.character(data[[spec@group_col]])
+  }
+}
+
 #
 # This runs at serialize time and the result is stored on the wire so the
 # Svelte viewer slices `displayRows` using the same breakpoints the PDF
@@ -226,24 +249,7 @@ compute_page_breaks <- function(spec, paginate = NULL) {
   # Build per-row group ID vector matching the composite-key scheme used by
   # serialize_data() (so frontend/PDF page boundaries align with what the
   # widget actually renders for grouped data).
-  group_ids <- if (!is.na(spec@group_col) && spec@group_col %in% names(spec@data)) {
-    if (length(spec@group_cols) > 1L &&
-        all(spec@group_cols %in% names(spec@data))) {
-      parts <- vapply(spec@group_cols, function(col) {
-        as.character(spec@data[[col]])
-      }, character(n))
-      if (is.matrix(parts)) {
-        apply(parts, 1, paste, collapse = "__")
-      } else {
-        # Single row corner case
-        paste(parts, collapse = "__")
-      }
-    } else {
-      as.character(spec@data[[spec@group_col]])
-    }
-  } else {
-    rep(NA_character_, n)
-  }
+  group_ids <- .row_group_ids(spec)
 
   runs <- compute_group_runs(group_ids)
 
@@ -377,9 +383,11 @@ slice_spec_for_page <- function(spec, page_start, page_end) {
   out@data <- data[seq.int(page_start, page_end), , drop = FALSE]
   out@paginate <- NULL
 
-  # Filter group summaries to groups with data on this page.
+  # Filter group summaries to groups with data on this page. Key on the SAME
+  # composite group id GroupSummary@group_id carries (was the bare group_col,
+  # so hierarchical grouping matched nothing and dropped every summary).
   if (length(spec@summaries) > 0L && !is.na(spec@group_col)) {
-    page_group_ids <- unique(as.character(out@data[[spec@group_col]]))
+    page_group_ids <- unique(.row_group_ids(spec, out@data))
     out@summaries <- Filter(
       function(s) any(s@group_id %in% page_group_ids),
       spec@summaries
