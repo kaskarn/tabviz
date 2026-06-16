@@ -301,6 +301,17 @@ One line each; the cost of ignoring these has already been paid once.
   module scripts and fakes layout regressions.
 - Pinned systemfonts widths are narrower than the estimator — export
   truncation thresholds need ~one-pad tolerance.
+- The DOM and the export have TWO separate flex-distribution paths (export
+  = `resolveFlexWidths`; the DOM store has its own). They agree only while
+  content fits the container; past it the export grows a high-weight flex
+  column unbounded while the DOM stays even. Production WYSIWYG PINS widget
+  widths so it's unaffected — but `wysiwyg-diff.browser.ts` exercises the
+  FROM-SCRATCH path (no provided widths), where flex widths legitimately
+  diverge (budgeted under D32). Unifying the two is a post-ship arc (D32).
+- Numeric cells render `tabular-nums` but are measured with PROPORTIONAL
+  advances (~0.9px/digit under-count) — `tabularizeDigits()` normalizes
+  digits at the flat-measure sites (DOM `doMeasurement` + export
+  `calculateSvgAutoWidths`); composed cells use `COMPOSED_SPAN_BEARING`.
 
 **Layout / export**
 - Renderer registration is SPLIT across two boots (schema/init.ts = V8;
