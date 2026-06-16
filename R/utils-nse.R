@@ -314,13 +314,28 @@ validate_style_result <- function(result, expected_length, param_name, expr) {
   invisible(result)
 }
 
+# Monotonic session counter for computed-style column names (kept ABOVE the
+# roxygen block below so it doesn't rebind those docs — the roxygen-rebinding
+# trap).
+.wf_computed_counter <- local({
+  n <- 0L
+  function() {
+    n <<- n + 1L
+    n
+  }
+})
+
 #' Generate a unique column name for computed style
+#'
+#' Uses a monotonic session counter (not a wall-clock timestamp): deterministic
+#' across runs (snapshot-stable) and collision-free even for two formulas under
+#' the same `param_name` resolved in the same millisecond.
 #'
 #' @param param_name Base parameter name
 #' @return Unique column name string
 #' @keywords internal
 generate_computed_col_name <- function(param_name) {
-  paste0(".wf_computed_", param_name, "_", format(Sys.time(), "%H%M%S%OS3"))
+  paste0(".wf_computed_", param_name, "_", .wf_computed_counter())
 }
 
 #' Check if value is a scalar NA

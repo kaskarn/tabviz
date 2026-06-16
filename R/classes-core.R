@@ -69,10 +69,15 @@ EffectSpec <- new_class(
   ),
   validator = function(self) {
     valid_shapes <- c("square", "circle", "diamond", "triangle")
-    if (!is.na(self@shape) && !self@shape %in% valid_shapes) {
+    # length-gate first: a length>1 shape/opacity would make the `&&` below
+    # throw a cryptic "length = 2 in coercion to logical(1)" instead of a clean
+    # validator message. `length == 1 &&` short-circuits so length-0 is fine too.
+    if (length(self@shape) > 1L) return("shape must be a single value (or NA)")
+    if (length(self@shape) == 1L && !is.na(self@shape) && !self@shape %in% valid_shapes) {
       return(paste("shape must be one of:", paste(valid_shapes, collapse = ", ")))
     }
-    if (!is.na(self@opacity) && (self@opacity < 0 || self@opacity > 1)) {
+    if (length(self@opacity) > 1L) return("opacity must be a single value (or NA)")
+    if (length(self@opacity) == 1L && !is.na(self@opacity) && (self@opacity < 0 || self@opacity > 1)) {
       return("opacity must be between 0 and 1")
     }
     NULL
@@ -462,9 +467,15 @@ method(print, SplitForest) <- function(x, ...) {
     "",
     "Plots:",
     set_names(
-      vapply(names(x@specs), function(k) {
-        paste0("{.val ", k, "} ({nrow(x@specs[[\"", k, "\"]]@data)} rows)")
-      }, character(1)),
+      # Pre-compute counts + escape braces in the (data-derived) split keys so a
+      # key like "dose {high}" doesn't make cli glue-evaluate `high` and ERROR
+      # (the cli-glue trap). No runtime glue expression references the key.
+      {
+        counts <- vapply(x@specs, function(s) nrow(s@data), integer(1))
+        keys_esc <- gsub("}", "}}", gsub("{", "{{", names(x@specs), fixed = TRUE),
+                         fixed = TRUE)
+        sprintf("{.val %s} (%d rows)", keys_esc, counts)
+      },
       rep("*", length(x@specs))
     )
   ))

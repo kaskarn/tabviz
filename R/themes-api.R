@@ -560,9 +560,6 @@ web_theme <- function(
   theme
 }
 
-# Local null-coalesce (avoids relying on rlang for this small helper).
-`%||%` <- function(x, y) if (is.null(x)) y else x
-
 
 # Internal — re-resolve `theme` after coercing an anchor argument and
 # pinning it under `prefix`. Anchor arg may be hex, oklch() triple, or

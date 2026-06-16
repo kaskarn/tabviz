@@ -267,6 +267,3 @@ deserialize_resolved_theme <- function(x) {
   )
 }
 
-# Local null-coalesce.
-`%||%` <- function(x, y) if (is.null(x)) y else x
-

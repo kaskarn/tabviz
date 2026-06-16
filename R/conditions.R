@@ -183,5 +183,13 @@ evaluate_conditions <- function(conditions, data) {
   lapply(conditions, evaluate_condition, data = data)
 }
 
-# Local null-coalesce — same shape as elsewhere in the package.
-`%||%` <- function(x, y) if (is.null(x)) y else x
+# Package-wide canonical null-coalesce (SINGLE definition — was duplicated in 5
+# files, where the last-Collate copy silently won). Treats NULL, length-0 (incl.
+# `character(0)` from `setdiff`/`names()` — which used to CRASH), and the
+# length-1 empty string "" as NULL-ish; a length>1 character vector still errors
+# at the nzchar check (a deliberate scalar-only guard, per CLAUDE.md).
+`%||%` <- function(a, b) {
+  if (is.null(a) || length(a) == 0L) return(b)
+  if (is.character(a) && !nzchar(a)) return(b)
+  a
+}

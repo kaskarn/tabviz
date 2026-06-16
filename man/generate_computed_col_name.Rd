@@ -13,6 +13,8 @@ generate_computed_col_name(param_name)
 Unique column name string
 }
 \description{
-Generate a unique column name for computed style
+Uses a monotonic session counter (not a wall-clock timestamp): deterministic
+across runs (snapshot-stable) and collision-free even for two formulas under
+the same \code{param_name} resolved in the same millisecond.
 }
 \keyword{internal}

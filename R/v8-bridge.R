@@ -146,6 +146,3 @@ delegate_to_web_col <- function(builder_name, ts_args, type = NULL, na_text = NU
   do.call(web_col, args)
 }
 
-# Local null-coalesce. Identical to rlang's %||% but inlined here so the
-# v8-bridge has zero dependencies beyond V8 + jsonlite.
-`%||%` <- function(x, y) if (is.null(x)) y else x

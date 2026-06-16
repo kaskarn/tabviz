@@ -188,6 +188,13 @@ set_row_style <- function(
     muted = NULL,
     accent = NULL,
     fill = NULL) {
+  if (inherits(x, "tabviz_proxy")) {
+    cli_warn(c(
+      "Style mappings are authoring-time; ignored for a live {.cls tabviz_proxy}.",
+      "i" = "Rebuild the spec with {.fn set_row_style} and push via {.fn update_data}."
+    ))
+    return(x)
+  }
   spec <- extract_spec(x)
   if (!is.null(bold)) spec@row_bold_col <- bold
   if (!is.null(italic)) spec@row_italic_col <- italic
@@ -239,6 +246,13 @@ set_column_style <- function(
     bg = NULL,
     badge = NULL,
     icon = NULL) {
+  if (inherits(x, "tabviz_proxy")) {
+    cli_warn(c(
+      "Style mappings are authoring-time; ignored for a live {.cls tabviz_proxy}.",
+      "i" = "Rebuild the spec with {.fn set_column_style} and push via {.fn update_data}."
+    ))
+    return(x)
+  }
   spec <- extract_spec(x)
   mutator <- function(col) {
     if (!is.null(bold)) col@style_bold <- bold
@@ -290,6 +304,13 @@ set_marker_style <- function(
     shape = NULL,
     opacity = NULL,
     size = NULL) {
+  if (inherits(x, "tabviz_proxy")) {
+    cli_warn(c(
+      "Style mappings are authoring-time; ignored for a live {.cls tabviz_proxy}.",
+      "i" = "Rebuild the spec with {.fn set_marker_style} and push via {.fn update_data}."
+    ))
+    return(x)
+  }
   spec <- extract_spec(x)
   if (!is.null(color)) spec@marker_color_col <- color
   if (!is.null(shape)) spec@marker_shape_col <- shape

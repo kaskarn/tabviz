@@ -175,8 +175,6 @@ splice_font_face_into_svg <- function(svg, font_face_rules) {
   svg
 }
 
-`%||%` <- function(a, b) if (is.null(a) || (is.character(a) && !nzchar(a))) b else a
-
 # ── rsvg-side font registration (Phase 0, spec-first plan) ──────────────────
 #
 # The base64 @font-face splice above only helps an SVG opened in a BROWSER.
