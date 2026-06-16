@@ -14,7 +14,7 @@
 
 import type { RenderText, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
-import { formatPvalue, truncateString } from "../../lib/formatters";
+import { formatNumber, formatPvalue, truncateString } from "../../lib/formatters";
 import type { ColumnOptions } from "../../types";
 
 type AnyOpts = Record<string, unknown> | undefined;
@@ -42,24 +42,35 @@ export const referenceSvgRenderer: CellFormatter = (value, options, ctx) => {
 export const rangeSvgRenderer: CellFormatter = (_value, options, ctx) => {
   const opts = options as AnyOpts;
   const rangeOpts = opts?.range as
-    | { minField: string; maxField: string; separator?: string; decimals?: number | null }
+    | {
+        minField: string; maxField: string; separator?: string;
+        decimals?: number | null; digits?: number;
+        thousandsSep?: string | false; abbreviate?: boolean;
+      }
     | undefined;
   if (!rangeOpts) return text("");
   const meta = (ctx?.row ?? {}) as Record<string, unknown>;
   const minVal = meta[rangeOpts.minField];
   const maxVal = meta[rangeOpts.maxField];
   const sep = rangeOpts.separator ?? " – ";
-  const decimals = rangeOpts.decimals;
+  const { decimals, digits, thousandsSep, abbreviate } = rangeOpts;
+  // Mirror CellRange.svelte EXACTLY: share the numeric formatting pipeline
+  // (decimals / digits / thousandsSep / abbreviate) — the SVG path used to
+  // apply only `decimals`, dropping the rest (DOM↔export divergence).
+  const numOpts = { numeric: { decimals: decimals ?? undefined, digits, thousandsSep, abbreviate } } as ColumnOptions;
   const fmt = (v: unknown): string => {
     if (typeof v !== "number") return "";
-    if (decimals === null || decimals === undefined) {
+    // Auto mode (no decimals/digits, not abbreviate): integers bare, floats 1dp.
+    if ((decimals === null || decimals === undefined) && digits === undefined && !abbreviate) {
       return Number.isInteger(v) ? String(v) : v.toFixed(1);
     }
-    return v.toFixed(decimals);
+    return formatNumber(v, numOpts);
   };
-  if (minVal === null && maxVal === null) return text("");
-  if (minVal === null) return text(fmt(maxVal));
-  if (maxVal === null) return text(fmt(minVal));
+  // NA if EITHER bound is missing (CellRange semantics) — the SVG path used to
+  // show the single present bound, diverging from the DOM's naText.
+  if (minVal === null || minVal === undefined || maxVal === null || maxVal === undefined) {
+    return text(ctx?.naText ?? "");
+  }
   return text(`${fmt(minVal)}${sep}${fmt(maxVal)}`);
 };
 

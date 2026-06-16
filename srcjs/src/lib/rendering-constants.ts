@@ -60,6 +60,11 @@ export const BADGE = {
    *  `.badge-base { font-size: 0.77em }` — the live DOM reference. */
   FONT_SCALE: 0.77,
 
+  /** `size: "sm"` multiplier. Mirrors CellBadge.svelte `.badge-sm
+   *  { font-size: 0.7em }` — the export used to ignore `size` entirely so a
+   *  small badge rendered base-sized in static output (DOM↔export divergence). */
+  FONT_SCALE_SM: 0.7,
+
   /** Horizontal padding inside the badge pill, ONE side. Mirrors
    *  CellBadge.svelte `.badge-pill { padding: 0 10px }`. Drives pill WIDTH +
    *  the column-width estimator (both DOM + SVG). Was conflated with the

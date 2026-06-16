@@ -87,14 +87,14 @@ describe("Phase 4a — range svg renderer", () => {
     expect(out).toBe("10 to 20");
   });
 
-  test("missing min returns max only", () => {
-    const out = call(
-      "range",
-      null,
-      { range: { minField: "lo", maxField: "hi", decimals: 0 } },
-      { cellWidth: 0, rowHeight: 0, row: { lo: null, hi: 20 }, target: "svg" },
-    );
-    expect(out).toBe("20");
+  test("EITHER bound missing → naText (matches CellRange; not a partial bound)", () => {
+    // Was "missing min returns max only" (returned "20") — a DOM↔export
+    // divergence: the DOM shows naText whenever either bound is missing.
+    const mk = (row: Record<string, unknown>) =>
+      call("range", null, { range: { minField: "lo", maxField: "hi", decimals: 0 } },
+        { cellWidth: 0, rowHeight: 0, row, target: "svg", naText: "n/a" });
+    expect(mk({ lo: null, hi: 20 })).toBe("n/a");
+    expect(mk({ lo: 10, hi: null })).toBe("n/a");
   });
 
   test("both null returns empty", () => {

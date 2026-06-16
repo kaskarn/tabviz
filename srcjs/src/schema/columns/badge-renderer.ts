@@ -48,6 +48,7 @@ interface BadgeOptions {
   thresholds?: number[];
   shape?: "pill" | "circle" | "square";
   outline?: boolean;
+  size?: "sm" | "base";
 }
 
 interface BadgeGeometry {
@@ -111,10 +112,11 @@ function computeBadgeGeometry(
   text: string,
   shape: "pill" | "circle" | "square",
   theme: WebTheme,
+  size: "sm" | "base" = "base",
 ): BadgeGeometry {
   const cssVars = getCssVars(theme);
   const baseFontSize = parseFontSize(readBodySize(cssVars));
-  const fontSize = baseFontSize * BADGE.FONT_SCALE;
+  const fontSize = baseFontSize * (size === "sm" ? BADGE.FONT_SCALE_SM : BADGE.FONT_SCALE);
   const height = fontSize + BADGE.PADDING_Y * 2;
   const textWidth = measureTextWidth(text, fontSize, readBodyFamily(cssVars), 600);
   // Circle / square shapes are 1:1 aspect — use height as the
@@ -176,8 +178,9 @@ const badgeSvgRenderer: CellFormatter = (value, options, ctx) => {
   const text = String(value);
   const shape = opts?.shape ?? "pill";
   const outline = opts?.outline ?? false;
+  const size = opts?.size ?? "base";
   const color = resolveBadgeColor(text, value, opts, theme, ctx?.cellStyle, undefined);
-  const geom = computeBadgeGeometry(text, shape, theme);
+  const geom = computeBadgeGeometry(text, shape, theme, size);
   const markup = buildBadgeMarkup(text, color, outline, geom, theme);
   return { kind: "svg", markup, width: geom.width, height: geom.height };
 };

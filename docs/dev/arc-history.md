@@ -11,6 +11,66 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — DEEP review: unwired elements / fudge factors / magic numbers
+
+Maintainer: "we keep finding weird issues, unwired elements, fudging factors,
+and magic numbers." Four parallel agents swept exactly those classes across the
+un-reviewed surfaces (UI/settings/interaction · schema-options/tokens/wire ·
+fudge-factors/magic-numbers · layout/sizing). ~22 verified findings. The SYSTEMIC
+root surfaced: the `consumedBy: ["renderCell"]` drift gate checks only that the
+array is non-empty — it CANNOT distinguish a DOM-only renderCell option from a
+DOM+SVG one, so a whole class of DOM↔export divergences hid behind a green gate.
+
+**FIXED this pass (the export-divergence cluster + its anti-recurrence net):**
+- `range` SVG renderer applied only `decimals`, dropping `thousandsSep` /
+  `abbreviate` / `digits` and showing a partial bound when one side was missing.
+  Now mirrors `CellRange.svelte` exactly (shared `formatNumber` pipeline +
+  either-missing→naText). `badge.size` (sm/base) was ignored by the export
+  (every badge base-sized); threaded into `computeBadgeGeometry`
+  (`BADGE.FONT_SCALE_SM = 0.7`, mirrors `.badge-sm`). New gate
+  `export-option-parity.test.ts` asserts the SVG output CHANGES when each fixed
+  option toggles — the template to extend whenever a pixel-affecting renderCell
+  option is wired.
+
+**DEFERRED — engineering follow-ups (verified, file:line so they're pickable):**
+- STRUCTURAL: split the `consumedBy` `renderCell` token into `renderCellDom` /
+  `renderCellSvg` (or add a general DOM-vs-SVG render-parity gate), so the drift
+  gate can SEE DOM-only options. This is the root fix that would have caught the
+  whole cluster. (`schema/columns/drift.test.ts`.)
+- `pvalue` export gap: the SVG path emits plain `formatPvalue` text — no
+  `starsColor` rubrication, no `significantStyle` pill (DOM `CellPvalue.svelte`
+  does both; the nejm preset ships `starsColor:"ink2"`). Needs a render-tree
+  (colored stars node + pill group-bg) in `visual-svg-renderers.ts`.
+- `dom-export-divergence.test.ts` ledger only recognizes ONE DOM-consumer string
+  (`"svelte/TabvizPlot.svelte"`); a token consumed solely by a
+  `components/table/Cell*.svelte` (e.g. `--tv-ink2`) is invisible to it. Broaden
+  to "consumedBy ⊆ {known DOM files}".
+- StylingTab offers a `text-onsolid` role override the resolver discards
+  (`resolve-theme.ts:206` short-circuits OFF_RAMP_ROLES) — exclude
+  `OFF_RAMP_ROLES` from `rolesOfKind` (the D28 dead-control class).
+- MAGIC NUMBERS / duplicated literals to collapse into `rendering-constants.ts`:
+  header-scale `1.05` bypasses its own `HEADER_FONT_SCALE` at 3 paint sites
+  (resolve-theme:788, svg-generator:368/3079 — a real DOM↔export drift seam);
+  diamond height `10` ×3 (RowInterval + svg-generator ×2); marker-size formula
+  `0.5+√(x/100)*1.5` clamp `[3,base*2.5]` ×4 (DOM+export); bold-cell-weight
+  `600` ×3 (and a `700` "bold" elsewhere — reconcile); `+6` row padding dup of
+  `HEADER_ROW_PADDING`; `axisRegionHeight` trailing bare `+2` slack; ellipsis/
+  watermark `0.55` char-ratio literals. Overall-summary `1.5` magic in the DOM
+  vs named `OVERALL_ROW_HEIGHT_MULTIPLIER` in export; rowHeight fallback 34 vs 32.
+- LAYOUT bugs: nested column-group headers (depth ≥3) squash — DOM reserves a
+  2-tier band but renders N tiers, and the export only renders 2 (a real
+  wrong-size + DOM↔export divergence; `layout-zoom.svelte.ts:298` boolean depth
+  vs `TabvizPlot.svelte:811` true depth). Inverted flex bounds (content floor >
+  aspect cap) silently clip a column (`flex-distribute.ts:57`). Live row-kind
+  session pin vs a spec-pushed pin diverge DOM-vs-export (`layout-zoom:728` vs
+  `svg-generator:943`).
+
+The cascade/measure/aspect cores were re-confirmed SOUND (idempotency,
+shared-reference safety, measure-commit no-ratchet all held). The dead
+interaction-flag finding (showLegend/enableCollapse/enableSelect/enableHover —
+documented R API + serialized but NO TS consumer) is a PRODUCT decision (wire to
+honor the docs, or delete per D9's maximal-affordances philosophy) → register D31.
+
 ## 2026-06-16 — systematic review: theme resolve/cascade (found SOUND + 3 fixes)
 
 Three parallel verified-findings agents swept the 12.7k-line theme module
