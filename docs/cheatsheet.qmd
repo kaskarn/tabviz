@@ -186,14 +186,14 @@ tabviz(...,
 
 ```r
 web_theme(
-  name = "my-brand",
-  inputs = list(
-    neutral        = c("#FFF","#FAFAFA","#EEE","#888","#222"),
-    brand          = "#1F3A5F",
-    accent         = "#B08938",
-    fonts_body      = "Charter, Georgia, serif"
-  ),
-  variants = list(density = "comfortable", header_style = "bold")
+  name        = "my-brand",
+  paper       = "#FFFFFF",                 # lightest surface
+  ink         = "#222222",                 # darkest text
+  brand       = "#1F3A5F",                 # primary identity
+  accent      = "#B08938",                 # orthogonal callout/emphasis slot
+  fonts_body  = "Charter, Georgia, serif",
+  density     = "comfortable",
+  header_style = "bold"
 )
 ```
 
