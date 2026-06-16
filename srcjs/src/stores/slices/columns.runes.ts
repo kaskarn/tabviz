@@ -10,6 +10,10 @@ import {
   buildColumnsHarness, buildHarnessSpec, colGroup, textCol,
 } from "./columns.test-harness.svelte";
 import { mintUniqueId, RESERVED_COLUMN_IDS } from "./columns.svelte";
+import { bootBuiltinBehaviors } from "../../schema/init";
+import type { ColumnSpec } from "$types";
+
+bootBuiltinBehaviors(); // register the interval schema so compileColumn sees its variants
 
 describe("mintUniqueId (pure)", () => {
   test("returns the base when free", () => {
@@ -292,5 +296,29 @@ describe("columns slice — mintUniqueColumnId integration", () => {
     // "seed" is taken by the just-inserted column; mint should return seed_2.
     expect(id).toBe("seed_2");
     expect(h.slice.mintUniqueColumnId("occupied_by_axis")).toBe("occupied_by_axis_2");
+  });
+});
+
+describe("columns slice — variant recompile on edit", () => {
+  // The editor commits a variant switch via updateColumn (the granular edit
+  // path). It must recompile options.<bucket>.__resolved — the renderer reads
+  // __resolved, NOT the variant id. Before the fix, switching the variant set
+  // the id but left the stale recipe → "doesn't fire, appearance unchanged".
+  test("updateColumn switching the variant recompiles __resolved", () => {
+    const iv = {
+      id: "ci", field: "_interval_hr", type: "interval", header: "HR",
+      options: { interval: { variant: "traditional", __resolved: { boundsDelimiter: ["(", ")"] } } },
+    } as unknown as ColumnSpec;
+    const h = buildColumnsHarness({ columns: [iv] });
+
+    h.slice.updateColumn("ci", {
+      ...iv, options: { interval: { variant: "bracket_muted" } },
+    } as ColumnSpec);
+
+    const col = h.slice.allColumns.find((c) => c.id === "ci")!;
+    const opts = (col.options as Record<string, Record<string, unknown>>).interval;
+    expect(opts.variant).toBe("bracket_muted");
+    // Recompiled to bracket_muted's recipe — NOT the stale traditional parens.
+    expect((opts.__resolved as Record<string, unknown>).boundsDelimiter).toEqual(["[", "]"]);
   });
 });

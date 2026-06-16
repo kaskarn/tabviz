@@ -39,6 +39,7 @@ import type {
   WebSpec,
 } from "$types";
 import { getColumnDisplayText } from "$lib/formatters";
+import { compileColumn } from "../../schema/variant-compile";
 import { applyColumnOrder } from "$lib/column-order";
 import { resolveInteraction } from "$lib/interaction-resolve";
 import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
@@ -381,17 +382,24 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
   }
 
   function updateColumn(id: string, newSpec: ColumnSpec) {
+    // Recompile the active variant into options.<bucket>.__resolved for the
+    // edited column. The bulk setSpec path runs compileVariants; this GRANULAR
+    // edit path did not, so switching a column's variant in the editor set
+    // options.<bucket>.variant but left the stale __resolved the renderer reads
+    // — "doesn't fire, appearance unchanged" (2026-06-15). No-op for types
+    // without variants (returned by reference).
+    const compiled = compileColumn(newSpec);
     const insertedIdx = userInsertedColumns.findIndex((c) => c.def.id === id);
     if (insertedIdx >= 0) {
       const next = userInsertedColumns.slice();
-      next[insertedIdx] = { ...next[insertedIdx], def: { ...newSpec, id } };
+      next[insertedIdx] = { ...next[insertedIdx], def: { ...compiled, id } };
       userInsertedColumns = next;
     } else {
-      columnSpecOverrides = { ...columnSpecOverrides, [id]: { ...newSpec, id } };
+      columnSpecOverrides = { ...columnSpecOverrides, [id]: { ...compiled, id } };
     }
     const patch: Record<string, unknown> = {};
-    if (newSpec.header !== undefined) patch.header = newSpec.header;
-    if (newSpec.type !== undefined) patch.type = newSpec.type;
+    if (compiled.header !== undefined) patch.header = compiled.header;
+    if (compiled.type !== undefined) patch.type = compiled.type;
     deps.appendOp(ops.updateColumn(id, patch));
   }
 

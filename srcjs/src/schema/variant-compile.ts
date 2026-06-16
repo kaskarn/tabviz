@@ -54,7 +54,13 @@ export function resolveVariant(
   return variants[0]?.resolved ?? null;
 }
 
-function compileColumn(col: ColumnSpec): ColumnSpec {
+/** Compile ONE column's active variant into `options.<bucket>.__resolved`.
+ *  Exported so the granular interactive edit path (store `updateColumn`) can
+ *  recompile a single edited column — without this, switching a column's
+ *  variant in the editor sets `options.<bucket>.variant` but leaves the stale
+ *  `__resolved` the renderer reads, so the change "doesn't fire". Returns the
+ *  column by reference when its type declares no variants (a no-op). */
+export function compileColumn(col: ColumnSpec): ColumnSpec {
   const schema = findSchemaForColumn(col);
   if (!schema) return col;
   if (!schema.variants || schema.variants.length === 0) return col;
