@@ -26,7 +26,7 @@ the running widget swaps its theme without a full re-render.
 \dontrun{
 forest_data |>
   tabviz(label = "study", columns = list(viz_forest("hr", "lo", "hi"))) |>
-  set_theme("jama")
+  set_theme("nejm")
 }
 
 }

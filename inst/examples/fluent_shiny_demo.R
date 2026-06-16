@@ -34,8 +34,8 @@ ui <- fluidPage(
       actionButton("clear_flt",  "Clear filter"),
       br(), br(),
       h4("Styling"),
-      actionButton("theme_jama",   "Theme: JAMA"),
-      actionButton("theme_lancet", "Theme: Lancet"),
+      actionButton("theme_ledger", "Theme: Ledger"),
+      actionButton("theme_aurora", "Theme: Aurora"),
       actionButton("zoom_small",   "Zoom 0.8"),
       actionButton("zoom_reset",   "Zoom 1.0")
     ),
@@ -71,8 +71,8 @@ server <- function(input, output, session) {
   observeEvent(input$filter_hr, filter_rows(proxy, "hr", operator = "lt", value = 0.9))
   observeEvent(input$clear_flt, clear_filters(proxy))
 
-  observeEvent(input$theme_jama,   set_theme(proxy, "jama"))
-  observeEvent(input$theme_lancet, set_theme(proxy, "lancet"))
+  observeEvent(input$theme_ledger, set_theme(proxy, "ledger"))
+  observeEvent(input$theme_aurora, set_theme(proxy, "aurora"))
   observeEvent(input$zoom_small,   set_zoom(proxy, zoom = 0.8))
   observeEvent(input$zoom_reset,   set_zoom(proxy, zoom = 1.0))
 }

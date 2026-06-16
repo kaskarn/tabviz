@@ -149,6 +149,17 @@ jobs:
       - name: 'Gate: interaction QA (sort/collapse/paint/edit/zoom)'
         run: bun run tests/browser/interaction-qa.browser.ts
 
+      # The V8+rsvg visual pipeline can't see browser-additive theme effects
+      # (shell/paper surfaces, textures, glow, gradient, glass) — this is the
+      # ONLY gate for them. Was unwired (R5 review).
+      - name: 'Gate: theme screenshots (browser-only shell/paper/glow/glass)'
+        run: bun run tests/browser/theme-screenshots.browser.ts
+
+      # Webfont-settle clip regression (the 2026-06-12 hero clip): every cell
+      # must fit its box. Was unwired (R5 review).
+      - name: 'Gate: hero width (webfont-settle cell-fit)'
+        run: bun run tests/browser/hero-width-repro.browser.ts
+
       # Budgets CALIBRATED from run 27512901960 (measured × ~1.6); a real
       # regression (a renderer text-degrading jumps a cell to 50–70%) trips
       # the gate while curved-glyph AA variance stays under. The widget-DOM

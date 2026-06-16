@@ -67,6 +67,16 @@ describe("schema drift gate — consumedBy", () => {
   // option (inherited from BASE, TEXT, etc.) is only audited once per
   // concrete leaf.
   const offences: Array<{ schemaKey: string; optionKey: string }> = [];
+  // Frozen behavior vocabulary. A consumedBy string outside this set is a typo
+  // or a FICTIONAL consumer (the gate's whole value is that the strings are
+  // real — a non-empty-but-bogus consumedBy used to pass cleanly). Keep in sync
+  // with the registered behaviors + the editor-UI marker.
+  const VALID_CONSUMERS = new Set<string>([
+    "emitSource", "sortKey", "estimateWidth", "formatValue", "renderCell",
+    "naturalHeight", "contributeBanks", "contributeConditions", "aggregate",
+    "editor",
+  ]);
+  const badConsumers: Array<{ schemaKey: string; optionKey: string; bad: string }> = [];
   for (const [schemaKey, schema] of Object.entries(SCHEMA_REGISTRY)) {
     if (schema.abstract) continue;
     const cascade = resolveSchema(schema);
@@ -81,6 +91,9 @@ describe("schema drift gate — consumedBy", () => {
           if (!KNOWN_UNCONSUMED.has(handle)) {
             offences.push({ schemaKey, optionKey: opt.key });
           }
+        }
+        for (const c of consumedBy) {
+          if (!VALID_CONSUMERS.has(c)) badConsumers.push({ schemaKey, optionKey: opt.key, bad: c });
         }
       }
     }
@@ -99,6 +112,20 @@ describe("schema drift gate — consumedBy", () => {
       throw new Error(msg);
     }
     expect(offences.length).toBe(0);
+  });
+
+  it("every consumedBy string is a REAL consumer (no typos / fictional names)", () => {
+    if (badConsumers.length > 0) {
+      const lines = badConsumers.map((o) => `  ${o.schemaKey}:${o.optionKey} → "${o.bad}"`);
+      throw new Error(
+        `${badConsumers.length} option(s) declare an unknown consumer:\n` +
+        lines.join("\n") +
+        `\n\nValid consumers: emitSource | sortKey | estimateWidth | formatValue | ` +
+        `renderCell | naturalHeight | contributeBanks | contributeConditions | ` +
+        `aggregate | editor. Fix the typo, or add a new behavior to VALID_CONSUMERS here.`,
+      );
+    }
+    expect(badConsumers.length).toBe(0);
   });
 
   it("KNOWN_UNCONSUMED entries reference live options (no stale rows)", () => {

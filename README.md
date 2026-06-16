@@ -126,7 +126,7 @@ tabviz(
     )
   ),
   row_type = "row_type", row_bold = "row_bold",
-  theme = web_theme_lancet(),
+  theme = web_theme_nejm(),
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Major adverse cardiovascular events (MACE)"
 )
@@ -177,25 +177,32 @@ markers.
 ## Themes
 
 ```r
-tabviz(data, ..., theme = web_theme_lancet())
+tabviz(data, ..., theme = web_theme_ledger())
 
-web_theme_jama() |>
+web_theme_nejm() |>
   set_brand("#0066cc") |>
   set_spacing(row_height = 28) |>
   set_type_scale(base = 15)
 # axis options are per-column: viz_forest(..., axis_gridlines = TRUE)
 ```
 
+Nine committed presets, one per expressive axis (see `package_themes()`):
+
 | Theme | Identity |
 |---|---|
-| `web_theme_cochrane()` | Package default. Cochrane teal, Inter, comfortable density |
-| `web_theme_lancet()` | Lancet navy + warm cream, Georgia serif |
-| `web_theme_jama()` | All-black-and-white JAMA, ultra-compact, Arial |
-| `web_theme_dark()` | Catppuccin-derived dark canvas, pastel markers |
+| `web_theme_nejm()` | Restraint — the default |
+| `web_theme_ledger()` | Color — teal + oxblood, ruled |
+| `web_theme_brutalist()` | Geometry — sharp, thick rules, no effects |
+| `web_theme_aurora()` | Effects — glass + glow |
+| `web_theme_terminal()` | Mono phosphor CRT |
+| `web_theme_newsprint()` | Texture — warm grain serif |
+| `web_theme_blueprint()` | Draft / grid — cyanotype |
+| `web_theme_synthwave()` | Neon on deep space |
+| `web_theme_dwarven()` | Fantasy — Cinzel display serif |
 
-All four ride the same 3-tier OKLCH-derived cascade with an
-orthogonal accent slot, so semantic markers (selected, hover,
-callout) stay legible across the palette. Customize colors with `set_brand()` / `set_paper()` / `set_ink()` /
+All ride the same 3-tier OKLCH-derived cascade with an orthogonal accent
+slot, so semantic markers (selected, hover, callout) stay legible across the
+palette. Customize colors with `set_brand()` / `set_paper()` / `set_ink()` /
 `set_accent()`, type with `set_fonts()` / `set_type_scale()`, spacing
 with `set_spacing()`, and axis options per-column on `viz_forest()`.
 
