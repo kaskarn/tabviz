@@ -47,6 +47,18 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      # R↔TS source-parse sync gates (wire-version, glyph + interaction rosters)
+      # read the TS source via ../../srcjs and skip_if_not when it's absent. The
+      # R CMD check below runs from a tarball that EXCLUDES srcjs/ (.Rbuildignore),
+      # so those gates SKIP there — they only have teeth in-tree. Run them here on
+      # the checked-out repo (srcjs present) so R↔TS drift actually fails CI.
+      # ubuntu/release only: the gates are OS-independent (pure source parse).
+      - name: R↔TS sync gates (in-tree; tarball check excludes srcjs/)
+        if: matrix.config.os == 'ubuntu-latest' && matrix.config.r == 'release'
+        run: |
+          R CMD INSTALL --no-multiarch --with-keep.source .
+          Rscript -e 'library(testthat); library(tabviz); test_dir("tests/testthat", filter = "wire-version|glyph-roster-sync|interaction-roster-sync", stop_on_failure = TRUE)'
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
