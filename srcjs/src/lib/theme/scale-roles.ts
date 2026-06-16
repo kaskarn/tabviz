@@ -109,9 +109,12 @@ export const CORNER_SLOTS: Readonly<Record<CornerSlot, {
 export const RULE_SLOTS: Readonly<Record<RuleSlot, {
   hair: number; thin: number; regular: number; thick: number;
 }>> = {
-  fine:   { hair: 0.5, thin: 0.75, regular: 1,   thick: 1.5 },
-  normal: { hair: 0.5, thin: 1,    regular: 1.5, thick: 2.5 }, // ≡ the resolver defaults
-  strong: { hair: 1,   thin: 1.5,  regular: 2,   thick: 3.5 },
+  fine:   { hair: 0.5, thin: 0.75, regular: 1, thick: 1.5 },
+  // ≡ DEFAULT_BORDER_WIDTH (resolve-theme.ts) so `set_rules("normal")` is a true
+  // no-op. `regular` re-synced 1.5→2 after D28 (2026-06-14) bumped the default
+  // regular/header-rule floor 1.5→2 but left this slot stale.
+  normal: { hair: 0.5, thin: 1,    regular: 2, thick: 2.5 },
+  strong: { hair: 1,   thin: 1.5,  regular: 2, thick: 3.5 },
 };
 
 // ── SPACING (named density-relative steps) ───────────────────────────────

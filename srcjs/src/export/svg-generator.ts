@@ -2222,7 +2222,11 @@ function renderInterval(
     // Plots per-series stroke control reaches every series. WYSIWYG: DOM
     // + export changed together (CLAUDE.md rule).
     const slotLineColor = (theme.series?.[idx] as { stroke?: string } | undefined)?.stroke ?? defaultLineColor;
-    const lineColor = semanticLineColor ?? slotLineColor;
+    // XSS egress wall: `theme.series[].stroke` is spec-DATA when the export is
+    // driven by a hand-built wire (JS/V8/LLM) that never passed buildTheme's
+    // isValidHex gate. lineColor is only ever a `stroke=` attribute value, so
+    // escape once here (no-op on legitimate colors).
+    const lineColor = escapeAttr(semanticLineColor ?? slotLineColor);
 
     if (isSummaryRow) {
       // Summary row: render diamond shape spanning lower to upper.
@@ -2240,7 +2244,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${escapeAttr(style.fill)}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? accentDefault}" stroke-width="1"${mutedLineOpacityAttr}/>
+            fill="${escapeAttr(style.fill)}"${opacityAttr} stroke="${escapeAttr(theme.series?.[0]?.stroke ?? accentDefault)}" stroke-width="1"${mutedLineOpacityAttr}/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -2280,7 +2284,7 @@ function renderInterval(
         // Arrow pointing left with scaled dimensions (include opacity from theme)
         const arrowFill = mutedOp ? arrowConfig.opacity * mutedOp.fill : arrowConfig.opacity;
         const arrowOpacity = arrowFill < 1 ? ` fill-opacity="${arrowFill}"` : "";
-        leftEnd = `<path d="${renderArrowPath("left", leftArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"${arrowOpacity}/>`;
+        leftEnd = `<path d="${renderArrowPath("left", leftArrowX, effectY, arrowConfig)}" fill="${escapeAttr(arrowConfig.color)}"${arrowOpacity}/>`;
       } else {
         // Normal whisker (use scaled whisker height matching arrow)
         leftEnd = `<line x1="${clampedX1}" x2="${clampedX1}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"${mutedLineOpacityAttr}/>`;
@@ -2292,7 +2296,7 @@ function renderInterval(
         // Arrow pointing right with scaled dimensions (include opacity from theme)
         const arrowFill = mutedOp ? arrowConfig.opacity * mutedOp.fill : arrowConfig.opacity;
         const arrowOpacity = arrowFill < 1 ? ` fill-opacity="${arrowFill}"` : "";
-        rightEnd = `<path d="${renderArrowPath("right", rightArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"${arrowOpacity}/>`;
+        rightEnd = `<path d="${renderArrowPath("right", rightArrowX, effectY, arrowConfig)}" fill="${escapeAttr(arrowConfig.color)}"${arrowOpacity}/>`;
       } else {
         // Normal whisker
         rightEnd = `<line x1="${clampedX2}" x2="${clampedX2}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"${mutedLineOpacityAttr}/>`;
@@ -2356,8 +2360,8 @@ function renderDiamond(
 
   const accentDefault = readAccentDefault(cssVars);
   return `<polygon points="${points}"
-    fill="${theme.series?.[0]?.fill ?? accentDefault}"
-    stroke="${theme.series?.[0]?.stroke ?? accentDefault}"
+    fill="${escapeAttr(theme.series?.[0]?.fill ?? accentDefault)}"
+    stroke="${escapeAttr(theme.series?.[0]?.stroke ?? accentDefault)}"
     stroke-width="1"/>`;
 }
 

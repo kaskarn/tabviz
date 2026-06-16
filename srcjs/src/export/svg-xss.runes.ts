@@ -70,4 +70,30 @@ describe("generateSVG — untrusted color values cannot inject attributes", () =
     // Belt-and-suspenders: the raw quote-then-handler sequence is absent anywhere.
     expect(svg).not.toContain('" onmouseover');
   });
+
+  // `theme.series[].fill/stroke` is spec-DATA when a hand-built wire (JS/V8/LLM)
+  // sets a PRE-RESOLVED theme that never passed buildTheme's isValidHex gate.
+  // generateSVG reads spec.theme directly, so these colors reach the forest CI
+  // line / summary diamond / clip arrow SVG attributes — must escape at egress.
+  test("pre-resolved theme.series colors cannot inject (forest line/diamond/arrow)", () => {
+    // Poison the series AFTER buildTheme (mimics a wire that supplies series
+    // colors directly), then render a forest with a normal + a summary row.
+    const poisoned = { ...theme, series: [{ fill: PAYLOAD, stroke: PAYLOAD, shape: "diamond" }] } as never;
+    const spec = {
+      version: "1.0", theme: poisoned, interaction: {}, layout: {},
+      columns: [
+        { id: "lab", type: "text", field: "lab", header: "L", options: {} },
+        { id: "hr", type: "forest", field: "hr", header: "HR",
+          options: { forest: { point: "hr", lower: "lo", upper: "hi" } } },
+      ],
+      data: { groups: [], summaries: [],
+        rows: [
+          { id: "r0", label: "A", metadata: { lab: "A", hr: 1, lo: 0.5, hi: 1.5 } },
+          { id: "s0", label: "Overall", metadata: { lab: "Overall", hr: 1, lo: 0.8, hi: 1.2 }, style: { summary: true } },
+        ] },
+    } as never;
+    const svg = generateSVG(spec, { width: 400 });
+    expect(svg).not.toContain(BREAKOUT);
+    expect(svg).not.toContain('" onmouseover');
+  });
 });

@@ -100,45 +100,26 @@ export function buildWidgetCSS(
 
 function _buildThemeCSSImpl(theme: WebTheme): string {
   // ───────────────────────────────────────────────────────────────────────
-  // Single-emission rewrite (2026-06-04):
-  //
-  //   The function previously emitted TWO parallel `--tv-*` blocks: a v3
-  //   computation block (reading theme.X.Y from buildThemeStructure's
-  //   resolved output) and a v4 manifest block (from resolveTheme's
-  //   cssVars map). Same value sometimes appeared twice with subtle
-  //   resolver drift between the two paths.
-  //
-  //   Now: v4 manifest emits first (canonical source of theme values),
-  //   then a v3-alias block redirects every v3 var name to its v4
-  //   manifest equivalent via CSS `var()` lookup. The DOM still has
-  //   v3 names so existing Svelte/CSS consumers keep working — but
-  //   the VALUES come from one source, eliminating drift.
-  //
-  //   Each `[v3-name]: var([v4-name])` line is a bridge. When
-  //   the last Svelte consumer of a v3 name migrates to its v4
-  //   counterpart, the alias line dies. When every alias is gone,
-  //   this whole function can drop down to just `_emitV4CssVarsBody`.
-  //
-  //   A small tail of v3 vars STILL need computation from theme.X.Y
-  //   because they have no v4 manifest equivalent yet:
-  //     - header variants (bg/fg/rule depend on theme.variants.headerStyle)
-  //     - first-column variants (bg/fg/weight from theme.firstColumn)
-  //     - borders (theme.borders.{major,minor,table}.{color,style,...})
-  //     - per-role italic (italic was dropped from v4 typography in
-  //       Coh.22; emit hardcoded "normal" here as a kill-row)
-  //     - text-numeric-figures (tabular-num flag; not in v4 manifest)
-  //     - row-group-rule / semantic-* (depend on theme.rowGroup, theme.row.X)
-  //   These cluster at the bottom and shrink as v4 manifest extends.
+  // SINGLE V4 EMISSION (W4 complete, 2026-06-11). This function now emits ONLY:
+  //   1. `_emitV4CssVarsBody` — the v4 manifest cssVars (canonical source).
+  //   2. A handful of literal utility constants (font weights, header scale,
+  //      viz margin) that aren't theme-derived.
+  //   3. `computeLiveConfigVars` (v3-bridge-vars.ts) — the ONE remaining
+  //      non-cascade emission (series slot 0 + layout live-config), single-
+  //      sourced so it matches getCssVars' overlay by construction.
+  // There is NO v3-alias block and NO v3-tail computation anymore: W4 ported
+  // header/first-column/border/italic/numeric-figures/row-group/semantic vars
+  // into real v4 resolver groups (computeV3BridgeVars was deleted). Keep this
+  // in lockstep with getCssVars (gate: role-overrides-wiring.test.ts).
   // ───────────────────────────────────────────────────────────────────────
 
   const v4Body = _emitV4CssVarsBody(theme);
-  // Compute v4 cssVars once for fallback paths in the v3 tail — eliminates
-  // the v3-chrome read drift (e.g. theme.content.primary was slightly
-  // different from --tv-text in the v4 manifest because the two resolvers
-  // diverged at the 4th decimal of OKLCH).
+  // The resolved cssVars, fed to computeLiveConfigVars so its live-config
+  // output is single-sourced against the same map consumers read (avoids the
+  // 4th-decimal-OKLCH drift two independent resolvers once produced).
   const cv = getCssVars(theme);
 
-  // V3 user-config bridge values — single-sourced from
+  // Live-config bridge (series slot 0 + layout) — single-sourced from
   // computeLiveConfigVars (v3-bridge-vars.ts) so this emission and
   // getCssVars' overlay agree by construction (R3 studio F3/F4: the
   // inline duplicates here diverged from what consumers read).

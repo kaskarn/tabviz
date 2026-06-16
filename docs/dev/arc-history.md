@@ -11,6 +11,52 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — systematic review: theme resolve/cascade (found SOUND + 3 fixes)
+
+Three parallel verified-findings agents swept the 12.7k-line theme module
+(cascade correctness · ingress security · emission-parity/rationalization) — the
+V4 substrate at the heart of "theme-first," resolved TS-side with R delegating
+via V8. **The cascade itself is SOUND**: idempotency (re-resolve from the stored
+un-reflected `authoringInputs`; polarity applied exactly once per path),
+shared-reference safety (`scaleSpacing` copies even on the factor-1 path —
+the scar from the production bug holds; `effectiveTypeRoles` consumers all
+spread before mutating), NaN-poisoning (every user hex `isValidHex`-gated before
+oklch; `density_factor` clamped on both paths), and pin-overlay ordering (pins
+after resolve, before contrast; HC/RT ratchet beats pins; `isValidPinValue` +
+`--tv-` gate at the one chokepoint) all verified safe — no RANK-1. Ingress is
+solid too: `parseThemeWire` validates inputs/roleOverrides/pins/components/
+column_defaults/series at every gate; `__proto__` keys can't pass the closed-enum
+/ `--tv-`-prefix / roster key gates.
+
+**3 fixes landed:**
+1. **XSS egress wall — 8 unescaped `theme.series[].fill/stroke` sites** in the
+   forest renderer (CI line `lineColor`, summary diamond, clip arrows via
+   `arrowConfig.color`, summary-marker diamond). `generateSVG` reads `spec.theme`
+   directly, so a hand-built wire (JS/V8/LLM) can supply pre-resolved series
+   colors that never passed `buildTheme`'s `isValidHex` gate → stored XSS. Same
+   wall class as the prior export review; wrapped all 8 in `escapeAttr` (escaped
+   `lineColor` once at its definition). Locked: a `theme.series`-poison vector
+   added to `svg-xss.runes.ts` (verified 16 attribute sites escape, diamond +
+   lines render).
+2. **`RULE_SLOTS.normal.regular` 1.5→2** (`scale-roles.ts`): D28 (2026-06-14)
+   bumped `DEFAULT_BORDER_WIDTH.regular` 1.5→2 but left this slot stale, so
+   `set_rules("normal")` silently THINNED the header border instead of being the
+   no-op its "≡ defaults" comment claimed. Re-synced; no preset used 1.5 (all
+   resolver-dispatch snapshots unchanged), `matchFullSlot` slots stay distinct.
+3. **Stale v3-tail comment** in `theme-css.ts`: a 30-line block described a
+   "v3-alias block" + "v3 tail of computed vars" that W4 (2026-06-11) DELETED
+   (`computeV3BridgeVars` is gone; the body emits only the v4 manifest +
+   utility constants + the live-config bridge). Replaced with the reality.
+
+Validated: 1460 bun + 319 vitest (snapshots unmoved) + R theme/parity 162
+contexts, JAMA forest visual clean. **Deferred (RANK-2/3, documented):** glass/fx
+`parseInt` hex-slicing assumes 7-char hex (route through guarded `hexToRgba`);
+the `.bg-accent` DOM(`color-mix 12%`)↔export(`accent.tintSubtle`) tint divergence
+(needs a real `--tv-accent-tint-subtle` token — acknowledged on both sides);
+`role-overrides-wiring` lockstep gate checks pin-PRESENCE not full token-set
+equality (could miss a one-path-only token); `__proto__`/`ov.shape`
+defense-in-depth; redundant `var(--x, var(--x, #fff))` self-fallbacks.
+
 ## 2026-06-16 — systematic review: export/SVG-generator pipeline (7 bugs fixed)
 
 Four parallel review agents (geometry/layout · XSS egress · viz-renderer DOM
