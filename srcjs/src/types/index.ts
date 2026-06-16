@@ -797,7 +797,6 @@ export interface InteractionSpec {
   showLegend?: boolean;
   enableSort?: boolean;
   enableCollapse?: boolean;
-  enableSelect?: boolean;
   enableHover?: boolean;
   enableResize?: boolean;
   enableExport?: boolean;

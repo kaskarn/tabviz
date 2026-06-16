@@ -47,7 +47,7 @@ function buildSpec(theme = THEME_PRESETS.nejm, watermark: string | undefined = u
     watermark,
     interaction: {
       showFilters: false, showLegend: true, enableSort: true,
-      enableCollapse: true, enableSelect: true, enableHover: true,
+      enableCollapse: true, enableHover: true,
       enableResize: true, enableExport: true,
       enableFilters: false, enableReorderRows: true,
       enableReorderColumns: false, enableEdit: false,

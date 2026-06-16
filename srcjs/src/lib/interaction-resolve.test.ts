@@ -34,6 +34,26 @@ describe("resolveInteraction", () => {
     expect(resolveInteraction(null)).toMatchObject(BAKED_INTERACTION_DEFAULTS);
   });
 
+  it("D31: show_legend / enable_collapse / enable_hover are default-ON, opt-out", () => {
+    // default ON (the gated behaviors render/handle)
+    const on = resolveInteraction(spec({ interaction: {} }));
+    expect(on.showLegend).toBe(true);
+    expect(on.enableCollapse).toBe(true);
+    expect(on.enableHover).toBe(true);
+    // explicit FALSE disables (TabvizPlot/svg-generator gate on these)
+    const off = resolveInteraction(spec({
+      interaction: { showLegend: false, enableCollapse: false, enableHover: false },
+    }));
+    expect(off.showLegend).toBe(false);
+    expect(off.enableCollapse).toBe(false);
+    expect(off.enableHover).toBe(false);
+  });
+
+  it("D31: enableSelect was removed (gated a nonexistent row-selection feature)", () => {
+    expect("enableSelect" in resolveInteraction(spec({ interaction: {} }))).toBe(false);
+    expect((BAKED_INTERACTION_DEFAULTS as Record<string, unknown>).enableSelect).toBeUndefined();
+  });
+
   it("global tier overrides baked; theme opinion overrides global; explicit wins", () => {
     const r = resolveInteraction(spec({
       interactionDefaults: { enable_edit: true, enable_sort: false, enable_axis_zoom: true },

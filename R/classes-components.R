@@ -2175,7 +2175,7 @@ col_group <- function(header, ...) {
 # wire import.
 TABVIZ_INTERACTION_FLAGS <- c(
   "show_filters", "show_legend", "enable_sort", "enable_collapse",
-  "enable_select", "enable_hover", "enable_resize", "enable_export",
+  "enable_hover", "enable_resize", "enable_export",
   "enable_theme_edit", "enable_filters", "enable_reorder_rows",
   "enable_reorder_columns", "enable_edit", "enable_axis_zoom",
   "enable_arrange", "show_group_counts"
@@ -2188,7 +2188,6 @@ TABVIZ_INTERACTION_FLAGS <- c(
 #' @param show_legend Show legend
 #' @param enable_sort Enable column sorting
 #' @param enable_collapse Enable group collapsing
-#' @param enable_select Enable row selection
 #' @param enable_hover Enable hover effects
 #' @param enable_resize Enable column resizing
 #' @param enable_export Enable download/export button
@@ -2249,7 +2248,6 @@ InteractionSpec <- new_class(
     show_legend = new_property(class_logical, default = NA),
     enable_sort = new_property(class_logical, default = NA),
     enable_collapse = new_property(class_logical, default = NA),
-    enable_select = new_property(class_logical, default = NA),
     enable_hover = new_property(class_logical, default = NA),
     enable_resize = new_property(class_logical, default = NA),
     enable_export = new_property(class_logical, default = NA),
@@ -2386,7 +2384,6 @@ finalize_enable_themes <- function(value, theme) {
 #' @param show_legend Show legend
 #' @param enable_sort Enable column sorting
 #' @param enable_collapse Enable group collapsing
-#' @param enable_select Enable row selection
 #' @param enable_hover Enable hover effects
 #' @param enable_resize Enable column resizing
 #' @param enable_export Enable download/export button
@@ -2420,7 +2417,6 @@ web_interaction <- function(
     show_legend = NA,
     enable_sort = NA,
     enable_collapse = NA,
-    enable_select = NA,
     enable_hover = NA,
     enable_resize = NA,
     enable_export = NA,
@@ -2446,7 +2442,6 @@ web_interaction <- function(
     show_legend = show_legend,
     enable_sort = enable_sort,
     enable_collapse = enable_collapse,
-    enable_select = enable_select,
     enable_hover = enable_hover,
     enable_resize = enable_resize,
     enable_export = enable_export,
@@ -2473,7 +2468,6 @@ web_interaction_minimal <- function() {
     show_legend = TRUE,
     enable_sort = FALSE,
     enable_collapse = FALSE,
-    enable_select = FALSE,
     enable_hover = TRUE,
     enable_resize = FALSE,
     enable_export = FALSE,
@@ -2498,7 +2492,6 @@ web_interaction_publication <- function() {
     show_legend = FALSE,
     enable_sort = FALSE,
     enable_collapse = FALSE,
-    enable_select = FALSE,
     enable_hover = FALSE,
     enable_resize = FALSE,
     enable_export = FALSE,
@@ -2540,7 +2533,6 @@ web_interaction_full <- function() {
     show_legend = TRUE,
     enable_sort = TRUE,
     enable_collapse = TRUE,
-    enable_select = TRUE,
     enable_hover = TRUE,
     enable_resize = TRUE,
     enable_export = TRUE,

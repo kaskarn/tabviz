@@ -1333,7 +1333,10 @@
   // paint-mode cell-scope preview can target a specific cell. Falls through
   // to handleRowHover/handleRowLeave for the row-level hover behavior.
   function handleCellEnter(rowId: string, field: string, event: MouseEvent) {
-    handleRowHover(rowId, event);
+    // enable_hover gates the hover EFFECT (row highlight + tooltip) only —
+    // default-on, opt-out per D9/D31. Paint-mode cell tracking still runs so
+    // the paint tool works with hover disabled.
+    if (store.interaction.enableHover) handleRowHover(rowId, event);
     if (store.paintTool?.scope === "cell") {
       store.setPaintHoverCellField(`${rowId}:${field}`);
     }
@@ -1974,9 +1977,9 @@
                   if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
                   else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
                 } : undefined}
-                onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => handleCellClick(row, column.field) : undefined}
+                onclick={isGroupHeader && interaction.enableCollapse ? () => store.toggleGroup(displayRow.group.id) : row ? () => handleCellClick(row, column.field) : undefined}
                 ondblclick={!isGroupHeader && row && interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
-                onkeydown={isGroupHeader
+                onkeydown={isGroupHeader && interaction.enableCollapse
                   ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id)
                   : row
                     ? (e) => {
@@ -1999,6 +2002,7 @@
                     group={displayRow.group}
                     rowCount={interaction.showGroupCounts ? displayRow.rowCount : undefined}
                     level={displayRow.depth + 1}
+                    enableCollapse={interaction.enableCollapse}
                     {theme}
                   />
                 {:else if row}
@@ -2676,7 +2680,7 @@
         </div>
       {/if}
 
-      {#if legendEntries.length > 0}
+      {#if interaction.showLegend && legendEntries.length > 0}
         <!-- Series legend — inside the paper, under the table, so the
              key travels with the data card. Shared resolver with the
              SVG export (lib/legend.ts) keeps key == marks. -->

@@ -60,7 +60,7 @@ test_that("web_interaction creates a SPARSE default InteractionSpec", {
   inter <- web_interaction()
   expect_true(inherits(inter, "tabviz::InteractionSpec"))
   for (slot in c("show_filters", "show_legend", "enable_sort",
-                 "enable_collapse", "enable_select", "enable_hover",
+                 "enable_collapse", "enable_hover",
                  "enable_resize", "enable_export", "enable_edit",
                  "enable_axis_zoom")) {
     expect_true(is.na(S7::prop(inter, slot)), label = paste0(slot, " is NA"))
@@ -103,7 +103,6 @@ test_that("web_interaction_minimal returns minimal interaction", {
   inter <- web_interaction_minimal()
   expect_false(inter@enable_sort)
   expect_false(inter@enable_collapse)
-  expect_false(inter@enable_select)
   expect_false(inter@enable_resize)
   expect_false(inter@enable_export)
   expect_true(inter@enable_hover)
@@ -114,7 +113,6 @@ test_that("web_interaction_publication returns publication interaction", {
   expect_false(inter@show_legend)
   expect_false(inter@enable_sort)
   expect_false(inter@enable_collapse)
-  expect_false(inter@enable_select)
   expect_false(inter@enable_hover)
   expect_false(inter@enable_resize)
   expect_false(inter@enable_export)

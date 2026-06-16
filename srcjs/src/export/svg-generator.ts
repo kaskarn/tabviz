@@ -1673,6 +1673,7 @@ function renderLegend(
   theme: WebTheme,
   cssVars: Record<string, string> = {},
 ): string {
+  if (!resolveInteraction(spec).showLegend) return "";  // show_legend opt-out (D31)
   const entries = resolveForestLegend(spec, theme);
   if (entries.length === 0) return "";
   const fontSize = parseFontSize(readLabelSize(cssVars));

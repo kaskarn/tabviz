@@ -426,6 +426,14 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-16 — **D31 decided + executed (area B / E — dead-API honesty).**
+  Wired the 3 real interaction flags (show_legend / enable_collapse /
+  enable_hover) as default-ON opt-outs in BOTH render paths + deleted the
+  featureless enable_select across R + TS + the roster + serializer + tests.
+  One fewer open pre-1.0 register row (B: "register empty at ship"). Followed
+  a 7-round systematic review arc (Rounds 1–7, ~42 findings, converged
+  "basically perfect"; see arc-history) — area A gates hardened (2 dead
+  browser gates + the in-tree R↔TS sync gates wired into CI; drift gate teeth).
 - 2026-06-15 — **COLUMN-TYPE VARIANTS theme-control design + D30.** Designed
   how themes should control column-type visual variants
   (`docs/dev/column-type-variants.md`). Found two structurally-opposite ways to

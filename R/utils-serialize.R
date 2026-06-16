@@ -698,7 +698,6 @@ serialize_interaction <- function(interaction, active_theme = NULL) {
     showLegend = na_drop(interaction@show_legend),
     enableSort = na_drop(interaction@enable_sort),
     enableCollapse = na_drop(interaction@enable_collapse),
-    enableSelect = na_drop(interaction@enable_select),
     enableHover = na_drop(interaction@enable_hover),
     enableResize = na_drop(interaction@enable_resize),
     enableExport = na_drop(interaction@enable_export),

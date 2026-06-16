@@ -6,9 +6,13 @@
     rowCount?: number;
     theme: WebTheme | undefined;
     level?: number;  // 1 = top-level, 2 = second-level, etc.
+    /** When false (enable_collapse opt-out, D31), the group is always expanded
+     *  and non-collapsible: hide the chevron + drop the disclosure aria so it
+     *  isn't a dead affordance. */
+    enableCollapse?: boolean;
   }
 
-  const { group, rowCount, theme, level = 1 }: Props = $props();
+  const { group, rowCount, theme, level = 1, enableCollapse = true }: Props = $props();
 
   // Get level-specific styles from theme
   // Note: Background is NOT applied here - it's handled by TabvizPlot.svelte
@@ -37,15 +41,17 @@
 <div
   class="group-header"
   class:italic={levelStyles.italic}
-  aria-expanded={!group.collapsed}
+  aria-expanded={enableCollapse ? !group.collapsed : undefined}
   style:font-size={levelStyles.fontSize}
   style:font-weight={levelStyles.fontWeight}
 >
-  <span class="group-chevron" class:collapsed={group.collapsed}>
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-      <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" fill="none" />
-    </svg>
-  </span>
+  {#if enableCollapse}
+    <span class="group-chevron" class:collapsed={group.collapsed}>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+        <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" fill="none" />
+      </svg>
+    </span>
+  {/if}
   <span class="group-label">{group.label}</span>
   {#if rowCount !== undefined}
     <span class="group-count">({rowCount})</span>

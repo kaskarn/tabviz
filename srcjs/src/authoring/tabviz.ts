@@ -96,7 +96,6 @@ export interface TabvizArgs {
   showLegend?: boolean;
   enableSort?: boolean;
   enableCollapse?: boolean;
-  enableSelect?: boolean;
   enableHover?: boolean;
   enableResize?: boolean;
   enableExport?: boolean;
@@ -294,7 +293,6 @@ export function tabviz(args: TabvizArgs): WebSpec {
   setFlag("showLegend", args.showLegend);
   setFlag("enableSort", args.enableSort);
   setFlag("enableCollapse", args.enableCollapse);
-  setFlag("enableSelect", args.enableSelect);
   setFlag("enableHover", args.enableHover);
   setFlag("enableResize", args.enableResize);
   setFlag("enableExport", args.enableExport);

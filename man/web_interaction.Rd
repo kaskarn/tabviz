@@ -11,7 +11,6 @@ web_interaction(
   show_legend = NA,
   enable_sort = NA,
   enable_collapse = NA,
-  enable_select = NA,
   enable_hover = NA,
   enable_resize = NA,
   enable_export = NA,
@@ -40,8 +39,6 @@ web_interaction_full()
 \item{enable_sort}{Enable column sorting}
 
 \item{enable_collapse}{Enable group collapsing}
-
-\item{enable_select}{Enable row selection}
 
 \item{enable_hover}{Enable hover effects}
 

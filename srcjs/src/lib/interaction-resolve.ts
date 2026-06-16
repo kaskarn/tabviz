@@ -28,7 +28,7 @@ import type { InteractionSpec, WebSpec } from "$types";
 
 /** Boolean capability flags resolvable through the defaults chain. */
 export const INTERACTION_FLAG_KEYS = [
-  "showFilters", "showLegend", "enableSort", "enableCollapse", "enableSelect",
+  "showFilters", "showLegend", "enableSort", "enableCollapse",
   "enableHover", "enableResize", "enableExport", "enableThemeEdit",
   "enableFilters", "enableReorderRows", "enableReorderColumns", "enableEdit",
   "enableAxisZoom", "enableArrange", "showGroupCounts",
@@ -51,7 +51,6 @@ export const BAKED_INTERACTION_DEFAULTS: Readonly<Record<InteractionFlag, boolea
   showLegend: true,
   enableSort: true,
   enableCollapse: true,
-  enableSelect: true,
   enableHover: true,
   enableResize: true, // column-edge resize is the one universal table idiom
   enableExport: true,
