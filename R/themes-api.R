@@ -209,10 +209,7 @@ theme_inputs_to_json <- function(inputs) {
 resolve_from_inputs <- function(inputs, name = "custom", role_overrides = list(),
                                 pins = list(), components = list()) {
   inputs_json <- theme_inputs_to_json(inputs)
-  opts <- list(name = name)
-  if (length(role_overrides) > 0L) opts$roleOverrides <- role_overrides
-  if (length(pins) > 0L) opts$pins <- pins
-  if (length(components) > 0L) opts$components <- components
+  opts <- .theme_v8_opts(name, role_overrides, pins, components)
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- name
   theme <- deserialize_resolved_theme(blob)
@@ -452,9 +449,9 @@ web_theme <- function(
   checkmate::assert_string(categorical)
   checkmate::assert_choice(density, c("compact", "comfortable", "spacious"))
   checkmate::assert_number(density_factor, lower = 0.5, upper = 2)
+  # header_style light/tint/bold are all LIVE: TS activeHeaderStyle maps tint to
+  # the --tv-header-tint-bg/fg tokens (component-tokens.ts, data-head-style="tint").
   checkmate::assert_choice(header_style, c("light", "tint", "bold"), null.ok = TRUE)
-  # "tint" dropped 2026-06-11: accepted but mapped to NOTHING (the cluster
-  # only ever had default/bold — dead enum value, honesty rule).
   checkmate::assert_choice(first_column_style, c("default", "bold"))
   checkmate::assert_string(name)
   checkmate::assert_choice(shell_mode, c("flush", "raised", "float", "transparent"), null.ok = TRUE)
@@ -716,8 +713,9 @@ set_mode <- function(theme, mode) {
 
 #' Set the categorical data scheme and re-resolve.
 #' @param theme A [WebTheme].
-#' @param scheme Named scheme (`"okabe_ito"`, `"tableau10"`, `"set1"`,
-#'   `"set2"`, `"dark2"`, `"paired"`, `"wong"`, `"brand_mono"`).
+#' @param scheme Named scheme (`"okabe_ito"`, `"neon"`, `"ink_vermilion"`,
+#'   `"tableau10"`, `"set1"`, `"set2"`, `"dark2"`, `"paired"`, `"wong"`,
+#'   `"brand_mono"`).
 #' @return The re-resolved [WebTheme].
 #' @export
 set_categorical <- function(theme, scheme) {

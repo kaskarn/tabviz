@@ -9,8 +9,9 @@ set_categorical(theme, scheme)
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{scheme}{Named scheme (\code{"okabe_ito"}, \code{"tableau10"}, \code{"set1"},
-\code{"set2"}, \code{"dark2"}, \code{"paired"}, \code{"wong"}, \code{"brand_mono"}).}
+\item{scheme}{Named scheme (\code{"okabe_ito"}, \code{"neon"}, \code{"ink_vermilion"},
+\code{"tableau10"}, \code{"set1"}, \code{"set2"}, \code{"dark2"}, \code{"paired"}, \code{"wong"},
+\code{"brand_mono"}).}
 }
 \value{
 The re-resolved \link{WebTheme}.

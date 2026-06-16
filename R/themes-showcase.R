@@ -1,11 +1,9 @@
-# Showcase preset constructors. Stage 4 (2026-06-04): each preset is a
-# bold demonstration of one substrate axis — synthwave + brutalist lean
-# hard into the Phase D effects + geometry stacks; atelier + executive
-# carry the editorial/typography axis.
-#
-# Categorized under `showcase` in R/themes.R::package_themes(). Lives in
-# its own file (post-coherence-pass) so file location matches the
-# package_themes() taxonomy.
+# Showcase / rgc_v4-lab-port preset constructors — each leans hard into one
+# substrate axis: synthwave/aurora (Phase D effects), brutalist (geometry),
+# ledger (color), terminal (mono aliasing). The 27->9 cull retired the
+# atelier/executive editorial pair. Categorized in
+# R/themes.R::package_themes() under design / expressive (there is no
+# `showcase` category — it was renamed in the coherence pass).
 
 #' Synthwave theme - neon-on-deep-space showcase.
 #'

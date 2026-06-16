@@ -52,10 +52,7 @@ serialize_theme <- function(theme) {
   # role_overrides ride the options bag so the TS adapter stamps them on
   # the built blob (wire key `roleOverrides`) and the v4 resolve reflects
   # them (settings-overhaul P0 — pins are part of the portable artifact).
-  opts <- list(name = theme@name)
-  if (length(theme@role_overrides) > 0L) opts$roleOverrides <- theme@role_overrides
-  if (length(theme@pins) > 0L) opts$pins <- theme@pins
-  if (length(theme@components) > 0L) opts$components <- theme@components
+  opts <- .theme_v8_opts(theme@name, theme@role_overrides, theme@pins, theme@components)
   blob <- ts_call("buildTheme", inputs_json, options = opts)
   blob$name <- theme@name
 

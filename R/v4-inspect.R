@@ -115,12 +115,9 @@ theme_css_vars <- function(theme) {
   }
   inputs_json <- jsonlite::toJSON(theme_inputs_to_json(theme@inputs),
                                   auto_unbox = TRUE, null = "null", na = "null")
-  # Options bag carries name + role_overrides so pinned roles resolve in
-  # the inspected cssVars exactly as they paint (settings-overhaul P0).
-  opts <- list(name = theme@name)
-  if (length(theme@role_overrides) > 0L) opts$roleOverrides <- theme@role_overrides
-  if (length(theme@pins) > 0L) opts$pins <- theme@pins
-  if (length(theme@components) > 0L) opts$components <- theme@components
+  # Options bag carries name + role_overrides/pins/components so pinned roles
+  # resolve in the inspected cssVars exactly as they paint (settings-overhaul P0).
+  opts <- .theme_v8_opts(theme@name, theme@role_overrides, theme@pins, theme@components)
   opts_json <- jsonlite::toJSON(opts, auto_unbox = TRUE, null = "null", na = "null")
   ctx <- tabviz_v8()
   webtheme_json <- ctx$call("callBuilder", "buildTheme", as.character(inputs_json),

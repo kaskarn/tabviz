@@ -81,6 +81,21 @@ ts_call <- function(name, args, options = NULL) {
   )
 }
 
+#' Build the V8 options bag for a theme resolve (buildTheme / resolveFromInputs).
+#'
+#' Single source for the `{ name, roleOverrides?, pins?, components? }`
+#' omit-when-empty shape passed as the builders' second arg — was duplicated
+#' verbatim across resolve_from_inputs / theme_css_vars / serialize_theme.
+#' @noRd
+.theme_v8_opts <- function(name, role_overrides = list(), pins = list(),
+                           components = list()) {
+  opts <- list(name = name)
+  if (length(role_overrides) > 0L) opts$roleOverrides <- role_overrides
+  if (length(pins) > 0L) opts$pins <- pins
+  if (length(components) > 0L) opts$components <- components
+  opts
+}
+
 #' Delegate a `col_*` helper to its TS mirror, then wrap in S7 via web_col.
 #'
 #' Shared boilerplate for R column helpers that delegate construction to

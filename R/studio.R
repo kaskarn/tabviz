@@ -283,13 +283,14 @@ read_theme <- function(x) {
   # theme (dark paper came back white) with no error. Rebuilding through
   # resolve_from_inputs mirrors the envelope path exactly.
   if (!is.null(blob[["authoringInputs"]])) {
-    inputs <- theme_inputs_from_wire(blob[["authoringInputs"]])
-    return(resolve_from_inputs(
-      inputs,
-      name = blob[["name"]] %||% "imported",
-      role_overrides = blob[["roleOverrides"]] %||% list(),
-      pins = blob[["pins"]] %||% list()
-    ))
+    # Route through the CANONICAL importer by lifting authoringInputs -> inputs.
+    # A legacy file is still UNTRUSTED user-shareable JSON, so its pins /
+    # roleOverrides / components must pass the same grammar gate + normalize +
+    # component validation theme_from_wire enforces — feeding them raw to
+    # resolve_from_inputs (as before) bypassed the pin XSS defense.
+    wire <- blob
+    wire[["inputs"]] <- blob[["authoringInputs"]]
+    return(theme_from_wire(wire))
   }
   deserialize_resolved_theme(blob)
 }

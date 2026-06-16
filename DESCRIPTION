@@ -38,7 +38,6 @@ Collate:
     'inspect-resolved.R'
     'font-urls.R'
     'themes.R'
-    'themes-modes.R'
     'themes-lotr.R'
     'themes-design.R'
     'themes-showcase.R'
