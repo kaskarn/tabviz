@@ -14,6 +14,7 @@
 //   shape: effect.shape ?? theme.series[i].shape ?? 4-shape rotation
 
 import type { WebSpec, WebTheme, MarkerShape, EffectSpec, ColumnSpec } from "../types";
+import { escapeAttr } from "./svg-text-utils";
 
 export interface LegendEntry {
   label: string;
@@ -68,15 +69,20 @@ export function legendGlyphSvg(
   color: string,
 ): string {
   const r = size / 2;
+  // `color` is spec-DATA (EffectSpec.color, untrusted, no ingress grammar gate),
+  // and this raw-markup helper is concatenated by the SVG export AND injected
+  // via `{@html}` in the DOM (TabvizPlot) — neither auto-escapes, so escape here
+  // (no-op on legitimate colors).
+  const fill = escapeAttr(color);
   switch (shape) {
     case "square":
-      return `<rect x="${cx - r}" y="${cy - r}" width="${size}" height="${size}" fill="${color}"/>`;
+      return `<rect x="${cx - r}" y="${cy - r}" width="${size}" height="${size}" fill="${fill}"/>`;
     case "diamond":
-      return `<polygon points="${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}" fill="${color}"/>`;
+      return `<polygon points="${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}" fill="${fill}"/>`;
     case "triangle":
-      return `<polygon points="${cx},${cy - r} ${cx + r},${cy + r} ${cx - r},${cy + r}" fill="${color}"/>`;
+      return `<polygon points="${cx},${cy - r} ${cx + r},${cy + r} ${cx - r},${cy + r}" fill="${fill}"/>`;
     case "circle":
     default:
-      return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
   }
 }

@@ -123,7 +123,6 @@ import {
   VIZ,
 } from "$lib/rendering-constants";
 import {
-  formatNumber,
   getColumnDisplayText,
   truncateString,
 } from "$lib/formatters";
@@ -1434,7 +1433,8 @@ function truncateText(
   return text.slice(0, left) + ellipsis;
 }
 
-// Note: formatNumber + axis-tick helpers are imported from ./formatters.
+// Note: number/axis-tick formatters are imported from ./formatters; axis tick
+// labels use the local `formatTick` via `axisTickLabelSvg`.
 // formatEvents / formatInterval / formatPvalue moved to per-schema
 // renderers under src/schema/columns/*-renderer.ts (Phase 4a-c).
 
@@ -1446,6 +1446,36 @@ function formatTick(value: number): string {
   return value.toFixed(2);
 }
 
+/**
+ * Canonical axis tick-label `<text>` — the ONE source of truth shared by the
+ * forest axis and the viz (bar/boxplot/violin) axis, so their typography (the
+ * `tick` type role: family / weight / italic) and number format can't drift.
+ * The viz axis used to bake `readBodyFamily`/`400`/`formatNumber` and so
+ * rendered ticks in a different font + precision than the DOM's `EffectAxis`
+ * and the forest axis (copy-paste drift). Position (x/y/anchor) and color are
+ * the caller's; everything typographic lives here.
+ */
+function axisTickLabelSvg(
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+  value: number,
+  fontSize: number,
+  fill: string | null | undefined, // readVar() colors are typed loosely; always a real color at runtime
+  theme: WebTheme,
+  cssVars: Record<string, string>,
+): string {
+  const family = theme.plot?.tickLabel?.family ?? readTypeFamily(cssVars, "tick", readBodyFamily(cssVars));
+  const weight = theme.plot?.tickLabel?.weight ?? readTypeWeight(cssVars, "tick", 400);
+  const style = theme.plot?.tickLabel?.italic ? "italic" : "normal";
+  return `<text x="${x}" y="${y}" text-anchor="${anchor}"
+    font-family="${family}"
+    font-size="${fontSize}px"
+    font-weight="${weight}"
+    font-style="${style}"
+    fill="${fill}">${formatTick(value)}</text>`;
+}
+
 // ============================================================================
 // Scale Functions
 // ============================================================================
@@ -1453,23 +1483,29 @@ function formatTick(value: number): string {
 interface Scale {
   (value: number): number;
   domain: () => [number, number];
-  range: () => [number, number];
   ticks: (count: number) => number[];
 }
 
 function createLinearScale(domain: [number, number], range: [number, number]): Scale {
   const [d0, d1] = domain;
   const [r0, r1] = range;
-  const ratio = (r1 - r0) / (d1 - d0);
+  // Degenerate domain (d0 === d1) would make `ratio` Infinity and every mapped
+  // coordinate ±Infinity/NaN — a blank/broken plot in the V8 export with no DOM
+  // fallback. Reachable via equal explicit axis limits (no upstream validation
+  // requires rangeMin < rangeMax). Match d3's behavior: collapse to the range
+  // midpoint.
+  const span = d1 - d0;
+  const ratio = span === 0 ? 0 : (r1 - r0) / span;
+  const mid = (r0 + r1) / 2;
 
   const scale = (value: number): number => {
-    return r0 + (value - d0) * ratio;
+    return span === 0 ? mid : r0 + (value - d0) * ratio;
   };
 
   scale.domain = (): [number, number] => domain;
-  scale.range = () => range;
   scale.ticks = (count: number): number[] => {
-    const step = (d1 - d0) / (count - 1);
+    if (count <= 1) return [d0]; // step = (d1-d0)/(count-1) would divide by zero
+    const step = span / (count - 1);
     const ticks: number[] = [];
     for (let i = 0; i < count; i++) {
       ticks.push(d0 + step * i);
@@ -1485,15 +1521,18 @@ function createLogScale(domain: [number, number], range: [number, number]): Scal
   const [r0, r1] = range;
   const logD0 = Math.log10(d0);
   const logD1 = Math.log10(d1);
-  const ratio = (r1 - r0) / (logD1 - logD0);
+  // Degenerate domain guard (see createLinearScale) — collapse to range midpoint.
+  const logSpan = logD1 - logD0;
+  const ratio = logSpan === 0 ? 0 : (r1 - r0) / logSpan;
+  const mid = (r0 + r1) / 2;
 
   const scale = (value: number): number => {
+    if (logSpan === 0) return mid;
     const logValue = Math.log10(Math.max(value, 0.001));
     return r0 + (logValue - logD0) * ratio;
   };
 
   scale.domain = (): [number, number] => [d0, d1];
-  scale.range = () => range;
   scale.ticks = (_count: number): number[] => {
     // Generate log-spaced ticks at nice values (powers of 10 and 2x, 5x multiples)
     const ticks: number[] = [];
@@ -1583,8 +1622,7 @@ function renderHeader(
 
   if (spec.labels?.title) {
     const fontSize = parseFontSize(readTypeSize(cssVars, "title", readTypeSize(cssVars, "subtitle", "16.8px")));
-    const titleFamily = readTypeFamily(cssVars, "title",
-      readTypeFamily(cssVars, "title", readBodyFamily(cssVars)));
+    const titleFamily = readTypeFamily(cssVars, "title", readBodyFamily(cssVars));
     const titleWeight = readTypeWeight(cssVars, "title", 600);
     const titleFg = readVar(cssVars, "--tv-text-title-fg", readContentPrimary(cssVars));
     lines.push(`<text x="${padding}" y="${layout.titleY}"
@@ -2688,7 +2726,7 @@ function renderVizViolin(
       parts.push(`<line
         x1="${medianX}" x2="${medianX}"
         y1="${violinCenterY - maxWidth * 0.6}" y2="${violinCenterY + maxWidth * 0.6}"
-        stroke="${lineColor}" stroke-width="${medianStrokeW}"${strokeOpAttr}/>`);
+        stroke="${violinStroke}" stroke-width="${medianStrokeW}"${strokeOpAttr}/>`);
     }
 
     // Quartile lines
@@ -2698,11 +2736,11 @@ function renderVizViolin(
       parts.push(`<line
         x1="${q1X}" x2="${q1X}"
         y1="${violinCenterY - maxWidth * 0.4}" y2="${violinCenterY + maxWidth * 0.4}"
-        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"${strokeOpAttr}/>`);
+        stroke="${violinStroke}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"${strokeOpAttr}/>`);
       parts.push(`<line
         x1="${q3X}" x2="${q3X}"
         y1="${violinCenterY - maxWidth * 0.4}" y2="${violinCenterY + maxWidth * 0.4}"
-        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"${strokeOpAttr}/>`);
+        stroke="${violinStroke}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"${strokeOpAttr}/>`);
     }
   });
 
@@ -2877,15 +2915,9 @@ function renderVizAxis(
     const x = vizX + tickX;
     const textAnchor = getTextAnchor(tickX);
     const xOffset = getTextXOffset(tickX);
-    const label = formatNumber(tick);
 
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${tickMarkColor}" stroke-width="1"/>`);
-    lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
-      text-anchor="${textAnchor}"
-      font-family="${readBodyFamily(cssVars)}"
-      font-size="${fontSize}px"
-      font-weight="${400}"
-      fill="${tickLabelFg}">${label}</text>`);
+    lines.push(axisTickLabelSvg(x + xOffset, axisGeom.tickLabelY, textAnchor, tick, fontSize, tickLabelFg, theme, cssVars));
   }
 
   // Axis label — the LABEL type role, exactly what the DOM consumes
@@ -2995,12 +3027,9 @@ function renderForestAxis(
 
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
       stroke="${tickMarkColor}" stroke-width="1"/>`);
-    lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
-      font-family="${theme.plot?.tickLabel?.family ?? readTypeFamily(cssVars, "tick", readBodyFamily(cssVars))}"
-      font-size="${fontSize}px"
-      font-weight="${theme.plot?.tickLabel?.weight ?? readTypeWeight(cssVars, "tick", 400)}"
-      font-style="${theme.plot?.tickLabel?.italic ? "italic" : "normal"}"
-      fill="${tickLabelFg}">${formatTick(tick)}</text>`);
+    // The forest axis nudges labels +2px below the tick (its scaffold sits
+    // tighter than the viz axis); the typography is the shared helper.
+    lines.push(axisTickLabelSvg(x + xOffset, axisGeom.tickLabelY + 2, textAnchor, tick, fontSize, tickLabelFg, theme, cssVars));
   }
 
   // Axis label
@@ -3267,7 +3296,7 @@ function renderUnifiedTableRow(
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
     font-style="${fontStyle}"
-    fill="${textColor}">${escapeXml(row.label)}</text>`);
+    fill="${escapeAttr(textColor)}">${escapeXml(row.label)}</text>`);
 
   // Badge (if present)
   if (row.style?.badge) {
@@ -3631,6 +3660,7 @@ function renderReferenceLine(
   opacity: number = 0.6,
   labelY?: number,
   cssVars: Record<string, string> = {},
+  annColor?: string | null,
 ): string {
   const dashArray = style === "dashed" ? "6,4" : style === "dotted" ? "2,2" : "";
   const dashAttr = dashArray ? ` stroke-dasharray="${dashArray}"` : "";
@@ -3638,7 +3668,10 @@ function renderReferenceLine(
     stroke="${escapeAttr(color)}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
-    const labelColor = readContentSecondary(cssVars);
+    // Match the DOM: a colored reference line labels in its OWN color; an
+    // uncolored one falls back to muted/secondary text (the export used to
+    // always force secondary, so colored reflines got a gray label).
+    const labelColor = escapeAttr(annColor ?? readContentSecondary(cssVars));
     const ty = labelY ?? y1 - 4;
     svg += `<text x="${x}" y="${ty}" text-anchor="middle"
       font-family="${readBodyFamily(cssVars)}"
@@ -4870,7 +4903,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         `text-anchor="middle" dominant-baseline="middle" ` +
         `font-family="${readBodyFamily(cssVars)}" ` +
         `font-size="${fontSize.toFixed(1)}" font-weight="700" ` +
-        `fill="${wmFill}" fill-opacity="${wmOpacity}" ` +
+        `fill="${escapeAttr(wmFill)}" fill-opacity="${wmOpacity}" ` +
         `style="pointer-events:none; user-select:none">${escapeXml(spec.watermark)}</text>`
       );
     }
@@ -4964,6 +4997,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           ann.opacity ?? 0.6,
           annotationLabelBaseY + labelYOffset,
           cssVars,
+          ann.color,
         ));
       }
     }

@@ -11,6 +11,52 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — systematic review: export/SVG-generator pipeline (7 bugs fixed)
+
+Four parallel review agents (geometry/layout · XSS egress · viz-renderer DOM
+parity · rationalization) swept the 5421-line `export/svg-generator.ts` — the
+highest-stakes runtime (V8, no DOM fallback). Every finding was re-verified
+against the actual code before acting (subagents can mis-read). **7 RANK-1 bugs
+found + fixed:**
+
+1. **Degenerate axis domain → div-by-zero.** `createLinearScale`/`createLogScale`
+   had no `d0===d1` guard, so equal explicit axis limits / `xDomain:[v,v]` (no
+   upstream `rangeMin<rangeMax` validation) made `ratio` Infinity → every
+   marker/tick coord `±Infinity`/`NaN` → blank plot. Now collapses to the range
+   midpoint (matches d3). Also guarded `ticks(count<=1)`. Teeth:
+   `svg-robustness.runes.ts`.
+2-4. **Three XSS egress gaps** (spec-DATA color → `fill=` unescaped, the
+   string-concat export has no auto-escaping): row-LABEL color (`row.style.color`),
+   `spec.watermarkColor`, and the forest-legend `effect.color` in `lib/legend.ts`
+   — the last ALSO a latent DOM XSS (the DOM injects `legendGlyphSvg` via
+   `{@html}`, which bypasses Svelte escaping). All wrapped in `escapeAttr` at
+   egress. Teeth: 3 vectors added to `svg-xss.runes.ts` (verified they render
+   AND neutralize).
+5-7. **Three DOM↔export divergences from copy-paste drift** (the viz path lacked
+   a fix its forest/box sibling had): viz-axis tick labels baked
+   `readBodyFamily`/`400`/`formatNumber` instead of the `tick` type-role +
+   `formatTick` (forest axis was correct) — fixed by EXTRACTING a shared
+   `axisTickLabelSvg` used by BOTH axes, killing the drift surface; violin
+   median/quartile lines forced content-primary instead of the per-effect
+   `ms.stroke ?? lineColor` (the violin outline already did it right);
+   reference-line LABEL forced secondary instead of `ann.color ?? muted`.
+
+Cleanups: removed dead `Scale.range()`, a redundant nested `readTypeFamily("title",
+"title")`, dead `formatNumber` import + stale comment. Validated: 1460 bun + 318
+vitest, layout-metrics snapshots unchanged (typography-only), wysiwyg within
+budget (no NEW divergence — the viz axis now MATCHES), viz/forest/box/violin
+visual renders clean.
+
+**Deferred (verified, documented — not bugs today, brittleness for the v3→v4
+migration):** the aspect ladder still reads raw `spec.theme.spacing?.rowHeight`
+(`:~4097/4114/4314`) instead of the resolved `--tv-spacing-row-height` token, so
+a slim/D13 theme's aspect target can drift; `validateSpec` still hard-requires
+`theme.spacing` though the main layout path is v4-cssVars; `resolveBorders` is
+recomputed per-row inside the render loop (hoist candidate); several dead fn
+params (`vizWidth`, `theme` in renderHeader/Footer/RefLine, `autoWidths`/`_allRows`)
+inflate the signature surface. All RANK-2/3 — left for a focused follow-up so this
+arc stays a clean security+correctness pass.
+
 ## 2026-06-16 — D30: interval "exacting users" tier + D27 heatmap parity
 
 Two register items closed (roadmap implementation is checkbox-complete; the

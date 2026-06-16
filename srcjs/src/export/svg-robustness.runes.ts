@@ -36,6 +36,28 @@ describe("generateSVG — degenerate-but-valid specs degrade gracefully", () => 
       expect(svg.length).toBeGreaterThan(100);
     });
   }
+
+  // Degenerate axis domain (rangeMin == rangeMax / xDomain [v,v]) once made the
+  // pure-JS linear/log scale divide by zero → ±Infinity/NaN marker coordinates
+  // (a blank/broken plot, no DOM fallback). The scale now collapses to the
+  // range midpoint. Gate: no non-finite numbers reach the SVG attributes.
+  test("zero-width axis domain emits finite coordinates (no NaN/Infinity)", () => {
+    const spec = base({
+      columns: [{ id: "f", type: "forest", field: "hr", header: "HR",
+        options: { forest: { point: "hr", lower: "lo", upper: "hi" } } }],
+      data: { rows: [
+        { id: "r0", label: "A", metadata: { hr: 1, lo: 1, hi: 1 } },
+        { id: "r1", label: "B", metadata: { hr: 1, lo: 1, hi: 1 } },
+      ], groups: [], summaries: [] },
+    });
+    for (const scale of [undefined, "log" as const]) {
+      const opts = { width: 400, xDomain: [1, 1] as [number, number],
+        ...(scale ? { forestScale: scale } : {}) };
+      const svg = generateSVG(spec as never, opts as never);
+      expect(svg).toContain("<svg");
+      expect(svg).not.toMatch(/NaN|Infinity/);
+    }
+  });
 });
 
 describe("generateSVG — structurally invalid specs throw a CLEAR error", () => {

@@ -29,18 +29,29 @@ function mk() {
     theme,
     interaction: {},
     layout: {},
+    // Watermark color injection (spec.watermarkColor egress).
+    watermark: "DRAFT",
+    watermarkColor: PAYLOAD,
     columns: [
       { id: "name", type: "text", field: "name", header: "Name", options: {} },
       { id: "val", type: "bar", field: "val", header: "Val", options: { bar: { color: PAYLOAD } } },
+      // Multi-effect forest column → the legend glyph uses effect.color (lib/legend.ts egress).
+      { id: "hr", type: "forest", field: "hr", header: "HR", options: { forest: {
+        point: "hr", lower: "lo", upper: "hi",
+        effects: [
+          { point: "hr", lower: "lo", upper: "hi", label: "X", color: PAYLOAD },
+          { point: "hr", lower: "lo", upper: "hi", label: "Y", color: PAYLOAD },
+        ],
+      } } },
     ],
     data: {
       groups: [],
       summaries: [],
       rows: [
         {
-          id: "r0", label: "A", metadata: { name: "A", val: 50 },
-          // Row background injection (core renderer egress).
-          style: { bg: PAYLOAD },
+          id: "r0", label: "A", metadata: { name: "A", val: 50, hr: 1, lo: 0.5, hi: 1.5 },
+          // Row background + row-LABEL color injection (core renderer egresses).
+          style: { bg: PAYLOAD, color: PAYLOAD },
           // Cell-text color injection (core renderer cell path).
           cellStyles: { name: { color: PAYLOAD } },
         },

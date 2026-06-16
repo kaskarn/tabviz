@@ -332,10 +332,16 @@ One line each; the cost of ignoring these has already been paid once.
   annotation/ReferenceLine + viz-renderer `opts.*Color`) reaching a `fill=`/
   `stroke=` SVG attribute MUST pass `escapeAttr` (= escapeXml) at egress — the
   export is string-concatenated (no DOM auto-escaping) and embeds into HTML, so
-  a `#fff" onload="…` value is stored XSS. The DOM path is safe (Svelte escapes);
+  a `#fff" onload="…` value is stored XSS. The DOM path is *usually* safe (Svelte
+  escapes) — EXCEPT a shared raw-markup helper (e.g. `legendGlyphSvg`) that the
+  DOM injects via `{@html}`: `{@html}` bypasses Svelte escaping, so such a helper
+  needs the escape for BOTH consumers (escape inside it, not at the export site).
   THEME colors are safe (ingress isValidHex/getCssVars neutralizer). It's a no-op
   on legitimate colors, so escape at the resolve-call definition in any new
-  *-renderer.ts. Gate: `export/svg-xss.runes.ts`.
+  *-renderer.ts. Gate: `export/svg-xss.runes.ts` (covers row.style.bg/color,
+  cellStyle, bar.color, watermarkColor, legend effect.color). 2026-06-16 export
+  review found 3 missed egresses (row-label color, watermarkColor, legend) — the
+  wall ratchets, never loosens.
 
 **R**
 - NEVER `new_property(X, default = SomeClass())` — always
