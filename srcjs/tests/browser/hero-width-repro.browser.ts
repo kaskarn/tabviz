@@ -38,27 +38,55 @@ for (let i = 0; i < 40 && stable < 3; i++) {
   if (t === lastTemplate) stable++; else { stable = 0; lastTemplate = t; }
 }
 const verdict = await page.evaluate(() => {
-  // Select interval cells by content shape (data-field carries the
-  // ROW-level field only on some cell kinds; text-match is robust).
-  const cells = [...document.querySelectorAll<HTMLElement>(".grid-cell.data-cell")]
-    .filter((c) => /\(\d+\.\d+, \d+\.\d+\)/.test(c.textContent ?? ""));
+  // Content element per cell kind: render-tree cells use `.cell-content`;
+  // component cells render their own root (pvalue → `.cell-pvalue`, badge →
+  // `.cell-badge`, text → `.cell-text`). Measure the widest non-absolute
+  // content child (skip overlaid affordances like resize handles).
+  const contentWidth = (cell: HTMLElement): { w: number; txt: string } | null => {
+    const kids = [...cell.children].filter(
+      (k): k is HTMLElement => k instanceof HTMLElement && getComputedStyle(k).position !== "absolute",
+    );
+    if (!kids.length) return null;
+    let best = kids[0]!;
+    for (const k of kids) if (k.offsetWidth > best.offsetWidth) best = k;
+    return { w: best.offsetWidth, txt: (best.textContent ?? "").trim() };
+  };
+  const cells = [...document.querySelectorAll<HTMLElement>(".grid-cell.data-cell")];
+  // INTERVAL cells are EXACT-measured (Canvas tree) → strict 0.5px floor.
+  //
+  // The GENERAL floor (8px) is deliberately loose to absorb a KNOWN, tracked
+  // measurement gap: cells render `font-variant-numeric: tabular-nums` (DOM AND
+  // export), but the width measurement uses PROPORTIONAL glyph advances — so a
+  // numeric cell renders ~0.9px/digit WIDER than measured (a hero "839/14,752"
+  // events cell: render 87px vs proportional 70px). The proper fix is
+  // tabular-aware measurement (see arc-history 2026-06-16); until then the
+  // residual is ~7px for the hero's widest figure cells. The 8px floor still
+  // catches the bug class this gate exists for: a COMPONENT column dropping to
+  // AUTO_WIDTH.MIN (60px) → tens-of-px clips (the pvalue regression was 37px).
+  // A future wider tabular value clipping >8px will (correctly) fail here and
+  // force the tabular fix.
+  const STRICT = 0.5, GENERAL = 8;
   const bad: string[] = [];
+  let intervals = 0, total = 0;
   for (const cell of cells) {
-    const content = cell.querySelector<HTMLElement>(".cell-content");
-    if (!content) continue;
-    const pad = parseFloat(getComputedStyle(cell).paddingLeft) + parseFloat(getComputedStyle(cell).paddingRight);
-    // offsetWidth: UNSCALED layout boxes on both sides.
-    const room = cell.offsetWidth - pad;
-    if (content.offsetWidth > room + 0.5) {
-      bad.push(`${content.textContent!.trim().slice(0, 24)} content=${content.offsetWidth} room=${Math.round(room)}`);
+    const c = contentWidth(cell);
+    if (!c) continue;
+    total++;
+    const cs = getComputedStyle(cell);
+    const room = cell.offsetWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const isInterval = /\(\d+\.\d+, \d+\.\d+\)/.test(cell.textContent ?? "");
+    if (isInterval) intervals++;
+    const tol = isInterval ? STRICT : GENERAL;
+    if (c.w > room + tol) {
+      bad.push(`${isInterval ? "[iv]" : "[  ]"} "${c.txt.slice(0, 22)}" content=${c.w} room=${Math.round(room)} over=${Math.round(c.w - room)}`);
     }
   }
-  return { checked: cells.length, bad };
+  return { total, intervals, bad };
 });
-console.log(`interval cells checked: ${verdict.checked}; overflows: ${verdict.bad.length}`);
+console.log(`data cells checked: ${verdict.total} (${verdict.intervals} intervals); overflows: ${verdict.bad.length}`);
 if (verdict.bad.length > 0) {
   console.error(verdict.bad.join("\n"));
   process.exit(1);
 }
-console.log("✓ hero interval cells fit their boxes");
+console.log("✓ hero cells fit their column boxes (intervals strict 0.5px, others ≤8px tabular residual)");
 await browser.close();

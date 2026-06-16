@@ -11,6 +11,39 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — hero-width gate generalized + TABULAR-NUMS under-measure found
+
+Generalized `hero-width-repro.browser.ts` from interval-cells-only to ALL data
+cells (component cells render their own root, e.g. `.cell-pvalue`, which the old
+`.cell-content`-only selector missed — exactly why the pvalue MIN-floor
+regression slipped past it). Intervals stay strict (0.5px, Canvas-exact);
+others get an 8px floor.
+
+That 8px floor exists to absorb a NEWLY-FOUND, still-OPEN measurement gap (the
+maintainer's "the inaccuracy could be elsewhere" — it was): cells render
+`font-variant-numeric: tabular-nums` (DOM `.cell-content`/`.cell-pvalue` AND the
+SVG export, svg-generator:4621, gated by `--tv-text-numeric-figures`), but the
+width measurement (`estimateTextWidth` / `measureExact`) uses PROPORTIONAL glyph
+advances. Tabular forces every digit to the figure (widest) advance, so a
+numeric cell renders ~0.9px/DIGIT WIDER than measured. Measured directly on the
+hero: an events cell `839/14,752` renders **87px** but Canvas-proportional is
+**70px** (17px / 8 digits ≈ 2px/digit in Lora) — its column under-sized and
+clipped 7px. This under-measures EVERY numeric column (N / Events / HR / pvalue);
+most have slack, the tightest (events) clips. Both backends render tabular so
+they under-size CONSISTENTLY (no DOM↔export divergence) — it's a shared absolute
+error.
+
+**FIX (next arc — deliberately deferred, it's a careful core change):**
+tabular-aware measurement. `estimateTextWidth` gains a `tabular` flag → digits
+use `max(advance("0".."9"))` (the figure width) from the font-metrics table;
+`measureExact` (Canvas can't set tabular) approximates by measuring with digits
+normalized to the widest digit (cache the widest per font). Thread the flag from
+the measurement entry points (DOM `exactMax` + composedResolver; export
+`measureTextWidth` + the renderNodeToSvg estimator), derived once from
+`readVar(cssVars,"--tv-text-numeric-figures") !== "normal"`. Then the hero gate's
+GENERAL floor drops back to strict. Requires layout-metrics snapshot regen
+(numeric columns legitimately widen) + wysiwyg revalidation.
+
 ## 2026-06-16 — anti-recurrence gate: schema-driven export-option parity
 
 Built the structural fix for the recurring DOM↔export divergence class (the
