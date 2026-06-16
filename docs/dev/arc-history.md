@@ -11,6 +11,48 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — systematic review Rounds 4–7 + CONVERGENCE ("basically perfect")
+
+Continued the recursive review/cleanup arc to convergence. Rounds 4–6 each ran 4
+parallel adversarial agents over the remaining + previously-deep surfaces;
+Round 7 was a confirmation pass.
+
+**R4** (export drawing residue · layout · R theme · settings/components):
+formatAxisTick DOM/export dedup (one source in axis-utils; EffectAxis sources
+AXIS.* instead of re-hardcoding); DropIndicator portaled-accent (D4) threaded
+from TabvizOverlays; portal.ts/eslint/SettingsPanel header doc-honesty; vestigial
+tailwindcss() dropped from the split build; R rlang `%||%`/abort/… import was
+dead+misleading → removed; tabviz(weight) now warns like its deprecated siblings;
+**CI: the R↔TS source-parse sync gates (wire-version, glyph, interaction) SKIPPED
+in every CI run** (R CMD check builds a srcjs-less tarball) → added an in-tree
+step to R-CMD-check.
+
+**R5** (verify R1–4 · docs · harnesses): my refactors verified sound (one
+defensible %||% empty-env edge); **two real browser gates (theme-screenshots —
+the SOLE gate for shell/paper/glow/glass — and hero-width) were never wired into
+CI** → added; drift.test only checked consumedBy was non-empty → added a frozen
+VALID_CONSUMERS gate; the incomplete 27→9 theme cull had left **erroring docs
+examples** (README/roxygen/shiny demo calling web_theme_lancet/jama/… ) + pervasive
+stale .qmd prose (counts, ink2-as-anchor, broken anchors, wrong package_themes
+keys) → fixed across 9 files + the cheatsheet's fictional web_theme(inputs=…) API,
+all re-rendered clean.
+
+**R6** (adversarial sweep of under-reviewed areas): found ONE HIGH bug 5 rounds
+missed — **update_data()'s proxy path was dead** (`as.data.frame` stripped the
+WebSpec before the S7_inherits check → every proxy data-push aborted), hidden
+behind a test that passed for the wrong reason. Fixed + added the missing
+positive-path test. + tightened the set_figure_layout envelope-unwrap guard.
+
+**R7** (confirmation): all checks PASS — update_data fix correct + covered,
+serialize_data hot path sane on zero-rows/factor/Date, formatters boundary-safe,
+single canonical %||%, no eval/RegExp-from-input. Verdict: **basically perfect.**
+
+CONVERGENCE: ~42 findings fixed across 7 rounds, every consequential one
+validated + committed separately; full TS gauntlet + R suite (543 ctx) green;
+decisions D32 (dual flex impls) + D33 (systemfonts constants) logged as
+post-ship arcs. The theme system, XSS egress wall, and browser/V8 split were
+verified-clean true-negatives throughout. The arc came out the other end clean.
+
 ## 2026-06-16 — systematic multi-round code review (Rounds 1–3, 12 streams)
 
 A recursive review/cleanup arc (goal: iterate until a full pass comes back

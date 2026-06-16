@@ -281,6 +281,14 @@ One line each; the cost of ignoring these has already been paid once.
 - Browser gates rot silently if nothing executes them (the preset cull
   broke panel-liveness/interaction-qa for weeks) — when deleting exports,
   grep `srcjs/tests/` and `scripts/` too. CI for harnesses = roadmap M0.
+  When you ADD a browser gate, wire it into `js-ci.yaml`'s `browser-gates`
+  job (theme-screenshots + hero-width sat unwired) — a gate not in that list
+  never runs.
+- R↔TS source-parse sync gates (`test-wire-version`, `test-glyph-roster-sync`,
+  `test-interaction-roster-sync`) read `../../srcjs` and `skip_if_not` when it's
+  absent — so they SKIP in the tarball-based `R CMD check` (srcjs is
+  `.Rbuildignore`d). An in-tree step in `R-CMD-check.yaml` (ubuntu/release) runs
+  them where srcjs exists; keep new R↔TS source-parse gates in that filter.
 - Puppeteer `mouse.click({clickCount: 2})` sends ONE pointer pair and CDP
   reports `detail` 0 — detect double-press via the `dblclick` event.
 - Liveness-harness lessons: comprehensive fingerprints (full outerHTML +
@@ -381,6 +389,16 @@ One line each; the cost of ignoring these has already been paid once.
 - `cli_abort()` glue-interpolates its strings — machine-built messages
   (e.g. TS validator output quoting user values) must escape `{`/`}`
   (double them, `fixed = TRUE`) or cli errors on pluralization/glue.
+- `%||%` has ONE canonical def (`R/conditions.R`) — coalesces NULL **and**
+  length-0 (incl. `character(0)`, which the old variant CRASHED on) **and**
+  `""`. Never re-add a local `%||%` (5 copies drifted once; the empty-string
+  one silently won by Collate order) and don't `@importFrom rlang "%||%"` (its
+  NULL-only semantics differ). The `web_col` empty-header idiom needs raw
+  `is.null` precisely because `%||%` eats `""`.
+- Coerce constructor args (`as.data.frame`, etc.) INSIDE the branch that needs
+  them, never before a class dispatch — `update_data` coerced the WebSpec to a
+  data.frame above its `S7_inherits(WebSpec)` proxy check, killing the whole
+  proxy path (gate it with a POSITIVE-path test, not just the rejection case).
 
 ## Working in this Codebase
 
