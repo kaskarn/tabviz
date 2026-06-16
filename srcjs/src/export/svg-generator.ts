@@ -97,6 +97,10 @@ import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { resolveForestLegend, legendGlyphSvg } from "../lib/legend";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
+import {
+  measureComposedColumnWidth,
+  type ComposedCandidate,
+} from "../schema/measure-composed";
 import { compileVariants } from "../schema/variant-compile";
 import { applyThemeColumnDefaultsToSpec } from "../lib/theme/column-defaults";
 import { resolveContainerBorder } from "../lib/theme/layout-defaults";
@@ -349,6 +353,11 @@ export function calculateSvgAutoWidths(
 ): Map<string, number> {
   const widths = new Map<string, number>();
   const cssVarsLocal = getCssVars(spec.theme);
+  // Composed-cell tree measurement reuses the EXACT resolver the export draws
+  // with (`makeThemeResolver`) — same symbolic→px size map, and no `measure`
+  // so `renderNodeToSvg` falls to the pure-JS estimator the V8 renderer also
+  // uses. Measure == render, in the export's own (scale-1) space.
+  const exportMeasureResolver = makeThemeResolver(spec.theme, cssVarsLocal);
   const bodySizeStr = readBodySize(cssVarsLocal);
   const fontSize = parseFontSize(readTypeSize(cssVarsLocal, "body", bodySizeStr));
   // W4 arc 2 (2026-06-11): header typography is a REAL manifest token
@@ -460,19 +469,34 @@ export function calculateSvgAutoWidths(
       );
     }
 
-    // Measure all data cell values using proper display text
+    // Per-cell candidates: flat display text (the cheap rank key) + the
+    // metadata + bold flag a tree measure needs. Skip header/spacer rows.
+    const cells: ComposedCandidate[] = [];
     for (const row of rows) {
       if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) {
         continue;
       }
       const text = getColumnDisplayText(row, col);
-      if (text) {
-        // Bold rows (row_bold styling, summary rows) render wider than
-        // regular weight — the hero's overall-summary intervals clipped
-        // 13px when everything was measured at 400 (regression gate:
-        // hero-width-repro).
-        const weight = row.style?.bold ? 700 : 400;
-        maxWidth = Math.max(maxWidth, measureTextWidth(text, fontSize, bodyFamily, weight));
+      if (text) cells.push({ text, metadata: row.metadata, bold: !!row.style?.bold });
+    }
+
+    // Composed cells (intervals, variant layouts, custom compositions) lay out
+    // a node tree whose width ≠ the flat string; measure the ACTUAL tree over
+    // the top-K widest rows with the SAME canvas-free estimator the V8
+    // renderer draws with (so width-measure == render → no clip). Returns null
+    // for plain text columns, which keep the flat path. Bold rows (row_bold /
+    // summary) measure at 700 — the hero's overall-summary intervals clipped
+    // 13px at 400 (regression gate: hero-width-repro).
+    const composedW = measureComposedColumnWidth(
+      col, cells, fontSize, () => exportMeasureResolver,
+      { theme: spec.theme, nodeRules: spec.theme?.nodeRules, target: "svg" },
+    );
+    if (composedW != null) {
+      maxWidth = Math.max(maxWidth, composedW);
+    } else {
+      for (const c of cells) {
+        const weight = c.bold ? 700 : 400;
+        maxWidth = Math.max(maxWidth, measureTextWidth(c.text, fontSize, bodyFamily, weight));
       }
     }
 
@@ -487,9 +511,6 @@ export function calculateSvgAutoWidths(
     // Use type-specific minimum for visual columns, else default minimum
     const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
     const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
-    // TEMP-DIAG2
-    // eslint-disable-next-line no-console
-    if (col.type === "interval") console.log("[iv-natural]", maxWidth, "→", computedWidth);
     widths.set(col.id, Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth)));
   }
 

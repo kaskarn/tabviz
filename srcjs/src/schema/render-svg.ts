@@ -41,6 +41,12 @@ export interface StyleResolver {
   weight?: (v: NonNullable<TextStyle["weight"]>) => string | number;
   color?:  (v: NonNullable<TextStyle["color"]>) => string;
   bg?:     (v: NonNullable<GroupStyle["bg"]>) => string;
+  /** Text-width measurer `(text, resolvedPx) → width`. Default is the pure-JS
+   *  `estimateTextWidth`. Lets the WIDTH-ESTIMATION path inject a Canvas-exact
+   *  measurer (bound to the cell font) so it reuses THIS layout engine — same
+   *  per-node sizing the renderer draws — instead of re-deriving widths from a
+   *  flat string. The V8 SVG render path leaves it unset (estimator). */
+  measure?: (text: string, fontSizePx: number) => number;
 }
 
 const DEFAULT_RESOLVER: StyleResolver = {
@@ -137,7 +143,7 @@ function renderText(node: RenderText, r: StyleResolver): RenderToSvgResult {
   attrs.unshift(`y="${(height / 2).toFixed(2)}"`);
   attrs.push(`dominant-baseline="central"`);
 
-  const width  = estimateTextWidth(node.value, s.layoutPx);
+  const width  = (r.measure ?? estimateTextWidth)(node.value, s.layoutPx);
   const markup = `<text ${attrs.join(" ")}>${escapeText(node.value)}</text>`;
   return { markup, width, height };
 }

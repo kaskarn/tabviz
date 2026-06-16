@@ -11,6 +11,42 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — composed-cell width measurement (retire COMPOSED_TEXT_BUFFER)
+
+Replaced the fixed `+18px` `COMPOSED_TEXT_BUFFER` fudge — applied to
+interval/custom columns because their flat-string width measure under-shot the
+rendered cell — with **structural measurement of the actual render tree**.
+New `schema/measure-composed.ts::measureComposedColumnWidth`: rank rows by the
+cheap flat estimate (`rankTopKBy`, the generalized `rankTopK`), then
+`renderCell`→`renderNodeToSvg` the top-K widest TREES through a width-only
+`StyleResolver` and take the max. Plain columns (single un-styled text node)
+return null → keep the proven flat path. The win the buffer's own comment
+promised: any-variant-any-column accuracy — a `bracket_muted` interval now
+sizes its column TIGHTER (bounds measured at their real minor/muted size),
+`plus_minus` tighter still (short `0.85 ± 0.14` form), instead of all variants
+getting the same flat-string-plus-buffer width. Both measurement sites share
+the helper (live widget `stores/slices/columns`, V8 export `svg-generator`) so
+they stay WYSIWYG-locked; each injects its own width metric.
+
+Diagnosis cost the arc (recorded so the next agent doesn't re-pay it): the naïve
+tree measure UNDER-sized and clipped, exposing TWO real gaps the flat buffer had
+been blindly absorbing. (1) **Font size**: the resolver re-derived px from
+cssVars without the root-aware rem→px conversion the DOM does, so it measured
+14px while the DOM painted 16px (rem×root). Fixed: `makeMeasureResolver` now
+takes explicit px (`MeasureSizes`); the DOM site resolves them in its own space,
+the export reuses `makeThemeResolver` verbatim. (2) **Render-big-scale-down**:
+the widget lays out at NATURAL size then `transform: scale(actualScale)`s to
+fit, and each composed cell is a multi-SPAN inline run the browser rounds up
+per-span and can't kern across — so the grid's layout-space width =
+Canvas-visual ÷ actualScale + ~1px/span. The DOM resolver's per-text `measure`
+now folds in `/scaleComp` (live `actualScale` threaded via the columns-slice
+deps) + a `COMPOSED_SPAN_BEARING` per-span side-bearing then `ceil`,
+reproducing the DOM's per-span layout exactly. The export needs neither (V8
+draws at scale 1, fractional x — self-consistent). Validated: hero-width-repro
+gate (downscaled, scaleComp<1) 0 overflows; broad sweep (4 themes × 4 variants,
+scale 1) 0 clips with 10–24px slack + correct variant differentiation; JAMA V8
+export render clean; wysiwyg-diff within budget; 1456 bun + 317 vitest green.
+
 ## 2026-06-15 — systematic R-serialization review (found SOUND) + I()-array lock
 
 Full correctness/brittleness review of the R wire serializer (`utils-serialize.R`

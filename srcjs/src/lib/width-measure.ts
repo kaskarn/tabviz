@@ -107,24 +107,39 @@ export function rankTopK(
   weight: number,
   k: number = DEFAULT_TOP_K
 ): string[] {
+  return rankTopKBy(candidates, (t) => (t ? estimateTextWidth(t, fontSize, weight) : -1), k);
+}
+
+/**
+ * Generic top-K: pick the K highest-`score` items (linear scan, no allocations
+ * for rejects). The basis for `rankTopK` — but also lets callers rank ROWS (by
+ * the cheap `estimateTextWidth` of their display string) so the exact pass can
+ * measure the WIDEST ROWS' actual cell trees, not just their strings. A `score`
+ * < 0 is a sentinel to skip the item (e.g. an empty string). Returns winners in
+ * ascending score; ≤K winners when fewer items are supplied.
+ */
+export function rankTopKBy<T>(
+  items: readonly T[],
+  score: (item: T) => number,
+  k: number = DEFAULT_TOP_K
+): T[] {
   if (k <= 0) return [];
-  if (candidates.length <= k) return candidates.slice();
-  const top: { text: string; score: number }[] = [];
-  for (const text of candidates) {
-    if (!text) continue;
-    const score = estimateTextWidth(text, fontSize, weight);
+  if (items.length <= k) return items.slice();
+  const top: { item: T; score: number }[] = [];
+  for (const item of items) {
+    const s = score(item);
+    if (s < 0) continue;
     if (top.length < k) {
-      top.push({ text, score });
-      // Keep smallest at index 0 for quick replace.
-      top.sort((a, b) => a.score - b.score);
+      top.push({ item, score: s });
+      top.sort((a, b) => a.score - b.score); // smallest at [0] for quick replace
       continue;
     }
-    if (score > top[0].score) {
-      top[0] = { text, score };
+    if (s > top[0]!.score) {
+      top[0] = { item, score: s };
       top.sort((a, b) => a.score - b.score);
     }
   }
-  return top.map((t) => t.text);
+  return top.map((t) => t.item);
 }
 
 /**

@@ -104,6 +104,9 @@ export function createTabvizStore() {
     setWrapLineCounts: cells.setWrapLineCounts,
     appendOp,
     markSource,
+    // `actualScale` is declared below; the closure reads it lazily at
+    // measure time (long after init), so the forward reference is safe.
+    getActualScale: () => actualScale,
   });
 
   // ── Theme management ────────────────────────────────────────────────────

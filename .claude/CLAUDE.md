@@ -316,6 +316,18 @@ One line each; the cost of ignoring these has already been paid once.
   don't put load-bearing affordances under it.
 - Shell/paper export work must preserve the flush-inertness invariant
   (pads 0 ⇒ byte-identical geometry).
+- COMPOSED-CELL width (interval/variant/custom) = measure the actual
+  RENDER TREE (`schema/measure-composed.ts`), not the flat string — the
+  retired `COMPOSED_TEXT_BUFFER` blindly absorbed two real gaps. (1) Measure
+  at the size the surface PAINTS: the DOM cell is `rem×root` px (use the
+  root-aware conversion, NOT raw cssVars); the export reuses
+  `makeThemeResolver`. (2) The DOM lays out at NATURAL size then
+  `transform: scale(actualScale)` to fit, and composed cells are multi-SPAN
+  inline runs the browser rounds up per-span — so grid-space width =
+  Canvas-visual ÷ actualScale + ~1px/span (ceil per text node). The DOM
+  resolver's injected `measure` folds both in (`scaleComp` via columns-slice
+  deps + `COMPOSED_SPAN_BEARING`); the export needs neither (scale 1,
+  fractional x). Get the size wrong and columns silently under-clip.
 - XSS EGRESS WALL: any spec-DATA color (EffectSpec/marker/cellStyle/row.style.bg/
   annotation/ReferenceLine + viz-renderer `opts.*Color`) reaching a `fill=`/
   `stroke=` SVG attribute MUST pass `escapeAttr` (= escapeXml) at egress — the

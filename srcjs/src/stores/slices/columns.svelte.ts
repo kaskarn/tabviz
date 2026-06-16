@@ -50,6 +50,12 @@ import {
   DEFAULT_TOP_K,
   type FontKey,
 } from "$lib/width-measure";
+import {
+  measureComposedColumnWidth,
+  makeMeasureResolver,
+  type ComposedCandidate,
+} from "../../schema/measure-composed";
+import type { StyleResolver } from "../../schema/render-svg";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import {
   AUTO_WIDTH,
@@ -59,7 +65,7 @@ import {
   TEXT_MEASUREMENT,
 } from "$lib/rendering-constants";
 import {
-  getCssVars, readVarPx, readBodyFamily, readBodySize,
+  getCssVars, readVarPx, readBodyFamily, readBodySize, readLabelSize,
 } from "$lib/theme/consumer-bridge";
 
 /**
@@ -90,6 +96,13 @@ export interface ColumnsSliceDeps {
   setWrapLineCounts: (counts: Record<string, number>) => void;
   appendOp: (record: OpRecord) => void;
   markSource: (field: string) => void;
+  /** Live CSS-transform scale of `.tabviz-scalable` (rendered rect ÷ layout
+   *  size). The widget lays out at a NATURAL size then transform-scales to
+   *  fit, so a detached-canvas measure (visual px) under-states the grid's
+   *  layout-space width by `1/scale`. Composed-cell tree measurement divides
+   *  by this to land in the grid's space. Defaults to 1 (no scaling / first
+   *  paint / V8). */
+  getActualScale?: () => number;
 }
 
 export interface ColumnsSlice {
@@ -582,6 +595,9 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const cssVars = getCssVars(spec.theme);
     const cellPadding = readVarPx(cssVars, "--tv-spacing-cell-padding-x", 10) * 2;
     const groupPadding = readVarPx(cssVars, "--tv-spacing-column-group-padding", 8) * 2;
+    // Live scalable transform (>0, ≤~1 when downscaled-to-fit); clamped so a
+    // transient 0/huge value can't blow up the division. 1 ⇒ no compensation.
+    const scaleComp = Math.min(1, Math.max(0.2, deps.getActualScale?.() ?? 1));
 
     // ── rank+top-K helpers ─────────────────────────────────────────────
     // Column auto-width = max over header + every cell. We don't need
@@ -603,6 +619,40 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       }
       return max;
     }
+
+    // Resolved render-tree sizes in the DOM's OWN space: cells paint at body
+    // size (root-aware rem→px — the SAME conversion `measureAutoColumns` does
+    // for the rank font), muted/minor nodes at label size. This is what
+    // RenderTree.svelte renders, so the tree measure lands at the real width
+    // (measuring 14px while the DOM paints 16px silently under-sizes columns).
+    const remToPx = (s: string | undefined): number => {
+      const v = s ?? "";
+      if (v.endsWith("rem") || v.endsWith("em")) {
+        const root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        return parseFloat(v) * root;
+      }
+      return parseFloat(v) || baseFontSize;
+    };
+    const measureSizes = { major: baseFontSize, base: baseFontSize, minor: remToPx(readLabelSize(cssVars)) };
+    // Width-only resolver for composed cells. The injected per-text measure
+    // reproduces how the DOM actually lays out a composed cell's spans, so the
+    // sum lands on the real `offsetWidth`:
+    //   · Canvas-exact (bold-aware) visual width, estimator fallback;
+    //   · ÷ scaleComp → the grid's NATURAL (pre-transform) layout space;
+    //   · + a per-span side-bearing then CEIL → each span is an independent
+    //     inline box the browser rounds UP and can't kern across (a 7-span
+    //     interval lost ~4px vs one continuous run). This is the structural
+    //     replacement for the old fixed COMPOSED_TEXT_BUFFER.
+    const composedResolver = (bold: boolean): StyleResolver => {
+      const font = bold ? headerFontKey : dataFontKey;
+      return makeMeasureResolver(
+        measureSizes,
+        (text, px) => {
+          const visual = measureExact(text, font, px) ?? estimateTextWidth(text, px, font.weight);
+          return Math.ceil(visual / scaleComp + TEXT_MEASUREMENT.COMPOSED_SPAN_BEARING);
+        },
+      );
+    };
 
     function getLeafColumns(col: ColumnSpec | ColumnGroup): ColumnSpec[] {
       if (col.isGroup) {
@@ -639,33 +689,45 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         ? exactMax([col.header], headerFontKey, headerFontSizePx)
         : 0;
 
-      // Build the candidate-pool for the cells: skip header/spacer rows.
-      // Bold rows (row_bold styling, summary rows) measure at the bold
-      // key — measuring them at 400 under-budgeted the hero's overall-
-      // summary intervals by ~13px and they clipped (regression gate:
-      // hero-width-repro).
-      const candidates: string[] = [];
-      const boldCandidates: string[] = [];
+      // Per-cell candidates: flat display text (the cheap rank key) + the
+      // metadata + bold flag a tree measure needs. Skip header/spacer rows.
+      const cells: ComposedCandidate[] = [];
       for (const row of spec!.data.rows) {
         if (!rowKindProps(resolveRowKind({ type: "data", row })).measuresWidth) continue;
         const text = getColumnDisplayText(row, col);
-        if (text) (row.style?.bold ? boldCandidates : candidates).push(text);
+        if (text) cells.push({ text, metadata: row.metadata, bold: !!row.style?.bold });
       }
-      maxWidth = Math.max(maxWidth, exactMax(candidates, dataFontKey, baseFontSize));
-      if (boldCandidates.length > 0) {
-        maxWidth = Math.max(maxWidth, exactMax(boldCandidates, headerFontKey, baseFontSize));
+
+      // Composed cells (intervals, variant layouts, custom compositions) lay
+      // out a node tree whose width ≠ the flat string (inter-node gaps,
+      // per-node sizes, variant delimiters); measure the ACTUAL tree over the
+      // top-K widest rows. Returns null for plain text/numeric columns, which
+      // keep the proven flat path (bold rows measured at the bold key — the
+      // hero-width-repro gate: at 400 the overall-summary intervals clipped
+      // ~13px).
+      const composedW = measureComposedColumnWidth(
+        col, cells, baseFontSize, composedResolver,
+        { theme: spec!.theme, nodeRules: spec!.theme?.nodeRules, target: "dom" },
+      );
+      if (composedW != null) {
+        // composedW already lands in the grid's natural layout space — the
+        // resolver's per-span measure folds in scaleComp + ceil (see above).
+        maxWidth = Math.max(maxWidth, composedW);
+      } else {
+        const candidates = cells.filter((c) => !c.bold).map((c) => c.text);
+        const boldCandidates = cells.filter((c) => c.bold).map((c) => c.text);
+        maxWidth = Math.max(maxWidth, exactMax(candidates, dataFontKey, baseFontSize));
+        if (boldCandidates.length > 0) {
+          maxWidth = Math.max(maxWidth, exactMax(boldCandidates, headerFontKey, baseFontSize));
+        }
       }
 
       maxWidth = Math.max(maxWidth, glyphNaturalWidth(col, spec!.data.rows));
 
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-      // Composed cell types render span trees wider than their string —
-      // see TEXT_MEASUREMENT.COMPOSED_TEXT_BUFFER (interim).
-      const composedBuffer = (col.type === "interval" || col.type === "custom")
-        ? TEXT_MEASUREMENT.COMPOSED_TEXT_BUFFER : 0;
       const computedWidth = Math.min(
         AUTO_WIDTH.MAX,
-        Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER + composedBuffer)),
+        Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
       );
       target[col.id] = computedWidth;
     }
