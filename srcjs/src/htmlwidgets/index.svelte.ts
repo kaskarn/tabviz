@@ -32,6 +32,13 @@ exposeDevHook("__tabvizExports", { exportToSVG, exportToPNG });
 const storeRegistry = new Map<string, TabvizStore>();
 exposeDevHook("__tabvizStoreRegistry", storeRegistry);
 
+// Teardown disposers keyed by element id. htmlwidgets gives output bindings NO
+// teardown hook, so when Shiny removes + recreates an element under the same id
+// (conditionalPanel / insertUI/removeUI), the prior store's ~20 subscriptions +
+// debounce timer + mounted Svelte component would leak. We dispose the stale
+// instance when a new one mounts under the same id (bounded: ≤1 stale per id).
+const teardownRegistry = new Map<string, () => void>();
+
 // Proxy method handlers. Keys match the method names sent from R's
 // invoke_proxy_method(); each value normalizes the raw wire payload via
 // `normalize.<method>` from `$spec/proxy-args.ts` then dispatches into
@@ -231,12 +238,23 @@ const binding: HTMLWidgetsBinding = {
           // First mount: factory validates the spec version, ingests the
           // spec + initial state, applies zoom fields, mounts TabvizPlot.
           instance = createTabviz(el, x, { width, height });
-          // Register the store reference for proxy + Shiny adapters.
-          if (el.id) storeRegistry.set(el.id, instance.store);
           // Let htmlwidgets container expand to fit content (sizing handled by CSS).
           el.style.height = "auto";
-          if (hasShiny() && el.id) {
-            setupShinyBindings(el.id, instance.store);
+          if (el.id) {
+            // Dispose any stale instance left under this id before re-registering.
+            teardownRegistry.get(el.id)?.();
+            storeRegistry.set(el.id, instance.store);
+            const disposeBindings = hasShiny()
+              ? setupShinyBindings(el.id, instance.store)
+              : undefined;
+            const inst = instance;
+            const id = el.id;
+            teardownRegistry.set(id, () => {
+              disposeBindings?.();
+              inst.destroy();
+              storeRegistry.delete(id);
+              teardownRegistry.delete(id);
+            });
           }
         } else {
           instance.update(x);
@@ -257,7 +275,16 @@ const binding: HTMLWidgetsBinding = {
 // ones — the store's withSource() wrapper around proxy dispatch (below) makes
 // markSource() capture the right tag synchronously inside each setter, before
 // $effect runs. See docs/dev/source-tagging.md for the contract.
-function setupShinyBindings(widgetId: string, store: TabvizStore) {
+function setupShinyBindings(widgetId: string, store: TabvizStore): () => void {
+  // Collect every subscription so the widget teardown can release them (htmlwidgets
+  // has no teardown hook — see teardownRegistry). `sub` keeps store.on's typed
+  // overload while pushing the returned Unsubscribe.
+  const subs: Array<() => void> = [];
+  const sub: TabvizStore["on"] = (event, listener) => {
+    const u = store.on(event, listener);
+    subs.push(u);
+    return u;
+  };
   const emit = (field: string, value: unknown) => {
     setShinyInput(
       `${widgetId}_${field}`,
@@ -270,26 +297,26 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
   // to its snake_case Shiny field name via EVENT_TO_SHINY_FIELD and forward.
   // Replaces the prior $effect.root(() => $effect(...) x18) block; same
   // wire behavior, narrower contract.
-  store.on("selected", (value) => emit(EVENT_TO_SHINY_FIELD.selected, value));
-  store.on("hover", (value) => emit(EVENT_TO_SHINY_FIELD.hover, value));
-  store.on("sort", (value) => emit(EVENT_TO_SHINY_FIELD.sort, value));
-  store.on("filters", (value) => emit(EVENT_TO_SHINY_FIELD.filters, value));
-  store.on("rowStyles", (value) => emit(EVENT_TO_SHINY_FIELD.rowStyles, value));
-  store.on("cellStyles", (value) => emit(EVENT_TO_SHINY_FIELD.cellStyles, value));
-  store.on("paintTool", (value) => emit(EVENT_TO_SHINY_FIELD.paintTool, value));
-  store.on("collapsedGroups", (value) => emit(EVENT_TO_SHINY_FIELD.collapsedGroups, value));
-  store.on("expandedRows", (value) => emit(EVENT_TO_SHINY_FIELD.expandedRows, value));
-  store.on("hiddenColumns", (value) => emit(EVENT_TO_SHINY_FIELD.hiddenColumns, value));
-  store.on("columnOrder", (value) => emit(EVENT_TO_SHINY_FIELD.columnOrder, value));
-  store.on("columnWidths", (value) => emit(EVENT_TO_SHINY_FIELD.columnWidths, value));
-  store.on("rowKindHeights", (value) => emit(EVENT_TO_SHINY_FIELD.rowKindHeights, value));
-  store.on("cellEdits", (value) => emit(EVENT_TO_SHINY_FIELD.cellEdits, value));
-  store.on("labelEdits", (value) => emit(EVENT_TO_SHINY_FIELD.labelEdits, value));
-  store.on("zoom", (value) => emit(EVENT_TO_SHINY_FIELD.zoom, value));
-  store.on("axisZooms", (value) => emit(EVENT_TO_SHINY_FIELD.axisZooms, value));
-  store.on("banding", (value) => emit(EVENT_TO_SHINY_FIELD.banding, value));
-  store.on("plotWidth", (value) => emit(EVENT_TO_SHINY_FIELD.plotWidth, value));
-  store.on("visibleRows", (value) => emit(EVENT_TO_SHINY_FIELD.visibleRows, value));
+  sub("selected", (value) => emit(EVENT_TO_SHINY_FIELD.selected, value));
+  sub("hover", (value) => emit(EVENT_TO_SHINY_FIELD.hover, value));
+  sub("sort", (value) => emit(EVENT_TO_SHINY_FIELD.sort, value));
+  sub("filters", (value) => emit(EVENT_TO_SHINY_FIELD.filters, value));
+  sub("rowStyles", (value) => emit(EVENT_TO_SHINY_FIELD.rowStyles, value));
+  sub("cellStyles", (value) => emit(EVENT_TO_SHINY_FIELD.cellStyles, value));
+  sub("paintTool", (value) => emit(EVENT_TO_SHINY_FIELD.paintTool, value));
+  sub("collapsedGroups", (value) => emit(EVENT_TO_SHINY_FIELD.collapsedGroups, value));
+  sub("expandedRows", (value) => emit(EVENT_TO_SHINY_FIELD.expandedRows, value));
+  sub("hiddenColumns", (value) => emit(EVENT_TO_SHINY_FIELD.hiddenColumns, value));
+  sub("columnOrder", (value) => emit(EVENT_TO_SHINY_FIELD.columnOrder, value));
+  sub("columnWidths", (value) => emit(EVENT_TO_SHINY_FIELD.columnWidths, value));
+  sub("rowKindHeights", (value) => emit(EVENT_TO_SHINY_FIELD.rowKindHeights, value));
+  sub("cellEdits", (value) => emit(EVENT_TO_SHINY_FIELD.cellEdits, value));
+  sub("labelEdits", (value) => emit(EVENT_TO_SHINY_FIELD.labelEdits, value));
+  sub("zoom", (value) => emit(EVENT_TO_SHINY_FIELD.zoom, value));
+  sub("axisZooms", (value) => emit(EVENT_TO_SHINY_FIELD.axisZooms, value));
+  sub("banding", (value) => emit(EVENT_TO_SHINY_FIELD.banding, value));
+  sub("plotWidth", (value) => emit(EVENT_TO_SHINY_FIELD.plotWidth, value));
+  sub("visibleRows", (value) => emit(EVENT_TO_SHINY_FIELD.visibleRows, value));
 
   // Aggregate — debounced `_state` bundle. The store's `change` event
   // fires on every mutation; we coalesce 150ms of activity into a single
@@ -297,7 +324,7 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
   // the store's reactive getters at flush time, not from the event
   // payload (which is empty for `change`).
   let stateTimer: ReturnType<typeof setTimeout> | null = null;
-  store.on("change", () => {
+  sub("change", () => {
     if (stateTimer) clearTimeout(stateTimer);
     stateTimer = setTimeout(() => {
       if (!hasShiny()) return;
@@ -332,6 +359,12 @@ function setupShinyBindings(widgetId: string, store: TabvizStore) {
       setShinyInput(`${widgetId}_state`, shinyEnvelope(bundle, "user"));
     }, 150);
   });
+
+  // Disposer: release every subscription + cancel the pending debounce.
+  return () => {
+    for (const u of subs) u();
+    if (stateTimer) clearTimeout(stateTimer);
+  };
 }
 
 // Register with HTMLWidgets

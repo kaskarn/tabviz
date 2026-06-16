@@ -44,6 +44,11 @@ export function setFootnote(spec: WebSpec, footnote: string | null): WebSpec {
   return { ...spec, labels: withLabel(spec.labels, "footnote", footnote) };
 }
 
+/** Set or clear the tag (the short shell stamp, e.g. "TABLE 2"). Mirrors R::set_tag(). */
+export function setTag(spec: WebSpec, tag: string | null): WebSpec {
+  return { ...spec, labels: withLabel(spec.labels, "tag", tag) };
+}
+
 function withLabel(labels: PlotLabels | undefined, key: keyof PlotLabels, value: string | null): PlotLabels {
   return { ...(labels ?? {}), [key]: value };
 }

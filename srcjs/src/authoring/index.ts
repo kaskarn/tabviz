@@ -46,7 +46,7 @@ export type {
 
 // Spec modifiers
 export {
-  setTitle, setSubtitle, setCaption, setFootnote,
+  setTitle, setSubtitle, setCaption, setFootnote, setTag,
   setTheme, setZoom,
   addColumn, removeColumn, updateColumn,
 } from "./modifiers";

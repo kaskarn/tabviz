@@ -144,6 +144,7 @@ export interface ColumnPatch {
   wrap?: ColumnSpec["wrap"];
   sortable?: ColumnSpec["sortable"];
   width?: ColumnSpec["width"];
+  flex?: ColumnSpec["flex"];
   type?: ColumnSpec["type"];
   field?: ColumnSpec["field"];
   options?: Record<string, unknown>;
@@ -325,7 +326,7 @@ export const normalize = {
 
     const TOP_PROPS: ReadonlySet<keyof ColumnPatch | "header_align"> = new Set([
       "header", "align", "headerAlign", "header_align", "wrap",
-      "sortable", "width", "type", "field",
+      "sortable", "width", "flex", "type", "field",
     ] as const);
 
     const patch: ColumnPatch = {};

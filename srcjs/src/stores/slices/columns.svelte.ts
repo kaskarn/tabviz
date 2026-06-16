@@ -430,6 +430,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       wrap?: ColumnSpec["wrap"];
       sortable?: ColumnSpec["sortable"];
       width?: ColumnSpec["width"];
+      flex?: ColumnSpec["flex"];
       type?: ColumnSpec["type"];
       field?: ColumnSpec["field"];
       options?: Record<string, unknown>;
@@ -444,6 +445,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     if (patch.wrap !== undefined)        next.wrap = patch.wrap;
     if (patch.sortable !== undefined)    next.sortable = patch.sortable;
     if (patch.width !== undefined)       next.width = patch.width;
+    if (patch.flex !== undefined)        next.flex = patch.flex;
     if (patch.type !== undefined)        next.type = patch.type;
     if (patch.field !== undefined)       next.field = patch.field;
     if (patch.options !== undefined)     next.options = { ...(next.options ?? {}), ...patch.options };
