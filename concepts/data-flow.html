@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Data Flow – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<meta name="mermaid-theme" content="neutral">
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="../site_libs/tabviz-styles-0.37.0/tabviz.css" rel="stylesheet">
+<script src="../site_libs/tabviz-binding-0.38.0/tabviz.js"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-pipeline" id="toc-the-pipeline" class="nav-link active" data-scroll-target="#the-pipeline">The Pipeline</a>
+  <ul class="collapse">
+  <li><a href="#stage-1-column-resolution" id="toc-stage-1-column-resolution" class="nav-link" data-scroll-target="#stage-1-column-resolution">Stage 1: Column Resolution</a></li>
+  <li><a href="#stage-2-style-evaluation" id="toc-stage-2-style-evaluation" class="nav-link" data-scroll-target="#stage-2-style-evaluation">Stage 2: Style Evaluation</a></li>
+  <li><a href="#stage-3-json-serialization" id="toc-stage-3-json-serialization" class="nav-link" data-scroll-target="#stage-3-json-serialization">Stage 3: JSON Serialization</a></li>
+  <li><a href="#stage-4-svelte-rendering" id="toc-stage-4-svelte-rendering" class="nav-link" data-scroll-target="#stage-4-svelte-rendering">Stage 4: Svelte Rendering</a></li>
+  </ul></li>
+  <li><a href="#data-requirements" id="toc-data-requirements" class="nav-link" data-scroll-target="#data-requirements">Data Requirements</a>
+  <ul class="collapse">
+  <li><a href="#required-structure" id="toc-required-structure" class="nav-link" data-scroll-target="#required-structure">Required Structure</a></li>
+  <li><a href="#column-types" id="toc-column-types" class="nav-link" data-scroll-target="#column-types">Column Types</a></li>
+  <li><a href="#missing-values" id="toc-missing-values" class="nav-link" data-scroll-target="#missing-values">Missing Values</a></li>
+  </ul></li>
+  <li><a href="#grouping-data" id="toc-grouping-data" class="nav-link" data-scroll-target="#grouping-data">Grouping Data</a>
+  <ul class="collapse">
+  <li><a href="#single-level-grouping" id="toc-single-level-grouping" class="nav-link" data-scroll-target="#single-level-grouping">Single-Level Grouping</a></li>
+  <li><a href="#hierarchical-grouping" id="toc-hierarchical-grouping" class="nav-link" data-scroll-target="#hierarchical-grouping">Hierarchical Grouping</a></li>
+  </ul></li>
+  <li><a href="#styling-data-flow" id="toc-styling-data-flow" class="nav-link" data-scroll-target="#styling-data-flow">Styling Data Flow</a></li>
+  <li><a href="#common-patterns" id="toc-common-patterns" class="nav-link" data-scroll-target="#common-patterns">Common Patterns</a>
+  <ul class="collapse">
+  <li><a href="#pre-computing-style-columns" id="toc-pre-computing-style-columns" class="nav-link" data-scroll-target="#pre-computing-style-columns">Pre-computing Style Columns</a></li>
+  <li><a href="#using-formula-expressions" id="toc-using-formula-expressions" class="nav-link" data-scroll-target="#using-formula-expressions">Using Formula Expressions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Data Flow</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Trace one row of a <code>data.frame</code> from R into the rendered Svelte widget. This page explains how column specs resolve, when formula expressions evaluate, and how the result becomes JSON for the frontend.</p>
+<section id="the-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="the-pipeline">The Pipeline</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    subgraph Input
+        A["data.frame"]
+    end
+
+    subgraph Processing
+        B["Column Resolution"]
+        C["Style Evaluation"]
+        D["JSON Serialization"]
+    end
+
+    subgraph Output
+        E["Svelte Component"]
+        F["Interactive Widget"]
+    end
+
+    A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F
+
+    style D fill:#4f46e5,color:#fff
+    style E fill:#ff3e00,color:#fff
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="stage-1-column-resolution" class="level3">
+<h3 class="anchored" data-anchor-id="stage-1-column-resolution">Stage 1: Column Resolution</h3>
+<p>tabviz maps your column specifications to data columns:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,  <span class="co"># Maps to data$study</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)  <span class="co"># Maps to data$hr, data$lo, data$hi</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>At this stage: - String arguments become column lookups - Missing columns trigger errors - Data types are validated</p>
+</section>
+<section id="stage-2-style-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="stage-2-style-evaluation">Stage 2: Style Evaluation</h3>
+<p>Formula expressions are evaluated against your data:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>,  <span class="co"># Evaluates for each row</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#64748b"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>The formula <code>~ pval &lt; 0.05</code> becomes a vector of <code>TRUE</code>/<code>FALSE</code> values—one per row.</p>
+</section>
+<section id="stage-3-json-serialization" class="level3">
+<h3 class="anchored" data-anchor-id="stage-3-json-serialization">Stage 3: JSON Serialization</h3>
+<p>The configured specification converts to JSON for the Svelte frontend. <code>serialize_spec()</code> (in <code>R/utils-serialize.R</code>) emits a top-level object with these keys:</p>
+<pre class="jsonc"><code>{
+  "data":          { "rows": [...], "groups": [...], "summaries": [...] },
+  "columns":       [...],
+  "extraColumns":  [...],
+  "theme":         { ... },
+  "interaction":   { ... },
+  "labels":        { "title": ..., "subtitle": ..., ... },
+  "paginate":      { "rows": 30, "pages": [...], "nPages": 3, ... },  // when set
+  "layout":        { "plotWidth": "auto" }
+}</code></pre>
+<p>Per-row styling lives <strong>inside each row’s object</strong>, not in a parallel array — so a <code>row_bold</code> flag computed by <code>~ pval &lt; 0.05</code> lands on <code>row.style.bold</code>:</p>
+<pre class="jsonc"><code>// One element of data.rows
+{
+  "id":       "row_1",
+  "label":    "Smith 2020",
+  "groupId":  null,
+  "metadata": { "hr": 0.72, "lower": 0.55, "upper": 0.95, "is_sig": true },
+  "style":    { "bold": true }
+}</code></pre>
+<p>When <code>paginate = paginate_spec(...)</code> is set, breakpoints are computed once R-side over the same flattened display rows the frontend renders, then shipped as 0-based row ranges so the viewer and the PDF export agree on page boundaries:</p>
+<pre class="jsonc"><code>"paginate": {
+  "rows":         30,
+  "breakOn":      "split",
+  "keepGroups":   true,
+  "pageLabel":    "x_of_y",
+  "pages":        [{ "startIdx": 0,  "endIdx": 29 },
+                   { "startIdx": 30, "endIdx": 59 }],
+  "nPages":       2
+}</code></pre>
+</section>
+<section id="stage-4-svelte-rendering" class="level3">
+<h3 class="anchored" data-anchor-id="stage-4-svelte-rendering">Stage 4: Svelte Rendering</h3>
+<p>The Svelte component receives the JSON and renders the interactive table with: - Sortable columns (default; opt out per column with <code>sortable = FALSE</code>) - Collapsible groups - Hover tooltips (opt-in via <code>web_interaction(tooltip_fields = ...)</code>) - Page controls when <code>paginate</code> is set - Static export to SVG / PNG / PDF</p>
+</section>
+</section>
+<section id="data-requirements" class="level2">
+<h2 class="anchored" data-anchor-id="data-requirements">Data Requirements</h2>
+<section id="required-structure" class="level3">
+<h3 class="anchored" data-anchor-id="required-structure">Required Structure</h3>
+<p>Your data.frame needs: - <strong>One row per item</strong> to display - <strong>Columns referenced</strong> by your column specifications</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal forest plot data</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>meta_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Smith 2020"</span>, <span class="st">"Jones 2021"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="row-kinds-via-row_type" class="level4">
+<h4 class="anchored" data-anchor-id="row-kinds-via-row_type">Row kinds via <code>row_type</code></h4>
+<p>By default every row is a data row with a marker. Pass <code>row_type = "&lt;col&gt;"</code> to <code>tabviz()</code> (with a column whose values are <code>"data"</code>, <code>"header"</code>, <code>"summary"</code>, or <code>"spacer"</code>) to mix in:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>row_type</code></th>
+<th>Behavior</th>
+<th>Marker</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"data"</code></td>
+<td>Standard row</td>
+<td>Point with CI line</td>
+</tr>
+<tr class="even">
+<td><code>"header"</code></td>
+<td>Section header (point/lower/upper should be <code>NA</code>)</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td><code>"summary"</code></td>
+<td>Pooled / subtotal row</td>
+<td>Diamond</td>
+</tr>
+<tr class="even">
+<td><code>"spacer"</code></td>
+<td>Empty separator (point/lower/upper should be <code>NA</code>)</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../guide/row-styling.html#row-types">Row Styling</a> for the full specification.</p>
+</section>
+</section>
+<section id="column-types" class="level3">
+<h3 class="anchored" data-anchor-id="column-types">Column Types</h3>
+<p><code>col_*()</code> family covers cell content; <code>viz_*()</code> family adds shared-axis charts in their own column. tabviz infers a <code>field_category</code> from each data column (<code>numeric</code>, <code>integer</code>, <code>string</code>, <code>logical</code>, <code>date</code>, <code>array-numeric</code>, <code>other</code>) which the interactive column picker uses to filter compatible types.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>R Type</th>
+<th>Cell columns (<code>col_*</code>)</th>
+<th>Visualization columns (<code>viz_*</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>character</td>
+<td><code>col_text</code>, <code>col_label</code>, <code>col_badge</code>, <code>col_icon</code>, <code>col_reference</code></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>numeric</td>
+<td><code>col_numeric</code>, <code>col_n</code>, <code>col_percent</code>, <code>col_currency</code>, <code>col_pvalue</code>, <code>col_progress</code>, <code>col_heatmap</code>, <code>col_stars</code>, <code>col_pictogram</code>, <code>col_ring</code>, <code>col_bar</code></td>
+<td><code>viz_bar</code> (one value), <code>viz_forest</code> (point + CI), <code>viz_boxplot</code> / <code>viz_violin</code> (per-row arrays via list-columns or pre-computed stats)</td>
+</tr>
+<tr class="odd">
+<td>integer</td>
+<td><code>col_n</code></td>
+<td><code>viz_bar</code></td>
+</tr>
+<tr class="even">
+<td>logical</td>
+<td>Row / cell semantic flags</td>
+<td>— (read indirectly via <code>row_*</code> / cell <code>style_*</code>)</td>
+</tr>
+<tr class="odd">
+<td>date</td>
+<td><code>col_date</code></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>list of numeric</td>
+<td><code>col_sparkline</code></td>
+<td><code>viz_boxplot</code> (raw or quartiles), <code>viz_violin</code> (KDE)</td>
+</tr>
+<tr class="odd">
+<td>paired numeric</td>
+<td><code>col_interval</code>, <code>col_events</code>, <code>col_range</code></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="missing-values" class="level3">
+<h3 class="anchored" data-anchor-id="missing-values">Missing Values</h3>
+<p>NA handling varies by column type:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Context</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Forest points</td>
+<td>Row displays as label-only (no marker)</td>
+</tr>
+<tr class="even">
+<td>Numeric columns</td>
+<td>Displays as empty cell</td>
+</tr>
+<tr class="odd">
+<td>Text columns</td>
+<td>Displays as empty cell</td>
+</tr>
+<tr class="even">
+<td>Row styling</td>
+<td>NA rows skip that style</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="grouping-data" class="level2">
+<h2 class="anchored" data-anchor-id="grouping-data">Grouping Data</h2>
+<p>Grouping creates collapsible sections:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Flat data"] --&gt; B["group = 'category'"]
+    B --&gt; C["Grouped display"]
+
+    subgraph "Grouped display"
+        D["Group A Header"]
+        E["  Row 1"]
+        F["  Row 2"]
+        G["Group B Header"]
+        H["  Row 3"]
+    end
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="single-level-grouping" class="level3">
+<h3 class="anchored" data-anchor-id="single-level-grouping">Single-Level Grouping</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Trial D"</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">category =</span> <span class="fu">c</span>(<span class="st">"Drug X"</span>, <span class="st">"Drug X"</span>, <span class="st">"Drug Y"</span>, <span class="st">"Drug Y"</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.78</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.60</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">1.00</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,  <span class="co"># Groups by Drug X, Drug Y</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>))</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="hierarchical-grouping" class="level3">
+<h3 class="anchored" data-anchor-id="hierarchical-grouping">Hierarchical Grouping</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>region <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"North"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"category"</span>),  <span class="co"># Region &gt; Category hierarchy</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(...))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="styling-data-flow" class="level2">
+<h2 class="anchored" data-anchor-id="styling-data-flow">Styling Data Flow</h2>
+<p>Styles resolve in order of specificity:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Theme defaults"] --&gt; B["Row styling"]
+    B --&gt; C["Cell styling"]
+    C --&gt; D["Marker styling"]
+    D --&gt; E["Final appearance"]
+
+    style E fill:#059669,color:#fff
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>See <a href="../concepts/styling-cascade.html">Styling Cascade</a> for details.</p>
+</section>
+<section id="common-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="common-patterns">Common Patterns</h2>
+<section id="pre-computing-style-columns" class="level3">
+<h3 class="anchored" data-anchor-id="pre-computing-style-columns">Pre-computing Style Columns</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>styled_data <span class="ot">&lt;-</span> meta_data <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_significant =</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">direction_color =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Green: benefit</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Red: harm</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Gray: NS</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(styled_data,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                            <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_significant"</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"direction_color"</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="tabviz html-widget html-fill-item" id="htmlwidget-1dc545e962793d3dc3ba" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-1dc545e962793d3dc3ba">{"x":{"version":"1.10","data":{"rows":[{"id":"row_1","label":"Smith 2020","metadata":{"study":"Smith 2020","hr":0.72,"lower":0.55,"upper":0.95,"is_significant":true,"direction_color":"#16a34a"},"style":{"bold":true},"markerStyle":{"color":"#16a34a"}},{"id":"row_2","label":"Jones 2021","metadata":{"study":"Jones 2021","hr":0.85,"lower":0.7,"upper":1.03,"is_significant":false,"direction_color":"#64748b"},"style":{"bold":false},"markerStyle":{"color":"#64748b"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"groupCol":null,"weightCol":null},"columns":[{"id":"forest_hr","header":"","field":"_forest_hr","type":"forest","width":"auto","align":"left","wrap":0,"sortable":false,"flex":true,"isGroup":false,"headerAlign":"center","showHeader":false,"options":{"forest":{"point":"hr","lower":"lower","upper":"upper","effects":null,"scale":"log","nullValue":1,"axisLabel":"Effect","axisRange":null,"axisTicks":null,"axisGridlines":false,"showAxis":true,"annotations":null,"sharedAxis":null}}}],"labelColumn":{"id":"label","header":"Study","field":"study","type":"text","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false},"extraColumns":[],"availableFields":[{"field":"study","label":"study","category":"string"},{"field":"hr","label":"hr","category":"numeric"},{"field":"lower","label":"lower","category":"numeric"},{"field":"upper","label":"upper","category":"numeric"},{"field":"is_significant","label":"is_significant","category":"logical"},{"field":"direction_color","label":"direction_color","category":"string"}],"theme":{"schemaVersion":4,"name":"nejm","webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}],"authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.815},"ink":{"L":0.18,"C":0.01,"H":25.815},"brand":{"L":0.5289,"C":0.179,"H":25.815},"accent":{"L":0.4239,"C":0.0828,"H":241.1753}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"roleOverrides":{},"pins":{},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotWidth":"auto","containerBorder":false,"containerBorderRadius":8,"banding":{"mode":"group","level":null}},"accent":{"default":"#3F759A","muted":"#F2F4F6","tintSubtle":"#F2F4F6","tintMedium":"#C9D9E5"},"status":{"positive":"#27762F","negative":"#B02A2D","warning":"#C57C28","info":"#006A9D"},"series":[{"fill":"#690009","stroke":"#3E0003","fillDim":"#CEA5A0","strokeDim":"#AE8682","fillHot":"#530005","strokeHot":"#170001","textFg":"#16100F","shape":null},{"fill":"#000000","stroke":"#000000","fillDim":"#8E8C8B","strokeDim":"#706F6E","fillHot":"#000000","strokeHot":"#000000","textFg":"#16100F","shape":null},{"fill":"#E69F00","stroke":"#BE8300","fillDim":"#F6DCB5","strokeDim":"#D5BC96","fillHot":"#D29100","strokeHot":"#986800","textFg":"#16100F","shape":null},{"fill":"#56B4E9","stroke":"#3294C8","fillDim":"#C3E3F8","strokeDim":"#A3C3D7","fillHot":"#45A4D8","strokeHot":"#0076A7","textFg":"#16100F","shape":null},{"fill":"#009E73","stroke":"#007C5A","fillDim":"#B4DBC9","strokeDim":"#95BBA9","fillHot":"#008D66","strokeHot":"#005C41","textFg":"#16100F","shape":null}],"spacing":{"rowHeight":24,"headerHeight":32,"padding":12,"containerPadding":0,"axisGap":12,"columnGroupPadding":8,"rowGroupPadding":12,"cellPaddingX":10,"cellPaddingY":0,"groupPadding":8,"footerGap":8,"titleSubtitleGap":13,"headerGap":12,"bottomMargin":16,"indentPerLevel":16},"header":{"light":{"bg":"#FEFAF9","fg":"#16100F","rule":"#6B6565"},"tint":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565"},"bold":{"bg":"#690009","fg":"#FEFAF9","rule":"#C79994"},"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false}},"rowGroup":{"L1":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":600,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L2":{"bg":"#FAF5F4","fg":"#191312","rule":"#958F8E","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":500,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L3":{"bg":null,"fg":"#221C1B","rule":null,"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"indentPerLevel":16},"row":{"base":{"bg":"#FEFAF9","fg":"#16100F"},"alt":{"bg":"#FAF5F4","fg":"#16100F"},"hover":{"bg":"#F2F4F6","fg":"#16100F"},"selected":{"bg":"#F2F4F6","fg":"#16100F"},"emphasis":{"bg":null,"fg":"#16100F","border":null,"markerFill":"#16100F","markerStroke":"#16100F","fontWeight":600,"fontStyle":null},"muted":{"bg":null,"fg":"#191312","border":null,"markerFill":"#191312","markerStroke":"#050202","fontWeight":null,"fontStyle":null},"accent":{"bg":null,"fg":"#3F759A","border":null,"markerFill":"#3F759A","markerStroke":"#3F759A","fontWeight":600,"fontStyle":null},"bold":{"bg":null,"fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"fill":{"bg":"#F2F4F6","fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"banding":{"mode":"group","level":null},"selectedEdgeWidth":2,"borderWidth":1},"plot":{"bg":null,"axisLine":"#6B6565","tickMark":"#6B6565","gridline":"#958F8E","reference":"#6B6565","axisLabel":{"family":"'Lora', Georgia, serif","size":"0.8125rem","weight":400,"figures":"tabular","fg":"#191312","italic":false},"tickLabel":{"family":"'Lora', Georgia, serif","size":"0.75rem","weight":400,"figures":"tabular","fg":"#221C1B","italic":false},"tickMarkLength":4,"lineWidth":1.5,"pointSize":6}},"interaction":{"enableThemes":{"clinical":{"nejm":{"name":"nejm","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.81500801741709},"ink":{"L":0.18,"C":0.01,"H":25.81500801741709},"brand":{"L":0.5288715883271614,"C":0.1789848224453139,"H":25.81500801741709},"accent":{"L":0.423851406291947,"C":0.08284402795352479,"H":241.1752888872189}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}]}},"editorial":{"newsprint":{"name":"newsprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":50.85091767580559},"ink":{"L":0.18,"C":0.018,"H":50.85091767580559},"brand":{"L":0.2931284721783407,"C":1.092606942167953e-08,"H":89.87556272808467},"accent":{"L":0.582411886682794,"C":0.1168753795699413,"H":134.736150457051}},"categorical":"okabe_ito","fonts":{"body":"'Frank Ruhl Libre', Georgia, serif","display":"'Crimson Pro', Georgia, 'Times New Roman', serif"},"density_factor":0.95,"type_scale_ratio":1.2,"curves":{"neutral":"smooth","brand":"log"},"column_defaults":{"pvalue":{"stars":true,"starsColor":"ink2"},"badge":{"shape":"circle","size":"sm"},"interval":{"variant":"bracket_muted"}}},"webFonts":[{"family":"Frank Ruhl Libre","url":"https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&display=swap"},{"family":"Crimson Pro","url":"https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&display=swap"}]},"dwarven":{"name":"dwarven","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.012,"H":62.9970225993888},"ink":{"L":0.18,"C":0.014,"H":62.9970225993888},"brand":{"L":0.4647533563554065,"C":0.0835271514487964,"H":62.9970225993888},"accent":{"L":0.7472815552230879,"C":0.1570679996839604,"H":102.9301363408787}},"polarity":"dark","categorical":"okabe_ito","fonts":{"body":"'EB Garamond', Georgia, serif","display":"'Cinzel', 'EB Garamond', Georgia, serif","mono":"'JetBrains Mono', monospace"},"density_factor":1.05,"shell_mode":"raised","shell_texture":"dotted","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":400,"medium":500,"semibold":700,"bold":800},"curves":{"neutral":"log","brand":"log"},"effects":{"elevation":"low"}},"webFonts":[{"family":"EB Garamond","url":"https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"},{"family":"Cinzel","url":"https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"},{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"}]}},"design":{"ledger":{"name":"ledger","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.028,"H":75.74344362180136},"ink":{"L":0.18,"C":0.014,"H":75.74344362180136},"brand":{"L":0.4508491966171473,"C":0.07664632204931265,"H":199.6802433426556},"accent":{"L":0.4201260469078861,"C":0.1305827840202323,"H":27.75331186160355}},"categorical":"dark2","fonts":{"body":"'Spectral', Georgia, serif","display":"'Spectral', Georgia, serif","mono":"'Spline Sans Mono', monospace"},"density_factor":0.97,"shell_mode":"raised","shell_texture":"ruled","curves":{"neutral":"ease"},"geometry":{"radius":{"sm":1,"md":3,"lg":5,"pill":999}},"effects":{"caption_style":"both"},"marks":{"interval_weight":"hair"}},"webFonts":[{"family":"Spectral","url":"https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap"},{"family":"Spline Sans Mono","url":"https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700&display=swap"}]},"brutalist":{"name":"brutalist","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":0},"ink":{"L":0.18,"C":0.01,"H":0},"brand":{"L":0,"C":0,"H":0},"accent":{"L":0.5601827269112041,"C":0.2103615095410923,"H":28.01411559579572}},"categorical":"ink_vermilion","status":{"positive":{"L":0.523,"C":0.135,"H":144.167},"negative":{"L":0.5600000000000001,"C":0.21,"H":28.014},"warning":{"L":0.642,"C":0.144,"H":65.03700000000001},"info":{"L":0.387,"C":0.025,"H":229.789}},"fonts":{"body":"'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif","display":"'Darker Grotesque', 'Archivo Black', sans-serif"},"density":"compact","density_factor":0.88,"shell_texture":"grid","header_style":"bold","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":500,"medium":700,"semibold":800,"bold":900},"curves":{"neutral":"linear"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0},"border_width":{"hair":1,"thin":1.5,"regular":2,"thick":3}},"effects":{"glow_intensity":"none","gradient_shell_intensity":"none","elevation":"none","title_style":"bar"},"marks":{"point_shape":"square","interval_weight":"thick"},"column_defaults":{"badge":{"shape":"square"},"numeric":{"fontClass":"display"}}},"webFonts":[{"family":"Archivo Black","url":"https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap"},{"family":"Darker Grotesque","url":"https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800;900&display=swap"}]}},"expressive":{"aurora":{"name":"aurora","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":305.1470029220088},"ink":{"L":0.18,"C":0.01,"H":305.1470029220088},"brand":{"L":0.6500614158217797,"C":0.2295230899087186,"H":305.1470029220088},"accent":{"L":0.7805524615607029,"C":0.1301347198318709,"H":199.8517072379391}},"polarity":"dark","categorical":"wong","fonts":{"body":"'Outfit', -apple-system, system-ui, sans-serif","display":"'Outfit', -apple-system, system-ui, sans-serif"},"shell_mode":"raised","curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":4,"md":11,"lg":16,"pill":999}},"effects":{"glass":"aurora","glow_intensity":"subtle","glow_anchor":"accent","gradient_shell_intensity":"subtle","elevation":"high","caption_style":"chip"}},"webFonts":[{"family":"Outfit","url":"https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"}]},"terminal":{"name":"terminal","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":149.9595693750481},"ink":{"L":0.18,"C":0.01,"H":149.9595693750481},"brand":{"L":0.7199960360695109,"C":0.1903117110460079,"H":149.9595693750481},"accent":{"L":0.7507793649031496,"C":0.1538014404472383,"H":85.34469592006053}},"polarity":"dark","categorical":"greens","fonts":{"body":"'Space Mono', 'Courier New', monospace","display":"'Space Mono', 'Courier New', monospace","mono":"'Space Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"ruled","type_base_size":13,"curves":{"neutral":"exp"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"glow_intensity":"subtle","glow_anchor":"brand"},"monochrome":true,"column_defaults":{"numeric":{"fontClass":"mono"},"interval":{"fontClass":"mono","variant":"plus_minus"},"badge":{"shape":"square","outline":true}}},"webFonts":[{"family":"Space Mono","url":"https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"}]},"blueprint":{"name":"blueprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.045,"H":225.3585518256968},"ink":{"L":0.18,"C":0.03,"H":225.3585518256968},"brand":{"L":0.5488119588498624,"C":0.1043203329982339,"H":225.3585518256968},"accent":{"L":0.7494572823441571,"C":0.1404009542418051,"H":69.65201863671575}},"categorical":"paired","fonts":{"body":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","display":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","mono":"'IBM Plex Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"grid","type_base_size":13,"curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"title_style":"underline"},"marks":{"point_shape":"triangle"}},"webFonts":[{"family":"Archivo","url":"https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&display=swap"},{"family":"IBM Plex Mono","url":"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"}]},"synthwave":{"name":"synthwave","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":341.4083878960848},"ink":{"L":0.18,"C":0.02,"H":341.4083878960848},"brand":{"L":0.6725969114347667,"C":0.2903915080592962,"H":341.4083878960848},"accent":{"L":0.9639941918288973,"C":0.2121994271626719,"H":111.2199909297606}},"polarity":"dark","categorical":"neon","status":{"positive":{"L":0.88,"C":0.211,"H":156.631},"negative":{"L":0.65,"C":0.238,"H":17.898},"warning":{"L":0.885,"C":0.181,"H":94.78400000000001},"info":{"L":0.844,"C":0.146,"H":209.285}},"fonts":{"body":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","display":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","mono":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace"},"shell_mode":"float","shell_texture":"grid","type_base_size":13,"type_scale_ratio":1.2,"type_weights":{"regular":400,"medium":500,"semibold":600,"bold":700},"curves":{"neutral":"smooth","brand":"exp","accent":"exp"},"geometry":{"radius":{"sm":4,"md":9,"lg":14,"pill":999}},"effects":{"glow_intensity":"neon","glow_anchor":"accent","gradient_shell_intensity":"vivid","gradient_shell_angle":110,"elevation":"medium","title_style":"underline"},"marks":{"point_shape":"diamond"},"column_defaults":{"stars":{"size":"lg"},"ring":{"size":"lg"},"pictogram":{"size":"lg"},"pvalue":{"significantStyle":"pill"}}},"webFonts":[{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"}]}}}},"initialState":null,"labels":null,"notes":null,"watermark":null,"watermarkColor":null,"watermarkOpacity":null,"paginate":null,"layout":{"plotWidth":"auto"},"targetAspect":null,"targetAspectAnchor":"width","originalCall":"tabviz(data = styled_data, label = \"study\", columns = list(viz_forest(point = \"hr\", lower = \"lower\", upper = \"upper\", scale = \"log\", null_value = 1)), row_bold = \"is_significant\", marker_color = \"direction_color\")","banks":null,"figureLayout":null,"interactionDefaults":null,"zoom":1,"autoFit":true,"showZoomControls":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="using-formula-expressions" class="level3">
+<h3 class="anchored" data-anchor-id="using-formula-expressions">Using Formula Expressions</h3>
+<p>Equivalent approach without pre-computing:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta_data,</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="tabviz html-widget html-fill-item" id="htmlwidget-b3411d939739e8402bc7" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-b3411d939739e8402bc7">{"x":{"version":"1.10","data":{"rows":[{"id":"row_1","label":"Smith 2020","metadata":{"study":"Smith 2020","hr":0.72,"lower":0.55,"upper":0.95,".wf_computed_row_bold_1":true,".wf_computed_marker_color_2":"#16a34a"},"style":{"bold":true},"markerStyle":{"color":"#16a34a"}},{"id":"row_2","label":"Jones 2021","metadata":{"study":"Jones 2021","hr":0.85,"lower":0.7,"upper":1.03,".wf_computed_row_bold_1":false,".wf_computed_marker_color_2":"#64748b"},"style":{"bold":false},"markerStyle":{"color":"#64748b"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"groupCol":null,"weightCol":null},"columns":[{"id":"forest_hr","header":"","field":"_forest_hr","type":"forest","width":"auto","align":"left","wrap":0,"sortable":false,"flex":true,"isGroup":false,"headerAlign":"center","showHeader":false,"options":{"forest":{"point":"hr","lower":"lower","upper":"upper","effects":null,"scale":"log","nullValue":1,"axisLabel":"Effect","axisRange":null,"axisTicks":null,"axisGridlines":false,"showAxis":true,"annotations":null,"sharedAxis":null}}}],"labelColumn":{"id":"label","header":"Study","field":"study","type":"text","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false},"extraColumns":[],"availableFields":[{"field":"study","label":"study","category":"string"},{"field":"hr","label":"hr","category":"numeric"},{"field":"lower","label":"lower","category":"numeric"},{"field":"upper","label":"upper","category":"numeric"},{"field":".wf_computed_row_bold_1","label":".wf_computed_row_bold_1","category":"logical"},{"field":".wf_computed_marker_color_2","label":".wf_computed_marker_color_2","category":"string"}],"theme":{"schemaVersion":4,"name":"nejm","webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}],"authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.815},"ink":{"L":0.18,"C":0.01,"H":25.815},"brand":{"L":0.5289,"C":0.179,"H":25.815},"accent":{"L":0.4239,"C":0.0828,"H":241.1753}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"roleOverrides":{},"pins":{},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotWidth":"auto","containerBorder":false,"containerBorderRadius":8,"banding":{"mode":"group","level":null}},"accent":{"default":"#3F759A","muted":"#F2F4F6","tintSubtle":"#F2F4F6","tintMedium":"#C9D9E5"},"status":{"positive":"#27762F","negative":"#B02A2D","warning":"#C57C28","info":"#006A9D"},"series":[{"fill":"#690009","stroke":"#3E0003","fillDim":"#CEA5A0","strokeDim":"#AE8682","fillHot":"#530005","strokeHot":"#170001","textFg":"#16100F","shape":null},{"fill":"#000000","stroke":"#000000","fillDim":"#8E8C8B","strokeDim":"#706F6E","fillHot":"#000000","strokeHot":"#000000","textFg":"#16100F","shape":null},{"fill":"#E69F00","stroke":"#BE8300","fillDim":"#F6DCB5","strokeDim":"#D5BC96","fillHot":"#D29100","strokeHot":"#986800","textFg":"#16100F","shape":null},{"fill":"#56B4E9","stroke":"#3294C8","fillDim":"#C3E3F8","strokeDim":"#A3C3D7","fillHot":"#45A4D8","strokeHot":"#0076A7","textFg":"#16100F","shape":null},{"fill":"#009E73","stroke":"#007C5A","fillDim":"#B4DBC9","strokeDim":"#95BBA9","fillHot":"#008D66","strokeHot":"#005C41","textFg":"#16100F","shape":null}],"spacing":{"rowHeight":24,"headerHeight":32,"padding":12,"containerPadding":0,"axisGap":12,"columnGroupPadding":8,"rowGroupPadding":12,"cellPaddingX":10,"cellPaddingY":0,"groupPadding":8,"footerGap":8,"titleSubtitleGap":13,"headerGap":12,"bottomMargin":16,"indentPerLevel":16},"header":{"light":{"bg":"#FEFAF9","fg":"#16100F","rule":"#6B6565"},"tint":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565"},"bold":{"bg":"#690009","fg":"#FEFAF9","rule":"#C79994"},"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false}},"rowGroup":{"L1":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":600,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L2":{"bg":"#FAF5F4","fg":"#191312","rule":"#958F8E","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":500,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L3":{"bg":null,"fg":"#221C1B","rule":null,"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"indentPerLevel":16},"row":{"base":{"bg":"#FEFAF9","fg":"#16100F"},"alt":{"bg":"#FAF5F4","fg":"#16100F"},"hover":{"bg":"#F2F4F6","fg":"#16100F"},"selected":{"bg":"#F2F4F6","fg":"#16100F"},"emphasis":{"bg":null,"fg":"#16100F","border":null,"markerFill":"#16100F","markerStroke":"#16100F","fontWeight":600,"fontStyle":null},"muted":{"bg":null,"fg":"#191312","border":null,"markerFill":"#191312","markerStroke":"#050202","fontWeight":null,"fontStyle":null},"accent":{"bg":null,"fg":"#3F759A","border":null,"markerFill":"#3F759A","markerStroke":"#3F759A","fontWeight":600,"fontStyle":null},"bold":{"bg":null,"fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"fill":{"bg":"#F2F4F6","fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"banding":{"mode":"group","level":null},"selectedEdgeWidth":2,"borderWidth":1},"plot":{"bg":null,"axisLine":"#6B6565","tickMark":"#6B6565","gridline":"#958F8E","reference":"#6B6565","axisLabel":{"family":"'Lora', Georgia, serif","size":"0.8125rem","weight":400,"figures":"tabular","fg":"#191312","italic":false},"tickLabel":{"family":"'Lora', Georgia, serif","size":"0.75rem","weight":400,"figures":"tabular","fg":"#221C1B","italic":false},"tickMarkLength":4,"lineWidth":1.5,"pointSize":6}},"interaction":{"enableThemes":{"clinical":{"nejm":{"name":"nejm","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.81500801741709},"ink":{"L":0.18,"C":0.01,"H":25.81500801741709},"brand":{"L":0.5288715883271614,"C":0.1789848224453139,"H":25.81500801741709},"accent":{"L":0.423851406291947,"C":0.08284402795352479,"H":241.1752888872189}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}]}},"editorial":{"newsprint":{"name":"newsprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":50.85091767580559},"ink":{"L":0.18,"C":0.018,"H":50.85091767580559},"brand":{"L":0.2931284721783407,"C":1.092606942167953e-08,"H":89.87556272808467},"accent":{"L":0.582411886682794,"C":0.1168753795699413,"H":134.736150457051}},"categorical":"okabe_ito","fonts":{"body":"'Frank Ruhl Libre', Georgia, serif","display":"'Crimson Pro', Georgia, 'Times New Roman', serif"},"density_factor":0.95,"type_scale_ratio":1.2,"curves":{"neutral":"smooth","brand":"log"},"column_defaults":{"pvalue":{"stars":true,"starsColor":"ink2"},"badge":{"shape":"circle","size":"sm"},"interval":{"variant":"bracket_muted"}}},"webFonts":[{"family":"Frank Ruhl Libre","url":"https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&display=swap"},{"family":"Crimson Pro","url":"https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&display=swap"}]},"dwarven":{"name":"dwarven","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.012,"H":62.9970225993888},"ink":{"L":0.18,"C":0.014,"H":62.9970225993888},"brand":{"L":0.4647533563554065,"C":0.0835271514487964,"H":62.9970225993888},"accent":{"L":0.7472815552230879,"C":0.1570679996839604,"H":102.9301363408787}},"polarity":"dark","categorical":"okabe_ito","fonts":{"body":"'EB Garamond', Georgia, serif","display":"'Cinzel', 'EB Garamond', Georgia, serif","mono":"'JetBrains Mono', monospace"},"density_factor":1.05,"shell_mode":"raised","shell_texture":"dotted","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":400,"medium":500,"semibold":700,"bold":800},"curves":{"neutral":"log","brand":"log"},"effects":{"elevation":"low"}},"webFonts":[{"family":"EB Garamond","url":"https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"},{"family":"Cinzel","url":"https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"},{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"}]}},"design":{"ledger":{"name":"ledger","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.028,"H":75.74344362180136},"ink":{"L":0.18,"C":0.014,"H":75.74344362180136},"brand":{"L":0.4508491966171473,"C":0.07664632204931265,"H":199.6802433426556},"accent":{"L":0.4201260469078861,"C":0.1305827840202323,"H":27.75331186160355}},"categorical":"dark2","fonts":{"body":"'Spectral', Georgia, serif","display":"'Spectral', Georgia, serif","mono":"'Spline Sans Mono', monospace"},"density_factor":0.97,"shell_mode":"raised","shell_texture":"ruled","curves":{"neutral":"ease"},"geometry":{"radius":{"sm":1,"md":3,"lg":5,"pill":999}},"effects":{"caption_style":"both"},"marks":{"interval_weight":"hair"}},"webFonts":[{"family":"Spectral","url":"https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap"},{"family":"Spline Sans Mono","url":"https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700&display=swap"}]},"brutalist":{"name":"brutalist","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":0},"ink":{"L":0.18,"C":0.01,"H":0},"brand":{"L":0,"C":0,"H":0},"accent":{"L":0.5601827269112041,"C":0.2103615095410923,"H":28.01411559579572}},"categorical":"ink_vermilion","status":{"positive":{"L":0.523,"C":0.135,"H":144.167},"negative":{"L":0.5600000000000001,"C":0.21,"H":28.014},"warning":{"L":0.642,"C":0.144,"H":65.03700000000001},"info":{"L":0.387,"C":0.025,"H":229.789}},"fonts":{"body":"'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif","display":"'Darker Grotesque', 'Archivo Black', sans-serif"},"density":"compact","density_factor":0.88,"shell_texture":"grid","header_style":"bold","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":500,"medium":700,"semibold":800,"bold":900},"curves":{"neutral":"linear"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0},"border_width":{"hair":1,"thin":1.5,"regular":2,"thick":3}},"effects":{"glow_intensity":"none","gradient_shell_intensity":"none","elevation":"none","title_style":"bar"},"marks":{"point_shape":"square","interval_weight":"thick"},"column_defaults":{"badge":{"shape":"square"},"numeric":{"fontClass":"display"}}},"webFonts":[{"family":"Archivo Black","url":"https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap"},{"family":"Darker Grotesque","url":"https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800;900&display=swap"}]}},"expressive":{"aurora":{"name":"aurora","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":305.1470029220088},"ink":{"L":0.18,"C":0.01,"H":305.1470029220088},"brand":{"L":0.6500614158217797,"C":0.2295230899087186,"H":305.1470029220088},"accent":{"L":0.7805524615607029,"C":0.1301347198318709,"H":199.8517072379391}},"polarity":"dark","categorical":"wong","fonts":{"body":"'Outfit', -apple-system, system-ui, sans-serif","display":"'Outfit', -apple-system, system-ui, sans-serif"},"shell_mode":"raised","curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":4,"md":11,"lg":16,"pill":999}},"effects":{"glass":"aurora","glow_intensity":"subtle","glow_anchor":"accent","gradient_shell_intensity":"subtle","elevation":"high","caption_style":"chip"}},"webFonts":[{"family":"Outfit","url":"https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"}]},"terminal":{"name":"terminal","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":149.9595693750481},"ink":{"L":0.18,"C":0.01,"H":149.9595693750481},"brand":{"L":0.7199960360695109,"C":0.1903117110460079,"H":149.9595693750481},"accent":{"L":0.7507793649031496,"C":0.1538014404472383,"H":85.34469592006053}},"polarity":"dark","categorical":"greens","fonts":{"body":"'Space Mono', 'Courier New', monospace","display":"'Space Mono', 'Courier New', monospace","mono":"'Space Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"ruled","type_base_size":13,"curves":{"neutral":"exp"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"glow_intensity":"subtle","glow_anchor":"brand"},"monochrome":true,"column_defaults":{"numeric":{"fontClass":"mono"},"interval":{"fontClass":"mono","variant":"plus_minus"},"badge":{"shape":"square","outline":true}}},"webFonts":[{"family":"Space Mono","url":"https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"}]},"blueprint":{"name":"blueprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.045,"H":225.3585518256968},"ink":{"L":0.18,"C":0.03,"H":225.3585518256968},"brand":{"L":0.5488119588498624,"C":0.1043203329982339,"H":225.3585518256968},"accent":{"L":0.7494572823441571,"C":0.1404009542418051,"H":69.65201863671575}},"categorical":"paired","fonts":{"body":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","display":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","mono":"'IBM Plex Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"grid","type_base_size":13,"curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"title_style":"underline"},"marks":{"point_shape":"triangle"}},"webFonts":[{"family":"Archivo","url":"https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&display=swap"},{"family":"IBM Plex Mono","url":"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"}]},"synthwave":{"name":"synthwave","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":341.4083878960848},"ink":{"L":0.18,"C":0.02,"H":341.4083878960848},"brand":{"L":0.6725969114347667,"C":0.2903915080592962,"H":341.4083878960848},"accent":{"L":0.9639941918288973,"C":0.2121994271626719,"H":111.2199909297606}},"polarity":"dark","categorical":"neon","status":{"positive":{"L":0.88,"C":0.211,"H":156.631},"negative":{"L":0.65,"C":0.238,"H":17.898},"warning":{"L":0.885,"C":0.181,"H":94.78400000000001},"info":{"L":0.844,"C":0.146,"H":209.285}},"fonts":{"body":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","display":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","mono":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace"},"shell_mode":"float","shell_texture":"grid","type_base_size":13,"type_scale_ratio":1.2,"type_weights":{"regular":400,"medium":500,"semibold":600,"bold":700},"curves":{"neutral":"smooth","brand":"exp","accent":"exp"},"geometry":{"radius":{"sm":4,"md":9,"lg":14,"pill":999}},"effects":{"glow_intensity":"neon","glow_anchor":"accent","gradient_shell_intensity":"vivid","gradient_shell_angle":110,"elevation":"medium","title_style":"underline"},"marks":{"point_shape":"diamond"},"column_defaults":{"stars":{"size":"lg"},"ring":{"size":"lg"},"pictogram":{"size":"lg"},"pvalue":{"significantStyle":"pill"}}},"webFonts":[{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"}]}}}},"initialState":null,"labels":null,"notes":null,"watermark":null,"watermarkColor":null,"watermarkOpacity":null,"paginate":null,"layout":{"plotWidth":"auto"},"targetAspect":null,"targetAspectAnchor":"width","originalCall":"tabviz(data = meta_data, label = \"study\", columns = list(viz_forest(point = \"hr\", lower = \"lower\", upper = \"upper\", scale = \"log\", null_value = 1)), row_bold = ~upper < 1, marker_color = ~case_when(upper < 1 ~ \"#16a34a\", lower > 1 ~ \"#dc2626\", TRUE ~ \"#64748b\"))","banks":null,"figureLayout":null,"interactionDefaults":null,"zoom":1,"autoFit":true,"showZoomControls":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Both approaches produce identical output. Use formulas for concise one-offs; use pre-computed columns when reusing the same logic.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Data Flow"</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>Trace one row of a <span class="in">`data.frame`</span> from R into the rendered Svelte widget. This page explains how column specs resolve, when formula expressions evaluate, and how the result becomes JSON for the frontend.</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## The Pipeline</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    subgraph Input</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        A[<span class="ot">"</span><span class="st">data.frame</span><span class="ot">"</span>]</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    subgraph Processing</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        B[<span class="ot">"</span><span class="st">Column Resolution</span><span class="ot">"</span>]</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        C[<span class="ot">"</span><span class="st">Style Evaluation</span><span class="ot">"</span>]</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        D[<span class="ot">"</span><span class="st">JSON Serialization</span><span class="ot">"</span>]</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    subgraph Output</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        E[<span class="ot">"</span><span class="st">Svelte Component</span><span class="ot">"</span>]</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>        F[<span class="ot">"</span><span class="st">Interactive Widget</span><span class="ot">"</span>]</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    style D fill:<span class="co">#4f46e5,color:#fff</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    style E fill:<span class="co">#ff3e00,color:#fff</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 1: Column Resolution</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>tabviz maps your column specifications to data columns:</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>),</span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,  <span class="co"># Maps to data$study</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)  <span class="co"># Maps to data$hr, data$lo, data$hi</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>At this stage:</span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>String arguments become column lookups</span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Missing columns trigger errors</span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Data types are validated</span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 2: Style Evaluation</span></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>Formula expressions are evaluated against your data:</span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>,  <span class="co"># Evaluates for each row</span></span>
+<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#64748b"</span>)</span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a>The formula <span class="in">`~ pval &lt; 0.05`</span> becomes a vector of <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> values—one per row.</span>
+<span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 3: JSON Serialization</span></span>
+<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a>The configured specification converts to JSON for the Svelte frontend. <span class="in">`serialize_spec()`</span> (in <span class="in">`R/utils-serialize.R`</span>) emits a top-level object with these keys:</span>
+<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a><span class="in">```jsonc</span></span>
+<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a>  <span class="st">"data"</span><span class="op">:</span>          { <span class="st">"rows"</span><span class="op">:</span> [<span class="op">...</span>]<span class="op">,</span> <span class="st">"groups"</span><span class="op">:</span> [<span class="op">...</span>]<span class="op">,</span> <span class="st">"summaries"</span><span class="op">:</span> [<span class="op">...</span>] }<span class="op">,</span></span>
+<span id="cb11-93"><a href="#cb11-93" aria-hidden="true" tabindex="-1"></a>  <span class="st">"columns"</span><span class="op">:</span>       [<span class="op">...</span>]<span class="op">,</span></span>
+<span id="cb11-94"><a href="#cb11-94" aria-hidden="true" tabindex="-1"></a>  <span class="st">"extraColumns"</span><span class="op">:</span>  [<span class="op">...</span>]<span class="op">,</span></span>
+<span id="cb11-95"><a href="#cb11-95" aria-hidden="true" tabindex="-1"></a>  <span class="st">"theme"</span><span class="op">:</span>         { <span class="op">...</span> }<span class="op">,</span></span>
+<span id="cb11-96"><a href="#cb11-96" aria-hidden="true" tabindex="-1"></a>  <span class="st">"interaction"</span><span class="op">:</span>   { <span class="op">...</span> }<span class="op">,</span></span>
+<span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a>  <span class="st">"labels"</span><span class="op">:</span>        { <span class="st">"title"</span><span class="op">:</span> <span class="op">...,</span> <span class="st">"subtitle"</span><span class="op">:</span> <span class="op">...,</span> <span class="op">...</span> }<span class="op">,</span></span>
+<span id="cb11-98"><a href="#cb11-98" aria-hidden="true" tabindex="-1"></a>  <span class="st">"paginate"</span><span class="op">:</span>      { <span class="st">"rows"</span><span class="op">:</span> <span class="dv">30</span><span class="op">,</span> <span class="st">"pages"</span><span class="op">:</span> [<span class="op">...</span>]<span class="op">,</span> <span class="st">"nPages"</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="op">...</span> }<span class="op">,</span>  <span class="co">// when set</span></span>
+<span id="cb11-99"><a href="#cb11-99" aria-hidden="true" tabindex="-1"></a>  <span class="st">"layout"</span><span class="op">:</span>        { <span class="st">"plotWidth"</span><span class="op">:</span> <span class="st">"auto"</span> }</span>
+<span id="cb11-100"><a href="#cb11-100" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-101"><a href="#cb11-101" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-102"><a href="#cb11-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-103"><a href="#cb11-103" aria-hidden="true" tabindex="-1"></a>Per-row styling lives **inside each row's object**, not in a parallel array — so a <span class="in">`row_bold`</span> flag computed by <span class="in">`~ pval &lt; 0.05`</span> lands on <span class="in">`row.style.bold`</span>:</span>
+<span id="cb11-104"><a href="#cb11-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-105"><a href="#cb11-105" aria-hidden="true" tabindex="-1"></a><span class="in">```jsonc</span></span>
+<span id="cb11-106"><a href="#cb11-106" aria-hidden="true" tabindex="-1"></a><span class="co">// One element of data.rows</span></span>
+<span id="cb11-107"><a href="#cb11-107" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb11-108"><a href="#cb11-108" aria-hidden="true" tabindex="-1"></a>  <span class="st">"id"</span><span class="op">:</span>       <span class="st">"row_1"</span><span class="op">,</span></span>
+<span id="cb11-109"><a href="#cb11-109" aria-hidden="true" tabindex="-1"></a>  <span class="st">"label"</span><span class="op">:</span>    <span class="st">"Smith 2020"</span><span class="op">,</span></span>
+<span id="cb11-110"><a href="#cb11-110" aria-hidden="true" tabindex="-1"></a>  <span class="st">"groupId"</span><span class="op">:</span>  <span class="kw">null</span><span class="op">,</span></span>
+<span id="cb11-111"><a href="#cb11-111" aria-hidden="true" tabindex="-1"></a>  <span class="st">"metadata"</span><span class="op">:</span> { <span class="st">"hr"</span><span class="op">:</span> <span class="fl">0.72</span><span class="op">,</span> <span class="st">"lower"</span><span class="op">:</span> <span class="fl">0.55</span><span class="op">,</span> <span class="st">"upper"</span><span class="op">:</span> <span class="fl">0.95</span><span class="op">,</span> <span class="st">"is_sig"</span><span class="op">:</span> <span class="kw">true</span> }<span class="op">,</span></span>
+<span id="cb11-112"><a href="#cb11-112" aria-hidden="true" tabindex="-1"></a>  <span class="st">"style"</span><span class="op">:</span>    { <span class="st">"bold"</span><span class="op">:</span> <span class="kw">true</span> }</span>
+<span id="cb11-113"><a href="#cb11-113" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-114"><a href="#cb11-114" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-115"><a href="#cb11-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-116"><a href="#cb11-116" aria-hidden="true" tabindex="-1"></a>When <span class="in">`paginate = paginate_spec(...)`</span> is set, breakpoints are computed once R-side over the same flattened display rows the frontend renders, then shipped as 0-based row ranges so the viewer and the PDF export agree on page boundaries:</span>
+<span id="cb11-117"><a href="#cb11-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-118"><a href="#cb11-118" aria-hidden="true" tabindex="-1"></a><span class="in">```jsonc</span></span>
+<span id="cb11-119"><a href="#cb11-119" aria-hidden="true" tabindex="-1"></a><span class="st">"paginate"</span><span class="op">:</span> {</span>
+<span id="cb11-120"><a href="#cb11-120" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rows"</span><span class="op">:</span>         <span class="dv">30</span><span class="op">,</span></span>
+<span id="cb11-121"><a href="#cb11-121" aria-hidden="true" tabindex="-1"></a>  <span class="st">"breakOn"</span><span class="op">:</span>      <span class="st">"split"</span><span class="op">,</span></span>
+<span id="cb11-122"><a href="#cb11-122" aria-hidden="true" tabindex="-1"></a>  <span class="st">"keepGroups"</span><span class="op">:</span>   <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb11-123"><a href="#cb11-123" aria-hidden="true" tabindex="-1"></a>  <span class="st">"pageLabel"</span><span class="op">:</span>    <span class="st">"x_of_y"</span><span class="op">,</span></span>
+<span id="cb11-124"><a href="#cb11-124" aria-hidden="true" tabindex="-1"></a>  <span class="st">"pages"</span><span class="op">:</span>        [{ <span class="st">"startIdx"</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span>  <span class="st">"endIdx"</span><span class="op">:</span> <span class="dv">29</span> }<span class="op">,</span></span>
+<span id="cb11-125"><a href="#cb11-125" aria-hidden="true" tabindex="-1"></a>                   { <span class="st">"startIdx"</span><span class="op">:</span> <span class="dv">30</span><span class="op">,</span> <span class="st">"endIdx"</span><span class="op">:</span> <span class="dv">59</span> }]<span class="op">,</span></span>
+<span id="cb11-126"><a href="#cb11-126" aria-hidden="true" tabindex="-1"></a>  <span class="st">"nPages"</span><span class="op">:</span>       <span class="dv">2</span></span>
+<span id="cb11-127"><a href="#cb11-127" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-128"><a href="#cb11-128" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-129"><a href="#cb11-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-130"><a href="#cb11-130" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 4: Svelte Rendering</span></span>
+<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a>The Svelte component receives the JSON and renders the interactive table with:</span>
+<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Sortable columns (default; opt out per column with <span class="in">`sortable = FALSE`</span>)</span>
+<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Collapsible groups</span>
+<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hover tooltips (opt-in via <span class="in">`web_interaction(tooltip_fields = ...)`</span>)</span>
+<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Page controls when <span class="in">`paginate`</span> is set</span>
+<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Static export to SVG / PNG / PDF</span>
+<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-139"><a href="#cb11-139" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Requirements</span></span>
+<span id="cb11-140"><a href="#cb11-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-141"><a href="#cb11-141" aria-hidden="true" tabindex="-1"></a><span class="fu">### Required Structure</span></span>
+<span id="cb11-142"><a href="#cb11-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-143"><a href="#cb11-143" aria-hidden="true" tabindex="-1"></a>Your data.frame needs:</span>
+<span id="cb11-144"><a href="#cb11-144" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**One row per item** to display</span>
+<span id="cb11-145"><a href="#cb11-145" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Columns referenced** by your column specifications</span>
+<span id="cb11-146"><a href="#cb11-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-149"><a href="#cb11-149" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-150"><a href="#cb11-150" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal forest plot data</span></span>
+<span id="cb11-151"><a href="#cb11-151" aria-hidden="true" tabindex="-1"></a>meta_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-152"><a href="#cb11-152" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Smith 2020"</span>, <span class="st">"Jones 2021"</span>),</span>
+<span id="cb11-153"><a href="#cb11-153" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb11-154"><a href="#cb11-154" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb11-155"><a href="#cb11-155" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb11-156"><a href="#cb11-156" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-157"><a href="#cb11-157" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-158"><a href="#cb11-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-159"><a href="#cb11-159" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Row kinds via `row_type`</span></span>
+<span id="cb11-160"><a href="#cb11-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-161"><a href="#cb11-161" aria-hidden="true" tabindex="-1"></a>By default every row is a data row with a marker. Pass <span class="in">`row_type = "&lt;col&gt;"`</span> to <span class="in">`tabviz()`</span> (with a column whose values are <span class="in">`"data"`</span>, <span class="in">`"header"`</span>, <span class="in">`"summary"`</span>, or <span class="in">`"spacer"`</span>) to mix in:</span>
+<span id="cb11-162"><a href="#cb11-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-163"><a href="#cb11-163" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_type`</span> <span class="pp">|</span> Behavior <span class="pp">|</span> Marker <span class="pp">|</span></span>
+<span id="cb11-164"><a href="#cb11-164" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb11-165"><a href="#cb11-165" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`"data"`</span> <span class="pp">|</span> Standard row <span class="pp">|</span> Point with CI line <span class="pp">|</span></span>
+<span id="cb11-166"><a href="#cb11-166" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`"header"`</span> <span class="pp">|</span> Section header (point/lower/upper should be <span class="in">`NA`</span>) <span class="pp">|</span> None <span class="pp">|</span></span>
+<span id="cb11-167"><a href="#cb11-167" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`"summary"`</span> <span class="pp">|</span> Pooled / subtotal row <span class="pp">|</span> Diamond <span class="pp">|</span></span>
+<span id="cb11-168"><a href="#cb11-168" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`"spacer"`</span> <span class="pp">|</span> Empty separator (point/lower/upper should be <span class="in">`NA`</span>) <span class="pp">|</span> None <span class="pp">|</span></span>
+<span id="cb11-169"><a href="#cb11-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-170"><a href="#cb11-170" aria-hidden="true" tabindex="-1"></a>See <span class="co">[</span><span class="ot">Row Styling</span><span class="co">](../guide/row-styling.qmd#row-types)</span> for the full specification.</span>
+<span id="cb11-171"><a href="#cb11-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-172"><a href="#cb11-172" aria-hidden="true" tabindex="-1"></a><span class="fu">### Column Types</span></span>
+<span id="cb11-173"><a href="#cb11-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-174"><a href="#cb11-174" aria-hidden="true" tabindex="-1"></a><span class="in">`col_*()`</span> family covers cell content; <span class="in">`viz_*()`</span> family adds shared-axis charts in their own column. tabviz infers a <span class="in">`field_category`</span> from each data column (<span class="in">`numeric`</span>, <span class="in">`integer`</span>, <span class="in">`string`</span>, <span class="in">`logical`</span>, <span class="in">`date`</span>, <span class="in">`array-numeric`</span>, <span class="in">`other`</span>) which the interactive column picker uses to filter compatible types.</span>
+<span id="cb11-175"><a href="#cb11-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-176"><a href="#cb11-176" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> R Type <span class="pp">|</span> Cell columns (<span class="in">`col_*`</span>) <span class="pp">|</span> Visualization columns (<span class="in">`viz_*`</span>) <span class="pp">|</span></span>
+<span id="cb11-177"><a href="#cb11-177" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb11-178"><a href="#cb11-178" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> character <span class="pp">|</span> <span class="in">`col_text`</span>, <span class="in">`col_label`</span>, <span class="in">`col_badge`</span>, <span class="in">`col_icon`</span>, <span class="in">`col_reference`</span> <span class="pp">|</span> — <span class="pp">|</span></span>
+<span id="cb11-179"><a href="#cb11-179" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> numeric <span class="pp">|</span> <span class="in">`col_numeric`</span>, <span class="in">`col_n`</span>, <span class="in">`col_percent`</span>, <span class="in">`col_currency`</span>, <span class="in">`col_pvalue`</span>, <span class="in">`col_progress`</span>, <span class="in">`col_heatmap`</span>, <span class="in">`col_stars`</span>, <span class="in">`col_pictogram`</span>, <span class="in">`col_ring`</span>, <span class="in">`col_bar`</span> <span class="pp">|</span> <span class="in">`viz_bar`</span> (one value), <span class="in">`viz_forest`</span> (point + CI), <span class="in">`viz_boxplot`</span> / <span class="in">`viz_violin`</span> (per-row arrays via list-columns or pre-computed stats) <span class="pp">|</span></span>
+<span id="cb11-180"><a href="#cb11-180" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> integer <span class="pp">|</span> <span class="in">`col_n`</span> <span class="pp">|</span> <span class="in">`viz_bar`</span> <span class="pp">|</span></span>
+<span id="cb11-181"><a href="#cb11-181" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> logical <span class="pp">|</span> Row / cell semantic flags <span class="pp">|</span> — (read indirectly via <span class="in">`row_*`</span> / cell <span class="in">`style_*`</span>) <span class="pp">|</span></span>
+<span id="cb11-182"><a href="#cb11-182" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> date <span class="pp">|</span> <span class="in">`col_date`</span> <span class="pp">|</span> — <span class="pp">|</span></span>
+<span id="cb11-183"><a href="#cb11-183" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> list of numeric <span class="pp">|</span> <span class="in">`col_sparkline`</span> <span class="pp">|</span> <span class="in">`viz_boxplot`</span> (raw or quartiles), <span class="in">`viz_violin`</span> (KDE) <span class="pp">|</span></span>
+<span id="cb11-184"><a href="#cb11-184" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> paired numeric <span class="pp">|</span> <span class="in">`col_interval`</span>, <span class="in">`col_events`</span>, <span class="in">`col_range`</span> <span class="pp">|</span> — <span class="pp">|</span></span>
+<span id="cb11-185"><a href="#cb11-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-186"><a href="#cb11-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### Missing Values</span></span>
+<span id="cb11-187"><a href="#cb11-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-188"><a href="#cb11-188" aria-hidden="true" tabindex="-1"></a>NA handling varies by column type:</span>
+<span id="cb11-189"><a href="#cb11-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-190"><a href="#cb11-190" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Context <span class="pp">|</span> Behavior <span class="pp">|</span></span>
+<span id="cb11-191"><a href="#cb11-191" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|----------|</span></span>
+<span id="cb11-192"><a href="#cb11-192" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Forest points <span class="pp">|</span> Row displays as label-only (no marker) <span class="pp">|</span></span>
+<span id="cb11-193"><a href="#cb11-193" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Numeric columns <span class="pp">|</span> Displays as empty cell <span class="pp">|</span></span>
+<span id="cb11-194"><a href="#cb11-194" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Text columns <span class="pp">|</span> Displays as empty cell <span class="pp">|</span></span>
+<span id="cb11-195"><a href="#cb11-195" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Row styling <span class="pp">|</span> NA rows skip that style <span class="pp">|</span></span>
+<span id="cb11-196"><a href="#cb11-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-197"><a href="#cb11-197" aria-hidden="true" tabindex="-1"></a><span class="fu">## Grouping Data</span></span>
+<span id="cb11-198"><a href="#cb11-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-199"><a href="#cb11-199" aria-hidden="true" tabindex="-1"></a>Grouping creates collapsible sections:</span>
+<span id="cb11-200"><a href="#cb11-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-203"><a href="#cb11-203" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb11-204"><a href="#cb11-204" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb11-205"><a href="#cb11-205" aria-hidden="true" tabindex="-1"></a>    A[<span class="ot">"</span><span class="st">Flat data</span><span class="ot">"</span>] --&gt; B[<span class="ot">"</span><span class="st">group = 'category'</span><span class="ot">"</span>]</span>
+<span id="cb11-206"><a href="#cb11-206" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[<span class="ot">"</span><span class="st">Grouped display</span><span class="ot">"</span>]</span>
+<span id="cb11-207"><a href="#cb11-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-208"><a href="#cb11-208" aria-hidden="true" tabindex="-1"></a>    subgraph <span class="ot">"</span><span class="st">Grouped display</span><span class="ot">"</span></span>
+<span id="cb11-209"><a href="#cb11-209" aria-hidden="true" tabindex="-1"></a>        D[<span class="ot">"</span><span class="st">Group A Header</span><span class="ot">"</span>]</span>
+<span id="cb11-210"><a href="#cb11-210" aria-hidden="true" tabindex="-1"></a>        E[<span class="ot">"</span><span class="st">  Row 1</span><span class="ot">"</span>]</span>
+<span id="cb11-211"><a href="#cb11-211" aria-hidden="true" tabindex="-1"></a>        F[<span class="ot">"</span><span class="st">  Row 2</span><span class="ot">"</span>]</span>
+<span id="cb11-212"><a href="#cb11-212" aria-hidden="true" tabindex="-1"></a>        G[<span class="ot">"</span><span class="st">Group B Header</span><span class="ot">"</span>]</span>
+<span id="cb11-213"><a href="#cb11-213" aria-hidden="true" tabindex="-1"></a>        H[<span class="ot">"</span><span class="st">  Row 3</span><span class="ot">"</span>]</span>
+<span id="cb11-214"><a href="#cb11-214" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb11-215"><a href="#cb11-215" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-216"><a href="#cb11-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-217"><a href="#cb11-217" aria-hidden="true" tabindex="-1"></a><span class="fu">### Single-Level Grouping</span></span>
+<span id="cb11-218"><a href="#cb11-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-221"><a href="#cb11-221" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-222"><a href="#cb11-222" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb11-223"><a href="#cb11-223" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-224"><a href="#cb11-224" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Trial D"</span>),</span>
+<span id="cb11-225"><a href="#cb11-225" aria-hidden="true" tabindex="-1"></a>  <span class="at">category =</span> <span class="fu">c</span>(<span class="st">"Drug X"</span>, <span class="st">"Drug X"</span>, <span class="st">"Drug Y"</span>, <span class="st">"Drug Y"</span>),</span>
+<span id="cb11-226"><a href="#cb11-226" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.78</span>),</span>
+<span id="cb11-227"><a href="#cb11-227" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.60</span>),</span>
+<span id="cb11-228"><a href="#cb11-228" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">1.00</span>)</span>
+<span id="cb11-229"><a href="#cb11-229" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-230"><a href="#cb11-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-231"><a href="#cb11-231" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb11-232"><a href="#cb11-232" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb11-233"><a href="#cb11-233" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,  <span class="co"># Groups by Drug X, Drug Y</span></span>
+<span id="cb11-234"><a href="#cb11-234" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>))</span>
+<span id="cb11-235"><a href="#cb11-235" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-236"><a href="#cb11-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-237"><a href="#cb11-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-238"><a href="#cb11-238" aria-hidden="true" tabindex="-1"></a><span class="fu">### Hierarchical Grouping</span></span>
+<span id="cb11-239"><a href="#cb11-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-242"><a href="#cb11-242" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-243"><a href="#cb11-243" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb11-244"><a href="#cb11-244" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>region <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"North"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>)</span>
+<span id="cb11-245"><a href="#cb11-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-246"><a href="#cb11-246" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb11-247"><a href="#cb11-247" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb11-248"><a href="#cb11-248" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"category"</span>),  <span class="co"># Region &gt; Category hierarchy</span></span>
+<span id="cb11-249"><a href="#cb11-249" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(...))</span>
+<span id="cb11-250"><a href="#cb11-250" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-251"><a href="#cb11-251" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-252"><a href="#cb11-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-253"><a href="#cb11-253" aria-hidden="true" tabindex="-1"></a><span class="fu">## Styling Data Flow</span></span>
+<span id="cb11-254"><a href="#cb11-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-255"><a href="#cb11-255" aria-hidden="true" tabindex="-1"></a>Styles resolve in order of specificity:</span>
+<span id="cb11-256"><a href="#cb11-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-259"><a href="#cb11-259" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb11-260"><a href="#cb11-260" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb11-261"><a href="#cb11-261" aria-hidden="true" tabindex="-1"></a>    A[<span class="ot">"</span><span class="st">Theme defaults</span><span class="ot">"</span>] --&gt; B[<span class="ot">"</span><span class="st">Row styling</span><span class="ot">"</span>]</span>
+<span id="cb11-262"><a href="#cb11-262" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[<span class="ot">"</span><span class="st">Cell styling</span><span class="ot">"</span>]</span>
+<span id="cb11-263"><a href="#cb11-263" aria-hidden="true" tabindex="-1"></a>    C --&gt; D[<span class="ot">"</span><span class="st">Marker styling</span><span class="ot">"</span>]</span>
+<span id="cb11-264"><a href="#cb11-264" aria-hidden="true" tabindex="-1"></a>    D --&gt; E[<span class="ot">"</span><span class="st">Final appearance</span><span class="ot">"</span>]</span>
+<span id="cb11-265"><a href="#cb11-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-266"><a href="#cb11-266" aria-hidden="true" tabindex="-1"></a>    style E fill:<span class="co">#059669,color:#fff</span></span>
+<span id="cb11-267"><a href="#cb11-267" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-268"><a href="#cb11-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-269"><a href="#cb11-269" aria-hidden="true" tabindex="-1"></a>See <span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](styling-cascade.qmd)</span> for details.</span>
+<span id="cb11-270"><a href="#cb11-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-271"><a href="#cb11-271" aria-hidden="true" tabindex="-1"></a><span class="fu">## Common Patterns</span></span>
+<span id="cb11-272"><a href="#cb11-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-273"><a href="#cb11-273" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pre-computing Style Columns</span></span>
+<span id="cb11-274"><a href="#cb11-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-277"><a href="#cb11-277" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-278"><a href="#cb11-278" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb11-279"><a href="#cb11-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-280"><a href="#cb11-280" aria-hidden="true" tabindex="-1"></a>styled_data <span class="ot">&lt;-</span> meta_data <span class="sc">|&gt;</span></span>
+<span id="cb11-281"><a href="#cb11-281" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-282"><a href="#cb11-282" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_significant =</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb11-283"><a href="#cb11-283" aria-hidden="true" tabindex="-1"></a>    <span class="at">direction_color =</span> <span class="fu">case_when</span>(</span>
+<span id="cb11-284"><a href="#cb11-284" aria-hidden="true" tabindex="-1"></a>      upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Green: benefit</span></span>
+<span id="cb11-285"><a href="#cb11-285" aria-hidden="true" tabindex="-1"></a>      lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Red: harm</span></span>
+<span id="cb11-286"><a href="#cb11-286" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Gray: NS</span></span>
+<span id="cb11-287"><a href="#cb11-287" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-288"><a href="#cb11-288" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-289"><a href="#cb11-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-290"><a href="#cb11-290" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(styled_data,</span>
+<span id="cb11-291"><a href="#cb11-291" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb11-292"><a href="#cb11-292" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb11-293"><a href="#cb11-293" aria-hidden="true" tabindex="-1"></a>                            <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)),</span>
+<span id="cb11-294"><a href="#cb11-294" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_significant"</span>,</span>
+<span id="cb11-295"><a href="#cb11-295" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"direction_color"</span></span>
+<span id="cb11-296"><a href="#cb11-296" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-297"><a href="#cb11-297" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-298"><a href="#cb11-298" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-299"><a href="#cb11-299" aria-hidden="true" tabindex="-1"></a><span class="fu">### Using Formula Expressions</span></span>
+<span id="cb11-300"><a href="#cb11-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-301"><a href="#cb11-301" aria-hidden="true" tabindex="-1"></a>Equivalent approach without pre-computing:</span>
+<span id="cb11-302"><a href="#cb11-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-305"><a href="#cb11-305" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-306"><a href="#cb11-306" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta_data,</span>
+<span id="cb11-307"><a href="#cb11-307" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb11-308"><a href="#cb11-308" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb11-309"><a href="#cb11-309" aria-hidden="true" tabindex="-1"></a>                            <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)),</span>
+<span id="cb11-310"><a href="#cb11-310" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb11-311"><a href="#cb11-311" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb11-312"><a href="#cb11-312" aria-hidden="true" tabindex="-1"></a>    upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,</span>
+<span id="cb11-313"><a href="#cb11-313" aria-hidden="true" tabindex="-1"></a>    lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,</span>
+<span id="cb11-314"><a href="#cb11-314" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span></span>
+<span id="cb11-315"><a href="#cb11-315" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-316"><a href="#cb11-316" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-317"><a href="#cb11-317" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-318"><a href="#cb11-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-319"><a href="#cb11-319" aria-hidden="true" tabindex="-1"></a>Both approaches produce identical output. Use formulas for concise one-offs; use pre-computed columns when reusing the same logic.</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

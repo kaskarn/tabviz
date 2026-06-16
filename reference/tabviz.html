@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>tabviz() – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="../site_libs/tabviz-styles-0.37.0/tabviz.css" rel="stylesheet">
+<script src="../site_libs/tabviz-binding-0.38.0/tabviz.js"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#signature" id="toc-signature" class="nav-link active" data-scroll-target="#signature">Signature</a></li>
+  <li><a href="#arguments" id="toc-arguments" class="nav-link" data-scroll-target="#arguments">Arguments</a>
+  <ul class="collapse">
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#titles" id="toc-titles" class="nav-link" data-scroll-target="#titles">Titles</a></li>
+  <li><a href="#row-styling" id="toc-row-styling" class="nav-link" data-scroll-target="#row-styling">Row styling</a></li>
+  <li><a href="#marker-styling" id="toc-marker-styling" class="nav-link" data-scroll-target="#marker-styling">Marker styling</a></li>
+  <li><a href="#theme-interaction-layout" id="toc-theme-interaction-layout" class="nav-link" data-scroll-target="#theme-interaction-layout">Theme, interaction, layout</a></li>
+  <li><a href="#splitting" id="toc-splitting" class="nav-link" data-scroll-target="#splitting">Splitting</a></li>
+  <li><a href="#pagination" id="toc-pagination" class="nav-link" data-scroll-target="#pagination">Pagination</a></li>
+  <li><a href="#other" id="toc-other" class="nav-link" data-scroll-target="#other">Other</a></li>
+  </ul></li>
+  <li><a href="#deprecated-arguments" id="toc-deprecated-arguments" class="nav-link" data-scroll-target="#deprecated-arguments">Deprecated arguments</a></li>
+  <li><a href="#return-value" id="toc-return-value" class="nav-link" data-scroll-target="#return-value">Return value</a></li>
+  <li><a href="#grouping" id="toc-grouping" class="nav-link" data-scroll-target="#grouping">Grouping</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
+  <li><a href="#related" id="toc-related" class="nav-link" data-scroll-target="#related">Related</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">tabviz()</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><code>tabviz()</code> is the main entry point for building interactive table visualizations. It returns an htmlwidget that renders in R Markdown, Quarto, Shiny, or the RStudio Viewer. Use <code>tabviz()</code> whenever you want full control over which columns appear (text, numeric, badges, forest plots, sparklines, etc.). For a quick forest-only plot driven by <code>point</code> / <code>lower</code> / <code>upper</code> arguments, see <a href="../reference/forest_plot.html"><code>forest_plot()</code></a>.</p>
+<section id="signature" class="level2">
+<h2 class="anchored" data-anchor-id="signature">Signature</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  data,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_header =</span> <span class="st">"Study"</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">extra_columns =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">available_exclude =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="cn">NULL</span>, <span class="at">subtitle =</span> <span class="cn">NULL</span>, <span class="at">caption =</span> <span class="cn">NULL</span>, <span class="at">footnote =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Row styling (column name or formula)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="cn">NULL</span>, <span class="at">row_italic =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_color =</span> <span class="cn">NULL</span>, <span class="at">row_bg =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_badge =</span> <span class="cn">NULL</span>, <span class="at">row_icon =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_indent =</span> <span class="cn">NULL</span>, <span class="at">row_type =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_emphasis =</span> <span class="cn">NULL</span>, <span class="at">row_muted =</span> <span class="cn">NULL</span>, <span class="at">row_accent =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Marker styling (column name or formula)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="cn">NULL</span>, <span class="at">marker_shape =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_opacity =</span> <span class="cn">NULL</span>, <span class="at">marker_size =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Theme &amp; interaction</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_nejm</span>(),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">interaction =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot_position =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_height =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">banding =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="cn">NULL</span>, <span class="at">height =</span> <span class="cn">NULL</span>, <span class="at">elementId =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Splitting</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">split_by =</span> <span class="cn">NULL</span>, <span class="at">shared_axis =</span> <span class="cn">FALSE</span>, <span class="at">shared_column_widths =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pagination</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">paginate =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">.spec_only =</span> <span class="cn">FALSE</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="arguments" class="level2">
+<h2 class="anchored" data-anchor-id="arguments">Arguments</h2>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td><code>data.frame</code></td>
+<td>required</td>
+<td>A data.frame, data.table, or tibble.</td>
+</tr>
+<tr class="even">
+<td><code>label</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>Column name for row labels. When <code>NULL</code>, row numbers are used.</td>
+</tr>
+<tr class="odd">
+<td><code>label_header</code></td>
+<td><code>character(1)</code></td>
+<td><code>"Study"</code></td>
+<td>Header text for the label column. The literal default <code>"Study"</code> is auto-prettified from the <code>label</code> field name when applicable.</td>
+</tr>
+<tr class="even">
+<td><code>group</code></td>
+<td><code>character</code> / <code>list</code></td>
+<td><code>NULL</code></td>
+<td>Grouping spec. A single column name (flat), a vector (hierarchical), or a list of <code>web_group()</code> objects. See <a href="#grouping">Grouping</a>.</td>
+</tr>
+<tr class="odd">
+<td><code>columns</code></td>
+<td><code>list</code></td>
+<td><code>NULL</code></td>
+<td>List of column specs from <code>col_*()</code> / <code>viz_*()</code> helpers.</td>
+</tr>
+<tr class="even">
+<td><code>extra_columns</code></td>
+<td><code>list</code></td>
+<td><code>NULL</code></td>
+<td>Pre-configured columns hidden by default but available in the interactive column picker.</td>
+</tr>
+<tr class="odd">
+<td><code>available_exclude</code></td>
+<td><code>character</code></td>
+<td><code>NULL</code></td>
+<td>Data columns to omit from the column picker (e.g.&nbsp;internal/sensitive fields).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="titles" class="level3">
+<h3 class="anchored" data-anchor-id="titles">Titles</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>title</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>Main title (above the plot).</td>
+</tr>
+<tr class="even">
+<td><code>subtitle</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>Subtitle (below title).</td>
+</tr>
+<tr class="odd">
+<td><code>caption</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>Caption (below plot).</td>
+</tr>
+<tr class="even">
+<td><code>footnote</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>Footnote (below caption, italicized).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="row-styling" class="level3">
+<h3 class="anchored" data-anchor-id="row-styling">Row styling</h3>
+<p>All row-styling arguments accept either a <strong>column name (string)</strong> that holds the per-row value, or a <strong>formula</strong> evaluated against <code>data</code> (e.g.&nbsp;<code>~ pvalue &lt; 0.05</code>).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Value type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>row_bold</code></td>
+<td>logical</td>
+<td><code>NULL</code></td>
+<td>Bold whole row.</td>
+</tr>
+<tr class="even">
+<td><code>row_italic</code></td>
+<td>logical</td>
+<td><code>NULL</code></td>
+<td>Italicize row.</td>
+</tr>
+<tr class="odd">
+<td><code>row_color</code></td>
+<td>CSS color</td>
+<td><code>NULL</code></td>
+<td>Row text color.</td>
+</tr>
+<tr class="even">
+<td><code>row_bg</code></td>
+<td>CSS color</td>
+<td><code>NULL</code></td>
+<td>Row background color.</td>
+</tr>
+<tr class="odd">
+<td><code>row_badge</code></td>
+<td>character</td>
+<td><code>NULL</code></td>
+<td>Badge text on the label cell.</td>
+</tr>
+<tr class="even">
+<td><code>row_icon</code></td>
+<td>emoji/unicode</td>
+<td><code>NULL</code></td>
+<td>Icon on the label cell.</td>
+</tr>
+<tr class="odd">
+<td><code>row_indent</code></td>
+<td>numeric</td>
+<td><code>NULL</code></td>
+<td>Indentation level.</td>
+</tr>
+<tr class="even">
+<td><code>row_type</code></td>
+<td>character</td>
+<td><code>NULL</code></td>
+<td>One of <code>"data"</code>, <code>"header"</code>, <code>"summary"</code>, <code>"spacer"</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>row_emphasis</code></td>
+<td>logical</td>
+<td><code>NULL</code></td>
+<td>Bold + theme primary color.</td>
+</tr>
+<tr class="even">
+<td><code>row_muted</code></td>
+<td>logical</td>
+<td><code>NULL</code></td>
+<td>Lighter, reduced prominence.</td>
+</tr>
+<tr class="odd">
+<td><code>row_accent</code></td>
+<td>logical</td>
+<td><code>NULL</code></td>
+<td>Bold + theme accent color (most common).</td>
+</tr>
+<tr class="even">
+<td><code>row_fill</code></td>
+<td>logical</td>
+<td><code>NULL</code></td>
+<td>Bold + a strong row fill (auto-contrasting fg).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="marker-styling" class="level3">
+<h3 class="anchored" data-anchor-id="marker-styling">Marker styling</h3>
+<p>Same column-name-or-formula pattern as row styling:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Value type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>marker_color</code></td>
+<td>CSS color</td>
+<td><code>NULL</code></td>
+<td>Marker fill color.</td>
+</tr>
+<tr class="even">
+<td><code>marker_shape</code></td>
+<td>character</td>
+<td><code>NULL</code></td>
+<td>One of <code>"square"</code>, <code>"circle"</code>, <code>"diamond"</code>, <code>"triangle"</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>marker_opacity</code></td>
+<td>numeric <code>[0,1]</code></td>
+<td><code>NULL</code></td>
+<td>Marker opacity.</td>
+</tr>
+<tr class="even">
+<td><code>marker_size</code></td>
+<td>numeric</td>
+<td><code>NULL</code></td>
+<td>Driver for marker size — pass raw weights (e.g.&nbsp;study weights 0–100). The renderer normalizes via <code>0.5 + sqrt(w/100) * 1.5</code>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="theme-interaction-layout" class="level3">
+<h3 class="anchored" data-anchor-id="theme-interaction-layout">Theme, interaction, layout</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>theme</code></td>
+<td><code>WebTheme</code></td>
+<td><code>web_theme_nejm()</code></td>
+<td>Theme object (use a <code>web_theme_*()</code> builder).</td>
+</tr>
+<tr class="even">
+<td><code>interaction</code></td>
+<td><code>InteractionSpec</code></td>
+<td><code>NULL</code></td>
+<td>Use <code>web_interaction()</code>. When <code>NULL</code>, <code>default_interaction_for_theme(theme)</code> is used (full interactivity).</td>
+</tr>
+<tr class="odd">
+<td><code>plot_position</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td> No effect. Column order in <code>columns = list(...)</code> controls placement.</td>
+</tr>
+<tr class="even">
+<td><code>row_height</code></td>
+<td><code>numeric(1)</code></td>
+<td><code>NULL</code></td>
+<td>Row height in pixels.</td>
+</tr>
+<tr class="odd">
+<td><code>banding</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>Row banding mode: <code>"none"</code>, <code>"row"</code>, <code>"group"</code> (deepest level, default), or <code>"group-n"</code> (e.g.&nbsp;<code>"group-1"</code> for outermost). Overrides the banding on <code>theme</code>. Use the viewer’s settings panel (gear icon) to adjust interactively.</td>
+</tr>
+<tr class="even">
+<td><code>width</code></td>
+<td>character/numeric</td>
+<td><code>NULL</code></td>
+<td>Widget width (auto).</td>
+</tr>
+<tr class="odd">
+<td><code>height</code></td>
+<td>character/numeric</td>
+<td><code>NULL</code></td>
+<td>Widget height (auto).</td>
+</tr>
+<tr class="even">
+<td><code>elementId</code></td>
+<td><code>character(1)</code></td>
+<td><code>NULL</code></td>
+<td>HTML element id.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="splitting" class="level3">
+<h3 class="anchored" data-anchor-id="splitting">Splitting</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>split_by</code></td>
+<td><code>character</code></td>
+<td><code>NULL</code></td>
+<td>Column name(s) to split into one plot per unique value/combination, returning a <code>SplitForest</code> widget.</td>
+</tr>
+<tr class="even">
+<td><code>shared_axis</code></td>
+<td><code>logical(1)</code></td>
+<td><code>FALSE</code></td>
+<td>When <code>split_by</code> is set, share an axis range across all sub-plots.</td>
+</tr>
+<tr class="odd">
+<td><code>shared_column_widths</code></td>
+<td><code>logical(1)</code></td>
+<td><code>FALSE</code></td>
+<td>When <code>split_by</code> is set, stamp identical per-column widths across every sub-plot so columns line up when screenshots are stacked. Added in v0.16.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="pagination" class="level3">
+<h3 class="anchored" data-anchor-id="pagination">Pagination</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>paginate</code></td>
+<td><code>PaginateSpec</code> / shortcut</td>
+<td><code>NULL</code></td>
+<td>Break a long table across multiple pages. Accepts <code>NULL</code> (off), <code>TRUE</code> (default <code>paginate_spec()</code>), a positive integer (rows-per-page shorthand), or a <code>PaginateSpec</code> from <code>paginate_spec()</code> / <code>paginate_letter()</code> / <code>paginate_a4()</code> / <code>paginate_slide()</code>. Cascades into every <code>split_by</code> subview. See <a href="../guide/export.html#pagination">Export → Pagination</a>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="other" class="level3">
+<h3 class="anchored" data-anchor-id="other">Other</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>.spec_only</code></td>
+<td><code>logical(1)</code></td>
+<td><code>FALSE</code></td>
+<td>When <code>TRUE</code>, returns the <code>WebSpec</code> object instead of an htmlwidget — useful for programmatic manipulation before rendering.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="deprecated-arguments" class="level2">
+<h2 class="anchored" data-anchor-id="deprecated-arguments">Deprecated arguments</h2>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Removed from the <code>tabviz()</code> surface in 0.9.0
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The arguments below are still accepted for one cycle but emit <code>lifecycle::deprecate_warn()</code>. They have moved to dedicated, more discoverable homes.</p>
+</div>
+</div>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Old argument</th>
+<th>Replacement</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>tabviz(axis_range = ...)</code></td>
+<td>Pass <code>axis_range</code> to <code>viz_forest()</code> on the forest column.</td>
+</tr>
+<tr class="even">
+<td><code>tabviz(axis_ticks = ...)</code></td>
+<td>Pass <code>axis_ticks</code> to <code>viz_forest()</code> on the forest column.</td>
+</tr>
+<tr class="odd">
+<td><code>tabviz(axis_gridlines = ...)</code></td>
+<td>Pass <code>axis_gridlines</code> to <code>viz_forest()</code> on the forest column.</td>
+</tr>
+<tr class="even">
+<td><code>tabviz(zoom = ...)</code></td>
+<td>Pipe to <a href="../reference/styling.html#set_zoom"><code>set_zoom(zoom = ...)</code></a>.</td>
+</tr>
+<tr class="odd">
+<td><code>tabviz(auto_fit = ...)</code></td>
+<td>Pipe to <code>set_zoom(auto_fit = ...)</code>.</td>
+</tr>
+<tr class="even">
+<td><code>tabviz(max_width = ...)</code></td>
+<td>Pipe to <code>set_zoom(max_width = ...)</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>tabviz(max_height = ...)</code></td>
+<td>Pipe to <code>set_zoom(max_height = ...)</code>.</td>
+</tr>
+<tr class="even">
+<td><code>tabviz(show_zoom_controls = ...)</code></td>
+<td>Pipe to <code>set_zoom(show_controls = ...)</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>tabviz(weight = ...)</code></td>
+<td>Use <code>marker_size = ...</code>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="return-value" class="level2">
+<h2 class="anchored" data-anchor-id="return-value">Return value</h2>
+<p>An htmlwidget. When <code>.spec_only = TRUE</code>, returns a <code>WebSpec</code> instead. When <code>split_by</code> is set, returns a split-table widget backed by a <code>SplitForest</code>.</p>
+</section>
+<section id="grouping" class="level2">
+<h2 class="anchored" data-anchor-id="grouping">Grouping</h2>
+<p>Three modes of <code>group</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flat grouping</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">group =</span> <span class="st">"category"</span>, ...)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical grouping</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>), ...)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Explicit group definitions</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">list</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">web_group</span>(<span class="st">"cardio"</span>, <span class="at">label =</span> <span class="st">"Cardiovascular"</span>),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">web_group</span>(<span class="st">"renal"</span>,  <span class="at">label =</span> <span class="st">"Renal Outcomes"</span>, <span class="at">collapsed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="examples" class="level2">
+<h2 class="anchored" data-anchor-id="examples">Examples</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Smith 2020"</span>, <span class="st">"Jones 2021"</span>, <span class="st">"Lee 2022"</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">drug  =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr    =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo    =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi    =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">n     =</span> <span class="fu">c</span>(<span class="dv">245</span>, <span class="dv">180</span>, <span class="dv">320</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal: forest column + a couple of data columns</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_text</span>(<span class="st">"drug"</span>, <span class="st">"Drug"</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_n</span>(<span class="st">"n"</span>),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>, <span class="at">axis_label =</span> <span class="st">"Hazard Ratio"</span>),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"hr"</span>, <span class="st">"lo"</span>, <span class="st">"hi"</span>, <span class="at">header =</span> <span class="st">"HR (95% CI)"</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="tabviz html-widget html-fill-item" id="htmlwidget-4b64f16a83255543daad" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-4b64f16a83255543daad">{"x":{"version":"1.10","data":{"rows":[{"id":"row_1","label":"Smith 2020","metadata":{"study":"Smith 2020","drug":"A","hr":0.72,"lo":0.55,"hi":0.95,"n":245}},{"id":"row_2","label":"Jones 2021","metadata":{"study":"Jones 2021","drug":"A","hr":0.85,"lo":0.7,"hi":1.03,"n":180}},{"id":"row_3","label":"Lee 2022","metadata":{"study":"Lee 2022","drug":"B","hr":0.91,"lo":0.75,"hi":1.1,"n":320}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"groupCol":null,"weightCol":null},"columns":[{"id":"text_drug","header":"Drug","field":"drug","type":"text","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false},{"id":"numeric_n","header":"N","field":"n","type":"numeric","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false,"options":{"numeric":{"decimals":0,"thousandsSep":",","abbreviate":false}}},{"id":"forest_hr","header":"","field":"_forest_hr","type":"forest","width":"auto","align":"left","wrap":0,"sortable":false,"flex":true,"isGroup":false,"headerAlign":"center","showHeader":false,"options":{"forest":{"point":"hr","lower":"lo","upper":"hi","effects":null,"scale":"log","nullValue":1,"axisLabel":"Hazard Ratio","axisRange":null,"axisTicks":null,"axisGridlines":false,"showAxis":true,"annotations":null,"sharedAxis":null}}},{"id":"interval_hr","header":"HR (95% CI)","field":"_interval_hr","type":"interval","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false,"options":{"interval":{"decimals":2,"thousandsSep":false,"abbreviate":false,"separator":" ","point":"hr","lower":"lo","upper":"hi"}}}],"labelColumn":{"id":"label","header":"Study","field":"study","type":"text","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false},"extraColumns":[],"availableFields":[{"field":"study","label":"study","category":"string"},{"field":"drug","label":"drug","category":"string"},{"field":"hr","label":"hr","category":"numeric"},{"field":"lo","label":"lo","category":"numeric"},{"field":"hi","label":"hi","category":"numeric"},{"field":"n","label":"n","category":"numeric"}],"theme":{"schemaVersion":4,"name":"nejm","webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}],"authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.815},"ink":{"L":0.18,"C":0.01,"H":25.815},"brand":{"L":0.5289,"C":0.179,"H":25.815},"accent":{"L":0.4239,"C":0.0828,"H":241.1753}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"roleOverrides":{},"pins":{},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotWidth":"auto","containerBorder":false,"containerBorderRadius":8,"banding":{"mode":"group","level":null}},"accent":{"default":"#3F759A","muted":"#F2F4F6","tintSubtle":"#F2F4F6","tintMedium":"#C9D9E5"},"status":{"positive":"#27762F","negative":"#B02A2D","warning":"#C57C28","info":"#006A9D"},"series":[{"fill":"#690009","stroke":"#3E0003","fillDim":"#CEA5A0","strokeDim":"#AE8682","fillHot":"#530005","strokeHot":"#170001","textFg":"#16100F","shape":null},{"fill":"#000000","stroke":"#000000","fillDim":"#8E8C8B","strokeDim":"#706F6E","fillHot":"#000000","strokeHot":"#000000","textFg":"#16100F","shape":null},{"fill":"#E69F00","stroke":"#BE8300","fillDim":"#F6DCB5","strokeDim":"#D5BC96","fillHot":"#D29100","strokeHot":"#986800","textFg":"#16100F","shape":null},{"fill":"#56B4E9","stroke":"#3294C8","fillDim":"#C3E3F8","strokeDim":"#A3C3D7","fillHot":"#45A4D8","strokeHot":"#0076A7","textFg":"#16100F","shape":null},{"fill":"#009E73","stroke":"#007C5A","fillDim":"#B4DBC9","strokeDim":"#95BBA9","fillHot":"#008D66","strokeHot":"#005C41","textFg":"#16100F","shape":null}],"spacing":{"rowHeight":24,"headerHeight":32,"padding":12,"containerPadding":0,"axisGap":12,"columnGroupPadding":8,"rowGroupPadding":12,"cellPaddingX":10,"cellPaddingY":0,"groupPadding":8,"footerGap":8,"titleSubtitleGap":13,"headerGap":12,"bottomMargin":16,"indentPerLevel":16},"header":{"light":{"bg":"#FEFAF9","fg":"#16100F","rule":"#6B6565"},"tint":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565"},"bold":{"bg":"#690009","fg":"#FEFAF9","rule":"#C79994"},"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false}},"rowGroup":{"L1":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":600,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L2":{"bg":"#FAF5F4","fg":"#191312","rule":"#958F8E","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":500,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L3":{"bg":null,"fg":"#221C1B","rule":null,"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"indentPerLevel":16},"row":{"base":{"bg":"#FEFAF9","fg":"#16100F"},"alt":{"bg":"#FAF5F4","fg":"#16100F"},"hover":{"bg":"#F2F4F6","fg":"#16100F"},"selected":{"bg":"#F2F4F6","fg":"#16100F"},"emphasis":{"bg":null,"fg":"#16100F","border":null,"markerFill":"#16100F","markerStroke":"#16100F","fontWeight":600,"fontStyle":null},"muted":{"bg":null,"fg":"#191312","border":null,"markerFill":"#191312","markerStroke":"#050202","fontWeight":null,"fontStyle":null},"accent":{"bg":null,"fg":"#3F759A","border":null,"markerFill":"#3F759A","markerStroke":"#3F759A","fontWeight":600,"fontStyle":null},"bold":{"bg":null,"fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"fill":{"bg":"#F2F4F6","fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"banding":{"mode":"group","level":null},"selectedEdgeWidth":2,"borderWidth":1},"plot":{"bg":null,"axisLine":"#6B6565","tickMark":"#6B6565","gridline":"#958F8E","reference":"#6B6565","axisLabel":{"family":"'Lora', Georgia, serif","size":"0.8125rem","weight":400,"figures":"tabular","fg":"#191312","italic":false},"tickLabel":{"family":"'Lora', Georgia, serif","size":"0.75rem","weight":400,"figures":"tabular","fg":"#221C1B","italic":false},"tickMarkLength":4,"lineWidth":1.5,"pointSize":6}},"interaction":{"enableThemes":{"clinical":{"nejm":{"name":"nejm","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.81500801741709},"ink":{"L":0.18,"C":0.01,"H":25.81500801741709},"brand":{"L":0.5288715883271614,"C":0.1789848224453139,"H":25.81500801741709},"accent":{"L":0.423851406291947,"C":0.08284402795352479,"H":241.1752888872189}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}]}},"editorial":{"newsprint":{"name":"newsprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":50.85091767580559},"ink":{"L":0.18,"C":0.018,"H":50.85091767580559},"brand":{"L":0.2931284721783407,"C":1.092606942167953e-08,"H":89.87556272808467},"accent":{"L":0.582411886682794,"C":0.1168753795699413,"H":134.736150457051}},"categorical":"okabe_ito","fonts":{"body":"'Frank Ruhl Libre', Georgia, serif","display":"'Crimson Pro', Georgia, 'Times New Roman', serif"},"density_factor":0.95,"type_scale_ratio":1.2,"curves":{"neutral":"smooth","brand":"log"},"column_defaults":{"pvalue":{"stars":true,"starsColor":"ink2"},"badge":{"shape":"circle","size":"sm"},"interval":{"variant":"bracket_muted"}}},"webFonts":[{"family":"Frank Ruhl Libre","url":"https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&display=swap"},{"family":"Crimson Pro","url":"https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&display=swap"}]},"dwarven":{"name":"dwarven","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.012,"H":62.9970225993888},"ink":{"L":0.18,"C":0.014,"H":62.9970225993888},"brand":{"L":0.4647533563554065,"C":0.0835271514487964,"H":62.9970225993888},"accent":{"L":0.7472815552230879,"C":0.1570679996839604,"H":102.9301363408787}},"polarity":"dark","categorical":"okabe_ito","fonts":{"body":"'EB Garamond', Georgia, serif","display":"'Cinzel', 'EB Garamond', Georgia, serif","mono":"'JetBrains Mono', monospace"},"density_factor":1.05,"shell_mode":"raised","shell_texture":"dotted","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":400,"medium":500,"semibold":700,"bold":800},"curves":{"neutral":"log","brand":"log"},"effects":{"elevation":"low"}},"webFonts":[{"family":"EB Garamond","url":"https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"},{"family":"Cinzel","url":"https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"},{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"}]}},"design":{"ledger":{"name":"ledger","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.028,"H":75.74344362180136},"ink":{"L":0.18,"C":0.014,"H":75.74344362180136},"brand":{"L":0.4508491966171473,"C":0.07664632204931265,"H":199.6802433426556},"accent":{"L":0.4201260469078861,"C":0.1305827840202323,"H":27.75331186160355}},"categorical":"dark2","fonts":{"body":"'Spectral', Georgia, serif","display":"'Spectral', Georgia, serif","mono":"'Spline Sans Mono', monospace"},"density_factor":0.97,"shell_mode":"raised","shell_texture":"ruled","curves":{"neutral":"ease"},"geometry":{"radius":{"sm":1,"md":3,"lg":5,"pill":999}},"effects":{"caption_style":"both"},"marks":{"interval_weight":"hair"}},"webFonts":[{"family":"Spectral","url":"https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap"},{"family":"Spline Sans Mono","url":"https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700&display=swap"}]},"brutalist":{"name":"brutalist","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":0},"ink":{"L":0.18,"C":0.01,"H":0},"brand":{"L":0,"C":0,"H":0},"accent":{"L":0.5601827269112041,"C":0.2103615095410923,"H":28.01411559579572}},"categorical":"ink_vermilion","status":{"positive":{"L":0.523,"C":0.135,"H":144.167},"negative":{"L":0.5600000000000001,"C":0.21,"H":28.014},"warning":{"L":0.642,"C":0.144,"H":65.03700000000001},"info":{"L":0.387,"C":0.025,"H":229.789}},"fonts":{"body":"'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif","display":"'Darker Grotesque', 'Archivo Black', sans-serif"},"density":"compact","density_factor":0.88,"shell_texture":"grid","header_style":"bold","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":500,"medium":700,"semibold":800,"bold":900},"curves":{"neutral":"linear"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0},"border_width":{"hair":1,"thin":1.5,"regular":2,"thick":3}},"effects":{"glow_intensity":"none","gradient_shell_intensity":"none","elevation":"none","title_style":"bar"},"marks":{"point_shape":"square","interval_weight":"thick"},"column_defaults":{"badge":{"shape":"square"},"numeric":{"fontClass":"display"}}},"webFonts":[{"family":"Archivo Black","url":"https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap"},{"family":"Darker Grotesque","url":"https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800;900&display=swap"}]}},"expressive":{"aurora":{"name":"aurora","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":305.1470029220088},"ink":{"L":0.18,"C":0.01,"H":305.1470029220088},"brand":{"L":0.6500614158217797,"C":0.2295230899087186,"H":305.1470029220088},"accent":{"L":0.7805524615607029,"C":0.1301347198318709,"H":199.8517072379391}},"polarity":"dark","categorical":"wong","fonts":{"body":"'Outfit', -apple-system, system-ui, sans-serif","display":"'Outfit', -apple-system, system-ui, sans-serif"},"shell_mode":"raised","curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":4,"md":11,"lg":16,"pill":999}},"effects":{"glass":"aurora","glow_intensity":"subtle","glow_anchor":"accent","gradient_shell_intensity":"subtle","elevation":"high","caption_style":"chip"}},"webFonts":[{"family":"Outfit","url":"https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"}]},"terminal":{"name":"terminal","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":149.9595693750481},"ink":{"L":0.18,"C":0.01,"H":149.9595693750481},"brand":{"L":0.7199960360695109,"C":0.1903117110460079,"H":149.9595693750481},"accent":{"L":0.7507793649031496,"C":0.1538014404472383,"H":85.34469592006053}},"polarity":"dark","categorical":"greens","fonts":{"body":"'Space Mono', 'Courier New', monospace","display":"'Space Mono', 'Courier New', monospace","mono":"'Space Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"ruled","type_base_size":13,"curves":{"neutral":"exp"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"glow_intensity":"subtle","glow_anchor":"brand"},"monochrome":true,"column_defaults":{"numeric":{"fontClass":"mono"},"interval":{"fontClass":"mono","variant":"plus_minus"},"badge":{"shape":"square","outline":true}}},"webFonts":[{"family":"Space Mono","url":"https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"}]},"blueprint":{"name":"blueprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.045,"H":225.3585518256968},"ink":{"L":0.18,"C":0.03,"H":225.3585518256968},"brand":{"L":0.5488119588498624,"C":0.1043203329982339,"H":225.3585518256968},"accent":{"L":0.7494572823441571,"C":0.1404009542418051,"H":69.65201863671575}},"categorical":"paired","fonts":{"body":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","display":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","mono":"'IBM Plex Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"grid","type_base_size":13,"curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"title_style":"underline"},"marks":{"point_shape":"triangle"}},"webFonts":[{"family":"Archivo","url":"https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&display=swap"},{"family":"IBM Plex Mono","url":"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"}]},"synthwave":{"name":"synthwave","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":341.4083878960848},"ink":{"L":0.18,"C":0.02,"H":341.4083878960848},"brand":{"L":0.6725969114347667,"C":0.2903915080592962,"H":341.4083878960848},"accent":{"L":0.9639941918288973,"C":0.2121994271626719,"H":111.2199909297606}},"polarity":"dark","categorical":"neon","status":{"positive":{"L":0.88,"C":0.211,"H":156.631},"negative":{"L":0.65,"C":0.238,"H":17.898},"warning":{"L":0.885,"C":0.181,"H":94.78400000000001},"info":{"L":0.844,"C":0.146,"H":209.285}},"fonts":{"body":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","display":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","mono":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace"},"shell_mode":"float","shell_texture":"grid","type_base_size":13,"type_scale_ratio":1.2,"type_weights":{"regular":400,"medium":500,"semibold":600,"bold":700},"curves":{"neutral":"smooth","brand":"exp","accent":"exp"},"geometry":{"radius":{"sm":4,"md":9,"lg":14,"pill":999}},"effects":{"glow_intensity":"neon","glow_anchor":"accent","gradient_shell_intensity":"vivid","gradient_shell_angle":110,"elevation":"medium","title_style":"underline"},"marks":{"point_shape":"diamond"},"column_defaults":{"stars":{"size":"lg"},"ring":{"size":"lg"},"pictogram":{"size":"lg"},"pvalue":{"significantStyle":"pill"}}},"webFonts":[{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"}]}}}},"initialState":null,"labels":null,"notes":null,"watermark":null,"watermarkColor":null,"watermarkOpacity":null,"paginate":null,"layout":{"plotWidth":"auto"},"targetAspect":null,"targetAspectAnchor":"width","originalCall":"tabviz(data = meta, label = \"study\", columns = list(col_text(\"drug\", \"Drug\"), col_n(\"n\"), viz_forest(point = \"hr\", lower = \"lo\", upper = \"hi\", scale = \"log\", null_value = 1, axis_label = \"Hazard Ratio\"), col_interval(\"hr\", \"lo\", \"hi\", header = \"HR (95% CI)\")))","banks":null,"figureLayout":null,"interactionDefaults":null,"zoom":1,"autoFit":true,"showZoomControls":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Row styling: bold significant rows, color the favourable ones green</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold  =</span> <span class="sc">~</span> hi <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(hi <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#64748b"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="tabviz html-widget html-fill-item" id="htmlwidget-60fd1c277e315d144fd6" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-60fd1c277e315d144fd6">{"x":{"version":"1.10","data":{"rows":[{"id":"row_1","label":"Smith 2020","metadata":{"study":"Smith 2020","drug":"A","hr":0.72,"lo":0.55,"hi":0.95,"n":245,".wf_computed_row_bold_1":true,".wf_computed_row_color_2":"#16a34a"},"style":{"bold":true,"color":"#16a34a"}},{"id":"row_2","label":"Jones 2021","metadata":{"study":"Jones 2021","drug":"A","hr":0.85,"lo":0.7,"hi":1.03,"n":180,".wf_computed_row_bold_1":false,".wf_computed_row_color_2":"#64748b"},"style":{"bold":false,"color":"#64748b"}},{"id":"row_3","label":"Lee 2022","metadata":{"study":"Lee 2022","drug":"B","hr":0.91,"lo":0.75,"hi":1.1,"n":320,".wf_computed_row_bold_1":false,".wf_computed_row_color_2":"#64748b"},"style":{"bold":false,"color":"#64748b"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"groupCol":null,"weightCol":null},"columns":[{"id":"forest_hr","header":"","field":"_forest_hr","type":"forest","width":"auto","align":"left","wrap":0,"sortable":false,"flex":true,"isGroup":false,"headerAlign":"center","showHeader":false,"options":{"forest":{"point":"hr","lower":"lo","upper":"hi","effects":null,"scale":"log","nullValue":1,"axisLabel":"Effect","axisRange":null,"axisTicks":null,"axisGridlines":false,"showAxis":true,"annotations":null,"sharedAxis":null}}}],"labelColumn":{"id":"label","header":"Study","field":"study","type":"text","width":"auto","align":"left","wrap":0,"sortable":true,"flex":false,"isGroup":false},"extraColumns":[],"availableFields":[{"field":"study","label":"study","category":"string"},{"field":"drug","label":"drug","category":"string"},{"field":"hr","label":"hr","category":"numeric"},{"field":"lo","label":"lo","category":"numeric"},{"field":"hi","label":"hi","category":"numeric"},{"field":"n","label":"n","category":"numeric"},{"field":".wf_computed_row_bold_1","label":".wf_computed_row_bold_1","category":"logical"},{"field":".wf_computed_row_color_2","label":".wf_computed_row_color_2","category":"string"}],"theme":{"schemaVersion":4,"name":"nejm","webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}],"authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.815},"ink":{"L":0.18,"C":0.01,"H":25.815},"brand":{"L":0.5289,"C":0.179,"H":25.815},"accent":{"L":0.4239,"C":0.0828,"H":241.1753}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"roleOverrides":{},"pins":{},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotWidth":"auto","containerBorder":false,"containerBorderRadius":8,"banding":{"mode":"group","level":null}},"accent":{"default":"#3F759A","muted":"#F2F4F6","tintSubtle":"#F2F4F6","tintMedium":"#C9D9E5"},"status":{"positive":"#27762F","negative":"#B02A2D","warning":"#C57C28","info":"#006A9D"},"series":[{"fill":"#690009","stroke":"#3E0003","fillDim":"#CEA5A0","strokeDim":"#AE8682","fillHot":"#530005","strokeHot":"#170001","textFg":"#16100F","shape":null},{"fill":"#000000","stroke":"#000000","fillDim":"#8E8C8B","strokeDim":"#706F6E","fillHot":"#000000","strokeHot":"#000000","textFg":"#16100F","shape":null},{"fill":"#E69F00","stroke":"#BE8300","fillDim":"#F6DCB5","strokeDim":"#D5BC96","fillHot":"#D29100","strokeHot":"#986800","textFg":"#16100F","shape":null},{"fill":"#56B4E9","stroke":"#3294C8","fillDim":"#C3E3F8","strokeDim":"#A3C3D7","fillHot":"#45A4D8","strokeHot":"#0076A7","textFg":"#16100F","shape":null},{"fill":"#009E73","stroke":"#007C5A","fillDim":"#B4DBC9","strokeDim":"#95BBA9","fillHot":"#008D66","strokeHot":"#005C41","textFg":"#16100F","shape":null}],"spacing":{"rowHeight":24,"headerHeight":32,"padding":12,"containerPadding":0,"axisGap":12,"columnGroupPadding":8,"rowGroupPadding":12,"cellPaddingX":10,"cellPaddingY":0,"groupPadding":8,"footerGap":8,"titleSubtitleGap":13,"headerGap":12,"bottomMargin":16,"indentPerLevel":16},"header":{"light":{"bg":"#FEFAF9","fg":"#16100F","rule":"#6B6565"},"tint":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565"},"bold":{"bg":"#690009","fg":"#FEFAF9","rule":"#C79994"},"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false}},"rowGroup":{"L1":{"bg":"#F9F3F2","fg":"#16100F","rule":"#6B6565","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":600,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L2":{"bg":"#FAF5F4","fg":"#191312","rule":"#958F8E","text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":500,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"L3":{"bg":null,"fg":"#221C1B","rule":null,"text":{"family":"'Lora', Georgia, serif","size":"0.875rem","weight":400,"figures":"tabular","fg":"#16100F","italic":false},"borderBottom":false},"indentPerLevel":16},"row":{"base":{"bg":"#FEFAF9","fg":"#16100F"},"alt":{"bg":"#FAF5F4","fg":"#16100F"},"hover":{"bg":"#F2F4F6","fg":"#16100F"},"selected":{"bg":"#F2F4F6","fg":"#16100F"},"emphasis":{"bg":null,"fg":"#16100F","border":null,"markerFill":"#16100F","markerStroke":"#16100F","fontWeight":600,"fontStyle":null},"muted":{"bg":null,"fg":"#191312","border":null,"markerFill":"#191312","markerStroke":"#050202","fontWeight":null,"fontStyle":null},"accent":{"bg":null,"fg":"#3F759A","border":null,"markerFill":"#3F759A","markerStroke":"#3F759A","fontWeight":600,"fontStyle":null},"bold":{"bg":null,"fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"fill":{"bg":"#F2F4F6","fg":null,"border":null,"markerFill":null,"markerStroke":null,"fontWeight":600,"fontStyle":null},"banding":{"mode":"group","level":null},"selectedEdgeWidth":2,"borderWidth":1},"plot":{"bg":null,"axisLine":"#6B6565","tickMark":"#6B6565","gridline":"#958F8E","reference":"#6B6565","axisLabel":{"family":"'Lora', Georgia, serif","size":"0.8125rem","weight":400,"figures":"tabular","fg":"#191312","italic":false},"tickLabel":{"family":"'Lora', Georgia, serif","size":"0.75rem","weight":400,"figures":"tabular","fg":"#221C1B","italic":false},"tickMarkLength":4,"lineWidth":1.5,"pointSize":6}},"interaction":{"enableThemes":{"clinical":{"nejm":{"name":"nejm","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":25.81500801741709},"ink":{"L":0.18,"C":0.01,"H":25.81500801741709},"brand":{"L":0.5288715883271614,"C":0.1789848224453139,"H":25.81500801741709},"accent":{"L":0.423851406291947,"C":0.08284402795352479,"H":241.1752888872189}},"categorical":"okabe_ito","fonts":{"body":"'Lora', Georgia, serif","display":"'Lora', Georgia, serif"},"type_scale_ratio":1.25,"curves":{"neutral":"ease","brand":"smooth"},"column_defaults":{"pvalue":{"stars":true,"significantStyle":"pill"},"badge":{"outline":true}}},"webFonts":[{"family":"Lora","url":"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"}]}},"editorial":{"newsprint":{"name":"newsprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":50.85091767580559},"ink":{"L":0.18,"C":0.018,"H":50.85091767580559},"brand":{"L":0.2931284721783407,"C":1.092606942167953e-08,"H":89.87556272808467},"accent":{"L":0.582411886682794,"C":0.1168753795699413,"H":134.736150457051}},"categorical":"okabe_ito","fonts":{"body":"'Frank Ruhl Libre', Georgia, serif","display":"'Crimson Pro', Georgia, 'Times New Roman', serif"},"density_factor":0.95,"type_scale_ratio":1.2,"curves":{"neutral":"smooth","brand":"log"},"column_defaults":{"pvalue":{"stars":true,"starsColor":"ink2"},"badge":{"shape":"circle","size":"sm"},"interval":{"variant":"bracket_muted"}}},"webFonts":[{"family":"Frank Ruhl Libre","url":"https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&display=swap"},{"family":"Crimson Pro","url":"https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&display=swap"}]},"dwarven":{"name":"dwarven","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.012,"H":62.9970225993888},"ink":{"L":0.18,"C":0.014,"H":62.9970225993888},"brand":{"L":0.4647533563554065,"C":0.0835271514487964,"H":62.9970225993888},"accent":{"L":0.7472815552230879,"C":0.1570679996839604,"H":102.9301363408787}},"polarity":"dark","categorical":"okabe_ito","fonts":{"body":"'EB Garamond', Georgia, serif","display":"'Cinzel', 'EB Garamond', Georgia, serif","mono":"'JetBrains Mono', monospace"},"density_factor":1.05,"shell_mode":"raised","shell_texture":"dotted","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":400,"medium":500,"semibold":700,"bold":800},"curves":{"neutral":"log","brand":"log"},"effects":{"elevation":"low"}},"webFonts":[{"family":"EB Garamond","url":"https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"},{"family":"Cinzel","url":"https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"},{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"}]}},"design":{"ledger":{"name":"ledger","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.028,"H":75.74344362180136},"ink":{"L":0.18,"C":0.014,"H":75.74344362180136},"brand":{"L":0.4508491966171473,"C":0.07664632204931265,"H":199.6802433426556},"accent":{"L":0.4201260469078861,"C":0.1305827840202323,"H":27.75331186160355}},"categorical":"dark2","fonts":{"body":"'Spectral', Georgia, serif","display":"'Spectral', Georgia, serif","mono":"'Spline Sans Mono', monospace"},"density_factor":0.97,"shell_mode":"raised","shell_texture":"ruled","curves":{"neutral":"ease"},"geometry":{"radius":{"sm":1,"md":3,"lg":5,"pill":999}},"effects":{"caption_style":"both"},"marks":{"interval_weight":"hair"}},"webFonts":[{"family":"Spectral","url":"https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap"},{"family":"Spline Sans Mono","url":"https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700&display=swap"}]},"brutalist":{"name":"brutalist","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":0},"ink":{"L":0.18,"C":0.01,"H":0},"brand":{"L":0,"C":0,"H":0},"accent":{"L":0.5601827269112041,"C":0.2103615095410923,"H":28.01411559579572}},"categorical":"ink_vermilion","status":{"positive":{"L":0.523,"C":0.135,"H":144.167},"negative":{"L":0.5600000000000001,"C":0.21,"H":28.014},"warning":{"L":0.642,"C":0.144,"H":65.03700000000001},"info":{"L":0.387,"C":0.025,"H":229.789}},"fonts":{"body":"'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif","display":"'Darker Grotesque', 'Archivo Black', sans-serif"},"density":"compact","density_factor":0.88,"shell_texture":"grid","header_style":"bold","type_base_size":14,"type_scale_ratio":1.25,"type_weights":{"regular":500,"medium":700,"semibold":800,"bold":900},"curves":{"neutral":"linear"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0},"border_width":{"hair":1,"thin":1.5,"regular":2,"thick":3}},"effects":{"glow_intensity":"none","gradient_shell_intensity":"none","elevation":"none","title_style":"bar"},"marks":{"point_shape":"square","interval_weight":"thick"},"column_defaults":{"badge":{"shape":"square"},"numeric":{"fontClass":"display"}}},"webFonts":[{"family":"Archivo Black","url":"https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap"},{"family":"Darker Grotesque","url":"https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@700;800;900&display=swap"}]}},"expressive":{"aurora":{"name":"aurora","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":305.1470029220088},"ink":{"L":0.18,"C":0.01,"H":305.1470029220088},"brand":{"L":0.6500614158217797,"C":0.2295230899087186,"H":305.1470029220088},"accent":{"L":0.7805524615607029,"C":0.1301347198318709,"H":199.8517072379391}},"polarity":"dark","categorical":"wong","fonts":{"body":"'Outfit', -apple-system, system-ui, sans-serif","display":"'Outfit', -apple-system, system-ui, sans-serif"},"shell_mode":"raised","curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":4,"md":11,"lg":16,"pill":999}},"effects":{"glass":"aurora","glow_intensity":"subtle","glow_anchor":"accent","gradient_shell_intensity":"subtle","elevation":"high","caption_style":"chip"}},"webFonts":[{"family":"Outfit","url":"https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"}]},"terminal":{"name":"terminal","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.005,"H":149.9595693750481},"ink":{"L":0.18,"C":0.01,"H":149.9595693750481},"brand":{"L":0.7199960360695109,"C":0.1903117110460079,"H":149.9595693750481},"accent":{"L":0.7507793649031496,"C":0.1538014404472383,"H":85.34469592006053}},"polarity":"dark","categorical":"greens","fonts":{"body":"'Space Mono', 'Courier New', monospace","display":"'Space Mono', 'Courier New', monospace","mono":"'Space Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"ruled","type_base_size":13,"curves":{"neutral":"exp"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"glow_intensity":"subtle","glow_anchor":"brand"},"monochrome":true,"column_defaults":{"numeric":{"fontClass":"mono"},"interval":{"fontClass":"mono","variant":"plus_minus"},"badge":{"shape":"square","outline":true}}},"webFonts":[{"family":"Space Mono","url":"https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"}]},"blueprint":{"name":"blueprint","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.045,"H":225.3585518256968},"ink":{"L":0.18,"C":0.03,"H":225.3585518256968},"brand":{"L":0.5488119588498624,"C":0.1043203329982339,"H":225.3585518256968},"accent":{"L":0.7494572823441571,"C":0.1404009542418051,"H":69.65201863671575}},"categorical":"paired","fonts":{"body":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","display":"'Archivo', 'Helvetica Neue', system-ui, sans-serif","mono":"'IBM Plex Mono', 'Courier New', monospace"},"density":"compact","shell_texture":"grid","type_base_size":13,"curves":{"neutral":"smooth"},"geometry":{"radius":{"sm":0,"md":0,"lg":0,"pill":0}},"effects":{"title_style":"underline"},"marks":{"point_shape":"triangle"}},"webFonts":[{"family":"Archivo","url":"https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&display=swap"},{"family":"IBM Plex Mono","url":"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"}]},"synthwave":{"name":"synthwave","authoringInputs":{"anchors":{"paper":{"L":0.987,"C":0.016,"H":341.4083878960848},"ink":{"L":0.18,"C":0.02,"H":341.4083878960848},"brand":{"L":0.6725969114347667,"C":0.2903915080592962,"H":341.4083878960848},"accent":{"L":0.9639941918288973,"C":0.2121994271626719,"H":111.2199909297606}},"polarity":"dark","categorical":"neon","status":{"positive":{"L":0.88,"C":0.211,"H":156.631},"negative":{"L":0.65,"C":0.238,"H":17.898},"warning":{"L":0.885,"C":0.181,"H":94.78400000000001},"info":{"L":0.844,"C":0.146,"H":209.285}},"fonts":{"body":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","display":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace","mono":"'JetBrains Mono', 'Fira Code', 'SF Mono', monospace"},"shell_mode":"float","shell_texture":"grid","type_base_size":13,"type_scale_ratio":1.2,"type_weights":{"regular":400,"medium":500,"semibold":600,"bold":700},"curves":{"neutral":"smooth","brand":"exp","accent":"exp"},"geometry":{"radius":{"sm":4,"md":9,"lg":14,"pill":999}},"effects":{"glow_intensity":"neon","glow_anchor":"accent","gradient_shell_intensity":"vivid","gradient_shell_angle":110,"elevation":"medium","title_style":"underline"},"marks":{"point_shape":"diamond"},"column_defaults":{"stars":{"size":"lg"},"ring":{"size":"lg"},"pictogram":{"size":"lg"},"pvalue":{"significantStyle":"pill"}}},"webFonts":[{"family":"JetBrains Mono","url":"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"}]}}}},"initialState":null,"labels":null,"notes":null,"watermark":null,"watermarkColor":null,"watermarkOpacity":null,"paginate":null,"layout":{"plotWidth":"auto"},"targetAspect":null,"targetAspectAnchor":"width","originalCall":"tabviz(data = meta, label = \"study\", columns = list(viz_forest(point = \"hr\", lower = \"lo\", upper = \"hi\", scale = \"log\", null_value = 1)), row_bold = ~hi < 1, row_color = ~ifelse(hi < 1, \"#16a34a\", \"#64748b\"))","banks":null,"figureLayout":null,"interactionDefaults":null,"zoom":1,"autoFit":true,"showZoomControls":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Spec-only: build, mutate fluently, then render</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.spec_only =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme</span>(<span class="st">"nejm"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"drug"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="related" class="level2">
+<h2 class="anchored" data-anchor-id="related">Related</h2>
+<ul>
+<li><a href="../reference/forest_plot.html"><code>forest_plot()</code></a> — convenience wrapper around <code>tabviz()</code> + <code>viz_forest()</code></li>
+<li><a href="../reference/columns.html">Columns</a> — every <code>col_*()</code> and <code>viz_*()</code> helper</li>
+<li><a href="../reference/styling.html">Styling modifiers</a> — <code>set_row_style()</code>, <code>set_marker_style()</code>, <code>set_zoom()</code></li>
+<li><a href="../reference/themes.html">Themes</a> — <code>web_theme_*()</code> builders and <code>set_*()</code> modifiers</li>
+<li><a href="../reference/interaction.html">Interaction</a> — <code>web_interaction()</code></li>
+<li><a href="../reference/export.html">Export</a> — <code>save_plot()</code> for SVG / PNG / PDF, plus pagination for long tables</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "tabviz()"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="in">`tabviz()`</span> is the main entry point for building interactive table visualizations. It returns an htmlwidget that renders in R Markdown, Quarto, Shiny, or the RStudio Viewer. Use <span class="in">`tabviz()`</span> whenever you want full control over which columns appear (text, numeric, badges, forest plots, sparklines, etc.). For a quick forest-only plot driven by <span class="in">`point`</span> / <span class="in">`lower`</span> / <span class="in">`upper`</span> arguments, see <span class="co">[</span><span class="ot">`forest_plot()`</span><span class="co">](forest_plot.qmd)</span>.</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## Signature</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  data,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_header =</span> <span class="st">"Study"</span>,</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">extra_columns =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">available_exclude =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="cn">NULL</span>, <span class="at">subtitle =</span> <span class="cn">NULL</span>, <span class="at">caption =</span> <span class="cn">NULL</span>, <span class="at">footnote =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Row styling (column name or formula)</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="cn">NULL</span>, <span class="at">row_italic =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_color =</span> <span class="cn">NULL</span>, <span class="at">row_bg =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_badge =</span> <span class="cn">NULL</span>, <span class="at">row_icon =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_indent =</span> <span class="cn">NULL</span>, <span class="at">row_type =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_emphasis =</span> <span class="cn">NULL</span>, <span class="at">row_muted =</span> <span class="cn">NULL</span>, <span class="at">row_accent =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Marker styling (column name or formula)</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="cn">NULL</span>, <span class="at">marker_shape =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_opacity =</span> <span class="cn">NULL</span>, <span class="at">marker_size =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Theme &amp; interaction</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_nejm</span>(),</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">interaction =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot_position =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_height =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">banding =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="cn">NULL</span>, <span class="at">height =</span> <span class="cn">NULL</span>, <span class="at">elementId =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Splitting</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">split_by =</span> <span class="cn">NULL</span>, <span class="at">shared_axis =</span> <span class="cn">FALSE</span>, <span class="at">shared_column_widths =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pagination</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">paginate =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">.spec_only =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Arguments</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data`</span> <span class="pp">|</span> <span class="in">`data.frame`</span> <span class="pp">|</span> required <span class="pp">|</span> A data.frame, data.table, or tibble. <span class="pp">|</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`label`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Column name for row labels. When <span class="in">`NULL`</span>, row numbers are used. <span class="pp">|</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`label_header`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`"Study"`</span> <span class="pp">|</span> Header text for the label column. The literal default <span class="in">`"Study"`</span> is auto-prettified from the <span class="in">`label`</span> field name when applicable. <span class="pp">|</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`group`</span> <span class="pp">|</span> <span class="in">`character`</span> / <span class="in">`list`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Grouping spec. A single column name (flat), a vector (hierarchical), or a list of <span class="in">`web_group()`</span> objects. See <span class="co">[</span><span class="ot">Grouping</span><span class="co">](#grouping)</span>. <span class="pp">|</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`columns`</span> <span class="pp">|</span> <span class="in">`list`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> List of column specs from <span class="in">`col_*()`</span> / <span class="in">`viz_*()`</span> helpers. <span class="pp">|</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`extra_columns`</span> <span class="pp">|</span> <span class="in">`list`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Pre-configured columns hidden by default but available in the interactive column picker. <span class="pp">|</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`available_exclude`</span> <span class="pp">|</span> <span class="in">`character`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Data columns to omit from the column picker (e.g. internal/sensitive fields). <span class="pp">|</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a><span class="fu">### Titles</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`title`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Main title (above the plot). <span class="pp">|</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`subtitle`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Subtitle (below title). <span class="pp">|</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`caption`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Caption (below plot). <span class="pp">|</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`footnote`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Footnote (below caption, italicized). <span class="pp">|</span></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a><span class="fu">### Row styling</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>All row-styling arguments accept either a **column name (string)** that holds the per-row value, or a **formula** evaluated against <span class="in">`data`</span> (e.g. <span class="in">`~ pvalue &lt; 0.05`</span>).</span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Value type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bold`</span> <span class="pp">|</span> logical <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Bold whole row. <span class="pp">|</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_italic`</span> <span class="pp">|</span> logical <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Italicize row. <span class="pp">|</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_color`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Row text color. <span class="pp">|</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bg`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Row background color. <span class="pp">|</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_badge`</span> <span class="pp">|</span> character <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Badge text on the label cell. <span class="pp">|</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_icon`</span> <span class="pp">|</span> emoji/unicode <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Icon on the label cell. <span class="pp">|</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_indent`</span> <span class="pp">|</span> numeric <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Indentation level. <span class="pp">|</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_type`</span> <span class="pp">|</span> character <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> One of <span class="in">`"data"`</span>, <span class="in">`"header"`</span>, <span class="in">`"summary"`</span>, <span class="in">`"spacer"`</span>. <span class="pp">|</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_emphasis`</span> <span class="pp">|</span> logical <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Bold + theme primary color. <span class="pp">|</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_muted`</span> <span class="pp">|</span> logical <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Lighter, reduced prominence. <span class="pp">|</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_accent`</span> <span class="pp">|</span> logical <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Bold + theme accent color (most common). <span class="pp">|</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_fill`</span> <span class="pp">|</span> logical <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Bold + a strong row fill (auto-contrasting fg). <span class="pp">|</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a><span class="fu">### Marker styling</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>Same column-name-or-formula pattern as row styling:</span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Value type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_color`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Marker fill color. <span class="pp">|</span></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_shape`</span> <span class="pp">|</span> character <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> One of <span class="in">`"square"`</span>, <span class="in">`"circle"`</span>, <span class="in">`"diamond"`</span>, <span class="in">`"triangle"`</span>. <span class="pp">|</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_opacity`</span> <span class="pp">|</span> numeric <span class="in">`[0,1]`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Marker opacity. <span class="pp">|</span></span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_size`</span> <span class="pp">|</span> numeric <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Driver for marker size — pass raw weights (e.g. study weights 0–100). The renderer normalizes via <span class="in">`0.5 + sqrt(w/100) * 1.5`</span>. <span class="pp">|</span></span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a><span class="fu">### Theme, interaction, layout</span></span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`theme`</span> <span class="pp">|</span> <span class="in">`WebTheme`</span> <span class="pp">|</span> <span class="in">`web_theme_nejm()`</span> <span class="pp">|</span> Theme object (use a <span class="in">`web_theme_*()`</span> builder). <span class="pp">|</span></span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`interaction`</span> <span class="pp">|</span> <span class="in">`InteractionSpec`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Use <span class="in">`web_interaction()`</span>. When <span class="in">`NULL`</span>, <span class="in">`default_interaction_for_theme(theme)`</span> is used (full interactivity). <span class="pp">|</span></span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`plot_position`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`r lifecycle::badge("deprecated")`</span> No effect. Column order in <span class="in">`columns = list(...)`</span> controls placement. <span class="pp">|</span></span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_height`</span> <span class="pp">|</span> <span class="in">`numeric(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Row height in pixels. <span class="pp">|</span></span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`banding`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Row banding mode: <span class="in">`"none"`</span>, <span class="in">`"row"`</span>, <span class="in">`"group"`</span> (deepest level, default), or <span class="in">`"group-n"`</span> (e.g. <span class="in">`"group-1"`</span> for outermost). Overrides the banding on <span class="in">`theme`</span>. Use the viewer's settings panel (gear icon) to adjust interactively. <span class="pp">|</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`width`</span> <span class="pp">|</span> character/numeric <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Widget width (auto). <span class="pp">|</span></span>
+<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`height`</span> <span class="pp">|</span> character/numeric <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Widget height (auto). <span class="pp">|</span></span>
+<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`elementId`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> HTML element id. <span class="pp">|</span></span>
+<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a><span class="fu">### Splitting</span></span>
+<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-120"><a href="#cb6-120" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`split_by`</span> <span class="pp">|</span> <span class="in">`character`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Column name(s) to split into one plot per unique value/combination, returning a <span class="in">`SplitForest`</span> widget. <span class="pp">|</span></span>
+<span id="cb6-121"><a href="#cb6-121" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`shared_axis`</span> <span class="pp">|</span> <span class="in">`logical(1)`</span> <span class="pp">|</span> <span class="in">`FALSE`</span> <span class="pp">|</span> When <span class="in">`split_by`</span> is set, share an axis range across all sub-plots. <span class="pp">|</span></span>
+<span id="cb6-122"><a href="#cb6-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`shared_column_widths`</span> <span class="pp">|</span> <span class="in">`logical(1)`</span> <span class="pp">|</span> <span class="in">`FALSE`</span> <span class="pp">|</span> When <span class="in">`split_by`</span> is set, stamp identical per-column widths across every sub-plot so columns line up when screenshots are stacked. Added in v0.16. <span class="pp">|</span></span>
+<span id="cb6-123"><a href="#cb6-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-124"><a href="#cb6-124" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pagination</span></span>
+<span id="cb6-125"><a href="#cb6-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-126"><a href="#cb6-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`paginate`</span> <span class="pp">|</span> <span class="in">`PaginateSpec`</span> / shortcut <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Break a long table across multiple pages. Accepts <span class="in">`NULL`</span> (off), <span class="in">`TRUE`</span> (default <span class="in">`paginate_spec()`</span>), a positive integer (rows-per-page shorthand), or a <span class="in">`PaginateSpec`</span> from <span class="in">`paginate_spec()`</span> / <span class="in">`paginate_letter()`</span> / <span class="in">`paginate_a4()`</span> / <span class="in">`paginate_slide()`</span>. Cascades into every <span class="in">`split_by`</span> subview. See <span class="co">[</span><span class="ot">Export → Pagination</span><span class="co">](../guide/export.qmd#pagination)</span>. <span class="pp">|</span></span>
+<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a><span class="fu">### Other</span></span>
+<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.spec_only`</span> <span class="pp">|</span> <span class="in">`logical(1)`</span> <span class="pp">|</span> <span class="in">`FALSE`</span> <span class="pp">|</span> When <span class="in">`TRUE`</span>, returns the <span class="in">`WebSpec`</span> object instead of an htmlwidget — useful for programmatic manipulation before rendering. <span class="pp">|</span></span>
+<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a><span class="fu">## Deprecated arguments</span></span>
+<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-138"><a href="#cb6-138" aria-hidden="true" tabindex="-1"></a>:::{.callout-important}</span>
+<span id="cb6-139"><a href="#cb6-139" aria-hidden="true" tabindex="-1"></a><span class="fu">## Removed from the `tabviz()` surface in 0.9.0</span></span>
+<span id="cb6-140"><a href="#cb6-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-141"><a href="#cb6-141" aria-hidden="true" tabindex="-1"></a>The arguments below are still accepted for one cycle but emit <span class="in">`lifecycle::deprecate_warn()`</span>. They have moved to dedicated, more discoverable homes.</span>
+<span id="cb6-142"><a href="#cb6-142" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb6-143"><a href="#cb6-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-144"><a href="#cb6-144" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Old argument <span class="pp">|</span> Replacement <span class="pp">|</span></span>
+<span id="cb6-145"><a href="#cb6-145" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb6-146"><a href="#cb6-146" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(axis_range = ...)`</span> <span class="pp">|</span> Pass <span class="in">`axis_range`</span> to <span class="in">`viz_forest()`</span> on the forest column. <span class="pp">|</span></span>
+<span id="cb6-147"><a href="#cb6-147" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(axis_ticks = ...)`</span> <span class="pp">|</span> Pass <span class="in">`axis_ticks`</span> to <span class="in">`viz_forest()`</span> on the forest column. <span class="pp">|</span></span>
+<span id="cb6-148"><a href="#cb6-148" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(axis_gridlines = ...)`</span> <span class="pp">|</span> Pass <span class="in">`axis_gridlines`</span> to <span class="in">`viz_forest()`</span> on the forest column. <span class="pp">|</span></span>
+<span id="cb6-149"><a href="#cb6-149" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(zoom = ...)`</span> <span class="pp">|</span> Pipe to <span class="co">[</span><span class="ot">`set_zoom(zoom = ...)`</span><span class="co">](styling.qmd#set_zoom)</span>. <span class="pp">|</span></span>
+<span id="cb6-150"><a href="#cb6-150" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(auto_fit = ...)`</span> <span class="pp">|</span> Pipe to <span class="in">`set_zoom(auto_fit = ...)`</span>. <span class="pp">|</span></span>
+<span id="cb6-151"><a href="#cb6-151" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(max_width = ...)`</span> <span class="pp">|</span> Pipe to <span class="in">`set_zoom(max_width = ...)`</span>. <span class="pp">|</span></span>
+<span id="cb6-152"><a href="#cb6-152" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(max_height = ...)`</span> <span class="pp">|</span> Pipe to <span class="in">`set_zoom(max_height = ...)`</span>. <span class="pp">|</span></span>
+<span id="cb6-153"><a href="#cb6-153" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(show_zoom_controls = ...)`</span> <span class="pp">|</span> Pipe to <span class="in">`set_zoom(show_controls = ...)`</span>. <span class="pp">|</span></span>
+<span id="cb6-154"><a href="#cb6-154" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`tabviz(weight = ...)`</span> <span class="pp">|</span> Use <span class="in">`marker_size = ...`</span>. <span class="pp">|</span></span>
+<span id="cb6-155"><a href="#cb6-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-156"><a href="#cb6-156" aria-hidden="true" tabindex="-1"></a><span class="fu">## Return value</span></span>
+<span id="cb6-157"><a href="#cb6-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-158"><a href="#cb6-158" aria-hidden="true" tabindex="-1"></a>An htmlwidget. When <span class="in">`.spec_only = TRUE`</span>, returns a <span class="in">`WebSpec`</span> instead. When <span class="in">`split_by`</span> is set, returns a split-table widget backed by a <span class="in">`SplitForest`</span>.</span>
+<span id="cb6-159"><a href="#cb6-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-160"><a href="#cb6-160" aria-hidden="true" tabindex="-1"></a><span class="fu">## Grouping {#grouping}</span></span>
+<span id="cb6-161"><a href="#cb6-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-162"><a href="#cb6-162" aria-hidden="true" tabindex="-1"></a>Three modes of <span class="in">`group`</span>:</span>
+<span id="cb6-163"><a href="#cb6-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-164"><a href="#cb6-164" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb6-165"><a href="#cb6-165" aria-hidden="true" tabindex="-1"></a><span class="co"># Flat grouping</span></span>
+<span id="cb6-166"><a href="#cb6-166" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">group =</span> <span class="st">"category"</span>, ...)</span>
+<span id="cb6-167"><a href="#cb6-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-168"><a href="#cb6-168" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical grouping</span></span>
+<span id="cb6-169"><a href="#cb6-169" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>), ...)</span>
+<span id="cb6-170"><a href="#cb6-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-171"><a href="#cb6-171" aria-hidden="true" tabindex="-1"></a><span class="co"># Explicit group definitions</span></span>
+<span id="cb6-172"><a href="#cb6-172" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb6-173"><a href="#cb6-173" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">list</span>(</span>
+<span id="cb6-174"><a href="#cb6-174" aria-hidden="true" tabindex="-1"></a>    <span class="fu">web_group</span>(<span class="st">"cardio"</span>, <span class="at">label =</span> <span class="st">"Cardiovascular"</span>),</span>
+<span id="cb6-175"><a href="#cb6-175" aria-hidden="true" tabindex="-1"></a>    <span class="fu">web_group</span>(<span class="st">"renal"</span>,  <span class="at">label =</span> <span class="st">"Renal Outcomes"</span>, <span class="at">collapsed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-176"><a href="#cb6-176" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb6-177"><a href="#cb6-177" aria-hidden="true" tabindex="-1"></a>  ...)</span>
+<span id="cb6-178"><a href="#cb6-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb6-179"><a href="#cb6-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-180"><a href="#cb6-180" aria-hidden="true" tabindex="-1"></a><span class="fu">## Examples</span></span>
+<span id="cb6-181"><a href="#cb6-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-184"><a href="#cb6-184" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb6-185"><a href="#cb6-185" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb6-186"><a href="#cb6-186" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Smith 2020"</span>, <span class="st">"Jones 2021"</span>, <span class="st">"Lee 2022"</span>),</span>
+<span id="cb6-187"><a href="#cb6-187" aria-hidden="true" tabindex="-1"></a>  <span class="at">drug  =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>),</span>
+<span id="cb6-188"><a href="#cb6-188" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr    =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>),</span>
+<span id="cb6-189"><a href="#cb6-189" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo    =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>),</span>
+<span id="cb6-190"><a href="#cb6-190" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi    =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>),</span>
+<span id="cb6-191"><a href="#cb6-191" aria-hidden="true" tabindex="-1"></a>  <span class="at">n     =</span> <span class="fu">c</span>(<span class="dv">245</span>, <span class="dv">180</span>, <span class="dv">320</span>)</span>
+<span id="cb6-192"><a href="#cb6-192" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-193"><a href="#cb6-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-194"><a href="#cb6-194" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal: forest column + a couple of data columns</span></span>
+<span id="cb6-195"><a href="#cb6-195" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta,</span>
+<span id="cb6-196"><a href="#cb6-196" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb6-197"><a href="#cb6-197" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb6-198"><a href="#cb6-198" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_text</span>(<span class="st">"drug"</span>, <span class="st">"Drug"</span>),</span>
+<span id="cb6-199"><a href="#cb6-199" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_n</span>(<span class="st">"n"</span>),</span>
+<span id="cb6-200"><a href="#cb6-200" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>,</span>
+<span id="cb6-201"><a href="#cb6-201" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>, <span class="at">axis_label =</span> <span class="st">"Hazard Ratio"</span>),</span>
+<span id="cb6-202"><a href="#cb6-202" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"hr"</span>, <span class="st">"lo"</span>, <span class="st">"hi"</span>, <span class="at">header =</span> <span class="st">"HR (95% CI)"</span>)</span>
+<span id="cb6-203"><a href="#cb6-203" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-204"><a href="#cb6-204" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-205"><a href="#cb6-205" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb6-206"><a href="#cb6-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-209"><a href="#cb6-209" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb6-210"><a href="#cb6-210" aria-hidden="true" tabindex="-1"></a><span class="co"># Row styling: bold significant rows, color the favourable ones green</span></span>
+<span id="cb6-211"><a href="#cb6-211" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta,</span>
+<span id="cb6-212"><a href="#cb6-212" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb6-213"><a href="#cb6-213" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb6-214"><a href="#cb6-214" aria-hidden="true" tabindex="-1"></a>    <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>,</span>
+<span id="cb6-215"><a href="#cb6-215" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)</span>
+<span id="cb6-216"><a href="#cb6-216" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb6-217"><a href="#cb6-217" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold  =</span> <span class="sc">~</span> hi <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb6-218"><a href="#cb6-218" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(hi <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#64748b"</span>)</span>
+<span id="cb6-219"><a href="#cb6-219" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-220"><a href="#cb6-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb6-221"><a href="#cb6-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-224"><a href="#cb6-224" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb6-225"><a href="#cb6-225" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb6-226"><a href="#cb6-226" aria-hidden="true" tabindex="-1"></a><span class="co"># Spec-only: build, mutate fluently, then render</span></span>
+<span id="cb6-227"><a href="#cb6-227" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta,</span>
+<span id="cb6-228"><a href="#cb6-228" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb6-229"><a href="#cb6-229" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)),</span>
+<span id="cb6-230"><a href="#cb6-230" aria-hidden="true" tabindex="-1"></a>  <span class="at">.spec_only =</span> <span class="cn">TRUE</span></span>
+<span id="cb6-231"><a href="#cb6-231" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb6-232"><a href="#cb6-232" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme</span>(<span class="st">"nejm"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-233"><a href="#cb6-233" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"drug"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-234"><a href="#cb6-234" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>()</span>
+<span id="cb6-235"><a href="#cb6-235" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb6-236"><a href="#cb6-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-237"><a href="#cb6-237" aria-hidden="true" tabindex="-1"></a><span class="fu">## Related</span></span>
+<span id="cb6-238"><a href="#cb6-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-239"><a href="#cb6-239" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">`forest_plot()`</span><span class="co">](forest_plot.qmd)</span> — convenience wrapper around <span class="in">`tabviz()`</span> + <span class="in">`viz_forest()`</span></span>
+<span id="cb6-240"><a href="#cb6-240" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Columns</span><span class="co">](columns.qmd)</span> — every <span class="in">`col_*()`</span> and <span class="in">`viz_*()`</span> helper</span>
+<span id="cb6-241"><a href="#cb6-241" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Styling modifiers</span><span class="co">](styling.qmd)</span> — <span class="in">`set_row_style()`</span>, <span class="in">`set_marker_style()`</span>, <span class="in">`set_zoom()`</span></span>
+<span id="cb6-242"><a href="#cb6-242" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Themes</span><span class="co">](themes.qmd)</span> — <span class="in">`web_theme_*()`</span> builders and <span class="in">`set_*()`</span> modifiers</span>
+<span id="cb6-243"><a href="#cb6-243" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Interaction</span><span class="co">](interaction.qmd)</span> — <span class="in">`web_interaction()`</span></span>
+<span id="cb6-244"><a href="#cb6-244" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Export</span><span class="co">](export.qmd)</span> — <span class="in">`save_plot()`</span> for SVG / PNG / PDF, plus pagination for long tables</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

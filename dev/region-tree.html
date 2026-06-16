@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>region-tree – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#region-tree-the-row-system-foundation" id="toc-region-tree-the-row-system-foundation" class="nav-link active" data-scroll-target="#region-tree-the-row-system-foundation">Region tree — the row-system foundation</a>
+  <ul class="collapse">
+  <li><a href="#thesis" id="toc-thesis" class="nav-link" data-scroll-target="#thesis">0. Thesis</a></li>
+  <li><a href="#the-performance-first-principle-load-bearing" id="toc-the-performance-first-principle-load-bearing" class="nav-link" data-scroll-target="#the-performance-first-principle-load-bearing">1. The performance-first principle (load-bearing)</a></li>
+  <li><a href="#data-model" id="toc-data-model" class="nav-link" data-scroll-target="#data-model">2. Data model</a></li>
+  <li><a href="#the-flatten" id="toc-the-flatten" class="nav-link" data-scroll-target="#the-flatten">3. The flatten</a></li>
+  <li><a href="#dependency-graph-what-recomputes-when" id="toc-dependency-graph-what-recomputes-when" class="nav-link" data-scroll-target="#dependency-graph-what-recomputes-when">4. Dependency graph (what recomputes when)</a></li>
+  <li><a href="#per-context-scale-done-2026-06-02" id="toc-per-context-scale-done-2026-06-02" class="nav-link" data-scroll-target="#per-context-scale-done-2026-06-02">5. Per-context scale — DONE (2026-06-02)</a>
+  <ul class="collapse">
+  <li><a href="#known-follow-up-unify-the-mark-domain-on-plotregion" id="toc-known-follow-up-unify-the-mark-domain-on-plotregion" class="nav-link" data-scroll-target="#known-follow-up-unify-the-mark-domain-on-plotregion">Known follow-up — unify the mark domain on <code>plotRegion</code></a></li>
+  </ul></li>
+  <li><a href="#migration-behavior-preserving" id="toc-migration-behavior-preserving" class="nav-link" data-scroll-target="#migration-behavior-preserving">6. Migration (behavior-preserving)</a></li>
+  <li><a href="#benchmark-plan-lightweight-200-rows" id="toc-benchmark-plan-lightweight-200-rows" class="nav-link" data-scroll-target="#benchmark-plan-lightweight-200-rows">7. Benchmark plan (lightweight — 200 rows)</a></li>
+  <li><a href="#phased-plan-status-2026-06-02" id="toc-phased-plan-status-2026-06-02" class="nav-link" data-scroll-target="#phased-plan-status-2026-06-02">8. Phased plan — status (2026-06-02)</a></li>
+  <li><a href="#feature-1-detailsdisclosure-rows-shipped-2026-06-02" id="toc-feature-1-detailsdisclosure-rows-shipped-2026-06-02" class="nav-link" data-scroll-target="#feature-1-detailsdisclosure-rows-shipped-2026-06-02">Feature 1 — details/disclosure rows — SHIPPED (2026-06-02)</a></li>
+  <li><a href="#feature-2-annotationnote-rows-shipped-2026-06-02" id="toc-feature-2-annotationnote-rows-shipped-2026-06-02" class="nav-link" data-scroll-target="#feature-2-annotationnote-rows-shipped-2026-06-02">Feature 2 — annotation/note rows — SHIPPED (2026-06-02)</a></li>
+  <li><a href="#b.-forward-compat-with-the-cascadetheming-rework-architect-note-2026-06-02" id="toc-b.-forward-compat-with-the-cascadetheming-rework-architect-note-2026-06-02" class="nav-link" data-scroll-target="#b.-forward-compat-with-the-cascadetheming-rework-architect-note-2026-06-02">8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)</a></li>
+  <li><a href="#dont-foreclose-deferred-sub-decisions" id="toc-dont-foreclose-deferred-sub-decisions" class="nav-link" data-scroll-target="#dont-foreclose-deferred-sub-decisions">9. Don’t-foreclose (deferred sub-decisions)</a></li>
+  <li><a href="#verification" id="toc-verification" class="nav-link" data-scroll-target="#verification">10. Verification</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="region-tree-the-row-system-foundation" class="level1">
+<h1>Region tree — the row-system foundation</h1>
+<p>Status: <strong>LANDED 2026-06-02.</strong> Region tree primitive shipped (<code>srcjs/src/lib/layout/region-tree.ts</code>). Feature 1 (details/disclosure rows) + Feature 2 (per-context forest scale) LANDED via the same primitive. Faceting remains the future use case the seam was designed for. Companion to <code>row-types.md</code> and <code>sizing-model.md</code>.</p>
+<p>Decisions locked going in (see <code>row-types.md</code> §6 + the 2026-06-02 planning session): full tree refactor; foundation only, both targets later; performance is a first-class constraint; per-context scale lands first as its own PR.</p>
+<hr>
+<section id="thesis" class="level2">
+<h2 class="anchored" data-anchor-id="thesis">0. Thesis</h2>
+<p>Rows become a <strong>tree of regions</strong>. Each region carries <code>kind</code> (one-of) + <code>traits</code> (many-of) + <code>scope</code>, and its body is <em>either</em> column-cells <em>or</em> free content, with content-driven height available everywhere. The renderer <strong>flattens</strong> the tree to the flat <code>displayRows</code> list it already consumes.</p>
+<p>This is not a green-field idea — <strong>the flatten already exists.</strong> <code>rows-groups.svelte.ts::fullDisplayRows</code> (line 157) is a recursive walk (<code>outputGroup</code>: header → child groups → direct data rows) that emits a flat <code>DisplayRow[]</code>. The tree is implicit in that recursion today; we make it <strong>explicit and extensible</strong> so a node can also be a details panel under a data row, or an axis strip under a group — things the current <code>GroupHeaderRow | DataRow</code> union and flat recursion cannot express.</p>
+<pre><code>Today (implicit):  groups+rows ──fullDisplayRows recursion──▶ DisplayRow[]
+Proposed (explicit): RegionTree ──flatten (1 linear pass)────▶ RenderUnit[]   (== displayRows)</code></pre>
+</section>
+<section id="the-performance-first-principle-load-bearing" class="level2">
+<h2 class="anchored" data-anchor-id="the-performance-first-principle-load-bearing">1. The performance-first principle (load-bearing)</h2>
+<p><code>displayRows</code> is the hottest structure in the system: rebuilt on any data/sort/filter/collapse change, iterated by <code>computeRowLayout</code> on every layout change, iterated again by render, and fed back into by the measure-then-commit ResizeObserver loop. A naive “tree of node objects rebuilt per render” regresses all of that. The principle that prevents it:</p>
+<blockquote class="blockquote">
+<p><strong>The tree is the <em>structure</em> layer only. The flat render-unit array stays the layout/render contract.</strong> The tree exists <em>solely to produce</em> <code>displayRows</code>; layout’s and render’s hot loops keep iterating a flat array and do not change. Perf impact is therefore bounded to the flatten step.</p>
+</blockquote>
+<p>Concrete rules (each maps to a risk in <code>row-types.md</code>/this sprint’s planning):</p>
+<ol type="1">
+<li><strong><code>displayRows</code> stays a flat array</strong> of render units, each with explicit <code>kind</code> / <code>traits</code> / height-policy. No consumer walks the tree.</li>
+<li><strong>Single linear, pre-sized flatten.</strong> Pre-count nodes, allocate the result array once, push in one DFS pass. No <code>concat</code>/spread/intermediate arrays.</li>
+<li><strong>Preserve the existing structural-vs-layout <code>$derived</code> split.</strong> <code>flatten</code> depends on <em>structural</em> inputs only — rows, groups, sort/filter, collapse state, and the <strong>disclosure-expanded <code>Set</code></strong>. Container resize and measured row heights re-run <code>computeRowLayout</code> over the <em>existing</em> array; they must <strong>never</strong> re-flatten. (This split already exists as <code>fullDisplayRows</code> vs <code>computeRowLayout</code>; do not break it.)</li>
+<li><strong>Disclosure/expand state is a <code>Set&lt;rowId&gt;</code></strong>, not a field mutated inside nodes. Toggling is a set add/remove; a panel’s child units are appended after their parent only when expanded.</li>
+<li><strong>Free-content height reuses the existing content-height contract</strong> (<code>Record&lt;rowId, px&gt;</code>, the seam <code>wrapLineCounts</code> + measure-then-commit already use). No parallel measurement path; convergence is already solved.</li>
+<li><strong>Per-context scale = one cached <code>Map&lt;(colId,groupId) → scale&gt;</code></strong>, computed once per axis-relevant change; forest cells do an O(1) lookup. This <em>removes</em> work — it retires the redundant global <code>xScale</code> (= multi-flex Phase E).</li>
+<li><strong>Stable identity.</strong> Nodes/units keyed by stable id so downstream <code>$derived</code> (banding, scales, metrics) don’t recompute on unrelated changes.</li>
+</ol>
+<p>The behavior-preserving target makes rule 1–3 enforceable: through the foundation, the <code>layout-metrics</code> snapshot + parity harness must stay <strong>byte-identical</strong> (same <code>displayRows</code> out), exactly like the RowKind Phase-1 and multi-flex-B clean-but-validated patterns.</p>
+</section>
+<section id="data-model" class="level2">
+<h2 class="anchored" data-anchor-id="data-model">2. Data model</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode ts code-with-copy"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// kind: one-of — what a region fundamentally IS (drives default sizing/render)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> RegionKind <span class="op">=</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">"data"</span> <span class="op">|</span> <span class="st">"group_header"</span> <span class="op">|</span> <span class="st">"spacer"</span> <span class="op">|</span> <span class="st">"summary"</span> <span class="op">|</span> <span class="st">"header"</span>   <span class="co">// today's RowKind</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">"panel"</span>        <span class="co">// free-content child (details) — NEW, foundation-only stub</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">"axis_strip"</span><span class="op">;</span>  <span class="co">// per-group axis region (faceting) — NEW, foundation-only stub</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// traits: many-of — orthogonal modifiers a region MAY carry</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> RegionTrait <span class="op">=</span> <span class="st">"expandable"</span> <span class="op">|</span> <span class="st">"sticky"</span> <span class="op">|</span> <span class="st">"editable"</span> <span class="op">|</span> <span class="st">"computed"</span><span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">// scope: which level a region describes</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> RegionScope <span class="op">=</span> <span class="st">"table"</span> <span class="op">|</span> <span class="st">"group"</span> <span class="op">|</span> <span class="st">"overall"</span><span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> RegionNode {</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span> RegionKind<span class="op">;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  traits<span class="op">:</span> ReadonlySet<span class="op">&lt;</span>RegionTrait<span class="op">&gt;;</span>   <span class="co">// empty for plain rows</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  scope<span class="op">:</span> RegionScope<span class="op">;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  depth<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  body<span class="op">:</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> { type<span class="op">:</span> <span class="st">"cells"</span><span class="op">;</span> row<span class="op">?:</span> Row<span class="op">;</span> group<span class="op">?:</span> Group }   <span class="co">// column-aligned (today's rows)</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> { type<span class="op">:</span> <span class="st">"free"</span> }<span class="op">;</span>                              <span class="co">// full-width free content (panels)</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  heightPolicy<span class="op">:</span> <span class="st">"token"</span> <span class="op">|</span> <span class="st">"content"</span><span class="op">;</span>  <span class="co">// token = kind's height token; content = measured</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  children<span class="op">?:</span> RegionNode[]<span class="op">;</span>            <span class="co">// groups own rows; a data row may own a panel</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Today’s <code>DisplayRow = GroupHeaderRow | DataRow</code> (<code>types/index.ts:1047</code>) becomes the <code>body.type === "cells"</code> case; <code>RowKind</code> (<code>lib/layout/row-kind.ts</code>) is the <code>kind</code> enum, extended with <code>panel</code>/<code>axis_strip</code> and gaining the <code>traits</code>/<code>scope</code> split. The <strong>render unit</strong> the flatten emits is a thin projection — <code>{ id, kind, traits, depth, heightPolicy, body }</code> — NOT the node itself (no <code>children</code>), so the render/layout layers never see the tree.</p>
+<p>Foundation-only scope: <code>panel</code> and <code>axis_strip</code> kinds + the <code>traits</code>/<code>scope</code> fields are <strong>defined and threaded</strong> but no authoring surface produces them yet (no details API, no faceting config). The default tree built from today’s <code>spec.data.{rows,groups}</code> contains only the five existing kinds → byte-identical output.</p>
+</section>
+<section id="the-flatten" class="level2">
+<h2 class="anchored" data-anchor-id="the-flatten">3. The flatten</h2>
+<pre><code>flatten(tree) -&gt; RenderUnit[]:
+  n = countNodes(tree, expandedSet)      // pre-size
+  out = new Array(n); i = 0
+  dfs(node):
+    if node is collapsed-group or unexpanded-panel: return  // structural skip
+    out[i++] = project(node)             // thin unit, no children
+    for child in node.children: dfs(child)
+  dfs(root)
+  return out</code></pre>
+<p>One pass, pre-sized, no intermediates. The collapse/expand checks read the collapsed-groups + disclosure <code>Set</code>s (structural deps). <code>project()</code> copies the flat fields only.</p>
+</section>
+<section id="dependency-graph-what-recomputes-when" class="level2">
+<h2 class="anchored" data-anchor-id="dependency-graph-what-recomputes-when">4. Dependency graph (what recomputes when)</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>input changes</th>
+<th>flatten?</th>
+<th>computeRowLayout?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>rows / sort / filter</td>
+<td>✅</td>
+<td>✅ (new array)</td>
+</tr>
+<tr class="even">
+<td>group collapse</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>disclosure expand (<code>Set</code>)</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>container resize</td>
+<td>❌</td>
+<td>✅ (same array)</td>
+</tr>
+<tr class="odd">
+<td>measured row height</td>
+<td>❌</td>
+<td>✅ (same array)</td>
+</tr>
+<tr class="even">
+<td>density / aspect</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>Keep the two <code>$derived</code> boundaries the slices already have: a structural derived (produces the unit array) and the layout derived (<code>computeRowLayout</code> over it). Crossing them is the regression to guard against.</p>
+</section>
+<section id="per-context-scale-done-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="per-context-scale-done-2026-06-02">5. Per-context scale — DONE (2026-06-02)</h2>
+<p>Shipped first, as planned. The forest x-scale now resolves <strong>by context</strong>:</p>
+<ul>
+<li><strong><code>lib/layout/forest-scale.ts</code></strong> — the single source of truth. <code>buildForestScale(ctx)</code> + <code>forestScaleRange</code>/<code>safeLogDomain</code>/<code>forestScaleKey</code>, keyed on a <code>ForestScaleContext { columnId, groupId, scaleType, domain, width }</code>. <code>groupId === null</code> = “whole column” today; faceting passes a real group id with a per-group domain <em>without changing call sites</em>.</li>
+<li><strong>Axis slice</strong> (<code>axis.svelte.ts</code>) — replaced the global <code>axisComputation</code> + <code>xScale</code> (the first forest column’s, shared across all) with a per-column <code>forestAxes: Map&lt;colId, ResolvedForestAxis&gt;</code> resolver + a <code>primaryForestAxis</code> back-stop. The global <code>xScale</code> is <strong>retired</strong>.</li>
+<li><strong>Both backends</strong> build through the module: DOM via <code>forestAxes</code>, export (<code>computeXScaleAndClip</code>) via the shared range/clamp helpers.</li>
+</ul>
+<p>This also fixed a latent <strong>DOM↔︎export divergence</strong>: the DOM shared the first forest column’s domain across every forest column while the export was already per-column. Single-forest specs are byte-identical; multi-forest DOM now converges to the (correct) export. Plus the global <code>xScale</code> retirement aligned plot <strong>annotations</strong> with the marks (both now resolve through the primary column’s per-context scale; previously annotations used <code>plotRegion</code> and marks used <code>axisLimits</code>).</p>
+<p>Validation: 11 <code>forest-scale.test.ts</code> + 10 axis runes tests, full TS suite (923 bun / 201 vitest), R <code>devtools::test()</code>, export visuals unchanged, DOM screenshot verified.</p>
+<section id="known-follow-up-unify-the-mark-domain-on-plotregion" class="level3">
+<h3 class="anchored" data-anchor-id="known-follow-up-unify-the-mark-domain-on-plotregion">Known follow-up — unify the mark domain on <code>plotRegion</code></h3>
+<p>DOM forest marks still build their scale from <code>axisLimits</code>; the export builds from <code>plotRegion</code> (= axisLimits + marker margin). Within each backend everything is self-consistent, but live-DOM marks and the downloaded SVG differ by the marker margin. Unifying the DOM onto <code>plotRegion</code> (the documented render domain, what the export uses) is a small, isolated change — but it shifts <em>every</em> DOM forest render by the marker margin, so it wants its own commit + browser visual sign-off (and ideally a DOM mark-position test). Flagged in <code>axis.svelte.ts</code>.</p>
+</section>
+</section>
+<section id="migration-behavior-preserving" class="level2">
+<h2 class="anchored" data-anchor-id="migration-behavior-preserving">6. Migration (behavior-preserving)</h2>
+<ol type="1">
+<li>Introduce <code>RegionNode</code> + <code>buildRegionTree(spec, state)</code> that reproduces <code>fullDisplayRows</code>’ current output, and <code>flatten()</code> that emits the unit array.</li>
+<li>Swap <code>fullDisplayRows</code> to <code>flatten(buildRegionTree(...))</code>. Snapshot + parity harness stay <strong>byte-identical</strong> — the acceptance gate for the swap.</li>
+<li>Extend <code>row-kind.ts</code> to <code>kind</code>+<code>traits</code>+<code>scope</code>; migrate the ~existing call sites (already centralized through <code>resolveRowKind</code>/<code>rowKindProps</code>).</li>
+<li>Thread <code>panel</code>/<code>axis_strip</code> kinds + <code>heightPolicy: "content"</code> through the metrics pass (sum heterogeneous heights) — exercised by tests with synthetic panel nodes; no authoring surface yet.</li>
+</ol>
+</section>
+<section id="benchmark-plan-lightweight-200-rows" class="level2">
+<h2 class="anchored" data-anchor-id="benchmark-plan-lightweight-200-rows">7. Benchmark plan (lightweight — 200 rows)</h2>
+<p>Deliberately small and cheap to run, per the 2026-06-02 call. One fixture: <strong>200 rows, ~10 groups, one forest + a couple text columns.</strong> Measure, before and after each PR, checked in alongside the existing benches:</p>
+<ul>
+<li><strong>flatten cost</strong> (bun, <code>srcjs/tests/perf/</code>): time <code>buildRegionTree</code> + <code>flatten</code> over the 200-row fixture; assert no regression vs the pre-refactor <code>fullDisplayRows</code> baseline.</li>
+<li><strong>measure-loop settle</strong> (browser harness, <code>srcjs/tests/browser/</code>): the existing measure-then-commit harness on the 200-row fixture — assert it still settles in the same number of commit passes (no thrash from the tree).</li>
+</ul>
+<p>No 1k/10k sweep this sprint; 200 rows is representative enough to catch a constant-factor or extra-pass regression, which is the only perf risk the structure-layer principle leaves open.</p>
+</section>
+<section id="phased-plan-status-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="phased-plan-status-2026-06-02">8. Phased plan — status (2026-06-02)</h2>
+<ol type="1">
+<li>✅ <strong>Per-context scale + retire global <code>xScale</code></strong> (multi-flex E) — done (<code>forest-scale.ts</code>; commits on <code>feat/per-context-scale</code>).</li>
+<li>✅ <strong>Bench</strong> — <code>region-tree-bench.ts</code> (200-row flatten, budget-gated; build+flatten ≈ 0.013ms) + the existing <code>measure-rows.browser.ts</code> measure loop.</li>
+<li>✅ <strong>Region-tree model + flatten</strong> — <code>region-tree.ts</code> (<code>RegionNode</code> / <code>buildRegionTree</code> / <code>flatten</code>); DOM <code>fullDisplayRows</code> swapped; byte-identical; <code>RegionKind = RowKind | "panel" | "axis_strip"</code> (one kind enum, converged with <code>row-kind.ts</code>).</li>
+<li>⏸ <strong><code>kind</code>+<code>traits</code>+<code>scope</code></strong> — the <em>types</em> are on <code>RegionNode</code> already; widening <code>row-kind.ts</code>’s consumed vocabulary (traits/scope props, per-kind appearance fields) waits for a <strong>consumer</strong>. Per §8b the architect note, building this speculatively is explicitly discouraged (“don’t widen beyond what’s consumed today”) — so it lands WITH details/faceting, not before.</li>
+<li>⏸ <strong>Content-height seam for <code>panel</code>/<code>axis_strip</code></strong> — same reasoning: no feature produces those nodes yet, so the metrics-pass seam lands with the first consumer (details panels) rather than as dead scaffolding.</li>
+</ol>
+<p><strong>The foundation (1–3) is complete.</strong> Phases 4–5 are deliberately deferred to the feature sprints (<strong>details/disclosure</strong>, then <strong>faceting</strong>) — they are the consumers that justify the vocabulary, and the region tree’s <code>panel</code>/<code>axis_strip</code> kinds + <code>children</code> already give them a place to attach additively.</p>
+</section>
+<section id="feature-1-detailsdisclosure-rows-shipped-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="feature-1-detailsdisclosure-rows-shipped-2026-06-02">Feature 1 — details/disclosure rows — SHIPPED (2026-06-02)</h2>
+<p>The first feature on the foundation, complete across all runtimes: - <strong>Data/tree:</strong> <code>Row.details</code> (markdown) → a <code>panel</code> child region; <code>flatten</code> emits the <code>PanelRow</code> only when the owner is in <code>expandedRows</code> (flatten-time state). <code>initialState.expandedRows</code> seeds it. - <strong>DOM:</strong> full-width panel rendered from safe markdown→HTML (<code>lib/markdown.ts</code>), disclosure chevron, content-driven height via measure-then-commit (keyed <code>panelContentKey</code>). - <strong>R authoring:</strong> <code>tabviz()/forest_plot(details = "col", details_expanded =)</code>. - <strong>SVG/V8 export:</strong> <code>buildDisplayRows</code> emits expanded panels (honoring <code>initialState.expandedRows</code>); rendered as a full-width band of wrapped plain text (<code>markdownToPlainText</code>, since HTML markdown doesn’t translate to SVG). Height + render share <code>panelInnerWidth</code> so wrapped lines fit the row track.</p>
+<p>Guards: <code>region-tree.test.ts</code> (panel emission), <code>markdown.test.ts</code>, <code>details-panel.browser.ts</code> (DOM), R serialize/export tests.</p>
+<p>Follow-ups closed (2026-06-02): <strong>Shiny sync</strong> for <code>expanded_rows</code> — bidirectional, mirroring <code>collapsedGroups</code> (event registry + emit + snapshot + R <code>TABVIZ_STATE_FIELDS</code>; inbound proxy <code>toggleRowDetails</code> + R <code>toggle_row_details()</code>); <strong>TS authoring</strong> — <code>tabviz({ details: "col" })</code> column mapping + <code>notes:</code> passthrough, mirroring the R sugar.</p>
+</section>
+<section id="feature-2-annotationnote-rows-shipped-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="feature-2-annotationnote-rows-shipped-2026-06-02">Feature 2 — annotation/note rows — SHIPPED (2026-06-02)</h2>
+<p>Full-width prose rows inserted after a target row — built almost entirely on the details panel primitive (the render is free): - A note is an <strong>always-visible panel</strong> node inserted after its target row’s node (<code>RegionNode.body.free.alwaysVisible</code>); <code>flatten</code> emits it regardless of <code>expandedRows</code>. Reuses the <code>PanelRow</code> render in both backends (DOM markdown→HTML, SVG markdown→plain-text band) — no new render code. - Wire: <code>WebSpec.notes: { after: rowId, content }[]</code>; threaded into both <code>buildRegionTree</code> (DOM) and <code>buildDisplayRows</code> (export). - R authoring: <code>add_note(x, after, content)</code> — <code>after</code> is a 1-based row index or a row-label string (resolved to the positional <code>row_&lt;i&gt;</code> id). Authoring-time only (errors on a live proxy).</p>
+<p>Guards: <code>region-tree.test.ts</code> (note emission, always-visible + coexist-with-details), R serialize + <code>save_plot</code> render verified.</p>
+<p>Next feature: <strong>faceting</strong> (per-group axes via the <code>axis_strip</code> kind + the per-context scale resolver, both already in place) — currently tabled.</p>
+</section>
+<section id="b.-forward-compat-with-the-cascadetheming-rework-architect-note-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="b.-forward-compat-with-the-cascadetheming-rework-architect-note-2026-06-02">8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)</h2>
+<p>A theming-cascade rework is being scoped in parallel. It is <strong>not</strong> this sprint’s job and must not change our scope — but the row-kind expansion intersects its theme-access surface, so honor these cheap disciplines so our output stays forward-compatible (full note: <code>dev/cascade-rework-note-to-row-kind-agent.md</code>):</p>
+<ol type="1">
+<li><strong>One getter for theme→kind appearance.</strong> Route every row-kind theme read through a single <code>getRowKindAppearance(theme, kind) → { bg, fg, weight, … }</code> (or a small set). Renderers never reach into <code>theme.rowKind.X.Y</code> directly. The cascade rework swaps the getter’s <em>insides</em> without touching renderers — the biggest hedge against a half-merged state.</li>
+<li><strong>Kebab-case, attribute-safe kind discriminators.</strong> The kind strings will be stamped as <code>data-row-kind="&lt;kind&gt;"</code> later (CSS attribute selectors drive paint; geometry stays JS-side). Use stable kebab-case: <code>group-header</code>, <code>section-header</code>, <code>summary</code>, <code>spacer</code>, <code>overall</code>. <strong>⚠ Reconcile:</strong> today’s <code>row-kind.ts</code> enum is snake_case (<code>group_header</code>). The expansion must converge on kebab (rename the enum, or map enum→kebab at the stamp site) — decide once, no <code>groupHead</code>/<code>group_header</code>/<code>group-header</code> drift.</li>
+<li><strong>Deliberate, minimal per-kind appearance vocabulary.</strong> Every appearance field becomes a manifested consumed token (a COMPONENT_TOKENS row + drift-gate entry
+<ul>
+<li>CSS variable) later. Add only fields the renderer actually consumes; one canonical name per paint surface; no “for the future” fields.</li>
+</ul></li>
+<li><strong>One-line comment per appearance field</strong> (“summary row background fill”, “group-header bottom rule color”) — makes the eventual manifest mechanical.</li>
+<li><strong>Don’t pre-migrate</strong> to CSS variables / data attributes, and <strong>don’t widen</strong> the vocabulary or change scope to align with the rework. It isn’t landing first; this foundation stands on today’s theme shape.</li>
+<li><strong>HC-mode glyphs as real elements</strong>, never <code>::before</code>/<code>::after</code> — pseudo- elements don’t survive SVG export (geometry/glyph presence is JS-side in both the browser and V8 paths).</li>
+</ol>
+</section>
+<section id="dont-foreclose-deferred-sub-decisions" class="level2">
+<h2 class="anchored" data-anchor-id="dont-foreclose-deferred-sub-decisions">9. Don’t-foreclose (deferred sub-decisions)</h2>
+<p>The foundation must <em>allow</em> each without deciding it now:</p>
+<ul>
+<li><strong>Per-group axis placement</strong> (faceting) — leaning footer-bottom; the model allows an <code>axis_strip</code> region as a group’s last child.</li>
+<li><strong>Details in static (V8/SVG) export</strong> — render-expanded vs collapse; the flatten’s expanded-<code>Set</code> is the seam (static export can force-expand or skip).</li>
+<li><strong>Density <code>factor</code> vs named profiles</strong> (<code>sizing-model.md</code> §6) — orthogonal to the tree; the <code>heightPolicy: "token"</code> path reads whatever density resolves.</li>
+<li><strong>Row drag-resize ontology</strong> (<code>sizing-model.md</code> §8) — edits the kind’s height token; orthogonal, not in this sprint.</li>
+</ul>
+</section>
+<section id="verification" class="level2">
+<h2 class="anchored" data-anchor-id="verification">10. Verification</h2>
+<p><code>bun test</code> (new flatten + region-tree unit tests; byte-identical <code>layout-metrics</code> snapshot through the swap) · <code>npm run check</code> · the 200-row bench (no regression) · R <code>devtools::test()</code> + parity tests (per-context scale PR) · <code>render_visual_tests()</code> + browser measure harness · <code>quarto render</code>.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Region tree — the row-system foundation</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Status: **LANDED 2026-06-02.** Region tree primitive shipped (<span class="in">`srcjs/src/lib/layout/region-tree.ts`</span>).</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Feature 1 (details/disclosure rows) + Feature 2 (per-context forest scale)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>LANDED via the same primitive. Faceting remains the future use case the</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>seam was designed for. Companion to <span class="in">`row-types.md`</span> and <span class="in">`sizing-model.md`</span>.</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>Decisions locked going in (see <span class="in">`row-types.md`</span> §6 + the 2026-06-02 planning</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>session): full tree refactor; foundation only, both targets later; performance</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>is a first-class constraint; per-context scale lands first as its own PR.</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0. Thesis</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>Rows become a **tree of regions**. Each region carries <span class="in">`kind`</span> (one-of) +</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="in">`traits`</span> (many-of) + <span class="in">`scope`</span>, and its body is *either* column-cells *or* free</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>content, with content-driven height available everywhere. The renderer</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>**flattens** the tree to the flat <span class="in">`displayRows`</span> list it already consumes.</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>This is not a green-field idea — **the flatten already exists.**</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="in">`rows-groups.svelte.ts::fullDisplayRows`</span> (line 157) is a recursive walk</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>(<span class="in">`outputGroup`</span>: header → child groups → direct data rows) that emits a flat</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="in">`DisplayRow[]`</span>. The tree is implicit in that recursion today; we make it</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>**explicit and extensible** so a node can also be a details panel under a data</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>row, or an axis strip under a group — things the current `GroupHeaderRow |</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>DataRow` union and flat recursion cannot express.</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="in">Today (implicit):  groups+rows ──fullDisplayRows recursion──▶ DisplayRow[]</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="in">Proposed (explicit): RegionTree ──flatten (1 linear pass)────▶ RenderUnit[]   (== displayRows)</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. The performance-first principle (load-bearing)</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="in">`displayRows`</span> is the hottest structure in the system: rebuilt on any</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>data/sort/filter/collapse change, iterated by <span class="in">`computeRowLayout`</span> on every layout</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>change, iterated again by render, and fed back into by the measure-then-commit</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>ResizeObserver loop. A naive "tree of node objects rebuilt per render" regresses</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>all of that. The principle that prevents it:</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **The tree is the *structure* layer only. The flat render-unit array stays the</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; layout/render contract.** The tree exists *solely to produce* </span><span class="in">`displayRows`</span><span class="at">;</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; layout's and render's hot loops keep iterating a flat array and do not change.</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Perf impact is therefore bounded to the flatten step.</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>Concrete rules (each maps to a risk in <span class="in">`row-types.md`</span>/this sprint's planning):</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**`displayRows` stays a flat array** of render units, each with explicit</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>   <span class="in">`kind`</span> / <span class="in">`traits`</span> / height-policy. No consumer walks the tree.</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Single linear, pre-sized flatten.** Pre-count nodes, allocate the result</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>   array once, push in one DFS pass. No <span class="in">`concat`</span>/spread/intermediate arrays.</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Preserve the existing structural-vs-layout `$derived` split.** <span class="in">`flatten`</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>   depends on *structural* inputs only — rows, groups, sort/filter, collapse</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>   state, and the **disclosure-expanded `Set`**. Container resize and measured</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>   row heights re-run <span class="in">`computeRowLayout`</span> over the *existing* array; they must</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>   **never** re-flatten. (This split already exists as <span class="in">`fullDisplayRows`</span> vs</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>   <span class="in">`computeRowLayout`</span>; do not break it.)</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Disclosure/expand state is a `Set&lt;rowId&gt;`**, not a field mutated inside</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>   nodes. Toggling is a set add/remove; a panel's child units are appended after</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>   their parent only when expanded.</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Free-content height reuses the existing content-height contract**</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`Record&lt;rowId, px&gt;`</span>, the seam <span class="in">`wrapLineCounts`</span> + measure-then-commit already</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>   use). No parallel measurement path; convergence is already solved.</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**Per-context scale = one cached `Map&lt;(colId,groupId) → scale&gt;`**, computed</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>   once per axis-relevant change; forest cells do an O(1) lookup. This *removes*</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>   work — it retires the redundant global <span class="in">`xScale`</span> (= multi-flex Phase E).</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a><span class="ss">7. </span>**Stable identity.** Nodes/units keyed by stable id so downstream <span class="in">`$derived`</span></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>   (banding, scales, metrics) don't recompute on unrelated changes.</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>The behavior-preserving target makes rule 1–3 enforceable: through the</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>foundation, the <span class="in">`layout-metrics`</span> snapshot + parity harness must stay</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>**byte-identical** (same <span class="in">`displayRows`</span> out), exactly like the RowKind Phase-1 and</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>multi-flex-B clean-but-validated patterns.</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Data model</span></span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a><span class="in">```ts</span></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a><span class="co">// kind: one-of — what a region fundamentally IS (drives default sizing/render)</span></span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> RegionKind <span class="op">=</span></span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">"data"</span> <span class="op">|</span> <span class="st">"group_header"</span> <span class="op">|</span> <span class="st">"spacer"</span> <span class="op">|</span> <span class="st">"summary"</span> <span class="op">|</span> <span class="st">"header"</span>   <span class="co">// today's RowKind</span></span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">"panel"</span>        <span class="co">// free-content child (details) — NEW, foundation-only stub</span></span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">"axis_strip"</span><span class="op">;</span>  <span class="co">// per-group axis region (faceting) — NEW, foundation-only stub</span></span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a><span class="co">// traits: many-of — orthogonal modifiers a region MAY carry</span></span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> RegionTrait <span class="op">=</span> <span class="st">"expandable"</span> <span class="op">|</span> <span class="st">"sticky"</span> <span class="op">|</span> <span class="st">"editable"</span> <span class="op">|</span> <span class="st">"computed"</span><span class="op">;</span></span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a><span class="co">// scope: which level a region describes</span></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> RegionScope <span class="op">=</span> <span class="st">"table"</span> <span class="op">|</span> <span class="st">"group"</span> <span class="op">|</span> <span class="st">"overall"</span><span class="op">;</span></span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> RegionNode {</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span> RegionKind<span class="op">;</span></span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>  traits<span class="op">:</span> ReadonlySet<span class="op">&lt;</span>RegionTrait<span class="op">&gt;;</span>   <span class="co">// empty for plain rows</span></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>  scope<span class="op">:</span> RegionScope<span class="op">;</span></span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>  depth<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>  body<span class="op">:</span></span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> { type<span class="op">:</span> <span class="st">"cells"</span><span class="op">;</span> row<span class="op">?:</span> Row<span class="op">;</span> group<span class="op">?:</span> Group }   <span class="co">// column-aligned (today's rows)</span></span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> { type<span class="op">:</span> <span class="st">"free"</span> }<span class="op">;</span>                              <span class="co">// full-width free content (panels)</span></span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>  heightPolicy<span class="op">:</span> <span class="st">"token"</span> <span class="op">|</span> <span class="st">"content"</span><span class="op">;</span>  <span class="co">// token = kind's height token; content = measured</span></span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>  children<span class="op">?:</span> RegionNode[]<span class="op">;</span>            <span class="co">// groups own rows; a data row may own a panel</span></span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>Today's <span class="in">`DisplayRow = GroupHeaderRow | DataRow`</span> (<span class="in">`types/index.ts:1047`</span>) becomes</span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>the <span class="in">`body.type === "cells"`</span> case; <span class="in">`RowKind`</span> (<span class="in">`lib/layout/row-kind.ts`</span>) is the</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a><span class="in">`kind`</span> enum, extended with <span class="in">`panel`</span>/<span class="in">`axis_strip`</span> and gaining the <span class="in">`traits`</span>/<span class="in">`scope`</span></span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>split. The **render unit** the flatten emits is a thin projection — `{ id, kind,</span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>traits, depth, heightPolicy, body }<span class="in">` — NOT the node itself (no `</span>children`), so</span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a>the render/layout layers never see the tree.</span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a>Foundation-only scope: <span class="in">`panel`</span> and <span class="in">`axis_strip`</span> kinds + the <span class="in">`traits`</span>/<span class="in">`scope`</span></span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a>fields are **defined and threaded** but no authoring surface produces them yet</span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a>(no details API, no faceting config). The default tree built from today's</span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a><span class="in">`spec.data.{rows,groups}`</span> contains only the five existing kinds → byte-identical</span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>output.</span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. The flatten</span></span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a><span class="in">flatten(tree) -&gt; RenderUnit[]:</span></span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a><span class="in">  n = countNodes(tree, expandedSet)      // pre-size</span></span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a><span class="in">  out = new Array(n); i = 0</span></span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a><span class="in">  dfs(node):</span></span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a><span class="in">    if node is collapsed-group or unexpanded-panel: return  // structural skip</span></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a><span class="in">    out[i++] = project(node)             // thin unit, no children</span></span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a><span class="in">    for child in node.children: dfs(child)</span></span>
+<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a><span class="in">  dfs(root)</span></span>
+<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a><span class="in">  return out</span></span>
+<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a>One pass, pre-sized, no intermediates. The collapse/expand checks read the</span>
+<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a>collapsed-groups + disclosure <span class="in">`Set`</span>s (structural deps). <span class="in">`project()`</span> copies the</span>
+<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a>flat fields only.</span>
+<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. Dependency graph (what recomputes when)</span></span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> input changes <span class="pp">|</span> flatten? <span class="pp">|</span> computeRowLayout? <span class="pp">|</span></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> rows / sort / filter <span class="pp">|</span> ✅ <span class="pp">|</span> ✅ (new array) <span class="pp">|</span></span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> group collapse <span class="pp">|</span> ✅ <span class="pp">|</span> ✅ <span class="pp">|</span></span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> disclosure expand (<span class="in">`Set`</span>) <span class="pp">|</span> ✅ <span class="pp">|</span> ✅ <span class="pp">|</span></span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> container resize <span class="pp">|</span> ❌ <span class="pp">|</span> ✅ (same array) <span class="pp">|</span></span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> measured row height <span class="pp">|</span> ❌ <span class="pp">|</span> ✅ (same array) <span class="pp">|</span></span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> density / aspect <span class="pp">|</span> ❌ <span class="pp">|</span> ✅ <span class="pp">|</span></span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>Keep the two <span class="in">`$derived`</span> boundaries the slices already have: a structural derived</span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>(produces the unit array) and the layout derived (<span class="in">`computeRowLayout`</span> over it).</span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>Crossing them is the regression to guard against.</span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Per-context scale — DONE (2026-06-02)</span></span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a>Shipped first, as planned. The forest x-scale now resolves **by context**:</span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`lib/layout/forest-scale.ts`** — the single source of truth.</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a>  <span class="in">`buildForestScale(ctx)`</span> + <span class="in">`forestScaleRange`</span>/<span class="in">`safeLogDomain`</span>/<span class="in">`forestScaleKey`</span>,</span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a>  keyed on a <span class="in">`ForestScaleContext { columnId, groupId, scaleType, domain, width }`</span>.</span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>  <span class="in">`groupId === null`</span> = "whole column" today; faceting passes a real group id with</span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a>  a per-group domain *without changing call sites*.</span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Axis slice** (<span class="in">`axis.svelte.ts`</span>) — replaced the global <span class="in">`axisComputation`</span> +</span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a>  <span class="in">`xScale`</span> (the first forest column's, shared across all) with a per-column</span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a>  <span class="in">`forestAxes: Map&lt;colId, ResolvedForestAxis&gt;`</span> resolver + a <span class="in">`primaryForestAxis`</span></span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>  back-stop. The global <span class="in">`xScale`</span> is **retired**.</span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Both backends** build through the module: DOM via <span class="in">`forestAxes`</span>, export</span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`computeXScaleAndClip`</span>) via the shared range/clamp helpers.</span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>This also fixed a latent **DOM↔export divergence**: the DOM shared the first</span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>forest column's domain across every forest column while the export was already</span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>per-column. Single-forest specs are byte-identical; multi-forest DOM now</span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>converges to the (correct) export. Plus the global <span class="in">`xScale`</span> retirement aligned</span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>plot **annotations** with the marks (both now resolve through the primary</span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a>column's per-context scale; previously annotations used <span class="in">`plotRegion`</span> and marks</span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>used <span class="in">`axisLimits`</span>).</span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>Validation: 11 <span class="in">`forest-scale.test.ts`</span> + 10 axis runes tests, full TS suite (923</span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>bun / 201 vitest), R <span class="in">`devtools::test()`</span>, export visuals unchanged, DOM</span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>screenshot verified.</span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a><span class="fu">### Known follow-up — unify the mark domain on `plotRegion`</span></span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a>DOM forest marks still build their scale from <span class="in">`axisLimits`</span>; the export builds</span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>from <span class="in">`plotRegion`</span> (= axisLimits + marker margin). Within each backend everything</span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a>is self-consistent, but live-DOM marks and the downloaded SVG differ by the</span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a>marker margin. Unifying the DOM onto <span class="in">`plotRegion`</span> (the documented render domain,</span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a>what the export uses) is a small, isolated change — but it shifts *every* DOM</span>
+<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a>forest render by the marker margin, so it wants its own commit + browser visual</span>
+<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a>sign-off (and ideally a DOM mark-position test). Flagged in <span class="in">`axis.svelte.ts`</span>.</span>
+<span id="cb4-188"><a href="#cb4-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-189"><a href="#cb4-189" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Migration (behavior-preserving)</span></span>
+<span id="cb4-190"><a href="#cb4-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Introduce <span class="in">`RegionNode`</span> + <span class="in">`buildRegionTree(spec, state)`</span> that reproduces</span>
+<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a>   <span class="in">`fullDisplayRows`</span>' current output, and <span class="in">`flatten()`</span> that emits the unit array.</span>
+<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Swap <span class="in">`fullDisplayRows`</span> to <span class="in">`flatten(buildRegionTree(...))`</span>. Snapshot +</span>
+<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a>   parity harness stay **byte-identical** — the acceptance gate for the swap.</span>
+<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Extend <span class="in">`row-kind.ts`</span> to <span class="in">`kind`</span>+<span class="in">`traits`</span>+<span class="in">`scope`</span>; migrate the ~existing call</span>
+<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a>   sites (already centralized through <span class="in">`resolveRowKind`</span>/<span class="in">`rowKindProps`</span>).</span>
+<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Thread <span class="in">`panel`</span>/<span class="in">`axis_strip`</span> kinds + <span class="in">`heightPolicy: "content"`</span> through the</span>
+<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a>   metrics pass (sum heterogeneous heights) — exercised by tests with synthetic</span>
+<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a>   panel nodes; no authoring surface yet.</span>
+<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-201"><a href="#cb4-201" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Benchmark plan (lightweight — 200 rows)</span></span>
+<span id="cb4-202"><a href="#cb4-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-203"><a href="#cb4-203" aria-hidden="true" tabindex="-1"></a>Deliberately small and cheap to run, per the 2026-06-02 call. One fixture:</span>
+<span id="cb4-204"><a href="#cb4-204" aria-hidden="true" tabindex="-1"></a>**200 rows, ~10 groups, one forest + a couple text columns.** Measure, before</span>
+<span id="cb4-205"><a href="#cb4-205" aria-hidden="true" tabindex="-1"></a>and after each PR, checked in alongside the existing benches:</span>
+<span id="cb4-206"><a href="#cb4-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-207"><a href="#cb4-207" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**flatten cost** (bun, <span class="in">`srcjs/tests/perf/`</span>): time <span class="in">`buildRegionTree`</span> + <span class="in">`flatten`</span></span>
+<span id="cb4-208"><a href="#cb4-208" aria-hidden="true" tabindex="-1"></a>  over the 200-row fixture; assert no regression vs the pre-refactor</span>
+<span id="cb4-209"><a href="#cb4-209" aria-hidden="true" tabindex="-1"></a>  <span class="in">`fullDisplayRows`</span> baseline.</span>
+<span id="cb4-210"><a href="#cb4-210" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**measure-loop settle** (browser harness, <span class="in">`srcjs/tests/browser/`</span>): the existing</span>
+<span id="cb4-211"><a href="#cb4-211" aria-hidden="true" tabindex="-1"></a>  measure-then-commit harness on the 200-row fixture — assert it still settles in</span>
+<span id="cb4-212"><a href="#cb4-212" aria-hidden="true" tabindex="-1"></a>  the same number of commit passes (no thrash from the tree).</span>
+<span id="cb4-213"><a href="#cb4-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-214"><a href="#cb4-214" aria-hidden="true" tabindex="-1"></a>No 1k/10k sweep this sprint; 200 rows is representative enough to catch a</span>
+<span id="cb4-215"><a href="#cb4-215" aria-hidden="true" tabindex="-1"></a>constant-factor or extra-pass regression, which is the only perf risk the</span>
+<span id="cb4-216"><a href="#cb4-216" aria-hidden="true" tabindex="-1"></a>structure-layer principle leaves open.</span>
+<span id="cb4-217"><a href="#cb4-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-218"><a href="#cb4-218" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Phased plan — status (2026-06-02)</span></span>
+<span id="cb4-219"><a href="#cb4-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-220"><a href="#cb4-220" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>✅ **Per-context scale + retire global `xScale`** (multi-flex E) — done</span>
+<span id="cb4-221"><a href="#cb4-221" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`forest-scale.ts`</span>; commits on <span class="in">`feat/per-context-scale`</span>).</span>
+<span id="cb4-222"><a href="#cb4-222" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>✅ **Bench** — <span class="in">`region-tree-bench.ts`</span> (200-row flatten, budget-gated;</span>
+<span id="cb4-223"><a href="#cb4-223" aria-hidden="true" tabindex="-1"></a>   build+flatten ≈ 0.013ms) + the existing <span class="in">`measure-rows.browser.ts`</span> measure loop.</span>
+<span id="cb4-224"><a href="#cb4-224" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>✅ **Region-tree model + flatten** — <span class="in">`region-tree.ts`</span> (<span class="in">`RegionNode`</span> /</span>
+<span id="cb4-225"><a href="#cb4-225" aria-hidden="true" tabindex="-1"></a>   <span class="in">`buildRegionTree`</span> / <span class="in">`flatten`</span>); DOM <span class="in">`fullDisplayRows`</span> swapped; byte-identical;</span>
+<span id="cb4-226"><a href="#cb4-226" aria-hidden="true" tabindex="-1"></a>   <span class="in">`RegionKind = RowKind | "panel" | "axis_strip"`</span> (one kind enum, converged with</span>
+<span id="cb4-227"><a href="#cb4-227" aria-hidden="true" tabindex="-1"></a>   <span class="in">`row-kind.ts`</span>).</span>
+<span id="cb4-228"><a href="#cb4-228" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>⏸ **`kind`+`traits`+`scope`** — the *types* are on <span class="in">`RegionNode`</span> already;</span>
+<span id="cb4-229"><a href="#cb4-229" aria-hidden="true" tabindex="-1"></a>   widening <span class="in">`row-kind.ts`</span>'s consumed vocabulary (traits/scope props, per-kind</span>
+<span id="cb4-230"><a href="#cb4-230" aria-hidden="true" tabindex="-1"></a>   appearance fields) waits for a **consumer**. Per §8b the architect note,</span>
+<span id="cb4-231"><a href="#cb4-231" aria-hidden="true" tabindex="-1"></a>   building this speculatively is explicitly discouraged ("don't widen beyond</span>
+<span id="cb4-232"><a href="#cb4-232" aria-hidden="true" tabindex="-1"></a>   what's consumed today") — so it lands WITH details/faceting, not before.</span>
+<span id="cb4-233"><a href="#cb4-233" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>⏸ **Content-height seam for `panel`/`axis_strip`** — same reasoning: no</span>
+<span id="cb4-234"><a href="#cb4-234" aria-hidden="true" tabindex="-1"></a>   feature produces those nodes yet, so the metrics-pass seam lands with the</span>
+<span id="cb4-235"><a href="#cb4-235" aria-hidden="true" tabindex="-1"></a>   first consumer (details panels) rather than as dead scaffolding.</span>
+<span id="cb4-236"><a href="#cb4-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-237"><a href="#cb4-237" aria-hidden="true" tabindex="-1"></a>**The foundation (1–3) is complete.** Phases 4–5 are deliberately deferred to the</span>
+<span id="cb4-238"><a href="#cb4-238" aria-hidden="true" tabindex="-1"></a>feature sprints (**details/disclosure**, then **faceting**) — they are the</span>
+<span id="cb4-239"><a href="#cb4-239" aria-hidden="true" tabindex="-1"></a>consumers that justify the vocabulary, and the region tree's <span class="in">`panel`</span>/<span class="in">`axis_strip`</span></span>
+<span id="cb4-240"><a href="#cb4-240" aria-hidden="true" tabindex="-1"></a>kinds + <span class="in">`children`</span> already give them a place to attach additively.</span>
+<span id="cb4-241"><a href="#cb4-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-242"><a href="#cb4-242" aria-hidden="true" tabindex="-1"></a><span class="fu">## Feature 1 — details/disclosure rows — SHIPPED (2026-06-02)</span></span>
+<span id="cb4-243"><a href="#cb4-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-244"><a href="#cb4-244" aria-hidden="true" tabindex="-1"></a>The first feature on the foundation, complete across all runtimes:</span>
+<span id="cb4-245"><a href="#cb4-245" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Data/tree:** <span class="in">`Row.details`</span> (markdown) → a <span class="in">`panel`</span> child region; <span class="in">`flatten`</span></span>
+<span id="cb4-246"><a href="#cb4-246" aria-hidden="true" tabindex="-1"></a>  emits the <span class="in">`PanelRow`</span> only when the owner is in <span class="in">`expandedRows`</span> (flatten-time</span>
+<span id="cb4-247"><a href="#cb4-247" aria-hidden="true" tabindex="-1"></a>  state). <span class="in">`initialState.expandedRows`</span> seeds it.</span>
+<span id="cb4-248"><a href="#cb4-248" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**DOM:** full-width panel rendered from safe markdown→HTML (<span class="in">`lib/markdown.ts`</span>),</span>
+<span id="cb4-249"><a href="#cb4-249" aria-hidden="true" tabindex="-1"></a>  disclosure chevron, content-driven height via measure-then-commit (keyed</span>
+<span id="cb4-250"><a href="#cb4-250" aria-hidden="true" tabindex="-1"></a>  <span class="in">`panelContentKey`</span>).</span>
+<span id="cb4-251"><a href="#cb4-251" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**R authoring:** <span class="in">`tabviz()/forest_plot(details = "col", details_expanded =)`</span>.</span>
+<span id="cb4-252"><a href="#cb4-252" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**SVG/V8 export:** <span class="in">`buildDisplayRows`</span> emits expanded panels (honoring</span>
+<span id="cb4-253"><a href="#cb4-253" aria-hidden="true" tabindex="-1"></a>  <span class="in">`initialState.expandedRows`</span>); rendered as a full-width band of wrapped plain</span>
+<span id="cb4-254"><a href="#cb4-254" aria-hidden="true" tabindex="-1"></a>  text (<span class="in">`markdownToPlainText`</span>, since HTML markdown doesn't translate to SVG).</span>
+<span id="cb4-255"><a href="#cb4-255" aria-hidden="true" tabindex="-1"></a>  Height + render share <span class="in">`panelInnerWidth`</span> so wrapped lines fit the row track.</span>
+<span id="cb4-256"><a href="#cb4-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-257"><a href="#cb4-257" aria-hidden="true" tabindex="-1"></a>Guards: <span class="in">`region-tree.test.ts`</span> (panel emission), <span class="in">`markdown.test.ts`</span>,</span>
+<span id="cb4-258"><a href="#cb4-258" aria-hidden="true" tabindex="-1"></a><span class="in">`details-panel.browser.ts`</span> (DOM), R serialize/export tests.</span>
+<span id="cb4-259"><a href="#cb4-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-260"><a href="#cb4-260" aria-hidden="true" tabindex="-1"></a>Follow-ups closed (2026-06-02): **Shiny sync** for <span class="in">`expanded_rows`</span> —</span>
+<span id="cb4-261"><a href="#cb4-261" aria-hidden="true" tabindex="-1"></a>bidirectional, mirroring <span class="in">`collapsedGroups`</span> (event registry + emit + snapshot +</span>
+<span id="cb4-262"><a href="#cb4-262" aria-hidden="true" tabindex="-1"></a>R <span class="in">`TABVIZ_STATE_FIELDS`</span>; inbound proxy <span class="in">`toggleRowDetails`</span> + R</span>
+<span id="cb4-263"><a href="#cb4-263" aria-hidden="true" tabindex="-1"></a><span class="in">`toggle_row_details()`</span>); **TS authoring** — <span class="in">`tabviz({ details: "col" })`</span> column</span>
+<span id="cb4-264"><a href="#cb4-264" aria-hidden="true" tabindex="-1"></a>mapping + <span class="in">`notes:`</span> passthrough, mirroring the R sugar.</span>
+<span id="cb4-265"><a href="#cb4-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-266"><a href="#cb4-266" aria-hidden="true" tabindex="-1"></a><span class="fu">## Feature 2 — annotation/note rows — SHIPPED (2026-06-02)</span></span>
+<span id="cb4-267"><a href="#cb4-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-268"><a href="#cb4-268" aria-hidden="true" tabindex="-1"></a>Full-width prose rows inserted after a target row — built almost entirely on the</span>
+<span id="cb4-269"><a href="#cb4-269" aria-hidden="true" tabindex="-1"></a>details panel primitive (the render is free):</span>
+<span id="cb4-270"><a href="#cb4-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A note is an **always-visible panel** node inserted after its target row's node</span>
+<span id="cb4-271"><a href="#cb4-271" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`RegionNode.body.free.alwaysVisible`</span>); <span class="in">`flatten`</span> emits it regardless of</span>
+<span id="cb4-272"><a href="#cb4-272" aria-hidden="true" tabindex="-1"></a>  <span class="in">`expandedRows`</span>. Reuses the <span class="in">`PanelRow`</span> render in both backends (DOM markdown→HTML,</span>
+<span id="cb4-273"><a href="#cb4-273" aria-hidden="true" tabindex="-1"></a>  SVG markdown→plain-text band) — no new render code.</span>
+<span id="cb4-274"><a href="#cb4-274" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Wire: <span class="in">`WebSpec.notes: { after: rowId, content }[]`</span>; threaded into both</span>
+<span id="cb4-275"><a href="#cb4-275" aria-hidden="true" tabindex="-1"></a>  <span class="in">`buildRegionTree`</span> (DOM) and <span class="in">`buildDisplayRows`</span> (export).</span>
+<span id="cb4-276"><a href="#cb4-276" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>R authoring: <span class="in">`add_note(x, after, content)`</span> — <span class="in">`after`</span> is a 1-based row index or</span>
+<span id="cb4-277"><a href="#cb4-277" aria-hidden="true" tabindex="-1"></a>  a row-label string (resolved to the positional <span class="in">`row_&lt;i&gt;`</span> id). Authoring-time</span>
+<span id="cb4-278"><a href="#cb4-278" aria-hidden="true" tabindex="-1"></a>  only (errors on a live proxy).</span>
+<span id="cb4-279"><a href="#cb4-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-280"><a href="#cb4-280" aria-hidden="true" tabindex="-1"></a>Guards: <span class="in">`region-tree.test.ts`</span> (note emission, always-visible + coexist-with-details),</span>
+<span id="cb4-281"><a href="#cb4-281" aria-hidden="true" tabindex="-1"></a>R serialize + <span class="in">`save_plot`</span> render verified.</span>
+<span id="cb4-282"><a href="#cb4-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-283"><a href="#cb4-283" aria-hidden="true" tabindex="-1"></a>Next feature: **faceting** (per-group axes via the <span class="in">`axis_strip`</span> kind + the</span>
+<span id="cb4-284"><a href="#cb4-284" aria-hidden="true" tabindex="-1"></a>per-context scale resolver, both already in place) — currently tabled.</span>
+<span id="cb4-285"><a href="#cb4-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-286"><a href="#cb4-286" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8b. Forward-compat with the cascade/theming rework (architect note, 2026-06-02)</span></span>
+<span id="cb4-287"><a href="#cb4-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-288"><a href="#cb4-288" aria-hidden="true" tabindex="-1"></a>A theming-cascade rework is being scoped in parallel. It is **not** this sprint's</span>
+<span id="cb4-289"><a href="#cb4-289" aria-hidden="true" tabindex="-1"></a>job and must not change our scope — but the row-kind expansion intersects its</span>
+<span id="cb4-290"><a href="#cb4-290" aria-hidden="true" tabindex="-1"></a>theme-access surface, so honor these cheap disciplines so our output stays</span>
+<span id="cb4-291"><a href="#cb4-291" aria-hidden="true" tabindex="-1"></a>forward-compatible (full note: <span class="in">`dev/cascade-rework-note-to-row-kind-agent.md`</span>):</span>
+<span id="cb4-292"><a href="#cb4-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-293"><a href="#cb4-293" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**One getter for theme→kind appearance.** Route every row-kind theme read</span>
+<span id="cb4-294"><a href="#cb4-294" aria-hidden="true" tabindex="-1"></a>   through a single <span class="in">`getRowKindAppearance(theme, kind) → { bg, fg, weight, … }`</span></span>
+<span id="cb4-295"><a href="#cb4-295" aria-hidden="true" tabindex="-1"></a>   (or a small set). Renderers never reach into <span class="in">`theme.rowKind.X.Y`</span> directly. The</span>
+<span id="cb4-296"><a href="#cb4-296" aria-hidden="true" tabindex="-1"></a>   cascade rework swaps the getter's *insides* without touching renderers — the</span>
+<span id="cb4-297"><a href="#cb4-297" aria-hidden="true" tabindex="-1"></a>   biggest hedge against a half-merged state.</span>
+<span id="cb4-298"><a href="#cb4-298" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Kebab-case, attribute-safe kind discriminators.** The kind strings will be</span>
+<span id="cb4-299"><a href="#cb4-299" aria-hidden="true" tabindex="-1"></a>   stamped as <span class="in">`data-row-kind="&lt;kind&gt;"`</span> later (CSS attribute selectors drive</span>
+<span id="cb4-300"><a href="#cb4-300" aria-hidden="true" tabindex="-1"></a>   paint; geometry stays JS-side). Use stable kebab-case: <span class="in">`group-header`</span>,</span>
+<span id="cb4-301"><a href="#cb4-301" aria-hidden="true" tabindex="-1"></a>   <span class="in">`section-header`</span>, <span class="in">`summary`</span>, <span class="in">`spacer`</span>, <span class="in">`overall`</span>. **⚠ Reconcile:** today's</span>
+<span id="cb4-302"><a href="#cb4-302" aria-hidden="true" tabindex="-1"></a>   <span class="in">`row-kind.ts`</span> enum is snake_case (<span class="in">`group_header`</span>). The expansion must converge</span>
+<span id="cb4-303"><a href="#cb4-303" aria-hidden="true" tabindex="-1"></a>   on kebab (rename the enum, or map enum→kebab at the stamp site) — decide once,</span>
+<span id="cb4-304"><a href="#cb4-304" aria-hidden="true" tabindex="-1"></a>   no <span class="in">`groupHead`</span>/<span class="in">`group_header`</span>/<span class="in">`group-header`</span> drift.</span>
+<span id="cb4-305"><a href="#cb4-305" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Deliberate, minimal per-kind appearance vocabulary.** Every appearance field</span>
+<span id="cb4-306"><a href="#cb4-306" aria-hidden="true" tabindex="-1"></a>   becomes a manifested consumed token (a COMPONENT_TOKENS row + drift-gate entry</span>
+<span id="cb4-307"><a href="#cb4-307" aria-hidden="true" tabindex="-1"></a><span class="ss">   + </span>CSS variable) later. Add only fields the renderer actually consumes; one</span>
+<span id="cb4-308"><a href="#cb4-308" aria-hidden="true" tabindex="-1"></a>   canonical name per paint surface; no "for the future" fields.</span>
+<span id="cb4-309"><a href="#cb4-309" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**One-line comment per appearance field** ("summary row background fill",</span>
+<span id="cb4-310"><a href="#cb4-310" aria-hidden="true" tabindex="-1"></a>   "group-header bottom rule color") — makes the eventual manifest mechanical.</span>
+<span id="cb4-311"><a href="#cb4-311" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Don't pre-migrate** to CSS variables / data attributes, and **don't widen**</span>
+<span id="cb4-312"><a href="#cb4-312" aria-hidden="true" tabindex="-1"></a>   the vocabulary or change scope to align with the rework. It isn't landing</span>
+<span id="cb4-313"><a href="#cb4-313" aria-hidden="true" tabindex="-1"></a>   first; this foundation stands on today's theme shape.</span>
+<span id="cb4-314"><a href="#cb4-314" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**HC-mode glyphs as real elements**, never <span class="in">`::before`</span>/<span class="in">`::after`</span> — pseudo-</span>
+<span id="cb4-315"><a href="#cb4-315" aria-hidden="true" tabindex="-1"></a>   elements don't survive SVG export (geometry/glyph presence is JS-side in both</span>
+<span id="cb4-316"><a href="#cb4-316" aria-hidden="true" tabindex="-1"></a>   the browser and V8 paths).</span>
+<span id="cb4-317"><a href="#cb4-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-318"><a href="#cb4-318" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Don't-foreclose (deferred sub-decisions)</span></span>
+<span id="cb4-319"><a href="#cb4-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-320"><a href="#cb4-320" aria-hidden="true" tabindex="-1"></a>The foundation must *allow* each without deciding it now:</span>
+<span id="cb4-321"><a href="#cb4-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-322"><a href="#cb4-322" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Per-group axis placement** (faceting) — leaning footer-bottom; the model</span>
+<span id="cb4-323"><a href="#cb4-323" aria-hidden="true" tabindex="-1"></a>  allows an <span class="in">`axis_strip`</span> region as a group's last child.</span>
+<span id="cb4-324"><a href="#cb4-324" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Details in static (V8/SVG) export** — render-expanded vs collapse; the</span>
+<span id="cb4-325"><a href="#cb4-325" aria-hidden="true" tabindex="-1"></a>  flatten's expanded-<span class="in">`Set`</span> is the seam (static export can force-expand or skip).</span>
+<span id="cb4-326"><a href="#cb4-326" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Density `factor` vs named profiles** (<span class="in">`sizing-model.md`</span> §6) — orthogonal to</span>
+<span id="cb4-327"><a href="#cb4-327" aria-hidden="true" tabindex="-1"></a>  the tree; the <span class="in">`heightPolicy: "token"`</span> path reads whatever density resolves.</span>
+<span id="cb4-328"><a href="#cb4-328" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Row drag-resize ontology** (<span class="in">`sizing-model.md`</span> §8) — edits the kind's height</span>
+<span id="cb4-329"><a href="#cb4-329" aria-hidden="true" tabindex="-1"></a>  token; orthogonal, not in this sprint.</span>
+<span id="cb4-330"><a href="#cb4-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-331"><a href="#cb4-331" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Verification</span></span>
+<span id="cb4-332"><a href="#cb4-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-333"><a href="#cb4-333" aria-hidden="true" tabindex="-1"></a><span class="in">`bun test`</span> (new flatten + region-tree unit tests; byte-identical</span>
+<span id="cb4-334"><a href="#cb4-334" aria-hidden="true" tabindex="-1"></a><span class="in">`layout-metrics`</span> snapshot through the swap) · <span class="in">`npm run check`</span> · the 200-row</span>
+<span id="cb4-335"><a href="#cb4-335" aria-hidden="true" tabindex="-1"></a>bench (no regression) · R <span class="in">`devtools::test()`</span> + parity tests (per-context scale</span>
+<span id="cb4-336"><a href="#cb4-336" aria-hidden="true" tabindex="-1"></a>PR) · <span class="in">`render_visual_tests()`</span> + browser measure harness · <span class="in">`quarto render`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

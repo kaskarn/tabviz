@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>ux-redesign-plan – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8df481edb8b82de68a0ab0e6b50f92d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#tabviz-ux-theme-redesign-the-rgc_v4-ceiling-plan" id="toc-tabviz-ux-theme-redesign-the-rgc_v4-ceiling-plan" class="nav-link active" data-scroll-target="#tabviz-ux-theme-redesign-the-rgc_v4-ceiling-plan">tabviz UX + Theme Redesign — the rgc_v4-ceiling plan</a>
+  <ul class="collapse">
+  <li><a href="#the-two-root-diagnoses-panel-converged" id="toc-the-two-root-diagnoses-panel-converged" class="nav-link" data-scroll-target="#the-two-root-diagnoses-panel-converged">The two root diagnoses (panel-converged)</a></li>
+  <li><a href="#workstream-a-control-language-settingsstudio-ux" id="toc-workstream-a-control-language-settingsstudio-ux" class="nav-link" data-scroll-target="#workstream-a-control-language-settingsstudio-ux">Workstream A — Control language &amp; settings/studio UX</a></li>
+  <li><a href="#workstream-b-theme-set-8-axis-committed-identities-hard-cull" id="toc-workstream-b-theme-set-8-axis-committed-identities-hard-cull" class="nav-link" data-scroll-target="#workstream-b-theme-set-8-axis-committed-identities-hard-cull">Workstream B — Theme set: 8 axis-committed identities (HARD cull)</a></li>
+  <li><a href="#workstream-c-bold-internals-exposure" id="toc-workstream-c-bold-internals-exposure" class="nav-link" data-scroll-target="#workstream-c-bold-internals-exposure">Workstream C — Bold internals exposure</a></li>
+  <li><a href="#workstream-d-contained-correctness" id="toc-workstream-d-contained-correctness" class="nav-link" data-scroll-target="#workstream-d-contained-correctness">Workstream D — Contained correctness</a></li>
+  <li><a href="#sequencing" id="toc-sequencing" class="nav-link" data-scroll-target="#sequencing">Sequencing</a></li>
+  <li><a href="#critic-corrections-3rd-panelist-integrated" id="toc-critic-corrections-3rd-panelist-integrated" class="nav-link" data-scroll-target="#critic-corrections-3rd-panelist-integrated">Critic corrections (3rd panelist — integrated)</a></li>
+  <li><a href="#progress-log-2026-06-0809" id="toc-progress-log-2026-06-0809" class="nav-link" data-scroll-target="#progress-log-2026-06-0809">Progress log (2026-06-08/09)</a></li>
+  <li><a href="#guardrails-to-keep-green-throughout" id="toc-guardrails-to-keep-green-throughout" class="nav-link" data-scroll-target="#guardrails-to-keep-green-throughout">Guardrails to keep green throughout</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="tabviz-ux-theme-redesign-the-rgc_v4-ceiling-plan" class="level1">
+<h1>tabviz UX + Theme Redesign — the rgc_v4-ceiling plan</h1>
+<p><strong>Directive (2026-06-08, maintainer):</strong> Redesign ALL UX. ZERO dead buttons. Tight theme set with unique identities. Be ambitious; aim for excellence. Look to <strong>rgc_v4</strong> (<code>dev/rgc_v4_unzipped/</code>) for AESTHETIC outcomes (not its framework). Propose BOLD ways to expose package internals. Long haul — quality over speed. Summon front-end experts periodically to keep honest.</p>
+<p><strong>North star — rgc_v4’s four identities each OWN one axis</strong> (Ledger=COLOR, Brutalist=GEOMETRY, Aurora=EFFECTS, Terminal=ALIASING), fully committed, nothing half-applied. Control language = uppercase-mono kicker + serif title + prose hint + inline OKLCH coordinates (“the editor IS the documentation”). Table-craft = TABLE chip · green p-value pills · teal emphasis-row border · column-group spanner rules · footnote band.</p>
+<section id="the-two-root-diagnoses-panel-converged" class="level2">
+<h2 class="anchored" data-anchor-id="the-two-root-diagnoses-panel-converged">The two root diagnoses (panel-converged)</h2>
+<ol type="1">
+<li><strong>Two design systems in one viewport.</strong> <code>StudioShell.svelte</code> ships ~19 hardcoded slate-gray literals + <code>-apple-system</code> font; the rail <em>inside</em> it is warm v2-themed. The “fkin mess” is largely this incoherence + native <code>&lt;select&gt;</code> menus shattering the editorial skin. The bones (v2 tokens, Pill, AnchorRow LCH instrument, DT-11 boundary, the rich Picker) are GOOD.</li>
+<li><strong>Texture used as a substitute for table-craft.</strong> 14/27 presets carry <code>shell_texture</code>; journals (<code>nature</code> ruled, <code>tufte</code> ruled) use background pattern to fake character the type + borders + craft should carry. <code>border_preset</code> (frame/hairline) is built and used by ZERO presets. Elegance = subtraction + committing one axis.</li>
+</ol>
+</section>
+<section id="workstream-a-control-language-settingsstudio-ux" class="level2">
+<h2 class="anchored" data-anchor-id="workstream-a-control-language-settingsstudio-ux">Workstream A — Control language &amp; settings/studio UX</h2>
+<p><strong>A0. Unify the design language.</strong> Delete the slate literals + <code>-apple-system</code> from <code>StudioShell.svelte</code> (+ OklchPicker, StudioChart); route all studio chrome through <code>data-tv-v2</code> + the v2 tokens. One token set top to bottom. <em>Highest leverage, lowest risk; silences the core complaint.</em></p>
+<p><strong>A1. Kill native <code>&lt;select&gt;</code>.</strong> New <code>Dropdown.svelte</code> (Picker-backed, Select API: value/options/onchange). Swap all <code>Tier1Sections</code> call sites (Texture, fonts, type role family/size/weight). Demote/delete <code>Select.svelte</code>. <em>Most visible single win.</em></p>
+<p><strong>A2. The editorial voice.</strong> New <code>Kicker.svelte</code> = <code>[MONO-UPPERCASE EYEBROW · axis] / serif Title / prose hint</code>. Upgrade <code>Section</code> to use it. Put the declared-but-mute <code>--v2-font-serif/-display</code> to work. Add inline OKLCH coordinate micro-text to <code>AnchorRow</code> (compact) + a <code>coords</code> mode on <code>Slider</code>. New tokens in <code>tokens.css</code>: kicker/title/prose/coord/axis-dot.</p>
+<p><strong>A3. The IA — 4 axis-tabs.</strong> Replace the “Advanced controls” junk-drawer with Pill-tabs (colored dots): <strong>IDENTITY</strong> (anchors+polarity+status) · <strong>COLOR</strong> (mode, categorical, header, series, role-tones, read-only mini-spine) · <strong>FORM</strong> (geometry w/ live samples, density, type, borders, texture, shell) · <strong>EFFECTS</strong> (glow/gradient/glass/elevation/title/caption). QuickStrip stays pinned above. Disclosure-depth ≤ 1 preserved (tabs replace the toggle).</p>
+<p><strong>A4. Zero dead buttons (machine-enforced).</strong> (a) Universal <em>live</em> reset gutter: every Tier-1 row that diverges from <code>initialTheme</code> shows a hot dot; click reverts that field (reuse <code>theme-diff.ts</code>). (b) Delete the dead <code>tabviz_studio(plot)</code> R-snippet fallback. (c) New harness <code>tests/browser/panel-liveness.browser.ts</code>: mount the panel, drive EVERY control, assert each fires a store mutation. The permanent guarantee.</p>
+</section>
+<section id="workstream-b-theme-set-8-axis-committed-identities-hard-cull" class="level2">
+<h2 class="anchored" data-anchor-id="workstream-b-theme-set-8-axis-committed-identities-hard-cull">Workstream B — Theme set: 8 axis-committed identities (HARD cull)</h2>
+<p>Delete 27→8 (maintainer: cull hard). Each keeper OWNS one axis, fully committed; journals are CLEAN (no texture) + ELEGANT (committed serif, real accent, <code>border_preset:"frame"</code>, confident type scale, numeric figure font).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Theme</th>
+<th>Axis owned</th>
+<th>Texture</th>
+<th>Border</th>
+<th>Absorbs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Clinical</strong></td>
+<td>restraint</td>
+<td>none</td>
+<td>frame</td>
+<td>cochrane, nejm, jama, bmj, nature, lancet</td>
+</tr>
+<tr class="even">
+<td><strong>Ledger</strong></td>
+<td>COLOR</td>
+<td>none</td>
+<td>hairline</td>
+<td>ledger, solarized, sunprint, executive</td>
+</tr>
+<tr class="odd">
+<td><strong>Brutalist</strong></td>
+<td>GEOMETRY</td>
+<td>none</td>
+<td>boxed</td>
+<td>brutalist, swiss, bauhaus</td>
+</tr>
+<tr class="even">
+<td><strong>Aurora</strong></td>
+<td>EFFECTS</td>
+<td>none</td>
+<td>none</td>
+<td>aurora, tonal, tonal_dark</td>
+</tr>
+<tr class="odd">
+<td><strong>Terminal</strong></td>
+<td>ALIASING</td>
+<td>none</td>
+<td>none</td>
+<td>terminal, dark</td>
+</tr>
+<tr class="even">
+<td><strong>Darkroom</strong></td>
+<td>DARK (designed)</td>
+<td>none</td>
+<td>hairline</td>
+<td>solarized_dark, dwarven</td>
+</tr>
+<tr class="odd">
+<td><strong>Newsprint</strong></td>
+<td>TEXTURE (the one)</td>
+<td>grain</td>
+<td>ruled</td>
+<td>newsprint, hobbit, atelier, tufte, elvish</td>
+</tr>
+<tr class="even">
+<td><strong>Blueprint</strong></td>
+<td>grid/draft</td>
+<td>grid</td>
+<td>none</td>
+<td>(keep ~verbatim; maintainer-loved)</td>
+</tr>
+</tbody>
+</table>
+<p>(Synthwave = optional 9th neon showpiece; maintainer-loved. Recipes: see panel report — committed fonts, oxblood/teal accents, frame-not-texture.) <code>theme_blend()</code> covers the dropped variants. <strong>Highest-leverage first move: texture OUT, <code>border_preset:"frame"</code> IN on every journal.</strong></p>
+<p><strong>B-craft.</strong> Ship the six rgc table details as role-recipe defaults, not per-preset texture: TABLE chip (<code>caption_style</code>), p-value PILL on significant (<code>pvalue.significant_style:"pill"</code> — NEW option), emphasis row = thick left accent border + bold (role-recipe change), spanner hairline rules, footnote <code>note.band:"callout"</code> (NEW), differentiated row states. Wire the 4th <code>numeric</code> figure font slot into all keepers (<code>fonts.numeric</code>, falls back to body).</p>
+</section>
+<section id="workstream-c-bold-internals-exposure" class="level2">
+<h2 class="anchored" data-anchor-id="workstream-c-bold-internals-exposure">Workstream C — Bold internals exposure</h2>
+<ul>
+<li><strong>C1. <code>suggest_theme(brand, base)</code> first-class</strong> — one brand color → a complete contrast-validated theme on the nearest archetype. (Engine shipped in Wave 4; promote it as THE “make it mine” on-ramp + a panel control.)</li>
+<li><strong>C2. <code>theme_blend(a,b,t)</code> as a studio slider</strong> — ship 8 corners, slide between them (OKLab lerp + enum snap). Replaces shipping every point.</li>
+<li><strong>C3. Alt-click-any-cell → trace, in the WIDGET</strong> — promote <code>inspector-store</code> + <code>CascadeView</code> out of the studio: any cell/mark reveals its Tier1→3 derivation (token, OKLCH, ramp·grade, cascade path). The resolver becomes a user-facing teaching + debugging feature. <em>The flagship.</em></li>
+<li>(Stretch, from the 3rd panelist: embeddable theme-editor web component; shareable cascade permalink; in-panel live contrast/a11y audit; “what does this token affect” consumedBy highlighter.)</li>
+</ul>
+</section>
+<section id="workstream-d-contained-correctness" class="level2">
+<h2 class="anchored" data-anchor-id="workstream-d-contained-correctness">Workstream D — Contained correctness</h2>
+<ul>
+<li><strong>D1. CI column width</strong> — <code>_formatIntervalImpl</code> must share the renderer’s variant recipe (stacked/plus_minus measure wrong) + per-variant parity test.</li>
+<li><strong>D2. Title-chip text</strong> inline-on-canvas editing (finish item 6).</li>
+</ul>
+</section>
+<section id="sequencing" class="level2">
+<h2 class="anchored" data-anchor-id="sequencing">Sequencing</h2>
+<ol start="0" type="1">
+<li><strong>A0</strong> (unify design language) — silences the complaint, de-risks all after.</li>
+<li><strong>A1</strong> (kill native Select) — most visible win.</li>
+<li><strong>A2</strong> (editorial voice) — reach rgc surface polish.</li>
+<li><strong>B</strong> (theme cull + craft + numeric font) — the identity payoff.</li>
+<li><strong>A3</strong> (4 axis-tab IA) — reach rgc IA.</li>
+<li><strong>A4</strong> (zero-dead-buttons gate).</li>
+<li><strong>C</strong> (bold internals: coordinate skin → mini-spine → widget trace).</li>
+<li><strong>D</strong> (CI width, chip text).</li>
+</ol>
+<p>Each phase: build → verify (svelte-check, gates, screenshot via studio-shot/ panel-shot, R suites) → summon an honesty-check agent (with the directive + rgc grounding) before moving on.</p>
+</section>
+<section id="critic-corrections-3rd-panelist-integrated" class="level2">
+<h2 class="anchored" data-anchor-id="critic-corrections-3rd-panelist-integrated">Critic corrections (3rd panelist — integrated)</h2>
+<ol type="1">
+<li><strong>Native <code>&lt;select&gt;</code> is deliberately native</strong> (<code>Select.svelte</code> — free a11y + type-ahead + mobile pickers). The “web 0.0” is the OPEN OS menu, not the closed control. So A1’s <code>Dropdown</code> MUST be a fully keyboard-accessible listbox (arrows/Home/End/Enter/Esc/type-ahead/ARIA/focus-mgmt) — a naive swap REGRESSES a11y. (Our Dropdown.svelte does all of this.) Keep native as a documented escape hatch; don’t blanket-delete.</li>
+<li><strong>A0 is architectural, not paint.</strong> The studio rail is OUTSIDE the widget DOM → cannot inherit <code>--tv-*</code> (“light by construction”). Define a real <code>--studio-*</code> token LAYER (the shell already references undefined <code>--studio-bg/-fg</code>) deriving an editorial light/dark studio chrome, then replace the 19 literals against it. Required by the embeddable-editor story.</li>
+<li><strong>Reset gutter must be TWO-SCOPED</strong> (A4): theme controls diff vs <code>initialTheme</code>; FIGURE-band controls (banding/watermark/row-pins/contrast — spec-scoped, NOT in initialTheme, separate reset) diff vs figure-initial. A single “universal vs initialTheme” gutter breaks the shipped two-scoped-reset architecture + trips DT-11.</li>
+<li><strong>Liveness gate asserts the wrong property.</strong> “Every control mutates state” is necessary-not-sufficient + false for mode-suppressed controls. Assert:
+<ol type="a">
+<li>PIXEL-DELTA in the preview (screenshot-diff) — catches “writes a field nothing reads”; (b) a slider DRAG (pointermove) repaints — guards the <code>$state.raw</code> silent-dead-preview trap; (c) a justified-no-op ALLOW-LIST (texture under HC, dropped pins) so suppression stays honest; (d) both scoped resets clear only their scope; (e) keyboard reachability of every control.</li>
+</ol></li>
+<li><strong>Unified interaction contract (new Phase 1):</strong> every control = live-preview-on-input → debounced-commit-to-history → same-field coalescing. This gives the WIDGET undo for free (it has preview, lacks history) and makes rgc-style liveness safe. Every preview path MUST go through setSpec/writeThemePath (the <code>$state.raw</code> trap).</li>
+<li><strong>Vet the 8 by ΔE before naming</strong> (run <code>preset-distinctness.test.ts</code> on the candidates): Terminal/Darkroom and Ledger/Newsprint may be near-neighbors wasting the distinctness budget. Measure, then cut/merge.</li>
+<li><strong>Bolder internals (elevated):</strong> the flagship isn’t another R function — it’s making the cascade a SHAREABLE/EMBEDDABLE/SELF-EXPLAINING artifact on the wire envelope + <code>consumedBy</code> contract that already exist + are CI-enforced: ① theme PERMALINK (<code>#theme=base64url(envelope)</code>) + embeddable <code>&lt;tabviz-theme-editor&gt;</code> web component; ③ BIDIRECTIONAL <code>consumedBy</code> highlighter (hover cell → which tokens+behaviors made it — drift-gated, so free correctness); ② <code>explain_theme()</code> prose from roleSource/consumedBy; ④ live DTCG-export panel + AMBIENT a11y/contrast badge (validateVerdicts is already computed). Ship ①+③ first; stage ②+④.</li>
+</ol>
+</section>
+<section id="progress-log-2026-06-0809" class="level2">
+<h2 class="anchored" data-anchor-id="progress-log-2026-06-0809">Progress log (2026-06-08/09)</h2>
+<p>SHIPPED (each commit verified — svelte-check, DT-11/control-contract, snapshots, R parity/render-smoke): - <strong>A0 ✓</strong> studio <code>--studio-*</code> editorial token layer (StudioShell + OklchPicker + StudioChart) — one design language, no cold-slate. - <strong>A1 ✓</strong> <code>Dropdown.svelte</code> (keyboard-accessible custom listbox + aria- activedescendant) replaces native <code>&lt;select&gt;</code> in the panel. - <strong>A3 ✓</strong> the 4-axis TAB IA (IDENTITY/COLOR/FORM/EFFECTS, colored dots) replaces the long-scroll + “Advanced controls” junk-drawer. Both viewer + studio rail. - <strong>A2 ✓</strong> the editorial Section voice (rgc “editor IS documentation”): <code>Section.svelte</code> gained an opt-in editorial variant — mono-uppercase accent KICKER + serif display TITLE + visible prose LEDE (gated on <code>kicker</code>/<code>lede</code>; default compact voice unchanged for the column editor). The panel’s four structural sections now render the magazine masthead (Tier 1 · Anchors / Identity / prose, etc.). Plus the earlier inline OKLCH coords on AnchorRow. New <code>--v2-text-display</code> (18px); activates <code>--v2-font-serif</code>. - <strong>A4 ✓</strong> zero-dead-buttons. (a) Deleted the dead <code>tabviz_studio(plot)</code> snippet that printed an inert R string in the GUI when onOpenStudio was unwired. (b) The two-scoped live reset gutter (Reset theme / Reset figure, dirty-gated) already existed and is now machine-verified. (c) The standing machine gate <code>panel-liveness.browser.ts</code> (<code>npm run qa:liveness</code>) WALKS every value/nav control across all four tabs + quick strip + figure band, operating each with REAL input and asserting a widget-or-panel delta. Current: <strong>73 controls verified live, 0 dead.</strong> See CLAUDE.md for the hard-won design notes (comprehensive outerHTML+style-CSS fingerprint; keyboard-driven dropdowns; never-Escape; forest-column fixture; timeout-bounded everything). - <strong>B ✓ COMPLETE (27→9 cull)</strong> — the headline. 9 committed identities, each owning one axis, 4-dark/5-light (user-finalized): nejm(default)/ledger/ brutalist/aurora/terminal/newsprint/blueprint(light cyanotype)/synthwave/ dwarven. Two expert-review passes hardened it (terminal≈blueprint near- neighbor fixed via Archivo + light flip; ledger paper saturated; honest migration comments). FULL HARD DELETE done: 18 constructors + 18 man + NAMESPACE + ~44 examples + ~43 docs migrated. R↔︎TS parity green; distinctness gate re-tuned for 9; resolver-dispatch snapshot pruned. Commits fed2f9c / 2e6211a / 7751e53 / 355d6ef. theme_blend() deferred as a feature, not a migration crutch. REMAINING (separate): the rest of the table-craft (emphasis-row border, spanner rules, footnote band). - <strong>B-craft</strong> the rgc green p-value PILL (<code>significant_style:"pill"</code>). - <strong>D1 ✓</strong> CI column-width variant-aware measurement + parity gate.</p>
+<p>NEXT (priority for the panel-polish + theme-elegance maintainer): COLOR-tab read-only mini-spine (give the stub weight) · B 27→8 cull + table-craft · C bold internals (in-widget trace + permalink).</p>
+</section>
+<section id="guardrails-to-keep-green-throughout" class="level2">
+<h2 class="anchored" data-anchor-id="guardrails-to-keep-green-throughout">Guardrails to keep green throughout</h2>
+<p>DT-11 (<code>settings-band-contract</code>), control-contract, resolver-dispatch snapshot (regen+review), preset-distinctness (rewrite for 8), R↔︎TS parity, serialize- weight, dist-smoke (contract surface). Docs re-render (index+studio). Bundle budget is a movable tripwire (bump freely).</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># tabviz UX + Theme Redesign — the rgc_v4-ceiling plan</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>**Directive (2026-06-08, maintainer):** Redesign ALL UX. ZERO dead buttons.</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>Tight theme set with unique identities. Be ambitious; aim for excellence.</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>Look to **rgc_v4** (<span class="in">`dev/rgc_v4_unzipped/`</span>) for AESTHETIC outcomes (not its</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>framework). Propose BOLD ways to expose package internals. Long haul —</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>quality over speed. Summon front-end experts periodically to keep honest.</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>**North star — rgc_v4's four identities each OWN one axis** (Ledger=COLOR,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>Brutalist=GEOMETRY, Aurora=EFFECTS, Terminal=ALIASING), fully committed,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>nothing half-applied. Control language = uppercase-mono kicker + serif title</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">+ </span>prose hint + inline OKLCH coordinates ("the editor IS the documentation").</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>Table-craft = TABLE chip · green p-value pills · teal emphasis-row border ·</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>column-group spanner rules · footnote band.</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## The two root diagnoses (panel-converged)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Two design systems in one viewport.** <span class="in">`StudioShell.svelte`</span> ships ~19</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>   hardcoded slate-gray literals + <span class="in">`-apple-system`</span> font; the rail *inside* it</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>   is warm v2-themed. The "fkin mess" is largely this incoherence + native</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>   <span class="in">`&lt;select&gt;`</span> menus shattering the editorial skin. The bones (v2 tokens, Pill,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>   AnchorRow LCH instrument, DT-11 boundary, the rich Picker) are GOOD.</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Texture used as a substitute for table-craft.** 14/27 presets carry</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>   <span class="in">`shell_texture`</span>; journals (<span class="in">`nature`</span> ruled, <span class="in">`tufte`</span> ruled) use background</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>   pattern to fake character the type + borders + craft should carry.</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>   <span class="in">`border_preset`</span> (frame/hairline) is built and used by ZERO presets. Elegance</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>   = subtraction + committing one axis.</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## Workstream A — Control language &amp; settings/studio UX</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>**A0. Unify the design language.** Delete the slate literals + <span class="in">`-apple-system`</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>from <span class="in">`StudioShell.svelte`</span> (+ OklchPicker, StudioChart); route all studio chrome</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>through <span class="in">`data-tv-v2`</span> + the v2 tokens. One token set top to bottom. *Highest</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>leverage, lowest risk; silences the core complaint.*</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>**A1. Kill native `&lt;select&gt;`.** New <span class="in">`Dropdown.svelte`</span> (Picker-backed, Select</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>API: value/options/onchange). Swap all <span class="in">`Tier1Sections`</span> call sites (Texture,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>fonts, type role family/size/weight). Demote/delete <span class="in">`Select.svelte`</span>. *Most</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>visible single win.*</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>**A2. The editorial voice.** New <span class="in">`Kicker.svelte`</span> = `[MONO-UPPERCASE EYEBROW ·</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>axis] / serif Title / prose hint<span class="in">`. Upgrade `</span>Section` to use it. Put the</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>declared-but-mute <span class="in">`--v2-font-serif/-display`</span> to work. Add inline OKLCH</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>coordinate micro-text to <span class="in">`AnchorRow`</span> (compact) + a <span class="in">`coords`</span> mode on <span class="in">`Slider`</span>.</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>New tokens in <span class="in">`tokens.css`</span>: kicker/title/prose/coord/axis-dot.</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>**A3. The IA — 4 axis-tabs.** Replace the "Advanced controls" junk-drawer with</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>Pill-tabs (colored dots): **IDENTITY** (anchors+polarity+status) · **COLOR**</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>(mode, categorical, header, series, role-tones, read-only mini-spine) · **FORM**</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>(geometry w/ live samples, density, type, borders, texture, shell) · **EFFECTS**</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>(glow/gradient/glass/elevation/title/caption). QuickStrip stays pinned above.</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>Disclosure-depth ≤ 1 preserved (tabs replace the toggle).</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>**A4. Zero dead buttons (machine-enforced).** (a) Universal *live* reset gutter:</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>every Tier-1 row that diverges from <span class="in">`initialTheme`</span> shows a hot dot; click</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>reverts that field (reuse <span class="in">`theme-diff.ts`</span>). (b) Delete the dead</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="in">`tabviz_studio(plot)`</span> R-snippet fallback. (c) New harness</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="in">`tests/browser/panel-liveness.browser.ts`</span>: mount the panel, drive EVERY control,</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>assert each fires a store mutation. The permanent guarantee.</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="fu">## Workstream B — Theme set: 8 axis-committed identities (HARD cull)</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>Delete 27→8 (maintainer: cull hard). Each keeper OWNS one axis, fully</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>committed; journals are CLEAN (no texture) + ELEGANT (committed serif, real</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>accent, <span class="in">`border_preset:"frame"`</span>, confident type scale, numeric figure font).</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Theme <span class="pp">|</span> Axis owned <span class="pp">|</span> Texture <span class="pp">|</span> Border <span class="pp">|</span> Absorbs <span class="pp">|</span></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Clinical** <span class="pp">|</span> restraint <span class="pp">|</span> none <span class="pp">|</span> frame <span class="pp">|</span> cochrane, nejm, jama, bmj, nature, lancet <span class="pp">|</span></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Ledger** <span class="pp">|</span> COLOR <span class="pp">|</span> none <span class="pp">|</span> hairline <span class="pp">|</span> ledger, solarized, sunprint, executive <span class="pp">|</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Brutalist** <span class="pp">|</span> GEOMETRY <span class="pp">|</span> none <span class="pp">|</span> boxed <span class="pp">|</span> brutalist, swiss, bauhaus <span class="pp">|</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Aurora** <span class="pp">|</span> EFFECTS <span class="pp">|</span> none <span class="pp">|</span> none <span class="pp">|</span> aurora, tonal, tonal_dark <span class="pp">|</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Terminal** <span class="pp">|</span> ALIASING <span class="pp">|</span> none <span class="pp">|</span> none <span class="pp">|</span> terminal, dark <span class="pp">|</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Darkroom** <span class="pp">|</span> DARK (designed) <span class="pp">|</span> none <span class="pp">|</span> hairline <span class="pp">|</span> solarized_dark, dwarven <span class="pp">|</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Newsprint** <span class="pp">|</span> TEXTURE (the one) <span class="pp">|</span> grain <span class="pp">|</span> ruled <span class="pp">|</span> newsprint, hobbit, atelier, tufte, elvish <span class="pp">|</span></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Blueprint** <span class="pp">|</span> grid/draft <span class="pp">|</span> grid <span class="pp">|</span> none <span class="pp">|</span> (keep ~verbatim; maintainer-loved) <span class="pp">|</span></span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>(Synthwave = optional 9th neon showpiece; maintainer-loved. Recipes: see panel</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>report — committed fonts, oxblood/teal accents, frame-not-texture.) <span class="in">`theme_blend()`</span></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>covers the dropped variants. **Highest-leverage first move: texture OUT,</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="in">`border_preset:"frame"`</span> IN on every journal.**</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a>**B-craft.** Ship the six rgc table details as role-recipe defaults, not</span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>per-preset texture: TABLE chip (<span class="in">`caption_style`</span>), p-value PILL on significant</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>(<span class="in">`pvalue.significant_style:"pill"`</span> — NEW option), emphasis row = thick left</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>accent border + bold (role-recipe change), spanner hairline rules, footnote</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="in">`note.band:"callout"`</span> (NEW), differentiated row states. Wire the 4th <span class="in">`numeric`</span></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>figure font slot into all keepers (<span class="in">`fonts.numeric`</span>, falls back to body).</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="fu">## Workstream C — Bold internals exposure</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**C1. `suggest_theme(brand, base)` first-class** — one brand color → a</span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a>  complete contrast-validated theme on the nearest archetype. (Engine shipped</span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a>  in Wave 4; promote it as THE "make it mine" on-ramp + a panel control.)</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**C2. `theme_blend(a,b,t)` as a studio slider** — ship 8 corners, slide</span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>  between them (OKLab lerp + enum snap). Replaces shipping every point.</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**C3. Alt-click-any-cell → trace, in the WIDGET** — promote</span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>  <span class="in">`inspector-store`</span> + <span class="in">`CascadeView`</span> out of the studio: any cell/mark reveals its</span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a>  Tier1→3 derivation (token, OKLCH, ramp·grade, cascade path). The resolver</span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>  becomes a user-facing teaching + debugging feature. *The flagship.*</span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>(Stretch, from the 3rd panelist: embeddable theme-editor web component;</span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>  shareable cascade permalink; in-panel live contrast/a11y audit; "what does</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>  this token affect" consumedBy highlighter.)</span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a><span class="fu">## Workstream D — Contained correctness</span></span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**D1. CI column width** — <span class="in">`_formatIntervalImpl`</span> must share the renderer's</span>
+<span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a>  variant recipe (stacked/plus_minus measure wrong) + per-variant parity test.</span>
+<span id="cb1-109"><a href="#cb1-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**D2. Title-chip text** inline-on-canvas editing (finish item 6).</span>
+<span id="cb1-110"><a href="#cb1-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-111"><a href="#cb1-111" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sequencing</span></span>
+<span id="cb1-112"><a href="#cb1-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-113"><a href="#cb1-113" aria-hidden="true" tabindex="-1"></a><span class="ss">0. </span>**A0** (unify design language) — silences the complaint, de-risks all after.</span>
+<span id="cb1-114"><a href="#cb1-114" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**A1** (kill native Select) — most visible win.</span>
+<span id="cb1-115"><a href="#cb1-115" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**A2** (editorial voice) — reach rgc surface polish.</span>
+<span id="cb1-116"><a href="#cb1-116" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**B** (theme cull + craft + numeric font) — the identity payoff.</span>
+<span id="cb1-117"><a href="#cb1-117" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**A3** (4 axis-tab IA) — reach rgc IA.</span>
+<span id="cb1-118"><a href="#cb1-118" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**A4** (zero-dead-buttons gate).</span>
+<span id="cb1-119"><a href="#cb1-119" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**C** (bold internals: coordinate skin → mini-spine → widget trace).</span>
+<span id="cb1-120"><a href="#cb1-120" aria-hidden="true" tabindex="-1"></a><span class="ss">7. </span>**D** (CI width, chip text).</span>
+<span id="cb1-121"><a href="#cb1-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-122"><a href="#cb1-122" aria-hidden="true" tabindex="-1"></a>Each phase: build → verify (svelte-check, gates, screenshot via studio-shot/</span>
+<span id="cb1-123"><a href="#cb1-123" aria-hidden="true" tabindex="-1"></a>panel-shot, R suites) → summon an honesty-check agent (with the directive +</span>
+<span id="cb1-124"><a href="#cb1-124" aria-hidden="true" tabindex="-1"></a>rgc grounding) before moving on.</span>
+<span id="cb1-125"><a href="#cb1-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-126"><a href="#cb1-126" aria-hidden="true" tabindex="-1"></a><span class="fu">## Critic corrections (3rd panelist — integrated)</span></span>
+<span id="cb1-127"><a href="#cb1-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-128"><a href="#cb1-128" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Native `&lt;select&gt;` is deliberately native** (<span class="in">`Select.svelte`</span> — free a11y +</span>
+<span id="cb1-129"><a href="#cb1-129" aria-hidden="true" tabindex="-1"></a>   type-ahead + mobile pickers). The "web 0.0" is the OPEN OS menu, not the</span>
+<span id="cb1-130"><a href="#cb1-130" aria-hidden="true" tabindex="-1"></a>   closed control. So A1's <span class="in">`Dropdown`</span> MUST be a fully keyboard-accessible</span>
+<span id="cb1-131"><a href="#cb1-131" aria-hidden="true" tabindex="-1"></a>   listbox (arrows/Home/End/Enter/Esc/type-ahead/ARIA/focus-mgmt) — a naive</span>
+<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a>   swap REGRESSES a11y. (Our Dropdown.svelte does all of this.) Keep native as</span>
+<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a>   a documented escape hatch; don't blanket-delete.</span>
+<span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**A0 is architectural, not paint.** The studio rail is OUTSIDE the widget</span>
+<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a>   DOM → cannot inherit <span class="in">`--tv-*`</span> ("light by construction"). Define a real</span>
+<span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a>   <span class="in">`--studio-*`</span> token LAYER (the shell already references undefined</span>
+<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a>   <span class="in">`--studio-bg/-fg`</span>) deriving an editorial light/dark studio chrome, then</span>
+<span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a>   replace the 19 literals against it. Required by the embeddable-editor story.</span>
+<span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Reset gutter must be TWO-SCOPED** (A4): theme controls diff vs</span>
+<span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a>   <span class="in">`initialTheme`</span>; FIGURE-band controls (banding/watermark/row-pins/contrast —</span>
+<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a>   spec-scoped, NOT in initialTheme, separate reset) diff vs figure-initial. A</span>
+<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a>   single "universal vs initialTheme" gutter breaks the shipped two-scoped-reset</span>
+<span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a>   architecture + trips DT-11.</span>
+<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Liveness gate asserts the wrong property.** "Every control mutates state"</span>
+<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>   is necessary-not-sufficient + false for mode-suppressed controls. Assert:</span>
+<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a>   (a) PIXEL-DELTA in the preview (screenshot-diff) — catches "writes a field</span>
+<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a>   nothing reads"; (b) a slider DRAG (pointermove) repaints — guards the</span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a>   <span class="in">`$state.raw`</span> silent-dead-preview trap; (c) a justified-no-op ALLOW-LIST</span>
+<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a>   (texture under HC, dropped pins) so suppression stays honest; (d) both</span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>   scoped resets clear only their scope; (e) keyboard reachability of every</span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a>   control.</span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Unified interaction contract (new Phase 1):** every control =</span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a>   live-preview-on-input → debounced-commit-to-history → same-field</span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>   coalescing. This gives the WIDGET undo for free (it has preview, lacks</span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a>   history) and makes rgc-style liveness safe. Every preview path MUST go</span>
+<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a>   through setSpec/writeThemePath (the <span class="in">`$state.raw`</span> trap).</span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**Vet the 8 by ΔE before naming** (run <span class="in">`preset-distinctness.test.ts`</span> on the</span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a>   candidates): Terminal/Darkroom and Ledger/Newsprint may be near-neighbors</span>
+<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a>   wasting the distinctness budget. Measure, then cut/merge.</span>
+<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a><span class="ss">7. </span>**Bolder internals (elevated):** the flagship isn't another R function — it's</span>
+<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a>   making the cascade a SHAREABLE/EMBEDDABLE/SELF-EXPLAINING artifact on the</span>
+<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a>   wire envelope + <span class="in">`consumedBy`</span> contract that already exist + are CI-enforced:</span>
+<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a>   ① theme PERMALINK (<span class="in">`#theme=base64url(envelope)`</span>) + embeddable</span>
+<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a>   <span class="in">`&lt;tabviz-theme-editor&gt;`</span> web component; ③ BIDIRECTIONAL <span class="in">`consumedBy`</span></span>
+<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a>   highlighter (hover cell → which tokens+behaviors made it — drift-gated, so</span>
+<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a>   free correctness); ② <span class="in">`explain_theme()`</span> prose from roleSource/consumedBy;</span>
+<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a>   ④ live DTCG-export panel + AMBIENT a11y/contrast badge (validateVerdicts is</span>
+<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a>   already computed). Ship ①+③ first; stage ②+④.</span>
+<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a><span class="fu">## Progress log (2026-06-08/09)</span></span>
+<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a>SHIPPED (each commit verified — svelte-check, DT-11/control-contract, snapshots,</span>
+<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a>R parity/render-smoke):</span>
+<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A0 ✓** studio <span class="in">`--studio-*`</span> editorial token layer (StudioShell + OklchPicker</span>
+<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a><span class="ss">  + </span>StudioChart) — one design language, no cold-slate.</span>
+<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A1 ✓** <span class="in">`Dropdown.svelte`</span> (keyboard-accessible custom listbox + aria-</span>
+<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a>  activedescendant) replaces native <span class="in">`&lt;select&gt;`</span> in the panel.</span>
+<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A3 ✓** the 4-axis TAB IA (IDENTITY/COLOR/FORM/EFFECTS, colored dots) replaces</span>
+<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a>  the long-scroll + "Advanced controls" junk-drawer. Both viewer + studio rail.</span>
+<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A2 ✓** the editorial Section voice (rgc "editor IS documentation"):</span>
+<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a>  <span class="in">`Section.svelte`</span> gained an opt-in editorial variant — mono-uppercase accent</span>
+<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a>  KICKER + serif display TITLE + visible prose LEDE (gated on <span class="in">`kicker`</span>/<span class="in">`lede`</span>;</span>
+<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a>  default compact voice unchanged for the column editor). The panel's four</span>
+<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a>  structural sections now render the magazine masthead (Tier 1 · Anchors /</span>
+<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a>  Identity / prose, etc.). Plus the earlier inline OKLCH coords on AnchorRow.</span>
+<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a>  New <span class="in">`--v2-text-display`</span> (18px); activates <span class="in">`--v2-font-serif`</span>.</span>
+<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A4 ✓** zero-dead-buttons. (a) Deleted the dead <span class="in">`tabviz_studio(plot)`</span></span>
+<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>  snippet that printed an inert R string in the GUI when onOpenStudio was</span>
+<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a>  unwired. (b) The two-scoped live reset gutter (Reset theme / Reset figure,</span>
+<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a>  dirty-gated) already existed and is now machine-verified. (c) The standing</span>
+<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a>  machine gate <span class="in">`panel-liveness.browser.ts`</span> (<span class="in">`npm run qa:liveness`</span>) WALKS every</span>
+<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a>  value/nav control across all four tabs + quick strip + figure band, operating</span>
+<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a>  each with REAL input and asserting a widget-or-panel delta. Current: **73</span>
+<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a>  controls verified live, 0 dead.** See CLAUDE.md for the hard-won design notes</span>
+<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a>  (comprehensive outerHTML+style-CSS fingerprint; keyboard-driven dropdowns;</span>
+<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a>  never-Escape; forest-column fixture; timeout-bounded everything).</span>
+<span id="cb1-197"><a href="#cb1-197" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B ✓ COMPLETE (27→9 cull)** — the headline. 9 committed identities, each</span>
+<span id="cb1-198"><a href="#cb1-198" aria-hidden="true" tabindex="-1"></a>  owning one axis, 4-dark/5-light (user-finalized): nejm(default)/ledger/</span>
+<span id="cb1-199"><a href="#cb1-199" aria-hidden="true" tabindex="-1"></a>  brutalist/aurora/terminal/newsprint/blueprint(light cyanotype)/synthwave/</span>
+<span id="cb1-200"><a href="#cb1-200" aria-hidden="true" tabindex="-1"></a>  dwarven. Two expert-review passes hardened it (terminal≈blueprint near-</span>
+<span id="cb1-201"><a href="#cb1-201" aria-hidden="true" tabindex="-1"></a>  neighbor fixed via Archivo + light flip; ledger paper saturated; honest</span>
+<span id="cb1-202"><a href="#cb1-202" aria-hidden="true" tabindex="-1"></a>  migration comments). FULL HARD DELETE done: 18 constructors + 18 man +</span>
+<span id="cb1-203"><a href="#cb1-203" aria-hidden="true" tabindex="-1"></a>  NAMESPACE + ~44 examples + ~43 docs migrated. R↔TS parity green; distinctness</span>
+<span id="cb1-204"><a href="#cb1-204" aria-hidden="true" tabindex="-1"></a>  gate re-tuned for 9; resolver-dispatch snapshot pruned. Commits fed2f9c /</span>
+<span id="cb1-205"><a href="#cb1-205" aria-hidden="true" tabindex="-1"></a>  2e6211a / 7751e53 / 355d6ef. theme_blend() deferred as a feature, not a</span>
+<span id="cb1-206"><a href="#cb1-206" aria-hidden="true" tabindex="-1"></a>  migration crutch. REMAINING (separate): the rest of the table-craft</span>
+<span id="cb1-207"><a href="#cb1-207" aria-hidden="true" tabindex="-1"></a>  (emphasis-row border, spanner rules, footnote band).</span>
+<span id="cb1-208"><a href="#cb1-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B-craft** the rgc green p-value PILL (<span class="in">`significant_style:"pill"`</span>).</span>
+<span id="cb1-209"><a href="#cb1-209" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**D1 ✓** CI column-width variant-aware measurement + parity gate.</span>
+<span id="cb1-210"><a href="#cb1-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-211"><a href="#cb1-211" aria-hidden="true" tabindex="-1"></a>NEXT (priority for the panel-polish + theme-elegance maintainer): COLOR-tab</span>
+<span id="cb1-212"><a href="#cb1-212" aria-hidden="true" tabindex="-1"></a>read-only mini-spine (give the stub weight) · B 27→8 cull + table-craft ·</span>
+<span id="cb1-213"><a href="#cb1-213" aria-hidden="true" tabindex="-1"></a>C bold internals (in-widget trace + permalink).</span>
+<span id="cb1-214"><a href="#cb1-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-215"><a href="#cb1-215" aria-hidden="true" tabindex="-1"></a><span class="fu">## Guardrails to keep green throughout</span></span>
+<span id="cb1-216"><a href="#cb1-216" aria-hidden="true" tabindex="-1"></a>DT-11 (<span class="in">`settings-band-contract`</span>), control-contract, resolver-dispatch snapshot</span>
+<span id="cb1-217"><a href="#cb1-217" aria-hidden="true" tabindex="-1"></a>(regen+review), preset-distinctness (rewrite for 8), R↔TS parity, serialize-</span>
+<span id="cb1-218"><a href="#cb1-218" aria-hidden="true" tabindex="-1"></a>weight, dist-smoke (contract surface). Docs re-render (index+studio). Bundle</span>
+<span id="cb1-219"><a href="#cb1-219" aria-hidden="true" tabindex="-1"></a>budget is a movable tripwire (bump freely).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
