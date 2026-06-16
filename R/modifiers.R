@@ -936,16 +936,16 @@ move_row <- function(x, row_id, to) {
 #' @return The modified input
 #' @export
 update_data <- function(x, data) {
-  data <- as.data.frame(data)
-
   if (inherits(x, "tabviz_proxy")) {
-    # For proxy: rebuild a full WebSpec from the attached webspec (if any)
-    # and send the serialized payload. Users on a proxy typically have the
-    # original spec, so accept either a data.frame or a WebSpec here.
+    # For proxy: the caller passes a fresh WebSpec (the documented contract);
+    # serialize + send it. Do NOT coerce `data` first — `as.data.frame()` on an
+    # S7 WebSpec strips it to a plain data.frame, which made S7_inherits below
+    # ALWAYS false and every proxy update abort (dead path since 2026-04-17;
+    # the only test checked the rejection case, so it passed for the wrong
+    # reason).
     if (S7_inherits(data, WebSpec)) {
       payload <- serialize_spec(data, include_forest = TRUE)
     } else {
-      # Minimal path: require caller to pass a WebSpec for proxy updates.
       cli_abort(c(
         "Proxy {.fn update_data} requires a WebSpec, not a raw data.frame.",
         i = "Build a fresh spec with {.fn tabviz} (or {.fn web_spec}) and pass it here."
@@ -955,7 +955,7 @@ update_data <- function(x, data) {
   }
 
   spec <- extract_spec(x)
-  spec@data <- data
+  spec@data <- as.data.frame(data)  # static path: a raw data.frame is expected
   repack(x, spec)
 }
 
@@ -1386,8 +1386,11 @@ set_figure_layout <- function(x, column_widths = NULL, row_kind_heights = NULL,
   # verbatim) by unwrapping to $value — without this the envelope's `ts`
   # used to survive as a garbage pin while the real pins vanished.
   unwrap <- function(v) {
+    # Require ALL THREE envelope keys (value/source/ts), not just value+source,
+    # so a user layout list that happens to have columns named `value`+`source`
+    # isn't mistaken for an envelope and silently collapsed to its `value`.
     if (is.list(v) && !is.null(names(v)) &&
-        all(c("value", "source") %in% names(v))) {
+        all(c("value", "source", "ts") %in% names(v))) {
       return(v[["value"]])
     }
     v

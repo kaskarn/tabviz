@@ -193,6 +193,23 @@ test_that("update_data on proxy requires a WebSpec", {
   expect_error(update_data(p, data.frame(a = 1)), "WebSpec")
 })
 
+test_that("update_data on proxy WITH a WebSpec sends updateData (positive path)", {
+  # Regression: as.data.frame() used to coerce the WebSpec before the
+  # S7_inherits check, so EVERY proxy update aborted — and the rejection test
+  # above passed for the wrong reason. This is the missing positive path.
+  sess <- fake_session()
+  p <- fake_proxy(sess)
+  spec <- web_spec(
+    data.frame(study = c("A", "B"), hr = c(1, 1.2), lo = c(0.8, 1), hi = c(1.2, 1.4)),
+    label = "study",
+    columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))
+  )
+  update_data(p, spec)
+  msg <- sess$calls()[[1]]$message
+  expect_equal(msg$method, "updateData")
+  expect_false(is.null(msg$args$spec))
+})
+
 test_that("invoke_proxy_method rejects non-proxy input", {
   expect_error(invoke_proxy_method(list(), "foo", list()), "tabviz_proxy")
 })
