@@ -426,6 +426,22 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-06-15 — **COLUMN-TYPE VARIANTS theme-control design + D30.** Designed
+  how themes should control column-type visual variants
+  (`docs/dev/column-type-variants.md`). Found two structurally-opposite ways to
+  craft a variant today with OPPOSITE theme-control properties: the rich but
+  author-only `VariantSpec` recipe (interval/badge — `variant` has no `kind`, so
+  `column_defaults` rejects it) vs. the kind-tagged enum option that's
+  theme-controllable for free (pvalue `significantStyle: pill` — already shipped
+  by 2 presets). Locked CORE: promote the variant SELECTION to a kind-tagged
+  enum `OptionSpec` (themeable via the governed `column_defaults` pipeline);
+  `VariantSpec` stays the recipe expansion; precedence theme < author-variant <
+  author-primitive; the ingest order already supports it
+  (`applyThemeColumnDefaults` before `compileVariants`). Open product fork — the
+  "exacting users" tier (expose recipe primitives à la badge, vs. a recipe-
+  authoring API) — registered as **D30** (default: expose primitives). Build
+  pending D30 confirmation.
+
 - 2026-06-15 — **SETTINGS-PANEL COVERAGE AUDIT + D29.** Diffed the full
   `ThemeInputs`/role/token/mechanism surface against the five live tabs +
   sanctioned store verbs to inventory every theme option with NO interactive
