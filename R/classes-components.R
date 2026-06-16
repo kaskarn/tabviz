@@ -2088,10 +2088,7 @@ viz_forest <- function(
       )
     })
   }
-  ts_annotations <- NULL
-  if (!is.null(annotations) && length(annotations) > 0) {
-    ts_annotations <- lapply(annotations, serialize_annotation)
-  }
+  ts_annotations <- serialize_annotations(annotations)
 
   ts_args <- list(scale = scale)
   if (!is.null(point))          ts_args$point         <- point
@@ -3093,22 +3090,7 @@ viz_ts_args <- function(scale, axis_range, axis_ticks, axis_gridlines,
   if (!is.null(null_value)) {
     checkmate::assert_number(null_value, finite = TRUE)
   }
-  if (!is.null(annotations) && !is.list(annotations)) {
-    cli_abort("{.arg annotations} must be a list of annotation objects (e.g. {.fn refline}).")
-  }
-  ts_annotations <- NULL
-  if (!is.null(annotations) && length(annotations) > 0) {
-    for (i in seq_along(annotations)) {
-      a <- annotations[[i]]
-      if (!(S7_inherits(a, ReferenceLine) || S7_inherits(a, CustomAnnotation))) {
-        cli_abort(c(
-          "All elements of {.arg annotations} must be {.fn refline} or {.fn forest_annotation} objects.",
-          "i" = "Element {i} is {.cls {class(a)[[1]]}}"
-        ))
-      }
-    }
-    ts_annotations <- lapply(annotations, serialize_annotation)
-  }
+  ts_annotations <- serialize_annotations(annotations)
   args <- list(scale = scale)
   if (!is.null(axis_range))     args$axisRange     <- axis_range
   if (!is.null(axis_ticks))     args$axisTicks     <- axis_ticks

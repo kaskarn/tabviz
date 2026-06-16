@@ -13,6 +13,6 @@ serialize_annotation(ann)
 A list suitable for JSON serialization, or NULL for unknown types
 }
 \description{
-Converts ReferenceLine, CustomAnnotation, or RiskOfBias objects to JSON-ready lists.
+Converts ReferenceLine or CustomAnnotation objects to JSON-ready lists.
 }
 \keyword{internal}

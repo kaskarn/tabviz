@@ -938,9 +938,31 @@ build_cell_styles_fast <- function(row, recipes) {
   cell_styles
 }
 
+# Validate + serialize a list of annotation objects to wire form. Shared by
+# viz_forest and viz_ts_args (viz_bar/boxplot/violin) so BOTH reject a
+# non-annotation element loudly — viz_forest previously skipped the validation
+# loop and degraded silently (serialize_annotation warns + returns NULL on an
+# unknown type). Returns NULL when there are no annotations.
+serialize_annotations <- function(annotations) {
+  if (is.null(annotations) || length(annotations) == 0) return(NULL)
+  if (!is.list(annotations)) {
+    cli_abort("{.arg annotations} must be a list of annotation objects (e.g. {.fn refline}).")
+  }
+  for (i in seq_along(annotations)) {
+    a <- annotations[[i]]
+    if (!(S7_inherits(a, ReferenceLine) || S7_inherits(a, CustomAnnotation))) {
+      cli_abort(c(
+        "All elements of {.arg annotations} must be {.fn refline} or {.fn forest_annotation} objects.",
+        "i" = "Element {i} is {.cls {class(a)[[1]]}}"
+      ))
+    }
+  }
+  lapply(annotations, serialize_annotation)
+}
+
 #' Serialize annotation objects
 #'
-#' Converts ReferenceLine, CustomAnnotation, or RiskOfBias objects to JSON-ready lists.
+#' Converts ReferenceLine or CustomAnnotation objects to JSON-ready lists.
 #'
 #' @param ann An annotation object
 #' @return A list suitable for JSON serialization, or NULL for unknown types
