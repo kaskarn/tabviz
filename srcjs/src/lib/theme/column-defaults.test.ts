@@ -2,6 +2,7 @@
 
 import { describe, it, expect } from "bun:test";
 import { applyThemeColumnDefaults, applyThemeColumnDefaultsToSpec, rebaseThemeColumnDefaults, rebaseSpecForThemeSwitch } from "./column-defaults";
+import { compileVariants } from "../../schema/variant-compile";
 import type { ColumnDef, WebSpec } from "../../types";
 
 // Explicit wire-shaped pvalue column (avoids any builder default-omission
@@ -155,5 +156,54 @@ describe("theme-switch re-base (#65)", () => {
     const a = applyThemeColumnDefaultsToSpec(mk([pcol({})]));
     const again = rebaseSpecForThemeSwitch(mk(a.columns as ColumnDef[]), cd);
     expect(optsOf(again.columns[0]!).stars).toBe(true);
+  });
+});
+
+// Themeable variant SELECTION — a theme picks a column-type's variant via
+// column_defaults.<type>.variant (interval ships 4 real recipe variants).
+describe("themeable variant selection (column_defaults.<type>.variant)", () => {
+  const icol = (opts: Record<string, unknown> = {}): ColumnDef =>
+    ({ id: "ci", field: "_interval_hr", type: "interval", header: "HR", options: { interval: opts } }) as unknown as ColumnDef;
+  const iv = (c: ColumnDef): Record<string, unknown> =>
+    (c as unknown as { options: { interval: Record<string, unknown> } }).options.interval;
+
+  it("a theme SELECTS a declared variant on an unset column", () => {
+    const out = applyThemeColumnDefaults([icol({})], { interval: { variant: "bracket_muted" } });
+    expect(iv(out[0]!).variant).toBe("bracket_muted");
+  });
+
+  it("AUTHOR-WINS: an author's non-default variant is kept", () => {
+    const out = applyThemeColumnDefaults([icol({ variant: "stacked" })], { interval: { variant: "bracket_muted" } });
+    expect(iv(out[0]!).variant).toBe("stacked");
+  });
+
+  it("the first-declared variant is the convention default → theme overrides it", () => {
+    const out = applyThemeColumnDefaults([icol({ variant: "traditional" })], { interval: { variant: "bracket_muted" } });
+    expect(iv(out[0]!).variant).toBe("bracket_muted");
+  });
+
+  it("an UNKNOWN variant id is rejected (can't select a recipe)", () => {
+    const out = applyThemeColumnDefaults([icol({})], { interval: { variant: "nope" } });
+    expect(iv(out[0]!).variant).toBeUndefined();
+  });
+
+  it("a hostile variant id is dropped by the XSS grammar gate", () => {
+    const out = applyThemeColumnDefaults([icol({})], { interval: { variant: '"><script>' } });
+    expect(iv(out[0]!).variant).toBeUndefined();
+  });
+
+  it("END-TO-END: themed variant → compileVariants expands the recipe into __resolved", () => {
+    const spec = {
+      version: "1.0",
+      columns: [icol({})],
+      data: { rows: [], groups: [], summaries: [] },
+      theme: { authoringInputs: { column_defaults: { interval: { variant: "bracket_muted" } } } },
+    } as unknown as WebSpec;
+    const compiled = compileVariants(applyThemeColumnDefaultsToSpec(spec));
+    const opts = iv(compiled.columns[0] as ColumnDef);
+    expect(opts.variant).toBe("bracket_muted");
+    // bracket_muted's recipe: brackets + en-dash separator
+    expect((opts.__resolved as Record<string, unknown>).boundsDelimiter).toEqual(["[", "]"]);
+    expect((opts.__resolved as Record<string, unknown>).boundsSeparator).toBe("–");
   });
 });

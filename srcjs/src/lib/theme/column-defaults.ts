@@ -154,6 +154,29 @@ export function applyThemeColumnDefaults(
         changed = true;
       }
     }
+    // Variant SELECTION is themeable too, but `variant` is NOT a declared
+    // OptionSpec — it's the recipe selector handled SPECIALLY everywhere (the
+    // editor's variant-card picker owns it; compileVariants reads it from
+    // options.<bucket>.variant; declaring it as a normal option would
+    // double-render an editor control). So merge it here on the same terms:
+    //   • only a DECLARED variant id (an unknown id can't select a recipe);
+    //   • XSS grammar (variant ids reach nothing raw, but ride the same
+    //     untrusted theme wire — gate them like every other value);
+    //   • AUTHOR-WINS against the first-declared variant (the convention
+    //     default `resolveVariant` falls back to), mirroring rule 1 above.
+    // compileVariants (which runs AFTER this merge in every ingest path)
+    // expands the selected id into options.<bucket>.__resolved.
+    const schemaVariants = getSchema(type)?.variants;
+    if (schemaVariants && schemaVariants.length > 0 && typeof defs.variant === "string") {
+      const id = defs.variant;
+      const firstId = schemaVariants[0]!.id;
+      const cur = mergedNs.variant;
+      const atDefault = cur === undefined || cur === null || cur === firstId;
+      if (schemaVariants.some((sv) => sv.id === id) && isValidPinValue(id) && atDefault && cur !== id) {
+        mergedNs.variant = id;
+        changed = true;
+      }
+    }
     if (!changed) return col;
     return { ...c, options: { ...(c.options ?? {}), [type]: mergedNs } } as ColumnDef;
   });

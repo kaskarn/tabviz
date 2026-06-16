@@ -37,14 +37,21 @@ The two existing `VariantSpec` users have OPPOSITE internal shapes — the crux:
 
 Unify into ONE system with two layers — NOT two parallel mechanisms:
 
-1. **Promote the variant SELECTION to a kind-tagged enum `OptionSpec`.** Give
-   each variant-having schema a `variant` option (`kind: "presentation"`,
-   `control: "segmented"`, `segments` = the schema's variant ids, `default` =
-   first variant, `consumedBy: ["renderCell","emitSource","editor"]`). That one
-   change makes the variant **theme-selectable** through the existing governed
-   `column_defaults` pipeline, and surfaces it in `column_schema()` for free.
-   (Open: declare it explicitly per schema vs. SYNTHESIZE it for any schema with
-   a `variants` array — the latter is DRYer and can't drift; preferred.)
+1. **Make the variant SELECTION theme-selectable via `column_defaults`.**
+   SHIPPED 2026-06-15 as a SPECIAL-CASE in `applyThemeColumnDefaults`
+   (`lib/theme/column-defaults.ts`) — NOT a declared `OptionSpec`. Rationale
+   discovered at build: `variant` is the recipe selector handled SPECIALLY
+   everywhere (the editor's variant-card picker owns it via `column.options.
+   <bucket>.variant`, NOT the options loop; `compileVariants` reads it directly),
+   so declaring it as a normal option would **double-render an editor control**.
+   The merge instead recognizes `column_defaults.<type>.variant` when the schema
+   has `variants`: a DECLARED id only, XSS-gated, AUTHOR-WINS against the
+   first-declared variant. Same governance as every other column-default; no
+   schema/editor/drift/introspection churn. Gate:
+   `column-defaults.test.ts` (6 variant cases incl. end-to-end merge→compile).
+   (Discovery gap noted: variant ids aren't yet in `column_schema()`
+   introspection — fine for shipping + our presets where the ids are known; a
+   future `column_variants(type)` would serve R-user discovery.)
 2. **`VariantSpec` stays the recipe DEFINITION.** Each enum value IS a variant
    id; `compileVariants()` still expands the selected one. No change to the
    compile machinery. The pvalue "pill" is the degenerate case: a trivial recipe

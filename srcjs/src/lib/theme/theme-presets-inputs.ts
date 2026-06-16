@@ -181,6 +181,8 @@ export const NEWSPRINT: ThemeInputs = defineInputs(
     column_defaults: {
       pvalue: { stars: true, starsColor: "ink2" },
       badge: { shape: "circle", size: "sm" },
+      // Broadsheet restraint: bounds in brackets, en-dash range.
+      interval: { variant: "bracket_muted" },
     },
   },
 );
@@ -415,7 +417,8 @@ export const TERMINAL: ThemeInputs = defineInputs(
     // square outlined badges (ASCII boxes).
     column_defaults: {
       numeric: { fontClass: "mono" },
-      interval: { fontClass: "mono" },
+      // Engineering ± notation suits the monospace terminal identity.
+      interval: { fontClass: "mono", variant: "plus_minus" },
       badge: { shape: "square", outline: true },
     },
   },
