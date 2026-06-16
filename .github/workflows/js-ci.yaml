@@ -128,6 +128,9 @@ jobs:
       - name: 'Gate: measure-then-commit row heights'
         run: bun run tests/browser/measure-rows.browser.ts
 
+      - name: 'Gate: column-config edits re-measure widths'
+        run: bun run tests/browser/column-config-remeasure.browser.ts
+
       - name: 'Gate: details panels'
         run: bun run tests/browser/details-panel.browser.ts
 

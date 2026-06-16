@@ -17,6 +17,14 @@ feedback, real layout) can be verified. Two kinds live here:
     measure→commit→re-measure loop settles (no oscillation).
     Run: `bun run tests/browser/measure-rows.browser.ts [--bundle <p>] [--headed]`.
 
+  - `column-config-remeasure.browser.ts` — **interactive column-config edits
+    re-measure widths** (regression for the 2026-06-16 "columns don't re-measure
+    after I change column config" report). Drives the store via the
+    `__tabvizStoreRegistry` dev hook: asserts a header widen / option change
+    re-fits the auto width, an explicit width drops the stale auto entry (so
+    `col.width` wins), and a user-resized width survives a later config edit.
+    Run: `bun run tests/browser/column-config-remeasure.browser.ts`.
+
   - `details-panel.browser.ts` — **details/disclosure panels** (row-types.md
     §6): a row with `details` markdown owns a full-width disclosure panel.
     Asserts a pre-expanded (initialState) panel renders with markdown→HTML, a

@@ -414,6 +414,11 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     if (compiled.header !== undefined) patch.header = compiled.header;
     if (compiled.type !== undefined) patch.type = compiled.type;
     deps.appendOp(ops.updateColumn(id, patch));
+    // Re-measure: a config change (header / type / options / variant / width)
+    // can change a column's content width. Auto columns re-fit to the new
+    // content; explicit-width columns drop their stale auto entry (see
+    // measureLeafColumn). userResized columns are skipped by the measure pass.
+    measureAutoColumns();
   }
 
   function updateColumnPatch(
@@ -678,11 +683,20 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       // out from under them), AND the live widget would render at one
       // width while `save_plot()` rendered at another. Kept in lockstep
       // with `calculateSvgAutoWidths` in svg-generator.ts.
+      //
+      // Hard pin: DROP any stale auto-measured entry so `col.width` wins. The
+      // render's width priority is measured-map > col.width, so a column
+      // switched auto→explicit-width in the config editor would otherwise keep
+      // showing its old auto width (the measured entry shadows the new pin).
       if (typeof col.width === "number") {
+        delete target[col.id];
         return;
       }
 
-      if (col.width != null && col.width !== "auto") return;
+      if (col.width != null && col.width !== "auto") {
+        delete target[col.id];
+        return;
+      }
 
       // Header is exact-measured separately (different font key/size).
       let maxWidth = col.header
@@ -756,7 +770,13 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         return;
       }
 
-      measureLeafColumn(col);
+      // Apply the user's runtime "configure column" override so a config edit
+      // (header / type / options / variant / width) re-measures against the NEW
+      // spec — matching what `effectiveColumnDefs` renders. Overrides are
+      // leaf-only (applyColumnEdits skips groups), so resolving here covers
+      // both top-level leaves and group children. The primary/label column is
+      // measured separately above via `allColumns[0]` (already effective).
+      measureLeafColumn(columnSpecOverrides[col.id] ?? col);
     }
 
     for (const colDef of spec.columns) {
