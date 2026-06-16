@@ -283,9 +283,9 @@ web_col <- function(
   }
 
   # Default header to field name. Use `is.null` directly (not `%||%`) because
-  # `utils-embed-fonts.R` overloads `%||%` to also coalesce empty strings —
-  # but viz_forest's "empty-header + show_header=FALSE" idiom passes `""`
-  # intentionally as a signal that the header strip should be reserved-but-
+  # the package `%||%` (canonical def in `R/conditions.R`) also coalesces empty
+  # strings — but viz_forest's "empty-header + show_header=FALSE" idiom passes
+  # `""` intentionally as a signal that the header strip should be reserved-but-
   # hidden. Preserving the empty string lets that pass through unchanged.
   if (is.null(header)) header <- field
 

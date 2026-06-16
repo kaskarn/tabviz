@@ -228,7 +228,7 @@ tabviz <- function(
     marker_shape = NULL,
     marker_opacity = NULL,
     marker_size = NULL,
-    weight = NULL,
+    weight = lifecycle::deprecated(),
     details = NULL,
     details_expanded = FALSE,
     theme = web_theme_nejm(),
@@ -290,6 +290,12 @@ tabviz <- function(
   } else axis_gridlines <- NULL
 
   # Resolve deprecated zoom_* args (now lives on set_zoom() modifier)
+  # `weight` is the legacy marker-area driver; `marker_size` supersedes it
+  # (both feed weightCol/marker sizing). Warn like the other deprecated args
+  # rather than threading it silently.
+  if (lifecycle::is_present(weight)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(weight)", "tabviz(marker_size)")
+  } else weight <- NULL
   if (lifecycle::is_present(zoom)) {
     lifecycle::deprecate_warn("0.9.0", "tabviz(zoom)", "set_zoom(zoom)")
   } else zoom <- 1.0

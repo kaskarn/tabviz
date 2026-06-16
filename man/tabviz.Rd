@@ -37,7 +37,7 @@ tabviz(
   marker_shape = NULL,
   marker_opacity = NULL,
   marker_size = NULL,
-  weight = NULL,
+  weight = lifecycle::deprecated(),
   details = NULL,
   details_expanded = FALSE,
   theme = web_theme_nejm(),
