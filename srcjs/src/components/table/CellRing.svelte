@@ -53,7 +53,7 @@
     if (!thresholds || thresholds.length === 0) {
       if (typeof color === "string") return color;
       if (Array.isArray(color) && color.length === 1) return color[0];
-      return colorOverride ?? "var(--tv-accent, var(--tv-accent))";
+      return colorOverride ?? "var(--tv-accent, #2563eb)";
     }
     // Threshold path: find the color slot for this value.
     // Threshold defaults when user passed only `thresholds`, not `color`:

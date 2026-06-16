@@ -51,8 +51,16 @@ function defaultPalette(theme: WebTheme): string[] {
 
 /** Interpolate a value in [0,1] across the palette stops. */
 function interpolatePalette(palette: string[], normalized: number): { hex: string; rgb: [number, number, number] } {
+  // A 0- or 1-stop palette can't interpolate. `opts.palette` is unvalidated
+  // spec data, so a single-color `["#abc"]` would make segment = -1 and
+  // `parseHex(palette[-1])` THROW (crashing the whole V8 export). Guard it.
+  if (palette.length === 0) return { hex: "rgb(128,128,128)", rgb: [128, 128, 128] };
+  if (palette.length === 1) {
+    const c = parseHex(palette[0]);
+    return { hex: `rgb(${c[0]},${c[1]},${c[2]})`, rgb: c };
+  }
   const stops = palette.length - 1;
-  const segment = Math.min(Math.floor(normalized * stops), stops - 1);
+  const segment = Math.max(0, Math.min(Math.floor(normalized * stops), stops - 1));
   const t = normalized * stops - segment;
   const c1 = parseHex(palette[segment]);
   const c2 = parseHex(palette[segment + 1]);

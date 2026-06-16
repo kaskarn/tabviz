@@ -1262,6 +1262,10 @@
     columnResizeScale = elementScale(e.currentTarget as HTMLElement);
     document.addEventListener("pointermove", onColumnResize);
     document.addEventListener("pointerup", stopColumnResize);
+    // pointercancel (touch/stylus interruption mid-drag) MUST tear down too, or
+    // the document listeners leak and `resizingColumn` sticks — the same
+    // belt-and-braces the other two seams (EdgeResize/RowEdgeHandles) carry.
+    document.addEventListener("pointercancel", stopColumnResize);
     window.addEventListener("keydown", onColumnResizeKey, true);
     window.addEventListener("blur", commitColumnResize);
   }
@@ -1283,6 +1287,7 @@
     columnReadout = null;
     document.removeEventListener("pointermove", onColumnResize);
     document.removeEventListener("pointerup", stopColumnResize);
+    document.removeEventListener("pointercancel", stopColumnResize);
     window.removeEventListener("keydown", onColumnResizeKey, true);
     window.removeEventListener("blur", commitColumnResize);
   }
@@ -2863,7 +2868,7 @@
        compositions) fell back to literals (12px/#888/inherit) in the DOM
        while the SVG export resolved the same tokens through the theme —
        a "typography inconsistent" smoking gun. These aliases mirror the
-       export's token table (svg-generator makeTokenResolvers); keep the
+       export's token table (svg-generator makeThemeResolver); keep the
        two in lockstep. Also gives --tv-text-cell-size its DOM consumer. */
     --tabviz-text-major: var(--tv-text-body-size, 14px);
     --tabviz-text-base: var(--tv-text-cell-size, var(--tv-text-body-size, 14px));

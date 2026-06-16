@@ -72,6 +72,7 @@
   let startY = 0;
   let startHeight = 0;
   let dragScale = 1;
+  let dragMoved = false; // crossed the 2px dead-zone — a pure click pins nothing
   let startPin: number | undefined; // pin value at drag start (undefined = unpinned)
 
   const ghostKind = $derived(dragKind ?? hoverKind);
@@ -104,13 +105,18 @@
     dragScale = elementScale(e.currentTarget as HTMLElement);
     startPin = store.rowKindHeights[kind];
     dragValue = Math.round(startHeight);
+    dragMoved = false;
     attachDragListeners();
   }
 
   function onResize(e: PointerEvent): void {
     if (dragKind === null || dragIndex === null || !store) return;
-    const proposed = startHeight + (e.clientY - startY) / dragScale;
-    const newHeight = Math.max(MIN_HEIGHT_PX, Math.round(proposed));
+    const delta = (e.clientY - startY) / dragScale;
+    // Dead-zone: a click with sub-2px pointer jitter must NOT pin the whole
+    // kind (matches EdgeResize / column-resize "zero-movement commits nothing").
+    if (!dragMoved && Math.abs(delta) < 2) return;
+    dragMoved = true;
+    const newHeight = Math.max(MIN_HEIGHT_PX, Math.round(startHeight + delta));
     if (newHeight !== dragValue) {
       dragValue = newHeight;
       // Live preview: per-kind pins are slice state (no op-log), so the

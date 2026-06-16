@@ -142,16 +142,22 @@
     font-style: italic;
   }
 
+  /* Read the per-token semantic BUNDLE vars (fg + bg), same as CellContent —
+     so the paint tool + theme.semantics.* edits reach p-value cells too. Raw
+     palette vars are the fallback when a bundle entry is null. */
   .cell-emphasis {
     font-weight: var(--tv-font-weight-bold, 600);
-    color: var(--tv-text, #1a1a1a);
+    color: var(--tv-semantic-emphasis-fg, var(--tv-text, #1a1a1a));
+    background-color: var(--tv-semantic-emphasis-bg, transparent);
   }
 
   .cell-muted {
-    color: var(--tv-text-subtle, #94a3b8);
+    color: var(--tv-semantic-muted-fg, var(--tv-text-subtle, #94a3b8));
+    background-color: var(--tv-semantic-muted-bg, transparent);
   }
 
   .cell-accent {
-    color: var(--tv-accent, #8b5cf6);
+    color: var(--tv-semantic-accent-fg, var(--tv-accent, #8b5cf6));
+    background-color: var(--tv-semantic-accent-bg, transparent);
   }
 </style>

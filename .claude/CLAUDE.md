@@ -201,7 +201,7 @@ interactivity-ux-plan,spec-first-1.0-plan,settings-overhaul-plan}.md`.
 - Measurement harness: `tests/browser/wysiwyg-diff.browser.ts` (widget at
   scale-1 vs generateSVG, numeric diffs + side-by-side PNGs).
 - The `--tabviz-*` aliases on `.tabviz-container` mirror svg-generator's
-  `makeTokenResolvers` table — keep the two in lockstep.
+  `makeThemeResolver` table — keep the two in lockstep.
 - **DOM↔export divergence ledger** (`src/lib/theme/dom-export-divergence.test.ts`,
   2026-06-14): the numeric wysiwyg gate can't see 1px line/color differences, so
   this RATCHET gate guards them. Any component token whose `consumedBy` is

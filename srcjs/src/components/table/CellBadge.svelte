@@ -67,10 +67,10 @@
         // "default" variant means "use the engagement color" — accent.
         // Lets authors flag THE special value (e.g. the Ring-bearer) so
         // it pops in accent without needing a hex literal.
-        default:        return "var(--tv-accent, var(--tv-accent, #2563eb))";
+        default:        return "var(--tv-accent, #2563eb)";
       }
     }
-    return colorOverride ?? "var(--tv-accent, var(--tv-accent, #2563eb))";
+    return colorOverride ?? "var(--tv-accent, #2563eb)";
   });
 
   const sizeClass = $derived(size === "sm" ? "badge-sm" : "badge-base");

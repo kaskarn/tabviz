@@ -56,7 +56,7 @@
   // semantic markerFill (accent/emphasis/muted) when active — slots in
   // below explicit column-level color but above theme default.
   const filledColor = $derived(
-    cellStyle?.color ?? options?.color ?? colorOverride ?? "var(--tv-accent, var(--tv-accent))"
+    cellStyle?.color ?? options?.color ?? colorOverride ?? "var(--tv-accent, #2563eb)"
   );
   const emptyColor = $derived(options?.emptyColor ?? "var(--tv-text-subtle)");
   const isMutedRow = $derived(cellStyle?.muted === true);

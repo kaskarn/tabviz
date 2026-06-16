@@ -1,4 +1,3 @@
-import { scaleLinear, scaleLog } from "d3-scale";
 import type {
   WebSpec,
   Row,
@@ -6,7 +5,6 @@ import type {
 import { computeBandIndexes } from "$lib/banding";
 import { resolveInteraction } from "$lib/interaction-resolve";
 import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
-import { resolveRowKind } from "$lib/layout/row-kind";
 import { type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";
@@ -1097,186 +1095,54 @@ export function createTabvizStore() {
     getEffectiveDomain: axis.getEffectiveDomain,
 
     /**
-     * Get current dimensions for export.
-     * Returns complete layout information for WYSIWYG SVG generation.
-     *
-     * Two export paths:
-     * - Browser download: precomputedLayout is used for exact WYSIWYG match
-     * - R save_plot(): Uses same algorithm but with text estimation (no DOM)
+     * Export dimensions for the browser SVG/PNG download (DownloadButton).
+     * The result is passed STRAIGHT to generateSVG as ExportOptions, which
+     * reads only: columnWidths, width, height, scale, forestWidth, xDomain,
+     * clipBounds. generateSVG recomputes ALL row/header/forest geometry from
+     * scratch via computeRowLayout — WYSIWYG comes from PINNING the on-screen
+     * columnWidths, not from any layout this method emits. So we return ONLY
+     * those consumed fields. (It used to also emit a hand-rolled, divergent
+     * row-height / forest-axis / header layout that nothing read — a future-bug
+     * trap removed 2026-06-16; the `precomputedLayout` ExportOptions hook was
+     * never wired and is unrelated.)
+     * R save_plot() uses a separate V8 path (text estimation, no DOM).
      */
     getExportDimensions() {
-      // Primary forest column's scale domain (plotRegion) for the legacy
-      // top-level export fields below.
-      const domain = primaryForestAxis.plotRegion;
-
-      // Build column order and positions sequentially
-      const columnOrder: string[] = [];
-      const columnPositions: Record<string, number> = {};
-      const columnWidthsOut: Record<string, number> = {};
-
-      // Widths are measured once (no dual pass) since interaction chrome lives
-      // in absolute overlays that don't consume flow width.
+      // Per-column widths: the on-screen weighted distribution (layout.flexWidths
+      // = what the user sees, incl. any aspect reshape), pinned faithfully by
+      // the export. Legacy fallbacks cover any column missing the map.
       const widths = columnWidths;
-
-      // Multi-flex: per-column widths come straight from the weighted
-      // distribution (layout.flexWidths) — what the user sees on screen,
-      // including any aspect reshape. The export pins these (renders them
-      // faithfully). Legacy fallbacks remain for any column missing the map.
       const flexWidths = layout.flexWidths ?? {};
-
-      // The primary column is the leftmost entry in allColumns — no separate label slot.
-      let currentX = 0;
-
-      // Process all columns in order (forest columns are inline)
+      const columnWidthsOut: Record<string, number> = {};
       for (const col of allColumns) {
-        columnOrder.push(col.id);
-        columnPositions[col.id] = currentX;
-
-        const userResized = userResizedIds.has(col.id);
-        let colWidth: number;
         const flexed = flexWidths[col.id];
+        let colWidth: number;
         if (typeof flexed === "number") {
           colWidth = flexed;
         } else if (col.type === "forest") {
           if (typeof col.width === "number") colWidth = col.width;
           else if (typeof col.options?.forest?.width === "number") colWidth = col.options.forest.width;
-          else if (userResized && typeof widths[col.id] === "number") colWidth = widths[col.id];
-          else colWidth = layout.flexWidths?.[col.id] ?? 200;
+          else if (userResizedIds.has(col.id) && typeof widths[col.id] === "number") colWidth = widths[col.id]!;
+          else colWidth = flexWidths[col.id] ?? 200;
         } else {
           colWidth = widths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
         }
         columnWidthsOut[col.id] = colWidth;
-        currentX += colWidth;
       }
 
-      // Build forest column info with independent axis data
-      const forestColumnsData: Array<{
-        columnId: string;
-        xPosition: number;
-        width: number;
-        xDomain: [number, number];
-        clipBounds: [number, number];
-        ticks: number[];
-        scale: "linear" | "log";
-        nullValue: number;
-        axisLabel: string;
-      }> = [];
-
-      for (const fc of forestColumns) {
-        const col = fc.column;
-        const forestOpts = col.options?.forest;
-        // Use the width we already computed for this column
-        const fcWidth = columnWidthsOut[col.id] ?? layout.flexWidths?.[col.id] ?? 200;
-        const fcScale = forestOpts?.scale ?? "linear";
-        const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
-
-        // Each forest column exports from its OWN resolved axis (per-context).
-        const fcAxis = forestAxes.get(col.id) ?? primaryForestAxis;
-
-        // Apply per-column pan/zoom override if present. Clip bounds track the
-        // override so svg-generator's CI clipping + arrow logic matches view.
-        // The scale domain stays plotRegion (export convention; the marker
-        // margin is the DOM↔export divergence flagged in the axis slice).
-        const override = axis.axisZooms[col.id]?.domain;
-        const fcDomain: [number, number] = override ?? fcAxis.plotRegion;
-        const fcClip: [number, number] = override ?? fcAxis.axisLimits;
-        let fcTicks = fcAxis.ticks;
-        if (override) {
-          // Regenerate ticks against the overridden domain so axis labels reflect zoom.
-          const tickScale = fcScale === "log"
-            ? scaleLog().domain([Math.max(override[0], 1e-9), Math.max(override[1], 1e-9)])
-            : scaleLinear().domain(override);
-          fcTicks = tickScale.ticks(6);
-        }
-        forestColumnsData.push({
-          columnId: col.id,
-          xPosition: columnPositions[col.id],
-          width: fcWidth,
-          xDomain: fcDomain,
-          clipBounds: fcClip,
-          ticks: fcTicks,
-          scale: fcScale,
-          nullValue: fcNullValue,
-          axisLabel: forestOpts?.axisLabel ?? "Effect",
-        });
-      }
-
-      // Non-forest viz column zoom overrides for the export pipeline. Only
-      // emit entries for columns the user has actually zoomed/panned — default
-      // rendering in svg-generator.ts computes its own domain from the data.
-      const vizColumnsData: Array<{ columnId: string; xDomain: [number, number]; clipBounds: [number, number] }> = [];
-      for (const vc of vizColumns) {
-        if (vc.column.type === "forest") continue;
-        const override = axis.axisZooms[vc.column.id]?.domain;
-        if (!override) continue;
-        vizColumnsData.push({
-          columnId: vc.column.id,
-          xDomain: override,
-          clipBounds: override,
-        });
-      }
-
-      // Calculate row heights and positions
-      const rowHeights: number[] = [];
-      const rowPositions: number[] = [];
-      let totalRowsHeight = 0;
-
-      // Same group-header row-height accounting as `layout`: group-header
-      // rows take the themed rowGroupPadding so this shape-for-export also
-      // reflects the true DOM row heights.
-      const rowGroupPaddingExport = spec?.theme?.spacing?.rowGroupPadding ?? 0;
-      for (const displayRow of displayRows) {
-        let h: number;
-        if (resolveRowKind(displayRow) === "spacer") h = layout.rowHeight / 2;
-        else if (displayRow.type === "group_header") h = layout.rowHeight + rowGroupPaddingExport;
-        else h = layout.rowHeight;
-        rowPositions.push(totalRowsHeight);
-        rowHeights.push(h);
-        totalRowsHeight += h;
-      }
-
-      // Header depth (1 or 2 for column groups)
-      const headerDepth = allColumnDefs.some(c => c.isGroup) ? 2 : 1;
+      const firstForestId = columns.forestColumns[0]?.column?.id ?? "";
+      const forestWidth = (columnWidthsOut[firstForestId] ?? flexWidths[firstForestId] ?? 200) * zoom;
 
       return {
-        // Column layout (unified order)
-        columnOrder,
         columnWidths: columnWidthsOut,
-        columnPositions,
-
-        // Forest columns (may be multiple)
-        forestColumns: forestColumnsData,
-
-        // Non-forest viz columns with user pan/zoom overrides
-        vizColumns: vizColumnsData,
-
-        // Row layout
-        rowHeights,
-        rowPositions,
-        totalRowsHeight,
-
-        // Header
-        headerHeight: layout.headerHeight,
-        headerDepth,
-
-        // Overall dimensions. When an aspect target is pinned, route
-        // through the lever ladder's `aspectTargetWidth` /
-        // `aspectTargetHeight` so downloads honour the requested
-        // aspect bit-exactly. ResizeObserver-measured
-        // scalableNaturalHeight can lag the layout state for one
-        // frame at slider end-points, and `naturalContentWidth` for
-        // width — using the lever target sidesteps both. Falls back
-        // to the natural-derived values when no aspect is pinned.
+        // Overall dimensions. When an aspect target is pinned, route through the
+        // lever ladder's aspectTarget* so downloads honour the requested aspect
+        // bit-exactly (ResizeObserver-measured naturals lag a frame at slider
+        // end-points); else fall back to the natural-derived values.
         width: (layout.aspectTargetWidth ?? naturalContentWidth) * zoom,
         height: (layout.aspectTargetHeight ?? scalableNaturalHeight ?? 400) * zoom,
-        naturalWidth: layout.aspectTargetWidth ?? currentX,
-        naturalHeight: layout.aspectTargetHeight
-          ?? (totalRowsHeight + layout.headerHeight + layout.axisHeight),
-
-        // Legacy fields for backwards compatibility
-        // Use actual first forest column width (may be resized) for consistent layout
-        forestWidth: (forestColumnsData[0]?.width ?? layout.flexWidths?.[columns.forestColumns[0]?.column?.id ?? ""] ?? 200) * zoom,
-        xDomain: domain,
+        forestWidth,
+        xDomain: primaryForestAxis.plotRegion,
         clipBounds: primaryForestAxis.axisLimits,
         scale: zoom,
       };

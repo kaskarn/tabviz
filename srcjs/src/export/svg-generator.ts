@@ -419,7 +419,10 @@ export function calculateSvgAutoWidths(
       let countWidth = 0;
       if (showGroupCounts) {
         const rowCount = countGroupDescendantRows(group.id, groups, rows);
-        countWidth = measureTextWidth(`(${rowCount})`, fontSize * 0.75, bodyFamily, 400) + GROUP_HEADER.GAP;
+        // Measure at the SAME label role token the group-count renders with
+        // (readLabelSize, not a baked body*0.75) so allocation == paint.
+        const countFontPx = parseFontSize(readLabelSize(cssVars) ?? "0.75rem");
+        countWidth = measureTextWidth(`(${rowCount})`, countFontPx, bodyFamily, 400) + GROUP_HEADER.GAP;
       }
       maxWidth = Math.max(maxWidth,
         group.depth * indentPx + GROUP_HEADER.CHEVRON_WIDTH + GROUP_HEADER.GAP +
@@ -2446,7 +2449,9 @@ function renderVizBar(
   const barHeight = Math.max(4, adjustedBarHeight);
 
   // Default colors from theme
-  const defaultColors = theme.series.map(s => s.fill) ?? VIZ_DEFAULT_SERIES_COLORS;
+  // `.map` never returns null, so the old `?? VIZ_DEFAULT…` was dead and an
+  // empty `theme.series` yielded [] → NaN-indexed colors. Guard on length.
+  const defaultColors = theme.series.length ? theme.series.map(s => s.fill) : VIZ_DEFAULT_SERIES_COLORS;
 
   effects.forEach((effect, idx) => {
     const value = row.metadata[effect.value] as number | undefined;
@@ -2543,7 +2548,9 @@ function renderVizBoxplot(
   const boxHeight = Math.max(8, (totalHeight - (numEffects - 1) * boxGap) / numEffects);
 
   // Default colors
-  const defaultColors = theme.series.map(s => s.fill) ?? VIZ_DEFAULT_SERIES_COLORS;
+  // `.map` never returns null, so the old `?? VIZ_DEFAULT…` was dead and an
+  // empty `theme.series` yielded [] → NaN-indexed colors. Guard on length.
+  const defaultColors = theme.series.length ? theme.series.map(s => s.fill) : VIZ_DEFAULT_SERIES_COLORS;
   const lineColor = readContentPrimary(cssVars) ?? "#1a1a1a";
   const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
   const outlierR = readVarPx(cssVars, "--tv-plot-point-size", 6) * 0.4;
@@ -2682,7 +2689,9 @@ function renderVizViolin(
   const maxWidth = violinHeight / 2;
 
   // Default colors
-  const defaultColors = theme.series.map(s => s.fill) ?? VIZ_DEFAULT_SERIES_COLORS;
+  // `.map` never returns null, so the old `?? VIZ_DEFAULT…` was dead and an
+  // empty `theme.series` yielded [] → NaN-indexed colors. Guard on length.
+  const defaultColors = theme.series.length ? theme.series.map(s => s.fill) : VIZ_DEFAULT_SERIES_COLORS;
   const lineColor = readContentPrimary(cssVars) ?? "#1a1a1a";
   const themeLineWidth = readVarPx(cssVars, "--tv-plot-line-width", 1.5);
   // Violin outline reads thinner than a forest-plot stroke by convention;
@@ -4640,7 +4649,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const paintCanvasBg = options.backgroundColor != null
     || (bgShellMode !== "float" && bgShellMode !== "transparent");
   if (paintCanvasBg) {
-    parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
+    // bgColor may be the caller-supplied options.backgroundColor (the one
+    // drawing-side fill that takes an external string) — escape at egress for
+    // consistency with the XSS wall; no-op on a legitimate color.
+    parts.push(`<rect width="100%" height="100%" fill="${escapeAttr(bgColor)}"/>`);
   }
 
   // ── Shell chrome (band + gradient + texture; export parity) ──────────────

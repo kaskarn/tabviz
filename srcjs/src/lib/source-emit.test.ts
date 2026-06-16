@@ -69,11 +69,11 @@ describe("emitJsSource — compact builder output", () => {
       data: DATA, label: "study",
       columns: [colInterval({
         point: "hr", lower: "lcl", upper: "ucl",
-        variant: "bracket", boundsSeparator: "/", boundsMuted: true,
+        variant: "bracket_muted", boundsSeparator: "/", boundsMuted: true,
       })],
     });
     const src = emitJsSource({ spec });
-    expect(src).toContain(`variant: "bracket"`);
+    expect(src).toContain(`variant: "bracket_muted"`);
     expect(src).toContain(`boundsSeparator: "/"`);
     expect(src).toContain("boundsMuted: true");
   });
