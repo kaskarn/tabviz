@@ -57,7 +57,7 @@ import { applyFigureLayoutColumnOrder } from "$lib/column-order";
 import { markdownToPlainText } from "$lib/markdown";
 import { computeAspectLadder, minRowHeightFor } from "$lib/layout/aspect-ladder";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
-import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
+import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect, toColumnWidthSpec } from "$lib/layout/flex-weights";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { activeHeaderVariant } from "$lib/header-variant";
 import {
@@ -999,14 +999,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     const explicit =
       typeof provided === "number" ? provided : typeof c.width === "number" ? c.width : null;
     const measured = autoWidths.get(c.id);
-    const natural = explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
-    return {
-      id: c.id,
-      naturalWidth: natural,
-      flexWeight: flexWeightForColumn(c),
-      explicitWidth: explicit,
-      minWidth: measured ?? undefined,
-    };
+    // Wire sourcing of explicit/measured; shared builder locks the spec shape.
+    return toColumnWidthSpec(c, {
+      explicit, measured, fallback: getEffectiveWidth(c, autoWidths),
+    });
   });
   // D20 item-4 (2026-06-13): the label/primary column is an ORDINARY
   // flexing column in the flex set — the live widget's layout-zoom
@@ -4325,15 +4321,9 @@ function generateSVGForAspectTarget(
     .map((c) => {
       const explicit = typeof c.width === "number" ? c.width : null;
       const measured = autoWidths.get(c.id);
-      const natural = explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? getEffectiveWidth(c, autoWidths);
-      return {
-        id: c.id,
-        naturalWidth: natural,
-        flexWeight: flexWeightForColumn(c),
-        explicitWidth: explicit,
-        minWidth: measured ?? undefined,
-        cap: flexCap,
-      };
+      return toColumnWidthSpec(c, {
+        explicit, measured, fallback: getEffectiveWidth(c, autoWidths), cap: flexCap,
+      });
     });
   const aspectWidths = resolveFlexWidths(
     aspectFlexSpecs,

@@ -9,6 +9,7 @@
 
 import { findSchemaForColumn } from "../../schema/dispatch";
 import type { ColumnSpec } from "../../types";
+import type { ColumnWidthSpec } from "./flex-distribute";
 
 /** Default flex weight for column types whose schema doesn't declare one. */
 export const DEFAULT_FLEX_WEIGHT = 1;
@@ -32,4 +33,30 @@ export function columnFlexesForAspect(col: ColumnSpec): boolean {
 /** Designed natural width (px) for a plot column with no content width, or null. */
 export function vizNaturalWidthForColumn(col: ColumnSpec): number | null {
   return findSchemaForColumn(col)?.naturalWidthPx ?? null;
+}
+
+/**
+ * Build a {@link ColumnWidthSpec} for the flex engine from a column + the
+ * CONTEXT-sourced inputs. SINGLE source for the spec SHAPE and the natural
+ * resolution ORDER (explicit → measured → schema viz natural → caller fallback),
+ * shared by the three parity-critical `resolveFlexWidths` call sites — the DOM
+ * (layout-zoom) and the export (svg-generator main + aspect). They differ only
+ * in HOW they source `explicit`/`measured`/`fallback`/`cap` (live store vs wire,
+ * container target vs grow-to-natural) — that stays per-caller — so this locks
+ * the shared structure against drift without conflating the legitimately
+ * different contexts. (D32: there was never a second flex *implementation* — one
+ * engine, three callers; this removes the only real duplication.)
+ */
+export function toColumnWidthSpec(
+  col: ColumnSpec,
+  opts: { explicit: number | null; measured: number | undefined; fallback: number; cap?: number },
+): ColumnWidthSpec {
+  return {
+    id: col.id,
+    naturalWidth: opts.explicit ?? opts.measured ?? vizNaturalWidthForColumn(col) ?? opts.fallback,
+    flexWeight: flexWeightForColumn(col),
+    explicitWidth: opts.explicit,
+    minWidth: opts.measured ?? undefined,
+    cap: opts.cap,
+  };
 }

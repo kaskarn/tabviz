@@ -11,6 +11,31 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — D32 investigated + closed (no second flex impl) + D31 wired
+
+Two roadmap arcs after the review convergence.
+
+**D31** — wired the 3 real interaction flags (show_legend / enable_collapse /
+enable_hover) as default-ON opt-outs in both render paths + deleted the
+featureless enable_select across R + TS + roster + serializer + tests. Decided
+(a). Details in the D31 commit / register.
+
+**D32** — the directive said "refactor the brittle elements." The flagged
+brittleness ("DOM and export have TWO separate flex-distribution
+implementations") turned out to be a MISCHARACTERIZATION: investigation found
+`columns.svelte.ts` only MEASURES naturals; the DOM's distribution is in
+`layout-zoom.svelte.ts` and uses `resolveFlexWidths` — the SAME engine the
+export uses. ONE engine, three callers. The real (smaller) duplication was the
+`ColumnWidthSpec` assembly copied across the 3 sites → extracted `toColumnWidthSpec`
+(`flex-weights.ts`) locking the spec shape + natural-resolution order; the
+context-specific sourcing (live store vs wire) + target (container-compress vs
+grow-to-natural, no container in the from-scratch export) stay per-caller because
+they're legitimately different. The from-scratch divergence is inherent +
+production-pinned (D20 item 4). Behavior byte-identical (layout-metrics +
+wysiwyg + hero + interaction-qa unchanged). Closed (a) with the corrected record.
+Lesson: investigate the actual code before believing a "two implementations"
+brittleness claim — the engine was already centralized.
+
 ## 2026-06-16 — systematic review Rounds 4–7 + CONVERGENCE ("basically perfect")
 
 Continued the recursive review/cleanup arc to convergence. Rounds 4–6 each ran 4

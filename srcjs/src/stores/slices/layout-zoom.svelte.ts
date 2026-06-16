@@ -55,7 +55,7 @@ import { computeContentHeights } from "$lib/width-utils";
 import { ASPECT, LAYOUT, RENDERING } from "$lib/rendering-constants";
 import { isAxisBearingColumn, columnAxisLabel } from "$lib/column-types";
 import { resolveFlexWidths, type ColumnWidthSpec } from "$lib/layout/flex-distribute";
-import { flexWeightForColumn, vizNaturalWidthForColumn, columnFlexesForAspect } from "$lib/layout/flex-weights";
+import { vizNaturalWidthForColumn, columnFlexesForAspect, toColumnWidthSpec } from "$lib/layout/flex-weights";
 import {
   getCssVars, readVarPx, readBodySize, readLabelSize,
 } from "$lib/theme/consumer-bridge";
@@ -458,18 +458,12 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         forestPin ??
         (userResized && typeof measured === "number" ? measured
           : typeof c.width === "number" ? c.width : null);
-      const natural =
-        explicit ?? measured ?? vizNaturalWidthForColumn(c) ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
-      return {
-        id: c.id,
-        naturalWidth: natural,
-        flexWeight: flexWeightForColumn(c),
-        explicitWidth: explicit,
-        // measured (the columns slice's canvas pipeline) doubles as the
-        // shrink FLOOR — the distribution must never cut into content.
-        minWidth: measured ?? undefined,
-        cap: flexCap,
-      };
+      // measured (the columns slice's canvas pipeline) doubles as the shrink
+      // FLOOR — the distribution never cuts into content (handled in the shared
+      // builder). Live-store sourcing of explicit/measured stays here.
+      return toColumnWidthSpec(c, {
+        explicit, measured, fallback: LAYOUT.DEFAULT_COLUMN_WIDTH, cap: flexCap,
+      });
     });
     // Growth requires an ABSORBER (D19, 2026-06-11): a plain table (no
     // flex/plot column, no pinned aspect) sizes to its CONTENT — the
