@@ -11,6 +11,48 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — systematic multi-round code review (Rounds 1–3, 12 streams)
+
+A recursive review/cleanup arc (goal: iterate until a full pass comes back
+"basically perfect"). Each round = 4 parallel critical-review agents over
+distinct subsystems, every finding triaged through a rational-design test before
+any change. Three rounds in; all three found REAL issues, so not yet "perfect" —
+but the theme system + the pure-utility browser/V8 split + the XSS egress wall
+all came back verified-clean (stated explicitly, true negatives).
+
+**R1** (R serialize/classes · TS stores · theme system · schema/authoring):
+interval emitSource dropped the D30 bounds primitives; emit default-strip drift
+(pictogram/range/img); range separator unified to one source; colImg R↔TS parity;
+ALL_SEMANTIC_TOKENS de-duplicated (4 copies → 1, type derived); numeric-FILTER
+kinds sourced from the canonical set (currency/percent now numeric-filterable);
+zoom + RESIZE_MIN constants hoisted; setSpec double theme-clone collapsed;
+R serialize_annotations() shared (viz_forest skipped validation); RiskOfBias
+doc-rot.
+
+**R2** (export drawing · layout geometry · R theme · Svelte components): dead
+VIZ_DEFAULT_SERIES_COLORS fallback (empty-series NaN colors); heatmap palette
+crash guard; group-count measured at the role token; **getExportDimensions trim**
+— removed a hand-rolled divergent row-height/forest layout that NOTHING read
+(F1, future-bug trap); column-resize pointercancel teardown; RowEdgeHandles 2px
+dead-zone; CellPvalue semantic-bundle vars; R read_theme legacy-blob SECURITY
+gate (pins bypassed the XSS grammar); .theme_v8_opts dedup; header_style "tint"
+honesty; dead themes-modes.R deleted.
+
+**R3** (pure libs · authoring/bridge · R core utils · R export/shiny):
+formatPvalue(0) NaN guard; arrayMin/Max (spread-free, latent-crash fix);
+**widget teardown leak** (Shiny store/subscription disposal); flex proxy drift;
+setTag modifier; **%||% consolidation** (5 defs → 1, character(0) crash fixed);
+**glyph roster-sync test** (documented invariant was unguarded);
+print.SplitForest cli-glue crash on brace keys; set_*_style proxy warn;
+**create_subset_spec** clone-then-override (split DROPPED 17 fields incl markers
++ label_column); **paginate composite-key** summary filter (hierarchical grouping
+dropped all summaries); D33 (save_plot systemfonts width-constant drift — flagged,
+needs visual validation).
+
+Decisions logged: D32 (DOM/export dual flex impls), D33 (systemfonts constants).
+Every batch validated (TS: type-check/lint/bun/vitest/wysiwyg/hero/interaction-qa;
+R: full testthat 542 contexts) + committed separately. Rounds continue.
+
 ## 2026-06-16 — tabular-nums under-measure FIXED + wysiwyg gate recovery (D32)
 
 Closed the two threads the column-width report opened.
