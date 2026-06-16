@@ -8,7 +8,7 @@ col_heatmap(
   field,
   header = NULL,
   width = NULL,
-  palette = c("#f7fbff", "#08306b"),
+  palette = NULL,
   min_value = NULL,
   max_value = NULL,
   decimals = 2,
@@ -25,8 +25,9 @@ col_heatmap(
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
-\item{palette}{Character vector of 2+ hex colors for interpolation
-(default: light blue to dark blue)}
+\item{palette}{Character vector of 2+ hex colors for interpolation.
+\code{NULL} (default) derives a theme ramp (light surface to accent), so the
+heatmap honors the active theme; pass an explicit palette to override.}
 
 \item{min_value}{Minimum value for color scale (NULL = auto from data)}
 

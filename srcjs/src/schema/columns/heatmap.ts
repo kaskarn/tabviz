@@ -20,13 +20,19 @@ export const HEATMAP_SCHEMA: ColumnSchema = {
   ],
   options: [
     {
+      // No fixed default: an omitted palette is THEME-DERIVED (the renderer's
+      // `palette ?? defaultPalette(theme)` — light surface → accent ramp), so
+      // the default heatmap honors the theme rather than baking a fixed blue.
+      // D27 (2026-06-16): aligns the schema declaration with what the authoring
+      // path already does (`colHeatmap` omits palette) and with R (`col_heatmap`
+      // palette defaults NULL) — the R↔TS default-drift is gone.
       key: "palette",
       label: "Palette",
       control: "custom",
-      default: ["#f7fbff", "#08306b"],
+      default: null,
       kind: "styling",
       customComponent: "PalettePicker",
-      hint: "2+ hex stops; interpolated by value",
+      hint: "2+ hex stops; interpolated by value (theme-derived when unset)",
       consumedBy: ["renderCell", "emitSource", "editor"],
     },
     {

@@ -1696,8 +1696,9 @@ col_range <- function(
 #' @param field Field name containing numeric values
 #' @param header Column header (default NULL, uses field name)
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
-#' @param palette Character vector of 2+ hex colors for interpolation
-#'   (default: light blue to dark blue)
+#' @param palette Character vector of 2+ hex colors for interpolation.
+#'   `NULL` (default) derives a theme ramp (light surface to accent), so the
+#'   heatmap honors the active theme; pass an explicit palette to override.
 #' @param min_value Minimum value for color scale (NULL = auto from data)
 #' @param max_value Maximum value for color scale (NULL = auto from data)
 #' @param decimals Number of decimal places (default 2)
@@ -1723,19 +1724,22 @@ col_range <- function(
 #' # Hide numeric value (color only)
 #' col_heatmap("value", show_value = FALSE)
 col_heatmap <- function(field, header = NULL, width = NULL,
-                        palette = c("#f7fbff", "#08306b"),
+                        palette = NULL,
                         min_value = NULL, max_value = NULL,
                         decimals = 2, show_value = TRUE,
                         scale = c("linear", "log", "sqrt"),
                         na_text = NULL, ...) {
   scale <- match.arg(scale)
-  checkmate::assert_character(palette, min.len = 2)
+  checkmate::assert_character(palette, min.len = 2, null.ok = TRUE)
   checkmate::assert_number(min_value, null.ok = TRUE)
   checkmate::assert_number(max_value, null.ok = TRUE)
   checkmate::assert_number(decimals, lower = 0, upper = 10)
   checkmate::assert_flag(show_value)
-  ts_args <- list(field = field, palette = as.list(palette),
+  # palette omitted ⇒ the renderer derives a THEME ramp (light surface →
+  # accent), matching TS `colHeatmap`. Only send an explicit palette.
+  ts_args <- list(field = field,
                   decimals = decimals, showValue = show_value, scale = scale)
+  if (!is.null(palette))   ts_args$palette  <- as.list(palette)
   if (!is.null(header))    ts_args$header   <- header
   if (!is.null(width))     ts_args$width    <- width
   if (!is.null(min_value)) ts_args$minValue <- min_value

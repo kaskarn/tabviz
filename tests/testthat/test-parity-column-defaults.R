@@ -20,13 +20,10 @@ drop_nulls <- function(x) {
 }
 
 # Per-type option keys whose R/TS default divergence is a KNOWN product decision,
-# not a bug to fix here. Keep this list SHRINKING.
-EXEMPT <- list(
-  # D27 (registered): default heatmap palette — R bakes a fixed blue
-  # c("#f7fbff","#08306b"); TS omits it so the renderer derives a theme-accent
-  # ramp. Which is the canonical default is a maintainer decision.
-  heatmap = "palette"
-)
+# not a bug to fix here. Keep this list SHRINKING — currently EMPTY: D27
+# (heatmap `palette`) was RESOLVED 2026-06-16 by dropping R's baked blue so both
+# sides omit the palette and the renderer derives a theme ramp (theme-first).
+EXEMPT <- list()
 
 # Pure-option column helpers. The field-carrying types (forest/interval/range/
 # viz*) entangle data fields with options — out of scope for a clean options

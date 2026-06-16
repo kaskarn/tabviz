@@ -115,7 +115,7 @@ export interface HeatmapBucketOptions {
   minValue?: number | "auto" | null;
   /** Density — Cell padding — theme decides exact values */
   paddingClass?: undefined;
-  /** Palette — 2+ hex stops; interpolated by value */
+  /** Palette — 2+ hex stops; interpolated by value (theme-derived when unset) */
   palette?: unknown;
   /** Prefix — Prepended literal (e.g. "$") */
   prefix?: string | null;

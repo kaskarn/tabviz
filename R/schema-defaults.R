@@ -53,7 +53,6 @@ schema_defaults <- list(
     decimals = 2,
     thousands_sep = FALSE,
     abbreviate = FALSE,
-    palette = c("#f7fbff", "#08306b"),
     show_value = TRUE,
     scale = "linear"
   ),

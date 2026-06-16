@@ -6,7 +6,8 @@ test_that("col_heatmap creates valid ColumnSpec", {
   expect_equal(col@field, "value")
   expect_equal(col@options$heatmap$decimals, 2)
   expect_true(col@options$heatmap$showValue)
-  expect_equal(col@options$heatmap$palette, c("#f7fbff", "#08306b"))
+  # D27: no baked palette — omitted ⇒ renderer derives a theme ramp (matches TS).
+  expect_null(col@options$heatmap$palette)
   expect_null(col@options$heatmap$minValue)
   expect_null(col@options$heatmap$maxValue)
 })
