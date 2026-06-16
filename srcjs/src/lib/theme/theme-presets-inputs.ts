@@ -165,7 +165,11 @@ export const NEWSPRINT: ThemeInputs = defineInputs(
     categorical: "okabe_ito",
     // C65: newspaper rows are tight — column-inches discipline.
     density_factor: 0.95,
-    shell_texture: "grain",
+    // No shell_texture: newsprint is `flush`, where the opaque table fully
+    // occludes a paper texture (grain was "a pixel-level no-op under flush" —
+    // it only leaked through the transparent first column, a bug fixed
+    // 2026-06-15). Dropped grain entirely (maintainer call) rather than ship
+    // an invisible texture. The identity rides the warm paper + serif fonts.
     type_scale_ratio: 1.2,
     fonts: {
       body: "'Frank Ruhl Libre', Georgia, serif",
