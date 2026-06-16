@@ -541,6 +541,16 @@ col_n <- function(field, header = "N", width = NULL, decimals = 0,
 #'   themed muted bounds), `"plus_minus"` (`"0.85 +/- 0.14"`, half-width as
 #'   the offset), or `"stacked"` (point on the first line, bounds on the
 #'   next). NULL keeps the default. Wire field: `options.interval.variant`.
+#' @param bounds_layout,bounds_content,bounds_open,bounds_close,bounds_separator,bounds_prefix,bounds_muted
+#'   Fine-tune the bounds rendering WITHIN a variant (the "exacting users"
+#'   tier). Each defaults NULL and defers to the selected `variant`; setting one
+#'   OVERRIDES the variant's value for that knob (e.g. `variant =
+#'   "bracket_muted", bounds_separator = "/"`). `bounds_layout` is `"row"`
+#'   (inline) or `"column"` (stacked); `bounds_content` is `"range"` or
+#'   `"half_width"`; `bounds_open`/`bounds_close` are the delimiter glyphs;
+#'   `bounds_separator` joins the two bounds; `bounds_prefix` precedes them;
+#'   `bounds_muted` (logical) renders them in smaller secondary text. Themes can
+#'   also set these via `set_column_default()`.
 #' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param sep `r lifecycle::badge("deprecated")` Use `separator` instead.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
@@ -571,7 +581,11 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
                          digits = NULL, thousands_sep = FALSE,
                          abbreviate = FALSE,
                          separator = " ", imprecise_threshold = NULL,
-                         variant = NULL, na_text = NULL,
+                         variant = NULL,
+                         bounds_layout = NULL, bounds_content = NULL,
+                         bounds_open = NULL, bounds_close = NULL,
+                         bounds_separator = NULL, bounds_prefix = NULL,
+                         bounds_muted = NULL, na_text = NULL,
                          ..., sep = lifecycle::deprecated()) {
   if (lifecycle::is_present(sep)) {
     lifecycle::deprecate_warn("0.9.0", "col_interval(sep)", "col_interval(separator)")
@@ -598,6 +612,15 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
       c("traditional", "bracket_muted", "plus_minus", "stacked")
     )
   }
+  # Bounds primitives (D30) — fine-tune within a variant; each overrides the
+  # variant's resolved value when set. NULL ⇒ defer to the variant.
+  if (!is.null(bounds_layout))  checkmate::assert_choice(bounds_layout, c("row", "column"))
+  if (!is.null(bounds_content)) checkmate::assert_choice(bounds_content, c("range", "half_width"))
+  checkmate::assert_string(bounds_open, null.ok = TRUE)
+  checkmate::assert_string(bounds_close, null.ok = TRUE)
+  checkmate::assert_string(bounds_separator, null.ok = TRUE)
+  checkmate::assert_string(bounds_prefix, null.ok = TRUE)
+  checkmate::assert_flag(bounds_muted, null.ok = TRUE)
   # TS-side `colInterval` constructs the synthetic `_interval_<point>`
   # field name and packs the options bundle; delegate.
   ts_args <- list(
@@ -612,6 +635,13 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
   if (!is.null(digits))                 ts_args$digits             <- digits
   if (!is.null(imprecise_threshold))    ts_args$impreciseThreshold <- imprecise_threshold
   if (!is.null(variant))                ts_args$variant            <- variant
+  if (!is.null(bounds_layout))          ts_args$boundsLayout       <- bounds_layout
+  if (!is.null(bounds_content))         ts_args$boundsContent      <- bounds_content
+  if (!is.null(bounds_open))            ts_args$boundsOpen         <- bounds_open
+  if (!is.null(bounds_close))           ts_args$boundsClose        <- bounds_close
+  if (!is.null(bounds_separator))       ts_args$boundsSeparator    <- bounds_separator
+  if (!is.null(bounds_prefix))          ts_args$boundsPrefix       <- bounds_prefix
+  if (!is.null(bounds_muted))           ts_args$boundsMuted        <- bounds_muted
   delegate_to_web_col("colInterval", ts_args, na_text = na_text, extra_args = list(...))
 }
 

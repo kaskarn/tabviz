@@ -99,5 +99,81 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
       hint: 'Show "—" when upper/lower > threshold',
       consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
     },
+    // ── Bounds primitives (D30) ───────────────────────────────────────────
+    // The knobs a `variant` resolves to, exposed for direct fine-tuning. All
+    // default null ⇒ the selected variant (or the traditional fallback) fills
+    // them; an explicitly-set value OVERRIDES the variant (`recipeFor` overlay).
+    // presentation kind ⇒ themeable via column_defaults (author-wins).
+    {
+      key: "boundsLayout",
+      label: "Bounds layout",
+      control: "segmented",
+      default: null,
+      kind: "presentation",
+      segments: [
+        { value: "row",    label: "Inline" },
+        { value: "column", label: "Stacked" },
+      ],
+      hint: "Bounds beside the point, or stacked below",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
+    {
+      key: "boundsContent",
+      label: "Bounds content",
+      control: "segmented",
+      default: null,
+      kind: "presentation",
+      segments: [
+        { value: "range",      label: "Range" },
+        { value: "half_width", label: "± half-width" },
+      ],
+      hint: "Full (lo, hi) range, or symmetric ± half-width",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
+    {
+      key: "boundsOpen",
+      label: "Open delimiter",
+      control: "text",
+      default: null,
+      kind: "presentation",
+      hint: "Glyph before the bounds (e.g. ( or [)",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
+    {
+      key: "boundsClose",
+      label: "Close delimiter",
+      control: "text",
+      default: null,
+      kind: "presentation",
+      hint: "Glyph after the bounds (e.g. ) or ])",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
+    {
+      key: "boundsSeparator",
+      label: "Bounds separator",
+      control: "text",
+      default: null,
+      kind: "presentation",
+      hint: "Between the two bounds (e.g. ', ' or '–')",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
+    {
+      key: "boundsPrefix",
+      label: "Bounds prefix",
+      control: "text",
+      default: null,
+      kind: "presentation",
+      hint: "Text before the bounds (e.g. '± ')",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
+    {
+      key: "boundsMuted",
+      label: "Muted bounds",
+      control: "toggle",
+      default: null,
+      kind: "presentation",
+      hint: "Render bounds in smaller, secondary text",
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
+    },
   ],
 };

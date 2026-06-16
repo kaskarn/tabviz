@@ -75,6 +75,61 @@ describe("interval renderer — happy path", () => {
   });
 });
 
+describe("interval renderer — D30 author primitive overrides", () => {
+  test("author boundsSeparator overrides the variant ('bracket_muted but with /')", () => {
+    const c = col({ interval: {
+      point: "p", lower: "l", upper: "u", decimals: 2,
+      variant: "bracket_muted", boundsSeparator: "/",
+    } });
+    const out = dispatch(c, { p: 0.85, l: 0.72, u: 0.99 }) as RenderGroup;
+    const bounds = out.children.find(
+      (n): n is RenderGroup => n.kind === "group" && (n.tags ?? []).includes("interval-range"),
+    )!;
+    // brackets from the variant, separator from the author override
+    expect(textOf(bounds)).toBe("[0.72/0.99]");
+  });
+
+  test("author boundsOpen/boundsClose override the delimiter", () => {
+    const c = col({ interval: {
+      point: "p", lower: "l", upper: "u", decimals: 2,
+      boundsOpen: "{", boundsClose: "}",
+    } });
+    const out = dispatch(c, { p: 0.85, l: 0.72, u: 0.99 }) as RenderGroup;
+    const bounds = out.children.find(
+      (n): n is RenderGroup => n.kind === "group" && (n.tags ?? []).includes("interval-range"),
+    )!;
+    expect(textOf(bounds)).toBe("{0.72, 0.99}");
+  });
+
+  test("author boundsMuted:false un-mutes a muted variant (false survives ??)", () => {
+    const c = col({ interval: {
+      point: "p", lower: "l", upper: "u", decimals: 2,
+      variant: "bracket_muted", boundsMuted: false,
+    } });
+    const out = dispatch(c, { p: 0.85, l: 0.72, u: 0.99 }) as RenderGroup;
+    const bounds = out.children.find(
+      (n): n is RenderGroup => n.kind === "group" && (n.tags ?? []).includes("interval-range"),
+    )!;
+    const leaves: RenderText[] = [];
+    const collect = (n: RenderNode): void => {
+      if (n.kind === "text") leaves.push(n as RenderText);
+      else if (n.kind === "group") (n as RenderGroup).children.forEach(collect);
+    };
+    collect(bounds);
+    // override wins: NOT muted despite the bracket_muted variant
+    for (const t of leaves) expect(t.style?.color).not.toBe("muted");
+  });
+
+  test("author boundsContent:half_width overrides a range variant", () => {
+    const c = col({ interval: {
+      point: "p", lower: "l", upper: "u", decimals: 2,
+      variant: "traditional", boundsContent: "half_width",
+    } });
+    const out = dispatch(c, { p: 0.85, l: 0.72, u: 0.98 });
+    expect(textOf(out)).toBe("0.85 (0.13)"); // (0.98-0.72)/2 = 0.13, parens from traditional
+  });
+});
+
 describe("interval renderer — edge cases", () => {
   test("missing point → naText", () => {
     const c = col({ interval: { point: "p", lower: "l", upper: "u" }, naText: "n/a" });

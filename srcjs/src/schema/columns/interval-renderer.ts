@@ -55,7 +55,8 @@ export interface IntervalRecipe {
  *  width-measurement formatter mirrors EXACTLY what this renderer draws —
  *  the two diverged for the stacked/plus_minus variants, mis-sizing the
  *  column; user feedback 2026-06-08). */
-export function recipeFor(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
+/** The variant-resolved recipe BEFORE author primitive overrides. */
+function baseRecipe(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
   // Prefer the pre-compiled __resolved shape (compileVariants ingest pass);
   // fall back to looking up the variant id directly so test fixtures and
   // ad-hoc render paths that bypass setSpec still work correctly.
@@ -74,6 +75,28 @@ export function recipeFor(opts: ColumnOptions["interval"] | undefined): Interval
     boundsDelimiter: ["(", ")"],
     boundsSeparator: ", ",
     boundsPrefix: "",
+  };
+}
+
+export function recipeFor(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
+  const base = baseRecipe(opts);
+  // D30 — overlay explicitly-authored primitives ON TOP of the variant recipe
+  // (author-primitive wins over author/theme variant). `?? base` so an unset
+  // primitive defers to the variant; an explicit value (incl. `boundsMuted:
+  // false`, which `??` preserves) overrides it. `boundsDelimiter` reassembles
+  // from the open/close primitives.
+  const i = opts;
+  if (i == null) return base;
+  return {
+    boundsLayout:    i.boundsLayout    ?? base.boundsLayout,
+    boundsContent:   i.boundsContent   ?? base.boundsContent,
+    boundsSeparator: i.boundsSeparator ?? base.boundsSeparator,
+    boundsPrefix:    i.boundsPrefix    ?? base.boundsPrefix,
+    boundsDelimiter: [
+      i.boundsOpen  ?? base.boundsDelimiter[0],
+      i.boundsClose ?? base.boundsDelimiter[1],
+    ],
+    boundsMuted:     i.boundsMuted     ?? base.boundsMuted,
   };
 }
 

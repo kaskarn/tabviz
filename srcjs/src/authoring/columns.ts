@@ -271,13 +271,24 @@ export interface ColIntervalArgs extends CommonColumnArgs {
   impreciseThreshold?: number | null;
   /** Display variant — see IntervalColumnOptions.variant. */
   variant?: IntervalColumnOptions["variant"];
+  // Bounds primitives (D30) — fine-tune within a variant; each overrides the
+  // variant's resolved value when set. See IntervalColumnOptions.
+  boundsLayout?: IntervalColumnOptions["boundsLayout"];
+  boundsContent?: IntervalColumnOptions["boundsContent"];
+  boundsOpen?: string;
+  boundsClose?: string;
+  boundsSeparator?: string;
+  boundsPrefix?: string;
+  boundsMuted?: boolean;
   naText?: string | null;
 }
 
 export function colInterval({
   point, lower, upper,
   decimals = 2, digits, thousandsSep = false, abbreviate = false,
-  separator = " ", impreciseThreshold, variant, naText,
+  separator = " ", impreciseThreshold, variant,
+  boundsLayout, boundsContent, boundsOpen, boundsClose,
+  boundsSeparator, boundsPrefix, boundsMuted, naText,
   ...common
 }: ColIntervalArgs): ColumnSpec {
   const interval: IntervalColumnOptions = {
@@ -291,6 +302,14 @@ export function colInterval({
     upper,
     impreciseThreshold,
     ...(variant != null ? { variant } : {}),
+    // Only emit set primitives — absent ⇒ the variant fills them.
+    ...(boundsLayout    != null ? { boundsLayout } : {}),
+    ...(boundsContent   != null ? { boundsContent } : {}),
+    ...(boundsOpen      != null ? { boundsOpen } : {}),
+    ...(boundsClose     != null ? { boundsClose } : {}),
+    ...(boundsSeparator != null ? { boundsSeparator } : {}),
+    ...(boundsPrefix    != null ? { boundsPrefix } : {}),
+    ...(boundsMuted     != null ? { boundsMuted } : {}),
   };
   const options = { interval, ...(naText != null ? { naText } : {}) };
   // Synthetic field name (`_interval_<point>`) so multiple interval columns

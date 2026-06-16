@@ -162,6 +162,20 @@ export interface ImgBucketOptions {
 export interface IntervalBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
+  /** Close delimiter — Glyph after the bounds (e.g. ) or ]) */
+  boundsClose?: string | null;
+  /** Bounds content — Full (lo, hi) range, or symmetric ± half-width */
+  boundsContent?: "range" | "half_width" | null;
+  /** Bounds layout — Bounds beside the point, or stacked below */
+  boundsLayout?: "row" | "column" | null;
+  /** Muted bounds — Render bounds in smaller, secondary text */
+  boundsMuted?: boolean;
+  /** Open delimiter — Glyph before the bounds (e.g. ( or [) */
+  boundsOpen?: string | null;
+  /** Bounds prefix — Text before the bounds (e.g. '± ') */
+  boundsPrefix?: string | null;
+  /** Bounds separator — Between the two bounds (e.g. ', ' or '–') */
+  boundsSeparator?: string | null;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */

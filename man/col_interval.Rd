@@ -17,6 +17,13 @@ col_interval(
   separator = " ",
   imprecise_threshold = NULL,
   variant = NULL,
+  bounds_layout = NULL,
+  bounds_content = NULL,
+  bounds_open = NULL,
+  bounds_close = NULL,
+  bounds_separator = NULL,
+  bounds_prefix = NULL,
+  bounds_muted = NULL,
   na_text = NULL,
   ...,
   sep = lifecycle::deprecated()
@@ -54,6 +61,15 @@ Default is NULL (no threshold).}
 themed muted bounds), \code{"plus_minus"} (\code{"0.85 +/- 0.14"}, half-width as
 the offset), or \code{"stacked"} (point on the first line, bounds on the
 next). NULL keeps the default. Wire field: \code{options.interval.variant}.}
+
+\item{bounds_layout, bounds_content, bounds_open, bounds_close, bounds_separator, bounds_prefix, bounds_muted}{Fine-tune the bounds rendering WITHIN a variant (the "exacting users"
+tier). Each defaults NULL and defers to the selected \code{variant}; setting one
+OVERRIDES the variant's value for that knob (e.g. \verb{variant = "bracket_muted", bounds_separator = "/"}). \code{bounds_layout} is \code{"row"}
+(inline) or \code{"column"} (stacked); \code{bounds_content} is \code{"range"} or
+\code{"half_width"}; \code{bounds_open}/\code{bounds_close} are the delimiter glyphs;
+\code{bounds_separator} joins the two bounds; \code{bounds_prefix} precedes them;
+\code{bounds_muted} (logical) renders them in smaller secondary text. Themes can
+also set these via \code{set_column_default()}.}
 
 \item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 

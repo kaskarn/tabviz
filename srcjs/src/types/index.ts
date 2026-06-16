@@ -203,6 +203,27 @@ export interface IntervalColumnOptions {
    *  by interval-renderer.ts. One of "traditional" | "bracket_muted" |
    *  "plus_minus" | "stacked". Defaults to "traditional". */
   variant?: "traditional" | "bracket_muted" | "plus_minus" | "stacked";
+  // ── Bounds primitives (D30, "exacting users" tier) ──────────────────────
+  // The recipe knobs a `variant` resolves to, EXPOSED for direct fine-tuning
+  // ("bracket_muted but with –"). Each is unset by default; the variant (or
+  // the traditional fallback) supplies it, and an explicitly-set primitive
+  // OVERRIDES the variant (precedence: theme-variant < author-variant <
+  // author-primitive — `recipeFor` overlays these over `__resolved`). All are
+  // themeable (presentation kind) so a house style can set them too.
+  /** Bounds on one line (`row`) or stacked under the point (`column`). */
+  boundsLayout?: "row" | "column";
+  /** Show the full range (`(lo, hi)`) or the symmetric half-width (`± d`). */
+  boundsContent?: "range" | "half_width";
+  /** Opening delimiter glyph around the bounds (e.g. `(` or `[`). */
+  boundsOpen?: string;
+  /** Closing delimiter glyph around the bounds (e.g. `)` or `]`). */
+  boundsClose?: string;
+  /** Separator between the two bounds (e.g. `, ` or `–`). */
+  boundsSeparator?: string;
+  /** Text before the bounds payload (e.g. `± `). */
+  boundsPrefix?: string;
+  /** Render the bounds in minor/muted text (smaller, secondary color). */
+  boundsMuted?: boolean;
   /** Compile-pass output (schema/variant-compile.ts). Renderers read
    *  primitive recipe fields from here instead of branching on `variant`
    *  directly. Populated at spec ingest; do not author by hand. */

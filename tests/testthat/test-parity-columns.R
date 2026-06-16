@@ -75,6 +75,26 @@ test_that("colInterval: point/lower/upper packed into options.interval", {
   testthat::expect_equal(shape$options$interval$upper, "ucl")
 })
 
+test_that("colInterval: D30 bounds primitives round-trip (R == TS) + default-absent", {
+  args <- list(point = "hr", lower = "lcl", upper = "ucl",
+               variant = "bracket_muted", boundsSeparator = "/",
+               boundsLayout = "column", boundsMuted = FALSE)
+  shape <- ts_call("colInterval", args)
+  r_col <- col_interval("hr", "lcl", "ucl", variant = "bracket_muted",
+                        bounds_separator = "/", bounds_layout = "column",
+                        bounds_muted = FALSE)
+  # R packs the same primitive overrides TS does
+  testthat::expect_equal(r_col@options$interval$boundsSeparator,
+                         shape$options$interval$boundsSeparator)
+  testthat::expect_equal(r_col@options$interval$boundsSeparator, "/")
+  testthat::expect_equal(r_col@options$interval$boundsLayout, "column")
+  testthat::expect_false(r_col@options$interval$boundsMuted)
+  # Unset primitives are ABSENT on both sides (defer to the variant — no drift)
+  plain <- col_interval("hr", "lcl", "ucl")
+  testthat::expect_null(plain@options$interval$boundsSeparator)
+  testthat::expect_null(plain@options$interval$boundsLayout)
+})
+
 test_that("colPvalue: default header 'P-value'", {
   shape <- ts_call("colPvalue", list(field = "p"))
   r_col <- col_pvalue("p")

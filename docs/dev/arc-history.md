@@ -11,6 +11,38 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — D30: interval "exacting users" tier + D27 heatmap parity
+
+Two register items closed (roadmap implementation is checkbox-complete; the
+register is now the live worklist).
+
+**D27 — heatmap default palette theme-derived everywhere.** R `col_heatmap`
+baked a fixed blue while TS omitted the palette (renderer derives a theme-accent
+ramp) — same default, different output on non-blue themes. Dropped R's blue
+default AND the TS schema's matching fixed default (→ `null`), so both omit and
+the renderer's `palette ?? defaultPalette(theme)` wins. `EXEMPT` list in
+test-parity-column-defaults.R now empty; rendered ramps track the accent (nejm
+steel-blue, terminal amber).
+
+**D30 = (a) — promote interval's bounds primitives to options.** The "exacting
+users" fork resolved to option (a): expose the recipe knobs a `variant` resolves
+to as real `presentation` options so authors fine-tune within a variant
+("bracket_muted but with `/`") and themes can set them too — harmonizing
+interval with badge. Added 7 options (`boundsLayout`/`boundsContent`/
+`boundsOpen`/`boundsClose`/`boundsSeparator`/`boundsPrefix`/`boundsMuted`), all
+default null. `recipeFor` refactored: `baseRecipe` (variant `__resolved` or
+fallback) then an author-primitive overlay (`i.boundsX ?? base.boundsX`; `??`
+preserves an explicit `boundsMuted:false`, and `boundsOpen`/`boundsClose`
+reassemble `boundsDelimiter`). Precedence theme-variant < author-variant <
+author-primitive. Wired TS `colInterval` + R `col_interval(bounds_*=)` (snake,
+validated) + schema + regenerated artifacts; `column_schema("interval")` lists
+all 7 as themeable; `set_column_default` reaches them via the camelCase schema
+key (its established vocabulary — intentional layering, not a wart). Verified: 4
+TS override tests, R parity round-trip + default-absent, end-to-end V8 render
+(`0.90 [0.80/1.01]` — variant brackets+muting, author `/`), all suites green
+(1456 bun + 317 vitest + R parity 74 contexts). Option (b) (named-recipe
+authoring API) stays post-1.0.
+
 ## 2026-06-16 — composed-cell width measurement (retire COMPOSED_TEXT_BUFFER)
 
 Replaced the fixed `+18px` `COMPOSED_TEXT_BUFFER` fudge — applied to

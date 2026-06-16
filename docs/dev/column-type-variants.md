@@ -63,22 +63,24 @@ author-primitive-override. The ingest order already supports it: export runs
 The theme fills the variant id (author-wins, only if unset) → compile resolves
 it → any author-set primitive overrides `__resolved`.
 
-## OPEN FORK — the "exacting users" tier (D30)
+## RESOLVED FORK — the "exacting users" tier (D30 = (a), 2026-06-16)
 
-"Still allow `VariantSpec` authoring for very exacting users" splits into two
+"Still allow `VariantSpec` authoring for very exacting users" split into two
 genuinely different asks:
 
-- **(a) Fine-tune within a variant** ("bracket_muted but with `–`"): requires the
-  recipe primitives to be EXPOSED as kind-tagged options (the badge model). Then
-  authors fine-tune (author-wins) AND themes can set them too. Means promoting
-  interval's hidden `bounds*` primitives to real options — makes interval
-  consistent with badge. Natural next step, cheap, fully governed.
-- **(b) Define a NEW named recipe** ("my house bounds style"): requires a
-  variant-AUTHORING API. JS has it (`registerSchema`/extend); R has no surface.
-  Bigger arc; overlaps with custom-column-type extension.
-
-→ **D30**, default **(a)** (expose recipe primitives; consistent with badge,
-unblocks both author + theme fine-tuning).
+- **(a) Fine-tune within a variant** ("bracket_muted but with `–`") — **SHIPPED.**
+  Interval's 7 `bounds*` primitives (`boundsLayout`/`boundsContent`/`boundsOpen`/
+  `boundsClose`/`boundsSeparator`/`boundsPrefix`/`boundsMuted`) are now real
+  `presentation` options. Each defaults null ⇒ defers to the `variant`; an
+  explicit value OVERRIDES it (`recipeFor` overlays author primitives over the
+  variant's `__resolved`; precedence theme-variant < author-variant <
+  author-primitive). Themeable too (`set_column_default(th,"interval",
+  boundsSeparator="/")`). Makes interval consistent with badge. Wired R + TS +
+  schema + introspection; 4 TS override tests + R parity + end-to-end render.
+- **(b) Define a NEW named recipe** ("my house bounds style") — still OPEN,
+  post-1.0, on demand. Requires a variant-AUTHORING API. JS has the substrate
+  (`registerSchema`/extend); R has no surface. Overlaps custom-column-type
+  extension — a separate arc.
 
 ## Implementation sketch (post-D30)
 
