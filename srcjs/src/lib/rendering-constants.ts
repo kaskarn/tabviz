@@ -312,6 +312,12 @@ export const AUTO_WIDTH = {
   /** Minimum width for auto-sized columns */
   MIN: 60,
 
+  /** Absolute floor for an explicitly SET / dragged column width — below the
+   *  auto-measure MIN, since a user may deliberately shrink a column narrower
+   *  than its measured content. Shared by the interactive resize path
+   *  (columns slice) and the split-store width estimator. */
+  RESIZE_MIN: 40,
+
   /** Maximum width for auto-sized data columns */
   MAX: 600,
 

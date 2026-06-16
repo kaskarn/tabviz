@@ -62,6 +62,22 @@ describe("emitJsSource — compact builder output", () => {
     expect(src).toContain(`upper: "ucl"`);
   });
 
+  test("interval D30 bounds primitives + variant round-trip to source", () => {
+    // Regression: emitSource hand-enumerated fields and silently dropped the
+    // D30 bounds primitives + variant. Now it spreads the whole bucket.
+    const spec = tabviz({
+      data: DATA, label: "study",
+      columns: [colInterval({
+        point: "hr", lower: "lcl", upper: "ucl",
+        variant: "bracket", boundsSeparator: "/", boundsMuted: true,
+      })],
+    });
+    const src = emitJsSource({ spec });
+    expect(src).toContain(`variant: "bracket"`);
+    expect(src).toContain(`boundsSeparator: "/"`);
+    expect(src).toContain("boundsMuted: true");
+  });
+
   test("titles are emitted when present", () => {
     const spec = tabviz({
       data: DATA, label: "study",

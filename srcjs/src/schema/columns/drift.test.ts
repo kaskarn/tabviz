@@ -19,8 +19,8 @@
 // Adding a consumer:
 //   1. Pick the behavior name(s) that read this option at runtime:
 //      "emitSource" | "sortKey" | "estimateWidth" | "formatValue" |
-//      "renderCell" | "contributeBanks" | "contributeConditions" |
-//      "aggregate" | "editor" (UI-only)
+//      "renderCell" | "naturalHeight" | "contributeBanks" |
+//      "contributeConditions" | "aggregate" | "editor" (UI-only)
 //   2. Add `consumedBy: ["emitSource", "renderCell"]` to the OptionSpec
 //   3. Remove the row from KNOWN_UNCONSUMED (if present)
 

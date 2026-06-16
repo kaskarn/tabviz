@@ -75,22 +75,17 @@ registerBehaviors("numeric", {
 });
 
 registerBehaviors("interval", {
+  // Spread the whole authoring bucket (like every sibling emitter) so the D30
+  // bounds primitives (boundsLayout/Content/Open/Close/Separator/Prefix/Muted)
+  // and `variant` round-trip to source — hand-enumerating the fields silently
+  // dropped them. `point` defaults to the column field; dropDefaults strips the
+  // standard format defaults.
   emitSource: (col) => {
     const o = bucket(col, "interval");
     return {
       name: "colInterval",
       typeArgs: dropDefaults(
-        {
-          point: o.point ?? col.field,
-          lower: o.lower,
-          upper: o.upper,
-          decimals: o.decimals,
-          digits: o.digits,
-          thousandsSep: o.thousandsSep,
-          abbreviate: o.abbreviate,
-          separator: o.separator,
-          impreciseThreshold: o.impreciseThreshold,
-        },
+        { ...o, point: o.point ?? col.field },
         { decimals: 2, thousandsSep: false, abbreviate: false, separator: " ", impreciseThreshold: undefined as unknown },
       ),
     };
@@ -184,7 +179,7 @@ registerBehaviors("pictogram", {
       { field: col.field, ...bucket(col, "pictogram") },
       { glyph: "person", glyphField: null, maxGlyphs: null, domain: null,
         halfGlyphs: false, color: null, emptyColor: null, size: "base",
-        layout: "row", valueLabel: false, labelFormat: null, labelDecimals: 0 },
+        layout: "row", valueLabel: false, labelFormat: null, labelDecimals: 1 },
     ),
   }),
 });
@@ -206,7 +201,7 @@ registerBehaviors("img", {
     name: "colImg",
     typeArgs: dropDefaults(
       { field: col.field, ...bucket(col, "img") },
-      { height: 40, shape: "square" },
+      { height: null, shape: "square" },
     ),
   }),
 });
@@ -226,7 +221,7 @@ registerBehaviors("range", {
     name: "colRange",
     typeArgs: dropDefaults(
       { field: col.field, ...bucket(col, "range") },
-      { separator: "–", decimals: null, thousandsSep: false, abbreviate: false },
+      { separator: " - ", decimals: null, thousandsSep: false, abbreviate: false },
     ),
   }),
 });

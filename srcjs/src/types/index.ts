@@ -746,9 +746,14 @@ export interface SemanticBundle {
  * in R/classes-theme.R). The dedicated `theme.semantics` block was a v1
  * carry-over that's no longer emitted.
  */
-export type SemanticToken =
-  | "emphasis" | "muted" | "accent"
-  | "bold" | "fill";
+/**
+ * The paint-tool semantic tokens in canonical order. SINGLE SOURCE: the store
+ * slices (semantics, sort-filter), the spec proxy validator, and createTabviz
+ * import this rather than re-declaring the array — the four copies had drifted.
+ */
+export const ALL_SEMANTIC_TOKENS = ["emphasis", "muted", "accent", "bold", "fill"] as const;
+
+export type SemanticToken = (typeof ALL_SEMANTIC_TOKENS)[number];
 
 export type Semantics = Record<SemanticToken, SemanticBundle>;
 

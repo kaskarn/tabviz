@@ -65,6 +65,15 @@ import {
 } from "$lib/layout/row-kind-heights";
 import { resolveInteraction } from "$lib/interaction-resolve";
 
+// Zoom bounds — single source for this slice (the clamp was repeated as bare
+// 0.5 / 2.0 at five sites incl. the localStorage-load path, where a forgotten
+// update would let a stale persisted value escape a new bound). AUTOFIT floor
+// lets aspect-fit shrink further than a manual zoom.
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.0;
+const ZOOM_STEP = 1.1;
+const AUTOFIT_ZOOM_FLOOR = 0.05;
+
 /**
  * Merge measured row heights (real DOM offsetHeight per row) over predicted
  * (estimator) content heights. Measured wins when present — the browser knows
@@ -641,12 +650,12 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   });
 
   const minZoomFloor = $derived(
-    deps.getTargetAspect() != null ? (autoFit ? 0.05 : 0.5) : 0.5,
+    deps.getTargetAspect() != null ? (autoFit ? AUTOFIT_ZOOM_FLOOR : MIN_ZOOM) : MIN_ZOOM,
   );
   const actualScale = $derived(
     autoFit
       ? Math.max(minZoomFloor, zoom * fitScale)
-      : Math.max(minZoomFloor, Math.min(2.0, zoom)),
+      : Math.max(minZoomFloor, Math.min(MAX_ZOOM, zoom)),
   );
   const isClamped = $derived(autoFit && fitScale < 1);
 
@@ -750,7 +759,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   }
 
   function setZoom(value: number) {
-    zoom = Math.max(0.5, Math.min(2.0, value));
+    zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
     persistZoomState();
     deps.markSource("zoom");
   }
@@ -761,8 +770,8 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
     deps.markSource("zoom");
   }
 
-  function zoomIn()  { setZoom(zoom * 1.1); }
-  function zoomOut() { setZoom(zoom / 1.1); }
+  function zoomIn()  { setZoom(zoom * ZOOM_STEP); }
+  function zoomOut() { setZoom(zoom / ZOOM_STEP); }
 
   function setAutoFit(value: boolean) {
     autoFit = value;
@@ -779,7 +788,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   function fitToWidth() {
     if (!containerWidth || !scalableNaturalWidth) return;
     // ResizeObserver returns the content box (excludes padding).
-    zoom = Math.min(2.0, Math.max(0.5, containerWidth / scalableNaturalWidth));
+    zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, containerWidth / scalableNaturalWidth));
     persistZoomState();
     deps.markSource("zoom");
   }
@@ -835,7 +844,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
           // RE-PERSISTS on the next setZoom (sticky across reloads).
           const finite = (v: unknown): v is number =>
             typeof v === "number" && Number.isFinite(v);
-          zoom = finite(state.zoom) ? Math.max(0.5, Math.min(2.0, state.zoom)) : 1.0;
+          zoom = finite(state.zoom) ? Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, state.zoom)) : 1.0;
           autoFit = typeof state.autoFit === "boolean" ? state.autoFit : true;
           maxWidth = finite(state.maxWidth) && state.maxWidth > 0 ? state.maxWidth : null;
           maxHeight = finite(state.maxHeight) && state.maxHeight > 0 ? state.maxHeight : null;

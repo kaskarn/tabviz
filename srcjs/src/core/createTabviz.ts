@@ -189,13 +189,6 @@ export function createTabviz(
     props: { store },
   });
 
-  // ALL_SEMANTIC_TOKENS — duplicated here from the store for the
-  // null-token clear-all path. Kept in lockstep with the same constant
-  // in tabvizStore.svelte.ts; a future R↔JS doc-test (G6) could enforce.
-  const ALL_SEMANTIC_TOKENS: ReadonlyArray<SemanticToken> = [
-    "bold", "emphasis", "muted", "accent", "fill",
-  ];
-
   return {
     update(nextSpec) {
       validateSpecVersion(nextSpec as { version?: unknown }, "WebSpec");
@@ -267,7 +260,6 @@ export function createTabviz(
       return store.getSource(field);
     },
     destroy() {
-      void ALL_SEMANTIC_TOKENS; // keep constant referenced; future use below
       unmount(component);
     },
     get store() {

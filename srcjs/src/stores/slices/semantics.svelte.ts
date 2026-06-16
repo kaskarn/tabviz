@@ -18,7 +18,7 @@
 //
 // Phase 0c-C1 PR6.
 
-import type { Row, SemanticToken } from "$types";
+import { ALL_SEMANTIC_TOKENS, type Row, type SemanticToken } from "$types";
 import { ops, type OpRecord } from "$lib/op-recorder";
 
 export type SemanticFlags = Partial<Record<SemanticToken, boolean>>;
@@ -32,10 +32,6 @@ export type PaintTool = {
   token: SemanticToken;
   scope: "row" | "cell";
 };
-
-const ALL_SEMANTIC_TOKENS: ReadonlyArray<SemanticToken> = [
-  "bold", "emphasis", "muted", "accent", "fill",
-];
 
 export interface SemanticsSliceDeps {
   getSpec: () => { data: { rows: readonly Row[] } } | null;

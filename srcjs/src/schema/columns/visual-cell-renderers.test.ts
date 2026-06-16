@@ -67,14 +67,15 @@ describe("Phase 4a — reference svg renderer", () => {
 });
 
 describe("Phase 4a — range svg renderer", () => {
-  test("formats min – max with default separator", () => {
+  test("formats min - max with default separator", () => {
     const out = call(
       "range",
       null,
       { range: { minField: "lo", maxField: "hi", decimals: 1 } },
       { cellWidth: 0, rowHeight: 0, row: { lo: 0.5, hi: 1.5 }, target: "svg" },
     );
-    expect(out).toBe("0.5 – 1.5");
+    // default separator = the range schema default " - " (single source, mirrors CellRange.svelte)
+    expect(out).toBe("0.5 - 1.5");
   });
 
   test("respects custom separator", () => {

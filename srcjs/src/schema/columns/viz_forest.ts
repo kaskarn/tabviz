@@ -49,7 +49,7 @@ export const VIZ_FOREST_SCHEMA: ColumnSchema = {
       kind: "core",
       customComponent: "EffectForestList",
       hint: "Multiple overlaid effects; use slots above for a single effect",
-      consumedBy: ["contributeBanks", "renderCell", "emitSource", "editor"],
+      consumedBy: ["contributeBanks", "renderCell", "naturalHeight", "emitSource", "editor"],
     },
   ],
 };

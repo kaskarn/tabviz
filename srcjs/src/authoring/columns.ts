@@ -645,13 +645,15 @@ export interface ColImgArgs extends CommonColumnArgs {
 }
 
 export function colImg({
-  // fallback default "[img]" matches R col_img (shown when an image URL fails
-  // to load) — was undefined here, an R↔TS default drift (2026-06-14).
-  field, height = 40, maxWidth, fallback = "[img]", shape = "square", naText, ...common
+  // R↔TS parity with R col_img: fallback default "[img]" (shown when an image
+  // URL fails to load); `height` UNSET by default (R omits it → renderer's own
+  // default; baking 40 here was a drift); `align` defaults to "center" (R injects
+  // it unless the caller overrides).
+  field, height, maxWidth, fallback = "[img]", shape = "square", naText, ...common
 }: ColImgArgs): ColumnSpec {
   const img: ImgColumnOptions = { height, maxWidth, fallback, shape };
   const options = { img, ...(naText != null ? { naText } : {}) };
-  return baseColumn(field, "img", options, common);
+  return baseColumn(field, "img", options, { align: "center", ...common });
 }
 
 export interface ColReferenceArgs extends CommonColumnArgs {

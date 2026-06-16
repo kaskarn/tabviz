@@ -132,10 +132,13 @@ describe("colBadge / colIcon / colStars / colPictogram / colRing", () => {
 });
 
 describe("colImg / colReference / colPercent / colRange / colEvents", () => {
-  test("colImg default height 40 + shape square", () => {
+  test("colImg defaults: height unset (R parity), shape square, align center", () => {
     const c = colImg({ field: "avatar" });
-    expect(c.options?.img?.height).toBe(40);
+    // height omitted by default (matches R col_img: NULL → renderer default).
+    expect(c.options?.img?.height).toBeUndefined();
     expect(c.options?.img?.shape).toBe("square");
+    // align defaults to "center" (matches R col_img), caller can override.
+    expect(c.align).toBe("center");
   });
   test("colReference default showIcon true + maxChars 30", () => {
     const c = colReference({ field: "url" });

@@ -10,7 +10,7 @@
 
   const { metadata, options, naText }: Props = $props();
 
-  const separator = $derived(options?.separator ?? " – ");
+  const separator = $derived(options?.separator ?? " - "); // range schema default (single source); mirrored by visual-svg-renderers
   const decimals = $derived(options?.decimals);
   const digits = $derived(options?.digits);
   const thousandsSep = $derived(options?.thousandsSep);

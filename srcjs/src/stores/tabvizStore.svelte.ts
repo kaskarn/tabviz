@@ -453,12 +453,6 @@ export function createTabvizStore() {
     // newSpec.targetAspect. Continuous-mode toggle stays as a viewer
     // preference.
     data.hydrateForSpec(newSpec);
-    // Theme reset target + baseThemeName + edit tracking: the theme slice
-    // owns initialTheme / initialWatermark too, so a single captureInitial
-    // call handles all five fields. Settings panel's "View source" feature
-    // emits `web_theme_<baseThemeName>() |> ...` off the same baseThemeName
-    // the slice records here.
-    theme.captureInitial(newSpec);
 
     // Coerce banding default to "row" when the data has no groups. The R
     // default is "group" (deepest-level alternation), but on group-less data
@@ -483,10 +477,13 @@ export function createTabvizStore() {
       }
     }
 
-    // Snapshot the post-coercion theme as the reset target. captureInitial
-    // (called again to refresh after the coercion above) deep-clones via
-    // JSON round-trip — see theme slice's cloneTheme for why not
-    // structuredClone. baseThemeName + edit-tracking reset is idempotent.
+    // Theme reset target + baseThemeName + initialWatermark + edit tracking:
+    // ONE captureInitial handles all five fields. Called AFTER the banding
+    // coercion so the snapshot is the post-coercion theme (the reset target) —
+    // a pre-coercion call would be overwritten here, so it's the only call.
+    // Deep-clones via JSON round-trip (see the theme slice's cloneTheme for why
+    // not structuredClone). Settings panel "View source" emits
+    // `web_theme_<baseThemeName>() |> ...` off the baseThemeName recorded here.
     theme.captureInitial(spec);
 
     // Measure auto-width columns

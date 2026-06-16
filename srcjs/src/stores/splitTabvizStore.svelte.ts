@@ -3,6 +3,7 @@ import { createTabvizStore } from "./tabvizStore.svelte";
 import { type ThemeName } from "$lib/theme/theme-presets";
 import { ops } from "$lib/op-recorder";
 import { assertValidSpec } from "$spec/validate.ts";
+import { AUTO_WIDTH } from "$lib/rendering-constants";
 
 // Column types whose width is driven by the visualization itself, not its
 // data text content. We skip these when estimating shared widths — their
@@ -46,7 +47,7 @@ function estimateColumnWidth(header: string | undefined, values: unknown[]): num
     const s = v == null ? "" : String(v);
     if (s.length > maxChars) maxChars = s.length;
   }
-  return Math.max(40, Math.min(480, maxChars * 8 + 24));
+  return Math.max(AUTO_WIDTH.RESIZE_MIN, Math.min(480, maxChars * 8 + 24));
 }
 
 /**

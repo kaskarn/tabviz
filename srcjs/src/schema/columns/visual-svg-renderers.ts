@@ -52,7 +52,7 @@ export const rangeSvgRenderer: CellFormatter = (_value, options, ctx) => {
   const meta = (ctx?.row ?? {}) as Record<string, unknown>;
   const minVal = meta[rangeOpts.minField];
   const maxVal = meta[rangeOpts.maxField];
-  const sep = rangeOpts.separator ?? " – ";
+  const sep = rangeOpts.separator ?? " - "; // match the range schema default (single source); mirror CellRange.svelte
   const { decimals, digits, thousandsSep, abbreviate } = rangeOpts;
   // Mirror CellRange.svelte EXACTLY: share the numeric formatting pipeline
   // (decimals / digits / thousandsSep / abbreviate) — the SVG path used to

@@ -457,7 +457,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
   }
 
   function setColumnWidth(columnId: string, width: number) {
-    const w = Math.max(40, width);
+    const w = Math.max(AUTO_WIDTH.RESIZE_MIN, width);
     columnWidths[columnId] = w;
     if (!userResizedIds.has(columnId)) {
       const next = new Set(userResizedIds);
@@ -470,11 +470,13 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
 
   /**
    * Live-preview a column width during drag without recording it to the op
-   * log. Callers should still call `setColumnWidth()` on pointerup to commit
-   * the final settled value.
+   * log. CONTRACT: every previewColumnWidth gesture MUST terminate in either
+   * `setColumnWidth()` (commit on pointerup) or `cancelPreviewColumnWidth()`
+   * (Escape) — it sets the user-resized pin on the first tick, so a gesture
+   * that does neither leaks a permanent pin that freezes the column.
    */
   function previewColumnWidth(columnId: string, width: number) {
-    const w = Math.max(40, width);
+    const w = Math.max(AUTO_WIDTH.RESIZE_MIN, width);
     columnWidths[columnId] = w;
     if (!userResizedIds.has(columnId)) {
       const next = new Set(userResizedIds);
@@ -495,7 +497,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     startWidth: number,
     wasUserResized: boolean,
   ) {
-    columnWidths[columnId] = Math.max(40, startWidth);
+    columnWidths[columnId] = Math.max(AUTO_WIDTH.RESIZE_MIN, startWidth);
     if (!wasUserResized && userResizedIds.has(columnId)) {
       const next = new Set(userResizedIds);
       next.delete(columnId);
@@ -1048,7 +1050,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       for (const [id, px] of Object.entries(block.columnWidths)) {
         if (!validIds.has(id) || keptResized.has(id)) continue;
         if (typeof px !== "number" || !Number.isFinite(px) || px <= 0) continue;
-        keptWidths[id] = Math.min(10000, Math.max(40, Math.round(px)));
+        keptWidths[id] = Math.min(10000, Math.max(AUTO_WIDTH.RESIZE_MIN, Math.round(px)));
         keptResized.add(id);
       }
     }

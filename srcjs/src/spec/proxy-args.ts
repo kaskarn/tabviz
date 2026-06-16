@@ -17,6 +17,7 @@
 // proxy.test.ts fixture covers behavior on the JS side; an R-side
 // doc-test will land in 0e).
 
+import { ALL_SEMANTIC_TOKENS } from "$types";
 import type {
   ColumnDef,
   ColumnFilter,
@@ -217,12 +218,8 @@ export interface SetAspectRatioArgs {
 // typed args, or `null` if the payload is invalid (proxy handler returns
 // silently in that case — matches today's defensive style).
 
-const VALID_SEMANTIC_TOKENS: ReadonlyArray<SemanticToken> = [
-  "bold", "emphasis", "muted", "accent", "fill",
-];
-
 function isSemanticToken(x: unknown): x is SemanticToken {
-  return typeof x === "string" && (VALID_SEMANTIC_TOKENS as ReadonlyArray<string>).includes(x);
+  return typeof x === "string" && (ALL_SEMANTIC_TOKENS as ReadonlyArray<string>).includes(x);
 }
 
 /** True iff `x` is a finite number. */

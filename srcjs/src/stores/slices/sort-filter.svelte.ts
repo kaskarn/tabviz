@@ -36,15 +36,13 @@ import { ops, type OpRecord } from "$lib/op-recorder";
 import {
   applyFilters, readField, findColumnByKey, applySortWithinGroups,
 } from "$lib/filter-sort-utils";
-import type { WebSpec } from "$types";
+import type { SemanticToken, WebSpec } from "$types";
+import { NUMERIC_COLUMN_TYPES } from "../../schema/columns";
 
-// Mirror the cells-slice / semantics-slice SemanticFlags shape inline so
-// this slice doesn't import from semantics (which doesn't exist yet).
-// When semantics ships, the dep-injected shape will harmonize.
-type SemanticFlags = Partial<Record<
-  "emphasis" | "muted" | "accent" | "bold" | "fill",
-  boolean
->>;
+// SemanticFlags shape, keyed by the canonical SemanticToken union (single
+// source in $types) — was an inline copy of the token list with a now-stale
+// "semantics doesn't exist yet" note.
+type SemanticFlags = Partial<Record<SemanticToken, boolean>>;
 export type StyleEditsMap = {
   rows: Record<string, SemanticFlags>;
   cells: Record<string, Record<string, SemanticFlags>>;
@@ -196,10 +194,13 @@ export function createSortFilterSlice(deps: SortFilterSliceDeps): SortFilterSlic
     const spec = deps.getSpec();
     if (!spec) return "text";
     const col = deps.getAllColumns().find((c) => c.field === field);
-    const numericTypes: ColumnSpec["type"][] = [
-      "numeric", "bar", "pvalue", "heatmap", "progress", "range",
-    ];
-    if (col && numericTypes.includes(col.type)) return "numeric";
+    // Numeric-FILTER kinds = the canonical numeric-category columns (single
+    // source — includes currency/percent/n/interval/events that previously
+    // fell through to a text filter) PLUS the viz columns that render a numeric
+    // value (bar/heatmap/progress are category "visual", so not in the set).
+    const isNumericFilterType = (t: ColumnSpec["type"]): boolean =>
+      NUMERIC_COLUMN_TYPES.has(t) || t === "bar" || t === "heatmap" || t === "progress";
+    if (col && isNumericFilterType(col.type)) return "numeric";
 
     const sample: unknown[] = [];
     for (const row of spec.data.rows) {
