@@ -42,7 +42,7 @@ import { getColumnDisplayText } from "$lib/formatters";
 import { compileColumn } from "../../schema/variant-compile";
 import { applyColumnOrder } from "$lib/column-order";
 import { resolveInteraction } from "$lib/interaction-resolve";
-import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
+import { glyphNaturalWidth, estimateTextWidth, tabularizeDigits } from "$lib/width-utils";
 import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
 import {
   rankTopK,
@@ -65,7 +65,7 @@ import {
   TEXT_MEASUREMENT,
 } from "$lib/rendering-constants";
 import {
-  getCssVars, readVarPx, readBodyFamily, readBodySize, readLabelSize,
+  getCssVars, readVar, readVarPx, readBodyFamily, readBodySize, readLabelSize,
 } from "$lib/theme/consumer-bridge";
 
 /**
@@ -603,6 +603,11 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     // Live scalable transform (>0, ≤~1 when downscaled-to-fit); clamped so a
     // transient 0/huge value can't blow up the division. 1 ⇒ no compensation.
     const scaleComp = Math.min(1, Math.max(0.2, deps.getActualScale?.() ?? 1));
+    // Cells render tabular-nums (figure-width digits) unless the theme opts out;
+    // the proportional measure under-counts numeric content, so normalize digits
+    // to the widest-advance digit before flat measurement (see tabularizeDigits).
+    const numericTabular = readVar(cssVars, "--tv-text-numeric-figures", "tnum") !== "normal";
+    const tab = (t: string) => (numericTabular ? tabularizeDigits(t) : t);
 
     // ── rank+top-K helpers ─────────────────────────────────────────────
     // Column auto-width = max over header + every cell. We don't need
@@ -728,8 +733,8 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         // resolver's per-span measure folds in scaleComp + ceil (see above).
         maxWidth = Math.max(maxWidth, composedW);
       } else {
-        const candidates = cells.filter((c) => !c.bold).map((c) => c.text);
-        const boldCandidates = cells.filter((c) => c.bold).map((c) => c.text);
+        const candidates = cells.filter((c) => !c.bold).map((c) => tab(c.text));
+        const boldCandidates = cells.filter((c) => c.bold).map((c) => tab(c.text));
         maxWidth = Math.max(maxWidth, exactMax(candidates, dataFontKey, baseFontSize));
         if (boldCandidates.length > 0) {
           maxWidth = Math.max(maxWidth, exactMax(boldCandidates, headerFontKey, baseFontSize));

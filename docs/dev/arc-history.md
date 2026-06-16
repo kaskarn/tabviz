@@ -11,6 +11,45 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — tabular-nums under-measure FIXED + wysiwyg gate recovery (D32)
+
+Closed the two threads the column-width report opened.
+
+**Tabular-nums under-measurement (the maintainer's "inaccuracy could be
+elsewhere" — it was, systemic across every numeric column).** Cells render
+`font-variant-numeric: tabular-nums` but width is measured with PROPORTIONAL
+advances, so figures under-measure ~0.9px/digit. Fix: `tabularizeDigits(text)`
+(`width-utils.ts`) normalizes every digit to the widest-advance digit before
+measuring, gated by `--tv-text-numeric-figures !== "normal"`, at the two FLAT
+measure sites — DOM (`columns.svelte.ts doMeasurement`) and export
+(`svg-generator.ts calculateSvgAutoWidths`). Composed cells (intervals) were
+already covered by `COMPOSED_SPAN_BEARING`, left untouched. Worst hero overflow
+7px→1px; hero-width gate GENERAL floor tightened 8→3px. layout-metrics snapshots
+unchanged; full bun+vitest green. The ~1px residual (true tnum figure is a hair
+wider than even "0") awaits a font-metrics regen — deferred.
+
+**WYSIWYG gate recovery (D32).** The component-cell fix (`ba165fd3`, last arc)
+correctly grew pvalue/badge naturals from 0 → real, which pushed the wysiwyg
+fixture's Σ-naturals past the 800 nominal and UNMASKED a pre-existing divergence
+the gate had never exercised: the DOM and export use TWO separate
+flex-distribution implementations (export = `resolveFlexWidths` with
+`max=Infinity`, grows a weight-3 flex column unbounded to 600; the DOM store has
+its own even-er path → 162). 104 breaches (flex-column widths + their cumulative
+xOffset cascade + dwarven header truncation). Diagnosis: it's the FROM-SCRATCH
+export flex path; production PINS widget widths (D20 item 4) and is unaffected,
+so the no-browser path has no DOM to be WYSIWYG with. Recovery, all honest +
+documented (D32): (1) the harness now mounts the DOM at the export's resulting
+width, not a fixed 800 — apples-to-apples totals, dropped raw artifact Δ
+433→56; (2) budgeted exceptions for the from-scratch flex widths + xOffset
+cascade, pointing at D32; (3) `findHeaderText` tolerates ellipsis truncation
+(the export truncates a header when its column is narrower than the DOM's —
+dwarven's wide EB Garamond; the truncated run carries the same font so
+typography stays measurable). Gate back to 0 breaches / 216 within budget. D32
+default = accept (pinned production unaffected); the real fix is unifying the
+two flex implementations onto `resolveFlexWidths` (a post-ship rationalization
+arc — two implementations of one concept is exactly the brittleness the roadmap
+says to shed).
+
 ## 2026-06-16 — hero-width gate generalized + TABULAR-NUMS under-measure found
 
 Generalized `hero-width-repro.browser.ts` from interval-cells-only to ALL data

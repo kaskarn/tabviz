@@ -132,6 +132,24 @@ function resolveFamilyMetrics(family: string | undefined): ResolvedFamily {
   return r;
 }
 
+/**
+ * Tabular-nums normalization for WIDTH MEASUREMENT. Cells render with
+ * `font-variant-numeric: tabular-nums` (the DOM `.cell-content` AND the SVG
+ * export), where every digit takes the figure (widest) advance — but the
+ * proportional metrics / Canvas measure each digit at its NARROWER per-glyph
+ * advance, so a numeric cell renders ~2px/digit WIDER than measured (a hero
+ * `839/14,752` events cell: render 87 vs proportional 70). Replacing digits
+ * with the widest-advance digit ("0" in the bundled faces) before measuring
+ * approximates the tabular width — closing most of the gap. The residual (the
+ * true tnum figure is a hair wider than even "0", and isn't derivable from the
+ * proportional table — Canvas can't render tnum) needs a regen-measured figure
+ * advance; tracked in arc-history. Apply ONLY when the theme renders tabular
+ * figures (`--tv-text-numeric-figures` ≠ "normal"); a no-op on non-digit text.
+ */
+export function tabularizeDigits(text: string): string {
+  return text.replace(/[0-9]/g, "0");
+}
+
 export function estimateTextWidth(
   text: string,
   fontSize: number,

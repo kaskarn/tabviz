@@ -54,18 +54,17 @@ const verdict = await page.evaluate(() => {
   const cells = [...document.querySelectorAll<HTMLElement>(".grid-cell.data-cell")];
   // INTERVAL cells are EXACT-measured (Canvas tree) → strict 0.5px floor.
   //
-  // The GENERAL floor (8px) is deliberately loose to absorb a KNOWN, tracked
-  // measurement gap: cells render `font-variant-numeric: tabular-nums` (DOM AND
-  // export), but the width measurement uses PROPORTIONAL glyph advances — so a
-  // numeric cell renders ~0.9px/digit WIDER than measured (a hero "839/14,752"
-  // events cell: render 87px vs proportional 70px). The proper fix is
-  // tabular-aware measurement (see arc-history 2026-06-16); until then the
-  // residual is ~7px for the hero's widest figure cells. The 8px floor still
-  // catches the bug class this gate exists for: a COMPONENT column dropping to
-  // AUTO_WIDTH.MIN (60px) → tens-of-px clips (the pvalue regression was 37px).
-  // A future wider tabular value clipping >8px will (correctly) fail here and
-  // force the tabular fix.
-  const STRICT = 0.5, GENERAL = 8;
+  // The GENERAL floor (3px) absorbs the SMALL residual of the tabular-nums
+  // approximation: cells render `font-variant-numeric: tabular-nums` (DOM AND
+  // export) but are measured via PROPORTIONAL advances, so the measure
+  // normalizes digits to the widest-advance digit (tabularizeDigits) — closing
+  // ~6 of the old 7px gap on the hero's widest figure cell ("839/14,752": was
+  // 7px over, now ~1px). The true tnum figure is a hair wider than even "0"
+  // (needs a regen-measured advance — tracked in arc-history); the ~1px residual
+  // lives under this 3px floor, which still catches the bug class this gate
+  // exists for (a COMPONENT column at AUTO_WIDTH.MIN → tens-of-px clips; the
+  // pvalue regression was 37px).
+  const STRICT = 0.5, GENERAL = 3;
   const bad: string[] = [];
   let intervals = 0, total = 0;
   for (const cell of cells) {
@@ -88,5 +87,5 @@ if (verdict.bad.length > 0) {
   console.error(verdict.bad.join("\n"));
   process.exit(1);
 }
-console.log("✓ hero cells fit their column boxes (intervals strict 0.5px, others ≤8px tabular residual)");
+console.log("✓ hero cells fit their column boxes (intervals strict 0.5px, others ≤3px tabular residual)");
 await browser.close();

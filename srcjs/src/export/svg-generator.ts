@@ -130,7 +130,7 @@ import {
   getColumnDisplayText,
   truncateString,
 } from "$lib/formatters";
-import { estimateTextWidth, measureTextWidth, glyphNaturalWidth, computeContentHeights } from "$lib/width-utils";
+import { estimateTextWidth, measureTextWidth, glyphNaturalWidth, computeContentHeights, tabularizeDigits } from "$lib/width-utils";
 import { escapeXml, escapeAttr } from "$lib/svg-text-utils";
 import {
   computeVizBarDomain,
@@ -497,9 +497,15 @@ export function calculateSvgAutoWidths(
     if (composedW != null) {
       maxWidth = Math.max(maxWidth, composedW);
     } else {
+      // Cells render tabular-nums (figure-width digits) unless the theme opts
+      // out; normalize digits to the widest-advance digit so the proportional
+      // estimate matches the tabular render (see tabularizeDigits). Mirrors the
+      // DOM measurement → DOM/export stay consistent.
+      const numericTabular = readVar(cssVarsLocal, "--tv-text-numeric-figures", "tnum") !== "normal";
       for (const c of cells) {
         const weight = c.bold ? 700 : 400;
-        maxWidth = Math.max(maxWidth, measureTextWidth(c.text, fontSize, bodyFamily, weight));
+        const t = numericTabular ? tabularizeDigits(c.text) : c.text;
+        maxWidth = Math.max(maxWidth, measureTextWidth(t, fontSize, bodyFamily, weight));
       }
     }
 
