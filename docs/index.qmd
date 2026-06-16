@@ -75,7 +75,7 @@ tabviz(
 :::
 
 ::: {.g-col-6}
-**Built for science.** Forest plots, multi-arm effects, p-values, intervals, journal themes (Cochrane, JAMA, Lancet, dark mode), and multi-page PDF pagination for long meta-analyses — all first-class.
+**Built for science.** Forest plots, multi-arm effects, p-values, intervals, a curated theme roster (the clinical `nejm` default plus editorial, design, and expressive presets), and multi-page PDF pagination for long meta-analyses — all first-class.
 :::
 
 ::: {.g-col-6}

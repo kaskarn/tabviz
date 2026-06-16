@@ -1,6 +1,6 @@
 ---
 title: "The Preset Gallery"
-description: "All 27 theme presets on one table — pick one, then make it yours with set_brand()"
+description: "All nine theme presets on one table — pick one, then make it yours with set_brand()"
 ---
 
 ```{r}
@@ -50,115 +50,50 @@ show <- function(theme, tag = NULL) {
 }
 ```
 
-## Journals
+The roster is the four registers `package_themes()` groups by: one
+**clinical** default, two **editorial** voices, two **design** movements,
+and four **expressive** moods. Each preset owns a distinct expressive axis.
 
-Restrained clinical authority. Blue-leaning by tradition; each carries its
-journal's editorial serif or sans.
+## Clinical
 
-```{r}
-show(web_theme_nejm())
-```
-
-```{r}
-show(web_theme_nejm())
-```
+Restrained clinical authority — the package default.
 
 ```{r}
 show(web_theme_nejm())
 ```
 
+## Editorial
+
+Typographic register: a warm-grain newsprint and a Cinzel-display fantasy
+serif.
+
 ```{r}
-show(web_theme_nejm())
+show(web_theme_newsprint())
 ```
 
 ```{r}
-show(web_theme_nejm())
-```
-
-```{r}
-show(web_theme_nejm())
-```
-
-## Modes
-
-```{r}
-show(web_theme_aurora())
+show(web_theme_dwarven(), tag = "Table 1")
 ```
 
 ## Design
 
-Editorial and typographic traditions — International Style, data-ink
-minimalism, newsprint, Material You, Solarized.
-
-```{r}
-show(web_theme_brutalist())
-```
-
-```{r}
-show(web_theme_brutalist())
-```
-
-```{r}
-show(web_theme_newsprint())
-```
-
-```{r}
-show(web_theme_newsprint())
-```
+Design-movement identities — color discipline and hard geometry.
 
 ```{r}
 show(web_theme_ledger())
 ```
 
 ```{r}
+show(web_theme_brutalist())
+```
+
+## Expressive
+
+The expressivity ceiling: glow, glass, neon, phosphor aliasing, and
+cyanotype grid — the moods that exercise the full surface.
+
+```{r}
 show(web_theme_aurora())
-```
-
-```{r}
-show(web_theme_ledger())
-```
-
-```{r}
-show(web_theme_aurora())
-```
-
-## Middle-earth
-
-```{r}
-show(web_theme_dwarven())
-```
-
-```{r}
-show(web_theme_dwarven())
-```
-
-```{r}
-show(web_theme_dwarven())
-```
-
-## Showcase
-
-The expressivity ceiling: glow, glass, textures, rubrication ink,
-monochrome ramps, caption chips.
-
-```{r}
-show(web_theme_synthwave())
-```
-
-```{r}
-show(web_theme_brutalist(), tag = "Table 1")
-```
-
-```{r}
-show(web_theme_newsprint())
-```
-
-```{r}
-show(web_theme_newsprint())
-```
-
-```{r}
-show(web_theme_ledger(), tag = "Table 1")
 ```
 
 ```{r}
@@ -166,15 +101,11 @@ show(web_theme_terminal())
 ```
 
 ```{r}
-show(web_theme_aurora(), tag = "Table 1")
-```
-
-```{r}
 show(web_theme_blueprint())
 ```
 
 ```{r}
-show(web_theme_ledger())
+show(web_theme_synthwave())
 ```
 
 ## Make it yours
@@ -191,10 +122,10 @@ my_theme <- tint_from_brand(my_theme, "subtle")
 
 # 3. Reach for a focused setter when one axis needs attention:
 my_theme <- my_theme |>
-  set_ink2("#862721") |>                      # rubrication ink (stars, chips)
   set_density("compact", factor = 0.95) |>
   set_effects(glow_intensity = "subtle", title_style = "bar") |>
-  set_status_palette(list(negative = "#D42320"))
+  set_status_palette(list(negative = "#D42320")) |>
+  set_pin("--tv-ink2", "#862721")             # rubrication ink (pinnable token)
 ```
 
 The full input model — anchors, polarity, monochrome, geometry, marks,

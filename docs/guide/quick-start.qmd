@@ -93,7 +93,7 @@ tabviz(meta_data,
 
 ## Applying themes
 
-tabviz ships with seven publication-ready themes — four journal-style presets and three illustrative LOTR-flavored themes:
+tabviz ships with nine curated presets, each owning a distinct expressive axis — from the restrained clinical default to fully illustrative looks:
 
 ```{r}
 #| layout-ncol: 2
@@ -105,7 +105,7 @@ tabviz(meta_data[1:3, ],
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_nejm(), title = "JAMA"
+  theme = web_theme_nejm(), title = "nejm"
 )
 
 tabviz(meta_data[1:3, ],
@@ -114,12 +114,11 @@ tabviz(meta_data[1:3, ],
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_nejm(), title = "Lancet"
+  theme = web_theme_ledger(), title = "ledger"
 )
 ```
 
-**Journal presets**: `web_theme_nejm()` (default), `web_theme_nejm()`, `web_theme_nejm()`, `web_theme_aurora()`.
-**LOTR presets**: `web_theme_dwarven()`, `web_theme_dwarven()`, `web_theme_dwarven()`.
+**The nine presets**: `web_theme_nejm()` (default), `web_theme_ledger()`, `web_theme_brutalist()`, `web_theme_aurora()`, `web_theme_terminal()`, `web_theme_newsprint()`, `web_theme_blueprint()`, `web_theme_synthwave()`, `web_theme_dwarven()`.
 
 See [Themes](themes.qmd) for customization, the `set_*()` modifier family, and how to register your own preset.
 
@@ -210,5 +209,5 @@ tabviz(direction_data,
 | [Cell Styling](cell-styling.qmd) | Conditional formatting for individual cells |
 | [Row Groups](row-groups.qmd) | Collapsible groups, hierarchical nesting |
 | [Forest Plots](visualizations/forest-plots.qmd) | Advanced forest column options |
-| [Themes](themes.qmd) | Preset themes (4 journal + 3 LOTR) and customization |
+| [Themes](themes.qmd) | The nine preset themes and customization |
 | [Export → Pagination](export.qmd#pagination) | Break long tables across multiple PDF pages |

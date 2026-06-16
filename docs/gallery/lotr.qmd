@@ -10,12 +10,12 @@ library(tabviz)
 ::: {.callout-note}
 ## Pre-release easter egg
 
-The themes and examples on this page (`web_theme_dwarven()`, `web_theme_dwarven()`, `web_theme_dwarven()`, plus a set of bespoke pictogram glyphs — used below: `gem`, `ale_mug`, `pickaxe`, `sword`, `jar`, `pie`, `mushroom`, plus more in `glyph_registry_names()`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
+The theme and examples on this page (`web_theme_dwarven()`, plus a set of bespoke pictogram glyphs — used below: `gem`, `ale_mug`, `pickaxe`, `sword`, `jar`, `pie`, `mushroom`, plus more in `glyph_registry_names()`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
 
-These three tables exercise: the new `col_pictogram()` and `col_ring()` columns, threshold-driven `col_badge()` shapes, theme-declared web fonts (`Cinzel`, `EB Garamond`, `Cormorant Garamond`, `IM Fell English`, `UnifrakturMaguntia`), and bespoke SVG glyphs designed to read at 14 px.
+These three tables exercise: the new `col_pictogram()` and `col_ring()` columns, threshold-driven `col_badge()` shapes, theme-declared web fonts (`Cinzel`, `EB Garamond`), and bespoke SVG glyphs designed to read at 14 px.
 :::
 
-A late evening, an unexpected guest, three ledgers from three peoples. Each table demonstrates a complete editorial-register theme — palette, typography, glyphs — paired with content that winks at its source material.
+A late evening, an unexpected guest, three ledgers from three peoples — all dressed in the `dwarven` preset. Each table pairs a complete editorial-register theme — palette, typography, glyphs — with content that winks at its source material.
 
 ---
 
@@ -235,16 +235,16 @@ tabviz(
 
 ## Bring your own theme
 
-The three themes above are picked up automatically by the in-widget theme switcher (look for the **lotr** tab) when `enable_themes = "default"` — `package_themes()` returns them under the `lotr` category. To use one explicitly:
+The `dwarven` theme above is picked up automatically by the in-widget theme switcher (look for the **editorial** tab) when `enable_themes = "default"` — `package_themes()` returns it under the `editorial` category. To use it explicitly:
 
 ```r
 tabviz(
   data, label = "x",
   columns = list(...),
-  theme = web_theme_dwarven()   # or _elvish() or _hobbit()
+  theme = web_theme_dwarven()
 )
 ```
 
 The themes declare their Google Fonts via `web_fonts = list(web_font(family, url), …)`. The widget injects `<link rel="stylesheet">` tags on mount and dedupes across multiple widgets on the same page. `rsvg`/PNG export uses the system font fallback (Georgia, serif) since `rsvg` does not fetch web fonts at render time — install the family locally for high-fidelity offline export.
 
-The bespoke pictogram glyphs (`pickaxe`, `harp`, `mushroom`, …) live in `glyph_registry_names()` alongside the core set (`person`, `dot`, `star`, …) and are usable from any theme — `col_pictogram(field, glyph = "harp")` works on the JAMA preset just as well, it just doesn't *match*.
+The bespoke pictogram glyphs (`pickaxe`, `harp`, `mushroom`, …) live in `glyph_registry_names()` alongside the core set (`person`, `dot`, `star`, …) and are usable from any theme — `col_pictogram(field, glyph = "harp")` works on the `nejm` preset just as well, it just doesn't *match*.

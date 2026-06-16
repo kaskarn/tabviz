@@ -21,20 +21,21 @@ For the conceptual model see the [Themes guide](../guide/themes.qmd) and the
 ## Preset themes
 
 `web_theme_*()` builders return a fully resolved `WebTheme`. They take no
-arguments — chain modifiers to customize. Seven presets ship: four
-**journal** themes (restraint-led, designed for publication) and three
-**LOTR** themes (illustrative, exercise the full surface for talks /
-blog posts / themed reports).
+arguments — chain modifiers to customize. Nine presets ship, each owning a
+distinct expressive axis: the **clinical** default `nejm`, two **editorial**
+voices, two **design** movements, and four **expressive** moods.
 
-| Theme | Source | Purpose | Notable defaults |
-|---|---|---|---|
-| [`web_theme_nejm()`](#web_theme_cochrane) | `R/themes.R` | The package default | Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density |
-| [`web_theme_nejm()`](#web_theme_lancet)     | `R/themes.R` | Lancet-style editorial | Navy + refined old-gold + warm cream, Georgia serif |
-| [`web_theme_nejm()`](#web_theme_jama)         | `R/themes.R` | JAMA / print journals | Pure black-and-white, ultra-compact, strong dividers, Arial |
-| [`web_theme_aurora()`](#web_theme_dark)         | `R/themes.R` | Dark-mode viewing | Catppuccin Mocha-inspired canvas, pastel markers |
-| [`web_theme_dwarven()`](#web_theme_dwarven)   | `R/themes-lotr.R` | Talks, themed reports | Stone neutrals, forge-glow accent, broad serif display |
-| [`web_theme_dwarven()`](#web_theme_elvish)     | `R/themes-lotr.R` | Talks, themed reports | Twilight surface, mithril silvers, calligraphic serif |
-| [`web_theme_dwarven()`](#web_theme_hobbit)     | `R/themes-lotr.R` | Talks, themed reports | Parchment + green, hand-set body face, hearth accent |
+| Theme | Register | Identity |
+|---|---|---|
+| [`web_theme_nejm()`](#web_theme_nejm)         | clinical | The package default — restraint-led: teal + warm-coral accent, Inter, comfortable |
+| [`web_theme_ledger()`](#web_theme_ledger)       | design | Color: teal + oxblood, ruled rules |
+| [`web_theme_brutalist()`](#web_theme_brutalist) | design | Geometry: sharp corners, thick rules, no effects |
+| [`web_theme_aurora()`](#web_theme_aurora)       | expressive | Effects: glass + glow on a dark canvas |
+| [`web_theme_terminal()`](#web_theme_terminal)   | expressive | Mono phosphor CRT |
+| [`web_theme_newsprint()`](#web_theme_newsprint) | editorial | Texture: warm grain, serif body |
+| [`web_theme_blueprint()`](#web_theme_blueprint) | expressive | Draft / grid: cyanotype |
+| [`web_theme_synthwave()`](#web_theme_synthwave) | expressive | Neon |
+| [`web_theme_dwarven()`](#web_theme_dwarven)     | editorial | Fantasy: Cinzel display serif |
 
 ```r
 tabviz(data, label = "study",
@@ -57,7 +58,7 @@ The 9 committed identities — each owns one expressive axis:
 All preset builders take no arguments and return a fully resolved `WebTheme`.
 `nejm` is the default. (A previous 27-preset roster was culled to these 9; a
 deleted look's brand is a [`set_brand()`](#set_brand) recolor away, its full
-personality a `web_theme(base = "nejm", …)` away.)
+personality a `web_theme(…)` custom build away.)
 
 ---
 
@@ -99,7 +100,6 @@ else derives. Resolves the theme before returning.
 web_theme(
   brand = "#0099CC",          # required: identity seed
   accent = NULL,              # engagement (hover/selected/callouts); mirrors brand
-  ink2 = NULL,                # rubrication ink; seeds the accent ramp (B7)
   polarity = "light",         # "light" | "dark" (L-reflection)
   monochrome = FALSE,         # neutral ramp rides the brand hue (B8)
   categorical = "okabe_ito",  # data palette scheme
@@ -118,13 +118,12 @@ web_theme(
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
-| `brand` | hex | `"#0099CC"` | Required identity seed. Powers the brand ramp and identity tokens. |
+| `brand` | hex | `DEFAULT_BRAND_HEX` | Required identity seed. Powers the brand ramp and identity tokens. |
 | `accent` | hex | `NULL` | Engagement layer (hover, selected, callouts). Mirrors `brand` when unset. |
-| `ink2` | hex / oklch | `NULL` | Rubrication ink (editorial second color) — seeds the accent ramp with precedence over `accent`; drives significance stars and caption chips. |
+| `paper` / `ink` | hex / oklch | `NULL` | Light-end and dark-end neutral anchors; the neutral ramp interpolates between them. |
 | `marks` | list | `NULL` | Viz-mark identity: `point_shape`, `interval_weight`. |
 | `effects` | list | `NULL` | Glow / gradient shell / elevation / glass / caption, header, title styles. |
-| `mode` | string | `"light"` | `"light"` or `"dark"`. |
-| `ink2` | hex / oklch | `NULL` | Rubrication ink — seeds the accent ramp with precedence over `accent`. |
+| `mode` | string | `"standard"` | `"standard"` / `"high-contrast"` / `"reduced-transparency"` — accessibility, orthogonal to polarity. |
 | `polarity` / `monochrome` | string / flag | `"light"` / `FALSE` | L-reflection axis; brand-hued neutral ramp. Use [tint_from_brand()] to nudge hues instead. |
 | `categorical` / `sequential` / `diverging` | string | scheme names | Data-palette scheme references. |
 | `status_*` | hex | `NULL` | Optional status color overrides (`positive`/`negative`/`warning`/`info`). |
@@ -138,7 +137,7 @@ web_theme(
 To start from a preset instead of defaults, chain setters off a `web_theme_*()`
 builder (e.g. `web_theme_nejm() |> set_brand("#1F3A5F")`).
 
-Example — Lancet-inspired theme with bold headers:
+Example — navy editorial theme with bold headers:
 
 ```r
 custom <- web_theme(
@@ -168,7 +167,7 @@ single input prefer the focused setter (`set_brand()`, `set_accent()`,
 ```r
 set_inputs(
   theme,
-  brand, accent, ink2, polarity, monochrome, mode,
+  brand, accent, paper, ink, polarity, monochrome, mode,
   categorical, sequential, diverging,
   status_positive, status_negative, status_warning, status_info,
   fonts_body, fonts_display, fonts_mono,
@@ -181,9 +180,9 @@ set_inputs(
 | `theme` | `WebTheme` | Theme to modify |
 | `brand` | hex | Identity seed (markers, identity tokens). Derives the brand ramp |
 | `accent` | hex | Engagement layer — hover, selected, semantic callouts, selection edge. Mirrors `brand` when unset |
-| `ink2` | hex / oklch | Rubrication ink — seeds the accent ramp (stars, chips) |
-| `mode` | `"light"` / `"dark"` | Light or dark canvas |
-| `ink2` / `monochrome` | hex / flag | Rubrication anchor; brand-hued neutrals |
+| `paper` / `ink` | hex / oklch | Light-end / dark-end neutral anchors for the neutral ramp |
+| `mode` | `"standard"` / `"high-contrast"` / `"reduced-transparency"` | Accessibility mode |
+| `polarity` / `monochrome` | string / flag | L-reflection axis; brand-hued neutrals |
 | `categorical` / `sequential` / `diverging` | string | Data-palette scheme names |
 | `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
 | `fonts_body` | string | Primary CSS font-family |
@@ -299,11 +298,11 @@ plot |> set_theme(custom)
 
 ## Worked examples
 
-### Lancet-style with custom Tier 1 input
+### Editorial theme with custom Tier 1 input
 
 ```r
-my_lancet <- web_theme(
-  name = "my-lancet",
+my_editorial <- web_theme(
+  name = "my-editorial",
   brand        = "#0066CC",
   accent       = "#CC9900",
   fonts_body    = "Helvetica, Arial, sans-serif",
@@ -338,7 +337,7 @@ print_theme <- web_theme(
 ```r
 dark_theme <- web_theme(
   name = "dashboard-dark",
-  mode         = "dark",
+  polarity     = "dark",
   brand        = "#10B981",
   accent       = "#10B981",
   density      = "spacious",

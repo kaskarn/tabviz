@@ -48,17 +48,21 @@ tabviz(
 )
 ```
 
-Twenty-seven presets ship in the package across five families — **journals** (6), **design** (8), **showcase** (9), **lotr** (3), and **modes** (1). The journal themes are tuned for publication; the rest exercise the full surface for non-journal contexts (talks, blog posts, internal reports). Each leans into a clear identity rather than trying to be everything.
+Nine presets ship in the package across four registers — **clinical** (1),
+**editorial** (2), **design** (2), and **expressive** (4). Each owns a
+distinct expressive axis rather than trying to be everything.
 
-| Preset | Style | Designed for |
-|--------|-------|--------------|
-| `web_theme_nejm()` | The package default. Cochrane teal + warm coral, Inter sans-serif, comfortable density | General purpose, systematic reviews |
-| `web_theme_nejm()`   | Lancet navy + refined old-gold + warm cream, Georgia serif, comfortable | Lancet-style editorial layouts |
-| `web_theme_nejm()`     | Pure black-and-white, ultra-compact, strong dividers throughout, Arial | JAMA / print journal submissions |
-| `web_theme_aurora()`     | Catppuccin Mocha-inspired dark canvas with pastel marker palette | Dark-mode viewing |
-| `web_theme_dwarven()`  | Stone neutrals, forge-glow accent, broad serif display | Talks, blog posts, themed reports |
-| `web_theme_dwarven()`   | Twilight surface, mithril silvers, calligraphic serif | Talks, blog posts, themed reports |
-| `web_theme_dwarven()`   | Parchment + green, hand-set body face, hearth accent | Talks, blog posts, themed reports |
+| Preset | Register | Identity |
+|--------|----------|----------|
+| `web_theme_nejm()` | clinical | The package default — restraint-led: teal + warm-coral accent, Inter, comfortable density |
+| `web_theme_newsprint()` | editorial | Texture: warm grain, serif body |
+| `web_theme_dwarven()` | editorial | Fantasy: Cinzel display serif |
+| `web_theme_ledger()` | design | Color: teal + oxblood, ruled rules |
+| `web_theme_brutalist()` | design | Geometry: sharp corners, thick rules, no effects |
+| `web_theme_aurora()` | expressive | Effects: glass + glow on a dark canvas |
+| `web_theme_terminal()` | expressive | Mono phosphor CRT |
+| `web_theme_blueprint()` | expressive | Draft / grid: cyanotype |
+| `web_theme_synthwave()` | expressive | Neon |
 
 Switch presets at any point with `set_theme()`:
 
@@ -67,7 +71,7 @@ Switch presets at any point with `set_theme()`:
 my_table |> set_theme("nejm")
 ```
 
-The full registry is in `package_themes()` (a named list keyed `journals` / `modes` / `design` / `lotr` / `showcase`).
+The full registry is in `package_themes()` (a 2-level named list keyed `clinical` / `editorial` / `design` / `expressive`).
 
 ### Curating the in-widget switcher
 
@@ -80,18 +84,17 @@ theme; pass `enable_themes = list(...)` to `web_interaction()` or
 #| eval: false
 # Flat list — no tabs, just a single column of choices.
 selectable_themes(my_table, list(
-  Cochrane = web_theme_nejm(),
-  Lancet   = web_theme_nejm()
+  NEJM   = web_theme_nejm(),
+  Ledger = web_theme_ledger()
 ))
 
 # 2-level named list — each top-level key becomes a tab in the dropdown.
 selectable_themes(my_table, list(
   Editorial = list(
-    Cochrane = web_theme_nejm(),
-    Lancet   = web_theme_nejm(),
-    JAMA     = web_theme_nejm()
+    Newsprint = web_theme_newsprint(),
+    Dwarven   = web_theme_dwarven()
   ),
-  Other = list(Dark = web_theme_aurora())
+  Expressive = list(Aurora = web_theme_aurora())
 ))
 ```
 
@@ -111,7 +114,6 @@ polarity, accessibility, typography, density, geometry, marks, and effects.
 |  | `ink` | Dark-end neutral anchor (text, strong rules). |
 |  | `brand` | The identity hue. Seeds the brand ramp: headers, gradients, series slot 1, title color. |
 |  | `accent` | Optional engagement hue — hover, selected, callouts, highlight bar. Mirrors brand when unset. |
-|  | `ink2` | Optional **rubrication ink**. When set it seeds the accent ramp with precedence over `accent` — the editorial channel for significance stars and caption chips, without tinting interaction states by accident. |
 | Axes | `polarity` | `"light"` / `"dark"` — reflects every anchor's lightness around the midpoint. |
 |  | `monochrome` | The neutral ramp rides the brand hue (phosphor / sepia / cyanotype themes in one toggle). |
 |  | `mode` | Accessibility: `"standard"` / `"high-contrast"` / `"reduced-transparency"`. Orthogonal to polarity. |
@@ -133,16 +135,16 @@ my_theme <- web_theme(
   name   = "my-brand",
   brand  = "#1F3A5F",                       # navy identity
   accent = "#B08938",                       # warm gold engagement
-  ink2   = "#862721",                       # oxblood rubrication
   fonts_body = "Charter, Georgia, serif",
   density = "comfortable",
   effects = list(title_style = "bar")
-)
+) |>
+  set_pin("--tv-ink2", "#862721")           # oxblood rubrication (pinnable token)
 ```
 
-Defaults are predictable: `accent` mirrors `brand`; `ink2` falls back to
-`accent`; `fonts_display` mirrors `fonts_body`; paper/ink default to a
-clinical near-white / near-black pair carrying the brand hue at low chroma.
+Defaults are predictable: `accent` mirrors `brand`; `fonts_display`
+mirrors `fonts_body`; paper/ink default to a clinical near-white /
+near-black pair carrying the brand hue at low chroma.
 
 ### What each anchor actually drives
 
@@ -155,9 +157,11 @@ clinical near-white / near-black pair carrying the brand hue at low chroma.
   diamond.
 * **`accent`** owns the *engagement layer* — hover, selected, semantic
   callouts, the highlight bar. Keep it visually distinct from brand.
-* **`ink2`** seeds the accent ramp with precedence when set — so
-  significance stars (`col_pvalue(stars = TRUE)`) and caption chips pick
-  up the rubrication ink while the rest of the theme stays disciplined.
+
+The `--tv-ink2` rubrication token survives as a pinnable token — set it
+with `set_pin("--tv-ink2", "#hex")` for an editorial second color (e.g.
+oxblood significance stars or caption chips) without disturbing the
+cascade.
 
 To pin any *derived* field directly, use `set_theme_field()` — explicit
 pins survive re-resolution.
@@ -308,7 +312,7 @@ A theme has three tiers. You only ever interact with Tier 1; the other tiers are
 ```{mermaid}
 flowchart TB
     subgraph T1["Tier 1 — Inputs (you edit these)"]
-      anchors["anchors: paper · ink · brand · accent · ink2"] & axes["polarity · monochrome · mode"] & rest["fonts · density · geometry · marks · effects"]
+      anchors["anchors: paper · ink · brand · accent"] & axes["polarity · monochrome · mode"] & rest["fonts · density · geometry · marks · effects"]
     end
 
     subgraph T0["Ramps (generated)"]
@@ -372,11 +376,11 @@ custom <- web_theme_nejm() |>
 ```
 
 * **Focused setters** — one verb per axis: `set_brand()`, `set_accent()`,
-  `set_ink2()`, `set_paper()`, `set_ink()`, `set_polarity()`,
+  `set_paper()`, `set_ink()`, `set_polarity()`,
   `set_monochrome()`, `set_mode()`, `set_density()`, `set_geometry()`,
   `set_curves()`, `set_effects()`, `set_status()` /
   `set_status_palette()`, and `tint_from_brand()` (nudges paper / ink /
-  accent / ink2 hues toward brand in one move).
+  accent hues toward brand in one move).
 * **`set_inputs(theme, ...)`** — multi-input escape hatch; accepts anchor
   names as hex/oklch plus any flat `ThemeInputs` slot. Cascade-aware:
   every change re-resolves with pins preserved.
@@ -591,13 +595,13 @@ web_theme_acme <- function() {
     name   = "acme",
     brand  = "#FF5500",
     accent = "#0066CC",
-    ink2   = "#CC3300",
     fonts_body    = "'Source Sans 3', system-ui, sans-serif",
     fonts_display = "'Fraunces', Georgia, serif",
     density = "comfortable",
     effects = list(header_style = "tint")
   ) |>
-    tint_from_brand("subtle")
+    tint_from_brand("subtle") |>
+    set_pin("--tv-ink2", "#CC3300")
 }
 
 # Now share it across the team
@@ -616,12 +620,12 @@ my_table |> set_theme(web_theme_acme())
 * `web_theme()` — custom-theme constructor: anchors (hex or `oklch()`)
   + polarity / monochrome / mode + fonts + density + geometry + marks +
   effects + status.
-* `web_theme_*()` — 27 preset constructors across journals / modes /
-  design / lotr / showcase ([Preset Gallery](../gallery/presets.qmd)).
+* `web_theme_*()` — 9 preset constructors across clinical / editorial /
+  design / expressive ([Preset Gallery](../gallery/presets.qmd)).
 * `package_themes()` — categorized named list of every preset.
 * `set_theme(spec, theme)` — switch a `WebSpec` (or a live proxy) to a
   different theme.
-* Focused setters — `set_brand()` `set_accent()` `set_ink2()`
+* Focused setters — `set_brand()` `set_accent()`
   `set_paper()` `set_ink()` `set_polarity()` `set_monochrome()`
   `set_mode()` `set_density()` `set_geometry()` `set_curves()`
   `set_effects()` `set_status()` `set_status_palette()`

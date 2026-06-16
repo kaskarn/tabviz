@@ -139,19 +139,21 @@ All accept column names or formula expressions: `row_bold = ~ pvalue < 0.05`. Th
 All accept column names or formula expressions:
 `marker_color = ~ ifelse(sig, "green", "gray")`.
 
-## Built-in themes (seven shipped)
+## Built-in themes (nine shipped)
 
-Four journal presets and three illustrative LOTR presets. `set_theme(spec, "<name>")` switches by string; pass a `WebTheme` object directly for anything custom.
+Nine curated presets, each owning one expressive axis. `set_theme(spec, "<name>")` switches by string; pass a `WebTheme` object directly for anything custom.
 
 | Theme | Style |
 |---|---|
-| `web_theme_nejm()` | Package default. Cochrane teal + warm-coral accent, Inter, comfortable |
-| `web_theme_nejm()`   | Lancet navy + refined old-gold, Georgia serif, comfortable |
-| `web_theme_nejm()`     | JAMA all-B&W, ultra-compact, Arial |
-| `web_theme_aurora()`     | Catppuccin Mocha-inspired dark canvas |
-| `web_theme_dwarven()`  | Stone neutrals, forge-glow accent, broad serif display |
-| `web_theme_dwarven()`   | Twilight surface, mithril silvers, calligraphic serif |
-| `web_theme_dwarven()`   | Parchment + green, hand-set body face, hearth accent |
+| `web_theme_nejm()` | Package default. Restraint-led clinical: teal + warm-coral accent, Inter, comfortable |
+| `web_theme_ledger()`    | Color: teal + oxblood, ruled rules |
+| `web_theme_brutalist()` | Geometry: sharp corners, thick rules, no effects |
+| `web_theme_aurora()`    | Effects: glass + glow on a dark canvas |
+| `web_theme_terminal()`  | Mono phosphor CRT |
+| `web_theme_newsprint()` | Texture: warm grain, serif body |
+| `web_theme_blueprint()` | Draft / grid: cyanotype |
+| `web_theme_synthwave()` | Neon |
+| `web_theme_dwarven()`   | Fantasy: Cinzel display serif |
 
 ## Theme modifiers (fluent)
 
@@ -178,7 +180,7 @@ tabviz(...,
 | `set_density()` `set_header_style()` `set_first_column_style()` | Per-table variant setters (density, header style, first-column style) |
 | `set_spacing()` | Per-token spacing override on top of the density preset |
 | `set_theme_field(theme, path, value)` | Generic deep setter; `path` walks the theme tree |
-| `set_theme()` | Swap to a different preset (any of the 7 by name) or a `WebTheme` object |
+| `set_theme()` | Swap to a different preset (any of the 9 by name) or a `WebTheme` object |
 
 ### Build a custom theme from scratch
 

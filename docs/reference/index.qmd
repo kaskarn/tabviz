@@ -94,24 +94,26 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 | [`set_column_style()`](styling.qmd#set_column_style) | Per-cell styling for one column |
 | [`set_marker_style()`](styling.qmd#set_marker_style) | Marker color / shape / opacity / size |
 | [`set_zoom()`](styling.qmd#set_zoom) | Zoom and container constraints |
-| [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name (any of the 7 presets) or object |
+| [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name (any of the 9 presets) or object |
 | [`selectable_themes()`](styling.qmd#selectable_themes) | Curate the in-widget theme switcher |
 
 ## Themes
 
-### Preset themes (seven shipped)
+### Preset themes (nine shipped)
 
 | Function | Description |
 |---|---|
-| [`web_theme_nejm()`](themes.qmd#web_theme_cochrane) | The package default — Cochrane teal + warm-coral accent, Inter, comfortable |
-| [`web_theme_nejm()`](themes.qmd#web_theme_lancet)     | Lancet navy + refined gold, Georgia serif, comfortable |
-| [`web_theme_nejm()`](themes.qmd#web_theme_jama)         | JAMA all-B&W, ultra-compact, Arial |
-| [`web_theme_aurora()`](themes.qmd#web_theme_dark)         | Catppuccin Mocha-inspired dark canvas |
-| [`web_theme_dwarven()`](themes.qmd#web_theme_dwarven)   | Stone neutrals, forge-glow accent, broad serif display |
-| [`web_theme_dwarven()`](themes.qmd#web_theme_elvish)     | Twilight surface, mithril silvers, calligraphic serif |
-| [`web_theme_dwarven()`](themes.qmd#web_theme_hobbit)     | Parchment + green, hand-set body face, hearth accent |
+| [`web_theme_nejm()`](themes.qmd#web_theme_nejm)         | The package default — restraint-led clinical: teal + warm-coral accent, Inter, comfortable |
+| [`web_theme_ledger()`](themes.qmd#web_theme_ledger)       | Color: teal + oxblood, ruled rules |
+| [`web_theme_brutalist()`](themes.qmd#web_theme_brutalist) | Geometry: sharp corners, thick rules, no effects |
+| [`web_theme_aurora()`](themes.qmd#web_theme_aurora)       | Effects: glass + glow on a dark canvas |
+| [`web_theme_terminal()`](themes.qmd#web_theme_terminal)   | Mono phosphor CRT |
+| [`web_theme_newsprint()`](themes.qmd#web_theme_newsprint) | Texture: warm grain, serif body |
+| [`web_theme_blueprint()`](themes.qmd#web_theme_blueprint) | Draft / grid: cyanotype |
+| [`web_theme_synthwave()`](themes.qmd#web_theme_synthwave) | Neon |
+| [`web_theme_dwarven()`](themes.qmd#web_theme_dwarven)     | Fantasy: Cinzel display serif |
 | [`web_theme()`](themes.qmd#web_theme)                   | Generic custom-theme constructor |
-| [`package_themes()`](themes.qmd#package_themes)         | 2-level named list (`journals` + `lotr`) of every shipped theme |
+| [`package_themes()`](themes.qmd#package_themes)         | 2-level named list (`clinical` / `editorial` / `design` / `expressive`) of every shipped theme |
 
 ### Theme modifiers
 
@@ -121,7 +123,7 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 | [`set_density()` / `set_header_style()` / `set_first_column_style()`](themes.qmd#set_variants) | Per-table variant setters |
 | [`set_spacing()`](themes.qmd#set_spacing) | Per-token spacing override on top of the density preset |
 | [`set_theme_field()`](themes.qmd#set_theme_field) | Generic deep setter; `path` walks the theme tree |
-| `set_paper()` / `set_ink()` / `set_brand()` / `set_accent()` / `set_ink2()` | Tier-1 anchor setters — hex or `oklch()` triple; re-resolve the cascade |
+| `set_paper()` / `set_ink()` / `set_brand()` / `set_accent()` | Tier-1 anchor setters — hex or `oklch()` triple; re-resolve the cascade |
 | `set_border_preset()` | Tier-1 border preset (`none` / `hairline` / `ruled` / `boxed`) |
 | `set_role()` / `clear_role()` | Pin / release a Tier-2 role to a `(ramp, grade)` binding (the studio spine's R twin) |
 | `set_pin()` / `clear_pin()` | Pin / release a component token (`--tv-*`) to a direct value — total control, manifest-validated |
