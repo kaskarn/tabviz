@@ -11,6 +11,36 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — anti-recurrence gate: schema-driven export-option parity
+
+Built the structural fix for the recurring DOM↔export divergence class (the
+highest-leverage deep-review follow-up). The root: `consumedBy:["renderCell"]`
+checks only array-non-empty, so an option the DOM honors but the SVG export
+silently ignores (badge `size`, range `thousandsSep`, pvalue `starsColor`)
+passes the drift gate. The NEW `export-option-parity.test.ts` (CI via bun)
+auto-iterates every concrete visual/composed type's LEAF render options
+(`consumedBy` ⊇ renderCell|formatValue), renders an SVG cell at two genuinely
+distinct values, and asserts the output CHANGES — i.e. the export reads it. ~35
+cases across 10 types (badge/bar/progress/heatmap/icon/sparkline/ring/interval/
+range/pvalue). A NEW DOM-only render option now FAILS CI instead of shipping a
+silent divergence.
+
+Design lessons baked in (the iterate-to-green found them): perturb to TWO
+explicit values (segment[0] vs segment[last]) — a single perturbation to the
+declared default no-ops when an unset option's recipe resolves to that default
+(`interval:boundsLayout`); key fixtures by REGISTRY KEY not `type` (percent/
+currency share `type:"numeric"`); iterate LEAF `schema.options` not the full
+cascade (the inherited BASE chrome — header/align/width/naText — doesn't change
+an isolated cell-content tree, and was 100+ false positives). The honest ledger
+`EXPORT_OPTION_GAPS` carries the legit exceptions WITH reasons: pvalue
+`starsColor`/`significantStyle` (real export gaps — asserted NOT-changing so they
+flip red when fixed), `bar:maxValue` (saturates at the fixture value). pictogram
++ stars are out of scope here (registry-glyph paths don't load in the bun env;
+their options inherit from the glyph-cell parent) — covered DOM-vs-SVG by the
+`glyph-cell-parity` browser gate. Deep-review items still open: the pvalue
+export gap itself, the nested-group-header squash + flex-bound-inversion layout
+bugs, StylingTab text-onsolid, and D31 (dead interaction flags).
+
 ## 2026-06-16 — magic-number consolidation (deep-review catalog, behavior-preserving)
 
 Collapsed the duplicated literals + DOM↔export drift seams the deep review
