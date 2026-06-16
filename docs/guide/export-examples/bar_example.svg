@@ -40,7 +40,7 @@
       font-family="'Lora', Georgia, serif"
       font-size="22.37px"
       font-weight="600"
-      fill="#191312">Trial Enrollment by Department</text>
+      fill="#4D0005">Trial Enrollment by Department</text>
 <line x1="12" x2="398"
       y1="55.481" y2="55.481"
       stroke="#4A4444" stroke-width="2"/>
@@ -150,10 +150,6 @@
     fill="#191312">Pediatrics</text>
 <g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(350 163.081)"><text y="8.40" dominant-baseline="central">156.00</text></g>
 <line x1="12" x2="398" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
-<line x1="12" x2="398" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2.5"/>
-<line x1="12" x2="398" y1="183.481" y2="183.481" stroke="#6B6565" stroke-width="2.5"/>
-<line x1="12" x2="12" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2.5"/>
-<line x1="398" x2="398" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2.5"/>
 
 
 </svg>

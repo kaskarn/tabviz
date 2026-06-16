@@ -48,6 +48,31 @@ describe("interval renderer — happy path", () => {
     expect(bounds).toBeDefined();
     expect(textOf(bounds!)).toBe("(0.72, 0.99)");
   });
+
+  test("muted variant renders the bounds in minor/muted text (bracket_muted)", () => {
+    const c = col({ interval: { point: "p", lower: "l", upper: "u", decimals: 2, variant: "bracket_muted" } });
+    const out = dispatch(c, { p: 0.85, l: 0.72, u: 0.99 }) as RenderGroup;
+    const bounds = out.children.find(
+      (n): n is RenderGroup => n.kind === "group" && (n.tags ?? []).includes("interval-range"),
+    );
+    expect(textOf(bounds!)).toBe("[0.72–0.99]"); // variant resolved (brackets + en-dash)
+
+    const leaves: RenderText[] = [];
+    const collect = (n: RenderNode): void => {
+      if (n.kind === "text") leaves.push(n as RenderText);
+      else if (n.kind === "group") (n as RenderGroup).children.forEach(collect);
+    };
+    collect(bounds!);
+    expect(leaves.length).toBeGreaterThan(0);
+    // EVERY bounds leaf is minor + muted (the withStyle overlay)…
+    for (const t of leaves) {
+      expect(t.style?.size).toBe("minor");
+      expect(t.style?.color).toBe("muted");
+    }
+    // …but the POINT stays full-weight (not muted).
+    const point = out.children.find((n) => n.kind === "text") as RenderText;
+    expect(point.style?.color).not.toBe("muted");
+  });
 });
 
 describe("interval renderer — edge cases", () => {

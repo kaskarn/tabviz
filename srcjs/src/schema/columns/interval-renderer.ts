@@ -31,6 +31,7 @@ import type { RenderNode, RenderText, RenderGroup, CellFormatter } from "../rend
 import { registerRenderers } from "../extend";
 import { formatNumber } from "../../lib/formatters";
 import { tag } from "../theme-finalize";
+import { withStyle } from "../compose";
 import { resolveVariant } from "../variant-compile";
 import { INTERVAL_SCHEMA } from "./interval";
 
@@ -44,6 +45,10 @@ export interface IntervalRecipe {
   boundsDelimiter: readonly [string, string];
   boundsSeparator: string;
   boundsPrefix: string;
+  /** When true the bounds render in minor/muted text (smaller, secondary
+   *  color) — drives the "muted" in e.g. the `bracket_muted` variant. Applied
+   *  via the shared `withStyle` overlay (same as `compose({minor})`). */
+  boundsMuted?: boolean;
 }
 
 /** Resolve the layout recipe for an interval column (exported so the
@@ -129,10 +134,16 @@ const intervalRenderer: CellFormatter = (_value, options, ctx) => {
   }
   if (recipe.boundsDelimiter[1]) boundsChildren.push(text(recipe.boundsDelimiter[1]));
 
-  const bounds: RenderGroup = tag(
+  let bounds: RenderNode = tag(
     { kind: "group", layout: "row", children: boundsChildren },
     "interval-range",
   ) as RenderGroup;
+  // "muted" variants render the bounds in minor/secondary text. withStyle
+  // recurses into the group's text children (same overlay compose({minor})
+  // uses); a theme can still re-target the `interval-range` tag on top.
+  if (recipe.boundsMuted) {
+    bounds = withStyle(bounds, { size: "minor", color: "muted" });
+  }
 
   return {
     kind: "group",

@@ -50,6 +50,7 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
         boundsDelimiter: ["[", "]"],
         boundsSeparator: "–",
         boundsPrefix: "",
+        boundsMuted: true,
       },
     },
     {

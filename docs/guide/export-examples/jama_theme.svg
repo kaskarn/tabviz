@@ -40,7 +40,7 @@
       font-family="'Lora', Georgia, serif"
       font-size="22.37px"
       font-weight="600"
-      fill="#191312">Figure 1. Primary Endpoint</text>
+      fill="#4D0005">Figure 1. Primary Endpoint</text>
 <line x1="12" x2="424"
       y1="55.481" y2="55.481"
       stroke="#4A4444" stroke-width="2"/>
@@ -155,10 +155,6 @@
     fill="#191312">REWIND</text>
 <g font-family="'Lora', Georgia, serif" font-size="14px" font-weight="400" font-style="normal" fill="#191312" transform="translate(307 163.081)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(27.244000000000003 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(31.136000000000003 0)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">(</text></g><g transform="translate(4.662 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(31.906000000000002 0)"><text y="8.40" dominant-baseline="central">, </text></g><g transform="translate(39.690000000000005 0)"><text y="8.40" dominant-baseline="central">0.99</text></g><g transform="translate(66.93400000000001 0)"><text y="8.40" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="424" y1="183.481" y2="183.481" stroke="#958F8E" stroke-width="1"/>
-<line x1="12" x2="424" y1="55.481" y2="55.481" stroke="#6B6565" stroke-width="2.5"/>
-<line x1="12" x2="424" y1="183.481" y2="183.481" stroke="#6B6565" stroke-width="2.5"/>
-<line x1="12" x2="12" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2.5"/>
-<line x1="424" x2="424" y1="55.481" y2="183.481" stroke="#6B6565" stroke-width="2.5"/>
 
 
 </svg>

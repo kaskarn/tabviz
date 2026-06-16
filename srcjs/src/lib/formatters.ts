@@ -338,6 +338,10 @@ function _formatIntervalImpl(
     ? fmt((upper - lower) / 2)
     : `${fmt(lower)}${recipe.boundsSeparator}${fmt(upper)}`;
   const boundsStr = `${recipe.boundsDelimiter[0]}${recipe.boundsPrefix}${boundsBody}${recipe.boundsDelimiter[1]}`;
+  // NB: `boundsMuted` renders the bounds at MINOR size (~0.85x); this string is
+  // measured at full size, so a muted variant slightly OVER-estimates its
+  // column width — a safe direction (never clips). Discounting the bounds
+  // sub-width would need a split measure; not worth it for the small delta.
   const pointStr = fmt(point);
   if (recipe.boundsLayout === "column") {
     // Two stacked lines → width = the longer single line.

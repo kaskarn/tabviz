@@ -102,9 +102,11 @@ function interleave<T>(items: T[], sep: T): T[] {
 /**
  * Recursively apply a TextStyle overlay to a render node. Leaves
  * untouched fields untouched (caller's style values take precedence);
- * groups walk into children.
+ * groups walk into children. Exported so renderers that hand-build a
+ * subtree (e.g. interval bounds) can apply the same minor/muted overlay
+ * `compose({minor})` uses, instead of re-deriving the style merge.
  */
-function withStyle(node: RenderNode, overlay: TextStyle): RenderNode {
+export function withStyle(node: RenderNode, overlay: TextStyle): RenderNode {
   switch (node.kind) {
     case "text":
       return { ...node, style: { ...overlay, ...node.style } };
