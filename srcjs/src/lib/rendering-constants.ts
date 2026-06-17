@@ -213,6 +213,15 @@ export const TYPOGRAPHY = {
 
   /** Average character width as ratio of font size (for rough text width estimation) */
   AVG_CHAR_WIDTH_RATIO: 0.55,
+
+  /** Title/subtitle BASELINE drop below the text-area top, × the area height —
+   *  drops the baseline under the ascender. (Font-box metric, stays a
+   *  multiplier; mirrors the LEGEND.*_ASCENT_RATIO convention.) */
+  CAPTION_BASELINE_RATIO: 0.8,
+
+  /** Subtitle ASCENT (text-top above baseline), × font size — positions the
+   *  title/subtitle separator line relative to the subtitle's text top. */
+  SUBTITLE_ASCENT_RATIO: 0.75,
 } as const;
 
 // ============================================================================

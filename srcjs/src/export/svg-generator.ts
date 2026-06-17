@@ -113,6 +113,7 @@ import {
   AUTO_WIDTH,
   GROUP_HEADER,
   LEGEND,
+  TYPOGRAPHY,
   TEXT_MEASUREMENT,
   BADGE,
   EFFECT,
@@ -1106,8 +1107,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // Title baseline = top of region + (titleHeight × 0.8) to drop under the
     // ascender. Replaces the old `+ TITLE_HEIGHT - 4` magic that assumed
     // the constant 28px region.
-    titleY: PLOT_HEADER_TOP_PAD + Math.round(titleHeight * 0.8),
-    subtitleY: PLOT_HEADER_TOP_PAD + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * 0.8),
+    titleY: PLOT_HEADER_TOP_PAD + Math.round(titleHeight * TYPOGRAPHY.CAPTION_BASELINE_RATIO),
+    subtitleY: PLOT_HEADER_TOP_PAD + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * TYPOGRAPHY.CAPTION_BASELINE_RATIO),
     // Header → first row gap. Live widget applies it as `padding-bottom`
     // on the header element via `--tv-spacing-header-gap` (PlotHeader.svelte);
     // SVG has no header element so we fold the gap into mainY. Default 12
@@ -1649,7 +1650,7 @@ function renderHeader(
   // to leave 6px gap between it and the subtitle text top
   if (spec.labels?.title && spec.labels?.subtitle) {
     const subtitleFontSize = parseFontSize(readTypeSize(cssVars, "subtitle", readBodySize(cssVars)));
-    const subtitleAscent = subtitleFontSize * 0.75; // Approximate ascent (text top from baseline)
+    const subtitleAscent = subtitleFontSize * TYPOGRAPHY.SUBTITLE_ASCENT_RATIO; // text top from baseline
     const separatorY = layout.subtitleY - subtitleAscent - 6; // 6px gap like web CSS padding-top
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${separatorY}" y2="${separatorY}"
