@@ -62,3 +62,44 @@ describe("estimateTextWidth — empirical per-font advances", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// GOLDEN CALIBRATION PINS — the bun-side WYSIWYG drift guard.
+//
+// The relational tests above (bold ≥ regular, mmmm > iiii×2, mono
+// weight-independent) verify the estimator's SHAPE but pin no ABSOLUTE value:
+// a refactor that rescaled the advance tables or the size factor by a constant
+// would shift every estimated width — silently breaking WYSIWYG — yet pass
+// every relational check. The estimator is the load-bearing measurement path
+// for ALL non-browser export (V8 / R SVG+PNG), and its calibration against
+// Canvas lives only in prose + the CI-gated browser harness (which rots
+// silently if unrun). These goldens close that gap: they fail on ANY drift,
+// forcing an intentional re-bless. The estimator is fully deterministic
+// (pure-JS, no Canvas), so the pins are exact to ~0.01px.
+//
+// Captured 2026-06-17 against the shipped font-metrics.generated tables. If a
+// metric-table regeneration legitimately moves these, re-bless the numbers in
+// the SAME commit (and confirm the browser wysiwyg-diff gate stays green).
+// NOTE: 'Inter' has no table — it exercises the sans FALLBACK, the exact path
+// the width-utils header calls "calibrated against canvas for Inter/system-ui".
+describe("estimateTextWidth — golden calibration pins (WYSIWYG drift guard)", () => {
+  const GOLDENS: Array<{ text: string; size: number; weight: number; family: string; px: number }> = [
+    { text: "Hydrochlorothiazide", size: 14, weight: 400, family: "'Inter', system-ui, sans-serif", px: 123.704 },
+    { text: "Hydrochlorothiazide", size: 14, weight: 600, family: "'Inter', system-ui, sans-serif", px: 131.4693 },
+    { text: "1.23 (0.45-2.67)", size: 13, weight: 400, family: "'Inter', system-ui, sans-serif", px: 92.495 },
+    { text: "Treatment Group", size: 13, weight: 600, family: "'Outfit', sans-serif", px: 104.7973 },
+    { text: "Hydrochlorothiazide", size: 14, weight: 400, family: "'Lora', Georgia, serif", px: 135.03 },
+    { text: "0000000000", size: 14, weight: 400, family: "'JetBrains Mono', monospace", px: 84.0 },
+  ];
+  for (const g of GOLDENS) {
+    it(`${g.family.split(",")[0]} ${g.size}/${g.weight} "${g.text}" = ${g.px}px`, () => {
+      expect(estimateTextWidth(g.text, g.size, g.weight, g.family)).toBeCloseTo(g.px, 2);
+    });
+  }
+
+  it("scales linearly with font size (a constant-factor drift guard)", () => {
+    const at14 = estimateTextWidth("Hydrochlorothiazide", 14, 400, "'Lora', serif");
+    const at28 = estimateTextWidth("Hydrochlorothiazide", 28, 400, "'Lora', serif");
+    expect(at28).toBeCloseTo(at14 * 2, 2);
+  });
+});
