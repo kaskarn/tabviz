@@ -529,16 +529,19 @@ save_plot <- function(x, file,
   }, error = function(e) 10)
   # Match TS measureAutoColumns: text width + cellPaddingX*2 + rendering buffer.
   cell_padding <- as.numeric(cell_padding_x) * 2
-  # NOTE (D33): these DIVERGE from the TS constants the old comments claimed
-  # equality with (RENDERING_BUFFER=4, AUTO_WIDTH.MIN=60, MAX=600, label
-  # LABEL_MAX=400). The wider buffer may be deliberate — pinned systemfonts
-  # widths measure NARROWER than the estimator (CLAUDE.md trap), so extra pad
-  # guards against truncation — but the min/max likely drifted. Resolving needs
-  # a visual WYSIWYG check (truncation vs DOM-width parity), so NOT blindly
-  # realigned here. test-systemfonts-injection.R pins the current values.
-  rendering_buffer <- 8
-  auto_min <- 40
-  auto_max <- 480
+  # Width constants (D33 RESOLVED 2026-06-16, option c — FULL TS alignment, zero
+  # fudge): match the DOM/export EXACTLY. The old 8/40/480 diverged from the TS
+  # source (RENDERING_BUFFER=4, AUTO_WIDTH.MIN=60, MAX=600, label LABEL_MAX=400;
+  # svg-generator.ts:432/526). The +8 buffer was assumed to compensate for
+  # systemfonts measuring narrower than the estimator — but an eyes-on render
+  # check (long clinical labels + text columns, PNG-verified) showed buffer=4
+  # truncates NOTHING and overflows NOTHING, so the +4 was unjustified drift,
+  # not real compensation. Aligning all four removes the divergence entirely.
+  # Gate: test-systemfonts-injection.R pins these against the TS values.
+  rendering_buffer <- 4   # TEXT_MEASUREMENT.RENDERING_BUFFER
+  auto_min <- 60          # AUTO_WIDTH.MIN
+  data_max <- 600         # AUTO_WIDTH.MAX (non-label columns)
+  label_max <- 400        # AUTO_WIDTH.LABEL_MAX (the row-label column)
   skip_types <- c("viz_bar", "viz_boxplot", "viz_violin", "forest")
 
   df <- spec@data
@@ -587,7 +590,7 @@ save_plot <- function(x, file,
     if (!is.finite(m)) NA_real_ else m
   }
 
-  measure_one <- function(col) {
+  measure_one <- function(col, cap = data_max) {
     if (is.numeric(col@width) && !is.na(col@width)) return(NULL)
     if (col@type %in% skip_types) return(NULL)
     field <- col@field
@@ -607,7 +610,7 @@ save_plot <- function(x, file,
     if (!is.finite(max_text)) return(NULL)
 
     computed <- ceiling(max_text + cell_padding + rendering_buffer)
-    as.integer(min(auto_max, max(auto_min, computed)))
+    as.integer(min(cap, max(auto_min, computed)))
   }
 
   # Body columns. ColumnGroup wrappers don't carry @width / @type
@@ -632,7 +635,7 @@ save_plot <- function(x, file,
   # Label column lives on its own slot (0.34.2+); apply the same measurement
   # so the leftmost column tracks the rest in shared exports.
   if (!is.null(spec@label_column) && S7_inherits(spec@label_column, ColumnSpec)) {
-    w <- measure_one(spec@label_column)
+    w <- measure_one(spec@label_column, cap = label_max)
     if (!is.null(w)) spec@label_column@width <- w
   }
 

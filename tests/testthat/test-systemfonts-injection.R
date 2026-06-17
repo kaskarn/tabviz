@@ -11,6 +11,30 @@ skip_if_no_systemfonts <- function() {
   }
 }
 
+test_that("injection width constants match the TS source (D33 — no re-drift)", {
+  # The injection clamps must equal the TS DOM/export constants EXACTLY
+  # (D33 resolved 2026-06-16). Source-parse both sides so a one-sided change
+  # fails. Skips in the tarball R CMD check (srcjs absent) — runs in-tree
+  # (R-CMD-check.yaml's sync-gate step + local devtools::test()).
+  ts_path <- testthat::test_path("..", "..", "srcjs", "src", "lib",
+                                 "rendering-constants.ts")
+  r_path <- testthat::test_path("..", "..", "R", "save_plot.R")
+  skip_if_not(file.exists(ts_path), "srcjs source tree not present")
+
+  ts <- paste(readLines(ts_path, warn = FALSE), collapse = "\n")
+  r  <- paste(readLines(r_path, warn = FALSE), collapse = "\n")
+  num <- function(src, pat) {
+    m <- regmatches(src, regexpr(pat, src))
+    expect_length(m, 1L)
+    as.integer(sub(pat, "\\1", m))
+  }
+  # TS: RENDERING_BUFFER + AUTO_WIDTH.{MIN,MAX,LABEL_MAX} (\b avoids RESIZE_MIN).
+  expect_equal(num(r, "rendering_buffer <- (\\d+)"), num(ts, "RENDERING_BUFFER: (\\d+)"))
+  expect_equal(num(r, "auto_min <- (\\d+)"),  num(ts, "\\bMIN: (\\d+)"))
+  expect_equal(num(r, "data_max <- (\\d+)"),  num(ts, "\\bMAX: (\\d+)"))
+  expect_equal(num(r, "label_max <- (\\d+)"), num(ts, "LABEL_MAX: (\\d+)"))
+})
+
 test_that("inject_systemfonts_widths stamps numeric widths on auto columns", {
   skip_if_no_systemfonts()
   df <- data.frame(
@@ -30,8 +54,9 @@ test_that("inject_systemfonts_widths stamps numeric widths on auto columns", {
   for (c in res@columns) {
     expect_true(is.numeric(c@width) && !is.na(c@width),
                 info = sprintf("column %s should have numeric width", c@field))
-    expect_gte(c@width, 40)
-    expect_lte(c@width, 480)
+    # Clamps match the TS DOM/export EXACTLY (D33): AUTO_WIDTH.MIN .. MAX.
+    expect_gte(c@width, 60)
+    expect_lte(c@width, 600)
   }
   expect_true(is.numeric(res@label_column@width))
   # Wider study labels yield a wider label column than the n column.

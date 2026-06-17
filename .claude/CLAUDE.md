@@ -307,8 +307,13 @@ One line each; the cost of ignoring these has already been paid once.
   preview).
 - Docs screenshots MUST be over HTTP — `file://` CORS breaks Quarto
   module scripts and fakes layout regressions.
-- Pinned systemfonts widths are narrower than the estimator — export
-  truncation thresholds need ~one-pad tolerance.
+- systemfonts (R `.inject_systemfonts_widths`) measures a hair narrower than
+  the estimator, BUT D33 (2026-06-16) proved empirically that the injection
+  buffer/clamps should MATCH the TS source EXACTLY (RENDERING_BUFFER=4,
+  AUTO_WIDTH.MIN/MAX/LABEL_MAX) — a PNG render-check of long clinical labels
+  found buffer=4 truncates + overflows NOTHING, so the old +8/40/480 padding
+  was unjustified fudge, not real compensation. Gate:
+  test-systemfonts-injection.R pins the R constants to the TS source.
 - The DOM and the export have TWO separate flex-distribution paths (export
   = `resolveFlexWidths`; the DOM store has its own). They agree only while
   content fits the container; past it the export grows a high-weight flex

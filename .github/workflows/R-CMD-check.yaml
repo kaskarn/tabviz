@@ -57,7 +57,7 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest' && matrix.config.r == 'release'
         run: |
           R CMD INSTALL --no-multiarch --with-keep.source .
-          Rscript -e 'library(testthat); library(tabviz); test_dir("tests/testthat", filter = "wire-version|glyph-roster-sync|interaction-roster-sync", stop_on_failure = TRUE)'
+          Rscript -e 'library(testthat); library(tabviz); test_dir("tests/testthat", filter = "wire-version|glyph-roster-sync|interaction-roster-sync|systemfonts-injection", stop_on_failure = TRUE)'
 
       - uses: r-lib/actions/check-r-package@v2
         with:

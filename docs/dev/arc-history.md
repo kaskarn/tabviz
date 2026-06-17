@@ -11,6 +11,23 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-16 — D33 closed: systemfonts width constants → full TS alignment (fudge removed)
+
+`.inject_systemfonts_widths` (save_plot) hard-coded buffer=8 / min=40 / max=480
+(one cap), diverging from the TS source (4 / 60 / 600 / label 400). The min/max
+were clear drift (the screen floors at 60, caps data at 600, label at 400);
+realigning is truncation-safe (only widens). The +8 buffer was the fudge
+candidate — ASSUMED to compensate for systemfonts measuring narrower than the
+estimator. Settled it EMPIRICALLY (prompted by the maintainer's "make sure
+you're not adding fudge debt"): rendered save_plot PNGs of long clinical labels
+at buffer=4 → truncates + overflows NOTHING (eyes-on verified). So the +4 was
+unjustified drift, not compensation. Aligned all four to TS exactly (zero fudge,
+WYSIWYG-improving: screen + save_plot now share identical clamps). Added a
+source-parse drift test pinning the R constants to the TS values (wired into the
+in-tree CI sync-gate step); corrected the stale CLAUDE.md trap that had
+justified the fudge. D33 → Decided (c). Lesson: don't preserve a fudge factor on
+an assumption — render it and measure.
+
 ## 2026-06-16 — D32 investigated + closed (no second flex impl) + D31 wired
 
 Two roadmap arcs after the review convergence.
