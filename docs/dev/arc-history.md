@@ -36,6 +36,12 @@ collapse/disclosure semantics. No findings. (4) **D20 #4 corrected** — the
 export `labelWidth` scalar was mischaracterized as a vestigial pre-1.0 tidy; it
 is the load-bearing primary-column width handle (flexed + reconciled at
 svg-generator.ts:1037, ~15 downstream consumers), coupled to shed #1/post-1.0.
+(5) **Measurement-subsystem coverage gap CLOSED** — the pure-JS
+`estimateTextWidth` (load-bearing for all non-browser export) had only
+relational tests; a constant-factor calibration drift would silently break
+WYSIWYG yet pass them all. Added 6 deterministic golden pins (~0.01px) +
+a linear-size-scaling guard to `width-utils.test.ts` (commit 1fd3f92c) — the
+bun-side WYSIWYG drift guard, complementing the CI-gated browser harness.
 The autonomous roadmap remains complete: every register Open item (D29/D25/D20)
 and roadmap remainder is post-1.0 / maintainer-gated.
 
