@@ -26,6 +26,16 @@ validation (pin grammar, component bindings, schema), `%||%` self-guards on
 length>1. R↔TS sync + parity gates 55 checks / 0 failing (wire-version, both
 rosters, systemfonts injection, columns, themes). knip 0 dead values. No code
 change warranted — recorded here so future firings skip re-auditing this ground.
+(3) **Layout subsystem deep read** (region-tree + the 5-layer row-kind height
+cascade + row-kind enum) — went past trap-grep into design review. Clean: the
+height cascade has a documented formula, cycle guard, and an untrusted-pin
+sanitizer (vocab gate + [8,2000] clamp); region-tree keeps a documented
+structural/flatten split with memoized descendant counts and single-pass child
+bucketing (O(G²)→O(G) fixes noted inline), cycle-free tree, clean
+collapse/disclosure semantics. No findings. (4) **D20 #4 corrected** — the
+export `labelWidth` scalar was mischaracterized as a vestigial pre-1.0 tidy; it
+is the load-bearing primary-column width handle (flexed + reconciled at
+svg-generator.ts:1037, ~15 downstream consumers), coupled to shed #1/post-1.0.
 The autonomous roadmap remains complete: every register Open item (D29/D25/D20)
 and roadmap remainder is post-1.0 / maintainer-gated.
 
