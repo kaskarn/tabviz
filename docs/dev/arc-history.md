@@ -11,6 +11,24 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-17 — systematic review pass: caption-ascent naming + R serialization/parity audit (clean)
+
+Two loop firings of focused review. (1) **Width-system fudge audit** →
+the system came back clean; the one real finding was bare ascent literals
+in the title/subtitle caption block (`0.8` ×2, `0.75`), inconsistent with
+the named `LEGEND.*_ASCENT_RATIO` convention. Named them
+`TYPOGRAPHY.CAPTION_BASELINE_RATIO` / `SUBTITLE_ASCENT_RATIO` (same values,
+byte-identical geometry — commit 6b8c0b75). (2) **R serialization / wire-import
++ R↔TS parity audit** — irreducibly R-side, not previously given a dedicated
+pass. Came back clean on all known trap classes: eager S7 defaults ZERO,
+`theme_from_wire` uses `[[ ]]` exact access + full untrusted-ingress
+validation (pin grammar, component bindings, schema), `%||%` self-guards on
+length>1. R↔TS sync + parity gates 55 checks / 0 failing (wire-version, both
+rosters, systemfonts injection, columns, themes). knip 0 dead values. No code
+change warranted — recorded here so future firings skip re-auditing this ground.
+The autonomous roadmap remains complete: every register Open item (D29/D25/D20)
+and roadmap remainder is post-1.0 / maintainer-gated.
+
 ## 2026-06-16 — D33 closed: systemfonts width constants → full TS alignment (fudge removed)
 
 `.inject_systemfonts_widths` (save_plot) hard-coded buffer=8 / min=40 / max=480
