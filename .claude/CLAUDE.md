@@ -270,6 +270,14 @@ One line each; the cost of ignoring these has already been paid once.
   across every comfortable theme; one mutation restyled them all —
   js-ci's maiden run caught it via Linux test-file order).
 - `hexToOklch` NaN-poisons on garbage — gate user input with `isValidHex`.
+- NON-FINITE NUMERICS are a recurring poison class: `Number.isNaN(x)` guards
+  catch NaN but NOT ±Infinity, which then renders as the raw `"Infinity"`
+  string (formatters) or NaN tick/scale positions (axis). Guard numeric
+  ingress with `!Number.isFinite(x)` (covers NaN + ±Inf), not `isNaN`. Fixed
+  2026-06-17 in `formatters.ts` (formatNumber/Pvalue/Interval → naText) +
+  `axis-utils.ts` (computeAxisLimits drops non-finite explicit limits;
+  generateTicks filters non-finite ticks). When adding a formatter / scale /
+  measurement that consumes spec-data numbers, use the finite guard.
 - On `Select` call sites put `onchange=` BEFORE `options=` (the
   primitive-wiring audit's tag regex stops at the first `>`).
 

@@ -42,6 +42,20 @@ relational tests; a constant-factor calibration drift would silently break
 WYSIWYG yet pass them all. Added 6 deterministic golden pins (~0.01px) +
 a linear-size-scaling guard to `width-utils.test.ts` (commit 1fd3f92c) — the
 bun-side WYSIWYG drift guard, complementing the CI-gated browser harness.
+(6) **Boundary-probe campaign — two real runtime BUGS fixed.** Probing pure
+formatters/scale functions at edge inputs (Infinity/NaN/±0/zero-width domain)
+surfaced a recurring NON-FINITE POISON class: `Number.isNaN` guards catch NaN
+but not ±Infinity. **formatters** (commit f7e35ff1) — formatNumber/Pvalue rendered
+the raw `"Infinity"` string into cells, formatInterval rendered an infinite CI
+bound; fixed all four guard sites (`!Number.isFinite`) → naText / point-only.
+**axis-utils** (commit 166e4100) — a non-finite explicit `rangeMin/rangeMax`
+rode unvalidated to `generateTicks` → NaN tick x-positions; two-layer fix
+(computeAxisLimits treats non-finite explicit limits as unset but keeps a finite
+partner; generateTicks filters non-finite ticks). Also added golden coverage for
+the previously-untested `formatInterval` (core forest CI cell) + `abbreviateNumber`
+(commit 7b37008d), pinning the intentional sub-1000 integer-rounding edge. The
+class is now a CLAUDE.md trap (use `!Number.isFinite`, not `isNaN`, at every
+numeric ingress). Finite behavior byte-identical throughout.
 The autonomous roadmap remains complete: every register Open item (D29/D25/D20)
 and roadmap remainder is post-1.0 / maintainer-gated.
 
