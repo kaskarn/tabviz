@@ -95,9 +95,13 @@ export function computeAxisLimits(
   lowerCol?: string | null,
   upperCol?: string | null
 ): [number, number] {
-  // Priority 1: Explicit limits override everything
-  const hasExplicitMin = config.rangeMin != null;
-  const hasExplicitMax = config.rangeMax != null;
+  // Priority 1: Explicit limits override everything — but only if FINITE. A
+  // non-finite explicit rangeMin/rangeMax (bad author/theme/wire value) is
+  // treated as unset EVERYWHERE (both the short-circuit below AND the partial
+  // application later), so it can never ride to the axis and poison
+  // generateTicks → NaN ticks. Falls back to the fully-guarded data path.
+  const hasExplicitMin = config.rangeMin != null && Number.isFinite(config.rangeMin);
+  const hasExplicitMax = config.rangeMax != null && Number.isFinite(config.rangeMax);
 
   if (hasExplicitMin && hasExplicitMax) {
     return [config.rangeMin!, config.rangeMax!];
@@ -396,8 +400,13 @@ export function generateTicks(
       ? computeLogTicks(axisLimits, targetCount)
       : computeLinearTicks(axisLimits, targetCount);
 
+  // Defensive: a non-finite axis bound (generateTicks is exported + called
+  // directly, and the partial-explicit limit path can still apply one) yields
+  // NaN ticks → garbage x-positions on the axis. Drop them before they paint.
+  ticks = ticks.filter((t) => Number.isFinite(t));
+
   // Priority 3: Ensure null tick
-  if (shouldIncludeNullTick && !ticks.includes(nullValue)) {
+  if (shouldIncludeNullTick && Number.isFinite(nullValue) && !ticks.includes(nullValue)) {
     ticks = [...ticks, nullValue].sort((a, b) => a - b);
   }
 

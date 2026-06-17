@@ -390,3 +390,36 @@ describe("computeAxis (integration)", () => {
     expect(result.ticks).toContain(1);
   });
 });
+
+// Non-finite guard (regression, 2026-06-17): a non-finite axis bound — from a
+// bad explicit rangeMin/rangeMax (author/theme/wire) or a directly-supplied
+// limit — produced NaN ticks (rendered as garbage x-positions on the axis).
+// Two defenses: computeAxisLimits treats a non-finite explicit limit as unset
+// (falls back to the guarded data path, keeping any FINITE partner limit), and
+// generateTicks filters non-finite ticks before they paint.
+describe("axis — non-finite guard (regression)", () => {
+  const rows = createRows([{ point: 1.2, lower: 0.9, upper: 1.6 }]);
+  const fin = (r: [number, number]) => r.every(Number.isFinite);
+
+  test("computeAxisLimits: non-finite explicit limits fall back to finite", () => {
+    expect(fin(computeAxisLimits(rows, { ...defaultConfig, rangeMin: NaN, rangeMax: 2 }, "linear", 0))).toBe(true);
+    expect(fin(computeAxisLimits(rows, { ...defaultConfig, rangeMin: 0, rangeMax: Infinity }, "linear", 0))).toBe(true);
+    expect(fin(computeAxisLimits(rows, { ...defaultConfig, rangeMin: NaN, rangeMax: NaN }, "linear", 0))).toBe(true);
+  });
+
+  test("computeAxisLimits: a FINITE partner limit is still honored", () => {
+    // NaN min is dropped; the finite max=2 must survive.
+    expect(computeAxisLimits(rows, { ...defaultConfig, rangeMin: NaN, rangeMax: 2 }, "linear", 0)[1]).toBe(2);
+    // both finite unchanged
+    expect(computeAxisLimits(rows, { ...defaultConfig, rangeMin: 0, rangeMax: 3 }, "linear", 0)).toEqual([0, 3]);
+  });
+
+  test("generateTicks: never emits a non-finite tick", () => {
+    for (const limits of [[NaN, 2], [0, Infinity], [-Infinity, Infinity]] as Array<[number, number]>) {
+      const ticks = generateTicks(limits, defaultConfig, "linear", 0);
+      expect(ticks.every(Number.isFinite)).toBe(true);
+    }
+    // finite behavior unchanged
+    expect(generateTicks([0, 2], defaultConfig, "linear", 0)).toEqual([0, 0.5, 1, 1.5, 2]);
+  });
+});
