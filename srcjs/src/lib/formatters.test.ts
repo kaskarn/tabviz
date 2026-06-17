@@ -1,5 +1,5 @@
 import { expect, test, it, describe } from "bun:test";
-import { formatNumber, formatPvalue, truncateString } from "./formatters";
+import { formatNumber, formatPvalue, truncateString, formatInterval, abbreviateNumber } from "./formatters";
 
 describe("formatPvalue — non-positive guard (regression)", () => {
   it("p = 0 (underflow) renders the <threshold floor, NOT NaN×10⁻ᴵⁿᶠⁱⁿⁱᵗʸ", () => {
@@ -85,5 +85,64 @@ describe("formatNumber — R2 review fixes", () => {
       numeric: { decimals: 0, thousandsSep: true },
     } as never);
     expect(out).toBe("1,234,567");
+  });
+});
+
+// formatInterval is THE forest-plot cell formatter (point + CI), painted on
+// every forest table — yet it was wholly untested. These goldens pin its
+// behavior across the variant-recipe matrix so a recipe/primitive refactor
+// can't silently change the user-visible string. Captured 2026-06-17.
+describe("formatInterval — golden coverage (the core forest CI cell)", () => {
+  const o = (interval: object, rest: object = {}) => ({ interval, ...rest }) as never;
+  it("default recipe: point (lower, comma upper)", () => {
+    expect(formatInterval(1.5, 0.8, 2.3, o({}))).toBe("1.50 (0.80, 2.30)");
+  });
+  it("no options resolves the same default recipe", () => {
+    expect(formatInterval(1.5, 0.8, 2.3)).toBe("1.50 (0.80, 2.30)");
+  });
+  it("decimals primitive flows through to point AND bounds", () => {
+    expect(formatInterval(1.5, 0.8, 2.34, o({ decimals: 1 }))).toBe("1.5 (0.8, 2.3)");
+  });
+  it("author primitives override delimiter + separator", () => {
+    expect(formatInterval(1.5, 0.8, 2.3, o({ boundsOpen: "[", boundsClose: "]", boundsSeparator: " to " })))
+      .toBe("1.50 [0.80 to 2.30]");
+  });
+  it("half_width content renders the ± half-interval, not the range", () => {
+    // (2.3 − 0.8) / 2 = 0.75
+    expect(formatInterval(1.5, 0.8, 2.3, o({ boundsContent: "half_width", decimals: 2 }))).toBe("1.50 (0.75)");
+  });
+  it("missing point → naText", () => {
+    expect(formatInterval(undefined, 0.8, 2.3, o({}, { naText: "N/A" }))).toBe("N/A");
+  });
+  it("missing bounds → point only (no empty parens)", () => {
+    expect(formatInterval(1.5, undefined, undefined, o({ decimals: 2 }))).toBe("1.50");
+  });
+  it("imprecise estimate (CI ratio > threshold) collapses to em-dash", () => {
+    // upper/lower = 9.0/0.1 = 90 > 2
+    expect(formatInterval(1.5, 0.1, 9.0, o({ impreciseThreshold: 2 }))).toBe("—");
+  });
+});
+
+// abbreviateNumber suffixes large COUNTS (K/M/B). The sub-1000 path rounds to
+// an INTEGER by design (it targets counts, where 950→"950" is right) — pinned
+// here so the edge is explicit: a fractional value like 0.5→"1" is intended,
+// NOT a bug, and a future change to support fractional abbreviation must
+// consciously re-bless these. Captured 2026-06-17.
+describe("abbreviateNumber — golden coverage (count abbreviation, integer sub-1000)", () => {
+  it("sub-1000 returns the rounded integer (the count-oriented design)", () => {
+    expect(abbreviateNumber(950)).toBe("950");
+    expect(abbreviateNumber(42)).toBe("42");
+    expect(abbreviateNumber(0.5)).toBe("1"); // INTENTIONAL: rounds, not "0.5"
+  });
+  it("K/M/B suffixes with at-most-1 decimal, no trailing zeros", () => {
+    expect(abbreviateNumber(1200)).toBe("1.2K");
+    expect(abbreviateNumber(1_500_000)).toBe("1.5M");
+    expect(abbreviateNumber(3_400_000_000)).toBe("3.4B");
+  });
+  it("negative values keep the sign", () => {
+    expect(abbreviateNumber(-1200)).toBe("-1.2K");
+  });
+  it("≥ 1 trillion throws (out of suffix range)", () => {
+    expect(() => abbreviateNumber(1e12)).toThrow();
   });
 });
