@@ -146,7 +146,11 @@ export function formatNumber(value: number | undefined | null, options?: ColumnO
 }
 
 function _formatNumberImpl(value: number | undefined | null, options?: ColumnOptions): string {
-  if (value === undefined || value === null || Number.isNaN(value)) {
+  // Non-finite guard: undefined/null/NaN AND ±Infinity all render as naText.
+  // (Was Number.isNaN only — Infinity slipped through to .toFixed() → the raw
+  // "Infinity" string in a cell. !Number.isFinite folds both in, matching the
+  // truncateString guard above.)
+  if (value === undefined || value === null || !Number.isFinite(value)) {
     return options?.naText ?? "";
   }
 
@@ -300,7 +304,7 @@ function _formatIntervalImpl(
   upper?: number,
   options?: ColumnOptions
 ): string {
-  if (point === undefined || point === null || Number.isNaN(point)) {
+  if (point === undefined || point === null || !Number.isFinite(point)) {
     return options?.naText ?? "";
   }
 
@@ -321,8 +325,10 @@ function _formatIntervalImpl(
 
   const fmt = (v: number) => formatNumber(v, numOpts);
 
+  // A non-finite bound (NaN or ±Infinity) is not a usable interval edge →
+  // fall back to point-only, exactly like a missing bound.
   if (lower === undefined || lower === null || upper === undefined || upper === null ||
-      Number.isNaN(lower) || Number.isNaN(upper)) {
+      !Number.isFinite(lower) || !Number.isFinite(upper)) {
     return fmt(point);
   }
 
@@ -364,7 +370,11 @@ export function formatPvalue(value: number | undefined | null, options?: ColumnO
 }
 
 function _formatPvalueImpl(value: number | undefined | null, options?: ColumnOptions): string {
-  if (value === undefined || value === null || Number.isNaN(value)) {
+  // Non-finite guard: undefined/null/NaN AND ±Infinity all render as naText.
+  // (Was Number.isNaN only — Infinity slipped through to .toFixed() → the raw
+  // "Infinity" string in a cell. !Number.isFinite folds both in, matching the
+  // truncateString guard above.)
+  if (value === undefined || value === null || !Number.isFinite(value)) {
     return options?.naText ?? "";
   }
 

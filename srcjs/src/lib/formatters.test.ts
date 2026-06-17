@@ -123,6 +123,27 @@ describe("formatInterval — golden coverage (the core forest CI cell)", () => {
   });
 });
 
+// Non-finite guard (regression, 2026-06-17): undefined/null/NaN were guarded
+// but ±Infinity slipped through to .toFixed()/range formatting, rendering the
+// raw JS "Infinity" string into a cell. !Number.isFinite folds both in.
+describe("formatters — non-finite guard (regression)", () => {
+  it("formatNumber: ±Infinity → naText, not the 'Infinity' string", () => {
+    expect(formatNumber(Infinity, { numeric: { decimals: 2 } } as never)).toBe("");
+    expect(formatNumber(-Infinity, { naText: "—" } as never)).toBe("—");
+    // NaN + finite behavior unchanged
+    expect(formatNumber(NaN as never)).toBe("");
+    expect(formatNumber(1.5, { numeric: { decimals: 2 } } as never)).toBe("1.50");
+  });
+  it("formatPvalue: Infinity → naText (matches the non-positive guard's intent)", () => {
+    expect(formatPvalue(Infinity)).toBe("");
+    expect(formatPvalue(0.05)).toBe("0.050"); // finite unchanged
+  });
+  it("formatInterval: a non-finite bound falls back to point-only", () => {
+    expect(formatInterval(1.5, 0.8, Infinity, { interval: { decimals: 2 } } as never)).toBe("1.50");
+    expect(formatInterval(1.5, Infinity, 2.3, { interval: { decimals: 2 } } as never)).toBe("1.50");
+  });
+});
+
 // abbreviateNumber suffixes large COUNTS (K/M/B). The sub-1000 path rounds to
 // an INTEGER by design (it targets counts, where 950→"950" is right) — pinned
 // here so the edge is explicit: a fractional value like 0.5→"1" is intended,
