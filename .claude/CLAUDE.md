@@ -274,10 +274,19 @@ One line each; the cost of ignoring these has already been paid once.
   catch NaN but NOT ±Infinity, which then renders as the raw `"Infinity"`
   string (formatters) or NaN tick/scale positions (axis). Guard numeric
   ingress with `!Number.isFinite(x)` (covers NaN + ±Inf), not `isNaN`. Fixed
-  2026-06-17 in `formatters.ts` (formatNumber/Pvalue/Interval → naText) +
+  2026-06-17 in `formatters.ts` (formatNumber/Pvalue/Interval → naText),
   `axis-utils.ts` (computeAxisLimits drops non-finite explicit limits;
-  generateTicks filters non-finite ticks). When adding a formatter / scale /
-  measurement that consumes spec-data numbers, use the finite guard.
+  generateTicks filters non-finite ticks), and `interval-renderer.ts` (the
+  render-tree twin of formatInterval). FULL-SWEEP RESULT (39 isNaN sites
+  triaged): the class is BOUNDED — the value-READING chokepoint
+  `scale-utils.ts::getEffectValue` already guards `Number.isFinite` (filters
+  ±Inf point/lower/upper to null at source), so forest-mark/axis VALUE paths
+  are protected upstream and their downstream `!Number.isNaN` checks are
+  belt-and-suspenders on already-filtered data; mark POSITIONS additionally
+  clamp via `clamp01` (Inf→1 edge, not garbage). The real gaps were the
+  text/tick EGRESSES (now fixed). When adding a formatter / scale / measurement
+  that consumes spec-data numbers, use the finite guard; don't re-sweep the
+  belt-and-suspenders sites.
 - On `Select` call sites put `onchange=` BEFORE `options=` (the
   primitive-wiring audit's tag regex stops at the first `>`).
 

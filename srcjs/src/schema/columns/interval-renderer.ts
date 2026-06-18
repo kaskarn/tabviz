@@ -112,7 +112,10 @@ const intervalRenderer: CellFormatter = (_value, options, ctx) => {
   const lower = lowerField ? (meta[lowerField] as number | undefined) : undefined;
   const upper = upperField ? (meta[upperField] as number | undefined) : undefined;
 
-  if (point === undefined || point === null || Number.isNaN(point)) {
+  // Non-finite guard (matches formatters.ts::_formatIntervalImpl — this is the
+  // render-tree twin): ±Infinity must short-circuit to naText like NaN, not
+  // build a malformed interval out of empty formatNumber() pieces.
+  if (point === undefined || point === null || !Number.isFinite(point)) {
     return text(opts?.naText ?? "");
   }
 
@@ -132,7 +135,7 @@ const intervalRenderer: CellFormatter = (_value, options, ctx) => {
   if (
     lower === undefined || lower === null ||
     upper === undefined || upper === null ||
-    Number.isNaN(lower) || Number.isNaN(upper)
+    !Number.isFinite(lower) || !Number.isFinite(upper)
   ) {
     return text(fmt(point));
   }
