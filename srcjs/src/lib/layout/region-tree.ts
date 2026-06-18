@@ -111,10 +111,15 @@ export function buildRegionTree(input: RegionTreeInput): RegionNode[] {
   }
 
   // 2. Groups that need a header: every group with data + all its ancestors.
+  //    The `!has(current)` guard both TERMINATES a malformed parentId cycle
+  //    (g1→g2→g1 from a hand-built/wire spec would otherwise loop forever and
+  //    hang the render thread) AND dedups shared-ancestor re-walks: once a
+  //    group is recorded, its whole ancestor chain already is. Mirrors the
+  //    cycle guard in row-kind-heights.ts::resolveRowKindRatio.
   const groupsWithHeaders = new Set<string>();
   for (const groupId of rowsByGroup.keys()) {
     let current: string | null | undefined = groupId;
-    while (current) {
+    while (current && !groupsWithHeaders.has(current)) {
       groupsWithHeaders.add(current);
       current = groupMap.get(current)?.parentId;
     }

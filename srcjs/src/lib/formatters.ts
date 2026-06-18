@@ -135,6 +135,21 @@ export function toSuperscript(str: string): string {
 // Column Formatters
 // ============================================================================
 
+/** Clamp a decimal-places count to the `toFixed`-legal [0, 100] range. A
+ *  spec/wire value outside it (or non-finite) makes `toFixed` THROW a
+ *  RangeError, crashing the whole render — defensively bound it here. */
+function safeFixedDigits(d: number | null | undefined, fallback = 0): number {
+  if (d == null || !Number.isFinite(d)) return fallback;
+  return Math.min(100, Math.max(0, Math.trunc(d)));
+}
+
+/** Clamp a significant-figures count to the `toPrecision`-legal [1, 100]
+ *  range (same RangeError hazard as {@link safeFixedDigits}). */
+function safePrecisionDigits(d: number | null | undefined, fallback = 6): number {
+  if (d == null || !Number.isFinite(d)) return fallback;
+  return Math.min(100, Math.max(1, Math.trunc(d)));
+}
+
 /** Format number for display - respects column options */
 export function formatNumber(value: number | undefined | null, options?: ColumnOptions): string {
   const cache = options ? _getOrCreate(_formatNumberCache, options) : _noOptsCacheNumber;
@@ -160,8 +175,8 @@ function _formatNumberImpl(value: number | undefined | null, options?: ColumnOpt
     const displayValue = multiply ? value * 100 : value;
     // Use significant figures if digits is specified, otherwise use decimals
     const formatted = digits != null
-      ? displayValue.toPrecision(digits)
-      : displayValue.toFixed(decimals ?? 1);
+      ? displayValue.toPrecision(safePrecisionDigits(digits))
+      : displayValue.toFixed(safeFixedDigits(decimals, 1));
     return symbol ? `${formatted}%` : formatted;
   }
 
@@ -185,13 +200,13 @@ function _formatNumberImpl(value: number | undefined | null, options?: ColumnOpt
   if (abbreviate && Math.abs(value) >= 1000) {
     formatted = abbreviateNumber(value);
   } else if (digits !== undefined && digits !== null) {
-    formatted = value.toPrecision(digits);
+    formatted = value.toPrecision(safePrecisionDigits(digits));
     if (thousandsSep && typeof thousandsSep === "string") {
       formatted = addThousandsSep(formatted, thousandsSep);
     }
   } else {
     if (decimals !== undefined) {
-      formatted = value.toFixed(decimals);
+      formatted = value.toFixed(safeFixedDigits(decimals));
     } else if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
       // Default behavior: integers show no decimals, others show 2
       formatted = Math.round(value).toString();
@@ -410,15 +425,15 @@ function _formatPvalueImpl(value: number | undefined | null, options?: ColumnOpt
   if (format === "scientific" || (format === "auto" && value < expThreshold)) {
     const exp = Math.floor(Math.log10(value));
     const mantissa = value / Math.pow(10, exp);
-    const mantissaStr = mantissa.toPrecision(digits);
+    const mantissaStr = mantissa.toPrecision(safePrecisionDigits(digits));
     return `${mantissaStr}×10${toSuperscript(exp.toString())}${starStr}`;
   }
 
   // Decimal format with appropriate precision based on magnitude
   let formatted: string;
-  if (value >= 0.1) formatted = value.toFixed(digits);
-  else if (value >= 0.01) formatted = value.toFixed(digits + 1);
-  else formatted = value.toFixed(digits + 2);
+  if (value >= 0.1) formatted = value.toFixed(safeFixedDigits(digits));
+  else if (value >= 0.01) formatted = value.toFixed(safeFixedDigits(digits + 1));
+  else formatted = value.toFixed(safeFixedDigits(digits + 2));
 
   return `${formatted}${starStr}`;
 }
@@ -483,9 +498,9 @@ export function getColumnDisplayText(
 
     case "heatmap": {
       const hmValue = row.metadata[field] as number;
-      if (hmValue === undefined || hmValue === null) return "";
+      if (hmValue == null || !Number.isFinite(hmValue)) return "";
       const hmDecimals = options?.heatmap?.decimals ?? 2;
-      return hmValue.toFixed(hmDecimals);
+      return hmValue.toFixed(safeFixedDigits(hmDecimals));
     }
 
     case "progress": {

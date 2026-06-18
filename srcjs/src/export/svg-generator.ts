@@ -2041,9 +2041,9 @@ function renderInterval(
 
   // Filter to only valid effects
   const validEffects = effectsToRender.filter(e =>
-    e.point != null && !Number.isNaN(e.point) &&
-    e.lower != null && !Number.isNaN(e.lower) &&
-    e.upper != null && !Number.isNaN(e.upper)
+    e.point != null && Number.isFinite(e.point) &&
+    e.lower != null && Number.isFinite(e.lower) &&
+    e.upper != null && Number.isFinite(e.upper)
   );
 
   if (validEffects.length === 0) {
@@ -2427,7 +2427,7 @@ function renderVizBar(
   // Check if row has valid data
   const hasValidData = effects.some(e => {
     const val = row.metadata[e.value];
-    return val != null && !Number.isNaN(val as number);
+    return val != null && Number.isFinite(val as number);
   });
 
   if (!hasValidData) return "";
@@ -2445,7 +2445,7 @@ function renderVizBar(
 
   effects.forEach((effect, idx) => {
     const value = row.metadata[effect.value] as number | undefined;
-    if (value == null || Number.isNaN(value)) return;
+    if (value == null || !Number.isFinite(value)) return;
 
     const barY = yCenter - totalBarHeight / 2 + idx * (barHeight + barGap);
     const barXStart = vizX + xScale(Math.min(0, value));
@@ -2509,7 +2509,7 @@ function renderVizBoxplot(
       const q3 = row.metadata[effect.q3] as number;
       const max = row.metadata[effect.max] as number;
 
-      if ([min, q1, median, q3, max].some(v => v == null || Number.isNaN(v))) {
+      if ([min, q1, median, q3, max].some(v => v == null || !Number.isFinite(v))) {
         return null;
       }
 
@@ -5023,7 +5023,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             const r = displayRow.row;
             if (!(r.label === ann.rowId || r.id === ann.rowId)) return;
             const ptVal = r.metadata[pointCol];
-            if (typeof ptVal !== "number" || Number.isNaN(ptVal)) return;
+            if (typeof ptVal !== "number" || !Number.isFinite(ptVal)) return;
             const annY = plotY + (rowMarkerCenters[i] ?? rowPositions[i] + rowHeights[i] / 2);
             const markerX = forestX + xScale(ptVal);
             const offset = ann.position === "before" ? -14 : ann.position === "after" ? 14 : 0;
@@ -5072,9 +5072,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
     // Overall summary diamond
     if (spec.data.overall && layout.showOverallSummary &&
-        typeof spec.data.overall.point === "number" && !Number.isNaN(spec.data.overall.point) &&
-        typeof spec.data.overall.lower === "number" && !Number.isNaN(spec.data.overall.lower) &&
-        typeof spec.data.overall.upper === "number" && !Number.isNaN(spec.data.overall.upper)) {
+        typeof spec.data.overall.point === "number" && Number.isFinite(spec.data.overall.point) &&
+        typeof spec.data.overall.lower === "number" && Number.isFinite(spec.data.overall.lower) &&
+        typeof spec.data.overall.upper === "number" && Number.isFinite(spec.data.overall.upper)) {
       const diamondY = plotY + layout.summaryYPosition;
       parts.push(renderDiamond(
         spec.data.overall.point,

@@ -18,6 +18,29 @@ const NO_COLLAPSE = new Set<string>();
 const dr = (input: RegionTreeInput, collapsed = NO_COLLAPSE) =>
   flatten(buildRegionTree(input), collapsed);
 
+describe("region-tree — malformed input robustness (regression)", () => {
+  test("a parentId CYCLE terminates instead of hanging the render thread", () => {
+    // g1→g2→g1 (hand-built / wire spec). Before the `!has(current)` guard this
+    // looped forever in the ancestor walk and froze the widget.
+    const input: RegionTreeInput = {
+      groups: [group("g1", 0, "g2"), group("g2", 1, "g1")],
+      visibleRows: [row("r1", "g1"), row("r2", "g2")],
+      rowOrder: NO_ORDER,
+    };
+    const out = buildRegionTree(input); // must RETURN (not hang)
+    expect(Array.isArray(out)).toBe(true);
+  });
+
+  test("a self-referential parentId terminates", () => {
+    const input: RegionTreeInput = {
+      groups: [group("g1", 0, "g1")],
+      visibleRows: [row("r1", "g1")],
+      rowOrder: NO_ORDER,
+    };
+    expect(Array.isArray(buildRegionTree(input))).toBe(true);
+  });
+});
+
 describe("region-tree — flat (no groups)", () => {
   test("emits data rows at depth 0 in order", () => {
     const out = dr({ groups: [], visibleRows: [row("a"), row("b")], rowOrder: NO_ORDER });

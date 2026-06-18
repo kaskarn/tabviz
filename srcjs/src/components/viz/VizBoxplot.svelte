@@ -40,7 +40,7 @@
         const q3 = row.metadata[effect.q3] as number;
         const max = row.metadata[effect.max] as number;
 
-        if ([min, q1, median, q3, max].some((v) => v == null || Number.isNaN(v))) {
+        if ([min, q1, median, q3, max].some((v) => v == null || !Number.isFinite(v))) {
           return null;
         }
 

@@ -57,7 +57,7 @@
 
   // Normalize value to [0, 1]
   const normalized = $derived.by(() => {
-    if (value === undefined || value === null || Number.isNaN(value)) return null;
+    if (value === undefined || value === null || !Number.isFinite(value)) return null;
     if (effectiveMax === effectiveMin) return 0.5;
     return normalizeValue(value, effectiveMin, effectiveMax, scale);
   });
@@ -104,7 +104,7 @@
     return luminance > 0.5 ? HEATMAP_TEXT.DARK : HEATMAP_TEXT.LIGHT;
   });
 
-  const isNa = $derived(value === undefined || value === null || Number.isNaN(value as number));
+  const isNa = $derived(value === undefined || value === null || !Number.isFinite(value as number));
 
   const formattedValue = $derived.by(() => {
     if (isNa) return naText ?? "";

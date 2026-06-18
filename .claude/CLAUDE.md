@@ -288,10 +288,22 @@ One line each; the cost of ignoring these has already been paid once.
   getEffectValue — and those used `!Number.isNaN` inconsistently with their own
   `Number.isFinite` siblings (`computeVizBar/BoxplotDomain` guarded; violin
   domain + quartiles/outliers/silverman/KDE did not). Rationalized all to
-  `Number.isFinite` (2026-06-17). So the real gaps were the EGRESSES (formatters,
-  axis ticks, interval render-tree) PLUS the viz statistics path. When adding a
-  formatter / scale / measurement that consumes spec-data numbers, use the
-  finite guard; the forest belt-and-suspenders sites need no re-sweep.
+  `Number.isFinite` (2026-06-17). The "bounded by getEffectValue" claim was
+  then DISPROVEN by an adversarial agent sweep: the **viz-SERIES forest columns
+  + overall-summary diamond + CellHeatmap text + export forest-coordinate paths**
+  ALSO read data directly (NOT through getEffectValue) and leaked ±Inf →
+  `width="NaN"` / `cx="Infinity"` / literal `"Infinity"` cell text. Fixed across
+  `VizBar`/`VizBoxplot`/`CellHeatmap`.svelte + `svg-generator.ts` (validEffects
+  filter, viz_bar/viz_boxplot, overall diamond, custom-annotation marker) +
+  `TabvizPlot.svelte` (annotation + overall diamond). RELATED RangeError class:
+  `toFixed(d)` THROWS when d∉[0,100], `toPrecision(d)` when d∉[1,100] — a
+  spec/wire `decimals`/`digits` outside range crashed the whole render; clamp
+  with `safeFixedDigits`/`safePrecisionDigits` (formatters.ts). RULE: any
+  spec-DATA number reaching a formatted string OR an SVG coord/size/opacity
+  needs the finite guard at its OWN read site — there is no single chokepoint
+  (getEffectValue covers forest VALUE reads only; viz/diamond/heatmap/export
+  each read separately). Gate: `viz-domain-utils.test.ts` (±Inf), region-tree
+  cycle test.
 - On `Select` call sites put `onchange=` BEFORE `options=` (the
   primitive-wiring audit's tag regex stops at the first `>`).
 

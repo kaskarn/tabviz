@@ -61,7 +61,7 @@
   const hasValidData = $derived(
     options.effects.some((e) => {
       const val = row.metadata[e.value];
-      return val != null && !Number.isNaN(val as number);
+      return val != null && Number.isFinite(val as number);
     })
   );
 </script>
@@ -71,7 +71,7 @@
     <!-- Bars for each effect -->
     {#each options.effects as effect, idx}
       {@const value = row.metadata[effect.value] as number | undefined}
-      {#if value != null && !Number.isNaN(value)}
+      {#if value != null && Number.isFinite(value)}
         {@const barY = yPosition - barConfig.totalHeight / 2 + idx * (barConfig.barHeight + barConfig.barGap)}
         {@const barX = xScale(Math.min(0, value))}
         {@const barWidth = Math.abs(xScale(value) - xScale(0))}

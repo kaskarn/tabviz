@@ -2205,7 +2205,7 @@
                 {#each displayRows as displayRow, ri (getDisplayRowKey(displayRow, ri))}
                   {#if displayRow.type === "data" && pointCol && (displayRow.row.label === customAnn.rowId || displayRow.row.id === customAnn.rowId)}
                     {@const ptVal = displayRow.row.metadata[pointCol]}
-                    {#if typeof ptVal === "number" && !Number.isNaN(ptVal)}
+                    {#if typeof ptVal === "number" && Number.isFinite(ptVal)}
                       {@const annRowY = rowLayout.markerCenters?.[ri] ?? ((rowLayout.positions[ri] ?? ri * layout.rowHeight) + (rowLayout.heights[ri] ?? layout.rowHeight) / 2)}
                       {@const markerX = colScale(ptVal)}
                       {@const offset = customAnn.position === "before" ? -14 : customAnn.position === "after" ? 14 : 0}
@@ -2277,9 +2277,9 @@
 
             <!-- Overall summary diamond (positioned at end of rows) -->
             {#if spec.data.overall && layout.showOverallSummary &&
-                 typeof spec.data.overall.point === 'number' && !Number.isNaN(spec.data.overall.point) &&
-                 typeof spec.data.overall.lower === 'number' && !Number.isNaN(spec.data.overall.lower) &&
-                 typeof spec.data.overall.upper === 'number' && !Number.isNaN(spec.data.overall.upper)}
+                 typeof spec.data.overall.point === 'number' && Number.isFinite(spec.data.overall.point) &&
+                 typeof spec.data.overall.lower === 'number' && Number.isFinite(spec.data.overall.lower) &&
+                 typeof spec.data.overall.upper === 'number' && Number.isFinite(spec.data.overall.upper)}
               <SummaryDiamond
                 point={spec.data.overall.point}
                 lower={spec.data.overall.lower}
