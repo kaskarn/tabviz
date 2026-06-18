@@ -217,7 +217,7 @@ is_reserved_id <- function(id) {
 #'   column type defaults to `FALSE`. See `save_plot(flex = ...)` for the
 #'   per-render cap on how far flex columns may stretch.
 #' @param options Named list of type-specific options
-#' @param na_text Text to display for NA/missing values (default "" for empty)
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param bold Column name containing logical values for per-cell bold styling
 #' @param italic Column name containing logical values for per-cell italic styling
 #' @param color Column name containing CSS color strings for per-cell text color

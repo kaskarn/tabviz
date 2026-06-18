@@ -79,7 +79,7 @@ per-render cap on how far flex columns may stretch.}
 
 \item{options}{Named list of type-specific options}
 
-\item{na_text}{Text to display for NA/missing values (default "" for empty)}
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{bold}{Column name containing logical values for per-cell bold styling}
 

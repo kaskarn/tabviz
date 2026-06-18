@@ -678,8 +678,32 @@ update_column <- function(x, field, ...) {
         if (!is.list(val)) cli_abort("`options` must be a list")
         col@options <- utils::modifyList(col@options, val)
       } else {
-        # Unknown name: write into options as a top-level key.
-        col@options[[nm]] <- val
+        # Type-specific options nest under a per-type bucket
+        # (e.g. options$numeric$decimals), NOT flat — a blind top-level write
+        # was silently IGNORED by the renderer (the reported
+        # `update_column(decimals = )` no-op). Route the name into whichever
+        # existing bucket already defines it; only a genuinely-flat option
+        # (e.g. naText, set by web_col at the top level) stays flat.
+        bucket <- NULL
+        for (b in names(col@options)) {
+          if (is.list(col@options[[b]]) && nm %in% names(col@options[[b]])) {
+            bucket <- b
+            break
+          }
+        }
+        if (!is.null(bucket)) {
+          col@options[[bucket]][[nm]] <- val
+        } else if (nm %in% names(col@options)) {
+          col@options[[nm]] <- val            # existing flat option
+        } else {
+          # New, unplaceable name: keep the flat write but don't do it
+          # SILENTLY — a type-specific option set this way won't render.
+          col@options[[nm]] <- val
+          cli_warn(c(
+            "Option {.field {nm}} on column {.val {field}} was written at the top level of {.field options}.",
+            "i" = "If it is a type-specific option it may be ignored; nest it via {.code options = list(<type> = list({nm} = ...))}."
+          ))
+        }
       }
     }
     col
@@ -1209,9 +1233,11 @@ check_paint_token <- function(token) {
 #' Paint a row with a semantic token
 #'
 #' The equivalent of toggling a cell semantic via the in-widget paint tool.
-#' Static-path (WebSpec / htmlwidget) records the decision on a per-row
-#' edit map so `save_plot()` and the "View source" panel pick it up.
-#' Proxy-path dispatches live.
+#' This is a **runtime (proxy-only) verb**: called on a [tabviz_proxy] it
+#' dispatches the paint live. Called on a static `WebSpec`/htmlwidget it warns
+#' and returns the input unchanged — for static specs express the same intent
+#' at construction via `row_emphasis=` / `row_muted=` / `row_accent=` on
+#' [tabviz()]. (A static per-row paint map is not implemented.)
 #'
 #' @param x A WebSpec, htmlwidget, or tabviz_proxy.
 #' @param row_id Row id to paint.

@@ -18,7 +18,9 @@ The modified input
 }
 \description{
 The equivalent of toggling a cell semantic via the in-widget paint tool.
-Static-path (WebSpec / htmlwidget) records the decision on a per-row
-edit map so \code{save_plot()} and the "View source" panel pick it up.
-Proxy-path dispatches live.
+This is a \strong{runtime (proxy-only) verb}: called on a \link{tabviz_proxy} it
+dispatches the paint live. Called on a static \code{WebSpec}/htmlwidget it warns
+and returns the input unchanged — for static specs express the same intent
+at construction via \verb{row_emphasis=} / \verb{row_muted=} / \verb{row_accent=} on
+\code{\link[=tabviz]{tabviz()}}. (A static per-row paint map is not implemented.)
 }

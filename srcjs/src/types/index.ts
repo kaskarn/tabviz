@@ -449,7 +449,7 @@ export interface VizBoxplotEffect {
   label?: string | null;      // Legend label
   color?: string | null;      // Box fill color
   opacity?: number | null;    // Box fill opacity (0-1)
-  fillOpacity?: number | null;// @deprecated Use `opacity`. Kept for one release for backward compat.
+  fillOpacity?: number | null;// LIVE alias for `opacity`, read as a fallback (`opacity ?? fillOpacity ?? default`) at every viz consumer (VizBoxplot/VizViolin + svg-generator). NOT deprecated — don't delete without dropping the fallbacks.
 }
 
 /** Options for viz_boxplot column */
@@ -466,7 +466,7 @@ export interface VizViolinEffect {
   label?: string | null;      // Legend label
   color?: string | null;      // Fill color
   opacity?: number | null;    // Fill opacity (0-1)
-  fillOpacity?: number | null;// @deprecated Use `opacity`. Kept for one release for backward compat.
+  fillOpacity?: number | null;// LIVE alias for `opacity`, read as a fallback (`opacity ?? fillOpacity ?? default`) at every viz consumer (VizBoxplot/VizViolin + svg-generator). NOT deprecated — don't delete without dropping the fallbacks.
 }
 
 /** Options for viz_violin column */

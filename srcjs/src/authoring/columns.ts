@@ -234,6 +234,8 @@ export function colN({
 export interface ColCurrencyArgs extends CommonColumnArgs {
   field: string;
   decimals?: number;
+  /** Significant figures (alternative to `decimals`) — mirrors R `col_currency(digits = )`. */
+  digits?: number;
   /** Currency symbol. Defaults to "$" — mirrors R `col_currency(symbol = "$")`. */
   symbol?: string;
   thousandsSep?: string | false;
@@ -244,11 +246,15 @@ export interface ColCurrencyArgs extends CommonColumnArgs {
 }
 
 export function colCurrency({
-  field, decimals = 2, symbol = "$", thousandsSep = ",", abbreviate = false,
+  field, decimals = 2, digits, symbol = "$", thousandsSep = ",", abbreviate = false,
   position = "prefix", naText, ...common
 }: ColCurrencyArgs): ColumnSpec {
   return colNumeric({
-    field, decimals, thousandsSep, abbreviate,
+    field,
+    // digits and decimals are mutually exclusive — pass digits alone when
+    // given (R `col_currency(digits=)` parity), else the decimals default.
+    ...(digits != null ? { digits } : { decimals }),
+    thousandsSep, abbreviate,
     prefix: position === "prefix" ? symbol : undefined,
     suffix: position === "suffix" ? symbol : undefined,
     naText, ...common,
