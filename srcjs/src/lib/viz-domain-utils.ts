@@ -96,7 +96,7 @@ export function computeVizViolinDomain(
     for (const effect of options.effects) {
       const data = row.metadata[effect.data] as number[] | undefined;
       if (data && Array.isArray(data)) {
-        values.push(...data.filter((v) => v != null && !Number.isNaN(v)));
+        values.push(...data.filter((v) => v != null && Number.isFinite(v)));
       }
     }
   }

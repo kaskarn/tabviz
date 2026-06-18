@@ -14,9 +14,11 @@ export function computeQuartiles(values: number[]): Omit<BoxplotStats, "outliers
     return { min: NaN, q1: NaN, median: NaN, q3: NaN, max: NaN };
   }
 
-  // Filter out NaN/null values and sort
+  // Filter out non-finite (NaN/±Inf) and null values, then sort. Matches the
+  // viz-domain functions (computeVizBar/BoxplotDomain) — a non-finite sample
+  // poisons quartiles/fences/KDE, so it's excluded from the statistics.
   const sorted = values
-    .filter((v) => v != null && !Number.isNaN(v))
+    .filter((v) => v != null && Number.isFinite(v))
     .sort((a, b) => a - b);
 
   if (sorted.length === 0) {
@@ -52,7 +54,7 @@ export function computeOutliers(
   q1: number,
   q3: number
 ): number[] {
-  if (!values || values.length === 0 || Number.isNaN(q1) || Number.isNaN(q3)) {
+  if (!values || values.length === 0 || !Number.isFinite(q1) || !Number.isFinite(q3)) {
     return [];
   }
 
@@ -62,7 +64,7 @@ export function computeOutliers(
 
   return values.filter(
     (v) =>
-      v != null && !Number.isNaN(v) && (v < lowerFence || v > upperFence)
+      v != null && Number.isFinite(v) && (v < lowerFence || v > upperFence)
   );
 }
 
@@ -87,7 +89,7 @@ export function silvermanBandwidth(values: number[]): number {
   if (!values || values.length < 2) return 1;
 
   const sorted = values
-    .filter((v) => v != null && !Number.isNaN(v))
+    .filter((v) => v != null && Number.isFinite(v))
     .sort((a, b) => a - b);
 
   if (sorted.length < 2) return 1;
@@ -138,7 +140,7 @@ export function computeKDE(
   }
 
   // Filter valid values
-  const data = values.filter((v) => v != null && !Number.isNaN(v));
+  const data = values.filter((v) => v != null && Number.isFinite(v));
 
   if (data.length === 0) {
     return { x: [], y: [] };

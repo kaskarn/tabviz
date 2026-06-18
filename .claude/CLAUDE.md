@@ -283,10 +283,15 @@ One line each; the cost of ignoring these has already been paid once.
   ±Inf point/lower/upper to null at source), so forest-mark/axis VALUE paths
   are protected upstream and their downstream `!Number.isNaN` checks are
   belt-and-suspenders on already-filtered data; mark POSITIONS additionally
-  clamp via `clamp01` (Inf→1 edge, not garbage). The real gaps were the
-  text/tick EGRESSES (now fixed). When adding a formatter / scale / measurement
-  that consumes spec-data numbers, use the finite guard; don't re-sweep the
-  belt-and-suspenders sites.
+  clamp via `clamp01` (Inf→1 edge, not garbage). BUT **viz columns read data
+  through a SEPARATE path** (`viz-domain-utils.ts` / `viz-utils.ts`), NOT
+  getEffectValue — and those used `!Number.isNaN` inconsistently with their own
+  `Number.isFinite` siblings (`computeVizBar/BoxplotDomain` guarded; violin
+  domain + quartiles/outliers/silverman/KDE did not). Rationalized all to
+  `Number.isFinite` (2026-06-17). So the real gaps were the EGRESSES (formatters,
+  axis ticks, interval render-tree) PLUS the viz statistics path. When adding a
+  formatter / scale / measurement that consumes spec-data numbers, use the
+  finite guard; the forest belt-and-suspenders sites need no re-sweep.
 - On `Select` call sites put `onchange=` BEFORE `options=` (the
   primitive-wiring audit's tag regex stops at the first `>`).
 

@@ -120,8 +120,12 @@ describe("computeVizViolinDomain", () => {
     expect(d).toEqual({ min: -5, max: 5 });
   });
 
-  test("filters non-finite values from data arrays", () => {
-    const d = computeVizViolinDomain([row({ d: [0, NaN, 4] })], opts());
+  test("filters non-finite values from data arrays (NaN AND ±Infinity)", () => {
+    // Regression (2026-06-17): the filter was `!Number.isNaN` (caught NaN but
+    // NOT ±Inf — an infinite sample poisoned the domain → scale collapse).
+    // Now `Number.isFinite`, matching computeVizBar/BoxplotDomain. The old test
+    // only passed NaN, so it never exercised the gap; ±Inf is the real guard.
+    const d = computeVizViolinDomain([row({ d: [0, NaN, Infinity, -Infinity, 4] })], opts());
     expect(d.min).toBe(-0.4);
     expect(d.max).toBe(4.4);
   });
