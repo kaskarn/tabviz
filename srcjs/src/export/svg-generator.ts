@@ -43,6 +43,7 @@ import type {
   Annotation,
 } from "$types";
 import { getEffectValue } from "$lib/scale-utils";
+import { trianglePoints, starPoints } from "$lib/annotation-glyph";
 import { computeAxis, generateTicks, formatAxisTick, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
@@ -5034,15 +5035,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             } else if (ann.shape === "square") {
               parts.push(`<rect x="${aX - sz}" y="${annY - sz}" width="${2*sz}" height="${2*sz}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             } else if (ann.shape === "triangle") {
-              parts.push(`<polygon points="${aX},${annY - sz} ${aX - sz},${annY + sz} ${aX + sz},${annY + sz}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
+              parts.push(`<polygon points="${trianglePoints(aX, annY, sz)}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             } else if (ann.shape === "star") {
-              const pts: string[] = [];
-              for (let k = 0; k < 10; k++) {
-                const rr = k % 2 === 0 ? sz * 1.2 : sz * 0.5;
-                const a = Math.PI / 2 + k * Math.PI / 5;
-                pts.push(`${aX + rr * Math.cos(a)},${annY - rr * Math.sin(a)}`);
-              }
-              parts.push(`<polygon points="${pts.join(" ")}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
+              parts.push(`<polygon points="${starPoints(aX, annY, sz)}" fill="${escapeAttr(ann.color)}" stroke="white" stroke-width="0.5"/>`);
             }
           });
         }

@@ -50,6 +50,7 @@
   import PlotHeader from "$components/forest/PlotHeader.svelte";
   import EdgeResize from "$components/ui/EdgeResize.svelte";
   import { elementScale } from "$lib/scale-factor";
+  import { trianglePoints, starPoints } from "$lib/annotation-glyph";
   import PlotFooter from "$components/forest/PlotFooter.svelte";
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
@@ -2216,9 +2217,9 @@
                       {:else if customAnn.shape === "square"}
                         <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {:else if customAnn.shape === "triangle"}
-                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
+                        <polygon points={trianglePoints(annX, annRowY, sz)} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {:else if customAnn.shape === "star"}
-                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
+                        <polygon points={starPoints(annX, annRowY, sz)} fill={customAnn.color} stroke={annStroke} stroke-width="0.5" />
                       {/if}
                     {/if}
                   {/if}
