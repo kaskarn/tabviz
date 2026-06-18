@@ -178,7 +178,7 @@ export function createSplitTabvizStore() {
    * `maxChars * 8` heuristic, so the interactive toggle lands on the SAME
    * numbers the exported figure does (it previously diverged). The font is
    * left to the estimator's default for now; exact non-Inter-theme parity
-   * would pass each subset's resolved body family (see D-note).
+   * would pass each subset's resolved body family via SubsetSpec.theme.text.
    */
   function computeSharedWidths(): Map<string, number> {
     const result = new Map<string, number>();
