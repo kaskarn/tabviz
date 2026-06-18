@@ -56,6 +56,18 @@ the previously-untested `formatInterval` (core forest CI cell) + `abbreviateNumb
 (commit 7b37008d), pinning the intentional sub-1000 integer-rounding edge. The
 class is now a CLAUDE.md trap (use `!Number.isFinite`, not `isNaN`, at every
 numeric ingress). Finite behavior byte-identical throughout.
+(7) **Store / state subsystem review (re-issued /goal) — basically perfect.**
+Reviewed the ~10k-line Svelte 5 runes store for the silent-dead-mutation trap
+(no automated gate): ZERO direct deep `spec.*` mutations (all route through
+`setSpec`/`writeThemePath`); every `preview*` method routes correctly
+(`previewThemeField`→`writeThemePath`, the 2026-05-25 regression stays fixed);
+the one in-place mutation (`columnWidths[id]=w`) is on a deliberately-deep
+`$state` (not `.raw`) with a documented rationale; Sets/objects reassign
+immutably. Debt audit across srcjs: 0 FIXME/HACK/@ts-ignore; 3 TODOs are tracked
+KNOWN_UNCONSUMED notes; all 17 eslint-disables justified (dev-warn, XSS
+control-regex, documented `{@html}`); 5 console.log all in `debug-layout.ts`
+(dev tool); no runner-split `.vitest.ts` orphans. `$effect` hygiene sound
+(read-state→emit-external, no write-back loops). No code change warranted.
 The autonomous roadmap remains complete: every register Open item (D29/D25/D20)
 and roadmap remainder is post-1.0 / maintainer-gated.
 
