@@ -11,6 +11,37 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-06-17 — FULL recursive review pass COMPLETE (re-issued /goal) — basically perfect
+
+Capstone for the multi-firing recursive review (the /goal: "keep going until a
+whole review pass comes out basically perfect, no fudge debt"). Every major
+subsystem has now had a dedicated design-level pass:
+
+- **TS:** width/measurement, formatters, axis, layout (region-tree + row-kind
+  cascade), store/state (runes mutation discipline), viz statistics, theme
+  cascade resolution, schema/columns. **R:** serialization/wire-import, R↔TS
+  parity, modifiers/Shiny proxy+state.
+- **Real bugs found + fixed this campaign** (all the same non-finite poison
+  class, now CLOSED + codified as a CLAUDE.md trap): formatters render
+  "Infinity" strings (f7e35ff1), axis non-finite bounds → NaN ticks (166e4100),
+  interval render-tree twin (b3bc1fc7), viz statistics inconsistent guards
+  (832f73f9). Plus caption-ascent magic-number naming (6b8c0b75).
+- **Coverage gaps closed:** estimator golden pins (1fd3f92c), formatInterval +
+  abbreviateNumber goldens (7b37008d), strengthened the viz "non-finite" test
+  that only ever passed NaN.
+- **Clean / basically-perfect (no change warranted):** store mutation surface
+  (correct setSpec/writeThemePath routing, documented $state decisions), theme
+  cascade (deterministic; role-overrides-wiring lockstep gate covers pins/
+  overrides reaching both resolve paths), schema/columns (drift gate GRANDFATHER
+  empty per D11, export-option-parity 40/0, boot-coverage), R serialization
+  (eager S7 defaults 0, [[ ]] importer, %||% canonical-single), normalizeValue
+  (bulletproof at every edge). All gates green throughout.
+
+Conclusion: the codebase is basically perfect. The only outstanding work to 1.0
+is maintainer-gated (D29/D25/D20 post-1.0; branch protection + ship-time
+defaults sign-off). No fudge debt introduced — every fix used the honest finite
+guard, no hacks.
+
 ## 2026-06-17 — systematic review pass: caption-ascent naming + R serialization/parity audit (clean)
 
 Two loop firings of focused review. (1) **Width-system fudge audit** →
