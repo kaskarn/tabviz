@@ -1,9 +1,19 @@
-# D36 — Studio retirement via salvage-then-delete (option c)
+# D36 — Studio retirement via salvage-then-delete (option c) — SUPERSEDED
 
-**Status:** DECIDED (option c, 2026-06-18) — salvage the worthwhile pieces into
-the live settings panel as part of a *careful final rethink of that menu*, then
-delete the rest. This doc scopes the arc; it deliberately leaves the design
-questions OPEN for that rethink rather than pre-deciding them.
+> **SUPERSEDED 2026-06-18 (same day).** The maintainer reversed to **option (b):
+> KEEP the studio as a LIVING TUTORIAL** — the cascade-teaching spine is too
+> bulky to fold into a collapsible settings pane, so the studio stays as its
+> home, maintained, not deleted. The salvage-then-delete plan below is NOT
+> active. This doc is retained for its (a) corrected inventory of the studio
+> subgraph and (b) the analysis that concluded the cascade pedagogy is valuable
+> but can't move into the settings pane — which is *why* (b) was chosen. See the
+> D36 Decided entry in `decision-register.md`.
+
+---
+
+**Original status (no longer active):** DECIDED (option c, 2026-06-18) — salvage
+the worthwhile pieces into the live settings panel as part of a *careful final
+rethink of that menu*, then delete the rest.
 
 ## Why this isn't a quick delete
 

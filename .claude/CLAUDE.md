@@ -136,8 +136,13 @@ interactivity-ux-plan,spec-first-1.0-plan,settings-overhaul-plan}.md`.
   geometry/scheme) · `PlotsTab` (L3 per-series shape/fill/stroke via
   `series_overrides`) · `StylingTab` (L4 density_factor + role/text-role
   remapping + override release). The pre-redesign panel (two-band, quick
-  strip, role tones, components band) and the STUDIO are SUPERSEDED;
-  studio is DORMANT (do not extend). **The merge bar is
+  strip, role tones, components band) is SUPERSEDED for editing — the live
+  panel replaced it. The STUDIO is KEPT as a **living tutorial** (D36,
+  2026-06-18): it's the home for the tier-by-tier cascade-teaching viz
+  (`components/theme-panel/cascade/`), which is too bulky to fold into a
+  collapsible settings pane — so it's a maintained teaching surface, NOT dead
+  weight to delete. Don't pile *editing* features here (the live settings panel
+  is the editing surface); do keep it functional. **The merge bar is
   `tests/browser/settings-consequence.browser.ts`** (`npm run
   qa:consequence`, CI-gated): every `[data-vt|lt|it|pt|st]` control must
   move ≥20 visible pixels in the figure (pixelmatch threshold 0 — zero
@@ -713,9 +718,10 @@ Manual tests in `tests/manual/`; visual regression in `tests/visual/`.
   SKIPS (screenshot flake) — download the `glyph-parity-crops` artifact to
   eyeball. Budgets only shrink (drop to new floor when a rank-3/4/5
   reconcile lands).
-- `srcjs/tests/browser/studio-shot.mjs` — DORMANT with the studio (not
-  in CI; keep passing if touched, don't extend). Was the ONLY way to eyeball the
-  studio without launching R (it's a Shiny gadget). Serves `inst/studio/`
+- `srcjs/tests/browser/studio-shot.mjs` — the studio smoke gate (not in
+  CI; keep it passing — the studio is a KEPT living tutorial per D36, not dead
+  code). The ONLY way to eyeball the studio without launching R (it's a Shiny
+  gadget). Serves `inst/studio/`
   over HTTP (the file:// CORS rule) and boots the studio in standalone
   forge mode (no host data → sample spec + cochrane). Doubles as a smoke
   gate: exits non-zero if the role spine never mounts or the page throws.
