@@ -3140,7 +3140,10 @@ col_custom <- function(field, type, header = NULL, width = NULL,
     id      = paste0(type, "_", field),
     field   = field,
     type    = type,
-    header  = header %||% field,
+    # raw is.null, NOT %||% — `%||%` coalesces "" to field, but an empty
+    # header is an intentional idiom (a reserved-but-hidden header slot).
+    # Mirrors web_col()'s empty-header handling.
+    header  = if (is.null(header)) field else header,
     width   = width %||% NA,
     options = options,
     ...

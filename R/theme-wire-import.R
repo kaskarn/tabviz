@@ -36,8 +36,8 @@
     if (!ramp %in% .ROLE_RAMPS || is.na(grade) || grade < 1L || grade > 11L) return(NULL)
     return(list(ramp = ramp, grade = grade))
   }
-  if (is.list(entry) && !is.null(entry$ramp) && !is.null(entry$grade)) {
-    return(list(ramp = as.character(entry$ramp), grade = as.integer(entry$grade)))
+  if (is.list(entry) && !is.null(entry[["ramp"]]) && !is.null(entry[["grade"]])) {
+    return(list(ramp = as.character(entry[["ramp"]]), grade = as.integer(entry[["grade"]])))
   }
   NULL
 }
@@ -281,7 +281,7 @@ theme_inputs_from_wire <- function(wire_inputs) {
   rk <- w[["row_kinds"]] %||% list()
   rk_ratio <- function(kind) {
     e <- rk[[kind]]
-    if (is.null(e)) NA_real_ else .wire_num(e$heightRatio)
+    if (is.null(e)) NA_real_ else .wire_num(e[["heightRatio"]])
   }
   v$row_kinds_data_height_ratio         <- rk_ratio("data")
   v$row_kinds_group_header_height_ratio <- rk_ratio("group_header")

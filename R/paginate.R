@@ -343,12 +343,12 @@ compute_page_breaks <- function(spec, paginate = NULL) {
 
   oversized <- unique(oversized)
   if (length(oversized) > 0L) {
+    # Interpolate the (data-controlled) group labels as cli DATA, never
+    # pasted into the format string: a label containing `{...}` would
+    # otherwise make cli's glue pass crash (trap: cli_abort glue-interpolates).
+    labels <- paste(oversized, collapse = ", ")
     msg <- c(
-      "i" = sprintf(
-        "Group(s) larger than {.field rows} (= %d) will overflow their page: %s",
-        rows_per_page,
-        paste(oversized, collapse = ", ")
-      )
+      "i" = "Group(s) larger than {.field rows} (= {rows_per_page}) will overflow their page: {labels}"
     )
     policy <- paginate@oversized_group_policy
     if (policy == "warn") {
