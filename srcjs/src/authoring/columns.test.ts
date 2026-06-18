@@ -55,8 +55,12 @@ describe("colNumeric", () => {
     expect(c.options?.numeric?.decimals).toBeUndefined();
   });
 
-  test("decimals + digits throws", () => {
+  test("decimals + digits throws (true sentinel, not value-check)", () => {
     expect(() => colNumeric({ field: "v", decimals: 3, digits: 2 })).toThrow();
+    // Regression: the OLD guard was `digits != null && decimals !== 2`, so an
+    // explicit `decimals: 2` + `digits` slipped through and silently dropped
+    // decimals. The sentinel guard must catch the default value too.
+    expect(() => colNumeric({ field: "v", decimals: 2, digits: 3 })).toThrow();
   });
 });
 
@@ -66,6 +70,13 @@ describe("colN", () => {
     expect(c.header).toBe("N");
     expect(c.options?.numeric?.thousandsSep).toBe(",");
     expect(c.options?.numeric?.decimals).toBe(0);
+  });
+
+  test("digits is supported and does NOT false-trip the mutual-exclusion guard", () => {
+    // colN's own decimals default (0) must not collide with an explicit digits.
+    const c = colN({ field: "n", digits: 3 });
+    expect(c.options?.numeric?.digits).toBe(3);
+    expect(c.options?.numeric?.decimals).toBeUndefined();
   });
 });
 

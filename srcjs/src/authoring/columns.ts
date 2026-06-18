@@ -196,14 +196,19 @@ export interface ColNumericArgs extends CommonColumnArgs {
 }
 
 export function colNumeric({
-  field, decimals = 2, digits, thousandsSep = false, abbreviate = false,
+  field, decimals, digits, thousandsSep = false, abbreviate = false,
   prefix, suffix, naText, ...common
 }: ColNumericArgs): ColumnSpec {
-  if (digits != null && decimals !== 2) {
+  // Mutual exclusivity via a true sentinel (both EXPLICITLY given → throw),
+  // mirroring R's `missing(decimals)` — the old `decimals !== 2` value-check
+  // silently dropped an explicit `decimals: 2` when `digits` was also passed
+  // (and treated a real `decimals: 2` as "unset"). The default 2 is applied
+  // in the body, not the signature, so "explicit 2" stays distinguishable.
+  if (decimals != null && digits != null) {
     throw new Error("colNumeric: cannot specify both `decimals` and `digits`");
   }
   const numeric: NumericColumnOptions & { prefix?: string | null; suffix?: string | null } = {
-    decimals: digits == null ? decimals : undefined,
+    decimals: digits != null ? undefined : (decimals ?? 2),
     digits,
     thousandsSep,
     abbreviate,
@@ -225,10 +230,17 @@ export interface ColNArgs extends CommonColumnArgs {
 
 /** Sample size / integer count column. Default thousands_sep "," + decimals 0. */
 export function colN({
-  field, decimals = 0, digits, thousandsSep = ",", abbreviate = false, naText, ...common
+  field, decimals, digits, thousandsSep = ",", abbreviate = false, naText, ...common
 }: ColNArgs): ColumnSpec {
   const header = common.header ?? "N";
-  return colNumeric({ field, decimals, digits, thousandsSep, abbreviate, naText, ...common, header });
+  return colNumeric({
+    field,
+    // digits/decimals are mutually exclusive — send digits alone when given,
+    // else colN's integer-count default of 0 (never both, so the guard above
+    // can't false-trip on colN's own default).
+    ...(digits != null ? { digits } : { decimals: decimals ?? 0 }),
+    thousandsSep, abbreviate, naText, ...common, header,
+  });
 }
 
 export interface ColCurrencyArgs extends CommonColumnArgs {
