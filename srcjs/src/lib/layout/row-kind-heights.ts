@@ -122,13 +122,21 @@ export function resolveRowKindRatio(
   }
   _visited.add(kind);
 
+  // A ratio is only honored if FINITE and POSITIVE — a garbage constructor/
+  // theme value (negative, NaN, ±Inf, 0) would otherwise produce a negative or
+  // NaN base row height. Invalid → fall through to the next layer (matching the
+  // layer-5 `sanitizeRowKindPins` finite+positive discipline). No upper cap —
+  // a large ratio is a legitimate (if odd) choice; only non-finite/≤0 is wrong.
+  const isValidRatio = (r: number | undefined): r is number =>
+    r !== undefined && Number.isFinite(r) && r > 0;
+
   // Layer 4 — constructor override
   const ctor = ctx.constructorOverride?.[kind];
-  if (ctor !== undefined) return ctor;
+  if (isValidRatio(ctor)) return ctor;
 
   // Layer 3 — theme-level default
   const themeRatio = ctx.themeKinds?.[kind]?.heightRatio;
-  if (themeRatio !== undefined) return themeRatio;
+  if (isValidRatio(themeRatio)) return themeRatio;
 
   // Layer 2 — inheritance walk
   const parent = KIND_INHERITANCE[kind];
