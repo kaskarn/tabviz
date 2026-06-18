@@ -3,25 +3,8 @@ import { createTabvizStore } from "./tabvizStore.svelte";
 import { type ThemeName } from "$lib/theme/theme-presets";
 import { ops } from "$lib/op-recorder";
 import { assertValidSpec } from "$spec/validate.ts";
-import { AUTO_WIDTH } from "$lib/rendering-constants";
+import { computeSharedWidths as computeSharedColumnWidths, type SubsetSpec } from "$lib/split-shared";
 
-// Column types whose width is driven by the visualization itself, not its
-// data text content. We skip these when estimating shared widths — their
-// auto-sizing is already driven by the plot, not string length.
-const VIZ_COLUMN_TYPES = new Set([
-  "viz_bar",
-  "viz_boxplot",
-  "viz_violin",
-  "forest",
-  "viz_forest",
-]);
-
-/**
- * Estimate a px width from a column's header + data content. Mirrors the
- * R-side heuristic in `R/split_table.R` so the interactive toggle lands on
- * numbers consistent with what `tabviz(shared_column_widths = TRUE)` produces.
- * Not meant to be pixel-perfect — tight enough for slide alignment.
- */
 /**
  * Flatten a `WebSpec.columns` array into its leaf `ColumnSpec` entries —
  * descends into `ColumnGroup` children. The split-widget code paths that
@@ -41,14 +24,6 @@ function leafColumns(cols: ColumnDef[] | undefined): ColumnSpec[] {
   return out;
 }
 
-function estimateColumnWidth(header: string | undefined, values: unknown[]): number {
-  let maxChars = (header ?? "").length;
-  for (const v of values) {
-    const s = v == null ? "" : String(v);
-    if (s.length > maxChars) maxChars = s.length;
-  }
-  return Math.max(AUTO_WIDTH.RESIZE_MIN, Math.min(480, maxChars * 8 + 24));
-}
 
 /**
  * Store for managing split forest navigation and display state.
@@ -196,8 +171,14 @@ export function createSplitTabvizStore() {
   }
 
   /**
-   * Compute max shared width per column id across every spec, using the
-   * R-style char heuristic on original (pre-stamp) widths + data content.
+   * Compute the shared per-column-id width across every spec. Routes through
+   * the CANONICAL `lib/split-shared.computeSharedWidths` — the exact font-aware,
+   * rank+top-K estimator the V8/R build-time path uses (`split_table()` /
+   * `tabviz(shared_column_widths = TRUE)`) — instead of the old font-blind
+   * `maxChars * 8` heuristic, so the interactive toggle lands on the SAME
+   * numbers the exported figure does (it previously diverged). The font is
+   * left to the estimator's default for now; exact non-Inter-theme parity
+   * would pass each subset's resolved body family (see D-note).
    */
   function computeSharedWidths(): Map<string, number> {
     const result = new Map<string, number>();
@@ -206,37 +187,32 @@ export function createSplitTabvizStore() {
     const specs = Object.values(payload.specs);
     if (specs.length === 0) return result;
 
-    // Use the first spec's column list as the canonical order.
-    for (const col of leafColumns(specs[0].columns)) {
-      if (VIZ_COLUMN_TYPES.has(col.type)) continue;
-      // If any spec has an explicit numeric width, respect the max of those.
-      let explicitMax: number | null = null;
-      for (const s of specs) {
-        const match = leafColumns(s.columns).find(c => c.id === col.id);
-        if (match && typeof match.width === "number") {
-          explicitMax = explicitMax == null ? match.width : Math.max(explicitMax, match.width);
+    const subsets: SubsetSpec[] = specs.map((s) => {
+      const cols = leafColumns(s.columns);
+      const rows = Array.isArray(s.data) ? s.data : [];
+      // Row-major spec data → the column-major vectors the estimator wants.
+      const dataColumns: Record<string, unknown[]> = {};
+      for (const col of cols) {
+        const field = col.field;
+        if (field && !(field in dataColumns)) {
+          dataColumns[field] = rows.map((row) => (row as Record<string, unknown>)[field]);
         }
       }
+      return {
+        data: { columns: dataColumns, rowStyleTypes: null },
+        columns: cols.map((c) => ({
+          id: c.id,
+          type: c.type,
+          field: c.field ?? null,
+          header: c.header ?? null,
+          width: typeof c.width === "number" ? c.width : null,
+          options: c.options as Record<string, unknown> | undefined,
+        })),
+      };
+    });
 
-      // Content-based estimate: max header / data chars across all specs.
-      let contentMax = 0;
-      const header = col.header ?? undefined;
-      for (const s of specs) {
-        const match = leafColumns(s.columns).find(c => c.id === col.id);
-        const field = match?.field;
-        const values: unknown[] = [];
-        if (field && Array.isArray(s.data)) {
-          for (const row of s.data) {
-            values.push((row as Record<string, unknown>)[field]);
-          }
-        }
-        contentMax = Math.max(contentMax, estimateColumnWidth(header, values));
-      }
-
-      const width = explicitMax != null ? Math.max(explicitMax, contentMax) : contentMax;
-      result.set(col.id, width);
-    }
-
+    const { widths } = computeSharedColumnWidths({ subsets });
+    for (const [id, w] of Object.entries(widths)) result.set(id, w);
     return result;
   }
 
