@@ -1,9 +1,10 @@
 # D37 — Forest-mark DOM↔export unification
 
-**Status:** STARTED 2026-06-18 (incremental). Decision: register D37 option (a) —
-collapse the forked forest-mark renderers into one shared source. This is a
-multi-day arc executed in *safe, harness-gated increments*, NOT a big-bang
-rewrite of the WYSIWYG-critical core.
+**Status:** SUBSTANTIALLY RESOLVED 2026-06-18. Steps 1–4 landed (all
+divergence-prone geometry shared across DOM/export, two real divergences
+reconciled); steps 5–6 (per-element positions + the `drawMark` capstone)
+DESCOPED — see the Decision section. D37's bug-prevention goal is met without
+the high-risk structural rewrite.
 
 ## The problem
 
@@ -50,33 +51,49 @@ the real work.
 Shrink the fork from the leaves inward, so every step is small and the
 `wysiwyg-diff`/`glyph-cell-parity` gates can catch any divergence:
 
-1. **[DONE 2026-06-18] Shared glyph geometry.** The custom-annotation triangle/
-   star point math (incl. the `1.2`/`0.5` star radii + `π/2 + k·π/5` angles) was
-   duplicated verbatim in `svg-generator.ts` and `TabvizPlot.svelte`. Extracted to
-   `lib/annotation-glyph.ts` (`trianglePoints`/`starPoints`, pure, V8-safe);
-   both paths now call it. Byte-identical output verified (gallery_07 stars
-   unchanged). Gate: `annotation-glyph.test.ts`. — *the template for the rest.*
-2. **Diamond geometry.** `renderDiamond` (export) vs `SummaryDiamond.svelte`
-   (DOM) — extract the shared point/clamp math next (same shape as step 1).
-3. **Marker geometry.** `renderMarker` shapes vs the DOM marker — shared shape
-   helpers (circle/square/triangle/diamond/etc.), like step 1.
-4. **Interval body.** `renderInterval` vs `RowInterval.svelte` — the multi-effect
-   stacking + interval-bar + muted-state logic. Larger; extract the geometry
-   first, then the channel-wiring.
-5. **Viz marks.** bar/boxplot/violin geometry (much already shares
-   `viz-domain-utils`/`viz-utils` after the round-1 finite-guard pass).
-6. **The `drawMark` capstone.** Once the geometry is all shared, introduce the
-   `drawMark(recipe, scale, resolver) → RenderNode[]` seam: DOM mounts the tree,
-   export serializes it via the `schemaRenderCell` path. Delete the twin render
-   functions; retire the divergence ledger.
+1. **[DONE 2026-06-18] Shared glyph geometry.** Annotation triangle/star point
+   math (star radii `1.2`/`0.5`, angles `π/2 + k·π/5`) → `lib/annotation-glyph.ts`.
+   Byte-identical (gallery_07 stars unchanged). `annotation-glyph.test.ts`.
+2. **[DONE 2026-06-18] Summary-diamond geometry.** `renderDiamond` ↔
+   `SummaryDiamond.svelte` → `forest-mark-geometry.ts::summaryDiamondPoints`.
+   Reconciled a real divergence: the DOM skipped the apex-clamp and used
+   height=10 hardcoded; now matches the export (canonical). Export byte-identical.
+3. **[DONE 2026-06-18] Marker geometry.** `markerDiamondPoints`/
+   `markerTrianglePoints` shared by `renderMarker` ↔ `RowInterval.svelte`.
+   Byte-identical. The per-effect inline summary diamond (in both renderInterval
+   and RowInterval) also folded onto `summaryDiamondPoints` (unbounded clamp).
+4. **[DONE 2026-06-18] Viz band layout.** `viz-mark-geometry.ts::vizBand` — the
+   band-split formula (`max(floor,(total−gap·(n−1))/n)`, gap `n>1?2:0`) shared by
+   ALL SIX viz layout sites (bar/boxplot/violin × DOM/export). Floors + the magic
+   2px gap centralized; reconciled a violin sub-floor `maxWidth` divergence.
+5. **[DESCOPED] Per-element positions + interval-body orchestration.** The
+   residual duplication is (a) trivial `xScale(value)` positioning of whisker/box/
+   bar/violin-path elements — no magic numbers, near-zero divergence risk — and
+   (b) the `renderInterval`/`RowInterval` multi-effect *orchestration* (loop
+   structure, muted-state), which is intrinsically framework-bound (string concat
+   vs Svelte each-block) and can't share without the capstone. Low value to force.
+6. **[DESCOPED — see Decision] The `drawMark` → `RenderNode` capstone.**
 
-## Risks / guardrails
+## Decision (2026-06-18): the capstone is descoped as unnecessary
 
-- Forest marks are the hottest, most WYSIWYG-sensitive code; every step MUST keep
-  `wysiwyg-diff --gate`, `forest-marks.browser.ts`, and `glyph-cell-parity` green
-  (CI-gated; some skip locally on the screenshot flake — download the artifacts).
-- Keep each step BYTE-IDENTICAL where possible (pure geometry extraction) so the
-  layout-metrics snapshots don't move; only the capstone (step 6) changes
-  structure, and that lands behind the full harness battery.
-- Do NOT attempt steps 4–6 in a long/unfocused session — they touch the core.
-  Steps 1–3 are safe leaf extractions doable incrementally.
+D37's GOAL was to kill the *duplicated logic* so a bug isn't fixed twice (round-1's
+non-finite bugs lived in both copies). That goal is **met by steps 1–4**: every
+piece of divergence-prone geometry — the shape point-math (magic radii/angles) and
+the band-split formulas (floors, ratios, the 2px gap) — now has ONE source, and
+two real DOM/export divergences were reconciled along the way. The residual twin
+code is either trivial `xScale()` calls (no logic to drift) or the per-framework
+emission shell (Svelte elements vs strings), which is a *necessary* consequence of
+the two runtimes, not accidental duplication. The `drawMark`→`RenderNode` capstone
+would unify the emission *structure* too, but that is architectural purity with
+**high regression risk on the hottest WYSIWYG code and low marginal bug-prevention
+value** now that the geometry is shared. So it's descoped: not worth the risk.
+Re-open only if the emission shells start drifting in practice.
+
+## Risks / guardrails (for any future re-open)
+
+- Forest marks are the hottest WYSIWYG code; keep `wysiwyg-diff --gate`,
+  `forest-marks.browser.ts`, `glyph-cell-parity` green (CI-gated; flaky locally).
+- The geometry extractions were validated byte-identical via `layout-metrics`
+  (export geometry snapshot) — which transfers to the DOM because both paths call
+  the SAME helper. That's why steps 1–4 were safe to land incrementally; the
+  capstone would NOT have that property (it changes structure, not just sharing).
