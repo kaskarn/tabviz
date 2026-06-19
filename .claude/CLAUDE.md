@@ -201,6 +201,17 @@ interactivity-ux-plan,spec-first-1.0-plan,settings-overhaul-plan}.md`.
   Everything else must match within harness budgets. Known residuals are
   decision-register items (estimator column widths D8; group-header
   banding scope D10).
+- **`component`-kind cells (`bar`/`heatmap`/`pictogram`) are INTENTIONALLY a
+  DOM-component + export-`*-svg-renderer.ts` pair — NOT a fork to "unify"**
+  (D39, decided KEEP). The DOM components use dynamic CSS the static SVG can't:
+  `CellBar` = `display:flex` + `flex:1` track + `transition:width` animated
+  fill; `CellHeatmap` = flex centering + dynamic bg; `CellPictogram` is
+  interactive. The svg-renderer is the faithful static-export APPROXIMATION
+  (e.g. it pre-measures the label width because the DOM flex row grows it),
+  guarded visually by `glyph-cell-parity`. Same class as the browser-only
+  breaks above. The other six visual cells (`ring`/`stars`/`sparkline`/`badge`/
+  `icon`/`progress`) ARE `kind:"svg"` (one shared markup) because they need no
+  dynamic layout. Converting the three to `svg` would degrade the DOM — don't.
 - `computeRowLayout` floors data rows at one body line-height (the DOM
   measure loop grows them anyway — estimator parity).
 - Measurement harness: `tests/browser/wysiwyg-diff.browser.ts` (widget at
