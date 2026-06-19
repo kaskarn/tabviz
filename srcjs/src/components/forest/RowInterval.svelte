@@ -2,7 +2,7 @@
   import type { Row, RowStyle, CellStyle, WebTheme, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
-  import { markerDiamondPoints, markerTrianglePoints } from "$lib/forest-mark-geometry";
+  import { markerDiamondPoints, markerTrianglePoints, summaryDiamondPoints } from "$lib/forest-mark-geometry";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
   import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
@@ -296,14 +296,8 @@
                Note: Summary diamonds are intentionally NOT clipped - they represent
                the overall effect size and typically shouldn't extend beyond axis limits.
                If clipping is needed in the future, use clampAndScale() for x1/x2. -->
-          {@const summaryDiamondPoints = [
-            `${x1},${effectY}`,
-            `${cx},${effectY - halfDiamondHeight}`,
-            `${x2},${effectY}`,
-            `${cx},${effectY + halfDiamondHeight}`
-          ].join(' ')}
           <polygon
-            points={summaryDiamondPoints}
+            points={summaryDiamondPoints(x1, cx, x2, effectY, halfDiamondHeight)}
             fill={style.fill}
             fill-opacity={fillOp}
             stroke={theme?.series?.[0]?.stroke ?? "#1d4ed8"}

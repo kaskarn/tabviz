@@ -32,3 +32,10 @@ test("markerDiamondPoints / markerTrianglePoints — byte-identical to inline ma
   expect(markerDiamondPoints(50, 30, 4)).toBe("50,26 54,30 50,34 46,30");
   expect(markerTrianglePoints(50, 30, 4)).toBe("50,26 54,34 46,34");
 });
+
+test("summaryDiamondPoints default (no clamp args) = the unclamped inline diamond", () => {
+  // export renderInterval + DOM RowInterval per-effect summary diamonds
+  expect(summaryDiamondPoints(40, 55, 70, 100, 5)).toBe("40,100 55,95 70,100 55,105");
+  // a far-out point is NOT clamped without bounds
+  expect(summaryDiamondPoints(40, 9999, 70, 100, 5)).toBe("40,100 9999,95 70,100 9999,105");
+});

@@ -2225,12 +2225,9 @@ function renderInterval(
       // If clipping is needed in the future, clamp x1/x2 to clipBounds.
       const summaryFillOp = mutedOp ? style.opacity * mutedOp.fill : style.opacity;
       const opacityAttr = summaryFillOp < 1 ? ` fill-opacity="${summaryFillOp}"` : "";
-      const diamondPoints = [
-        `${x1},${effectY}`,
-        `${cx},${effectY - halfDiamondHeight}`,
-        `${x2},${effectY}`,
-        `${cx},${effectY + halfDiamondHeight}`
-      ].join(' ');
+      // Per-effect summary diamond — intentionally unclamped (shared helper, no
+      // clamp args). Byte-identical to the prior inline array.
+      const diamondPoints = summaryDiamondPoints(x1, cx, x2, effectY, halfDiamondHeight);
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"

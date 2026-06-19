@@ -26,8 +26,12 @@ export function summaryDiamondPoints(
   xUpper: number,
   yCenter: number,
   halfHeight: number,
-  clampMin: number,
-  clampMax: number,
+  // Default unbounded = NO clamp: the per-effect summary diamond inside
+  // renderInterval/RowInterval is intentionally NOT clipped (summary marks
+  // represent the overall effect and may extend past the axis). The
+  // renderDiamond/SummaryDiamond paths pass real bounds.
+  clampMin = -Infinity,
+  clampMax = Infinity,
   xOffset = 0,
 ): string {
   const clamp = (v: number) => xOffset + Math.max(clampMin, Math.min(clampMax, v));
