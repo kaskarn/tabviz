@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
+  import { EFFECT } from "$lib/rendering-constants";
+  import { summaryDiamondPoints } from "$lib/forest-mark-geometry";
 
   interface Props {
     point: number;
@@ -13,29 +15,14 @@
 
   const { point, lower, upper, yPosition, xScale, plotWidth }: Props = $props();
 
-  const diamondHeight = 10;
-  const halfHeight = diamondHeight / 2;
+  const halfHeight = EFFECT.SUMMARY_DIAMOND_HEIGHT / 2;
 
-  // Diamond points: left (lower), top, right (upper), bottom
-  const points = $derived.by(() => {
-    const xL = xScale(lower);
-    const xP = xScale(point);
-    const xU = xScale(upper);
-
-    // Clamp to visible area
-    const minX = 0;
-    const maxX = plotWidth;
-
-    const clampedL = Math.max(minX, xL);
-    const clampedU = Math.min(maxX, xU);
-
-    return [
-      [clampedL, yPosition].join(","),
-      [xP, yPosition - halfHeight].join(","),
-      [clampedU, yPosition].join(","),
-      [xP, yPosition + halfHeight].join(","),
-    ].join(" ");
-  });
+  // Diamond points (left/top/right/bottom) — shared with the SVG export via
+  // summaryDiamondPoints, which clamps all three positions (incl. the apex) to
+  // [0, plotWidth]. Local plot space, so xOffset = 0.
+  const points = $derived(
+    summaryDiamondPoints(xScale(lower), xScale(point), xScale(upper), yPosition, halfHeight, 0, plotWidth),
+  );
 
   // Show arrow indicators if clipped
   const clippedLeft = $derived(xScale(lower) < 0);

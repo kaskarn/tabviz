@@ -44,6 +44,7 @@ import type {
 } from "$types";
 import { getEffectValue } from "$lib/scale-utils";
 import { trianglePoints, starPoints } from "$lib/annotation-glyph";
+import { summaryDiamondPoints } from "$lib/forest-mark-geometry";
 import { computeAxis, generateTicks, formatAxisTick, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
@@ -2343,22 +2344,12 @@ function renderDiamond(
   const scaleRangeMin = Math.min(rangeMin, rangeMax);
   const scaleRangeMax = Math.max(rangeMin, rangeMax);
 
-  // Compute scale positions and clamp to visible area
-  const rawL = xScale(lower);
-  const rawP = xScale(point);
-  const rawU = xScale(upper);
-
-  // Clamp to scale range, then add forestX offset
-  const xL = forestX + Math.max(scaleRangeMin, Math.min(scaleRangeMax, rawL));
-  const xP = forestX + Math.max(scaleRangeMin, Math.min(scaleRangeMax, rawP));
-  const xU = forestX + Math.max(scaleRangeMin, Math.min(scaleRangeMax, rawU));
-
-  const points = [
-    `${xL},${yPosition}`,
-    `${xP},${yPosition - halfHeight}`,
-    `${xU},${yPosition}`,
-    `${xP},${yPosition + halfHeight}`,
-  ].join(" ");
+  // Scale positions; the shared helper clamps each to the visible range then
+  // applies the forestX offset (byte-identical to the prior inline math).
+  const points = summaryDiamondPoints(
+    xScale(lower), xScale(point), xScale(upper),
+    yPosition, halfHeight, scaleRangeMin, scaleRangeMax, forestX,
+  );
 
   const accentDefault = readAccentDefault(cssVars);
   return `<polygon points="${points}"
