@@ -45,7 +45,7 @@ import type {
 import { getEffectValue } from "$lib/scale-utils";
 import { trianglePoints, starPoints } from "$lib/annotation-glyph";
 import { summaryDiamondPoints, markerDiamondPoints, markerTrianglePoints } from "$lib/forest-mark-geometry";
-import { vizBarLayout } from "$lib/viz-mark-geometry";
+import { vizBarLayout, vizBand, VIZ_BAND_MIN } from "$lib/viz-mark-geometry";
 import { computeAxis, generateTicks, formatAxisTick, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
@@ -2507,9 +2507,8 @@ function renderVizBoxplot(
   if (!hasValidData) return "";
 
   // Box dimensions (matching VizBoxplot.svelte)
-  const totalHeight = rowHeight * VIZ.BOXPLOT_HEIGHT_RATIO;
-  const boxGap = numEffects > 1 ? 2 : 0;
-  const boxHeight = Math.max(8, (totalHeight - (numEffects - 1) * boxGap) / numEffects);
+  const { totalHeight, bandHeight: boxHeight, gap: boxGap } =
+    vizBand(rowHeight, VIZ.BOXPLOT_HEIGHT_RATIO, numEffects, VIZ_BAND_MIN.boxplot);
 
   // Default colors
   // `.map` never returns null, so the old `?? VIZ_DEFAULT…` was dead and an
@@ -2647,9 +2646,8 @@ function renderVizViolin(
   if (!hasValidData) return "";
 
   // Violin dimensions (matching VizViolin.svelte)
-  const totalHeight = rowHeight * VIZ.VIOLIN_HEIGHT_RATIO;
-  const violinGap = numEffects > 1 ? 2 : 0;
-  const violinHeight = Math.max(10, (totalHeight - (numEffects - 1) * violinGap) / numEffects);
+  const { totalHeight, bandHeight: violinHeight, gap: violinGap } =
+    vizBand(rowHeight, VIZ.VIOLIN_HEIGHT_RATIO, numEffects, VIZ_BAND_MIN.violin);
   const maxWidth = violinHeight / 2;
 
   // Default colors

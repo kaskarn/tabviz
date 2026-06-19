@@ -2,6 +2,7 @@
   import type { Row, WebTheme, VizViolinColumnOptions, VizViolinEffect, KDEResult } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeKDE, computeQuartiles, normalizeKDE } from "$lib/viz-utils";
+  import { vizBand, VIZ_BAND_MIN } from "$lib/viz-mark-geometry";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
   import { VIZ } from "$lib/rendering-constants";
@@ -48,15 +49,15 @@
   const xScale = $derived(sharedScale);
 
   // Violin dimensions
+  // Band-split math shared with the SVG export via vizBand. Note: maxWidth now
+  // derives from the FLOORED bandHeight (matching the export) — the DOM
+  // previously used the unfloored height, a divergence on sub-floor rows.
   const violinConfig = $derived.by(() => {
-    const numEffects = options.effects.length;
-    const totalHeight = rowHeight * VIZ.VIOLIN_HEIGHT_RATIO;
-    const violinHeight = (totalHeight - (numEffects - 1) * 2) / numEffects;
-
+    const { totalHeight, bandHeight, gap } = vizBand(rowHeight, VIZ.VIOLIN_HEIGHT_RATIO, options.effects.length, VIZ_BAND_MIN.violin);
     return {
-      maxWidth: violinHeight / 2, // Half-height for each side of mirrored violin
-      violinHeight: Math.max(10, violinHeight),
-      gap: numEffects > 1 ? 2 : 0,
+      maxWidth: bandHeight / 2, // half-height per side of the mirrored violin
+      violinHeight: bandHeight,
+      gap,
       totalHeight,
     };
   });

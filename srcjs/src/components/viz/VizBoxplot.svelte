@@ -2,6 +2,7 @@
   import type { Row, WebTheme, VizBoxplotColumnOptions, VizBoxplotEffect, BoxplotStats } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeBoxplotStats } from "$lib/viz-utils";
+  import { vizBand, VIZ_BAND_MIN } from "$lib/viz-mark-geometry";
   import { resolveMarkerStyle } from "$lib/marker-styling";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
   import { VIZ } from "$lib/rendering-constants";
@@ -65,17 +66,10 @@
 
   const xScale = $derived(sharedScale);
 
-  // Box dimensions
+  // Box dimensions — shared band-split math with the SVG export via vizBand.
   const boxConfig = $derived.by(() => {
-    const numEffects = options.effects.length;
-    const totalHeight = rowHeight * VIZ.BOXPLOT_HEIGHT_RATIO;
-    const boxHeight = (totalHeight - (numEffects - 1) * 2) / numEffects;
-
-    return {
-      boxHeight: Math.max(8, boxHeight),
-      boxGap: numEffects > 1 ? 2 : 0,
-      totalHeight,
-    };
+    const { totalHeight, bandHeight, gap } = vizBand(rowHeight, VIZ.BOXPLOT_HEIGHT_RATIO, options.effects.length, VIZ_BAND_MIN.boxplot);
+    return { boxHeight: bandHeight, boxGap: gap, totalHeight };
   });
 
   // Default colors from theme, with fallbacks
