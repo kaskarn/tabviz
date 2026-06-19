@@ -2,6 +2,7 @@
   import type { Row, WebTheme, VizBarColumnOptions, VizBarEffect } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { resolveMarkerStyle } from "$lib/marker-styling";
+  import { vizBarLayout } from "$lib/viz-mark-geometry";
   import { semanticMarkOpacity } from "$lib/semantic-styling";
   import { VIZ } from "$lib/rendering-constants";
 
@@ -21,18 +22,10 @@
 
   const xScale = $derived(sharedScale);
 
-  // Compute bar dimensions
+  // Compute bar dimensions — shared with the SVG export via vizBarLayout.
   const barConfig = $derived.by(() => {
-    const numEffects = options.effects.length;
-    const totalBarHeight = rowHeight * VIZ.BAR_HEIGHT_RATIO;
-    const barGap = numEffects > 1 ? 2 : 0;
-    const adjustedBarHeight = (totalBarHeight - barGap * (numEffects - 1)) / numEffects;
-
-    return {
-      barHeight: Math.max(4, adjustedBarHeight),
-      barGap,
-      totalHeight: totalBarHeight,
-    };
+    const { totalBarHeight, barHeight, barGap } = vizBarLayout(rowHeight, options.effects.length);
+    return { barHeight, barGap, totalHeight: totalBarHeight };
   });
 
   // Default colors from theme, with fallbacks

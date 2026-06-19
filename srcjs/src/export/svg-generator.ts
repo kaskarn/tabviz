@@ -45,6 +45,7 @@ import type {
 import { getEffectValue } from "$lib/scale-utils";
 import { trianglePoints, starPoints } from "$lib/annotation-glyph";
 import { summaryDiamondPoints, markerDiamondPoints, markerTrianglePoints } from "$lib/forest-mark-geometry";
+import { vizBarLayout } from "$lib/viz-mark-geometry";
 import { computeAxis, generateTicks, formatAxisTick, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
@@ -2408,11 +2409,8 @@ function renderVizBar(
 
   if (!hasValidData) return "";
 
-  // Bar dimensions (matching VizBar.svelte)
-  const totalBarHeight = rowHeight * VIZ.BAR_HEIGHT_RATIO;
-  const barGap = numEffects > 1 ? 2 : 0;
-  const adjustedBarHeight = (totalBarHeight - barGap * (numEffects - 1)) / numEffects;
-  const barHeight = Math.max(4, adjustedBarHeight);
+  // Bar dimensions — shared with VizBar.svelte via vizBarLayout.
+  const { totalBarHeight, barHeight, barGap } = vizBarLayout(rowHeight, numEffects);
 
   // Default colors from theme
   // `.map` never returns null, so the old `?? VIZ_DEFAULT…` was dead and an
