@@ -44,7 +44,7 @@ import type {
 } from "$types";
 import { getEffectValue } from "$lib/scale-utils";
 import { trianglePoints, starPoints } from "$lib/annotation-glyph";
-import { summaryDiamondPoints } from "$lib/forest-mark-geometry";
+import { summaryDiamondPoints, markerDiamondPoints, markerTrianglePoints } from "$lib/forest-mark-geometry";
 import { computeAxis, generateTicks, formatAxisTick, VIZ_MARGIN } from "$lib/axis-utils";
 import { forestScaleRange, safeLogDomain } from "$lib/layout/forest-scale";
 import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
@@ -2178,23 +2178,10 @@ function renderInterval(
     switch (shape) {
       case "circle":
         return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
-      case "diamond": {
-        const pts = [
-          `${cx},${effectY - size}`,
-          `${cx + size},${effectY}`,
-          `${cx},${effectY + size}`,
-          `${cx - size},${effectY}`
-        ].join(' ');
-        return `<polygon points="${pts}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
-      }
-      case "triangle": {
-        const pts = [
-          `${cx},${effectY - size}`,
-          `${cx + size},${effectY + size}`,
-          `${cx - size},${effectY + size}`
-        ].join(' ');
-        return `<polygon points="${pts}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
-      }
+      case "diamond":
+        return `<polygon points="${markerDiamondPoints(cx, effectY, size)}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
+      case "triangle":
+        return `<polygon points="${markerTrianglePoints(cx, effectY, size)}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
       default: // square
         return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${fillSafe}"${fillOpacityAttr}${strokeAttr}/>`;
     }

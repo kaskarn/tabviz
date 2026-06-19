@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { summaryDiamondPoints } from "./forest-mark-geometry";
+import { summaryDiamondPoints, markerDiamondPoints, markerTrianglePoints } from "./forest-mark-geometry";
 
 // Reproduce the export's prior inline math to prove byte-identical output.
 function legacyExport(xL: number, xP: number, xU: number, y: number, hh: number, mn: number, mx: number, fx: number): string {
@@ -25,4 +25,10 @@ test("xOffset shifts every coordinate after clamping", () => {
   // b is a verbatim +7 shift of a's x-coords
   expect(b).toBe("17,0 27,-5 37,0 27,5");
   expect(a).toBe("10,0 20,-5 30,0 20,5");
+});
+
+test("markerDiamondPoints / markerTrianglePoints — byte-identical to inline math", () => {
+  // these are byte-shared between export renderMarker + DOM RowInterval
+  expect(markerDiamondPoints(50, 30, 4)).toBe("50,26 54,30 50,34 46,30");
+  expect(markerTrianglePoints(50, 30, 4)).toBe("50,26 54,34 46,34");
 });

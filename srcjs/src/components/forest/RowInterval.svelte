@@ -2,6 +2,7 @@
   import type { Row, RowStyle, CellStyle, WebTheme, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
+  import { markerDiamondPoints, markerTrianglePoints } from "$lib/forest-mark-geometry";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
   import { resolveRowKind, rowKindProps } from "$lib/layout/row-kind";
@@ -380,14 +381,8 @@
               class="point-estimate"
             />
           {:else if style.shape === "diamond"}
-            {@const diamondPts = [
-              `${clampedCx},${effectY - pointSize}`,
-              `${clampedCx + pointSize},${effectY}`,
-              `${clampedCx},${effectY + pointSize}`,
-              `${clampedCx - pointSize},${effectY}`
-            ].join(' ')}
             <polygon
-              points={diamondPts}
+              points={markerDiamondPoints(clampedCx, effectY, pointSize)}
               fill={style.fill}
               fill-opacity={fillOp}
               stroke={style.stroke}
@@ -396,13 +391,8 @@
               class="point-estimate"
             />
           {:else if style.shape === "triangle"}
-            {@const trianglePts = [
-              `${clampedCx},${effectY - pointSize}`,
-              `${clampedCx + pointSize},${effectY + pointSize}`,
-              `${clampedCx - pointSize},${effectY + pointSize}`
-            ].join(' ')}
             <polygon
-              points={trianglePts}
+              points={markerTrianglePoints(clampedCx, effectY, pointSize)}
               fill={style.fill}
               fill-opacity={fillOp}
               stroke={style.stroke}

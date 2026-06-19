@@ -36,3 +36,17 @@ export function summaryDiamondPoints(
   const xU = clamp(xUpper);
   return `${xL},${yCenter} ${xP},${yCenter - halfHeight} ${xU},${yCenter} ${xP},${yCenter + halfHeight}`;
 }
+
+/**
+ * Point-MARKER diamond (a small rhombus centered on the marker, ±`size` on each
+ * axis) — distinct from the lower→upper-spanning summaryDiamondPoints. Shared by
+ * the export `renderMarker` and the DOM `RowInterval.svelte`.
+ */
+export function markerDiamondPoints(cx: number, cy: number, size: number): string {
+  return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
+}
+
+/** Point-MARKER triangle (apex up, base at +size). Shared export ↔ DOM. */
+export function markerTrianglePoints(cx: number, cy: number, size: number): string {
+  return `${cx},${cy - size} ${cx + size},${cy + size} ${cx - size},${cy + size}`;
+}
