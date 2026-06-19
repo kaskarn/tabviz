@@ -457,11 +457,14 @@ col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
   if (!is.null(digits) && !missing(decimals)) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
-  ts_args <- list(field = field, decimals = decimals,
+  # digits/decimals are mutually exclusive — send ONE to the TS builder, never
+  # both (the strict colNumeric guard rejects both; passing the default
+  # `decimals` alongside an explicit `digits` was the regression).
+  ts_args <- list(field = field,
                   thousandsSep = thousands_sep, abbreviate = abbreviate)
   if (!is.null(header)) ts_args$header <- header
   if (!is.null(width))  ts_args$width  <- width
-  if (!is.null(digits)) ts_args$digits <- digits
+  if (!is.null(digits)) ts_args$digits <- digits else ts_args$decimals <- decimals
   delegate_to_web_col("colNumeric", ts_args, na_text = na_text, extra_args = list(...))
 }
 
@@ -508,10 +511,11 @@ col_n <- function(field, header = "N", width = NULL, decimals = 0,
   if (!is.null(digits) && !missing(decimals)) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
-  ts_args <- list(field = field, header = header, decimals = decimals,
+  ts_args <- list(field = field, header = header,
                   thousandsSep = thousands_sep, abbreviate = abbreviate)
   if (!is.null(width))  ts_args$width  <- width
-  if (!is.null(digits)) ts_args$digits <- digits
+  # mutually exclusive — send one, never both (see col_numeric).
+  if (!is.null(digits)) ts_args$digits <- digits else ts_args$decimals <- decimals
   delegate_to_web_col("colN", ts_args, na_text = na_text, extra_args = list(...))
 }
 
@@ -625,14 +629,14 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
   # field name and packs the options bundle; delegate.
   ts_args <- list(
     point = point, lower = lower, upper = upper,
-    decimals = decimals,
     thousandsSep = thousands_sep,
     abbreviate = abbreviate,
     separator = separator
   )
   if (!identical(header, "95% CI"))     ts_args$header             <- header
   if (!is.null(width))                  ts_args$width              <- width
-  if (!is.null(digits))                 ts_args$digits             <- digits
+  # mutually exclusive — send one, never both (see col_numeric).
+  if (!is.null(digits)) ts_args$digits <- digits else ts_args$decimals <- decimals
   if (!is.null(imprecise_threshold))    ts_args$impreciseThreshold <- imprecise_threshold
   if (!is.null(variant))                ts_args$variant            <- variant
   if (!is.null(bounds_layout))          ts_args$boundsLayout       <- bounds_layout
@@ -862,11 +866,12 @@ col_percent <- function(
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
 
-  ts_args <- list(field = field, decimals = decimals,
+  ts_args <- list(field = field,
                   multiply = multiply, symbol = symbol)
   if (!is.null(header)) ts_args$header <- header
   if (!is.null(width))  ts_args$width  <- width
-  if (!is.null(digits)) ts_args$digits <- digits
+  # mutually exclusive — send one, never both (see col_numeric).
+  if (!is.null(digits)) ts_args$digits <- digits else ts_args$decimals <- decimals
   delegate_to_web_col("colPercent", ts_args, na_text = na_text, extra_args = list(...))
 }
 
@@ -1880,12 +1885,13 @@ col_currency <- function(field, header = NULL, width = NULL,
   }
   checkmate::assert_flag(abbreviate)
   ts_args <- list(
-    field = field, symbol = symbol, decimals = decimals,
+    field = field, symbol = symbol,
     thousandsSep = thousands_sep, abbreviate = abbreviate, position = position
   )
   if (!is.null(header)) ts_args$header <- header
   if (!is.null(width))  ts_args$width  <- width
-  if (!is.null(digits)) ts_args$digits <- digits
+  # mutually exclusive — send one, never both (see col_numeric).
+  if (!is.null(digits)) ts_args$digits <- digits else ts_args$decimals <- decimals
   extra <- list(...)
   if (!"align" %in% names(extra)) extra$align <- "right"
   delegate_to_web_col("colCurrency", ts_args, na_text = na_text, extra_args = extra)
