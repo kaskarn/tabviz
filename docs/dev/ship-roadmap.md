@@ -64,8 +64,9 @@ Every other area on this roadmap decays invisibly without this one.
 - [x] `docs/dev/decision-register.md` exists, populated with all known
       open decisions, each with a default-if-undecided and a decide-by
       milestone (2026-06-10).
-- [ ] Register is EMPTY of pre-1.0 items at ship (every entry decided or
-      explicitly re-dated post-1.0).
+- [x] Register is EMPTY of pre-1.0 items at ship (2026-06-18: the Open
+      section is now FULLY empty — every entry, pre- and post-1.0, decided
+      with rationale; D37/D38/D39 closed in the viz-unification + roadmap pass).
 - [x] CLAUDE.md instructs agents: deferring a product call ⇒ register
       entry; landing an arc ⇒ roadmap status line. Done 2026-06-10;
       VERIFIED FOLLOWED across the 2026-06-11 session sweep (every arc
