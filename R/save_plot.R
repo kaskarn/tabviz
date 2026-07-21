@@ -542,7 +542,26 @@ save_plot <- function(x, file,
   auto_min <- 60          # AUTO_WIDTH.MIN
   data_max <- 600         # AUTO_WIDTH.MAX (non-label columns)
   label_max <- 400        # AUTO_WIDTH.LABEL_MAX (the row-label column)
-  skip_types <- c("viz_bar", "viz_boxplot", "viz_violin", "forest")
+  # systemfonts shapes `as.character(df[[field]])` — the RAW cell value. That
+  # only equals the rendered string for columns whose display IS the raw value
+  # (text, numeric ≈ raw). For every other type the renderer draws something
+  # WIDER: pvalue → scientific + Unicode superscripts + stars ("6e-04" measures
+  # 46px but "6.0×10⁻⁴***" renders 85px → the hero P column truncated); visual /
+  # glyph cells (bar/stars/ring/…) → fixed artwork, not text; composed cells
+  # (interval/events/range/custom) → a laid-out node tree. Pinning those from
+  # the raw value under-budgets and CLIPS. Skip them here and let V8's
+  # `calculateSvgAutoWidths` size them — it measures the actual display text /
+  # glyph geometry and (offlineFallbackFamily) is pixel-accurate against the
+  # rasterizer's substituted face. (Composed types already carry synthetic
+  # field names absent from the df, so they were skipped implicitly; listing
+  # them makes the contract explicit and robust to field-naming changes.)
+  skip_types <- c(
+    "viz_bar", "viz_boxplot", "viz_violin", "forest",
+    "pvalue",
+    "bar", "heatmap", "pictogram", "icon", "ring", "stars", "sparkline",
+    "badge", "progress",
+    "interval", "events", "range", "custom"
+  )
 
   df <- spec@data
   field_names <- names(df)

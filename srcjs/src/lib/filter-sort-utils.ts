@@ -74,7 +74,10 @@ export function matchColumnFilter(row: Row, f: ColumnFilter): boolean {
     case "lte":
       return typeof value === "number" && typeof f.value === "number" && value <= f.value;
     case "between": {
-      if (typeof value !== "number") return false;
+      // `typeof NaN === "number"`, but NaN is not IN any range — its `< lo`
+      // and `> hi` tests are both false, so it would spuriously PASS. Exclude
+      // it, matching gt/lt/gte/lte (which reject NaN via their comparisons).
+      if (typeof value !== "number" || !Number.isFinite(value)) return false;
       const range = f.value as [number | null, number | null] | null | undefined;
       if (!range) return true;
       const [lo, hi] = range;

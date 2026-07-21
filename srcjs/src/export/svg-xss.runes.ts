@@ -96,4 +96,31 @@ describe("generateSVG — untrusted color values cannot inject attributes", () =
     expect(svg).not.toContain(BREAKOUT);
     expect(svg).not.toContain('" onmouseover');
   });
+
+  // Viz distribution renderers resolve each effect's marker style from
+  // `effect.color` (spec DATA) into fill/stroke SVG attributes. viz_boxplot
+  // escaped via fillSafe/strokeSafe, but viz_violin emitted `stroke=` RAW
+  // (ms.stroke ?? lineColor) — a hole in the wall. Poison the effect colors and
+  // assert every viz renderer neutralizes them.
+  test("viz_violin / viz_boxplot effect colors cannot inject (fill + stroke)", () => {
+    const vals = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const mkViz = (type: string, optKey: string) => ({
+      version: "1.0", theme, interaction: {}, layout: {},
+      columns: [
+        { id: "lab", type: "text", field: "lab", header: "L", options: {} },
+        { id: "v", type, field: "v", header: "V",
+          options: { [optKey]: { effects: [
+            { data: "a", label: "A", color: PAYLOAD },
+            { data: "b", label: "B", color: PAYLOAD },
+          ] } } },
+      ],
+      data: { groups: [], summaries: [],
+        rows: [{ id: "r0", label: "A", metadata: { lab: "A", a: vals, b: vals } }] },
+    } as never);
+    for (const [type, key] of [["viz_violin", "vizViolin"], ["viz_boxplot", "vizBoxplot"]] as const) {
+      const svg = generateSVG(mkViz(type, key), { width: 400 });
+      expect(svg, type).not.toContain(BREAKOUT);
+      expect(svg, type).not.toContain('" onmouseover');
+    }
+  });
 });

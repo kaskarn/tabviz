@@ -134,7 +134,7 @@ import {
   getColumnDisplayText,
   truncateString,
 } from "$lib/formatters";
-import { estimateTextWidth, measureTextWidth, glyphNaturalWidth, computeContentHeights, tabularizeDigits } from "$lib/width-utils";
+import { estimateTextWidth, measureTextWidth, glyphNaturalWidth, computeContentHeights, tabularizeDigits, offlineFallbackFamily } from "$lib/width-utils";
 import { escapeXml, escapeAttr } from "$lib/svg-text-utils";
 import {
   computeVizBarDomain,
@@ -379,6 +379,12 @@ export function calculateSvgAutoWidths(
   // under-measured ~12% with the proportional character-class model,
   // rendering first columns flush against their neighbors.
   const bodyFamily = readBodyFamily(cssVarsLocal);
+  // For LAYOUT measurement the estimator must predict the font the headless
+  // rasterizer actually draws — the offline system fallback, NOT the embedded
+  // webfont librsvg ignores (see offlineFallbackFamily). Rendering still emits
+  // the full stack (browsers use the webfont); only the width budget collapses
+  // to the class so bold weight is budgeted for the substituted face.
+  const measureFamily = offlineFallbackFamily(bodyFamily);
   const rows = spec.data.rows;
 
   // Padding values from theme (not hardcoded magic numbers). v4 cssVars when
@@ -494,11 +500,24 @@ export function calculateSvgAutoWidths(
     // a node tree whose width ≠ the flat string; measure the ACTUAL tree over
     // the top-K widest rows with the SAME canvas-free estimator the V8
     // renderer draws with (so width-measure == render → no clip). Returns null
-    // for plain text columns, which keep the flat path. Bold rows (row_bold /
-    // summary) measure at 700 — the hero's overall-summary intervals clipped
-    // 13px at 400 (regression gate: hero-width-repro).
+    // for plain text columns, which keep the flat path.
+    // Bold rows (row_bold / summary) render at BOLD_CELL_WEIGHT, whose glyphs
+    // are ~15% wider than regular; the measure must be told the weight or the
+    // column is too narrow AND the tree's internal span layout (at the render
+    // site) drifts → the overall-summary intervals overlap (hero regression).
+    // Split by weight to MATCH the render site: regular → bare family-less
+    // estimator (best fit to rsvg's substituted regular face); bold → the
+    // weight-sensitive class fallback (offlineFallbackFamily) so the heavier
+    // substituted bold is budgeted. (No Canvas here — the pure-JS estimator is
+    // what renderNodeToSvg draws with, so measure == render.)
     const composedW = measureComposedColumnWidth(
-      col, cells, fontSize, () => exportMeasureResolver,
+      col, cells, fontSize,
+      (bold) => ({
+        ...exportMeasureResolver,
+        measure: bold
+          ? (text, px) => estimateTextWidth(text, px, BOLD_CELL_WEIGHT, measureFamily)
+          : (text, px) => estimateTextWidth(text, px, 400),
+      }),
       { theme: spec.theme, nodeRules: spec.theme?.nodeRules, target: "svg" },
     );
     if (composedW != null) {
@@ -510,9 +529,14 @@ export function calculateSvgAutoWidths(
       // DOM measurement → DOM/export stay consistent.
       const numericTabular = readVar(cssVarsLocal, "--tv-text-numeric-figures", "tnum") !== "normal";
       for (const c of cells) {
-        const weight = c.bold ? 700 : 400;
+        // Measure at the weight the cell RENDERS at (BOLD_CELL_WEIGHT for bold),
+        // and match the render's family the same way the composed path does:
+        // regular → bare family-less (fits rsvg's substituted regular face);
+        // bold → the class fallback so the heavier substituted bold is budgeted.
+        const weight = c.bold ? BOLD_CELL_WEIGHT : 400;
+        const fam = c.bold ? measureFamily : "";
         const t = numericTabular ? tabularizeDigits(c.text) : c.text;
-        maxWidth = Math.max(maxWidth, measureTextWidth(t, fontSize, bodyFamily, weight));
+        maxWidth = Math.max(maxWidth, measureTextWidth(t, fontSize, fam, weight));
       }
     }
 
@@ -2673,7 +2697,11 @@ function renderVizViolin(
     const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
     const rowOpacity = row.markerStyle?.opacity ?? null;
     const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? VIZ.VIOLIN_OPACITY);
-    const violinStroke = ms.stroke ?? lineColor;
+    // XSS egress wall: ms.stroke can be a user series-override hex reaching a
+    // `stroke=` attribute — escape at egress like the boxplot's strokeSafe (the
+    // violin path was the one viz renderer that emitted it raw). lineColor is
+    // theme-safe; escapeAttr is a no-op on legitimate colors.
+    const violinStroke = escapeAttr(ms.stroke ?? lineColor);
     const violinStrokeW = ms.stroke ? ms.strokeWidth : violinStrokeDefault;
     const mutedOp = semanticMarkOpacity(row.style);
     const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
@@ -3215,6 +3243,10 @@ function renderUnifiedTableRow(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(readTypeSize(cssVars, "cell", readBodySize(cssVars)));
+  // Composed-cell tree layout budgets each span with the estimator; it must
+  // predict the offline font the rasterizer draws (not the webfont) so a bold
+  // row's wider glyphs don't overrun their slots — see offlineFallbackFamily.
+  const measureFamily = offlineFallbackFamily(readBodyFamily(cssVars));
   // NOTE: cell text deliberately uses the BODY family below (a dead
   // `cellFamily` read was deleted here) — --tv-text-cell-family is
   // KNOWN_UNCONSUMED headroom, and consuming it export-side only would
@@ -3365,7 +3397,6 @@ function renderUnifiedTableRow(
         "svg",
       );
       if (tree) {
-        const resolver = makeThemeResolver(theme, cssVars);
         // Apply the same cellStyle precedence the legacy text branch
         // does (bold / italic / color → semantic bundle → theme
         // default). Wrap the tree's markup in a <g> with these
@@ -3378,6 +3409,20 @@ function renderUnifiedTableRow(
         let cellFontWeight = 400;
         if (cellStyle?.bold) cellFontWeight = BOLD_CELL_WEIGHT;
         else if (cellSemBundle?.fontWeight != null) cellFontWeight = cellSemBundle.fontWeight;
+        // The composed tree lays its spans out by advancing cursorX by each
+        // span's measured width; that measure MUST use the weight the <g>
+        // wrapper paints at (below), or a bold cell's ~10%-wider glyphs
+        // overrun their weight-400 slots and successive spans overlap (the
+        // hero overall-summary interval overlap). REGULAR weight keeps the bare
+        // (family-less) estimator: it matches rsvg's substituted regular face
+        // within ~0.25px, whereas the serif class table over-budgets each digit
+        // ~0.6px → visible gaps before interval commas. BOLD needs the
+        // weight-sensitive class fallback (offlineFallbackFamily) to widen for
+        // the ~15%-heavier substituted bold, or spans overlap.
+        const baseResolver = makeThemeResolver(theme, cssVars);
+        const resolver: StyleResolver = cellFontWeight === 400
+          ? baseResolver
+          : { ...baseResolver, measure: (text, px) => estimateTextWidth(text, px, cellFontWeight, measureFamily) };
         let cellFontStyle = "normal";
         if (cellStyle?.italic) cellFontStyle = "italic";
         else if (cellSemBundle?.fontStyle != null) cellFontStyle = cellSemBundle.fontStyle;

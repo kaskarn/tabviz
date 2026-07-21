@@ -1,5 +1,5 @@
 import { expect, test, it, describe } from "bun:test";
-import { formatNumber, formatPvalue, truncateString, formatInterval, abbreviateNumber } from "./formatters";
+import { formatNumber, formatPvalue, truncateString, formatInterval, abbreviateNumber, formatEvents } from "./formatters";
 
 describe("formatPvalue — non-positive guard (regression)", () => {
   it("p = 0 (underflow) renders the <threshold floor, NOT NaN×10⁻ᴵⁿᶠⁱⁿⁱᵗʸ", () => {
@@ -48,6 +48,19 @@ describe("formatNumber — prefix/suffix + abbreviate (regression for col_curren
       numeric: { abbreviate: true, prefix: "$", decimals: 2 },
     });
     expect(out).toBe("$123.00");
+  });
+
+  test("abbreviate does not CRASH on trillion-scale values (renders T, not a throw)", () => {
+    // abbreviateNumber threw `Cannot abbreviate value >= 1 trillion` — an
+    // unguarded crash on user data (market caps / budgets exceed 1e12). Now
+    // the ladder extends to T and caps there.
+    expect(abbreviateNumber(1.5e12)).toBe("1.5T");
+    expect(abbreviateNumber(-5e12)).toBe("-5T");
+    expect(abbreviateNumber(1e15)).toBe("1000T");
+    expect(formatNumber(1.5e12, { numeric: { abbreviate: true, prefix: "$" } })).toBe("$1.5T");
+    // Non-finite must degrade to empty, never the "NaN" string.
+    expect(abbreviateNumber(Infinity)).toBe("");
+    expect(abbreviateNumber(NaN)).toBe("");
   });
 
   test("non-abbreviate path still applies prefix", () => {
@@ -142,6 +155,16 @@ describe("formatters — non-finite guard (regression)", () => {
     expect(formatInterval(1.5, 0.8, Infinity, { interval: { decimals: 2 } } as never)).toBe("1.50");
     expect(formatInterval(1.5, Infinity, 2.3, { interval: { decimals: 2 } } as never)).toBe("1.50");
   });
+  it("formatEvents: non-numeric / ±Inf events or n → naText, not 'NaN'/'Infinity'", () => {
+    const opts = { events: { eventsField: "ev", nField: "tot" }, naText: "—" } as never;
+    const row = (ev: unknown, tot: unknown) => ({ id: "r", label: "", metadata: { ev, tot } }) as never;
+    expect(formatEvents(row("abc", 100), opts)).toBe("—");
+    expect(formatEvents(row(Infinity, 100), opts)).toBe("—");
+    expect(formatEvents(row(50, "xyz"), opts)).toBe("—");
+    expect(formatEvents(row(50, NaN), opts)).toBe("—");
+    // finite pair unchanged
+    expect(formatEvents(row(50, 100), opts)).toBe("50/100");
+  });
 });
 
 // abbreviateNumber suffixes large COUNTS (K/M/B). The sub-1000 path rounds to
@@ -163,7 +186,8 @@ describe("abbreviateNumber — golden coverage (count abbreviation, integer sub-
   it("negative values keep the sign", () => {
     expect(abbreviateNumber(-1200)).toBe("-1.2K");
   });
-  it("≥ 1 trillion throws (out of suffix range)", () => {
-    expect(() => abbreviateNumber(1e12)).toThrow();
+  it("≥ 1 trillion renders a T suffix (never throws — crashes the render)", () => {
+    expect(abbreviateNumber(1e12)).toBe("1T");
+    expect(abbreviateNumber(2.5e12)).toBe("2.5T");
   });
 });

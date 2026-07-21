@@ -198,7 +198,16 @@ export function createDataSlice(deps: DataSliceDeps): DataSlice {
     if (value == null) {
       bandingOverride = null;
     } else if (typeof value === "string") {
-      bandingOverride = parseBandingString(value);
+      // parseBandingString THROWS on an unrecognized string (its documented
+      // "sanitize first" contract). This setter is reachable from a Shiny proxy
+      // / JS caller with untrusted input — a typo'd `set_banding("gruop")` must
+      // not crash the reactive update. Ignore invalid input (keep the current
+      // override) instead.
+      try {
+        bandingOverride = parseBandingString(value);
+      } catch {
+        return;
+      }
     } else {
       bandingOverride = value;
     }

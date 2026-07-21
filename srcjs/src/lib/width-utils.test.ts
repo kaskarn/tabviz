@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { estimateTextWidth, isMonospaceFamily } from "./width-utils";
+import { estimateTextWidth, isMonospaceFamily, offlineFallbackFamily } from "./width-utils";
 import { PROP_FONTS, MONO_ADVANCE_BY_FONT } from "./font-metrics.generated";
 
 // The estimator reads REAL measured per-font advance tables
@@ -60,6 +60,34 @@ describe("estimateTextWidth — empirical per-font advances", () => {
     for (const f of ["Space Mono", "JetBrains Mono"]) {
       expect(MONO_ADVANCE_BY_FONT[f]).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("offlineFallbackFamily — the V8/rsvg substitution class", () => {
+  // librsvg ignores embedded @font-face webfonts and substitutes an installed
+  // system face, whose BOLD is markedly wider than the webfont's (Lora bold ≈
+  // regular in-metric, but the Georgia substitute is ~15% wider). Export LAYOUT
+  // must measure the class-fallback so bold composed cells don't overlap.
+  it("collapses a webfont stack to its generic class keyword", () => {
+    expect(offlineFallbackFamily("'Lora', Georgia, serif")).toBe("serif");
+    expect(offlineFallbackFamily("'Outfit', Helvetica, sans-serif")).toBe("sans-serif");
+    expect(offlineFallbackFamily("'JetBrains Mono', monospace")).toBe("monospace");
+    expect(offlineFallbackFamily("Inter")).toBe("sans-serif"); // no sans/serif token → sans default
+    expect(offlineFallbackFamily(undefined)).toBe("sans-serif");
+  });
+
+  it("the class fallback is weight-sensitive where the webfont table is not", () => {
+    // The whole point: a serif webfont's own table under-reports bold widening
+    // (matches a browser that loaded it), but the offline serif class DOES widen
+    // — which is what the rasterizer actually draws. So measuring the class gives
+    // a strictly wider bold budget than measuring the webfont name.
+    const s = "0.86 (0.81, 0.91)";
+    const cls = offlineFallbackFamily("'Lora', Georgia, serif");
+    const clsReg = estimateTextWidth(s, 14, 400, cls);
+    const clsBold = estimateTextWidth(s, 14, 600, cls);
+    const webBold = estimateTextWidth(s, 14, 600, "Lora");
+    expect(clsBold).toBeGreaterThan(clsReg);       // class widens for bold
+    expect(clsBold).toBeGreaterThan(webBold + 5);  // and wider than the webfont's own bold
   });
 });
 

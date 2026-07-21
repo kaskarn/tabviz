@@ -319,7 +319,16 @@ One line each; the cost of ignoring these has already been paid once.
   needs the finite guard at its OWN read site — there is no single chokepoint
   (getEffectValue covers forest VALUE reads only; viz/diamond/heatmap/export
   each read separately). Gate: `viz-domain-utils.test.ts` (±Inf), region-tree
-  cycle test.
+  cycle test. TAIL (2026-07-21): the sweep MISSED `formatEvents` +
+  `formatBarValue` — both coerced with `Number()`/compared raw and leaked
+  "NaN"/"Infinity" (guarded now, gate: formatters non-finite block). And a
+  FORMATTER THAT THROWS is a whole-render crash, not a bad cell: the SVG export
+  has ZERO try/catch, so `abbreviateNumber` throwing `Cannot abbreviate value
+  >= 1 trillion` killed the entire `save_plot` on any `col_numeric(abbreviate)`
+  cell ≥ 1e12 (market caps / budgets). It now caps the ladder at "T". RULE:
+  formatters/renderers must NEVER throw on spec-DATA — degrade (naText / a
+  suffix), never `throw`; an unguarded throw anywhere in the format→render path
+  takes down the whole export.
 - On `Select` call sites put `onchange=` BEFORE `options=` (the
   primitive-wiring audit's tag regex stops at the first `>`).
 
@@ -377,6 +386,32 @@ One line each; the cost of ignoring these has already been paid once.
   `calculateSvgAutoWidths`); composed cells use `COMPOSED_SPAN_BEARING`.
 
 **Layout / export**
+- EXPORT MEASURE ≠ EXPORT RENDER — the WYSIWYG rule (2026-07-21, hero
+  overall-summary overlap + P-column truncation). Two roots, one lesson —
+  the width budget must predict the string, weight, AND font the export
+  actually PAINTS: (1) librsvg IGNORES `@font-face` webfonts (embedded ==
+  no-embed == the next INSTALLED stack font; `'Lora',Georgia,serif` →
+  Georgia, whose BOLD is ~15% wider than the webfont's). So the V8/export
+  estimator must measure the OFFLINE FALLBACK class, not the webfont name —
+  `offlineFallbackFamily()` collapses the stack to serif/sans/mono; passing
+  the webfont name budgets a browser's narrow bold and bold composed cells
+  OVERLAP. Budget the wider offline bold: never overlaps in EITHER render
+  (rsvg matches; a browser that DID load the webfont just gets a hair more
+  whitespace). svg-generator's composed column-width measure, composed
+  render-layout (`renderNodeToSvg` folds weight into the injected `measure`
+  — a bare resolver lays out at 400 while the `<g>` paints
+  BOLD_CELL_WEIGHT=600), and flat path ALL pass measureFamily+weight now.
+  Gate: `offlineFallbackFamily` + bold-widening tests (width-utils /
+  measure-composed); the hero-width-repro browser gate is DOM-only — it
+  never saw the export overlap. (2) R `.inject_systemfonts_widths` pins
+  from `as.character(df[[field]])` — the RAW value — which only equals the
+  render for `text`/`numeric`. pvalue (`6e-04`→`6.0×10⁻⁴***`), visual/glyph
+  cells (fixed artwork), and composed cells render WIDER → raw pins CLIP.
+  Its `skip_types` now excludes all of those so V8 (display-text-aware)
+  sizes them; only text/numeric stay systemfonts-pinned. Gate:
+  test-systemfonts-injection.R. Orthogonal residual: rsvg's substituted
+  face mis-renders Unicode superscripts (`10⁻⁴` gaps) on some non-serif
+  themes — font-substitution class, not a width bug.
 - Renderer registration is SPLIT across two boots (schema/init.ts = V8;
   init-dom.ts = +Svelte) — an svg renderer registered only via a
   Svelte-importing module silently text-degrades every headless export.

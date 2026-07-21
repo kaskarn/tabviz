@@ -95,6 +95,39 @@ test_that("inject_systemfonts_widths skips viz/forest column types", {
   expect_identical(forest@width, pre_forest@width)
 })
 
+test_that("inject_systemfonts_widths skips formatted / visual column types", {
+  skip_if_no_systemfonts()
+  # systemfonts shapes the RAW cell value; for these types the rendered string
+  # is WIDER than the raw value (pvalue → scientific + Unicode superscript +
+  # stars; visual cells → fixed glyph artwork), so a raw-value pin under-budgets
+  # and CLIPS (the hero P column: "6e-04" measured 46px, "6.0×10⁻⁴***" rendered
+  # 85px). These must stay "auto" so V8's display-text-aware estimator sizes
+  # them; only text/numeric (raw ≈ display) get systemfonts-pinned.
+  df <- data.frame(
+    study  = c("Alpha", "Bravo"),
+    n      = c(100L, 200L),
+    p      = c(6e-4, 0.03),
+    rating = c(4.5, 3.0),
+    stringsAsFactors = FALSE
+  )
+  spec <- tabviz(
+    df, label = "study",
+    columns = list(
+      col_n("n"),
+      col_pvalue("p", stars = TRUE),
+      col_stars("rating")
+    ),
+    .spec_only = TRUE
+  )
+  res <- tabviz:::.inject_systemfonts_widths(spec)
+  by_field <- function(f) Filter(function(c) identical(c@field, f), res@columns)[[1]]
+  # text/numeric are pinned (numeric width)…
+  expect_true(is.numeric(by_field("n")@width) && !is.na(by_field("n")@width))
+  # …pvalue and stars are NOT (deferred to V8).
+  expect_identical(by_field("p")@width, "auto")
+  expect_identical(by_field("rating")@width, "auto")
+})
+
 test_that("inject_systemfonts_widths is a no-op without systemfonts (defensive)", {
   # Even if systemfonts IS installed in the test env, the helper should
   # short-circuit cleanly on specs with no theme. Catches the early-return

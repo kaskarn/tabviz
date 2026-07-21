@@ -90,10 +90,27 @@ export function primaryFamily(family: string | undefined | null): string {
 /** Whether the family resolves to serif vs sans for the class fallback
  *  (used only when the primary font isn't in the measured roster).
  *  "sans-serif" contains "serif", so check sans first. */
-function isSerifFamily(family: string | undefined | null): boolean {
+export function isSerifFamily(family: string | undefined | null): boolean {
   const f = (family ?? "").toLowerCase();
   if (f.includes("sans")) return false;
   return f.includes("serif") || /\b(georgia|times|garamond|cambria|spectral|lora|libre|book antiqua|palatino|cinzel|crimson)\b/.test(f);
+}
+
+/**
+ * The GENERIC font CLASS the estimator should use when predicting what a
+ * headless rasterizer (V8/rsvg export) will actually draw. librsvg does NOT
+ * load `@font-face` webfonts embedded as data-URIs — it substitutes the next
+ * INSTALLED system font in the family stack (e.g. `'Lora', Georgia, serif` →
+ * Georgia). So measuring with the WEBFONT's metric table under-predicts the
+ * substituted face's bold weight (Lora bold ≈ regular in-table, but Georgia
+ * bold is ~15% wider) → bold composed cells overlap in export. Collapsing to
+ * the class keyword makes `estimateTextWidth` use its Georgia/Helvetica/Courier
+ * OFFLINE-fallback table, which models the substituted face. Budgeting for the
+ * wider offline bold also can't overlap in a browser that DID load the webfont
+ * (whose bold is narrower) — it just leaves a hair more whitespace there. */
+export function offlineFallbackFamily(family: string | undefined | null): string {
+  if (isMonospaceFamily(family)) return "monospace";
+  return isSerifFamily(family) ? "serif" : "sans-serif";
 }
 
 /**

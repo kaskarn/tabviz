@@ -49,6 +49,28 @@ season of latent cross-runtime bugs flushed out by new gates.
   registered them. Bars draw, stars star, heatmaps paint.
 * The significance pill no longer grows compact rows (its decoration
   box is now layout-neutral), keeping DOM and export heights aligned.
+* **Composed cells no longer overlap or clip in `save_plot()`.** Bold
+  summary / "Overall" rows rendered their interval as `0.86(0.81, 0.91)`
+  (estimate and CI running together); the width budget measured the
+  wrong weight and the embedded webfont, while the rasterizer draws a
+  substituted system face whose bold is ~15% wider. Formatted columns
+  (p-values in scientific notation with stars, e.g. `6.0×10⁻⁴***`) were
+  sized to their raw value and truncated. Both now measure the face the
+  export actually paints, so the download matches the screen.
+
+## Robustness & bug fixes
+
+* **`col_numeric(abbreviate = TRUE)` no longer crashes on values ≥ 1
+  trillion.** The abbreviator threw, and because the export has no error
+  boundary that killed the whole `save_plot()`; trillions now abbreviate
+  to `T` (e.g. `$1.5T`).
+* Non-numeric or infinite values in events (`col_events()`), bar labels,
+  and abbreviated numbers no longer leak the literal `"NaN"` / `"Infinity"`
+  text into a cell — they render the NA text, like every other column.
+* Numeric-range (`between`) filters no longer spuriously match `NaN`
+  cells.
+* A malformed banding string from a proxy / JS caller (a typo'd
+  `set_banding()`) is ignored instead of crashing the reactive update.
 
 ## Accessibility floor
 

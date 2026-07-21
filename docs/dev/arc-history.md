@@ -11,6 +11,124 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-07-21 — Codebase-wide review (round 3): formatter crash + non-finite tail
+
+Broadened past the export path. Reading `formatters.ts` critically surfaced a
+class the earlier "basically perfect" sweep missed:
+
+- **`abbreviateNumber` THREW on ≥ 1e12** (`Cannot abbreviate value >= 1
+  trillion`). The export has ZERO try/catch, so `col_numeric(abbreviate=TRUE)`
+  on any trillion-scale cell (market caps, budgets) crashed the ENTIRE
+  `save_plot` — verified end-to-end (the render errored out, not just one cell).
+  Extended the K/M/B ladder to **T** (caps there: 1e15 → "1000T"); never throws.
+  RULE codified: formatters/renderers must degrade, never throw on spec-data.
+- **`formatEvents` leaked "NaN"/"Infinity"** — the null/undefined guard missed
+  `Number("abc")`→NaN and ±Inf, so a non-numeric events/n rendered `NaN/100` or
+  `Infinity/100`. Added a finite guard → naText. The events render-tree twin
+  shares the same `formatEvents`, so one fix covers DOM + export.
+- **`formatBarValue`** had the same latent gap (shared DOM+export bar-label
+  source); guarded defensively though callers filter upstream.
+- **`setBandingOverride`** called `parseBandingString` (documented to THROW on
+  invalid input) without sanitizing — a typo'd Shiny/JS `set_banding("gruop")`
+  would crash the reactive update. Wrapped in try/catch → ignore invalid.
+- **Filter `between` passed NaN** (`typeof NaN === "number"` but `NaN<lo` /
+  `NaN>hi` are both false → spuriously included), inconsistent with gt/lt.
+  Excluded it. Discovered `filter-sort-utils.ts` (funnel filters + header sort)
+  had ZERO tests — added `filter-sort-utils.test.ts` (11 cases: the predicate
+  truth table, missing/non-finite-to-end sort ordering, AND-across-columns).
+
+Clean on review (no change warranted): the markdown renderer (details/notes)
+is XSS-safe (escapeHtml before inline, safeHref allows only http(s)/mailto,
+pre-escaping blocks quote-breakout); the sort comparator (non-finite/null →
+end, no NaN in the subtraction); the sparkline renderer (empty/single/±Inf
+element arrays → valid paths, no coordinate leaks).
+
+Adversarial non-finite batteries (every visual type: bar/heatmap/ring/stars/
+progress; every text formatter: forest/interval/events/pvalue/abbreviate-numeric)
+now emit clean SVG — no NaN/Infinity/undefined, no crash. Verified the oklch /
+dispatch throws take only hardcoded/internal inputs (not user-reachable), and
+axis/scale tick+domain math degrades gracefully on zero/inverted/tiny spans.
+All suites green (bun 1557, R 1809).
+
+## 2026-07-21 — SVG export-path broad review (round 2)
+
+Broadened from the specific hero bug to a general export-path sweep. Findings +
+resolutions:
+
+- **Non-bold interval comma gap (regression from round 1).** Round 1 switched
+  the composed RENDER-layout to serif-class metrics for ALL weights; measurement
+  proved the serif table over-budgets each regular digit ~0.6px vs rsvg's
+  substituted regular face (0.78: est 27.75 / rsvg 27.0), opening visible gaps
+  before interval commas (`0.78 , 1.08`). Split the paths: REGULAR → bare
+  family-less estimator (matches rsvg regular within ~0.25px); BOLD → the class
+  fallback (widens for the ~15%-heavier substituted bold). Applied to all three
+  export measure sites (composed column-width, composed render-layout, flat).
+- **viz_violin stroke XSS egress.** `violinStroke = ms.stroke ?? lineColor`
+  (ms.stroke = a spec-DATA series-override hex) reached `stroke=` RAW — the one
+  viz renderer that skipped the escape (bar/boxplot use fillSafe/strokeSafe).
+  Wrapped in escapeAttr; added viz coverage to `svg-xss.runes.ts`.
+- **Code-quality (self-review of the round-1 diff):** removed a stale
+  "measure at 700 / regression gate: hero-width-repro" comment (wrong after the
+  BOLD_CELL_WEIGHT=600 split; that gate is DOM-only and never saw the export
+  overlap); swapped the non-type `"variant"` in R `skip_types` for the real
+  synthetic-field composed type `"range"`.
+- **Deferred (D40):** scientific-exponent Unicode superscripts render with a gap
+  on the 2 MONO presets (rsvg substitutes Courier, which mis-renders `⁴`);
+  serif/sans render fine. Fix = SVG superscript tspans (shared render node) —
+  cross-cutting for a 2-theme edge; output stays legible. Default (c).
+- **Noted minor (no fix):** pathologically long interval numbers (16-digit,
+  e.g. 1e12) overlap in export — the estimator/rsvg per-char bias accumulates
+  past the inter-span gaps; normal clinical intervals (≤4 digits) are unaffected.
+  Real mitigation is abbreviating huge numbers (a formatter default).
+
+Adversarial edge battery (special XML chars, extreme/±0 values, unicode, long
+labels, single cell) emits valid SVG with no NaN/Infinity/undefined; escaping
+verified visually. All suites green (bun 1555, vitest incl. new xss/violin, R
+injection 26).
+
+## 2026-07-21 — SVG export WYSIWYG: bold composed-cell overlap + formatted-column truncation
+
+Reported: the docs hero's overall-summary interval cells rendered
+`0.86(0.81, 0.91)` — estimate and CI overlapping — in the SVG/PNG export.
+Root-caused to a single principle violation: **the export's width budget
+didn't predict the font/weight/string it actually PAINTS.** Three fixes,
+one lesson (now a CLAUDE.md trap):
+
+- **Bold overlap.** The composed-cell tree lays spans out by advancing
+  `cursorX` by each span's estimated width; the export passed a bare
+  resolver (no `measure`), so `renderNodeToSvg` laid out at weight-400
+  advances while the `<g>` painted BOLD_CELL_WEIGHT=600 → bold glyphs
+  overran their slots. AND the estimator was called family-less → the
+  generic table is weight-agnostic for digits (27.244 at both 400/600).
+  The deeper cause: **librsvg ignores `@font-face` webfonts** (embedded ==
+  no-embed == the next installed stack font — `'Lora',Georgia,serif` →
+  Georgia, whose bold is empirically ~15% wider than the webfont's). Added
+  `offlineFallbackFamily()` (collapses a stack to serif/sans/mono) and wired
+  it + the cell weight through the composed column-width measure, the
+  composed render-layout, and the flat path. Budgeting the wider offline
+  bold can't overlap in either render mode (rsvg matches; a browser that
+  loaded the webfont just gets a hair more whitespace).
+- **P-column truncation.** `.inject_systemfonts_widths` (R) pins from
+  `as.character(df[[field]])` — the RAW value — which only equals the render
+  for text/numeric. pvalue (`6e-04` measures 46px, `6.0×10⁻⁴***` renders
+  85px), visual/glyph cells (fixed artwork), and composed cells render much
+  wider → raw pins clipped. Expanded `skip_types` to exclude all of them so
+  V8's display-text-aware estimator sizes them (now pixel-accurate vs the
+  rasterizer's substituted face via offlineFallbackFamily); only text/numeric
+  stay systemfonts-pinned.
+
+Gates added: `offlineFallbackFamily` + bold-widening unit tests
+(width-utils / measure-composed), R skip-formatted-types test
+(test-systemfonts-injection). Note the pre-existing `hero-width-repro`
+gate is DOM-only (Canvas) — it never saw the export overlap; the export
+had no equivalent gate. Verified: hero + meta-analysis + JAMA bold
+intervals clean, schema-showcase visual columns render full, 60/60 visual
+regression, all TS (bun 1552 + vitest 319) + R export suites green.
+Orthogonal residual NOT fixed (separate class): rsvg's substituted face
+mis-renders Unicode superscripts (`10⁻⁴` gaps) on some non-serif themes —
+font substitution, not a width bug; a real fix needs exponents drawn as
+SVG superscript tspans.
+
 ## 2026-06-17 — FULL recursive review pass COMPLETE (re-issued /goal) — basically perfect
 
 Capstone for the multi-firing recursive review (the /goal: "keep going until a

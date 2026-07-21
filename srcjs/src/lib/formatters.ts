@@ -86,23 +86,28 @@ export function abbreviateNumber(value: number): string {
 }
 
 function _abbreviateNumberImpl(value: number): string {
+  // Non-finite guard (defense in depth — the primary caller pre-filters, but
+  // this is exported and reachable directly): ±Inf/NaN must not fall through
+  // to `Math.round(NaN)` → the "NaN" string (the non-finite poison class).
+  if (!Number.isFinite(value)) return "";
+
   const absValue = Math.abs(value);
   const sign = value < 0 ? "-" : "";
 
+  // Suffix ladder K/M/B/T. Trillion caps the ladder: a value ≥ 1e15 renders as
+  // e.g. "1000T" rather than THROWING — abbreviating user data must never crash
+  // the render (a market-cap / national-budget cell easily exceeds 1e12).
   if (absValue >= 1e12) {
-    throw new Error(`Cannot abbreviate value >= 1 trillion: ${value}`);
+    return sign + formatAbbreviated(absValue / 1e12) + "T";
   }
   if (absValue >= 1e9) {
-    const scaled = absValue / 1e9;
-    return sign + formatAbbreviated(scaled) + "B";
+    return sign + formatAbbreviated(absValue / 1e9) + "B";
   }
   if (absValue >= 1e6) {
-    const scaled = absValue / 1e6;
-    return sign + formatAbbreviated(scaled) + "M";
+    return sign + formatAbbreviated(absValue / 1e6) + "M";
   }
   if (absValue >= 1e3) {
-    const scaled = absValue / 1e3;
-    return sign + formatAbbreviated(scaled) + "K";
+    return sign + formatAbbreviated(absValue / 1e3) + "K";
   }
   // Values under 1000 are returned as-is (rounded to integer)
   return sign + Math.round(absValue).toString();
@@ -267,6 +272,13 @@ function _formatEventsImpl(
 
   const eventsNum = Number(events);
   const nNum = Number(n);
+  // Non-finite guard (the poison class): a non-numeric or ±Inf/NaN value coerces
+  // to NaN/Infinity and would leak the literal "NaN"/"Infinity" string into the
+  // cell (the undefined/null guard above misses it). Mirror formatNumber →
+  // naText. Fixed 2026-07-21 (the events twin of the formatters non-finite sweep).
+  if (!Number.isFinite(eventsNum) || !Number.isFinite(nNum)) {
+    return options.naText ?? "";
+  }
   let eventsStr: string;
   let nStr: string;
 
@@ -449,7 +461,10 @@ function _formatPvalueImpl(value: number | undefined | null, options?: ColumnOpt
  * drift between widget and download.
  */
 export function formatBarValue(value: number | undefined | null): string {
-  if (value === undefined || value === null) return "";
+  // Non-finite folds into the empty case (defense in depth — callers filter the
+  // bar domain, but this is the shared DOM+export source): NaN/±Inf would else
+  // reach `.toFixed()` → the literal "NaN"/"Infinity" label string.
+  if (value == null || !Number.isFinite(value)) return "";
   if (value >= 100) return value.toFixed(0);
   if (value >= 10) return value.toFixed(1);
   return value.toFixed(2);

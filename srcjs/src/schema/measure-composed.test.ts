@@ -6,6 +6,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { measureComposedColumnWidth, makeMeasureResolver } from "./measure-composed";
+import { estimateTextWidth } from "../lib/width-utils";
 import type { ComposedCandidate } from "./measure-composed";
 import type { ColumnSpec } from "../types";
 import "./init";
@@ -84,6 +85,30 @@ describe("measureComposedColumnWidth", () => {
       intervalCol(), [rows[2]!], 14, resolver(), { target: "svg" },
     )!;
     expect(all).toBeCloseTo(justWide, 5);
+  });
+
+  test("bold row measures WIDER when resolverFor is weight-aware (hero overall-summary overlap)", () => {
+    // The export's overall-summary interval renders at BOLD_CELL_WEIGHT; its
+    // glyphs are ~10-15% wider than regular. If resolverFor ignores `bold` the
+    // tree is laid out at weight-400 advances but painted bold → spans overrun
+    // and overlap (the reported hero bug). Assert the plumbing: a weight-aware
+    // resolverFor (mirroring svg-generator's, family = serif) yields a strictly
+    // wider measure for the SAME data when the row is bold.
+    const boldAware = (bold: boolean) =>
+      makeMeasureResolver(
+        { major: 14, base: 14, minor: 10 },
+        (text, px) => estimateTextWidth(text, px, bold ? 600 : 400, "serif"),
+      );
+    const data = { p: 0.86, l: 0.81, u: 0.91 };
+    const regular = measureComposedColumnWidth(
+      intervalCol(), [{ text: "0.86 (0.81, 0.91)", metadata: data, bold: false }],
+      14, boldAware, { target: "svg" },
+    )!;
+    const bold = measureComposedColumnWidth(
+      intervalCol(), [{ text: "0.86 (0.81, 0.91)", metadata: data, bold: true }],
+      14, boldAware, { target: "svg" },
+    )!;
+    expect(bold).toBeGreaterThan(regular);
   });
 
   test("plus_minus variant measures its ± chrome (variant-aware)", () => {

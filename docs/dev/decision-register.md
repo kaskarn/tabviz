@@ -16,6 +16,7 @@ Entry format: `ID | question | options | default if undecided | decide by`.
 
 | ID | Question | Options | Default if undecided | Decide by |
 |----|----------|---------|----------------------|-----------|
+| D40 | Scientific-notation exponents (pvalue `6.0×10⁻⁴`) use Unicode superscript glyphs (⁻⁴). In the SVG **export**, librsvg substitutes Courier for MONO themes (terminal, synthwave), which renders ⁻⁴ with a gap + wrong size (`10⁻ 4`). Serif/sans themes render fine (7/9 presets). Fix = render exponents as proper SVG superscript (`baseline-shift` + smaller `<tspan>`, regular digits) in a shared render-tree superscript node — works in every font. (a) build the render-tree superscript node + reroute the pvalue/scientific renderers (fixes DOM+export universally); (b) export-only `kind:"svg"` markup in the pvalue svg renderer; (c) leave the Unicode superscripts (legible, just gapped on 2 mono themes). | (c) — output stays legible; the fix is cross-cutting for a 2-theme edge case | M2 (pre-1.0 polish) |
 
 
 ## Decided
