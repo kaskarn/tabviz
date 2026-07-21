@@ -5,6 +5,14 @@
 # layer expects `CURRENT_VERSION` to match. If they drift, every widget
 # render throws — better to catch it at `devtools::test()` time.
 
+# This gate also runs in R-CMD-check's in-tree step under `library(tabviz)`,
+# where the package INTERNALS below are not on the search path (they ARE under
+# devtools::test()'s load_all). Bind them via `tabviz:::` so both harnesses
+# resolve them — the same convention as test-systemfonts-injection.R.
+WIRE_FORMAT_VERSION <- tabviz:::WIRE_FORMAT_VERSION
+serialize_spec      <- tabviz:::serialize_spec
+TABVIZ_STATE_FIELDS <- tabviz:::TABVIZ_STATE_FIELDS
+
 test_that("WIRE_FORMAT_VERSION matches CURRENT_VERSION in srcjs/src/spec/index.ts", {
   ts_path <- testthat::test_path("..", "..", "srcjs", "src", "spec", "index.ts")
   skip_if_not(file.exists(ts_path), "Could not locate srcjs/src/spec/index.ts")

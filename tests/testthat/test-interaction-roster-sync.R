@@ -10,6 +10,12 @@
 # doc-test reads the TS source and asserts the rosters match — the same
 # pattern as test-theme-roster-sync.R.
 
+# Runs in R-CMD-check's in-tree step under `library(tabviz)`, where these
+# package internals are not on the search path (they ARE under load_all). Bind
+# them via `tabviz:::` so both harnesses resolve them (see test-wire-version.R).
+TABVIZ_INTERACTION_FLAGS <- tabviz:::TABVIZ_INTERACTION_FLAGS
+FIGURE_LAYOUT_ROW_KINDS  <- tabviz:::FIGURE_LAYOUT_ROW_KINDS
+
 test_that("R TABVIZ_INTERACTION_FLAGS matches TS INTERACTION_FLAG_KEYS", {
   ts_path <- testthat::test_path("..", "..", "srcjs", "src", "lib",
                                  "interaction-resolve.ts")
