@@ -65,7 +65,6 @@ When in doubt: render-or-not is `show_`; can-the-user-do-it is `enable_`.
 | `tooltip_fields` | `NULL` | Character vector of column names to show in marker hover tooltip |
 | `enable_sort` | `TRUE` | Click headers to sort |
 | `enable_collapse` | `TRUE` | Click group headers to collapse/expand |
-| `enable_select` | `TRUE` | Click rows to select |
 | `enable_hover` | `TRUE` | Highlight rows on hover |
 | `enable_resize` | `TRUE` | Drag column borders to resize |
 | `enable_export` | `TRUE` | Show download button in header |
@@ -91,7 +90,7 @@ glp1_trials |>
     ),
     interaction = web_interaction(
       enable_sort = FALSE,
-      enable_select = FALSE
+      enable_edit = FALSE
     ),
     theme = web_theme_nejm()
   )
