@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>multi-flex-columns – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e355811a8c568e4d4352796d242e0740.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#multi-flex-columns-weighted-width-distribution" id="toc-multi-flex-columns-weighted-width-distribution" class="nav-link active" data-scroll-target="#multi-flex-columns-weighted-width-distribution">Multi-flex columns — weighted width distribution</a>
+  <ul class="collapse">
+  <li><a href="#context-why" id="toc-context-why" class="nav-link" data-scroll-target="#context-why">Context — why</a></li>
+  <li><a href="#the-model-weighted-distribution-css-flex-growshrink-per-column" id="toc-the-model-weighted-distribution-css-flex-growshrink-per-column" class="nav-link" data-scroll-target="#the-model-weighted-distribution-css-flex-growshrink-per-column">The model — weighted distribution (CSS flex-grow/shrink, per column)</a></li>
+  <li><a href="#how-it-subsumes-the-aspect-ladder" id="toc-how-it-subsumes-the-aspect-ladder" class="nav-link" data-scroll-target="#how-it-subsumes-the-aspect-ladder">How it subsumes the aspect ladder</a></li>
+  <li><a href="#phased-plan" id="toc-phased-plan" class="nav-link" data-scroll-target="#phased-plan">Phased plan</a>
+  <ul class="collapse">
+  <li><a href="#phase-status-2026-06-02" id="toc-phase-status-2026-06-02" class="nav-link" data-scroll-target="#phase-status-2026-06-02">Phase status (2026-06-02)</a></li>
+  </ul></li>
+  <li><a href="#key-change-surface-from-scoping" id="toc-key-change-surface-from-scoping" class="nav-link" data-scroll-target="#key-change-surface-from-scoping">Key change surface (from scoping)</a></li>
+  <li><a href="#verification" id="toc-verification" class="nav-link" data-scroll-target="#verification">Verification</a></li>
+  <li><a href="#status-forestwidth-scalar-fully-retired-2026-06-02" id="toc-status-forestwidth-scalar-fully-retired-2026-06-02" class="nav-link" data-scroll-target="#status-forestwidth-scalar-fully-retired-2026-06-02">Status — <code>forestWidth</code> scalar fully retired (2026-06-02)</a>
+  <ul class="collapse">
+  <li><a href="#flagged-follow-up-converge-the-forest-pin-plot-width-feature" id="toc-flagged-follow-up-converge-the-forest-pin-plot-width-feature" class="nav-link" data-scroll-target="#flagged-follow-up-converge-the-forest-pin-plot-width-feature">FLAGGED follow-up — converge the forest “pin plot width” feature</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="multi-flex-columns-weighted-width-distribution" class="level1">
+<h1>Multi-flex columns — weighted width distribution</h1>
+<p>Status: <strong>design, approved direction (2026-06).</strong> Companion to <code>sizing-model.md</code> and <code>r-ts-parity-notes.md</code>. Captures the model + phased plan for replacing the single-flex-column layout with a weighted, reversible width-distribution engine.</p>
+<section id="context-why" class="level2">
+<h2 class="anchored" data-anchor-id="context-why">Context — why</h2>
+<p>Today the layout models “expand-to-fill” as a single scalar <code>forestWidth</code> (a.k.a. <code>layout.plotWidth</code>): exactly ONE column (the forest, by default) absorbs leftover width; every auto-width flex/viz column falls back to that same scalar, so two would overlap. The code admits it (<code>svg-generator.ts</code>: <em>“the renderer threads a single per-flex-column width … tabviz today renders at most one flex column per spec”</em>). That blocks legitimate layouts — two forest plots side by side, forest + bar, multiple viz columns — and it’s an arbitrary cap.</p>
+<p>The scoping investigation found the render layers are <strong>already per-column</strong> (per-column d3 scales in a <code>Map&lt;columnId,…&gt;</code> on both DOM + export; absolutely- positioned overlays measuring each grid cell’s <code>offsetLeft</code>; per-column grid px; per-column <code>vizX</code>/<code>forestX</code> threading; a per-column <code>flex</code> flag already in the wire). The only thing assuming “one” is the <strong>width derivation</strong> — the <code>forestWidth</code> scalar that everything falls back to.</p>
+</section>
+<section id="the-model-weighted-distribution-css-flex-growshrink-per-column" class="level2">
+<h2 class="anchored" data-anchor-id="the-model-weighted-distribution-css-flex-growshrink-per-column">The model — weighted distribution (CSS flex-grow/shrink, per column)</h2>
+<p>Every column carries a <strong>flex weight</strong> <code>w ≥ 0</code>. Extra (or deficit) width relative to the natural content widths is distributed across columns <em>proportional to weight</em>, respecting per-column min/max. There is no privileged “the flex column” — forest is just a high-weight column; a pinned (explicit-width) column is weight 0.</p>
+<p><strong>Base rule — effective weight = <code>typeFlex × natural</code></strong> (decided 2026-06, “inverse-stretch / proportional”). The engine distributes the <em>delta</em> (not the total) by effective weight:</p>
+<pre><code>base   = Σ naturalᵢ
+delta  = targetTotal − base
+wᵢ     = typeFlexᵢ × naturalᵢ                  ← the weight POLICY (proportional)
+widthᵢ = naturalᵢ + delta × wᵢ / Σw    (then clamp to [minᵢ, maxᵢ];
+                                         redistribute any clamped overflow)</code></pre>
+<p>Why the delta-form with <code>w = flex×natural</code> (not the <code>width ∝ flex×natural</code> equilibrium): the equilibrium reading does NOT preserve naturals at base width (a high-flex column sits pre-stretched even with no extra space) — unintuitive. The delta-form gives the right base case <strong>and</strong> the desired character: - <code>delta = 0</code> → naturals preserved. - <code>flex = 1</code> everywhere → <code>widthᵢ = naturalᵢ × (target/Σnatural)</code> = <strong>uniform proportional scale</strong>, no tuning needed. - small columns auto-penalized (small natural → small share) — the pvalue / ring / icon “penalty” mostly falls out for free; type weights are refinements.</p>
+<p><strong>The engine is policy-free.</strong> “Model B” is just this weight policy fed to the generic <code>distributeFlexWidths</code> (which distributes a delta by any given weight). Swapping the policy (e.g.&nbsp;to a <code>sqrt(nat² + 2·flex·nat·t)</code> within-pour falloff — the literal “appetite drops as the column stretches”, needs a 1-D root-find) is a <strong>Tier-2</strong> option if linear + bounds ever allows a column to run away.</p>
+<p><strong>Reversible by construction:</strong> the result is a pure function of <code>(naturals, weights, mins, maxes, targetTotal)</code> — no stored mutation. Going <code>natural → T → natural</code> returns identically; <code>T → T'</code> is independent of history. This replaces the stateful single-scalar override and is what makes the behavior predictable to tune.</p>
+<p><strong>Weight is type-defaulted, circumstance-adjusted, user-overridable</strong> — a tiered calculation:</p>
+<ul>
+<li><p><strong>Tier 1 — static type weights</strong> (ship first). A registry maps column type → base weight. Shape (values are starters, tunable from usage, NOT pre-baked truth — see [[feedback_dont_pre_bake_defaults]]):</p>
+<ul>
+<li>high: <code>forest</code>, <code>viz_bar</code>, <code>viz_boxplot</code>, <code>viz_violin</code> (the plots want width)</li>
+<li>medium: <code>sparkline</code>, <code>bar</code>, <code>progress</code>, <code>heatmap</code></li>
+<li>default <code>1</code>: <code>text</code>, <code>label</code>, <code>numeric</code>, <code>interval</code>, <code>range</code>, <code>date</code>, …</li>
+<li>penalized (fixed-ish glyph content): <code>pvalue</code>, <code>ring</code>, <code>stars</code>, <code>icon</code>, <code>badge</code>, vertical-layout <code>pictogram</code></li>
+<li><code>0</code> (immovable): columns with an explicit numeric <code>width</code></li>
+</ul>
+<p><strong>Viz/forest natural width</strong> (decided: <em>designed per-type default</em>). Plot columns have no content-natural width — today forest’s is literally <code>0.25 × container</code> (circular). For the proportional base rule to mean anything, each viz/forest type gets a designed default natural (e.g.&nbsp;a target plot width), in the same registry as the weights and tunable from usage.</p>
+<blockquote class="blockquote">
+<p>⚠️ <strong>Caveat — viz natural isn’t a constant.</strong> As viz layouts grow their own text (value labels beside bars, in-plot annotations, axis tick text), that content <em>widens</em> the column’s natural width, and the measurement becomes viz-layout-specific (a bar with trailing value labels needs more natural width than a bare bar). The designed default is a starting baseline; the natural-width calc for viz must eventually fold in that intrinsic content, which is nontrivial per viz type. Keep the viz-natural source pluggable so this can be refined without touching the distribution engine.</p>
+</blockquote></li>
+<li><p><strong>Tier 2 — circumstantial adjustment</strong> (later). Layout-time boosts/penalties: wrapped text earns a boost (more width = fewer lines); a <code>pictogram</code> shrunk by width pressure earns a boost; etc. Computed from content + measured state.</p></li>
+</ul>
+<p>User override: <code>flex</code> becomes <code>boolean | number</code> (<code>true</code>→1, <code>false</code>→0, number = explicit weight) — additive wire change; existing boolean specs keep working.</p>
+</section>
+<section id="how-it-subsumes-the-aspect-ladder" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-subsumes-the-aspect-ladder">How it subsumes the aspect ladder</h2>
+<p>The aspect reshape’s two width levers (1A forest absorption + 1B non-flex scale) <strong>collapse into one call</strong> to the distribution engine with the aspect target as <code>targetTotal</code>. The <code>FLEX_CAP</code> becomes per-column bounds (<code>min = natural/cap</code>, <code>max = natural×cap</code>) for weighted columns. The committed aspect work (<code>lib/layout/aspect-ladder.ts</code> P0/P1/P3a) stays: <code>computeAspectLadder</code>’s height ladder is unchanged; its width levers delegate to the new engine in Phase C.</p>
+</section>
+<section id="phased-plan" class="level2">
+<h2 class="anchored" data-anchor-id="phased-plan">Phased plan</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Phase</th>
+<th>Work</th>
+<th>Behavior change</th>
+<th>Est.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A. Distribution engine</strong></td>
+<td>Pure <code>distributeFlexWidths(items, target)</code> in <code>lib/layout/flex-distribute.ts</code> + tests (clamp/redistribute/reversibility). Policy-free (takes weights as input).</td>
+<td>none (nothing wired yet)</td>
+<td>~1 day</td>
+</tr>
+<tr class="even">
+<td><strong>B. Wire engine into layout</strong></td>
+<td><code>computeLayout</code> (export) + <code>layout</code> slice (DOM): replace <code>forestWidth</code> scalar with per-column resolved widths via the engine; <code>ComputedLayout.forestWidth → flexWidths: Record&lt;id,number&gt;</code> (<strong>clean break</strong>, no shim). Render reads per-column (already capable). Type-weight registry (Tier 1, <code>lib/layout/flex-weights.ts</code>).</td>
+<td><strong>YES</strong> — extra width now distributes across all columns by weight, not just forest. Every table’s fill behavior shifts. Visual re-baseline.</td>
+<td>~3–4 days</td>
+</tr>
+<tr class="odd">
+<td><strong>C. Aspect on the engine</strong></td>
+<td>Aspect width levers delegate to <code>distributeFlexWidths</code>; resume the DOM aspect adoption on per-column widths; parity test.</td>
+<td>folds in the aspect flex-model change</td>
+<td>~2–3 days</td>
+</tr>
+<tr class="even">
+<td><strong>D. Weights through wire/R</strong></td>
+<td><code>flex: boolean\|number</code> through R serialize + R/TS authoring + <code>update_column</code>; honor user weights.</td>
+<td>additive</td>
+<td>~1–2 days</td>
+</tr>
+<tr class="odd">
+<td><strong>E. Tier 2 + cleanup</strong></td>
+<td>Circumstantial weight adjustment (wrapped text, shrunk pictogram); retire the legacy global <code>xScale</code>; docs + parity.</td>
+<td>additive + tuning</td>
+<td>~2–3 days</td>
+</tr>
+</tbody>
+</table>
+<p><strong>~2–3 weeks.</strong> The risky step is <strong>B</strong> (default fill behavior changes) — isolated to its own commit with a visual checkpoint, like the aspect flex-flag change.</p>
+<section id="phase-status-2026-06-02" class="level3">
+<h3 class="anchored" data-anchor-id="phase-status-2026-06-02">Phase status (2026-06-02)</h3>
+<ul>
+<li><strong>A / B / C — done.</strong> Engine (<code>flex-distribute.ts</code>), wired into both backends (<code>forestWidth</code> scalar retired — see Status below), aspect on the weighted distribution.</li>
+<li><strong>D — done.</strong> Per-column flex <strong>weight</strong> is now author-settable: <code>flex</code> widened from <code>boolean</code> to <strong><code>boolean | number</code></strong> (number = explicit weight overriding the schema default; <code>true</code>/<code>false</code> keep the default weight and toggle aspect participation). <code>flexWeightForColumn</code> honors the numeric override; <code>columnFlexesForAspect</code> centralizes the aspect predicate (both export <code>isFlex</code> sites use it). Threaded through R (<code>web_col</code>/<code>col_*</code> accept numeric, <code>ColumnSpec@flex</code> is <code>class_any</code>, serialize emits numeric, <code>update_column</code> whitelists <code>flex</code>) + TS authoring. The two old “flex” concepts (aspect boolean vs schema weight) are now one field.</li>
+<li><strong>E — done.</strong> Global <code>xScale</code> retired (see <code>region-tree.md</code> §5 / forest-scale). Circumstantial Tier-2 weight tuning (wrapped-text / shrunk-pictogram) remains the only unbuilt sliver, deferred until a concrete need.</li>
+</ul>
+</section>
+</section>
+<section id="key-change-surface-from-scoping" class="level2">
+<h2 class="anchored" data-anchor-id="key-change-surface-from-scoping">Key change surface (from scoping)</h2>
+<ul>
+<li>Export: <code>computeLayout</code> forestWidth derivation (<code>svg-generator.ts</code> ~785–846), <code>getColWidth</code> (~3962), <code>ComputedLayout.forestWidth</code> (~898), aspect apply (<code>layout.plotWidth</code> override).</li>
+<li>DOM: <code>layout</code> slice forestWidth (<code>layout-zoom.svelte.ts</code> ~251, <code>tableWidth</code> ~399), <code>gridTemplateColumns</code> + <code>effectiveVizWidth</code>/<code>effectiveColumnWidth</code>/ <code>getColWidth</code> (<code>TabvizPlot.svelte</code> ~695–772, ~900–942), the legacy global <code>xScale</code> (<code>axis.svelte.ts</code> ~125 — per-column overlays already bypass it).</li>
+<li>Spec/R: per-column <code>flex</code> (<code>authoring/columns.ts:124</code>, <code>types/index.ts:540</code>, <code>R/classes-components.R:65</code>) boolean→number; <code>plotWidth</code> scalar retired (<code>types/index.ts:781</code>, <code>R/utils-serialize.R:39</code>).</li>
+<li>Already per-column (no change): viz/forest d3 scales, SVG overlays, viz axes, grid px emission, column x-positioning.</li>
+</ul>
+</section>
+<section id="verification" class="level2">
+<h2 class="anchored" data-anchor-id="verification">Verification</h2>
+<p><code>bun test src/lib/layout/flex-distribute.test.ts</code> (engine: clamp, redistribute, reversibility round-trip) · aspect parity tests · <code>npm run build</code> + behavior gates · <code>tabviz::render_visual_tests()</code> + browser harness for the Phase-B fill change (re-baseline) · R <code>save-plot</code> + parity tests · full <code>quarto render</code>.</p>
+</section>
+<section id="status-forestwidth-scalar-fully-retired-2026-06-02" class="level2">
+<h2 class="anchored" data-anchor-id="status-forestwidth-scalar-fully-retired-2026-06-02">Status — <code>forestWidth</code> scalar fully retired (2026-06-02)</h2>
+<p>Phase B’s clean break is <strong>complete</strong>: <code>ComputedLayout.forestWidth</code> (and the co-dead <code>tableWidth</code> field + the unused <code>aspectNonForestScale</code>) are gone from the type and both layout producers (<code>svg-generator.ts::computeLayout</code>, <code>layout-zoom.svelte.ts</code>). Forest is now <em>just another high-weight plot column</em> — its width comes only from the per-column <code>flexWidths</code> distribution. Changes:</p>
+<ul>
+<li><strong>Type</strong> (<code>types/index.ts</code>): <code>ComputedLayout</code> lost <code>forestWidth</code> / <code>tableWidth</code> / <code>aspectNonForestScale</code>; <code>flexWidths</code> is the single source of truth.</li>
+<li><strong>Overlay components</strong> (<code>EffectAxis</code> / <code>RowInterval</code> / <code>SummaryDiamond</code>): take an explicit <code>plotWidth: number</code> prop instead of reading <code>layout.forestWidth</code>.</li>
+<li><strong>Readers repointed</strong> to <code>flexWidths[colId]</code>: <code>TabvizPlot</code> (<code>effectiveVizWidth</code> now drives <em>every</em> plot column incl.&nbsp;forest — the grid-template + overlay forest branches that duplicated explicit-first width logic were collapsed, since <code>flexWidths</code> already encodes <code>col.width</code> / <code>options.forest.width</code> pins), the export <code>colWidth</code>/<code>getColWidth</code> helpers + <code>LayoutMetrics</code>, <code>tabvizStore</code> export loop, and the cross-slice axis getter (renamed <code>getLayoutForestWidth</code> → <code>getForestPlotWidth</code>, now returns <code>flexWidths[firstForestId]</code>).</li>
+<li><strong>Aspect ladder</strong> (<code>generateSVGForAspectTarget</code>): <code>naturalForestWidth</code> is now the Σ of <em>all</em> flex columns’ natural widths (forest is one of them), not a scalar.</li>
+</ul>
+<section id="flagged-follow-up-converge-the-forest-pin-plot-width-feature" class="level3">
+<h3 class="anchored" data-anchor-id="flagged-follow-up-converge-the-forest-pin-plot-width-feature">FLAGGED follow-up — converge the forest “pin plot width” feature</h3>
+<p>Still forest-special (deliberately <strong>not</strong> removed here — it’s a working, public-surface feature, not the dead scalar): the dedicated path for <em>pinning the forest plot column’s width</em> —</p>
+<ul>
+<li>interactive drag-resize via <code>setPlotWidth</code> / <code>plotWidthOverride</code> (<code>layout-zoom.svelte.ts</code>, <code>TabvizPlot.svelte:1132</code>),</li>
+<li>the Shiny <code>plot_width</code> event round-trip (<code>spec/events.ts</code>, <code>R/shiny.R</code>),</li>
+<li>the wire scalar <code>theme.layout.plotWidth</code> (R <code>plot_width</code>, default <code>"auto"</code>).</li>
+</ul>
+<p>Every <em>other</em> plot column (viz_bar / sparkline / …) resizes through the generic <code>userResizedIds</code> + <code>columnWidths</code> mechanism. These pins currently flow correctly into the distribution (the DOM <code>flexSpecs</code> <code>forestPin</code> honors <code>plotWidthOverride ?? theme.layout.plotWidth ?? options.forest.width</code>), so nothing is broken — but to make forest <em>fully</em> generic this should converge onto the per-column resize path. That touches the public wire, the R <code>plot_width</code> property/<code>set_*</code> API, and the Shiny Tier-2 event contract, so it’s its own arc.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Multi-flex columns — weighted width distribution</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Status: **design, approved direction (2026-06).** Companion to <span class="in">`sizing-model.md`</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>and <span class="in">`r-ts-parity-notes.md`</span>. Captures the model + phased plan for replacing the</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>single-flex-column layout with a weighted, reversible width-distribution engine.</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Context — why</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Today the layout models "expand-to-fill" as a single scalar <span class="in">`forestWidth`</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>(a.k.a. <span class="in">`layout.plotWidth`</span>): exactly ONE column (the forest, by default) absorbs</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>leftover width; every auto-width flex/viz column falls back to that same scalar,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>so two would overlap. The code admits it (<span class="in">`svg-generator.ts`</span>: *"the renderer</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>threads a single per-flex-column width … tabviz today renders at most one flex</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>column per spec"*). That blocks legitimate layouts — two forest plots side by</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>side, forest + bar, multiple viz columns — and it's an arbitrary cap.</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>The scoping investigation found the render layers are **already per-column**</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>(per-column d3 scales in a <span class="in">`Map&lt;columnId,…&gt;`</span> on both DOM + export; absolutely-</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>positioned overlays measuring each grid cell's <span class="in">`offsetLeft`</span>; per-column grid px;</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>per-column <span class="in">`vizX`</span>/<span class="in">`forestX`</span> threading; a per-column <span class="in">`flex`</span> flag already in the</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>wire). The only thing assuming "one" is the **width derivation** — the</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="in">`forestWidth`</span> scalar that everything falls back to.</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## The model — weighted distribution (CSS flex-grow/shrink, per column)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>Every column carries a **flex weight** <span class="in">`w ≥ 0`</span>. Extra (or deficit) width relative</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>to the natural content widths is distributed across columns *proportional to</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>weight*, respecting per-column min/max. There is no privileged "the flex column"</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>— forest is just a high-weight column; a pinned (explicit-width) column is</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>weight 0.</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>**Base rule — effective weight = `typeFlex × natural`** (decided 2026-06,</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>"inverse-stretch / proportional"). The engine distributes the *delta* (not the</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>total) by effective weight:</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="in">base   = Σ naturalᵢ</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="in">delta  = targetTotal − base</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="in">wᵢ     = typeFlexᵢ × naturalᵢ                  ← the weight POLICY (proportional)</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="in">widthᵢ = naturalᵢ + delta × wᵢ / Σw    (then clamp to [minᵢ, maxᵢ];</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="in">                                         redistribute any clamped overflow)</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>Why the delta-form with <span class="in">`w = flex×natural`</span> (not the <span class="in">`width ∝ flex×natural`</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>equilibrium): the equilibrium reading does NOT preserve naturals at base width (a</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>high-flex column sits pre-stretched even with no extra space) — unintuitive. The</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>delta-form gives the right base case **and** the desired character:</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`delta = 0`</span> → naturals preserved.</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`flex = 1`</span> everywhere → <span class="in">`widthᵢ = naturalᵢ × (target/Σnatural)`</span> = **uniform</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  proportional scale**, no tuning needed.</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>small columns auto-penalized (small natural → small share) — the pvalue / ring</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>  / icon "penalty" mostly falls out for free; type weights are refinements.</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>**The engine is policy-free.** "Model B" is just this weight policy fed to the</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>generic <span class="in">`distributeFlexWidths`</span> (which distributes a delta by any given weight).</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>Swapping the policy (e.g. to a <span class="in">`sqrt(nat² + 2·flex·nat·t)`</span> within-pour falloff —</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>the literal "appetite drops as the column stretches", needs a 1-D root-find) is a</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>**Tier-2** option if linear + bounds ever allows a column to run away.</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>**Reversible by construction:** the result is a pure function of</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="in">`(naturals, weights, mins, maxes, targetTotal)`</span> — no stored mutation. Going</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="in">`natural → T → natural`</span> returns identically; <span class="in">`T → T'`</span> is independent of history.</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>This replaces the stateful single-scalar override and is what makes the behavior</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>predictable to tune.</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>**Weight is type-defaulted, circumstance-adjusted, user-overridable** — a tiered</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>calculation:</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Tier 1 — static type weights** (ship first). A registry maps column type →</span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>  base weight. Shape (values are starters, tunable from usage, NOT pre-baked</span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>  truth — see [<span class="co">[</span><span class="ot">feedback_dont_pre_bake_defaults</span><span class="co">]</span>]):</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>high: <span class="in">`forest`</span>, <span class="in">`viz_bar`</span>, <span class="in">`viz_boxplot`</span>, <span class="in">`viz_violin`</span> (the plots want width)</span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>medium: <span class="in">`sparkline`</span>, <span class="in">`bar`</span>, <span class="in">`progress`</span>, <span class="in">`heatmap`</span></span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>default <span class="in">`1`</span>: <span class="in">`text`</span>, <span class="in">`label`</span>, <span class="in">`numeric`</span>, <span class="in">`interval`</span>, <span class="in">`range`</span>, <span class="in">`date`</span>, …</span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>penalized (fixed-ish glyph content): <span class="in">`pvalue`</span>, <span class="in">`ring`</span>, <span class="in">`stars`</span>, <span class="in">`icon`</span>,</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>    <span class="in">`badge`</span>, vertical-layout <span class="in">`pictogram`</span></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span><span class="in">`0`</span> (immovable): columns with an explicit numeric <span class="in">`width`</span></span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>  **Viz/forest natural width** (decided: *designed per-type default*). Plot</span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>  columns have no content-natural width — today forest's is literally</span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  <span class="in">`0.25 × container`</span> (circular). For the proportional base rule to mean anything,</span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  each viz/forest type gets a designed default natural (e.g. a target plot width),</span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>  in the same registry as the weights and tunable from usage.</span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>  <span class="at">&gt; ⚠️ **Caveat — viz natural isn't a constant.** As viz layouts grow their own</span></span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; text (value labels beside bars, in-plot annotations, axis tick text), that</span></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; content *widens* the column's natural width, and the measurement becomes</span></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; viz-layout-specific (a bar with trailing value labels needs more natural width</span></span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; than a bare bar). The designed default is a starting baseline; the natural-width</span></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; calc for viz must eventually fold in that intrinsic content, which is nontrivial</span></span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; per viz type. Keep the viz-natural source pluggable so this can be refined</span></span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><span class="at">  &gt; without touching the distribution engine.</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Tier 2 — circumstantial adjustment** (later). Layout-time boosts/penalties:</span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>  wrapped text earns a boost (more width = fewer lines); a <span class="in">`pictogram`</span> shrunk by</span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>  width pressure earns a boost; etc. Computed from content + measured state.</span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>User override: <span class="in">`flex`</span> becomes <span class="in">`boolean | number`</span> (<span class="in">`true`</span>→1, <span class="in">`false`</span>→0, number =</span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>explicit weight) — additive wire change; existing boolean specs keep working.</span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a><span class="fu">## How it subsumes the aspect ladder</span></span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>The aspect reshape's two width levers (1A forest absorption + 1B non-flex scale)</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>**collapse into one call** to the distribution engine with the aspect target as</span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><span class="in">`targetTotal`</span>. The <span class="in">`FLEX_CAP`</span> becomes per-column bounds (<span class="in">`min = natural/cap`</span>,</span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><span class="in">`max = natural×cap`</span>) for weighted columns. The committed aspect work</span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>(<span class="in">`lib/layout/aspect-ladder.ts`</span> P0/P1/P3a) stays: <span class="in">`computeAspectLadder`</span>'s height</span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>ladder is unchanged; its width levers delegate to the new engine in Phase C.</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a><span class="fu">## Phased plan</span></span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Phase <span class="pp">|</span> Work <span class="pp">|</span> Behavior change <span class="pp">|</span> Est. <span class="pp">|</span></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **A. Distribution engine** <span class="pp">|</span> Pure <span class="in">`distributeFlexWidths(items, target)`</span> in <span class="in">`lib/layout/flex-distribute.ts`</span> + tests (clamp/redistribute/reversibility). Policy-free (takes weights as input). <span class="pp">|</span> none (nothing wired yet) <span class="pp">|</span> ~1 day <span class="pp">|</span></span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **B. Wire engine into layout** | `computeLayout` (export) + `layout` slice (DOM): replace `forestWidth` scalar with per-column resolved widths via the engine; `ComputedLayout.forestWidth → flexWidths: Record&lt;id,number&gt;` (**clean break**, no shim). Render reads per-column (already capable). Type-weight registry (Tier 1, `lib/layout/flex-weights.ts`). | **YES** — extra width now distributes across all columns by weight, not just forest. Every table's fill behavior shifts. Visual re-baseline. <span class="pp">|</span> ~3–4 days <span class="pp">|</span></span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **C. Aspect on the engine** <span class="pp">|</span> Aspect width levers delegate to <span class="in">`distributeFlexWidths`</span>; resume the DOM aspect adoption on per-column widths; parity test. <span class="pp">|</span> folds in the aspect flex-model change <span class="pp">|</span> ~2–3 days <span class="pp">|</span></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **D. Weights through wire/R** <span class="pp">|</span> <span class="in">`flex: boolean\|number`</span> through R serialize + R/TS authoring + <span class="in">`update_column`</span>; honor user weights. <span class="pp">|</span> additive <span class="pp">|</span> ~1–2 days <span class="pp">|</span></span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **E. Tier 2 + cleanup** <span class="pp">|</span> Circumstantial weight adjustment (wrapped text, shrunk pictogram); retire the legacy global <span class="in">`xScale`</span>; docs + parity. <span class="pp">|</span> additive + tuning <span class="pp">|</span> ~2–3 days <span class="pp">|</span></span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>**~2–3 weeks.** The risky step is **B** (default fill behavior changes) — isolated</span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a>to its own commit with a visual checkpoint, like the aspect flex-flag change.</span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="fu">### Phase status (2026-06-02)</span></span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A / B / C — done.** Engine (<span class="in">`flex-distribute.ts`</span>), wired into both backends</span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`forestWidth`</span> scalar retired — see Status below), aspect on the weighted</span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>  distribution.</span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**D — done.** Per-column flex **weight** is now author-settable: <span class="in">`flex`</span> widened</span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>  from <span class="in">`boolean`</span> to **`boolean | number`** (number = explicit weight overriding</span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>  the schema default; <span class="in">`true`</span>/<span class="in">`false`</span> keep the default weight and toggle aspect</span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>  participation). <span class="in">`flexWeightForColumn`</span> honors the numeric override;</span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a>  <span class="in">`columnFlexesForAspect`</span> centralizes the aspect predicate (both export</span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>  <span class="in">`isFlex`</span> sites use it). Threaded through R (<span class="in">`web_col`</span>/<span class="in">`col_*`</span> accept numeric,</span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>  <span class="in">`ColumnSpec@flex`</span> is <span class="in">`class_any`</span>, serialize emits numeric, <span class="in">`update_column`</span></span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a>  whitelists <span class="in">`flex`</span>) + TS authoring. The two old "flex" concepts (aspect</span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a>  boolean vs schema weight) are now one field.</span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**E — done.** Global <span class="in">`xScale`</span> retired (see <span class="in">`region-tree.md`</span> §5 / forest-scale).</span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a>  Circumstantial Tier-2 weight tuning (wrapped-text / shrunk-pictogram) remains</span>
+<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a>  the only unbuilt sliver, deferred until a concrete need.</span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a><span class="fu">## Key change surface (from scoping)</span></span>
+<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Export: <span class="in">`computeLayout`</span> forestWidth derivation (<span class="in">`svg-generator.ts`</span> ~785–846),</span>
+<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a>  <span class="in">`getColWidth`</span> (~3962), <span class="in">`ComputedLayout.forestWidth`</span> (~898), aspect apply</span>
+<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`layout.plotWidth`</span> override).</span>
+<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>DOM: <span class="in">`layout`</span> slice forestWidth (<span class="in">`layout-zoom.svelte.ts`</span> ~251, <span class="in">`tableWidth`</span></span>
+<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a>  ~399), <span class="in">`gridTemplateColumns`</span> + <span class="in">`effectiveVizWidth`</span>/<span class="in">`effectiveColumnWidth`</span>/</span>
+<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a>  <span class="in">`getColWidth`</span> (<span class="in">`TabvizPlot.svelte`</span> ~695–772, ~900–942), the legacy global</span>
+<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a>  <span class="in">`xScale`</span> (<span class="in">`axis.svelte.ts`</span> ~125 — per-column overlays already bypass it).</span>
+<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Spec/R: per-column <span class="in">`flex`</span> (<span class="in">`authoring/columns.ts:124`</span>, <span class="in">`types/index.ts:540`</span>,</span>
+<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a>  <span class="in">`R/classes-components.R:65`</span>) boolean→number; <span class="in">`plotWidth`</span> scalar retired</span>
+<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`types/index.ts:781`</span>, <span class="in">`R/utils-serialize.R:39`</span>).</span>
+<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Already per-column (no change): viz/forest d3 scales, SVG overlays, viz axes,</span>
+<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a>  grid px emission, column x-positioning.</span>
+<span id="cb2-154"><a href="#cb2-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-155"><a href="#cb2-155" aria-hidden="true" tabindex="-1"></a><span class="fu">## Verification</span></span>
+<span id="cb2-156"><a href="#cb2-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-157"><a href="#cb2-157" aria-hidden="true" tabindex="-1"></a><span class="in">`bun test src/lib/layout/flex-distribute.test.ts`</span> (engine: clamp, redistribute,</span>
+<span id="cb2-158"><a href="#cb2-158" aria-hidden="true" tabindex="-1"></a>reversibility round-trip) · aspect parity tests · <span class="in">`npm run build`</span> + behavior</span>
+<span id="cb2-159"><a href="#cb2-159" aria-hidden="true" tabindex="-1"></a>gates · <span class="in">`tabviz::render_visual_tests()`</span> + browser harness for the Phase-B fill</span>
+<span id="cb2-160"><a href="#cb2-160" aria-hidden="true" tabindex="-1"></a>change (re-baseline) · R <span class="in">`save-plot`</span> + parity tests · full <span class="in">`quarto render`</span>.</span>
+<span id="cb2-161"><a href="#cb2-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-162"><a href="#cb2-162" aria-hidden="true" tabindex="-1"></a><span class="fu">## Status — `forestWidth` scalar fully retired (2026-06-02)</span></span>
+<span id="cb2-163"><a href="#cb2-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-164"><a href="#cb2-164" aria-hidden="true" tabindex="-1"></a>Phase B's clean break is **complete**: <span class="in">`ComputedLayout.forestWidth`</span> (and the</span>
+<span id="cb2-165"><a href="#cb2-165" aria-hidden="true" tabindex="-1"></a>co-dead <span class="in">`tableWidth`</span> field + the unused <span class="in">`aspectNonForestScale`</span>) are gone from the</span>
+<span id="cb2-166"><a href="#cb2-166" aria-hidden="true" tabindex="-1"></a>type and both layout producers (<span class="in">`svg-generator.ts::computeLayout`</span>,</span>
+<span id="cb2-167"><a href="#cb2-167" aria-hidden="true" tabindex="-1"></a><span class="in">`layout-zoom.svelte.ts`</span>). Forest is now *just another high-weight plot column* —</span>
+<span id="cb2-168"><a href="#cb2-168" aria-hidden="true" tabindex="-1"></a>its width comes only from the per-column <span class="in">`flexWidths`</span> distribution. Changes:</span>
+<span id="cb2-169"><a href="#cb2-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-170"><a href="#cb2-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Type** (<span class="in">`types/index.ts`</span>): <span class="in">`ComputedLayout`</span> lost <span class="in">`forestWidth`</span> / <span class="in">`tableWidth`</span></span>
+<span id="cb2-171"><a href="#cb2-171" aria-hidden="true" tabindex="-1"></a>  / <span class="in">`aspectNonForestScale`</span>; <span class="in">`flexWidths`</span> is the single source of truth.</span>
+<span id="cb2-172"><a href="#cb2-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Overlay components** (<span class="in">`EffectAxis`</span> / <span class="in">`RowInterval`</span> / <span class="in">`SummaryDiamond`</span>): take an</span>
+<span id="cb2-173"><a href="#cb2-173" aria-hidden="true" tabindex="-1"></a>  explicit <span class="in">`plotWidth: number`</span> prop instead of reading <span class="in">`layout.forestWidth`</span>.</span>
+<span id="cb2-174"><a href="#cb2-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Readers repointed** to <span class="in">`flexWidths[colId]`</span>: <span class="in">`TabvizPlot`</span> (<span class="in">`effectiveVizWidth`</span></span>
+<span id="cb2-175"><a href="#cb2-175" aria-hidden="true" tabindex="-1"></a>  now drives *every* plot column incl. forest — the grid-template + overlay forest</span>
+<span id="cb2-176"><a href="#cb2-176" aria-hidden="true" tabindex="-1"></a>  branches that duplicated explicit-first width logic were collapsed, since</span>
+<span id="cb2-177"><a href="#cb2-177" aria-hidden="true" tabindex="-1"></a>  <span class="in">`flexWidths`</span> already encodes <span class="in">`col.width`</span> / <span class="in">`options.forest.width`</span> pins), the</span>
+<span id="cb2-178"><a href="#cb2-178" aria-hidden="true" tabindex="-1"></a>  export <span class="in">`colWidth`</span>/<span class="in">`getColWidth`</span> helpers + <span class="in">`LayoutMetrics`</span>, <span class="in">`tabvizStore`</span> export</span>
+<span id="cb2-179"><a href="#cb2-179" aria-hidden="true" tabindex="-1"></a>  loop, and the cross-slice axis getter (renamed <span class="in">`getLayoutForestWidth`</span> →</span>
+<span id="cb2-180"><a href="#cb2-180" aria-hidden="true" tabindex="-1"></a>  <span class="in">`getForestPlotWidth`</span>, now returns <span class="in">`flexWidths[firstForestId]`</span>).</span>
+<span id="cb2-181"><a href="#cb2-181" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Aspect ladder** (<span class="in">`generateSVGForAspectTarget`</span>): <span class="in">`naturalForestWidth`</span> is now the</span>
+<span id="cb2-182"><a href="#cb2-182" aria-hidden="true" tabindex="-1"></a>  Σ of *all* flex columns' natural widths (forest is one of them), not a scalar.</span>
+<span id="cb2-183"><a href="#cb2-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-184"><a href="#cb2-184" aria-hidden="true" tabindex="-1"></a><span class="fu">### FLAGGED follow-up — converge the forest "pin plot width" feature</span></span>
+<span id="cb2-185"><a href="#cb2-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-186"><a href="#cb2-186" aria-hidden="true" tabindex="-1"></a>Still forest-special (deliberately **not** removed here — it's a working,</span>
+<span id="cb2-187"><a href="#cb2-187" aria-hidden="true" tabindex="-1"></a>public-surface feature, not the dead scalar): the dedicated path for *pinning the</span>
+<span id="cb2-188"><a href="#cb2-188" aria-hidden="true" tabindex="-1"></a>forest plot column's width* —</span>
+<span id="cb2-189"><a href="#cb2-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-190"><a href="#cb2-190" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>interactive drag-resize via <span class="in">`setPlotWidth`</span> / <span class="in">`plotWidthOverride`</span></span>
+<span id="cb2-191"><a href="#cb2-191" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`layout-zoom.svelte.ts`</span>, <span class="in">`TabvizPlot.svelte:1132`</span>),</span>
+<span id="cb2-192"><a href="#cb2-192" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the Shiny <span class="in">`plot_width`</span> event round-trip (<span class="in">`spec/events.ts`</span>, <span class="in">`R/shiny.R`</span>),</span>
+<span id="cb2-193"><a href="#cb2-193" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the wire scalar <span class="in">`theme.layout.plotWidth`</span> (R <span class="in">`plot_width`</span>, default <span class="in">`"auto"`</span>).</span>
+<span id="cb2-194"><a href="#cb2-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-195"><a href="#cb2-195" aria-hidden="true" tabindex="-1"></a>Every *other* plot column (viz_bar / sparkline / …) resizes through the generic</span>
+<span id="cb2-196"><a href="#cb2-196" aria-hidden="true" tabindex="-1"></a><span class="in">`userResizedIds`</span> + <span class="in">`columnWidths`</span> mechanism. These pins currently flow correctly</span>
+<span id="cb2-197"><a href="#cb2-197" aria-hidden="true" tabindex="-1"></a>into the distribution (the DOM <span class="in">`flexSpecs`</span> <span class="in">`forestPin`</span> honors `plotWidthOverride</span>
+<span id="cb2-198"><a href="#cb2-198" aria-hidden="true" tabindex="-1"></a>?? theme.layout.plotWidth ?? options.forest.width`), so nothing is broken — but to</span>
+<span id="cb2-199"><a href="#cb2-199" aria-hidden="true" tabindex="-1"></a>make forest *fully* generic this should converge onto the per-column resize path.</span>
+<span id="cb2-200"><a href="#cb2-200" aria-hidden="true" tabindex="-1"></a>That touches the public wire, the R <span class="in">`plot_width`</span> property/<span class="in">`set_*`</span> API, and the</span>
+<span id="cb2-201"><a href="#cb2-201" aria-hidden="true" tabindex="-1"></a>Shiny Tier-2 event contract, so it's its own arc.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

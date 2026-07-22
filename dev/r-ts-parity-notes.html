@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>r-ts-parity-notes – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e355811a8c568e4d4352796d242e0740.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#rts-parity-notes" id="toc-rts-parity-notes" class="nav-link active" data-scroll-target="#rts-parity-notes">R↔︎TS parity notes</a>
+  <ul class="collapse">
+  <li><a href="#themes" id="toc-themes" class="nav-link" data-scroll-target="#themes">Themes</a></li>
+  <li><a href="#oklab-precision-gap-resolved-via-canonization-post-0.2.0" id="toc-oklab-precision-gap-resolved-via-canonization-post-0.2.0" class="nav-link" data-scroll-target="#oklab-precision-gap-resolved-via-canonization-post-0.2.0">OKLab precision gap — RESOLVED via canonization (post-0.2.0)</a></li>
+  <li><a href="#theme-drift-safeguards-0.33.0-0.3.0-round" id="toc-theme-drift-safeguards-0.33.0-0.3.0-round" class="nav-link" data-scroll-target="#theme-drift-safeguards-0.33.0-0.3.0-round">Theme drift safeguards (0.33.0 / 0.3.0 round)</a></li>
+  <li><a href="#r-side-opportunistic-simplifications-done-post-0.2.0" id="toc-r-side-opportunistic-simplifications-done-post-0.2.0" class="nav-link" data-scroll-target="#r-side-opportunistic-simplifications-done-post-0.2.0">R-side opportunistic simplifications — DONE (post-0.2.0)</a></li>
+  <li><a href="#column-constructors" id="toc-column-constructors" class="nav-link" data-scroll-target="#column-constructors">Column constructors</a>
+  <ul class="collapse">
+  <li><a href="#naming-convention-schema-key-wire-type-options-bucket" id="toc-naming-convention-schema-key-wire-type-options-bucket" class="nav-link" data-scroll-target="#naming-convention-schema-key-wire-type-options-bucket">Naming convention: schema key / wire type / options bucket</a></li>
+  </ul></li>
+  <li><a href="#row-marker-style-mapping-in-ts-authoring-closed-2026-06-15" id="toc-row-marker-style-mapping-in-ts-authoring-closed-2026-06-15" class="nav-link" data-scroll-target="#row-marker-style-mapping-in-ts-authoring-closed-2026-06-15">Row / marker style mapping in TS authoring (CLOSED 2026-06-15)</a></li>
+  <li><a href="#paginate-2026-06-11-area-f-pager-walk" id="toc-paginate-2026-06-11-area-f-pager-walk" class="nav-link" data-scroll-target="#paginate-2026-06-11-area-f-pager-walk">paginate (2026-06-11, area-F pager walk)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="rts-parity-notes" class="level1">
+<h1>R↔︎TS parity notes</h1>
+<p>Per-helper classification of R↔︎TS authoring parity. Captured during the bilingual-API work for <code>@tabviz/core@0.2.0</code>.</p>
+<p>Status legend:</p>
+<ul>
+<li><strong>thin-wrapper</strong> — R helper is pure arg-packing; mechanical V8-delegation target for Phase 2. Body has no validation beyond what <code>checkmate</code> provides, no NSE, no computed defaults.</li>
+<li><strong>simplified-in-place</strong> — touched during the TS port to consolidate redundancy or trim dead code.</li>
+<li><strong>keep-r-logic</strong> — non-trivial R-specific logic (NSE, S7 method dispatch, hierarchical group resolution); not a Phase 2 delegation target.</li>
+<li><strong>phase-2-candidate</strong> — Phase 1 leaves R-side untouched but the helper is on Phase 2’s punch list; the parity tests + TS mirror are in place so the delegation can land mechanically.</li>
+</ul>
+<section id="themes" class="level2">
+<h2 class="anchored" data-anchor-id="themes">Themes</h2>
+<blockquote class="blockquote">
+<p><strong>Sprint 1 Phase 1a — R cascade collapsed (2026-05-28).</strong> R-side cascade deleted; <code>resolve_theme()</code> delegates to TS via V8. <code>R/utils-theme-validate.R</code> deleted. The “R↔︎TS theme parity” rows below are retained as historical context — post-collapse, R and TS produce identical blobs by construction (R <em>is</em> TS at runtime). See <code>R/utils-deserialize-resolved.R</code> for the V8 round-trip glue.</p>
+</blockquote>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 53%">
+<col style="width: 35%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>R helper</th>
+<th>Classification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>R/utils-oklch.R</code></td>
+<td>phase-2-candidate</td>
+<td>TS port at <code>srcjs/src/lib/oklch.ts</code> is faithful but ~1-25 channels of drift on chroma-related derivations vs <code>farver</code> near gamut boundaries (Ottosson coefficients are slightly different from farver’s, and bisection amplifies the drift). Used R-side by tests and standalone color math. Resolution now happens TS-side, so the drift no longer matters for cascade output.</td>
+</tr>
+<tr class="even">
+<td><code>R/utils-theme-resolve.R</code></td>
+<td><strong>collapsed (Phase 1a)</strong></td>
+<td>R helpers deleted; the file is now an 80-LOC shim around <code>ts_call("resolveTheme", draft, options)</code>. <code>DENSITY_PRESETS</code> reference value kept for tests. Cascade semantics tested in <code>srcjs/src/lib/theme/theme-resolve.test.ts</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>R/utils-theme-validate.R</code></td>
+<td><strong>deleted (Phase 1a)</strong></td>
+<td>TS validates inside <code>resolveTheme(draft, { validate })</code>. Errors surface through V8 to R with the same <code>header bold band: ...</code> invariant names.</td>
+</tr>
+<tr class="even">
+<td><code>R/themes.R</code> (4 journal presets)</td>
+<td>thin-wrapper</td>
+<td>Pure Tier 1 input bundles + <code>resolve_theme()</code> call. TS mirrors at <code>srcjs/src/lib/theme/theme-presets-inputs.ts</code>. Snapshot JSON at <code>theme-presets-v2.json</code> remains R-resolved truth (journal presets).</td>
+</tr>
+<tr class="odd">
+<td><code>R/themes-lotr.R</code> (3 LOTR presets)</td>
+<td>thin-wrapper</td>
+<td>Same shape as journals. TS mirrors at <code>theme-presets-inputs.ts</code>; resolved at JS module load (no R snapshot). Pre-release; may be removed before CRAN.</td>
+</tr>
+<tr class="even">
+<td><code>R/themes-api.R::web_theme</code></td>
+<td>phase-2-candidate</td>
+<td>TS mirror at <code>srcjs/src/lib/theme/theme-api.ts::webTheme</code>. <strong>Suggested R-side streamline</strong>: the <code>brand</code> / <code>tertiary</code> legacy migration check (lines 84-100) is duplicated verbatim in <code>set_inputs</code> (lines 158-173). Pull into a single <code>check_legacy_inputs(args)</code> helper.</td>
+</tr>
+<tr class="odd">
+<td><code>R/themes-api.R::set_inputs</code></td>
+<td>phase-2-candidate</td>
+<td>TS mirror at <code>theme-api.ts::setInputs</code>. See <code>web_theme</code> streamline.</td>
+</tr>
+<tr class="even">
+<td><code>R/themes-api.R::set_variants</code></td>
+<td>phase-2-candidate</td>
+<td>TS mirror at <code>theme-api.ts::setVariants</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>R/themes-api.R::set_spacing</code></td>
+<td>thin-wrapper</td>
+<td>TS mirror at <code>theme-api.ts::setSpacing</code>.</td>
+</tr>
+<tr class="even">
+<td><code>R/themes-api.R::set_theme_field</code></td>
+<td>phase-2-candidate</td>
+<td>TS mirror at <code>theme-api.ts::setThemeField</code>. R uses recursive <code>set_at</code> walking via S7 prop accessors + integer indexing; TS uses <code>structuredClone</code> + dot-path. Same semantics, idiomatic differences.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="oklab-precision-gap-resolved-via-canonization-post-0.2.0" class="level2">
+<h2 class="anchored" data-anchor-id="oklab-precision-gap-resolved-via-canonization-post-0.2.0">OKLab precision gap — RESOLVED via canonization (post-0.2.0)</h2>
+<p>R’s <code>farver</code> and TS’s hand-rolled OKLab transform produce OKLCH triples that differ by ~5e-6 L / ~6e-5 C / ~0.03° H. These compound through gamut-bisection clamping into 1-25 channels of drift on chroma-related derivations near saturation boundaries.</p>
+<p><strong>Resolution (option C from the original phase-2 list)</strong>: TS is now canonical for <code>srcjs/src/lib/theme-presets-v2.json</code>. The snapshot is regenerated from the TS cascade resolver via <code>scripts/regenerate-theme-presets.ts</code>, and the parity test in <code>theme-resolve.test.ts</code> is now byte-exact drift detection (snapshot vs resolver output, same source).</p>
+<p>Why this works: - The npm runtime path is fully TS-resolved → TS-snapshotted → consistent. - The R-rendered widget path is fully R-resolved → R-serialized → wire → JS renders the resolved values verbatim (no snapshot lookup). - The JS-side theme switcher uses the TS-canonical snapshot. R-rendered widgets switch from “R-cochrane” (initial wire) to “TS-lancet” (snapshot) when the user clicks lancet — the difference is sub-perceptual (&lt;25 channels per pixel), within OKLab precision.</p>
+<p>Each runtime is now canonical in its own context; the divergence between them no longer matters because no consumer compares them side-by-side at byte level.</p>
+<p>To refresh the snapshot after any change to <code>oklch.ts</code>, <code>theme-resolve.ts</code>, <code>theme-validate.ts</code>, or <code>theme-presets-inputs.ts</code> that affects resolved output:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> srcjs <span class="kw">&amp;&amp;</span> <span class="ex">bun</span> run scripts/regenerate-theme-presets.ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Drift detection runs in CI via <code>theme-resolve.test.ts</code> — accidental output changes fail the build until the snapshot is regenerated intentionally.</p>
+</section>
+<section id="theme-drift-safeguards-0.33.0-0.3.0-round" class="level2">
+<h2 class="anchored" data-anchor-id="theme-drift-safeguards-0.33.0-0.3.0-round">Theme drift safeguards (0.33.0 / 0.3.0 round)</h2>
+<p>The 0.33.0 theme expansion added 8 new presets — the <code>design</code> category of <code>package_themes()</code> (Bauhaus, Swiss, Tufte, Newsprint, Solarized × {light, dark}, Tonal × {light, dark}). To keep R↔︎TS skew from creeping in as the roster grows, three complementary mechanisms run in CI:</p>
+<ol type="1">
+<li><strong>Roster sync</strong> (<code>tests/testthat/test-theme-roster-sync.R</code>) — asserts every R <code>web_theme_X()</code> has a matching <code>themeX</code> symbol in the V8 bundle (reachable via <code>tabviz_v8()$call("callBuilder", "themeX", "{}")</code>). Either side adding or dropping a theme without the other fails.</li>
+<li><strong>Resolved-wire-shape parity</strong> (<code>tests/testthat/test-parity-themes.R</code>) — for each theme: <code>serialize_theme(web_theme_X())</code> (R) vs <code>callBuilder("themeX", "{}")</code> (TS), compared with structural-equal on shape and <code>hex_close(tol = 50)</code> on derived hex. Skips <code>series</code> (chroma-boost-near-gamut compounds OKLab drift to 25-100 channels on near-grayscale palettes; JS-side byte-exact snapshot is the parity oracle for that) and <code>layout.banding</code> (R wire legacy duplicates <code>row.banding</code>; renderer reads <code>row.banding</code> only).</li>
+<li><strong>Byte-exact snapshot drift detection</strong> on TS side (<code>srcjs/src/lib/theme/theme-resolve.test.ts</code>) — already in place since 0.2.1’s canonization; auto-extends to new themes via the iterator pattern.</li>
+</ol>
+<p>Adding a new theme: write the R <code>web_theme_X()</code> constructor, write the TS <code>XXX_DRAFT</code> + <code>themeX()</code> mirror, run <code>bun run scripts/regenerate-theme-presets.ts</code> to refresh the snapshot, add <code>"x"</code> to <code>EXPECTED_THEME_NAMES</code> in the roster-sync test and to the <code>THEMES</code> vector in the parity-themes test. All three tests green = roster locked.</p>
+</section>
+<section id="r-side-opportunistic-simplifications-done-post-0.2.0" class="level2">
+<h2 class="anchored" data-anchor-id="r-side-opportunistic-simplifications-done-post-0.2.0">R-side opportunistic simplifications — DONE (post-0.2.0)</h2>
+<p>All 3 simplifications flagged during the TS port landed in the same post-0.2.0 round as the OKLab canonization. R tests still green; visual tests still 45/45.</p>
+<ol type="1">
+<li>✅ <strong>Deduped legacy-input migration</strong> — extracted <code>check_legacy_inputs(args, arg_hint)</code> helper in <code>R/themes-api.R</code>. Both <code>web_theme()</code> and <code>set_inputs()</code> now call it with their respective context-tailored migration hint. Saved ~18 lines.</li>
+<li>✅ <strong>Unified <code>fill_na</code> + <code>compose_text</code></strong> — <code>fill_na(obj, source)</code> in <code>R/utils-theme-resolve.R</code> now dispatches on <code>inherits(source, "S7_object")</code>: list sources iterate <code>names(source)</code>, S7 sources iterate <code>S7::prop_names(obj)</code>. <code>compose_text(over, under)</code> is kept as a thin alias so callsite readability is preserved.</li>
+<li>✅ <strong>Dropped defensive <code>secondary_deep</code> re-mirror</strong> — line 583 of the old resolver had a fallback <code>is.na(secondary_deep) ? primary_deep : secondary_deep</code> guard. Since <code>resolve_components</code> runs after <code>resolve_inputs_mirrors</code>, the guard was unreachable. Replaced with direct <code>theme@inputs@secondary_deep</code> access; full R test suite verifies no regression. Note: <code>resolve_text</code> keeps its similar-looking defensive guard intentionally — it supports test paths that call the function directly with raw inputs, bypassing the resolve_theme pipeline.</li>
+</ol>
+</section>
+<section id="column-constructors" class="level2">
+<h2 class="anchored" data-anchor-id="column-constructors">Column constructors</h2>
+<section id="naming-convention-schema-key-wire-type-options-bucket" class="level3">
+<h3 class="anchored" data-anchor-id="naming-convention-schema-key-wire-type-options-bucket">Naming convention: schema key / wire type / options bucket</h3>
+<p>A column type carries <strong>three related-but-distinct names</strong>, and getting them right is what keeps R↔︎TS parity (canonical doc: <code>srcjs/src/schema/types.ts</code>, the <code>bucket</code> field):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>name</th>
+<th>what</th>
+<th>rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>schema <code>key</code></td>
+<td>registry id (TS schema registry, <code>registerBehaviors</code> key)</td>
+<td>viz types use the long namespaced form: <code>viz_forest</code>, <code>viz_bar</code>, <code>viz_boxplot</code>, <code>viz_violin</code></td>
+</tr>
+<tr class="even">
+<td>wire <code>type</code></td>
+<td>the string serialized to JSON (<code>column.type</code>), matched in render branches on BOTH sides</td>
+<td>equals <code>key</code> for most types</td>
+</tr>
+<tr class="odd">
+<td>options <code>bucket</code></td>
+<td>where the type’s options nest: <code>column.options[bucket]</code></td>
+<td>camelCase echo of the wire <code>type</code> (<code>viz_bar</code> → <code>vizBar</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Two deliberate, preserved exceptions</strong> (both pre-date the convention; changing the wire would ripple across ~40 render sites in TS + the R parity surface for no user benefit):</p>
+<ul>
+<li><strong>forest</strong> — schema key <code>viz_forest</code>, but wire type <em>and</em> bucket are the short <code>forest</code> (it was the original viz type). The bucket still follows the rule <em>relative to its own type</em> (camelCase of <code>forest</code> is <code>forest</code>).</li>
+<li><strong>percent</strong> — bucket <code>percent</code> though wire type is <code>numeric</code>.</li>
+</ul>
+<p><strong>Adding a new column/viz type:</strong> pick <code>type</code>, set <code>bucket = camelCase(type)</code>, key = the same (or namespaced for viz). Don’t invent a third short form. The R↔︎TS parity tests (<code>tests/testthat/test-parity-columns.R</code>) assert R’s <code>col@options$&lt;bucket&gt;</code> matches TS’s <code>shape$options$&lt;bucket&gt;</code>, so a bucket-name mismatch fails loudly.</p>
+</section>
+</section>
+<section id="row-marker-style-mapping-in-ts-authoring-closed-2026-06-15" class="level2">
+<h2 class="anchored" data-anchor-id="row-marker-style-mapping-in-ts-authoring-closed-2026-06-15">Row / marker style mapping in TS authoring (CLOSED 2026-06-15)</h2>
+<p>R <code>tabviz(row_bold = ~expr, marker_color = ~col, …)</code> resolves each to a column NAME (<code>row_bold_col</code>, <code>marker_color_col</code>) and EXTRACTS per-row values into each <code>Row.style</code> / <code>Row.markerStyle</code> at serialize time (<code>compile_row_style_recipe</code> + <code>.apply_style_recipe</code>). TS authoring had no equivalent — a JS author could only set <code>row.style</code> by hand.</p>
+<p>Closed: <code>tabviz({ rowBold, rowItalic, rowColor, rowBg, rowBadge, rowIcon, rowEmphasis, rowMuted, rowAccent, markerColor, markerShape, markerOpacity, markerSize })</code> — each is a DATA FIELD NAME, extracted per-row into <code>row.style</code>/<code>row.markerStyle</code> with the same type coercion R uses (bold/italic/ emphasis/muted/accent→bool, color/bg/badge/icon→string, opacity/size→number; false IS emitted, NA/missing skipped, no styles → no <code>style</code>). ALL 12 RowStyle fields are covered — incl.&nbsp;the structural <code>rowFill</code> (bool), <code>rowIndent</code> (number), <code>rowType</code> (enum string). V8 PARITY-GATED: <code>test-parity-row-style.R</code> runs R <code>serialize_data</code> vs TS <code>tabviz</code> on identical data and asserts each row’s <code>style</code>/<code>markerStyle</code> match (mapequal — wire key order is not semantic). STILL R-ONLY (lower-value): <code>row_height</code> (a row-kind height pin, distinct from style) and the <code>cond()</code>-form / static / theme StyleOverride variants (a field-name string is the 90%% case; the tagged-union forms stay on the per-column <code>ColumnSpec.styleMapping</code>).</p>
+</section>
+<section id="paginate-2026-06-11-area-f-pager-walk" class="level2">
+<h2 class="anchored" data-anchor-id="paginate-2026-06-11-area-f-pager-walk">paginate (2026-06-11, area-F pager walk)</h2>
+<p>R <code>tabviz(paginate=)</code> accepts a count / <code>paginate_spec()</code> and precomputes page BREAKPOINTS at serialize time (<code>compute_page_breaks()</code> — grouped breaks, orphan rules); the wire carries <code>paginate.pages[{startIdx,endIdx}]</code> and the widget never re-derives them.</p>
+<p><strong>CLOSED 2026-06-15</strong>: TS authoring now has <code>tabviz({ paginate })</code> (a number or <code>PaginateOptions</code>). <code>src/authoring/paginate.ts::computePageBreaks</code> is a byte-faithful port of R’s algorithm (RLE group-runs → page-fill walk → oversized-group + orphan pull/merge); <code>paginate.test.ts</code> MIRRORS R’s <code>test-paginate.R</code> fixtures (same inputs, same expected pages) so the two can’t drift. Additive — no wire change.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># R↔TS parity notes</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Per-helper classification of R↔TS authoring parity. Captured during the</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>bilingual-API work for <span class="in">`@tabviz/core@0.2.0`</span>.</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>Status legend:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**thin-wrapper** — R helper is pure arg-packing; mechanical V8-delegation</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  target for Phase 2. Body has no validation beyond what <span class="in">`checkmate`</span> provides,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  no NSE, no computed defaults.</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**simplified-in-place** — touched during the TS port to consolidate</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  redundancy or trim dead code.</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**keep-r-logic** — non-trivial R-specific logic (NSE, S7 method dispatch,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  hierarchical group resolution); not a Phase 2 delegation target.</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**phase-2-candidate** — Phase 1 leaves R-side untouched but the helper is</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  on Phase 2's punch list; the parity tests + TS mirror are in place so the</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  delegation can land mechanically.</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## Themes</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **Sprint 1 Phase 1a — R cascade collapsed (2026-05-28).** R-side cascade</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; deleted; </span><span class="in">`resolve_theme()`</span><span class="at"> delegates to TS via V8.</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="in">`R/utils-theme-validate.R`</span><span class="at"> deleted. The "R↔TS theme parity" rows below</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; are retained as historical context — post-collapse, R and TS produce</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; identical blobs by construction (R *is* TS at runtime). See</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="in">`R/utils-deserialize-resolved.R`</span><span class="at"> for the V8 round-trip glue.</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> R helper                          <span class="pp">|</span> Classification        <span class="pp">|</span> Notes <span class="pp">|</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------------------------------|-----------------------|-------|</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/utils-oklch.R`</span>                 <span class="pp">|</span> phase-2-candidate     <span class="pp">|</span> TS port at <span class="in">`srcjs/src/lib/oklch.ts`</span> is faithful but ~1-25 channels of drift on chroma-related derivations vs <span class="in">`farver`</span> near gamut boundaries (Ottosson coefficients are slightly different from farver's, and bisection amplifies the drift). Used R-side by tests and standalone color math. Resolution now happens TS-side, so the drift no longer matters for cascade output. <span class="pp">|</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/utils-theme-resolve.R`</span>         <span class="pp">|</span> **collapsed (Phase 1a)** <span class="pp">|</span> R helpers deleted; the file is now an 80-LOC shim around <span class="in">`ts_call("resolveTheme", draft, options)`</span>. <span class="in">`DENSITY_PRESETS`</span> reference value kept for tests. Cascade semantics tested in <span class="in">`srcjs/src/lib/theme/theme-resolve.test.ts`</span>. <span class="pp">|</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/utils-theme-validate.R`</span>        <span class="pp">|</span> **deleted (Phase 1a)** <span class="pp">|</span> TS validates inside <span class="in">`resolveTheme(draft, { validate })`</span>. Errors surface through V8 to R with the same <span class="in">`header bold band: ...`</span> invariant names. <span class="pp">|</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes.R`</span> (4 journal presets)  <span class="pp">|</span> thin-wrapper          <span class="pp">|</span> Pure Tier 1 input bundles + <span class="in">`resolve_theme()`</span> call. TS mirrors at <span class="in">`srcjs/src/lib/theme/theme-presets-inputs.ts`</span>. Snapshot JSON at <span class="in">`theme-presets-v2.json`</span> remains R-resolved truth (journal presets). <span class="pp">|</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes-lotr.R`</span> (3 LOTR presets)<span class="pp">|</span> thin-wrapper          <span class="pp">|</span> Same shape as journals. TS mirrors at <span class="in">`theme-presets-inputs.ts`</span>; resolved at JS module load (no R snapshot). Pre-release; may be removed before CRAN. <span class="pp">|</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes-api.R::web_theme`</span>       <span class="pp">|</span> phase-2-candidate     <span class="pp">|</span> TS mirror at <span class="in">`srcjs/src/lib/theme/theme-api.ts::webTheme`</span>. **Suggested R-side streamline**: the <span class="in">`brand`</span> / <span class="in">`tertiary`</span> legacy migration check (lines 84-100) is duplicated verbatim in <span class="in">`set_inputs`</span> (lines 158-173). Pull into a single <span class="in">`check_legacy_inputs(args)`</span> helper. <span class="pp">|</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes-api.R::set_inputs`</span>      <span class="pp">|</span> phase-2-candidate     <span class="pp">|</span> TS mirror at <span class="in">`theme-api.ts::setInputs`</span>. See <span class="in">`web_theme`</span> streamline. <span class="pp">|</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes-api.R::set_variants`</span>    <span class="pp">|</span> phase-2-candidate     <span class="pp">|</span> TS mirror at <span class="in">`theme-api.ts::setVariants`</span>. <span class="pp">|</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes-api.R::set_spacing`</span>     <span class="pp">|</span> thin-wrapper          <span class="pp">|</span> TS mirror at <span class="in">`theme-api.ts::setSpacing`</span>. <span class="pp">|</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`R/themes-api.R::set_theme_field`</span> <span class="pp">|</span> phase-2-candidate     <span class="pp">|</span> TS mirror at <span class="in">`theme-api.ts::setThemeField`</span>. R uses recursive <span class="in">`set_at`</span> walking via S7 prop accessors + integer indexing; TS uses <span class="in">`structuredClone`</span> + dot-path. Same semantics, idiomatic differences. <span class="pp">|</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="fu">## OKLab precision gap — RESOLVED via canonization (post-0.2.0)</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>R's <span class="in">`farver`</span> and TS's hand-rolled OKLab transform produce OKLCH triples</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>that differ by ~5e-6 L / ~6e-5 C / ~0.03° H. These compound through</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>gamut-bisection clamping into 1-25 channels of drift on chroma-related</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>derivations near saturation boundaries.</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>**Resolution (option C from the original phase-2 list)**: TS is now</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>canonical for <span class="in">`srcjs/src/lib/theme-presets-v2.json`</span>. The snapshot is</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>regenerated from the TS cascade resolver via</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="in">`scripts/regenerate-theme-presets.ts`</span>, and the parity test in</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="in">`theme-resolve.test.ts`</span> is now byte-exact drift detection (snapshot vs</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>resolver output, same source).</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>Why this works:</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The npm runtime path is fully TS-resolved → TS-snapshotted → consistent.</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The R-rendered widget path is fully R-resolved → R-serialized → wire</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  → JS renders the resolved values verbatim (no snapshot lookup).</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The JS-side theme switcher uses the TS-canonical snapshot. R-rendered</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  widgets switch from "R-cochrane" (initial wire) to "TS-lancet"</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>  (snapshot) when the user clicks lancet — the difference is</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  sub-perceptual (&lt;25 channels per pixel), within OKLab precision.</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>Each runtime is now canonical in its own context; the divergence between</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>them no longer matters because no consumer compares them side-by-side</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>at byte level.</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>To refresh the snapshot after any change to <span class="in">`oklch.ts`</span>,</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="in">`theme-resolve.ts`</span>, <span class="in">`theme-validate.ts`</span>, or <span class="in">`theme-presets-inputs.ts`</span></span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>that affects resolved output:</span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="in">```sh</span></span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> srcjs <span class="kw">&amp;&amp;</span> <span class="ex">bun</span> run scripts/regenerate-theme-presets.ts</span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>Drift detection runs in CI via <span class="in">`theme-resolve.test.ts`</span> — accidental</span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>output changes fail the build until the snapshot is regenerated</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>intentionally.</span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme drift safeguards (0.33.0 / 0.3.0 round)</span></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>The 0.33.0 theme expansion added 8 new presets — the <span class="in">`design`</span> category</span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>of <span class="in">`package_themes()`</span> (Bauhaus, Swiss, Tufte, Newsprint, Solarized ×</span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>{light, dark}, Tonal × {light, dark}). To keep R↔TS skew from creeping</span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>in as the roster grows, three complementary mechanisms run in CI:</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Roster sync** (<span class="in">`tests/testthat/test-theme-roster-sync.R`</span>) —</span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>   asserts every R <span class="in">`web_theme_X()`</span> has a matching <span class="in">`themeX`</span> symbol in</span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a>   the V8 bundle (reachable via <span class="in">`tabviz_v8()$call("callBuilder", "themeX", "{}")`</span>).</span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>   Either side adding or dropping a theme without the other fails.</span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Resolved-wire-shape parity** (<span class="in">`tests/testthat/test-parity-themes.R`</span>) —</span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>   for each theme: <span class="in">`serialize_theme(web_theme_X())`</span> (R) vs</span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>   <span class="in">`callBuilder("themeX", "{}")`</span> (TS), compared with structural-equal</span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>   on shape and <span class="in">`hex_close(tol = 50)`</span> on derived hex. Skips <span class="in">`series`</span></span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>   (chroma-boost-near-gamut compounds OKLab drift to 25-100 channels</span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>   on near-grayscale palettes; JS-side byte-exact snapshot is the</span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>   parity oracle for that) and <span class="in">`layout.banding`</span> (R wire legacy</span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>   duplicates <span class="in">`row.banding`</span>; renderer reads <span class="in">`row.banding`</span> only).</span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Byte-exact snapshot drift detection** on TS side</span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>   (<span class="in">`srcjs/src/lib/theme/theme-resolve.test.ts`</span>) — already in place since</span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>   0.2.1's canonization; auto-extends to new themes via the iterator</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>   pattern.</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>Adding a new theme: write the R <span class="in">`web_theme_X()`</span> constructor, write the</span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>TS <span class="in">`XXX_DRAFT`</span> + <span class="in">`themeX()`</span> mirror, run <span class="in">`bun run scripts/regenerate-theme-presets.ts`</span></span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>to refresh the snapshot, add <span class="in">`"x"`</span> to <span class="in">`EXPECTED_THEME_NAMES`</span> in the</span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>roster-sync test and to the <span class="in">`THEMES`</span> vector in the parity-themes test.</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>All three tests green = roster locked.</span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="fu">## R-side opportunistic simplifications — DONE (post-0.2.0)</span></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>All 3 simplifications flagged during the TS port landed in the same</span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>post-0.2.0 round as the OKLab canonization. R tests still green; visual</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>tests still 45/45.</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>✅ **Deduped legacy-input migration** — extracted <span class="in">`check_legacy_inputs(args, arg_hint)`</span></span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>   helper in <span class="in">`R/themes-api.R`</span>. Both <span class="in">`web_theme()`</span> and <span class="in">`set_inputs()`</span> now</span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>   call it with their respective context-tailored migration hint. Saved</span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>   ~18 lines.</span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>✅ **Unified `fill_na` + `compose_text`** — <span class="in">`fill_na(obj, source)`</span> in</span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a>   <span class="in">`R/utils-theme-resolve.R`</span> now dispatches on <span class="in">`inherits(source, "S7_object")`</span>:</span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a>   list sources iterate <span class="in">`names(source)`</span>, S7 sources iterate</span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a>   <span class="in">`S7::prop_names(obj)`</span>. <span class="in">`compose_text(over, under)`</span> is kept as a thin</span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a>   alias so callsite readability is preserved.</span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>✅ **Dropped defensive `secondary_deep` re-mirror** — line 583 of the</span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>   old resolver had a fallback <span class="in">`is.na(secondary_deep) ? primary_deep : secondary_deep`</span></span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a>   guard. Since <span class="in">`resolve_components`</span> runs after <span class="in">`resolve_inputs_mirrors`</span>,</span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>   the guard was unreachable. Replaced with direct <span class="in">`theme@inputs@secondary_deep`</span></span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>   access; full R test suite verifies no regression. Note: <span class="in">`resolve_text`</span></span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>   keeps its similar-looking defensive guard intentionally — it supports</span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a>   test paths that call the function directly with raw inputs, bypassing</span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>   the resolve_theme pipeline.</span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a><span class="fu">## Column constructors</span></span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a><span class="fu">### Naming convention: schema key / wire type / options bucket</span></span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a>A column type carries **three related-but-distinct names**, and getting them</span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a>right is what keeps R↔TS parity (canonical doc: <span class="in">`srcjs/src/schema/types.ts`</span>,</span>
+<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a>the <span class="in">`bucket`</span> field):</span>
+<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> name <span class="pp">|</span> what <span class="pp">|</span> rule <span class="pp">|</span></span>
+<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> schema <span class="in">`key`</span> <span class="pp">|</span> registry id (TS schema registry, <span class="in">`registerBehaviors`</span> key) <span class="pp">|</span> viz types use the long namespaced form: <span class="in">`viz_forest`</span>, <span class="in">`viz_bar`</span>, <span class="in">`viz_boxplot`</span>, <span class="in">`viz_violin`</span> <span class="pp">|</span></span>
+<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> wire <span class="in">`type`</span> <span class="pp">|</span> the string serialized to JSON (<span class="in">`column.type`</span>), matched in render branches on BOTH sides <span class="pp">|</span> equals <span class="in">`key`</span> for most types <span class="pp">|</span></span>
+<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> options <span class="in">`bucket`</span> <span class="pp">|</span> where the type's options nest: <span class="in">`column.options[bucket]`</span> <span class="pp">|</span> camelCase echo of the wire <span class="in">`type`</span> (<span class="in">`viz_bar`</span> → <span class="in">`vizBar`</span>) <span class="pp">|</span></span>
+<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a>**Two deliberate, preserved exceptions** (both pre-date the convention;</span>
+<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a>changing the wire would ripple across ~40 render sites in TS + the R parity</span>
+<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a>surface for no user benefit):</span>
+<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**forest** — schema key <span class="in">`viz_forest`</span>, but wire type *and* bucket are the short</span>
+<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a>  <span class="in">`forest`</span> (it was the original viz type). The bucket still follows the rule</span>
+<span id="cb2-154"><a href="#cb2-154" aria-hidden="true" tabindex="-1"></a>  *relative to its own type* (camelCase of <span class="in">`forest`</span> is <span class="in">`forest`</span>).</span>
+<span id="cb2-155"><a href="#cb2-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**percent** — bucket <span class="in">`percent`</span> though wire type is <span class="in">`numeric`</span>.</span>
+<span id="cb2-156"><a href="#cb2-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-157"><a href="#cb2-157" aria-hidden="true" tabindex="-1"></a>**Adding a new column/viz type:** pick <span class="in">`type`</span>, set <span class="in">`bucket = camelCase(type)`</span>,</span>
+<span id="cb2-158"><a href="#cb2-158" aria-hidden="true" tabindex="-1"></a>key = the same (or namespaced for viz). Don't invent a third short form. The</span>
+<span id="cb2-159"><a href="#cb2-159" aria-hidden="true" tabindex="-1"></a>R↔TS parity tests (<span class="in">`tests/testthat/test-parity-columns.R`</span>) assert R's</span>
+<span id="cb2-160"><a href="#cb2-160" aria-hidden="true" tabindex="-1"></a><span class="in">`col@options$&lt;bucket&gt;`</span> matches TS's <span class="in">`shape$options$&lt;bucket&gt;`</span>, so a bucket-name</span>
+<span id="cb2-161"><a href="#cb2-161" aria-hidden="true" tabindex="-1"></a>mismatch fails loudly.</span>
+<span id="cb2-162"><a href="#cb2-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-163"><a href="#cb2-163" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row / marker style mapping in TS authoring (CLOSED 2026-06-15)</span></span>
+<span id="cb2-164"><a href="#cb2-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-165"><a href="#cb2-165" aria-hidden="true" tabindex="-1"></a>R <span class="in">`tabviz(row_bold = ~expr, marker_color = ~col, …)`</span> resolves each to a column</span>
+<span id="cb2-166"><a href="#cb2-166" aria-hidden="true" tabindex="-1"></a>NAME (<span class="in">`row_bold_col`</span>, <span class="in">`marker_color_col`</span>) and EXTRACTS per-row values into each</span>
+<span id="cb2-167"><a href="#cb2-167" aria-hidden="true" tabindex="-1"></a><span class="in">`Row.style`</span> / <span class="in">`Row.markerStyle`</span> at serialize time (<span class="in">`compile_row_style_recipe`</span> +</span>
+<span id="cb2-168"><a href="#cb2-168" aria-hidden="true" tabindex="-1"></a><span class="in">`.apply_style_recipe`</span>). TS authoring had no equivalent — a JS author could only</span>
+<span id="cb2-169"><a href="#cb2-169" aria-hidden="true" tabindex="-1"></a>set <span class="in">`row.style`</span> by hand.</span>
+<span id="cb2-170"><a href="#cb2-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-171"><a href="#cb2-171" aria-hidden="true" tabindex="-1"></a>Closed: `tabviz({ rowBold, rowItalic, rowColor, rowBg, rowBadge, rowIcon,</span>
+<span id="cb2-172"><a href="#cb2-172" aria-hidden="true" tabindex="-1"></a>rowEmphasis, rowMuted, rowAccent, markerColor, markerShape, markerOpacity,</span>
+<span id="cb2-173"><a href="#cb2-173" aria-hidden="true" tabindex="-1"></a>markerSize })` — each is a DATA FIELD NAME, extracted per-row into</span>
+<span id="cb2-174"><a href="#cb2-174" aria-hidden="true" tabindex="-1"></a><span class="in">`row.style`</span>/<span class="in">`row.markerStyle`</span> with the same type coercion R uses (bold/italic/</span>
+<span id="cb2-175"><a href="#cb2-175" aria-hidden="true" tabindex="-1"></a>emphasis/muted/accent→bool, color/bg/badge/icon→string, opacity/size→number;</span>
+<span id="cb2-176"><a href="#cb2-176" aria-hidden="true" tabindex="-1"></a>false IS emitted, NA/missing skipped, no styles → no <span class="in">`style`</span>). ALL 12 RowStyle</span>
+<span id="cb2-177"><a href="#cb2-177" aria-hidden="true" tabindex="-1"></a>fields are covered — incl. the structural <span class="in">`rowFill`</span> (bool), <span class="in">`rowIndent`</span></span>
+<span id="cb2-178"><a href="#cb2-178" aria-hidden="true" tabindex="-1"></a>(number), <span class="in">`rowType`</span> (enum string). V8 PARITY-GATED: <span class="in">`test-parity-row-style.R`</span></span>
+<span id="cb2-179"><a href="#cb2-179" aria-hidden="true" tabindex="-1"></a>runs R <span class="in">`serialize_data`</span> vs TS <span class="in">`tabviz`</span> on identical data and asserts each row's</span>
+<span id="cb2-180"><a href="#cb2-180" aria-hidden="true" tabindex="-1"></a><span class="in">`style`</span>/<span class="in">`markerStyle`</span> match (mapequal — wire key order is not semantic).</span>
+<span id="cb2-181"><a href="#cb2-181" aria-hidden="true" tabindex="-1"></a>STILL R-ONLY (lower-value): <span class="in">`row_height`</span> (a row-kind height pin, distinct from</span>
+<span id="cb2-182"><a href="#cb2-182" aria-hidden="true" tabindex="-1"></a>style) and the <span class="in">`cond()`</span>-form / static / theme StyleOverride variants (a</span>
+<span id="cb2-183"><a href="#cb2-183" aria-hidden="true" tabindex="-1"></a>field-name string is the 90%% case; the tagged-union forms stay on the</span>
+<span id="cb2-184"><a href="#cb2-184" aria-hidden="true" tabindex="-1"></a>per-column <span class="in">`ColumnSpec.styleMapping`</span>).</span>
+<span id="cb2-185"><a href="#cb2-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-186"><a href="#cb2-186" aria-hidden="true" tabindex="-1"></a><span class="fu">## paginate (2026-06-11, area-F pager walk)</span></span>
+<span id="cb2-187"><a href="#cb2-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-188"><a href="#cb2-188" aria-hidden="true" tabindex="-1"></a>R <span class="in">`tabviz(paginate=)`</span> accepts a count / <span class="in">`paginate_spec()`</span> and precomputes</span>
+<span id="cb2-189"><a href="#cb2-189" aria-hidden="true" tabindex="-1"></a>page BREAKPOINTS at serialize time (<span class="in">`compute_page_breaks()`</span> — grouped</span>
+<span id="cb2-190"><a href="#cb2-190" aria-hidden="true" tabindex="-1"></a>breaks, orphan rules); the wire carries <span class="in">`paginate.pages[{startIdx,endIdx}]`</span></span>
+<span id="cb2-191"><a href="#cb2-191" aria-hidden="true" tabindex="-1"></a>and the widget never re-derives them.</span>
+<span id="cb2-192"><a href="#cb2-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-193"><a href="#cb2-193" aria-hidden="true" tabindex="-1"></a>**CLOSED 2026-06-15**: TS authoring now has <span class="in">`tabviz({ paginate })`</span> (a number</span>
+<span id="cb2-194"><a href="#cb2-194" aria-hidden="true" tabindex="-1"></a>or <span class="in">`PaginateOptions`</span>). <span class="in">`src/authoring/paginate.ts::computePageBreaks`</span> is a</span>
+<span id="cb2-195"><a href="#cb2-195" aria-hidden="true" tabindex="-1"></a>byte-faithful port of R's algorithm (RLE group-runs → page-fill walk →</span>
+<span id="cb2-196"><a href="#cb2-196" aria-hidden="true" tabindex="-1"></a>oversized-group + orphan pull/merge); <span class="in">`paginate.test.ts`</span> MIRRORS R's</span>
+<span id="cb2-197"><a href="#cb2-197" aria-hidden="true" tabindex="-1"></a><span class="in">`test-paginate.R`</span> fixtures (same inputs, same expected pages) so the two</span>
+<span id="cb2-198"><a href="#cb2-198" aria-hidden="true" tabindex="-1"></a>can't drift. Additive — no wire change.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

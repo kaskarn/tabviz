@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>maintainer-feedback-2026-06-13 – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e355811a8c568e4d4352796d242e0740.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#maintainer-feedback-pass-2026-06-13-settings-roles-borders" id="toc-maintainer-feedback-pass-2026-06-13-settings-roles-borders" class="nav-link active" data-scroll-target="#maintainer-feedback-pass-2026-06-13-settings-roles-borders">Maintainer feedback pass — 2026-06-13 (settings / roles / borders)</a>
+  <ul class="collapse">
+  <li><a href="#landed" id="toc-landed" class="nav-link" data-scroll-target="#landed">Landed</a></li>
+  <li><a href="#hunt-batch-a-quick-wins-landed-2026-06-13" id="toc-hunt-batch-a-quick-wins-landed-2026-06-13" class="nav-link" data-scroll-target="#hunt-batch-a-quick-wins-landed-2026-06-13">Hunt batch A (quick wins, LANDED 2026-06-13)</a></li>
+  <li><a href="#hunt-batch-b-export-wysiwyg-cluster-landed-2026-06-13" id="toc-hunt-batch-b-export-wysiwyg-cluster-landed-2026-06-13" class="nav-link" data-scroll-target="#hunt-batch-b-export-wysiwyg-cluster-landed-2026-06-13">Hunt batch B (export WYSIWYG cluster, LANDED 2026-06-13)</a></li>
+  <li><a href="#hunt-batch-c-a11y-dead-capability-cluster-2026-06-13" id="toc-hunt-batch-c-a11y-dead-capability-cluster-2026-06-13" class="nav-link" data-scroll-target="#hunt-batch-c-a11y-dead-capability-cluster-2026-06-13">Hunt batch C (a11y / dead-capability cluster, 2026-06-13)</a></li>
+  <li><a href="#hunt-2-12-export-reconcile-landed-2026-06-13" id="toc-hunt-2-12-export-reconcile-landed-2026-06-13" class="nav-link" data-scroll-target="#hunt-2-12-export-reconcile-landed-2026-06-13">Hunt #2 + #12 (export reconcile, LANDED 2026-06-13)</a></li>
+  <li><a href="#hunt-b4-group-rule-reconciled-export-cluster-closed-2026-06-13" id="toc-hunt-b4-group-rule-reconciled-export-cluster-closed-2026-06-13" class="nav-link" data-scroll-target="#hunt-b4-group-rule-reconciled-export-cluster-closed-2026-06-13">Hunt #B4 — group-rule reconciled; export cluster CLOSED (2026-06-13)</a></li>
+  <li><a href="#hunt-13-dead-surface-sweep-2026-06-14" id="toc-hunt-13-dead-surface-sweep-2026-06-14" class="nav-link" data-scroll-target="#hunt-13-dead-surface-sweep-2026-06-14">Hunt #13 — dead-surface sweep (2026-06-14)</a></li>
+  <li><a href="#remaining" id="toc-remaining" class="nav-link" data-scroll-target="#remaining">Remaining</a></li>
+  <li><a href="#diagnosis-evidence-remaining-plan" id="toc-diagnosis-evidence-remaining-plan" class="nav-link" data-scroll-target="#diagnosis-evidence-remaining-plan">Diagnosis (evidence) + remaining plan</a>
+  <ul class="collapse">
+  <li><a href="#sliders-commit-on-release-inconsistency-user-duplicate-component-defs" id="toc-sliders-commit-on-release-inconsistency-user-duplicate-component-defs" class="nav-link" data-scroll-target="#sliders-commit-on-release-inconsistency-user-duplicate-component-defs">Sliders — commit-on-release inconsistency (user: “duplicate component defs?”)</a></li>
+  <li><a href="#borders-boxed-first-column-anomaly-three-stacked-defects-d20-root" id="toc-borders-boxed-first-column-anomaly-three-stacked-defects-d20-root" class="nav-link" data-scroll-target="#borders-boxed-first-column-anomaly-three-stacked-defects-d20-root">Borders — boxed first-column anomaly (THREE stacked defects, D20 root)</a></li>
+  <li><a href="#roles-dead-controls-zero-legibility" id="toc-roles-dead-controls-zero-legibility" class="nav-link" data-scroll-target="#roles-dead-controls-zero-legibility">Roles — dead controls + zero legibility</a></li>
+  <li><a href="#glow-glass-wired-but-ungated" id="toc-glow-glass-wired-but-ungated" class="nav-link" data-scroll-target="#glow-glass-wired-but-ungated">glow / glass — wired but ungated</a></li>
+  <li><a href="#density-vertical-only-feel-real-subtle-cause" id="toc-density-vertical-only-feel-real-subtle-cause" class="nav-link" data-scroll-target="#density-vertical-only-feel-real-subtle-cause">Density — vertical-only feel (real, subtle cause)</a></li>
+  <li><a href="#font-selectors-no-preview" id="toc-font-selectors-no-preview" class="nav-link" data-scroll-target="#font-selectors-no-preview">Font selectors — no preview</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="maintainer-feedback-pass-2026-06-13-settings-roles-borders" class="level1">
+<h1>Maintainer feedback pass — 2026-06-13 (settings / roles / borders)</h1>
+<p>A live-testing pass surfaced ~11 issues, several pointing at brittle / hardcoded substrate. This doc records the <strong>diagnosis</strong> (three parallel investigations, file:line evidence) and the <strong>batch plan</strong>. Newest status at top of each item.</p>
+<section id="landed" class="level2">
+<h2 class="anchored" data-anchor-id="landed">Landed</h2>
+<ul>
+<li><p><strong>B1 — theme-switch crash</strong> (<code>containerBorder</code>): <code>computeLiveConfigVars</code> read <code>theme.layout.containerBorder</code> raw while guarding <code>theme.series?.</code> beside it; a partial theme threw and corrupted every later render. Fixed by <code>lib/theme/layout-defaults.ts::resolveContainerBorder</code> (one helper for DOM emitter + SVG export + buildTheme; kills the triplicated magic <code>8</code>). Regression-tested. Commit 0b583e2.</p></li>
+<li><p><strong>B1 — D9 reversal → maximal interaction defaults</strong>: author-grade affordances default ON (dev-tinker audience). Commit 0b583e2.</p></li>
+<li><p><strong>B2 — geometry sliders live-preview</strong> (IdentityTab radii + rule widths): were <code>oncommit</code>-only (drag-blind); now <code>onchange</code>=preview + <code>oncommit</code>=commit via one <code>writeGeometry(write,…)</code>. Commit 136cd8b.</p></li>
+<li><p><strong>B3 — boxed first-column missing divider (Bug A)</strong>: <code>--tv-first-col-rule</code> emitted <code>"transparent"</code> when not bold, defeating the consumer var() fallback → col1/col2 divider vanished under boxed. Resolver now emits the concrete minor divider color. Regression-tested; per-preset snapshot regenerated. Commit 9810056.</p></li>
+<li><p><strong>B4 — font selectors actually preview</strong>: FontFamily was wired to the native <code>&lt;select&gt;</code> (option font-family is a no-op in Chrome/Safari); swapped to the custom DOM <code>Dropdown</code> (prop-compatible). Every font name now previews in its own face + selected value too. Commit 7664fd6.</p></li>
+<li><p><strong>B5 — dead cell family/weight controls honesty-filtered</strong>: the text-role rebind now shows only the {family,size,weight} channels whose backing <code>--tv-text-&lt;role&gt;-&lt;channel&gt;</code> token actually paints (NOT KNOWN_UNCONSUMED), mirroring the component roster’s filter. cell→size only; numeric→family only; a hint names the fixed channels. Reset moved to the always-present Role field. Test locks the data basis. Commit 10884e3.</p></li>
+<li><p><strong>B6 — hover explanations for theme toggles</strong> (what is glow/glass/ruled): <code>Pill</code> already rendered <code>seg.title</code>; only the copy was missing. Centralized <code>OPTION_DESCRIPTIONS</code> (option-descriptions.ts) keyed by vocabulary → value, wired via <code>describedSegments()</code> across the Variations enum toggles. Keying by vocabulary disambiguates the overloaded <code>ruled</code>. Commit d752e26.</p></li>
+<li><p><strong>B7 — role→element legibility</strong>: the Styling color-role picker shows a hint describing what the selected role paints, DERIVED from the manifest token descriptions (<code>TOKENS_BY_ROLE</code>), jargon stripped, curated overrides + naming- pattern fallback for token-less roles. Commit a663508.</p></li>
+<li><p><strong>B8 (LANDED) — remaining release-only sliders preview live</strong>: role grade (new <code>previewThemeRoleOverride</code> verb), row-kind heights + watermark opacity (already history-free → onchange wired to the same verb), banding level (<code>writeBanding</code> commitNow flag). Slider inconsistency fully closed. Commit 4a0151e.</p></li>
+<li><p><strong>B9 (LANDED) — Bug B fixed: complete DOM table frame, stops above the axis (D26).</strong> Key correction during implementation: the EXPORT was already correct (its table-frame rect spans mainY→rowsY+rowsHeight, i.e.&nbsp;already above the axis — the earlier diagnosis conflated it with the full-figure CONTAINER border). So Bug B was DOM-only: the DOM drew only a top edge + accidental cell edges, no left edge. Added a <code>.table-frame</code> overlay spanning the table grid area (rows 1 / axisRowNum, all columns) with an inset box-shadow (4 edges, zero layout impact); removed the old <code>.tabviz-main</code> border-top. CAUGHT BY THE GATE: an in-flow spanning grid item (grid-column: 1/-1) defeats the grid’s <code>width: max-content</code> shrink-wrap → stretched the DOM to the container (huge width divergence). Fixed with <code>position: absolute; inset: 0</code> (an abspos grid item uses its grid area as containing block but is OUT of track sizing). Added a <code>nejm-boxed</code> case to the wysiwyg matrix. Verified: wysiwyg 0 breaches incl. boxed, layout-metrics 26/0 (export untouched), forest-marks + measure-rows green, full suite green, + eyeballed boxed/frame screenshots (complete frame, left edge present, stops above the axis). Commit pending. (Note: double-style table frames render as solid in the DOM — box-shadow can’t do double — but no preset uses a double table border; documentable WYSIWYG nuance if one ever does.)</p></li>
+</ul>
+</section>
+<section id="hunt-batch-a-quick-wins-landed-2026-06-13" class="level2">
+<h2 class="anchored" data-anchor-id="hunt-batch-a-quick-wins-landed-2026-06-13">Hunt batch A (quick wins, LANDED 2026-06-13)</h2>
+<p>A systematic hunt (3 parallel agents) after the reactive pass found ~15 more instances of the same brittleness classes — answering “did we catch everything?” with a clear NO. Triaged by importance × difficulty; Batch A = the trivial/low-risk wins: - <strong>Watermark opacity drift</strong>: panel showed 0.08 while DOM + export rendered 0.07. Centralized to <code>DEFAULT_WATERMARK_OPACITY</code> (rendering-constants) used by all three. (the magic-<code>8</code> class) - <strong>Geometry slider defaults</strong>: 6 inline literals in IdentityTab duplicated the resolver’s <code>DEFAULT_RADIUS</code>/<code>DEFAULT_BORDER_WIDTH</code> — now exported + imported. - <strong>Dead <code>Select.svelte</code> deleted</strong> (residue of the B4 Dropdown swap) + its 3 references (barrel export, primitive-contract list, check-primitive-wiring list). - <strong><code>type_roles.family</code> type</strong> gained <code>"numeric"</code> (the validator + resolver already accept it; the TS type lied). - <strong>Badge <code>warning</code> fallback hex</strong> <code>#f59e0b</code> → <code>#d97706</code> (matches BADGE_VARIANTS + the export; the DOM was the outlier). Verified: full suite 1413 bun + 301 vitest, check (incl.&nbsp;primitive-wiring) + lint clean, build green.</p>
+</section>
+<section id="hunt-batch-b-export-wysiwyg-cluster-landed-2026-06-13" class="level2">
+<h2 class="anchored" data-anchor-id="hunt-batch-b-export-wysiwyg-cluster-landed-2026-06-13">Hunt batch B (export WYSIWYG cluster, LANDED 2026-06-13)</h2>
+<ul>
+<li><strong>#1 — export draws boxed internal vertical dividers</strong>: under border_preset= boxed the DOM painted a full ruled grid but the export drew only horizontal rules + the outer frame — the whole interior vertical set was missing. Export-side fix (new <code>layoutHasVertical</code> + a vertical-divider pass over <code>columnPositions</code>, label boundary honoring <code>--tv-first-col-rule</code>). Eyeballed boxed export PNG = matches the DOM; wysiwyg 0 breaches. <code>--tv-first-col-rule</code> consumedBy now includes the export. Commit 4d01728.</li>
+<li><strong>#3 — DOM↔︎export divergence-ledger GATE</strong> (<code>dom-export-divergence.test.ts</code>): every token consumed ONLY by the DOM (<code>consumedBy === ["svelte/TabvizPlot .svelte"]</code>) must now carry a justification (browser-only / parallel / PENDING) in a ratcheted ledger — a new unjustified DOM-only token fails the gate (forcing: draw it in the export, or document why not), and the ledger only shrinks. Turns the Bug-B class from reactive to gated. 16 tokens bootstrapped.</li>
+<li><strong>#2 — first-column BOLD styling in export (bg/fg/weight)</strong>: tracked as PENDING in the ledger, NOT done — no preset uses <code>first_column_style=bold</code>, so it’s explicit-opt-in only. The bold DIVIDER is already correct (rides #1). The group-header rule COLOR divergence (neutral[7] DOM vs border role export) is also PENDING in the ledger — common (grouped tables) but a subtle gray shade; follow-up.</li>
+</ul>
+</section>
+<section id="hunt-batch-c-a11y-dead-capability-cluster-2026-06-13" class="level2">
+<h2 class="anchored" data-anchor-id="hunt-batch-c-a11y-dead-capability-cluster-2026-06-13">Hunt batch C (a11y / dead-capability cluster, 2026-06-13)</h2>
+<p>The a11y findings were OVER-rated by the hunt: every control already carries an <code>ariaLabel</code> (wired at the call sites), so screen-reader naming was never actually broken. That reframed the cluster: - <strong>#4 <code>Field.forId</code> — DELETED (not wired)</strong>: the dead prop’s purpose (label↔︎control association) is already served by <code>ariaLabel</code>, and a native <code>&lt;label for=…&gt;</code> would have ACTIVATED a button-based control (Pill segment) on label-click, not just focused it. Honest rationalization — remove the vestigial capability rather than add a marginal, linter-hostile click handler. - <strong>#7 <code>AnchorRow</code> reset dot — WIRED (real feature)</strong>: the override dot + “reset to preset” gutter that AnchorRow always rendered but no live call site lit. IdentityTab now passes <code>pinned</code> (anchor differs from <code>store.initialTheme</code>) + <code>onreset</code> for the 4 identity anchors AND the 4 status colors. The one genuinely-missing FEATURE in the cluster. - <strong>#11 <code>Tooltip.id</code> (aria-describedby) — LEFT</strong>: the hint is already SR-announced via the <code>i</code> mark’s <code>aria-label={hint}</code>; the Tooltip id would be redundant. Harmless optional prop; not worth churn. Verified: full suite 1416 bun + 301 vitest; svelte-check 0 warnings; lint clean; build green. (Per-anchor dot reactivity mirrors the existing working <code>anchorTriple</code> helper pattern.)</p>
+</section>
+<section id="hunt-2-12-export-reconcile-landed-2026-06-13" class="level2">
+<h2 class="anchored" data-anchor-id="hunt-2-12-export-reconcile-landed-2026-06-13">Hunt #2 + #12 (export reconcile, LANDED 2026-06-13)</h2>
+<ul>
+<li><strong>#2 — first-column BOLD styling in export</strong>: <code>renderUnifiedTableRow</code> now paints <code>--tv-first-col-bg</code> over the label cell + folds <code>--tv-first-col-fg</code>/ <code>-weight</code> into the label text as its base (per-row styles still win). Eyeballed a boxed+bold export PNG (bold + tinted + strong divider, matches the DOM). The 3 tokens left the divergence ledger. Commit 73ab91f.</li>
+<li><strong>#12 — header two-path divergence RECONCILED</strong>: the export read header bg/fg/rule from the legacy <code>theme.header</code> cluster (<code>activeHeaderVariant</code>), a SEPARATE path from the DOM’s v4 <code>--tv-header-bg/-fg/-rule</code> tokens. Measured the gap: bg agreed everywhere; fg differed subtly; rule differed visibly (e.g.&nbsp;nejm #6B6565 vs #4A4444). New <code>headerHexes(theme, cssVars)</code> reads the v4 tokens (v3 fallback) and all 8 export sites route through it — so DOM and export agree by construction (one source). <code>--tv-header-bg/-fg/-rule</code> consumedBy now includes the export; fg/rule left the ledger. wysiwyg 0 breaches; R 46/0.</li>
+</ul>
+</section>
+<section id="hunt-b4-group-rule-reconciled-export-cluster-closed-2026-06-13" class="level2">
+<h2 class="anchored" data-anchor-id="hunt-b4-group-rule-reconciled-export-cluster-closed-2026-06-13">Hunt #B4 — group-rule reconciled; export cluster CLOSED (2026-06-13)</h2>
+<p>The group-header underline read <code>borders.major</code> (border role) in the export but <code>--tv-row-group-rule</code> (neutral[7]) in the DOM — a visible gray-shade divergence on every grouped table. The export’s row-border loop now draws group-header rows with <code>--tv-row-group-rule</code> + <code>--tv-group-border-width</code> (matching the DOM’s <code>.group</code> separator), via the same canonical-token reconcile as #12. Eyeballed a grouped export PNG (North/South headers with correct underlines). <code>--tv-row-group-rule</code> consumedBy now includes the export.</p>
+<p><strong>The DOM↔︎export divergence ledger now has ZERO PENDING entries</strong> — every DOM-only token is browser-only or parallel-agrees; first-col, header, and group-rule are all wired into the export. The export WYSIWYG cluster is closed, and the ledger gate keeps it that way.</p>
+</section>
+<section id="hunt-13-dead-surface-sweep-2026-06-14" class="level2">
+<h2 class="anchored" data-anchor-id="hunt-13-dead-surface-sweep-2026-06-14">Hunt #13 — dead-surface sweep (2026-06-14)</h2>
+<p>Cleared the vestigial trivia (zero behavior change except the documented Knob fix): - <strong>Deleted dead props</strong>: <code>Accordion.summary</code> (renderer + <code>.head-summary</code> CSS), <code>Field.tight</code> (prop + <code>.field.tight</code> grid variant), <code>EnumRow.disabled</code> (forward to Pill) — all declared, no producer. - <strong><code>Knob</code> chipWidth</strong>: the <code>mode === "track" ? 56 : 56</code> dead ternary always returned 56, so track knobs were NEVER 64 (the JSDoc lied). Simplified to <code>width ?? 56</code> + corrected the doc to match reality (no untested behavior change). - <strong>Self-fallback typo</strong>: <code>var(--tv-border, var(--tv-border))</code> → <code>var(--tv-border)</code> ×5 (annotation strokes, TabvizPlot). - <strong>#10 roster drift</strong>: StylingTab’s <code>TYPE_FAMILY/SIZE/WEIGHT_OPTS</code> now derive from the validator’s exported <code>TYPE_*_VALUES</code> (one source — add a size to the scale and the picker tracks it).</p>
+<p>LEFT (deliberately): <code>TextInput.ariaDescribedby/ariaInvalid</code> (live in the dormant studio), <code>Tooltip.id</code> (redundant — hint already SR-announced via the i mark), the glow / ink2 var() self-fallbacks (harmless, identical to their fallback target). Deleting these is churn for no gain.</p>
+<p>Verified: svelte-check 0 + primitive-wiring clean; lint clean; full suite 1416 bun + 301 vitest; build green.</p>
+</section>
+<section id="remaining" class="level2">
+<h2 class="anchored" data-anchor-id="remaining">Remaining</h2>
+<ul>
+<li>(Bug B prior scoping retained below for history; superseded by B9.)</li>
+<li><strong>Bug B — boxed DOM↔︎export frame divergence</strong> (DONE in B9; original scoping):
+<ul>
+<li>The DOM “frame” is STRUCTURALLY INCOMPLETE. <code>--tv-table-border-*</code> drives ONLY the top edge (<code>.tabviz-main</code> border-top, TabvizPlot.svelte:3040-3044). The right + bottom edges are ACCIDENTAL — they appear only when the cell col/row border styles happen to be solid (boxed → right via last-col border-right; bottom via last-row border-bottom). There is NO <code>border-left</code> anywhere → the table’s left side is open under boxed/frame (the user’s “absent border before 1st column”).</li>
+<li>The EXPORT draws a proper 4-side rect OVERLAY (svg-generator.ts:5231-5236), no layout impact, AND draws no internal vertical column dividers at all (col/table tokens are <code>consumedBy</code> DOM-only) → boxed renders a visibly different table in DOM vs export.</li>
+<li>FIX DIRECTION: give the DOM a real 4-side frame that does NOT perturb layout (a plain border shifts content + breaks the flush-inertness invariant — must be an outline / inset box-shadow / positioned overlay, like the export’s rect), and draw internal verticals in the export under grid layout so the two paths match. MUST be verified by <code>wysiwyg-diff.browser.ts</code> (DOM vs export parity) + layout-metrics (geometry unchanged). Deferred from this pass because that gate was flaking locally (captureScreenshot protocolTimeout — a Chrome/env issue, not the code); do it when the gate runs clean (CI, or a less-contended local env). (Bug A — the DOM missing col1/col2 divider — was already fixed in B3.)</li>
+<li>DEEPER FINDING (2026-06-13): the divergence is a frame-MODEL disagreement, not just missing edges. The DOM frame is DESIGNED to sit ABOVE the axis (frame bottom between the last data row and the axis ticks, via the axis-cell border-top — TabvizPlot.svelte:3035-3044), while the EXPORT rect spans the FULL figure INCLUDING the axis (height = totalHeight, svg-generator.ts:5231-5236). So DOM and export disagree on the frame’s BOUNDS, not only which edges paint. The numeric wysiwyg gate does NOT catch this (it measures geometry/typography positions, not the presence/extent of 1px border lines) — it passes at 0 breaches today with <code>frame</code> presets. Fix requires (1) a DECISION: does the outer frame enclose the axis or stop above it? then (2) reconcile BOTH renderers to it (DOM: non-layout-affecting 4-side frame — inset box-shadow / overlay, gated on –tv-table-border, on the element with the chosen bounds; export: match), (3) VISUAL verification via the wysiwyg side-by-side PNGs under a <code>boxed</code> + <code>frame</code> case (add to the harness matrix — currently no boxed case). A register entry (frame-model decision) is the right home before implementation.</li>
+</ul></li>
+<li><strong>DECISIONS (await maintainer):</strong> glow/glass reimagine-or-remove (now shell-painted-gating could help; B6 added explanations); horizontal density model (needs a gap multiplier that doesn’t feed auto-width); border vocabulary rename vs doc-clarify (B6 tooltips partially mitigate).</li>
+</ul>
+</section>
+<section id="diagnosis-evidence-remaining-plan" class="level2">
+<h2 class="anchored" data-anchor-id="diagnosis-evidence-remaining-plan">Diagnosis (evidence) + remaining plan</h2>
+<section id="sliders-commit-on-release-inconsistency-user-duplicate-component-defs" class="level3">
+<h3 class="anchored" data-anchor-id="sliders-commit-on-release-inconsistency-user-duplicate-component-defs">Sliders — commit-on-release inconsistency (user: “duplicate component defs?”)</h3>
+<p>NOT duplicate components — ONE <code>primitives/v2/Slider.svelte</code> with a leaky dual contract: <code>oninput→onchange</code> (live), release→<code>oncommit</code>. Sites that pass only <code>oncommit</code> are drag-blind. No debounce anywhere. - LIVE already: text size/scaling, gradient angle (VariationsTab), density_factor (StylingTab), LCH anchors (AnchorRow). - RELEASE-ONLY: geometry radii/rules (IdentityTab — <strong>fixed B2</strong>), role grade (StylingTab:165), banding level (VariationsTab:151), watermark opacity (LabelsTab:86), row-kind heights (FigureBand:62). - <strong>Remaining fix</strong>: role-grade + row-kind-height need NEW preview verbs (no <code>previewThemeRoleOverride</code> / <code>previewRowKindHeight</code> exist — only the recorded verbs); banding level is discrete + tangled with <code>setBandingOverride(null)</code>; watermark opacity needs a preview path. A focused “slider preview verbs” arc. Preview verbs that DO exist: previewAuthoringInputs, previewColumnWidth, previewLabel, previewThemeField, previewWatermark.</p>
+</section>
+<section id="borders-boxed-first-column-anomaly-three-stacked-defects-d20-root" class="level3">
+<h3 class="anchored" data-anchor-id="borders-boxed-first-column-anomaly-three-stacked-defects-d20-root">Borders — boxed first-column anomaly (THREE stacked defects, D20 root)</h3>
+<p>Shared resolver <code>lib/theme/borders.ts::resolveBorders</code> shares <strong>horizontal</strong> rules only; verticals + frame are DOM-only and uncoordinated with the export. - <strong>Bug A (DOM dead fallback)</strong>: <code>--tv-first-col-rule</code> resolves to the literal string <code>"transparent"</code> (resolve-theme.ts:581) when <code>first_column_style !==   "bold"</code>; the primary cell’s <code>border-right-color: var(--tv-first-col-rule,   …fallback)</code> (TabvizPlot.svelte:3249) never fires the fallback (var is DEFINED, just transparent) → col1/col2 divider silently missing under boxed. <strong>Likely the main reported symptom.</strong> Fix: emit the divider color (or leave unset) instead of <code>transparent</code> when not bold. - <strong>Bug B (frame asymmetry)</strong>: DOM has NO <code>border-left</code> anywhere; frame = top + last-row-bottom + last-col-right. SVG draws a full 4-side rect incl. left edge (svg-generator.ts:5231-5236). → “missing border before col 1” is a real DOM↔︎export divergence. Fix: either DOM draws the left edge or export matches DOM; pick one and gate both on the same token. - <strong>Bug C (polarity)</strong>: <code>first_column_style="bold"</code> + boxed → neutral[6] heavier divider + inverted bg/fg vs other columns. The first-col recipe (designed for hairline) collides with the grid layout. - <strong>Also</strong>: SVG draws ZERO internal vertical column dividers (only the DOM does, via per-cell border-right) — col/table tokens are <code>consumedBy</code> DOM-only (component-tokens.ts:1340,1373,1389,1405). So <code>boxed</code> renders a visibly different table in DOM vs export — an undocumented WYSIWYG break. - <strong>Vocabulary</strong>: <code>ruled</code>/<code>grid</code>/<code>boxed</code> overloaded across <code>border_preset</code> (layout), <code>shell_texture</code> (paper pattern), <code>set_rules</code> (width). <code>ruled</code> = horizontal rows with a thicker 2px major rule. Confusing; consider renaming or doc-clarifying.</p>
+</section>
+<section id="roles-dead-controls-zero-legibility" class="level3">
+<h3 class="anchored" data-anchor-id="roles-dead-controls-zero-legibility">Roles — dead controls + zero legibility</h3>
+<ul>
+<li><strong>Dead cell family/weight</strong>: StylingTab text-role rebind defaults to <code>cell</code> and offers Family/Weight, but <code>--tv-text-cell-family</code> / <code>--tv-text-cell-weight</code> are KNOWN_UNCONSUMED (component-tokens.ts:1553-54); only <code>size</code> is wired. Changing them does nothing. The <em>component</em> roster honesty-filters dead channels (component-bindings.ts:114-121); the <em>text-role</em> surface does NOT. <strong>Fix</strong>: honesty-filter the text-role family/weight controls against KNOWN_UNCONSUMED (hide dead channels), OR wire cell family/weight (DOM+export together).</li>
+<li><strong>“cell” role</strong> does do something: the COLOR cell component (<code>--tv-cell-fg</code> / <code>--tv-cell-border</code>) is live + consumed (svg + DOM). Only the TYPOGRAPHY cell role is partly dead (above).</li>
+<li><strong>rebind has no COLOR for text roles</strong> (user): color roles are edited as ramp+grade in a <em>different</em> StylingTab section under role “text”; text-role rebind is family/size/weight only. Asymmetry is real but the color IS editable — just elsewhere. Legibility problem, not a missing capability.</li>
+<li><strong>Legibility = none</strong>: roles shown as opaque names; no tooltip/preview/ element-mapping in the live panel. Manifest HAS human descriptions (component-tokens.ts <code>description</code> fields, e.g.&nbsp;“Cell horizontal divider color”) but they’re never surfaced. The one labeled UI (<code>RoleChipGrid</code>, with a hover readout) is mounted ONLY in the dormant studio. <code>list_roles()</code> returns name+coordinate+one example token, no description join. <strong>Fix (high value, low risk)</strong>: project the manifest <code>description</code> onto the role/option controls as hover tooltips — surfaces data that already exists.</li>
+</ul>
+</section>
+<section id="glow-glass-wired-but-ungated" class="level3">
+<h3 class="anchored" data-anchor-id="glow-glass-wired-but-ungated">glow / glass — wired but ungated</h3>
+<p>Both ARE wired to DOM rendering (glow: <code>.tv-shell.tv-glow</code> box-shadow halo, theme-runtime.css:380; glass: <code>backdrop-filter</code> + sheen, :215-253). DOM-only by design (stripped from export). “Don’t do much” because they paint the SHELL band, which is empty under the default <code>flush</code> shell — and unlike the gradient control (gated by <code>shellPainted</code>, VariationsTab:100-101), glow/glass are shown unconditionally. <strong>Fix</strong>: gate glow/glass controls by shell-painted state + hover explanations; “reimagine or remove” is the maintainer’s medium-term call (effects axis). Decision-register candidate.</p>
+</section>
+<section id="density-vertical-only-feel-real-subtle-cause" class="level3">
+<h3 class="anchored" data-anchor-id="density-vertical-only-feel-real-subtle-cause">Density — vertical-only feel (real, subtle cause)</h3>
+<p><code>density_factor</code> DOES multiply horizontal tokens (cellPaddingX, columnGroupPadding, indentPerLevel) in both resolve paths — but content-driven column auto-width (<code>width = text + cellPaddingX×2</code>, rendering-constants.ts:253) ABSORBS the change: shrink padding → column shrinks → text rhythm unchanged. Plus <code>cell_padding_y = 0</code> in all presets, so vertical is carried entirely by <code>row_height</code> (direct, visible). <strong>Fix (design call)</strong>: a horizontal-density control needs a multiplier that adds inter-column gap WITHOUT feeding auto-width (else it self-cancels). Decision-register candidate.</p>
+</section>
+<section id="font-selectors-no-preview" class="level3">
+<h3 class="anchored" data-anchor-id="font-selectors-no-preview">Font selectors — no preview</h3>
+<p>Font family pickers show the name in the default UI font. <strong>Fix</strong>: render each option label in its own face (<code>style="font-family: …"</code>). Low risk; families are already loaded for the live themes.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Maintainer feedback pass — 2026-06-13 (settings / roles / borders)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>A live-testing pass surfaced ~11 issues, several pointing at brittle /</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>hardcoded substrate. This doc records the **diagnosis** (three parallel</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>investigations, file:line evidence) and the **batch plan**. Newest status</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>at top of each item.</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## Landed</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B1 — theme-switch crash** (<span class="in">`containerBorder`</span>): <span class="in">`computeLiveConfigVars`</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  read <span class="in">`theme.layout.containerBorder`</span> raw while guarding <span class="in">`theme.series?.`</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  beside it; a partial theme threw and corrupted every later render. Fixed</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  by <span class="in">`lib/theme/layout-defaults.ts::resolveContainerBorder`</span> (one helper for</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  DOM emitter + SVG export + buildTheme; kills the triplicated magic <span class="in">`8`</span>).</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  Regression-tested. Commit 0b583e2.</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B1 — D9 reversal → maximal interaction defaults**: author-grade</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  affordances default ON (dev-tinker audience). Commit 0b583e2.</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B2 — geometry sliders live-preview** (IdentityTab radii + rule widths):</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  were <span class="in">`oncommit`</span>-only (drag-blind); now <span class="in">`onchange`</span>=preview + <span class="in">`oncommit`</span>=commit</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  via one <span class="in">`writeGeometry(write,…)`</span>. Commit 136cd8b.</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B3 — boxed first-column missing divider (Bug A)**: <span class="in">`--tv-first-col-rule`</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  emitted <span class="in">`"transparent"`</span> when not bold, defeating the consumer var() fallback</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  → col1/col2 divider vanished under boxed. Resolver now emits the concrete</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  minor divider color. Regression-tested; per-preset snapshot regenerated.</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  Commit 9810056.</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B4 — font selectors actually preview**: FontFamily was wired to the native</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="in">`&lt;select&gt;`</span> (option font-family is a no-op in Chrome/Safari); swapped to the</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  custom DOM <span class="in">`Dropdown`</span> (prop-compatible). Every font name now previews in its</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  own face + selected value too. Commit 7664fd6.</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B5 — dead cell family/weight controls honesty-filtered**: the text-role</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  rebind now shows only the {family,size,weight} channels whose backing</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="in">`--tv-text-&lt;role&gt;-&lt;channel&gt;`</span> token actually paints (NOT KNOWN_UNCONSUMED),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  mirroring the component roster's filter. cell→size only; numeric→family only;</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  a hint names the fixed channels. Reset moved to the always-present Role field.</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  Test locks the data basis. Commit 10884e3.</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B6 — hover explanations for theme toggles** (what is glow/glass/ruled):</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="in">`Pill`</span> already rendered <span class="in">`seg.title`</span>; only the copy was missing. Centralized</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="in">`OPTION_DESCRIPTIONS`</span> (option-descriptions.ts) keyed by vocabulary → value,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  wired via <span class="in">`describedSegments()`</span> across the Variations enum toggles. Keying by</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  vocabulary disambiguates the overloaded <span class="in">`ruled`</span>. Commit d752e26.</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B7 — role→element legibility**: the Styling color-role picker shows a hint</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  describing what the selected role paints, DERIVED from the manifest token</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  descriptions (<span class="in">`TOKENS_BY_ROLE`</span>), jargon stripped, curated overrides + naming-</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  pattern fallback for token-less roles. Commit a663508.</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B8 (LANDED) — remaining release-only sliders preview live**: role grade</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  (new <span class="in">`previewThemeRoleOverride`</span> verb), row-kind heights + watermark opacity</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  (already history-free → onchange wired to the same verb), banding level</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`writeBanding`</span> commitNow flag). Slider inconsistency fully closed. Commit</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  4a0151e.</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**B9 (LANDED) — Bug B fixed: complete DOM table frame, stops above the axis</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>  (D26).** Key correction during implementation: the EXPORT was already correct</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>  (its table-frame rect spans mainY→rowsY+rowsHeight, i.e. already above the</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  axis — the earlier diagnosis conflated it with the full-figure CONTAINER</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  border). So Bug B was DOM-only: the DOM drew only a top edge + accidental cell</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>  edges, no left edge. Added a <span class="in">`.table-frame`</span> overlay spanning the table grid</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  area (rows 1 / axisRowNum, all columns) with an inset box-shadow (4 edges,</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>  zero layout impact); removed the old <span class="in">`.tabviz-main`</span> border-top. CAUGHT BY THE</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>  GATE: an in-flow spanning grid item (grid-column: 1/-1) defeats the grid's</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>  <span class="in">`width: max-content`</span> shrink-wrap → stretched the DOM to the container (huge</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>  width divergence). Fixed with <span class="in">`position: absolute; inset: 0`</span> (an abspos grid</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>  item uses its grid area as containing block but is OUT of track sizing). Added</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>  a <span class="in">`nejm-boxed`</span> case to the wysiwyg matrix. Verified: wysiwyg 0 breaches incl.</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>  boxed, layout-metrics 26/0 (export untouched), forest-marks + measure-rows</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>  green, full suite green, + eyeballed boxed/frame screenshots (complete frame,</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>  left edge present, stops above the axis). Commit pending. (Note: double-style</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>  table frames render as solid in the DOM — box-shadow can't do double — but no</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>  preset uses a double table border; documentable WYSIWYG nuance if one ever</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>  does.)</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hunt batch A (quick wins, LANDED 2026-06-13)</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>A systematic hunt (3 parallel agents) after the reactive pass found ~15 more</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>instances of the same brittleness classes — answering "did we catch</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>everything?" with a clear NO. Triaged by importance × difficulty; Batch A =</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>the trivial/low-risk wins:</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Watermark opacity drift**: panel showed 0.08 while DOM + export rendered</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>  0.07. Centralized to <span class="in">`DEFAULT_WATERMARK_OPACITY`</span> (rendering-constants) used</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>  by all three. (the magic-<span class="in">`8`</span> class)</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Geometry slider defaults**: 6 inline literals in IdentityTab duplicated the</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>  resolver's <span class="in">`DEFAULT_RADIUS`</span>/<span class="in">`DEFAULT_BORDER_WIDTH`</span> — now exported + imported.</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Dead `Select.svelte` deleted** (residue of the B4 Dropdown swap) + its 3</span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>  references (barrel export, primitive-contract list, check-primitive-wiring</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>  list).</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`type_roles.family` type** gained <span class="in">`"numeric"`</span> (the validator + resolver</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>  already accept it; the TS type lied).</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Badge `warning` fallback hex** <span class="in">`#f59e0b`</span> → <span class="in">`#d97706`</span> (matches BADGE_VARIANTS</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="ss">  + </span>the export; the DOM was the outlier).</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>Verified: full suite 1413 bun + 301 vitest, check (incl. primitive-wiring) +</span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a>lint clean, build green.</span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hunt batch B (export WYSIWYG cluster, LANDED 2026-06-13)</span></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#1 — export draws boxed internal vertical dividers**: under border_preset=</span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>  boxed the DOM painted a full ruled grid but the export drew only horizontal</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a>  rules + the outer frame — the whole interior vertical set was missing.</span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>  Export-side fix (new <span class="in">`layoutHasVertical`</span> + a vertical-divider pass over</span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a>  <span class="in">`columnPositions`</span>, label boundary honoring <span class="in">`--tv-first-col-rule`</span>). Eyeballed</span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>  boxed export PNG = matches the DOM; wysiwyg 0 breaches. <span class="in">`--tv-first-col-rule`</span></span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a>  consumedBy now includes the export. Commit 4d01728.</span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#3 — DOM↔export divergence-ledger GATE** (<span class="in">`dom-export-divergence.test.ts`</span>):</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>  every token consumed ONLY by the DOM (`consumedBy === ["svelte/TabvizPlot</span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a>  .svelte"]`) must now carry a justification (browser-only / parallel / PENDING)</span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a>  in a ratcheted ledger — a new unjustified DOM-only token fails the gate</span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a>  (forcing: draw it in the export, or document why not), and the ledger only</span>
+<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a>  shrinks. Turns the Bug-B class from reactive to gated. 16 tokens bootstrapped.</span>
+<span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#2 — first-column BOLD styling in export (bg/fg/weight)**: tracked as PENDING</span>
+<span id="cb1-109"><a href="#cb1-109" aria-hidden="true" tabindex="-1"></a>  in the ledger, NOT done — no preset uses <span class="in">`first_column_style=bold`</span>, so it's</span>
+<span id="cb1-110"><a href="#cb1-110" aria-hidden="true" tabindex="-1"></a>  explicit-opt-in only. The bold DIVIDER is already correct (rides #1). The</span>
+<span id="cb1-111"><a href="#cb1-111" aria-hidden="true" tabindex="-1"></a>  group-header rule COLOR divergence (neutral<span class="co">[</span><span class="ot">7</span><span class="co">]</span> DOM vs border role export) is</span>
+<span id="cb1-112"><a href="#cb1-112" aria-hidden="true" tabindex="-1"></a>  also PENDING in the ledger — common (grouped tables) but a subtle gray shade;</span>
+<span id="cb1-113"><a href="#cb1-113" aria-hidden="true" tabindex="-1"></a>  follow-up.</span>
+<span id="cb1-114"><a href="#cb1-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-115"><a href="#cb1-115" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hunt batch C (a11y / dead-capability cluster, 2026-06-13)</span></span>
+<span id="cb1-116"><a href="#cb1-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-117"><a href="#cb1-117" aria-hidden="true" tabindex="-1"></a>The a11y findings were OVER-rated by the hunt: every control already carries an</span>
+<span id="cb1-118"><a href="#cb1-118" aria-hidden="true" tabindex="-1"></a><span class="in">`ariaLabel`</span> (wired at the call sites), so screen-reader naming was never</span>
+<span id="cb1-119"><a href="#cb1-119" aria-hidden="true" tabindex="-1"></a>actually broken. That reframed the cluster:</span>
+<span id="cb1-120"><a href="#cb1-120" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#4 `Field.forId` — DELETED (not wired)**: the dead prop's purpose</span>
+<span id="cb1-121"><a href="#cb1-121" aria-hidden="true" tabindex="-1"></a>  (label↔control association) is already served by <span class="in">`ariaLabel`</span>, and a native</span>
+<span id="cb1-122"><a href="#cb1-122" aria-hidden="true" tabindex="-1"></a>  <span class="in">`&lt;label for=…&gt;`</span> would have ACTIVATED a button-based control (Pill segment) on</span>
+<span id="cb1-123"><a href="#cb1-123" aria-hidden="true" tabindex="-1"></a>  label-click, not just focused it. Honest rationalization — remove the</span>
+<span id="cb1-124"><a href="#cb1-124" aria-hidden="true" tabindex="-1"></a>  vestigial capability rather than add a marginal, linter-hostile click handler.</span>
+<span id="cb1-125"><a href="#cb1-125" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#7 `AnchorRow` reset dot — WIRED (real feature)**: the override dot +</span>
+<span id="cb1-126"><a href="#cb1-126" aria-hidden="true" tabindex="-1"></a>  "reset to preset" gutter that AnchorRow always rendered but no live call site</span>
+<span id="cb1-127"><a href="#cb1-127" aria-hidden="true" tabindex="-1"></a>  lit. IdentityTab now passes <span class="in">`pinned`</span> (anchor differs from <span class="in">`store.initialTheme`</span>)</span>
+<span id="cb1-128"><a href="#cb1-128" aria-hidden="true" tabindex="-1"></a><span class="ss">  + </span><span class="in">`onreset`</span> for the 4 identity anchors AND the 4 status colors. The one</span>
+<span id="cb1-129"><a href="#cb1-129" aria-hidden="true" tabindex="-1"></a>  genuinely-missing FEATURE in the cluster.</span>
+<span id="cb1-130"><a href="#cb1-130" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#11 `Tooltip.id` (aria-describedby) — LEFT**: the hint is already</span>
+<span id="cb1-131"><a href="#cb1-131" aria-hidden="true" tabindex="-1"></a>  SR-announced via the <span class="in">`i`</span> mark's <span class="in">`aria-label={hint}`</span>; the Tooltip id would be</span>
+<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a>  redundant. Harmless optional prop; not worth churn.</span>
+<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a>Verified: full suite 1416 bun + 301 vitest; svelte-check 0 warnings; lint clean;</span>
+<span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a>build green. (Per-anchor dot reactivity mirrors the existing working</span>
+<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a><span class="in">`anchorTriple`</span> helper pattern.)</span>
+<span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hunt #2 + #12 (export reconcile, LANDED 2026-06-13)</span></span>
+<span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#2 — first-column BOLD styling in export**: <span class="in">`renderUnifiedTableRow`</span> now</span>
+<span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a>  paints <span class="in">`--tv-first-col-bg`</span> over the label cell + folds <span class="in">`--tv-first-col-fg`</span>/</span>
+<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a>  <span class="in">`-weight`</span> into the label text as its base (per-row styles still win). Eyeballed</span>
+<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a>  a boxed+bold export PNG (bold + tinted + strong divider, matches the DOM). The</span>
+<span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a>  3 tokens left the divergence ledger. Commit 73ab91f.</span>
+<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#12 — header two-path divergence RECONCILED**: the export read header</span>
+<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>  bg/fg/rule from the legacy <span class="in">`theme.header`</span> cluster (<span class="in">`activeHeaderVariant`</span>), a</span>
+<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a>  SEPARATE path from the DOM's v4 <span class="in">`--tv-header-bg/-fg/-rule`</span> tokens. Measured the</span>
+<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a>  gap: bg agreed everywhere; fg differed subtly; rule differed visibly (e.g. nejm</span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a>  #6B6565 vs #4A4444). New <span class="in">`headerHexes(theme, cssVars)`</span> reads the v4 tokens (v3</span>
+<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a>  fallback) and all 8 export sites route through it — so DOM and export agree by</span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>  construction (one source). <span class="in">`--tv-header-bg/-fg/-rule`</span> consumedBy now includes</span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a>  the export; fg/rule left the ledger. wysiwyg 0 breaches; R 46/0.</span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hunt #B4 — group-rule reconciled; export cluster CLOSED (2026-06-13)</span></span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a>The group-header underline read <span class="in">`borders.major`</span> (border role) in the export but</span>
+<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a><span class="in">`--tv-row-group-rule`</span> (neutral<span class="co">[</span><span class="ot">7</span><span class="co">]</span>) in the DOM — a visible gray-shade divergence</span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a>on every grouped table. The export's row-border loop now draws group-header rows</span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a>with <span class="in">`--tv-row-group-rule`</span> + <span class="in">`--tv-group-border-width`</span> (matching the DOM's <span class="in">`.group`</span></span>
+<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a>separator), via the same canonical-token reconcile as #12. Eyeballed a grouped</span>
+<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a>export PNG (North/South headers with correct underlines). <span class="in">`--tv-row-group-rule`</span></span>
+<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a>consumedBy now includes the export.</span>
+<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a>**The DOM↔export divergence ledger now has ZERO PENDING entries** — every</span>
+<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a>DOM-only token is browser-only or parallel-agrees; first-col, header, and</span>
+<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a>group-rule are all wired into the export. The export WYSIWYG cluster is closed,</span>
+<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a>and the ledger gate keeps it that way.</span>
+<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hunt #13 — dead-surface sweep (2026-06-14)</span></span>
+<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a>Cleared the vestigial trivia (zero behavior change except the documented Knob</span>
+<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a>fix):</span>
+<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Deleted dead props**: <span class="in">`Accordion.summary`</span> (renderer + <span class="in">`.head-summary`</span> CSS),</span>
+<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a>  <span class="in">`Field.tight`</span> (prop + <span class="in">`.field.tight`</span> grid variant), <span class="in">`EnumRow.disabled`</span></span>
+<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a>  (forward to Pill) — all declared, no producer.</span>
+<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`Knob` chipWidth**: the <span class="in">`mode === "track" ? 56 : 56`</span> dead ternary always</span>
+<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a>  returned 56, so track knobs were NEVER 64 (the JSDoc lied). Simplified to</span>
+<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a>  <span class="in">`width ?? 56`</span> + corrected the doc to match reality (no untested behavior</span>
+<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a>  change).</span>
+<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Self-fallback typo**: <span class="in">`var(--tv-border, var(--tv-border))`</span> → <span class="in">`var(--tv-border)`</span></span>
+<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a>  ×5 (annotation strokes, TabvizPlot).</span>
+<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**#10 roster drift**: StylingTab's <span class="in">`TYPE_FAMILY/SIZE/WEIGHT_OPTS`</span> now derive</span>
+<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a>  from the validator's exported <span class="in">`TYPE_*_VALUES`</span> (one source — add a size to the</span>
+<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a>  scale and the picker tracks it).</span>
+<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a>LEFT (deliberately): <span class="in">`TextInput.ariaDescribedby/ariaInvalid`</span> (live in the</span>
+<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a>dormant studio), <span class="in">`Tooltip.id`</span> (redundant — hint already SR-announced via the i</span>
+<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a>mark), the glow / ink2 var() self-fallbacks (harmless, identical to their</span>
+<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>fallback target). Deleting these is churn for no gain.</span>
+<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a>Verified: svelte-check 0 + primitive-wiring clean; lint clean; full suite 1416</span>
+<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a>bun + 301 vitest; build green.</span>
+<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a><span class="fu">## Remaining</span></span>
+<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>(Bug B prior scoping retained below for history; superseded by B9.)</span>
+<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Bug B — boxed DOM↔export frame divergence** (DONE in B9; original scoping):</span>
+<span id="cb1-197"><a href="#cb1-197" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The DOM "frame" is STRUCTURALLY INCOMPLETE. <span class="in">`--tv-table-border-*`</span> drives</span>
+<span id="cb1-198"><a href="#cb1-198" aria-hidden="true" tabindex="-1"></a>    ONLY the top edge (<span class="in">`.tabviz-main`</span> border-top, TabvizPlot.svelte:3040-3044).</span>
+<span id="cb1-199"><a href="#cb1-199" aria-hidden="true" tabindex="-1"></a>    The right + bottom edges are ACCIDENTAL — they appear only when the cell</span>
+<span id="cb1-200"><a href="#cb1-200" aria-hidden="true" tabindex="-1"></a>    col/row border styles happen to be solid (boxed → right via last-col</span>
+<span id="cb1-201"><a href="#cb1-201" aria-hidden="true" tabindex="-1"></a>    border-right; bottom via last-row border-bottom). There is NO <span class="in">`border-left`</span></span>
+<span id="cb1-202"><a href="#cb1-202" aria-hidden="true" tabindex="-1"></a>    anywhere → the table's left side is open under boxed/frame (the user's</span>
+<span id="cb1-203"><a href="#cb1-203" aria-hidden="true" tabindex="-1"></a>    "absent border before 1st column").</span>
+<span id="cb1-204"><a href="#cb1-204" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>The EXPORT draws a proper 4-side rect OVERLAY (svg-generator.ts:5231-5236),</span>
+<span id="cb1-205"><a href="#cb1-205" aria-hidden="true" tabindex="-1"></a>    no layout impact, AND draws no internal vertical column dividers at all</span>
+<span id="cb1-206"><a href="#cb1-206" aria-hidden="true" tabindex="-1"></a>    (col/table tokens are <span class="in">`consumedBy`</span> DOM-only) → boxed renders a visibly</span>
+<span id="cb1-207"><a href="#cb1-207" aria-hidden="true" tabindex="-1"></a>    different table in DOM vs export.</span>
+<span id="cb1-208"><a href="#cb1-208" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>FIX DIRECTION: give the DOM a real 4-side frame that does NOT perturb layout</span>
+<span id="cb1-209"><a href="#cb1-209" aria-hidden="true" tabindex="-1"></a>    (a plain border shifts content + breaks the flush-inertness invariant — must</span>
+<span id="cb1-210"><a href="#cb1-210" aria-hidden="true" tabindex="-1"></a>    be an outline / inset box-shadow / positioned overlay, like the export's</span>
+<span id="cb1-211"><a href="#cb1-211" aria-hidden="true" tabindex="-1"></a>    rect), and draw internal verticals in the export under grid layout so the</span>
+<span id="cb1-212"><a href="#cb1-212" aria-hidden="true" tabindex="-1"></a>    two paths match. MUST be verified by <span class="in">`wysiwyg-diff.browser.ts`</span> (DOM vs</span>
+<span id="cb1-213"><a href="#cb1-213" aria-hidden="true" tabindex="-1"></a>    export parity) + layout-metrics (geometry unchanged). Deferred from this</span>
+<span id="cb1-214"><a href="#cb1-214" aria-hidden="true" tabindex="-1"></a>    pass because that gate was flaking locally (captureScreenshot</span>
+<span id="cb1-215"><a href="#cb1-215" aria-hidden="true" tabindex="-1"></a>    protocolTimeout — a Chrome/env issue, not the code); do it when the gate</span>
+<span id="cb1-216"><a href="#cb1-216" aria-hidden="true" tabindex="-1"></a>    runs clean (CI, or a less-contended local env). (Bug A — the DOM missing</span>
+<span id="cb1-217"><a href="#cb1-217" aria-hidden="true" tabindex="-1"></a>    col1/col2 divider — was already fixed in B3.)</span>
+<span id="cb1-218"><a href="#cb1-218" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>DEEPER FINDING (2026-06-13): the divergence is a frame-MODEL disagreement,</span>
+<span id="cb1-219"><a href="#cb1-219" aria-hidden="true" tabindex="-1"></a>    not just missing edges. The DOM frame is DESIGNED to sit ABOVE the axis</span>
+<span id="cb1-220"><a href="#cb1-220" aria-hidden="true" tabindex="-1"></a>    (frame bottom between the last data row and the axis ticks, via the</span>
+<span id="cb1-221"><a href="#cb1-221" aria-hidden="true" tabindex="-1"></a>    axis-cell border-top — TabvizPlot.svelte:3035-3044), while the EXPORT rect</span>
+<span id="cb1-222"><a href="#cb1-222" aria-hidden="true" tabindex="-1"></a>    spans the FULL figure INCLUDING the axis (height = totalHeight,</span>
+<span id="cb1-223"><a href="#cb1-223" aria-hidden="true" tabindex="-1"></a>    svg-generator.ts:5231-5236). So DOM and export disagree on the frame's</span>
+<span id="cb1-224"><a href="#cb1-224" aria-hidden="true" tabindex="-1"></a>    BOUNDS, not only which edges paint. The numeric wysiwyg gate does NOT catch</span>
+<span id="cb1-225"><a href="#cb1-225" aria-hidden="true" tabindex="-1"></a>    this (it measures geometry/typography positions, not the presence/extent of</span>
+<span id="cb1-226"><a href="#cb1-226" aria-hidden="true" tabindex="-1"></a>    1px border lines) — it passes at 0 breaches today with <span class="in">`frame`</span> presets. Fix</span>
+<span id="cb1-227"><a href="#cb1-227" aria-hidden="true" tabindex="-1"></a>    requires (1) a DECISION: does the outer frame enclose the axis or stop above</span>
+<span id="cb1-228"><a href="#cb1-228" aria-hidden="true" tabindex="-1"></a>    it? then (2) reconcile BOTH renderers to it (DOM: non-layout-affecting</span>
+<span id="cb1-229"><a href="#cb1-229" aria-hidden="true" tabindex="-1"></a>    4-side frame — inset box-shadow / overlay, gated on --tv-table-border, on</span>
+<span id="cb1-230"><a href="#cb1-230" aria-hidden="true" tabindex="-1"></a>    the element with the chosen bounds; export: match), (3) VISUAL verification</span>
+<span id="cb1-231"><a href="#cb1-231" aria-hidden="true" tabindex="-1"></a>    via the wysiwyg side-by-side PNGs under a <span class="in">`boxed`</span> + <span class="in">`frame`</span> case (add to the</span>
+<span id="cb1-232"><a href="#cb1-232" aria-hidden="true" tabindex="-1"></a>    harness matrix — currently no boxed case). A register entry (frame-model</span>
+<span id="cb1-233"><a href="#cb1-233" aria-hidden="true" tabindex="-1"></a>    decision) is the right home before implementation.</span>
+<span id="cb1-234"><a href="#cb1-234" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**DECISIONS (await maintainer):** glow/glass reimagine-or-remove (now</span>
+<span id="cb1-235"><a href="#cb1-235" aria-hidden="true" tabindex="-1"></a>  shell-painted-gating could help; B6 added explanations); horizontal density</span>
+<span id="cb1-236"><a href="#cb1-236" aria-hidden="true" tabindex="-1"></a>  model (needs a gap multiplier that doesn't feed auto-width); border vocabulary</span>
+<span id="cb1-237"><a href="#cb1-237" aria-hidden="true" tabindex="-1"></a>  rename vs doc-clarify (B6 tooltips partially mitigate).</span>
+<span id="cb1-238"><a href="#cb1-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-239"><a href="#cb1-239" aria-hidden="true" tabindex="-1"></a><span class="fu">## Diagnosis (evidence) + remaining plan</span></span>
+<span id="cb1-240"><a href="#cb1-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-241"><a href="#cb1-241" aria-hidden="true" tabindex="-1"></a><span class="fu">### Sliders — commit-on-release inconsistency (user: "duplicate component defs?")</span></span>
+<span id="cb1-242"><a href="#cb1-242" aria-hidden="true" tabindex="-1"></a>NOT duplicate components — ONE <span class="in">`primitives/v2/Slider.svelte`</span> with a leaky</span>
+<span id="cb1-243"><a href="#cb1-243" aria-hidden="true" tabindex="-1"></a>dual contract: <span class="in">`oninput→onchange`</span> (live), release→<span class="in">`oncommit`</span>. Sites that</span>
+<span id="cb1-244"><a href="#cb1-244" aria-hidden="true" tabindex="-1"></a>pass only <span class="in">`oncommit`</span> are drag-blind. No debounce anywhere.</span>
+<span id="cb1-245"><a href="#cb1-245" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>LIVE already: text size/scaling, gradient angle (VariationsTab),</span>
+<span id="cb1-246"><a href="#cb1-246" aria-hidden="true" tabindex="-1"></a>  density_factor (StylingTab), LCH anchors (AnchorRow).</span>
+<span id="cb1-247"><a href="#cb1-247" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>RELEASE-ONLY: geometry radii/rules (IdentityTab — **fixed B2**), role</span>
+<span id="cb1-248"><a href="#cb1-248" aria-hidden="true" tabindex="-1"></a>  grade (StylingTab:165), banding level (VariationsTab:151), watermark</span>
+<span id="cb1-249"><a href="#cb1-249" aria-hidden="true" tabindex="-1"></a>  opacity (LabelsTab:86), row-kind heights (FigureBand:62).</span>
+<span id="cb1-250"><a href="#cb1-250" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Remaining fix**: role-grade + row-kind-height need NEW preview verbs</span>
+<span id="cb1-251"><a href="#cb1-251" aria-hidden="true" tabindex="-1"></a>  (no <span class="in">`previewThemeRoleOverride`</span> / <span class="in">`previewRowKindHeight`</span> exist — only the</span>
+<span id="cb1-252"><a href="#cb1-252" aria-hidden="true" tabindex="-1"></a>  recorded verbs); banding level is discrete + tangled with</span>
+<span id="cb1-253"><a href="#cb1-253" aria-hidden="true" tabindex="-1"></a>  <span class="in">`setBandingOverride(null)`</span>; watermark opacity needs a preview path. A</span>
+<span id="cb1-254"><a href="#cb1-254" aria-hidden="true" tabindex="-1"></a>  focused "slider preview verbs" arc. Preview verbs that DO exist:</span>
+<span id="cb1-255"><a href="#cb1-255" aria-hidden="true" tabindex="-1"></a>  previewAuthoringInputs, previewColumnWidth, previewLabel,</span>
+<span id="cb1-256"><a href="#cb1-256" aria-hidden="true" tabindex="-1"></a>  previewThemeField, previewWatermark.</span>
+<span id="cb1-257"><a href="#cb1-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-258"><a href="#cb1-258" aria-hidden="true" tabindex="-1"></a><span class="fu">### Borders — boxed first-column anomaly (THREE stacked defects, D20 root)</span></span>
+<span id="cb1-259"><a href="#cb1-259" aria-hidden="true" tabindex="-1"></a>Shared resolver <span class="in">`lib/theme/borders.ts::resolveBorders`</span> shares **horizontal**</span>
+<span id="cb1-260"><a href="#cb1-260" aria-hidden="true" tabindex="-1"></a>rules only; verticals + frame are DOM-only and uncoordinated with the export.</span>
+<span id="cb1-261"><a href="#cb1-261" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Bug A (DOM dead fallback)**: <span class="in">`--tv-first-col-rule`</span> resolves to the literal</span>
+<span id="cb1-262"><a href="#cb1-262" aria-hidden="true" tabindex="-1"></a>  string <span class="in">`"transparent"`</span> (resolve-theme.ts:581) when `first_column_style !==</span>
+<span id="cb1-263"><a href="#cb1-263" aria-hidden="true" tabindex="-1"></a>  "bold"<span class="in">`; the primary cell's `</span>border-right-color: var(--tv-first-col-rule,</span>
+<span id="cb1-264"><a href="#cb1-264" aria-hidden="true" tabindex="-1"></a>  …fallback)` (TabvizPlot.svelte:3249) never fires the fallback (var is</span>
+<span id="cb1-265"><a href="#cb1-265" aria-hidden="true" tabindex="-1"></a>  DEFINED, just transparent) → col1/col2 divider silently missing under boxed.</span>
+<span id="cb1-266"><a href="#cb1-266" aria-hidden="true" tabindex="-1"></a>  **Likely the main reported symptom.** Fix: emit the divider color (or leave</span>
+<span id="cb1-267"><a href="#cb1-267" aria-hidden="true" tabindex="-1"></a>  unset) instead of <span class="in">`transparent`</span> when not bold.</span>
+<span id="cb1-268"><a href="#cb1-268" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Bug B (frame asymmetry)**: DOM has NO <span class="in">`border-left`</span> anywhere; frame =</span>
+<span id="cb1-269"><a href="#cb1-269" aria-hidden="true" tabindex="-1"></a>  top + last-row-bottom + last-col-right. SVG draws a full 4-side rect incl.</span>
+<span id="cb1-270"><a href="#cb1-270" aria-hidden="true" tabindex="-1"></a>  left edge (svg-generator.ts:5231-5236). → "missing border before col 1" is</span>
+<span id="cb1-271"><a href="#cb1-271" aria-hidden="true" tabindex="-1"></a>  a real DOM↔export divergence. Fix: either DOM draws the left edge or export</span>
+<span id="cb1-272"><a href="#cb1-272" aria-hidden="true" tabindex="-1"></a>  matches DOM; pick one and gate both on the same token.</span>
+<span id="cb1-273"><a href="#cb1-273" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Bug C (polarity)**: <span class="in">`first_column_style="bold"`</span> + boxed → neutral<span class="co">[</span><span class="ot">6</span><span class="co">]</span></span>
+<span id="cb1-274"><a href="#cb1-274" aria-hidden="true" tabindex="-1"></a>  heavier divider + inverted bg/fg vs other columns. The first-col recipe</span>
+<span id="cb1-275"><a href="#cb1-275" aria-hidden="true" tabindex="-1"></a>  (designed for hairline) collides with the grid layout.</span>
+<span id="cb1-276"><a href="#cb1-276" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Also**: SVG draws ZERO internal vertical column dividers (only the DOM</span>
+<span id="cb1-277"><a href="#cb1-277" aria-hidden="true" tabindex="-1"></a>  does, via per-cell border-right) — col/table tokens are <span class="in">`consumedBy`</span></span>
+<span id="cb1-278"><a href="#cb1-278" aria-hidden="true" tabindex="-1"></a>  DOM-only (component-tokens.ts:1340,1373,1389,1405). So <span class="in">`boxed`</span> renders a</span>
+<span id="cb1-279"><a href="#cb1-279" aria-hidden="true" tabindex="-1"></a>  visibly different table in DOM vs export — an undocumented WYSIWYG break.</span>
+<span id="cb1-280"><a href="#cb1-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Vocabulary**: <span class="in">`ruled`</span>/<span class="in">`grid`</span>/<span class="in">`boxed`</span> overloaded across <span class="in">`border_preset`</span></span>
+<span id="cb1-281"><a href="#cb1-281" aria-hidden="true" tabindex="-1"></a>  (layout), <span class="in">`shell_texture`</span> (paper pattern), <span class="in">`set_rules`</span> (width). <span class="in">`ruled`</span> =</span>
+<span id="cb1-282"><a href="#cb1-282" aria-hidden="true" tabindex="-1"></a>  horizontal rows with a thicker 2px major rule. Confusing; consider renaming</span>
+<span id="cb1-283"><a href="#cb1-283" aria-hidden="true" tabindex="-1"></a>  or doc-clarifying.</span>
+<span id="cb1-284"><a href="#cb1-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-285"><a href="#cb1-285" aria-hidden="true" tabindex="-1"></a><span class="fu">### Roles — dead controls + zero legibility</span></span>
+<span id="cb1-286"><a href="#cb1-286" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Dead cell family/weight**: StylingTab text-role rebind defaults to</span>
+<span id="cb1-287"><a href="#cb1-287" aria-hidden="true" tabindex="-1"></a>  <span class="in">`cell`</span> and offers Family/Weight, but <span class="in">`--tv-text-cell-family`</span> /</span>
+<span id="cb1-288"><a href="#cb1-288" aria-hidden="true" tabindex="-1"></a>  <span class="in">`--tv-text-cell-weight`</span> are KNOWN_UNCONSUMED (component-tokens.ts:1553-54);</span>
+<span id="cb1-289"><a href="#cb1-289" aria-hidden="true" tabindex="-1"></a>  only <span class="in">`size`</span> is wired. Changing them does nothing. The *component* roster</span>
+<span id="cb1-290"><a href="#cb1-290" aria-hidden="true" tabindex="-1"></a>  honesty-filters dead channels (component-bindings.ts:114-121); the</span>
+<span id="cb1-291"><a href="#cb1-291" aria-hidden="true" tabindex="-1"></a>  *text-role* surface does NOT. **Fix**: honesty-filter the text-role</span>
+<span id="cb1-292"><a href="#cb1-292" aria-hidden="true" tabindex="-1"></a>  family/weight controls against KNOWN_UNCONSUMED (hide dead channels), OR</span>
+<span id="cb1-293"><a href="#cb1-293" aria-hidden="true" tabindex="-1"></a>  wire cell family/weight (DOM+export together).</span>
+<span id="cb1-294"><a href="#cb1-294" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**"cell" role** does do something: the COLOR cell component (<span class="in">`--tv-cell-fg`</span></span>
+<span id="cb1-295"><a href="#cb1-295" aria-hidden="true" tabindex="-1"></a>  / <span class="in">`--tv-cell-border`</span>) is live + consumed (svg + DOM). Only the TYPOGRAPHY</span>
+<span id="cb1-296"><a href="#cb1-296" aria-hidden="true" tabindex="-1"></a>  cell role is partly dead (above).</span>
+<span id="cb1-297"><a href="#cb1-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**rebind has no COLOR for text roles** (user): color roles are edited as</span>
+<span id="cb1-298"><a href="#cb1-298" aria-hidden="true" tabindex="-1"></a>  ramp+grade in a *different* StylingTab section under role "text"; text-role</span>
+<span id="cb1-299"><a href="#cb1-299" aria-hidden="true" tabindex="-1"></a>  rebind is family/size/weight only. Asymmetry is real but the color IS</span>
+<span id="cb1-300"><a href="#cb1-300" aria-hidden="true" tabindex="-1"></a>  editable — just elsewhere. Legibility problem, not a missing capability.</span>
+<span id="cb1-301"><a href="#cb1-301" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Legibility = none**: roles shown as opaque names; no tooltip/preview/</span>
+<span id="cb1-302"><a href="#cb1-302" aria-hidden="true" tabindex="-1"></a>  element-mapping in the live panel. Manifest HAS human descriptions</span>
+<span id="cb1-303"><a href="#cb1-303" aria-hidden="true" tabindex="-1"></a>  (component-tokens.ts <span class="in">`description`</span> fields, e.g. "Cell horizontal divider</span>
+<span id="cb1-304"><a href="#cb1-304" aria-hidden="true" tabindex="-1"></a>  color") but they're never surfaced. The one labeled UI (<span class="in">`RoleChipGrid`</span>,</span>
+<span id="cb1-305"><a href="#cb1-305" aria-hidden="true" tabindex="-1"></a>  with a hover readout) is mounted ONLY in the dormant studio. <span class="in">`list_roles()`</span></span>
+<span id="cb1-306"><a href="#cb1-306" aria-hidden="true" tabindex="-1"></a>  returns name+coordinate+one example token, no description join.</span>
+<span id="cb1-307"><a href="#cb1-307" aria-hidden="true" tabindex="-1"></a>  **Fix (high value, low risk)**: project the manifest <span class="in">`description`</span> onto the</span>
+<span id="cb1-308"><a href="#cb1-308" aria-hidden="true" tabindex="-1"></a>  role/option controls as hover tooltips — surfaces data that already exists.</span>
+<span id="cb1-309"><a href="#cb1-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-310"><a href="#cb1-310" aria-hidden="true" tabindex="-1"></a><span class="fu">### glow / glass — wired but ungated</span></span>
+<span id="cb1-311"><a href="#cb1-311" aria-hidden="true" tabindex="-1"></a>Both ARE wired to DOM rendering (glow: <span class="in">`.tv-shell.tv-glow`</span> box-shadow halo,</span>
+<span id="cb1-312"><a href="#cb1-312" aria-hidden="true" tabindex="-1"></a>theme-runtime.css:380; glass: <span class="in">`backdrop-filter`</span> + sheen, :215-253). DOM-only</span>
+<span id="cb1-313"><a href="#cb1-313" aria-hidden="true" tabindex="-1"></a>by design (stripped from export). "Don't do much" because they paint the</span>
+<span id="cb1-314"><a href="#cb1-314" aria-hidden="true" tabindex="-1"></a>SHELL band, which is empty under the default <span class="in">`flush`</span> shell — and unlike the</span>
+<span id="cb1-315"><a href="#cb1-315" aria-hidden="true" tabindex="-1"></a>gradient control (gated by <span class="in">`shellPainted`</span>, VariationsTab:100-101), glow/glass</span>
+<span id="cb1-316"><a href="#cb1-316" aria-hidden="true" tabindex="-1"></a>are shown unconditionally. **Fix**: gate glow/glass controls by shell-painted</span>
+<span id="cb1-317"><a href="#cb1-317" aria-hidden="true" tabindex="-1"></a>state + hover explanations; "reimagine or remove" is the maintainer's</span>
+<span id="cb1-318"><a href="#cb1-318" aria-hidden="true" tabindex="-1"></a>medium-term call (effects axis). Decision-register candidate.</span>
+<span id="cb1-319"><a href="#cb1-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-320"><a href="#cb1-320" aria-hidden="true" tabindex="-1"></a><span class="fu">### Density — vertical-only feel (real, subtle cause)</span></span>
+<span id="cb1-321"><a href="#cb1-321" aria-hidden="true" tabindex="-1"></a><span class="in">`density_factor`</span> DOES multiply horizontal tokens (cellPaddingX,</span>
+<span id="cb1-322"><a href="#cb1-322" aria-hidden="true" tabindex="-1"></a>columnGroupPadding, indentPerLevel) in both resolve paths — but</span>
+<span id="cb1-323"><a href="#cb1-323" aria-hidden="true" tabindex="-1"></a>content-driven column auto-width (<span class="in">`width = text + cellPaddingX×2`</span>,</span>
+<span id="cb1-324"><a href="#cb1-324" aria-hidden="true" tabindex="-1"></a>rendering-constants.ts:253) ABSORBS the change: shrink padding → column</span>
+<span id="cb1-325"><a href="#cb1-325" aria-hidden="true" tabindex="-1"></a>shrinks → text rhythm unchanged. Plus <span class="in">`cell_padding_y = 0`</span> in all presets, so</span>
+<span id="cb1-326"><a href="#cb1-326" aria-hidden="true" tabindex="-1"></a>vertical is carried entirely by <span class="in">`row_height`</span> (direct, visible). **Fix</span>
+<span id="cb1-327"><a href="#cb1-327" aria-hidden="true" tabindex="-1"></a>(design call)**: a horizontal-density control needs a multiplier that adds</span>
+<span id="cb1-328"><a href="#cb1-328" aria-hidden="true" tabindex="-1"></a>inter-column gap WITHOUT feeding auto-width (else it self-cancels).</span>
+<span id="cb1-329"><a href="#cb1-329" aria-hidden="true" tabindex="-1"></a>Decision-register candidate.</span>
+<span id="cb1-330"><a href="#cb1-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-331"><a href="#cb1-331" aria-hidden="true" tabindex="-1"></a><span class="fu">### Font selectors — no preview</span></span>
+<span id="cb1-332"><a href="#cb1-332" aria-hidden="true" tabindex="-1"></a>Font family pickers show the name in the default UI font. **Fix**: render</span>
+<span id="cb1-333"><a href="#cb1-333" aria-hidden="true" tabindex="-1"></a>each option label in its own face (<span class="in">`style="font-family: …"`</span>). Low risk;</span>
+<span id="cb1-334"><a href="#cb1-334" aria-hidden="true" tabindex="-1"></a>families are already loaded for the live themes.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>theme-cascade-stage-3-design – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e355811a8c568e4d4352796d242e0740.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#stage-3-design-editor-architecture-spine-inspector-oklch-picker-exports" id="toc-stage-3-design-editor-architecture-spine-inspector-oklch-picker-exports" class="nav-link active" data-scroll-target="#stage-3-design-editor-architecture-spine-inspector-oklch-picker-exports">Stage 3 design — editor architecture (Spine, Inspector, OKLCH picker, exports)</a>
+  <ul class="collapse">
+  <li><a href="#what-this-document-covers" id="toc-what-this-document-covers" class="nav-link" data-scroll-target="#what-this-document-covers">0. What this document covers</a></li>
+  <li><a href="#settings-panel-tab-organized-api" id="toc-settings-panel-tab-organized-api" class="nav-link" data-scroll-target="#settings-panel-tab-organized-api">1. Settings panel — tab-organized API</a>
+  <ul class="collapse">
+  <li><a href="#a.-the-four-axes-superseded" id="toc-a.-the-four-axes-superseded" class="nav-link" data-scroll-target="#a.-the-four-axes-superseded">1a. The four axes (superseded)</a></li>
+  <li><a href="#b.-tab-composition" id="toc-b.-tab-composition" class="nav-link" data-scroll-target="#b.-tab-composition">1b. Tab composition</a></li>
+  <li><a href="#c.-existing-controls-refactored" id="toc-c.-existing-controls-refactored" class="nav-link" data-scroll-target="#c.-existing-controls-refactored">1c. Existing controls refactored</a></li>
+  </ul></li>
+  <li><a href="#cascade-inspector" id="toc-cascade-inspector" class="nav-link" data-scroll-target="#cascade-inspector">2. Cascade Inspector</a>
+  <ul class="collapse">
+  <li><a href="#a.-the-architecture" id="toc-a.-the-architecture" class="nav-link" data-scroll-target="#a.-the-architecture">2a. The architecture</a></li>
+  <li><a href="#b.-click-targeting" id="toc-b.-click-targeting" class="nav-link" data-scroll-target="#b.-click-targeting">2b. Click-targeting</a></li>
+  <li><a href="#c.-data-tv-token-attribute-new" id="toc-c.-data-tv-token-attribute-new" class="nav-link" data-scroll-target="#c.-data-tv-token-attribute-new">2c. <code>data-tv-token</code> attribute (new)</a></li>
+  <li><a href="#d.-trace-rendering" id="toc-d.-trace-rendering" class="nav-link" data-scroll-target="#d.-trace-rendering">2d. Trace rendering</a></li>
+  <li><a href="#e.-where-it-lives" id="toc-e.-where-it-lives" class="nav-link" data-scroll-target="#e.-where-it-lives">2e. Where it lives</a></li>
+  </ul></li>
+  <li><a href="#spine-ui" id="toc-spine-ui" class="nav-link" data-scroll-target="#spine-ui">3. Spine UI</a>
+  <ul class="collapse">
+  <li><a href="#a.-the-architecture-1" id="toc-a.-the-architecture-1" class="nav-link" data-scroll-target="#a.-the-architecture-1">3a. The architecture</a></li>
+  <li><a href="#b.-component-composition" id="toc-b.-component-composition" class="nav-link" data-scroll-target="#b.-component-composition">3b. Component composition</a></li>
+  <li><a href="#c.-hover-wire-animation" id="toc-c.-hover-wire-animation" class="nav-link" data-scroll-target="#c.-hover-wire-animation">3c. Hover-wire animation</a></li>
+  <li><a href="#d.-drag-mechanics" id="toc-d.-drag-mechanics" class="nav-link" data-scroll-target="#d.-drag-mechanics">3d. Drag mechanics</a></li>
+  </ul></li>
+  <li><a href="#oklch-picker" id="toc-oklch-picker" class="nav-link" data-scroll-target="#oklch-picker">4. OKLCH picker</a>
+  <ul class="collapse">
+  <li><a href="#a.-the-popover" id="toc-a.-the-popover" class="nav-link" data-scroll-target="#a.-the-popover">4a. The popover</a></li>
+  <li><a href="#b.-component-composition-1" id="toc-b.-component-composition-1" class="nav-link" data-scroll-target="#b.-component-composition-1">4b. Component composition</a></li>
+  <li><a href="#c.-smart-popover-placement" id="toc-c.-smart-popover-placement" class="nav-link" data-scroll-target="#c.-smart-popover-placement">4c. Smart popover placement</a></li>
+  <li><a href="#d.-math" id="toc-d.-math" class="nav-link" data-scroll-target="#d.-math">4d. Math</a></li>
+  </ul></li>
+  <li><a href="#live-themed-docs-sheets" id="toc-live-themed-docs-sheets" class="nav-link" data-scroll-target="#live-themed-docs-sheets">5. Live-themed docs sheets</a></li>
+  <li><a href="#two-format-export-with-delta-serialization" id="toc-two-format-export-with-delta-serialization" class="nav-link" data-scroll-target="#two-format-export-with-delta-serialization">6. Two-format export with delta serialization</a>
+  <ul class="collapse">
+  <li><a href="#a.-export-formats" id="toc-a.-export-formats" class="nav-link" data-scroll-target="#a.-export-formats">6a. Export formats</a></li>
+  <li><a href="#b.-delta-serialization-for-json" id="toc-b.-delta-serialization-for-json" class="nav-link" data-scroll-target="#b.-delta-serialization-for-json">6b. Delta serialization for JSON</a></li>
+  <li><a href="#c.-export-ui" id="toc-c.-export-ui" class="nav-link" data-scroll-target="#c.-export-ui">6c. Export UI</a></li>
+  </ul></li>
+  <li><a href="#schema-versioning" id="toc-schema-versioning" class="nav-link" data-scroll-target="#schema-versioning">7. Schema versioning</a></li>
+  <li><a href="#what-does-not-ship-in-stage-3" id="toc-what-does-not-ship-in-stage-3" class="nav-link" data-scroll-target="#what-does-not-ship-in-stage-3">8. What does NOT ship in Stage 3</a></li>
+  <li><a href="#stage-3-design-questions" id="toc-stage-3-design-questions" class="nav-link" data-scroll-target="#stage-3-design-questions">9. Stage-3 design questions</a>
+  <ul class="collapse">
+  <li><a href="#q-s3.1-inspector-dock-position-bottom-left-fixed-rgc_v4-or-floating-dockable-panel" id="toc-q-s3.1-inspector-dock-position-bottom-left-fixed-rgc_v4-or-floating-dockable-panel" class="nav-link" data-scroll-target="#q-s3.1-inspector-dock-position-bottom-left-fixed-rgc_v4-or-floating-dockable-panel">Q-S3.1 — Inspector dock position: bottom-left fixed (rgc_v4) or floating dockable panel?</a></li>
+  <li><a href="#q-s3.2-spine-ui-accessibility-keyboard-nav-for-the-role-tokens" id="toc-q-s3.2-spine-ui-accessibility-keyboard-nav-for-the-role-tokens" class="nav-link" data-scroll-target="#q-s3.2-spine-ui-accessibility-keyboard-nav-for-the-role-tokens">Q-S3.2 — Spine UI accessibility: keyboard nav for the role tokens?</a></li>
+  <li><a href="#q-s3.3-oklch-picker-presets-hard-coded-list-or-theme-driven" id="toc-q-s3.3-oklch-picker-presets-hard-coded-list-or-theme-driven" class="nav-link" data-scroll-target="#q-s3.3-oklch-picker-presets-hard-coded-list-or-theme-driven">Q-S3.3 — OKLCH picker presets: hard-coded list or theme-driven?</a></li>
+  <li><a href="#q-s3.4-sheets-visibility-default-shown-in-widget-mode-or-only-in-editor-mode" id="toc-q-s3.4-sheets-visibility-default-shown-in-widget-mode-or-only-in-editor-mode" class="nav-link" data-scroll-target="#q-s3.4-sheets-visibility-default-shown-in-widget-mode-or-only-in-editor-mode">Q-S3.4 — Sheets visibility default: shown in widget mode or only in editor mode?</a></li>
+  <li><a href="#q-s3.5-cascade-inspector-drift-tested-for-completeness" id="toc-q-s3.5-cascade-inspector-drift-tested-for-completeness" class="nav-link" data-scroll-target="#q-s3.5-cascade-inspector-drift-tested-for-completeness">Q-S3.5 — Cascade Inspector: drift-tested for completeness?</a></li>
+  <li><a href="#q-s3.6-hover-wire-animation-opt-in-or-opt-out-by-default" id="toc-q-s3.6-hover-wire-animation-opt-in-or-opt-out-by-default" class="nav-link" data-scroll-target="#q-s3.6-hover-wire-animation-opt-in-or-opt-out-by-default">Q-S3.6 — Hover-wire animation: opt-in or opt-out by default?</a></li>
+  <li><a href="#q-s3.7-sprint-model-for-stage-3" id="toc-q-s3.7-sprint-model-for-stage-3" class="nav-link" data-scroll-target="#q-s3.7-sprint-model-for-stage-3">Q-S3.7 — Sprint model for Stage 3?</a></li>
+  </ul></li>
+  <li><a href="#stage-3-decisions-log" id="toc-stage-3-decisions-log" class="nav-link" data-scroll-target="#stage-3-decisions-log">10. Stage-3 Decisions log</a>
+  <ul class="collapse">
+  <li><a href="#q-s3.1-closed-inspector-dock-position-is-bottom-left-fixed" id="toc-q-s3.1-closed-inspector-dock-position-is-bottom-left-fixed" class="nav-link" data-scroll-target="#q-s3.1-closed-inspector-dock-position-is-bottom-left-fixed">2026-06-02 — Q-S3.1 closed: Inspector dock position is bottom-left fixed</a></li>
+  <li><a href="#q-s3.2-closed-full-keyboard-navigation-for-spine-ui-role-tokens" id="toc-q-s3.2-closed-full-keyboard-navigation-for-spine-ui-role-tokens" class="nav-link" data-scroll-target="#q-s3.2-closed-full-keyboard-navigation-for-spine-ui-role-tokens">2026-06-02 — Q-S3.2 closed: full keyboard navigation for Spine UI role tokens</a></li>
+  <li><a href="#q-s3.3-closed-oklch-picker-uses-a-hard-coded-universal-preset-hex-list" id="toc-q-s3.3-closed-oklch-picker-uses-a-hard-coded-universal-preset-hex-list" class="nav-link" data-scroll-target="#q-s3.3-closed-oklch-picker-uses-a-hard-coded-universal-preset-hex-list">2026-06-02 — Q-S3.3 closed: OKLCH picker uses a hard-coded universal preset hex list</a></li>
+  <li><a href="#q-s3.4-closed-sheets-are-editor-docs-mode-only-hidden-in-widget-mode" id="toc-q-s3.4-closed-sheets-are-editor-docs-mode-only-hidden-in-widget-mode" class="nav-link" data-scroll-target="#q-s3.4-closed-sheets-are-editor-docs-mode-only-hidden-in-widget-mode">2026-06-02 — Q-S3.4 closed: sheets are editor / docs mode only; hidden in widget mode</a></li>
+  <li><a href="#q-s3.5-closed-cascade-inspector-has-a-drift-test" id="toc-q-s3.5-closed-cascade-inspector-has-a-drift-test" class="nav-link" data-scroll-target="#q-s3.5-closed-cascade-inspector-has-a-drift-test">2026-06-02 — Q-S3.5 closed: Cascade Inspector has a drift test</a></li>
+  <li><a href="#q-s3.6-closed-hover-wire-animation-is-opt-in-off-by-default" id="toc-q-s3.6-closed-hover-wire-animation-is-opt-in-off-by-default" class="nav-link" data-scroll-target="#q-s3.6-closed-hover-wire-animation-is-opt-in-off-by-default">2026-06-02 — Q-S3.6 closed: hover-wire animation is opt-in, off by default</a></li>
+  <li><a href="#q-s3.7-closed-stage-3-ships-as-a-single-sequenced-sprint" id="toc-q-s3.7-closed-stage-3-ships-as-a-single-sequenced-sprint" class="nav-link" data-scroll-target="#q-s3.7-closed-stage-3-ships-as-a-single-sequenced-sprint">2026-06-02 — Q-S3.7 closed: Stage 3 ships as a single sequenced sprint</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="stage-3-design-editor-architecture-spine-inspector-oklch-picker-exports" class="level1">
+<h1>Stage 3 design — editor architecture (Spine, Inspector, OKLCH picker, exports)</h1>
+<blockquote class="blockquote">
+<p><strong>Status:</strong> v1.0 LANDED — 2026-06-03. Editor substrate complete via <code>tabviz_studio()</code> R gadget per the <strong>studio-mode</strong> philosophy (editor lives in an explicit authoring context; embedded widgets ship zero editor chrome). Per the 2026-06-03 ideation session with three design- critic agents, the original “editor mode opts in via gear on chart” framing was rejected in favor of studio-mode. Sections 5 (live docs), 6 (delta serialization exports), 7 (schema versioning) and §3d (Spine drag-to-rebind) remain as follow-on UI/architecture work. <strong>Builds on:</strong> <a href="../dev/theme-cascade-stage-1-design.html"><code>theme-cascade-stage-1-design.md</code></a> — substrate + capabilities. <a href="../dev/theme-cascade-stage-2-design.html"><code>theme-cascade-stage-2-design.md</code></a> — typography + surfaces. <strong>Parent vision:</strong> <a href="../dev/theme-cascade-rework.html"><code>theme-cascade-rework.md</code></a> — §5 Stage 3 scope.</p>
+</blockquote>
+<hr>
+<section id="what-this-document-covers" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-document-covers">0. What this document covers</h2>
+<p>Stage 3 is the editor overhaul: the settings-panel redesign, the Cascade Inspector, the Spine UI, the OKLCH picker, hover-wire animation, two-format export with delta serialization, schema-versioned JSON. It assumes the Stage 1 substrate + Stage 2 capabilities have landed.</p>
+<p>This is the <strong>largest</strong> stage by surface area but the <strong>lightest</strong> by load-bearing architecture — Stage 1 already locked the data model and APIs the editor consumes. Stage 3’s design is mostly about UI composition, interaction patterns, and the conceptual surface for users learning the cascade.</p>
+<p>This doc covers <strong>architectural</strong> decisions only (where things live, how they compose, what data they consume). UI-implementation details (specific layouts, animation timings, copy) are deferred to sprint planning. The principle is: settle the bones now; let the implementer iterate on the flesh.</p>
+<p>What this doc settles: - Settings panel architecture (Color · Type · Size · Effects tab decomposition). - Cascade Inspector architecture (provenance walk, click anywhere → trace). - Spine UI architecture (draggable role tokens on ramp columns). - OKLCH picker integration (popover summoned from anchor swatches). - Hover-wire animation architecture (role hover → consumer highlight). - Live-themed docs sheets pattern. - Two-format export (JSON wire + CSS variables) with delta serialization.</p>
+<hr>
+</section>
+<section id="settings-panel-tab-organized-api" class="level2">
+<h2 class="anchored" data-anchor-id="settings-panel-tab-organized-api">1. Settings panel — tab-organized API</h2>
+<blockquote class="blockquote">
+<p><strong>SUPERSEDED 2026-06-03 by <code>tabviz_studio()</code>.</strong> The original §1 design proposed an in-widget settings panel with Color/Type/Size/Effects tabs. The 2026-06-03 design-critic ideation session pivoted to <strong>studio mode</strong>: editor lives in <code>tabviz_studio()</code> (Shiny gadget), embedded widgets ship zero editor chrome, and the tab taxonomy is reorganized by <em>decision altitude</em> — <strong>Identity / Rhythm / Encoding / Advanced</strong> — per the Settings critic’s “decoder altitude not stationery store” framing. See the 2026-06-03 closing entry in <code>theme-cascade-refactor-notes.md</code> for the locked design.</p>
+<p>The original Color/Type/Size/Effects taxonomy below is preserved for historical context only; the landed taxonomy and tab content are in <code>srcjs/src/studio/tabs/{Identity,Rhythm,Encoding,Advanced}Tab.svelte</code>.</p>
+</blockquote>
+<section id="a.-the-four-axes-superseded" class="level3">
+<h3 class="anchored" data-anchor-id="a.-the-four-axes-superseded">1a. The four axes (superseded)</h3>
+<p>The settings panel is reorganized into four tabs matching the system’s natural decomposition (per rgc_v4’s <code>Playground</code>):</p>
+<ul>
+<li><strong>Color</strong> — anchors (paper, ink, brand, decorative, accent), polarity, mode, curves, status colors.</li>
+<li><strong>Type</strong> — font trio, base size, scale ratio, weights.</li>
+<li><strong>Size</strong> — density, radius, border widths, frame pad, paper pad, rules, frame, head-style, title-style, first-col-style.</li>
+<li><strong>Effects</strong> — surface (solid / glass / textures), elevation, shell-mode, gradient, glow.</li>
+</ul>
+<p>Each tab has <strong>common knobs up top</strong> and <strong>Advanced (power user) controls</strong> behind a progressive-disclosure section. Common knobs are the daily-use surface; Advanced is the cascade-deeper customization.</p>
+</section>
+<section id="b.-tab-composition" class="level3">
+<h3 class="anchored" data-anchor-id="b.-tab-composition">1b. Tab composition</h3>
+<p>Each tab is its own Svelte component: - <code>srcjs/src/components/settings/ColorTab.svelte</code> - <code>srcjs/src/components/settings/TypeTab.svelte</code> - <code>srcjs/src/components/settings/SizeTab.svelte</code> - <code>srcjs/src/components/settings/EffectsTab.svelte</code></p>
+<p>The parent <code>SettingsPanel.svelte</code> owns tab selection, applies the selected tab’s component, and manages cross-tab state (e.g.&nbsp;“this panel is dirty; show reset”).</p>
+</section>
+<section id="c.-existing-controls-refactored" class="level3">
+<h3 class="anchored" data-anchor-id="c.-existing-controls-refactored">1c. Existing controls refactored</h3>
+<p>The current v3 settings panel has 8 control files (<code>ThemeControl.svelte</code>, <code>TokensControl.svelte</code>, <code>MarksControl.svelte</code>, <code>LayoutControl.svelte</code>, <code>TextControl.svelte</code>, <code>BandingControl.svelte</code>, <code>ColorField.svelte</code>, <code>swatch-palettes.ts</code>) plus the row-kind heights control from Stage 1 (<code>RowKindHeightsControl.svelte</code>). These get reorganized:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Control</th>
+<th>New home</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ThemeControl.svelte</code> (preset picker, polarity, mode)</td>
+<td>ColorTab</td>
+</tr>
+<tr class="even">
+<td><code>TokensControl.svelte</code> (row tokens)</td>
+<td>ColorTab (Advanced)</td>
+</tr>
+<tr class="odd">
+<td><code>TextControl.svelte</code> (typography)</td>
+<td>TypeTab</td>
+</tr>
+<tr class="even">
+<td><code>LayoutControl.svelte</code></td>
+<td>SizeTab</td>
+</tr>
+<tr class="odd">
+<td><code>BandingControl.svelte</code></td>
+<td>SizeTab</td>
+</tr>
+<tr class="even">
+<td><code>MarksControl.svelte</code></td>
+<td>EffectsTab</td>
+</tr>
+<tr class="odd">
+<td><code>ColorField.svelte</code></td>
+<td>shared utility</td>
+</tr>
+<tr class="even">
+<td><code>RowKindHeightsControl.svelte</code></td>
+<td>SizeTab</td>
+</tr>
+</tbody>
+</table>
+<p>The reorganization is logical, not load-bearing — the controls themselves are minimally changed. The big addition is the <strong>Spine UI</strong> (under ColorTab’s Advanced section) and the <strong>OKLCH picker</strong> (summoned from anchor swatches).</p>
+<hr>
+</section>
+</section>
+<section id="cascade-inspector" class="level2">
+<h2 class="anchored" data-anchor-id="cascade-inspector">2. Cascade Inspector</h2>
+<section id="a.-the-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="a.-the-architecture">2a. The architecture</h3>
+<p>A docked panel (browser-only) that traces any clicked element through the cascade:</p>
+<pre><code>Element clicked → Find the closest --tv-* paint reference
+  → Look up in COMPONENT_TOKENS manifest
+    → Walk source chain (Tier 3 → Tier 2 → Tier 1 → OKLCH)
+      → Render trace as a vertical step list</code></pre>
+<p>The Inspector is <strong>purely consumer-side</strong> — it reads <code>COMPONENT_TOKENS</code>, <code>roleSource</code> (from the resolver), <code>ramps</code>, <code>anchors</code>, and renders. No editing happens through it; the Inspector is for <em>understanding</em>, not <em>changing</em>.</p>
+</section>
+<section id="b.-click-targeting" class="level3">
+<h3 class="anchored" data-anchor-id="b.-click-targeting">2b. Click-targeting</h3>
+<p>Two click sources: - <strong>Click any cell/header/element in the widget</strong> → identifies the <code>--tv-*</code> variable painting it (via the element’s <code>data-tv-token</code> attribute — see §2c) → Inspector traces it. - <strong>Click any swatch in the Spine UI / Color tab / Token sheets</strong> → traces the role or token directly.</p>
+</section>
+<section id="c.-data-tv-token-attribute-new" class="level3">
+<h3 class="anchored" data-anchor-id="c.-data-tv-token-attribute-new">2c. <code>data-tv-token</code> attribute (new)</h3>
+<p>Every element in the widget that’s painted by a specific token gets a <code>data-tv-token="..."</code> attribute. E.g.:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="ot"> data-row-kind</span><span class="op">=</span><span class="st">"data"</span><span class="ot"> data-tv-token</span><span class="op">=</span><span class="st">"row-base-bg"</span><span class="dt">&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">td</span><span class="ot"> data-tv-token</span><span class="op">=</span><span class="st">"cell-fg"</span><span class="dt">&gt;</span>...<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The renderer adds these during element emission. Cost: one attribute per element (small string). Benefit: the Inspector’s click-handler immediately knows which token painted what — no DOM-walking required.</p>
+</section>
+<section id="d.-trace-rendering" class="level3">
+<h3 class="anchored" data-anchor-id="d.-trace-rendering">2d. Trace rendering</h3>
+<p>The Inspector renders a vertical step list with tier badges (color-coded per rgc_v4’s tier coloring):</p>
+<pre><code>Tier 3: --tv-row-base-bg
+  ↓
+Tier 2 role: surface
+  ↓ (default binding)
+Tier 1 ramp: neutral[1]
+  ↓
+OKLCH: 0.99 0.005 250</code></pre>
+<p>Each step is clickable to drill further. The pulsing accent outline animation (rgc_v4) lights up the consumer-side element being traced; this is gated behind an “editor learning mode” toggle (not the default; otherwise it’s distracting at runtime).</p>
+</section>
+<section id="e.-where-it-lives" class="level3">
+<h3 class="anchored" data-anchor-id="e.-where-it-lives">2e. Where it lives</h3>
+<ul>
+<li><code>srcjs/src/components/inspector/CascadeInspector.svelte</code> — the docked panel.</li>
+<li><code>srcjs/src/components/inspector/InspectorStep.svelte</code> — one trace step.</li>
+<li><code>srcjs/src/lib/theme/inspect.ts</code> — the <code>inspectToken(token, wire) → InspectionTrace</code> function (called by both R-side <code>inspect_token</code> and the browser Inspector).</li>
+</ul>
+<p>The inspection logic is shared with the R-side <code>inspect_token</code> helper (Stage 1 §12e); the Inspector is the UI surface on top.</p>
+<hr>
+</section>
+</section>
+<section id="spine-ui" class="level2">
+<h2 class="anchored" data-anchor-id="spine-ui">3. Spine UI</h2>
+<section id="a.-the-architecture-1" class="level3">
+<h3 class="anchored" data-anchor-id="a.-the-architecture-1">3a. The architecture</h3>
+<p>The Spine renders the three ramps (neutral, brand, accent) as vertical columns, with the 11 grade swatches stacked top-to-bottom. Each role is a draggable token positioned at the grade it currently binds to. Dragging: - <strong>Up/down</strong> on the same ramp → changes grade. - <strong>Across ramps</strong> → rebinds which ramp the role draws from.</p>
+<p>Both operations commit via <code>setRoleBinding(wire, role, ramp, grade)</code> (Stage 1 §9b).</p>
+</section>
+<section id="b.-component-composition" class="level3">
+<h3 class="anchored" data-anchor-id="b.-component-composition">3b. Component composition</h3>
+<ul>
+<li><code>srcjs/src/components/spine/RoleSpine.svelte</code> — the three-column container with axis labels and the “off-ramp roles” tray.</li>
+<li><code>srcjs/src/components/spine/SpineColumn.svelte</code> — one ramp column (the 11 swatch stack + the role tokens overlaid).</li>
+<li><code>srcjs/src/components/spine/RoleToken.svelte</code> — one draggable role token.</li>
+<li><code>srcjs/src/components/spine/OffRampTray.svelte</code> — read-only display of status + computed roles.</li>
+</ul>
+<p>The Spine UI lives under ColorTab’s Advanced section (or as a dedicated full-panel mode when the user expands it).</p>
+</section>
+<section id="c.-hover-wire-animation" class="level3">
+<h3 class="anchored" data-anchor-id="c.-hover-wire-animation">3c. Hover-wire animation</h3>
+<p>When the user hovers a role token in the Spine, the Inspector + widget light up: every element in the widget that the role paints gets the pulsing accent outline. This is the consumer-of-role visualization rgc_v4 showcases.</p>
+<p>Mechanism: <code>RoleToken.svelte</code>’s hover handler updates a <code>hoveredRole</code> store value; <code>theme-runtime.css</code> has CSS rules under <code>[data-hovered-role]</code> that target the matching elements (lit up via the <code>data-tv-token</code> attribute from §2c, looked up against <code>TOKENS_BY_ROLE</code>).</p>
+</section>
+<section id="d.-drag-mechanics" class="level3">
+<h3 class="anchored" data-anchor-id="d.-drag-mechanics">3d. Drag mechanics</h3>
+<p>Pointer-based drag (matches rgc_v4): - Pointerdown on a token captures the pointer. - Pointermove updates the token’s screen position; the underlying ramp/grade is computed from cursor position relative to the three columns. - Pointerup commits via <code>setRoleBinding(wire, role, ramp, grade)</code>.</p>
+<p>The pointer-capture pattern is the same as <code>ColumnDragHandle.svelte</code> and <code>RowEdgeHandles.svelte</code> (Stage 1 §34b).</p>
+<hr>
+</section>
+</section>
+<section id="oklch-picker" class="level2">
+<h2 class="anchored" data-anchor-id="oklch-picker">4. OKLCH picker</h2>
+<section id="a.-the-popover" class="level3">
+<h3 class="anchored" data-anchor-id="a.-the-popover">4a. The popover</h3>
+<p>Click an anchor swatch in the ColorTab → an OKLCH picker popover opens. The popover contains: - A 2D L×C field at the current hue, with out-of-gamut visualization (faint checkerboard). - A hue rail showing the full hue spectrum at the current L,C. - A hex input that round-trips OKLCH ↔︎ hex. - An eyedropper button (if <code>window.EyeDropper</code> is available). - Preset hex swatches for quick-start.</p>
+</section>
+<section id="b.-component-composition-1" class="level3">
+<h3 class="anchored" data-anchor-id="b.-component-composition-1">4b. Component composition</h3>
+<ul>
+<li><code>srcjs/src/components/picker/OklchPicker.svelte</code> — the popover container.</li>
+<li><code>srcjs/src/components/picker/OklchField.svelte</code> — the 2D L×C canvas with gamut visualization.</li>
+<li><code>srcjs/src/components/picker/HueRail.svelte</code> — the hue slider with live-rendered track.</li>
+</ul>
+<p>The picker is a separate component used by the ColorTab; it can also be summoned from the Cascade Inspector (when traced to an anchor).</p>
+</section>
+<section id="c.-smart-popover-placement" class="level3">
+<h3 class="anchored" data-anchor-id="c.-smart-popover-placement">4c. Smart popover placement</h3>
+<p>Per rgc_v4: prefer placing the popover to the left of the swatch; flip right if no room; clamp to viewport. Implemented via <code>OklchPicker.svelte</code>’s mount-time bounding-box computation.</p>
+</section>
+<section id="d.-math" class="level3">
+<h3 class="anchored" data-anchor-id="d.-math">4d. Math</h3>
+<p>The OKLCH ↔︎ sRGB conversions live in <code>srcjs/src/lib/oklch.ts</code> (already exists; extends if needed). The 2D field rendering uses <code>canvas.getContext("2d")</code> and <code>createImageData</code> to plot per-pixel OKLCH values with gamut detection — same pattern as rgc_v4’s <code>ColorField</code>.</p>
+<hr>
+</section>
+</section>
+<section id="live-themed-docs-sheets" class="level2">
+<h2 class="anchored" data-anchor-id="live-themed-docs-sheets">5. Live-themed docs sheets</h2>
+<p>The docs include several “sheets” — themed displays of the cascade’s own state. Each sheet is its own Svelte component themed by the same cascade it documents:</p>
+<ul>
+<li><code>PrimitivesSheet.svelte</code> — the three ramps + alpha companions + status anchors.</li>
+<li><code>RolesSheet.svelte</code> — role → primitive grade mapping.</li>
+<li><code>ComponentSheet.svelte</code> — Tier-3 component tokens → role aliases.</li>
+<li><code>GeometrySheet.svelte</code> — radius / border-width / border-style scales.</li>
+<li><code>TypeScaleSheet.svelte</code> — type roles with sample text.</li>
+<li><code>EffectsSheet.svelte</code> — elevation / surface / gradient / glow demos.</li>
+<li><code>FallbackTriptych.svelte</code> — the three-mode side-by-side demo (Stage 1 §29).</li>
+</ul>
+<p>Each sheet is clickable: click a swatch / role / token → opens the Cascade Inspector with that target.</p>
+<p>These sheets ship as part of the docs site (<code>docs/cascade/sheets.qmd</code>) and are also embedded in the dev-tools section of the settings panel (an “Inspect cascade” mode). They are NOT shown by default in user-facing widget mode.</p>
+<hr>
+</section>
+<section id="two-format-export-with-delta-serialization" class="level2">
+<h2 class="anchored" data-anchor-id="two-format-export-with-delta-serialization">6. Two-format export with delta serialization</h2>
+<section id="a.-export-formats" class="level3">
+<h3 class="anchored" data-anchor-id="a.-export-formats">6a. Export formats</h3>
+<p>Users can export their customized theme in two formats:</p>
+<p><strong>JSON (the wire):</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"$schema"</span><span class="fu">:</span> <span class="st">"tabviz-theme/v4"</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"inputs"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"polarity"</span><span class="fu">:</span> <span class="st">"light"</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"mode"</span><span class="fu">:</span> <span class="st">"standard"</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"brand"</span><span class="fu">:</span> <span class="st">"#005FAE"</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"fonts"</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">"display"</span><span class="fu">:</span> <span class="st">"Cinzel, serif"</span><span class="fu">,</span> <span class="er">...</span> <span class="fu">},</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="er">...</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"roleOverrides"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"surface-subtle"</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">"ramp"</span><span class="fu">:</span> <span class="st">"neutral"</span><span class="fu">,</span> <span class="dt">"grade"</span><span class="fu">:</span> <span class="dv">1</span> <span class="fu">}</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The JSON is the full authoring state — re-importable via <code>import_theme(json_string)</code> (R) or <code>importTheme(jsonString)</code> (JS). It’s small (~1–3 KB) and stable.</p>
+<p><strong>CSS (drop-in <code>:root</code> block):</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode css code-with-copy"><code class="sourceCode css"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* tabviz theme — my-theme (standard mode) */</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="in">:root</span> {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tier 1 · primitives */</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">--tv-ramp-neutral-1</span><span class="ch">:</span> <span class="fu">oklch(</span><span class="dv">0.99</span> <span class="dv">0.005</span> <span class="dv">250</span><span class="fu">)</span><span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tier 2 · roles */</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  --tv-role-surface<span class="in">:</span> var<span class="in">(</span>--tv-ramp-neutral-1<span class="in">)</span>;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tier 3 · component tokens */</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  --tv-row-base-bg<span class="in">:</span> var<span class="in">(</span>--tv-role-surface<span class="in">)</span>;</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The CSS is the drop-in stylesheet — useful for sharing with designers, for hand-tweaking, for use outside tabviz. Includes the full four-layer namespace (anchor / ramp / role / component) with real <code>var()</code> references preserved (the architecture is visible in DevTools).</p>
+</section>
+<section id="b.-delta-serialization-for-json" class="level3">
+<h3 class="anchored" data-anchor-id="b.-delta-serialization-for-json">6b. Delta serialization for JSON</h3>
+<p>The JSON export records <strong>only the deltas from the preset base</strong> — fields that differ from the preset’s defaults. A user who only changed <code>brand</code> gets:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"$schema"</span><span class="fu">:</span> <span class="st">"tabviz-theme/v4"</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"base_preset"</span><span class="fu">:</span> <span class="st">"lancet"</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"inputs"</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">"brand"</span><span class="fu">:</span> <span class="st">"#3366CC"</span> <span class="fu">},</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"roleOverrides"</span><span class="fu">:</span> <span class="fu">{}</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Three benefits: - Small payloads (typical export: 500 bytes vs.&nbsp;3 KB). - Clean diffs in version control. - Easy to spot custom theming (the delta reads like a change list).</p>
+<p>The full resolved state is reconstructable: <code>preset_base("lancet") |&gt; apply_deltas(json)</code>. Tested with parity assertions (the deltas-and-base reconstruction must round-trip identically).</p>
+</section>
+<section id="c.-export-ui" class="level3">
+<h3 class="anchored" data-anchor-id="c.-export-ui">6c. Export UI</h3>
+<p><code>srcjs/src/components/export/ExportModal.svelte</code> — modal with format toggle (JSON / CSS), preview pane, copy / download buttons.</p>
+<p>Triggered from a button in the settings panel header. Also accessible via R-side <code>export_theme(theme, format = "json")</code> / <code>export_theme(theme, format = "css")</code>.</p>
+<hr>
+</section>
+</section>
+<section id="schema-versioning" class="level2">
+<h2 class="anchored" data-anchor-id="schema-versioning">7. Schema versioning</h2>
+<p>Every exported wire JSON declares <code>$schema: "tabviz-theme/v4"</code>. The import path validates this — wrong schema or missing field rejects with a clear error.</p>
+<p>If/when a future Stage adds a Tier-1 input or changes the wire shape, the schema version bumps (<code>v5</code>) and the import path handles migration. Stage 3 ships only v4; future migration is deferred until then.</p>
+<hr>
+</section>
+<section id="what-does-not-ship-in-stage-3" class="level2">
+<h2 class="anchored" data-anchor-id="what-does-not-ship-in-stage-3">8. What does NOT ship in Stage 3</h2>
+<p>Stage 3 is large but not infinite. Defer to later stages or explicit non-scope:</p>
+<ul>
+<li><strong>AI-assisted theme suggestion.</strong> (Tempting; not the substrate work.)</li>
+<li><strong>Theme marketplace / sharing service.</strong> (Distribution, not editor.)</li>
+<li><strong>Per-cell paint override UI.</strong> (Per Stage 1 §9, not in the override schema.)</li>
+<li><strong>Animated theme transitions.</strong> (Aesthetic flourish; not architectural.)</li>
+<li><strong>Theme-from-image-extraction.</strong> (Specialty; out of scope.)</li>
+</ul>
+<hr>
+</section>
+<section id="stage-3-design-questions" class="level2">
+<h2 class="anchored" data-anchor-id="stage-3-design-questions">9. Stage-3 design questions</h2>
+<section id="q-s3.1-inspector-dock-position-bottom-left-fixed-rgc_v4-or-floating-dockable-panel" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.1-inspector-dock-position-bottom-left-fixed-rgc_v4-or-floating-dockable-panel">Q-S3.1 — Inspector dock position: bottom-left fixed (rgc_v4) or floating dockable panel?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Bottom-left fixed dock per rgc_v4. Always discoverable; doesn’t compete with widget content; the Inspector is a learning tool, not a primary workspace. See Decisions log.</p>
+</section>
+<section id="q-s3.2-spine-ui-accessibility-keyboard-nav-for-the-role-tokens" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.2-spine-ui-accessibility-keyboard-nav-for-the-role-tokens">Q-S3.2 — Spine UI accessibility: keyboard nav for the role tokens?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Full keyboard nav per rgc_v4 pattern. Arrow keys move tokens up/down (grade) and left/right (ramp); Enter inspects. ~1 day of work atop the drag interaction. See Decisions log.</p>
+</section>
+<section id="q-s3.3-oklch-picker-presets-hard-coded-list-or-theme-driven" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.3-oklch-picker-presets-hard-coded-list-or-theme-driven">Q-S3.3 — OKLCH picker presets: hard-coded list or theme-driven?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Hard-coded universal preset hex list per rgc_v4. Universal starting points; doesn’t surprise users when they switch presets. See Decisions log.</p>
+</section>
+<section id="q-s3.4-sheets-visibility-default-shown-in-widget-mode-or-only-in-editor-mode" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.4-sheets-visibility-default-shown-in-widget-mode-or-only-in-editor-mode">Q-S3.4 — Sheets visibility default: shown in widget mode or only in editor mode?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Editor / docs mode only. Sheets render in <code>docs/cascade/sheets.qmd</code>, in settings panel’s “Inspect cascade” mode, and as inline docs widgets. Hidden in user-facing widget mode. See Decisions log.</p>
+</section>
+<section id="q-s3.5-cascade-inspector-drift-tested-for-completeness" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.5-cascade-inspector-drift-tested-for-completeness">Q-S3.5 — Cascade Inspector: drift-tested for completeness?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Yes — add drift test parallel to <code>COMPONENT_TOKENS.drift.test.ts</code>. ~30 lines; asserts every cssVar is traceable. See Decisions log.</p>
+</section>
+<section id="q-s3.6-hover-wire-animation-opt-in-or-opt-out-by-default" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.6-hover-wire-animation-opt-in-or-opt-out-by-default">Q-S3.6 — Hover-wire animation: opt-in or opt-out by default?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Opt-in, off by default. Settings-panel toggle (“Highlight what this token paints”) surfaces the feature; distraction-free default. See Decisions log.</p>
+</section>
+<section id="q-s3.7-sprint-model-for-stage-3" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.7-sprint-model-for-stage-3">Q-S3.7 — Sprint model for Stage 3?</h3>
+<p><strong>RESOLVED 2026-06-02.</strong> Single sequenced sprint; ~4 weeks; lands as one PR. Discipline consistent with Stage 1/2 model. See Decisions log.</p>
+<hr>
+</section>
+</section>
+<section id="stage-3-decisions-log" class="level2">
+<h2 class="anchored" data-anchor-id="stage-3-decisions-log">10. Stage-3 Decisions log</h2>
+<blockquote class="blockquote">
+<p>Populated as Stage-3 questions are resolved.</p>
+</blockquote>
+<section id="q-s3.1-closed-inspector-dock-position-is-bottom-left-fixed" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.1-closed-inspector-dock-position-is-bottom-left-fixed">2026-06-02 — Q-S3.1 closed: Inspector dock position is bottom-left fixed</h3>
+<p><strong>Decision:</strong> the Cascade Inspector renders as a fixed dock at the bottom-left of the widget’s containing viewport. Not floating, not user-positionable. <strong>Rationale:</strong> matches rgc_v4 precedent; users learn to look there. The Inspector is a learning/debugging tool, not a primary workspace — a fixed position keeps it discoverable without consuming UI complexity for positioning controls. Float-dock support could come later if a real use case emerges; not justified for the substrate work.</p>
+</section>
+<section id="q-s3.2-closed-full-keyboard-navigation-for-spine-ui-role-tokens" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.2-closed-full-keyboard-navigation-for-spine-ui-role-tokens">2026-06-02 — Q-S3.2 closed: full keyboard navigation for Spine UI role tokens</h3>
+<p><strong>Decision:</strong> role tokens in the Spine UI support full keyboard nav — arrow keys move tokens up/down (grade) and left/right (cross-ramp); Enter triggers Cascade Inspector trace. Pointer drag remains the primary input; keyboard is parallel. <strong>Rationale:</strong> the Spine UI is innovative interaction; accessibility matters; rgc_v4 already validates the keyboard pattern works well. ~1 day of work atop the drag interaction; the Spine UI is hidden behind Advanced disclosure but accessibility shouldn’t be feature-gated.</p>
+</section>
+<section id="q-s3.3-closed-oklch-picker-uses-a-hard-coded-universal-preset-hex-list" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.3-closed-oklch-picker-uses-a-hard-coded-universal-preset-hex-list">2026-06-02 — Q-S3.3 closed: OKLCH picker uses a hard-coded universal preset hex list</h3>
+<p><strong>Decision:</strong> the picker’s quick-start preset swatches are a small fixed hex list per rgc_v4 (<code>#2A6FDB</code>, <code>#1F8A5B</code>, <code>#C2410C</code>, <code>#7C3AED</code>, <code>#0E7490</code>, <code>#B91C1C</code>, <code>#0F172A</code>, <code>#F5F5F4</code>). Not theme-driven. <strong>Rationale:</strong> universal starting points; predictable; doesn’t surprise users when they switch presets. The current theme’s actual colors are visible in other UI surfaces (anchor swatches, Spine UI ramps) — the picker is for <em>selecting new</em> colors, not for echoing existing ones.</p>
+</section>
+<section id="q-s3.4-closed-sheets-are-editor-docs-mode-only-hidden-in-widget-mode" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.4-closed-sheets-are-editor-docs-mode-only-hidden-in-widget-mode">2026-06-02 — Q-S3.4 closed: sheets are editor / docs mode only; hidden in widget mode</h3>
+<p><strong>Decision:</strong> the live-themed sheets (<code>PrimitivesSheet</code>, <code>RolesSheet</code>, <code>ComponentSheet</code>, <code>GeometrySheet</code>, <code>TypeScaleSheet</code>, <code>EffectsSheet</code>, <code>FallbackTriptych</code>) render in <code>docs/cascade/sheets.qmd</code>, in the settings panel’s “Inspect cascade” mode (an opt-in user-facing surface for learning the cascade), and as inline docs widgets. They are <strong>not</strong> shown in user-facing widget mode. <strong>Rationale:</strong> the widget’s primary purpose is presenting data; the theme cascade is meta-information. Inspector + Spine UI + opt-in inspect mode cover the educational surface; embedding sheets under every widget would clutter the visualization and confuse users about what’s data vs.&nbsp;what’s cascade.</p>
+</section>
+<section id="q-s3.5-closed-cascade-inspector-has-a-drift-test" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.5-closed-cascade-inspector-has-a-drift-test">2026-06-02 — Q-S3.5 closed: Cascade Inspector has a drift test</h3>
+<p><strong>Decision:</strong> add <code>srcjs/src/components/inspector/inspector.drift.test.ts</code> parallel to <code>COMPONENT_TOKENS.drift.test.ts</code>. The test iterates every entry in <code>COMPONENT_TOKENS</code>, calls the Inspector’s trace function for each, and asserts the trace renders without error and produces at least one step. <strong>Rationale:</strong> ~30 lines of test code; catches the failure mode where someone adds a new token kind (a <code>source.tier</code> variant, a new mode, a new ramp) and forgets to update the Inspector’s trace logic. The drift test is the inversion of the Inspector’s reactive surface — it forces the Inspector to keep pace with the manifest.</p>
+</section>
+<section id="q-s3.6-closed-hover-wire-animation-is-opt-in-off-by-default" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.6-closed-hover-wire-animation-is-opt-in-off-by-default">2026-06-02 — Q-S3.6 closed: hover-wire animation is opt-in, off by default</h3>
+<p><strong>Decision:</strong> the hover-wire animation (Spine UI hover → consumer-of-role elements light up in the widget) is gated behind a settings-panel toggle. Default state: off. <strong>Rationale:</strong> the animation is great for learning the cascade but distracting during routine theme customization. Opt-in default lets daily users work without distraction; learners surface the toggle prominently in Color tab. The docs / Inspect cascade mode can enable the toggle by default since that mode is explicitly for learning.</p>
+</section>
+<section id="q-s3.7-closed-stage-3-ships-as-a-single-sequenced-sprint" class="level3">
+<h3 class="anchored" data-anchor-id="q-s3.7-closed-stage-3-ships-as-a-single-sequenced-sprint">2026-06-02 — Q-S3.7 closed: Stage 3 ships as a single sequenced sprint</h3>
+<p><strong>Decision:</strong> Stage 3 begins after Stage 2 merges to main; runs as a single ~4-week sprint on a <code>feat/theme-stage-3</code> branch; lands as one coordinated PR. No sub-sprint splitting. <strong>Rationale:</strong> consistent with Stage 1 and Stage 2 sprint discipline. Sub-sprint splitting would trade single-landing atomicity for marginal review-surface reduction; the editor surface is internally coherent (settings panel + Inspector + Spine + picker + export are designed against each other) and benefits from being designed and shipped as one piece. Larger sprint; same discipline; single visual baseline shoot at the end.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Stage 3 design — editor architecture (Spine, Inspector, OKLCH picker, exports)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **Status:** v1.0 LANDED — 2026-06-03. Editor substrate complete via</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="in">`tabviz_studio()`</span><span class="at"> R gadget per the **studio-mode** philosophy (editor</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; lives in an explicit authoring context; embedded widgets ship zero</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; editor chrome). Per the 2026-06-03 ideation session with three design-</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; critic agents, the original "editor mode opts in via gear on chart"</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; framing was rejected in favor of studio-mode. Sections 5 (live docs),</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 6 (delta serialization exports), 7 (schema versioning) and §3d (Spine</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; drag-to-rebind) remain as follow-on UI/architecture work.</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **Builds on:** </span><span class="co">[</span><span class="ot">`theme-cascade-stage-1-design.md`</span><span class="co">](theme-cascade-stage-1-design.md)</span><span class="at"> — substrate + capabilities. </span><span class="co">[</span><span class="ot">`theme-cascade-stage-2-design.md`</span><span class="co">](theme-cascade-stage-2-design.md)</span><span class="at"> — typography + surfaces.</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **Parent vision:** </span><span class="co">[</span><span class="ot">`theme-cascade-rework.md`</span><span class="co">](theme-cascade-rework.md)</span><span class="at"> — §5 Stage 3 scope.</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0. What this document covers</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>Stage 3 is the editor overhaul: the settings-panel redesign, the Cascade Inspector, the Spine UI, the OKLCH picker, hover-wire animation, two-format export with delta serialization, schema-versioned JSON. It assumes the Stage 1 substrate + Stage 2 capabilities have landed.</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>This is the **largest** stage by surface area but the **lightest** by load-bearing architecture — Stage 1 already locked the data model and APIs the editor consumes. Stage 3's design is mostly about UI composition, interaction patterns, and the conceptual surface for users learning the cascade.</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>This doc covers **architectural** decisions only (where things live, how they compose, what data they consume). UI-implementation details (specific layouts, animation timings, copy) are deferred to sprint planning. The principle is: settle the bones now; let the implementer iterate on the flesh.</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>What this doc settles:</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Settings panel architecture (Color · Type · Size · Effects tab decomposition).</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Cascade Inspector architecture (provenance walk, click anywhere → trace).</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Spine UI architecture (draggable role tokens on ramp columns).</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>OKLCH picker integration (popover summoned from anchor swatches).</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hover-wire animation architecture (role hover → consumer highlight).</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Live-themed docs sheets pattern.</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Two-format export (JSON wire + CSS variables) with delta serialization.</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Settings panel — tab-organized API</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **SUPERSEDED 2026-06-03 by `tabviz_studio()`.** The original §1 design</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; proposed an in-widget settings panel with Color/Type/Size/Effects</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; tabs. The 2026-06-03 design-critic ideation session pivoted to</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **studio mode**: editor lives in </span><span class="in">`tabviz_studio()`</span><span class="at"> (Shiny gadget),</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; embedded widgets ship zero editor chrome, and the tab taxonomy is</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; reorganized by *decision altitude* — **Identity / Rhythm / Encoding</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; / Advanced** — per the Settings critic's "decoder altitude not</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; stationery store" framing. See the 2026-06-03 closing entry in</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="in">`theme-cascade-refactor-notes.md`</span><span class="at"> for the locked design.</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="at">&gt;</span></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; The original Color/Type/Size/Effects taxonomy below is preserved for</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; historical context only; the landed taxonomy and tab content are</span></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; in </span><span class="in">`srcjs/src/studio/tabs/{Identity,Rhythm,Encoding,Advanced}Tab.svelte`</span><span class="at">.</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1a. The four axes (superseded)</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>The settings panel is reorganized into four tabs matching the system's natural decomposition (per rgc_v4's <span class="in">`Playground`</span>):</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Color** — anchors (paper, ink, brand, decorative, accent), polarity, mode, curves, status colors.</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Type** — font trio, base size, scale ratio, weights.</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Size** — density, radius, border widths, frame pad, paper pad, rules, frame, head-style, title-style, first-col-style.</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Effects** — surface (solid / glass / textures), elevation, shell-mode, gradient, glow.</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>Each tab has **common knobs up top** and **Advanced (power user) controls** behind a progressive-disclosure section. Common knobs are the daily-use surface; Advanced is the cascade-deeper customization.</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1b. Tab composition</span></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>Each tab is its own Svelte component:</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/settings/ColorTab.svelte`</span></span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/settings/TypeTab.svelte`</span></span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/settings/SizeTab.svelte`</span></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/settings/EffectsTab.svelte`</span></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>The parent <span class="in">`SettingsPanel.svelte`</span> owns tab selection, applies the selected tab's component, and manages cross-tab state (e.g. "this panel is dirty; show reset").</span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1c. Existing controls refactored</span></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>The current v3 settings panel has 8 control files (<span class="in">`ThemeControl.svelte`</span>, <span class="in">`TokensControl.svelte`</span>, <span class="in">`MarksControl.svelte`</span>, <span class="in">`LayoutControl.svelte`</span>, <span class="in">`TextControl.svelte`</span>, <span class="in">`BandingControl.svelte`</span>, <span class="in">`ColorField.svelte`</span>, <span class="in">`swatch-palettes.ts`</span>) plus the row-kind heights control from Stage 1 (<span class="in">`RowKindHeightsControl.svelte`</span>). These get reorganized:</span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Control <span class="pp">|</span> New home <span class="pp">|</span></span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ThemeControl.svelte`</span> (preset picker, polarity, mode) <span class="pp">|</span> ColorTab <span class="pp">|</span></span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`TokensControl.svelte`</span> (row tokens) <span class="pp">|</span> ColorTab (Advanced) <span class="pp">|</span></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`TextControl.svelte`</span> (typography) <span class="pp">|</span> TypeTab <span class="pp">|</span></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`LayoutControl.svelte`</span> <span class="pp">|</span> SizeTab <span class="pp">|</span></span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`BandingControl.svelte`</span> <span class="pp">|</span> SizeTab <span class="pp">|</span></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`MarksControl.svelte`</span> <span class="pp">|</span> EffectsTab <span class="pp">|</span></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ColorField.svelte`</span> <span class="pp">|</span> shared utility <span class="pp">|</span></span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`RowKindHeightsControl.svelte`</span> <span class="pp">|</span> SizeTab <span class="pp">|</span></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>The reorganization is logical, not load-bearing — the controls themselves are minimally changed. The big addition is the **Spine UI** (under ColorTab's Advanced section) and the **OKLCH picker** (summoned from anchor swatches).</span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Cascade Inspector</span></span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2a. The architecture</span></span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a>A docked panel (browser-only) that traces any clicked element through the cascade:</span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a><span class="in">Element clicked → Find the closest --tv-* paint reference</span></span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="in">  → Look up in COMPONENT_TOKENS manifest</span></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="in">    → Walk source chain (Tier 3 → Tier 2 → Tier 1 → OKLCH)</span></span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a><span class="in">      → Render trace as a vertical step list</span></span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>The Inspector is **purely consumer-side** — it reads <span class="in">`COMPONENT_TOKENS`</span>, <span class="in">`roleSource`</span> (from the resolver), <span class="in">`ramps`</span>, <span class="in">`anchors`</span>, and renders. No editing happens through it; the Inspector is for *understanding*, not *changing*.</span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2b. Click-targeting</span></span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a>Two click sources:</span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Click any cell/header/element in the widget** → identifies the <span class="in">`--tv-*`</span> variable painting it (via the element's <span class="in">`data-tv-token`</span> attribute — see §2c) → Inspector traces it.</span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Click any swatch in the Spine UI / Color tab / Token sheets** → traces the role or token directly.</span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2c. `data-tv-token` attribute (new)</span></span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>Every element in the widget that's painted by a specific token gets a <span class="in">`data-tv-token="..."`</span> attribute. E.g.:</span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a><span class="in">```html</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>tr data<span class="op">-</span>row<span class="op">-</span>kind<span class="op">=</span><span class="st">"data"</span> data<span class="op">-</span>tv<span class="op">-</span>token<span class="op">=</span><span class="st">"row-base-bg"</span><span class="op">&gt;</span></span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a>  <span class="op">&lt;</span>td data<span class="op">-</span>tv<span class="op">-</span>token<span class="op">=</span><span class="st">"cell-fg"</span><span class="op">&gt;...&lt;/</span>td<span class="op">&gt;</span></span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;/</span>tr<span class="op">&gt;</span></span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>The renderer adds these during element emission. Cost: one attribute per element (small string). Benefit: the Inspector's click-handler immediately knows which token painted what — no DOM-walking required.</span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2d. Trace rendering</span></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a>The Inspector renders a vertical step list with tier badges (color-coded per rgc_v4's tier coloring):</span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a><span class="in">Tier 3: --tv-row-base-bg</span></span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a><span class="in">  ↓</span></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="in">Tier 2 role: surface</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="in">  ↓ (default binding)</span></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="in">Tier 1 ramp: neutral[1]</span></span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a><span class="in">  ↓</span></span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="in">OKLCH: 0.99 0.005 250</span></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>Each step is clickable to drill further. The pulsing accent outline animation (rgc_v4) lights up the consumer-side element being traced; this is gated behind an "editor learning mode" toggle (not the default; otherwise it's distracting at runtime).</span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2e. Where it lives</span></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/inspector/CascadeInspector.svelte`</span> — the docked panel.</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/inspector/InspectorStep.svelte`</span> — one trace step.</span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/lib/theme/inspect.ts`</span> — the <span class="in">`inspectToken(token, wire) → InspectionTrace`</span> function (called by both R-side <span class="in">`inspect_token`</span> and the browser Inspector).</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>The inspection logic is shared with the R-side <span class="in">`inspect_token`</span> helper (Stage 1 §12e); the Inspector is the UI surface on top.</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Spine UI</span></span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3a. The architecture</span></span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>The Spine renders the three ramps (neutral, brand, accent) as vertical columns, with the 11 grade swatches stacked top-to-bottom. Each role is a draggable token positioned at the grade it currently binds to. Dragging:</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Up/down** on the same ramp → changes grade.</span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Across ramps** → rebinds which ramp the role draws from.</span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>Both operations commit via <span class="in">`setRoleBinding(wire, role, ramp, grade)`</span> (Stage 1 §9b).</span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3b. Component composition</span></span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/spine/RoleSpine.svelte`</span> — the three-column container with axis labels and the "off-ramp roles" tray.</span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/spine/SpineColumn.svelte`</span> — one ramp column (the 11 swatch stack + the role tokens overlaid).</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/spine/RoleToken.svelte`</span> — one draggable role token.</span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/spine/OffRampTray.svelte`</span> — read-only display of status + computed roles.</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>The Spine UI lives under ColorTab's Advanced section (or as a dedicated full-panel mode when the user expands it).</span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3c. Hover-wire animation</span></span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>When the user hovers a role token in the Spine, the Inspector + widget light up: every element in the widget that the role paints gets the pulsing accent outline. This is the consumer-of-role visualization rgc_v4 showcases.</span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>Mechanism: <span class="in">`RoleToken.svelte`</span>'s hover handler updates a <span class="in">`hoveredRole`</span> store value; <span class="in">`theme-runtime.css`</span> has CSS rules under <span class="in">`[data-hovered-role]`</span> that target the matching elements (lit up via the <span class="in">`data-tv-token`</span> attribute from §2c, looked up against <span class="in">`TOKENS_BY_ROLE`</span>).</span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3d. Drag mechanics</span></span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>Pointer-based drag (matches rgc_v4):</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Pointerdown on a token captures the pointer.</span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Pointermove updates the token's screen position; the underlying ramp/grade is computed from cursor position relative to the three columns.</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Pointerup commits via <span class="in">`setRoleBinding(wire, role, ramp, grade)`</span>.</span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>The pointer-capture pattern is the same as <span class="in">`ColumnDragHandle.svelte`</span> and <span class="in">`RowEdgeHandles.svelte`</span> (Stage 1 §34b).</span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. OKLCH picker</span></span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4a. The popover</span></span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>Click an anchor swatch in the ColorTab → an OKLCH picker popover opens. The popover contains:</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A 2D L×C field at the current hue, with out-of-gamut visualization (faint checkerboard).</span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A hue rail showing the full hue spectrum at the current L,C.</span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A hex input that round-trips OKLCH ↔ hex.</span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>An eyedropper button (if <span class="in">`window.EyeDropper`</span> is available).</span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Preset hex swatches for quick-start.</span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4b. Component composition</span></span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/picker/OklchPicker.svelte`</span> — the popover container.</span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/picker/OklchField.svelte`</span> — the 2D L×C canvas with gamut visualization.</span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`srcjs/src/components/picker/HueRail.svelte`</span> — the hue slider with live-rendered track.</span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>The picker is a separate component used by the ColorTab; it can also be summoned from the Cascade Inspector (when traced to an anchor).</span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4c. Smart popover placement</span></span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>Per rgc_v4: prefer placing the popover to the left of the swatch; flip right if no room; clamp to viewport. Implemented via <span class="in">`OklchPicker.svelte`</span>'s mount-time bounding-box computation.</span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4d. Math</span></span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a>The OKLCH ↔ sRGB conversions live in <span class="in">`srcjs/src/lib/oklch.ts`</span> (already exists; extends if needed). The 2D field rendering uses <span class="in">`canvas.getContext("2d")`</span> and <span class="in">`createImageData`</span> to plot per-pixel OKLCH values with gamut detection — same pattern as rgc_v4's <span class="in">`ColorField`</span>.</span>
+<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Live-themed docs sheets</span></span>
+<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a>The docs include several "sheets" — themed displays of the cascade's own state. Each sheet is its own Svelte component themed by the same cascade it documents:</span>
+<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`PrimitivesSheet.svelte`</span> — the three ramps + alpha companions + status anchors.</span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`RolesSheet.svelte`</span> — role → primitive grade mapping.</span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`ComponentSheet.svelte`</span> — Tier-3 component tokens → role aliases.</span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`GeometrySheet.svelte`</span> — radius / border-width / border-style scales.</span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`TypeScaleSheet.svelte`</span> — type roles with sample text.</span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`EffectsSheet.svelte`</span> — elevation / surface / gradient / glow demos.</span>
+<span id="cb7-225"><a href="#cb7-225" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`FallbackTriptych.svelte`</span> — the three-mode side-by-side demo (Stage 1 §29).</span>
+<span id="cb7-226"><a href="#cb7-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-227"><a href="#cb7-227" aria-hidden="true" tabindex="-1"></a>Each sheet is clickable: click a swatch / role / token → opens the Cascade Inspector with that target.</span>
+<span id="cb7-228"><a href="#cb7-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-229"><a href="#cb7-229" aria-hidden="true" tabindex="-1"></a>These sheets ship as part of the docs site (<span class="in">`docs/cascade/sheets.qmd`</span>) and are also embedded in the dev-tools section of the settings panel (an "Inspect cascade" mode). They are NOT shown by default in user-facing widget mode.</span>
+<span id="cb7-230"><a href="#cb7-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-231"><a href="#cb7-231" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-232"><a href="#cb7-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Two-format export with delta serialization</span></span>
+<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6a. Export formats</span></span>
+<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-237"><a href="#cb7-237" aria-hidden="true" tabindex="-1"></a>Users can export their customized theme in two formats:</span>
+<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a>**JSON (the wire):**</span>
+<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>  <span class="st">"$schema"</span><span class="op">:</span> <span class="st">"tabviz-theme/v4"</span><span class="op">,</span></span>
+<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>  <span class="st">"inputs"</span><span class="op">:</span> {</span>
+<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>    <span class="st">"polarity"</span><span class="op">:</span> <span class="st">"light"</span><span class="op">,</span></span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mode"</span><span class="op">:</span> <span class="st">"standard"</span><span class="op">,</span></span>
+<span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a>    <span class="st">"brand"</span><span class="op">:</span> <span class="st">"#005FAE"</span><span class="op">,</span></span>
+<span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a>    <span class="st">"fonts"</span><span class="op">:</span> { <span class="st">"display"</span><span class="op">:</span> <span class="st">"Cinzel, serif"</span><span class="op">,</span> <span class="op">...</span> }<span class="op">,</span></span>
+<span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb7-249"><a href="#cb7-249" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb7-250"><a href="#cb7-250" aria-hidden="true" tabindex="-1"></a>  <span class="st">"roleOverrides"</span><span class="op">:</span> {</span>
+<span id="cb7-251"><a href="#cb7-251" aria-hidden="true" tabindex="-1"></a>    <span class="st">"surface-subtle"</span><span class="op">:</span> { <span class="st">"ramp"</span><span class="op">:</span> <span class="st">"neutral"</span><span class="op">,</span> <span class="st">"grade"</span><span class="op">:</span> <span class="dv">1</span> }</span>
+<span id="cb7-252"><a href="#cb7-252" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-253"><a href="#cb7-253" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-254"><a href="#cb7-254" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-255"><a href="#cb7-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-256"><a href="#cb7-256" aria-hidden="true" tabindex="-1"></a>The JSON is the full authoring state — re-importable via <span class="in">`import_theme(json_string)`</span> (R) or <span class="in">`importTheme(jsonString)`</span> (JS). It's small (~1–3 KB) and stable.</span>
+<span id="cb7-257"><a href="#cb7-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-258"><a href="#cb7-258" aria-hidden="true" tabindex="-1"></a>**CSS (drop-in `:root` block):**</span>
+<span id="cb7-259"><a href="#cb7-259" aria-hidden="true" tabindex="-1"></a><span class="in">```css</span></span>
+<span id="cb7-260"><a href="#cb7-260" aria-hidden="true" tabindex="-1"></a><span class="co">/* tabviz theme — my-theme (standard mode) */</span></span>
+<span id="cb7-261"><a href="#cb7-261" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>root <span class="op">{</span></span>
+<span id="cb7-262"><a href="#cb7-262" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tier 1 · primitives */</span></span>
+<span id="cb7-263"><a href="#cb7-263" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>tv<span class="op">-</span>ramp<span class="op">-</span>neutral<span class="dv">-1</span><span class="op">:</span> <span class="fu">oklch</span><span class="op">(</span><span class="fl">0.99</span> <span class="fl">0.005</span> <span class="dv">250</span><span class="op">);</span></span>
+<span id="cb7-264"><a href="#cb7-264" aria-hidden="true" tabindex="-1"></a>  <span class="op">...</span></span>
+<span id="cb7-265"><a href="#cb7-265" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tier 2 · roles */</span></span>
+<span id="cb7-266"><a href="#cb7-266" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>tv<span class="op">-</span>role<span class="op">-</span>surface<span class="op">:</span> <span class="fu">var</span><span class="op">(--</span>tv<span class="op">-</span>ramp<span class="op">-</span>neutral<span class="dv">-1</span><span class="op">);</span></span>
+<span id="cb7-267"><a href="#cb7-267" aria-hidden="true" tabindex="-1"></a>  <span class="op">...</span></span>
+<span id="cb7-268"><a href="#cb7-268" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tier 3 · component tokens */</span></span>
+<span id="cb7-269"><a href="#cb7-269" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>tv<span class="op">-</span>row<span class="op">-</span><span class="kw">base</span><span class="op">-</span>bg<span class="op">:</span> <span class="fu">var</span><span class="op">(--</span>tv<span class="op">-</span>role<span class="op">-</span>surface<span class="op">);</span></span>
+<span id="cb7-270"><a href="#cb7-270" aria-hidden="true" tabindex="-1"></a>  <span class="op">...</span></span>
+<span id="cb7-271"><a href="#cb7-271" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb7-272"><a href="#cb7-272" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-273"><a href="#cb7-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-274"><a href="#cb7-274" aria-hidden="true" tabindex="-1"></a>The CSS is the drop-in stylesheet — useful for sharing with designers, for hand-tweaking, for use outside tabviz. Includes the full four-layer namespace (anchor / ramp / role / component) with real <span class="in">`var()`</span> references preserved (the architecture is visible in DevTools).</span>
+<span id="cb7-275"><a href="#cb7-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-276"><a href="#cb7-276" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6b. Delta serialization for JSON</span></span>
+<span id="cb7-277"><a href="#cb7-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-278"><a href="#cb7-278" aria-hidden="true" tabindex="-1"></a>The JSON export records **only the deltas from the preset base** — fields that differ from the preset's defaults. A user who only changed <span class="in">`brand`</span> gets:</span>
+<span id="cb7-279"><a href="#cb7-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-280"><a href="#cb7-280" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb7-281"><a href="#cb7-281" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb7-282"><a href="#cb7-282" aria-hidden="true" tabindex="-1"></a>  <span class="st">"$schema"</span><span class="op">:</span> <span class="st">"tabviz-theme/v4"</span><span class="op">,</span></span>
+<span id="cb7-283"><a href="#cb7-283" aria-hidden="true" tabindex="-1"></a>  <span class="st">"base_preset"</span><span class="op">:</span> <span class="st">"lancet"</span><span class="op">,</span></span>
+<span id="cb7-284"><a href="#cb7-284" aria-hidden="true" tabindex="-1"></a>  <span class="st">"inputs"</span><span class="op">:</span> { <span class="st">"brand"</span><span class="op">:</span> <span class="st">"#3366CC"</span> }<span class="op">,</span></span>
+<span id="cb7-285"><a href="#cb7-285" aria-hidden="true" tabindex="-1"></a>  <span class="st">"roleOverrides"</span><span class="op">:</span> {}</span>
+<span id="cb7-286"><a href="#cb7-286" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-287"><a href="#cb7-287" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-288"><a href="#cb7-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-289"><a href="#cb7-289" aria-hidden="true" tabindex="-1"></a>Three benefits:</span>
+<span id="cb7-290"><a href="#cb7-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Small payloads (typical export: 500 bytes vs. 3 KB).</span>
+<span id="cb7-291"><a href="#cb7-291" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Clean diffs in version control.</span>
+<span id="cb7-292"><a href="#cb7-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Easy to spot custom theming (the delta reads like a change list).</span>
+<span id="cb7-293"><a href="#cb7-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-294"><a href="#cb7-294" aria-hidden="true" tabindex="-1"></a>The full resolved state is reconstructable: <span class="in">`preset_base("lancet") |&gt; apply_deltas(json)`</span>. Tested with parity assertions (the deltas-and-base reconstruction must round-trip identically).</span>
+<span id="cb7-295"><a href="#cb7-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-296"><a href="#cb7-296" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6c. Export UI</span></span>
+<span id="cb7-297"><a href="#cb7-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-298"><a href="#cb7-298" aria-hidden="true" tabindex="-1"></a><span class="in">`srcjs/src/components/export/ExportModal.svelte`</span> — modal with format toggle (JSON / CSS), preview pane, copy / download buttons.</span>
+<span id="cb7-299"><a href="#cb7-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-300"><a href="#cb7-300" aria-hidden="true" tabindex="-1"></a>Triggered from a button in the settings panel header. Also accessible via R-side <span class="in">`export_theme(theme, format = "json")`</span> / <span class="in">`export_theme(theme, format = "css")`</span>.</span>
+<span id="cb7-301"><a href="#cb7-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-302"><a href="#cb7-302" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-303"><a href="#cb7-303" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-304"><a href="#cb7-304" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Schema versioning</span></span>
+<span id="cb7-305"><a href="#cb7-305" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-306"><a href="#cb7-306" aria-hidden="true" tabindex="-1"></a>Every exported wire JSON declares <span class="in">`$schema: "tabviz-theme/v4"`</span>. The import path validates this — wrong schema or missing field rejects with a clear error.</span>
+<span id="cb7-307"><a href="#cb7-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-308"><a href="#cb7-308" aria-hidden="true" tabindex="-1"></a>If/when a future Stage adds a Tier-1 input or changes the wire shape, the schema version bumps (<span class="in">`v5`</span>) and the import path handles migration. Stage 3 ships only v4; future migration is deferred until then.</span>
+<span id="cb7-309"><a href="#cb7-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-310"><a href="#cb7-310" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-311"><a href="#cb7-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-312"><a href="#cb7-312" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. What does NOT ship in Stage 3</span></span>
+<span id="cb7-313"><a href="#cb7-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-314"><a href="#cb7-314" aria-hidden="true" tabindex="-1"></a>Stage 3 is large but not infinite. Defer to later stages or explicit non-scope:</span>
+<span id="cb7-315"><a href="#cb7-315" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-316"><a href="#cb7-316" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**AI-assisted theme suggestion.** (Tempting; not the substrate work.)</span>
+<span id="cb7-317"><a href="#cb7-317" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Theme marketplace / sharing service.** (Distribution, not editor.)</span>
+<span id="cb7-318"><a href="#cb7-318" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Per-cell paint override UI.** (Per Stage 1 §9, not in the override schema.)</span>
+<span id="cb7-319"><a href="#cb7-319" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Animated theme transitions.** (Aesthetic flourish; not architectural.)</span>
+<span id="cb7-320"><a href="#cb7-320" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Theme-from-image-extraction.** (Specialty; out of scope.)</span>
+<span id="cb7-321"><a href="#cb7-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-322"><a href="#cb7-322" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-323"><a href="#cb7-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-324"><a href="#cb7-324" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Stage-3 design questions</span></span>
+<span id="cb7-325"><a href="#cb7-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-326"><a href="#cb7-326" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.1 — Inspector dock position: bottom-left fixed (rgc_v4) or floating dockable panel?</span></span>
+<span id="cb7-327"><a href="#cb7-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-328"><a href="#cb7-328" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Bottom-left fixed dock per rgc_v4. Always discoverable; doesn't compete with widget content; the Inspector is a learning tool, not a primary workspace. See Decisions log.</span>
+<span id="cb7-329"><a href="#cb7-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-330"><a href="#cb7-330" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.2 — Spine UI accessibility: keyboard nav for the role tokens?</span></span>
+<span id="cb7-331"><a href="#cb7-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-332"><a href="#cb7-332" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Full keyboard nav per rgc_v4 pattern. Arrow keys move tokens up/down (grade) and left/right (ramp); Enter inspects. ~1 day of work atop the drag interaction. See Decisions log.</span>
+<span id="cb7-333"><a href="#cb7-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-334"><a href="#cb7-334" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.3 — OKLCH picker presets: hard-coded list or theme-driven?</span></span>
+<span id="cb7-335"><a href="#cb7-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-336"><a href="#cb7-336" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Hard-coded universal preset hex list per rgc_v4. Universal starting points; doesn't surprise users when they switch presets. See Decisions log.</span>
+<span id="cb7-337"><a href="#cb7-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-338"><a href="#cb7-338" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.4 — Sheets visibility default: shown in widget mode or only in editor mode?</span></span>
+<span id="cb7-339"><a href="#cb7-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-340"><a href="#cb7-340" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Editor / docs mode only. Sheets render in <span class="in">`docs/cascade/sheets.qmd`</span>, in settings panel's "Inspect cascade" mode, and as inline docs widgets. Hidden in user-facing widget mode. See Decisions log.</span>
+<span id="cb7-341"><a href="#cb7-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-342"><a href="#cb7-342" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.5 — Cascade Inspector: drift-tested for completeness?</span></span>
+<span id="cb7-343"><a href="#cb7-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-344"><a href="#cb7-344" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Yes — add drift test parallel to <span class="in">`COMPONENT_TOKENS.drift.test.ts`</span>. ~30 lines; asserts every cssVar is traceable. See Decisions log.</span>
+<span id="cb7-345"><a href="#cb7-345" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-346"><a href="#cb7-346" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.6 — Hover-wire animation: opt-in or opt-out by default?</span></span>
+<span id="cb7-347"><a href="#cb7-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-348"><a href="#cb7-348" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Opt-in, off by default. Settings-panel toggle ("Highlight what this token paints") surfaces the feature; distraction-free default. See Decisions log.</span>
+<span id="cb7-349"><a href="#cb7-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-350"><a href="#cb7-350" aria-hidden="true" tabindex="-1"></a><span class="fu">### Q-S3.7 — Sprint model for Stage 3?</span></span>
+<span id="cb7-351"><a href="#cb7-351" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-352"><a href="#cb7-352" aria-hidden="true" tabindex="-1"></a>**RESOLVED 2026-06-02.** Single sequenced sprint; ~4 weeks; lands as one PR. Discipline consistent with Stage 1/2 model. See Decisions log.</span>
+<span id="cb7-353"><a href="#cb7-353" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-354"><a href="#cb7-354" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-355"><a href="#cb7-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-356"><a href="#cb7-356" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Stage-3 Decisions log</span></span>
+<span id="cb7-357"><a href="#cb7-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-358"><a href="#cb7-358" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Populated as Stage-3 questions are resolved.</span></span>
+<span id="cb7-359"><a href="#cb7-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-360"><a href="#cb7-360" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.1 closed: Inspector dock position is bottom-left fixed</span></span>
+<span id="cb7-361"><a href="#cb7-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-362"><a href="#cb7-362" aria-hidden="true" tabindex="-1"></a>**Decision:** the Cascade Inspector renders as a fixed dock at the bottom-left of the widget's containing viewport. Not floating, not user-positionable. **Rationale:** matches rgc_v4 precedent; users learn to look there. The Inspector is a learning/debugging tool, not a primary workspace — a fixed position keeps it discoverable without consuming UI complexity for positioning controls. Float-dock support could come later if a real use case emerges; not justified for the substrate work.</span>
+<span id="cb7-363"><a href="#cb7-363" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-364"><a href="#cb7-364" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.2 closed: full keyboard navigation for Spine UI role tokens</span></span>
+<span id="cb7-365"><a href="#cb7-365" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-366"><a href="#cb7-366" aria-hidden="true" tabindex="-1"></a>**Decision:** role tokens in the Spine UI support full keyboard nav — arrow keys move tokens up/down (grade) and left/right (cross-ramp); Enter triggers Cascade Inspector trace. Pointer drag remains the primary input; keyboard is parallel. **Rationale:** the Spine UI is innovative interaction; accessibility matters; rgc_v4 already validates the keyboard pattern works well. ~1 day of work atop the drag interaction; the Spine UI is hidden behind Advanced disclosure but accessibility shouldn't be feature-gated.</span>
+<span id="cb7-367"><a href="#cb7-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-368"><a href="#cb7-368" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.3 closed: OKLCH picker uses a hard-coded universal preset hex list</span></span>
+<span id="cb7-369"><a href="#cb7-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-370"><a href="#cb7-370" aria-hidden="true" tabindex="-1"></a>**Decision:** the picker's quick-start preset swatches are a small fixed hex list per rgc_v4 (`#2A6FDB`, `#1F8A5B`, `#C2410C`, `#7C3AED`, `#0E7490`, `#B91C1C`, `#0F172A`, `#F5F5F4`). Not theme-driven. **Rationale:** universal starting points; predictable; doesn't surprise users when they switch presets. The current theme's actual colors are visible in other UI surfaces (anchor swatches, Spine UI ramps) — the picker is for *selecting new* colors, not for echoing existing ones.</span>
+<span id="cb7-371"><a href="#cb7-371" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-372"><a href="#cb7-372" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.4 closed: sheets are editor / docs mode only; hidden in widget mode</span></span>
+<span id="cb7-373"><a href="#cb7-373" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-374"><a href="#cb7-374" aria-hidden="true" tabindex="-1"></a>**Decision:** the live-themed sheets (`PrimitivesSheet`, `RolesSheet`, `ComponentSheet`, `GeometrySheet`, `TypeScaleSheet`, `EffectsSheet`, `FallbackTriptych`) render in `docs/cascade/sheets.qmd`, in the settings panel's "Inspect cascade" mode (an opt-in user-facing surface for learning the cascade), and as inline docs widgets. They are **not** shown in user-facing widget mode. **Rationale:** the widget's primary purpose is presenting data; the theme cascade is meta-information. Inspector + Spine UI + opt-in inspect mode cover the educational surface; embedding sheets under every widget would clutter the visualization and confuse users about what's data vs. what's cascade.</span>
+<span id="cb7-375"><a href="#cb7-375" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-376"><a href="#cb7-376" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.5 closed: Cascade Inspector has a drift test</span></span>
+<span id="cb7-377"><a href="#cb7-377" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-378"><a href="#cb7-378" aria-hidden="true" tabindex="-1"></a>**Decision:** add `srcjs/src/components/inspector/inspector.drift.test.ts` parallel to `COMPONENT_TOKENS.drift.test.ts`. The test iterates every entry in `COMPONENT_TOKENS`, calls the Inspector's trace function for each, and asserts the trace renders without error and produces at least one step. **Rationale:** ~30 lines of test code; catches the failure mode where someone adds a new token kind (a <span class="in">`source.tier`</span> variant, a new mode, a new ramp) and forgets to update the Inspector's trace logic. The drift test is the inversion of the Inspector's reactive surface — it forces the Inspector to keep pace with the manifest.</span>
+<span id="cb7-379"><a href="#cb7-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-380"><a href="#cb7-380" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.6 closed: hover-wire animation is opt-in, off by default</span></span>
+<span id="cb7-381"><a href="#cb7-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-382"><a href="#cb7-382" aria-hidden="true" tabindex="-1"></a>**Decision:** the hover-wire animation (Spine UI hover → consumer-of-role elements light up in the widget) is gated behind a settings-panel toggle. Default state: off. **Rationale:** the animation is great for learning the cascade but distracting during routine theme customization. Opt-in default lets daily users work without distraction; learners surface the toggle prominently in Color tab. The docs / Inspect cascade mode can enable the toggle by default since that mode is explicitly for learning.</span>
+<span id="cb7-383"><a href="#cb7-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-384"><a href="#cb7-384" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-06-02 — Q-S3.7 closed: Stage 3 ships as a single sequenced sprint</span></span>
+<span id="cb7-385"><a href="#cb7-385" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-386"><a href="#cb7-386" aria-hidden="true" tabindex="-1"></a>**Decision:** Stage 3 begins after Stage 2 merges to main; runs as a single ~4-week sprint on a `feat/theme-stage-3` branch; lands as one coordinated PR. No sub-sprint splitting. **Rationale:** consistent with Stage 1 and Stage 2 sprint discipline. Sub-sprint splitting would trade single-landing atomicity for marginal review-surface reduction; the editor surface is internally coherent (settings panel + Inspector + Spine + picker + export are designed against each other) and benefits from being designed and shipped as one piece. Larger sprint; same discipline; single visual baseline shoot at the end.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
