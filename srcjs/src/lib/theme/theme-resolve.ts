@@ -3,15 +3,15 @@
 // V4 anchor cascade:
 //   inputs.anchors.{ paper, ink, brand, accent? } → TokenRamps:
 //     neutral: OKLCH interpolation from paper → ink
-//     brand:   oklchRamp seeded from brand anchor
-//     accent:  oklchRamp seeded from accent (or brand) anchor
+//     brand:   anchoredChromaticRamp — step 9 === the brand anchor (L honored)
+//     accent:  anchoredChromaticRamp — step 9 === the accent (or brand) anchor
 //     status:  5-step ramp per status anchor
 //
 //   resolveToken(name, ramps, mode) → hex (T2 layer — demo subset)
 //   APCA-aware on-X pair derivation (brand_ink, accent_ink, *_ink)
 
 import {
-  oklchRamp, oklchInterpolateRamp, rampStep, pickInkOnBg,
+  anchoredChromaticRamp, oklchInterpolateRamp, rampStep, pickInkOnBg,
   hexToOklch, oklchToHex,
 } from "../oklch";
 import { curveFn } from "./curves";
@@ -108,8 +108,6 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
   // accent seeds the engagement ramp (the former ink2 anchor was merged
   // in — it silently won this seed, making it a redundant second hue).
   const accent = inputs.anchors.accent ?? brand;
-  const brandHex = oklchToHex(brand);
-  const accentHex = oklchToHex(accent);
 
   // Per-ramp curves; undefined = use hand-tuned LIGHT_RAMP_L (chromatic)
   // or linear (neutral).
@@ -132,18 +130,18 @@ export function buildRamps(inputs: ThemeInputs): TokenRamps {
     : ink;
   const neutral = oklchInterpolateRamp(neutralPaper, neutralInk, { curve: cN });
 
-  // Chromatic ramps still ride the hand-tuned chromatic L progression
-  // (LIGHT_RAMP_L / DARK_RAMP_L) so the chroma peak lands at step 9.
-  // A future revision (Phase D) can rebase these on paper.L → ink.L too.
-  //
-  // chromaPeak comes from the ANCHOR TRIPLE, not the hex projection:
-  // polarity reflection moves high-cusp hues (yellow, cyan) to an L
-  // where the hex projection gamut-crushes their chroma BEFORE the ramp
-  // ever builds — synthwave's #FAFF00 accent reached oklchRamp as C≈0.07
-  // and the whole dark ramp collapsed to gray (adversarial color review
-  // H2; pairs with oklchRamp's chroma-preserving L walk).
-  const brandRamp = oklchRamp(brandHex, { mode: polarity, curve: cB, chromaPeak: brand.C });
-  const accentRamp = oklchRamp(accentHex, { mode: polarity, curve: cA, chromaPeak: accent.C });
+  // Chromatic ramps are ANCHORED on the seed anchor (rgc_v4 brandRamp port,
+  // 2026-07-22): step 9 === the exact brand/accent anchor, and the whole L
+  // progression derives from the anchor's L — so the Brand/Accent lightness
+  // slider actually moves the figure (it was inert while these rode the
+  // fixed LIGHT_RAMP_L/DARK_RAMP_L arrays; decision-register D41).
+  // The seed arrives already polarity-reflected (buildRamps runs post-
+  // applyPolarityToInputs), and the ramp reads the seed's L/C/H directly, so
+  // high-cusp hues (synthwave #FAFF00) hold chroma at their natural L instead
+  // of collapsing at a forced 0.54 — retiring oklchRamp's chroma-preserving
+  // L walk for these two ramps.
+  const brandRamp = anchoredChromaticRamp(brand, paper, { curve: cB });
+  const accentRamp = anchoredChromaticRamp(accent, paper, { curve: cA });
 
   return {
     neutral,

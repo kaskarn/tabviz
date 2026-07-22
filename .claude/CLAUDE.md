@@ -286,6 +286,13 @@ One line each; the cost of ignoring these has already been paid once.
   across every comfortable theme; one mutation restyled them all —
   js-ci's maiden run caught it via Linux test-file order).
 - `hexToOklch` NaN-poisons on garbage — gate user input with `isValidHex`.
+- Brand/accent ramps use `anchoredChromaticRamp` (oklch.ts): step 9 === the
+  EXACT anchor, whole L progression derived from `seed.L` — so the Brand/Accent
+  lightness slider moves the figure (D41, 2026-07-22). Do NOT revert to a
+  fixed-L array (that made the L slider inert). The seed arrives ALREADY
+  polarity-reflected (`buildRamps` runs post-`applyPolarityToInputs`) — the ramp
+  must NOT re-reflect. A mid-tone brand solid (L≈0.6) is a poor text bg; the
+  brand_ink APCA≥45 preset gate catches it (dwarven needed a darker seed).
 - NON-FINITE NUMERICS are a recurring poison class: `Number.isNaN(x)` guards
   catch NaN but NOT ±Infinity, which then renders as the raw `"Infinity"`
   string (formatters) or NaN tick/scale positions (axis). Guard numeric

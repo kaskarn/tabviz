@@ -566,6 +566,63 @@ export function oklchRamp(seed: string, options: RampOptions = {}): string[] {
   return ramp;
 }
 
+/**
+ * Anchored chromatic ramp (brand / accent) — ported from rgc_v4
+ * `engine.jsx::brandRamp`.
+ *
+ * Unlike `oklchRamp` (which DISCARDS the seed's L and rides a fixed per-step
+ * L array), this ramp is ANCHORED so that **step 9 IS the exact seed color**,
+ * and the whole L progression is DERIVED from `seed.L`:
+ *   - grades 1..8 lerp from a near-paper subtle tint UP to the seed;
+ *   - grades 10..12 lerp from the seed toward a paper-contrasting text L.
+ * That is what makes the Brand/Accent lightness anchor actually move the
+ * figure — dragging the L slider re-lands the solid (and its whole ramp).
+ *
+ * Direction auto-flips for dark themes (detected from `paper.L < 0.5`). The
+ * resolver reflects ALL anchors upstream (`applyPolarityToInputs` before
+ * `buildRamps`), so `seed` / `paper` arrive here ALREADY in the active
+ * polarity's space — do NOT re-reflect. `ink` is intentionally not a
+ * parameter (the reference never read it).
+ *
+ * Returns 12 hex steps (Radix 1..12); `rampStep(ramp, 9)` === the seed color.
+ * Chroma peaks AT the anchor (step 9 = exact `seed.C`), tapering toward the
+ * tint end (×0.22) and slightly toward the text end (×0.82). `curve` reshapes
+ * only the sub-anchor L progression (matching the reference); default linear.
+ */
+export function anchoredChromaticRamp(
+  seed: OKLCH,
+  paper: OKLCH,
+  options: { curve?: LRampCurve } = {},
+): string[] {
+  const STEPS = 12;
+  const ANCHOR = 8; // 0-based index of step 9 (the solid saturated fill)
+  const ease = options.curve ?? ((t: number) => t); // rgc brand default = linear
+  const dark = paper.L < 0.5;
+  // Grade 1 (subtle tint near paper) and grade 12 (text-on-paper) endpoints,
+  // both anchored off the seed's own lightness.
+  const Ltop = paper.L + (seed.L - paper.L) * (dark ? 0.1 : 0.06);
+  const Ltext = dark
+    ? Math.min(0.96, Math.max(0.84, seed.L + 0.14))
+    : Math.min(0.46, Math.max(0.28, seed.L * 0.62));
+
+  const out: string[] = [];
+  for (let i = 0; i < STEPS; i++) {
+    let L: number, C: number;
+    if (i <= ANCHOR) {
+      const t = i / ANCHOR;
+      L = Ltop + (seed.L - Ltop) * ease(t);
+      C = seed.C * (0.22 + 0.78 * t); // tints desaturate toward paper
+    } else {
+      const t = (i - ANCHOR) / (STEPS - 1 - ANCHOR);
+      L = seed.L + (Ltext - seed.L) * t;
+      C = seed.C * (1 - 0.18 * t); // 1 → 0.82 toward the text end
+    }
+    out.push(oklchToHex({ L, C, H: seed.H }));
+  }
+  out[ANCHOR] = oklchToHex(seed); // force the EXACT anchor at step 9
+  return out;
+}
+
 /** 1-indexed accessor matching Radix step numbering. `rampStep(r, 1)..rampStep(r, 12)`. */
 export function rampStep(ramp: string[], step: number): string {
   if (step < 1 || step > 12 || !Number.isInteger(step)) {

@@ -11,6 +11,35 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-07-22 — Functional Brand/Accent lightness (anchored chromatic ramps)
+
+Maintainer report: "light/dark slider doesn't work as intended in the
+interactive settings menu" → specifically, dragging the L (lightness) slider on
+the **Brand/Accent** anchors in Edit-theme → Identity changed nothing.
+
+Root cause: `buildRamps` built the brand/accent ramps with `oklchRamp`, which
+DISCARDS the seed's L and rides fixed `LIGHT_RAMP_L`/`DARK_RAMP_L` arrays —
+reading only the anchor's hue + chroma. So the L component of the Brand/Accent
+anchor was inert (Paper/Ink worked because the neutral ramp interpolates
+paper.L→ink.L directly). A live, draggable control with no consequence — the
+exact bug class the settings-consequence harness exists to kill (it slipped
+because the harness edits the anchor *hex*, which also moves H/C).
+
+Fix (closes the resolver's own "Phase D" TODO; decision-register **D41**):
+ported rgc_v4 `engine.jsx::brandRamp` back as `anchoredChromaticRamp(seed,
+paper)` in `oklch.ts` — step 9 === the exact anchor, whole L progression derived
+from `seed.L`. Retired the chroma-preserving-L crutch for these two ramps (L now
+comes from the anchor). `brandHex`/`accentHex` projections dropped.
+
+Maintainer chose **let presets shift** (WYSIWYG — the chip you pick is the brand
+solid; restores the rgc-lab intent). Blast radius: 9 preset cssVars snapshots
+regenerated; one contrast casualty — **dwarven** dark brand landed at L≈0.634
+(brand_ink APCA 41.5 < 45 floor), its bronze seed darkened `#7A4E22`→`#63401D`
+(reflected solid L≈0.70, Lc≈51, same hue). Validated: TS suite (bun 1568 +
+vitest 320), APCA/distinctness gates, lint/svelte-check, 9 presets eyeballed via
+V8+rsvg, R parity/render/save-plot. R presets pull inputs from TS via V8, so the
+retune propagates structurally (no R-side edit).
+
 ## 2026-07-21 — Codebase-wide review (round 3): formatter crash + non-finite tail
 
 Broadened past the export path. Reading `formatters.ts` critically surfaced a

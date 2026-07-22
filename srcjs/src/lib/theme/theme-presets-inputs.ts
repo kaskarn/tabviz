@@ -202,7 +202,13 @@ export const NEWSPRINT: ThemeInputs = defineInputs(
  *  EB Garamond body. */
 export const DWARVEN: ThemeInputs = defineInputs(
   {
-    brand: "#7A4E22",
+    // Deep bronze. Under the anchored-chromatic-ramp (2026-07-22), the dark
+    // brand solid = the reflected anchor L; #7A4E22 landed at L≈0.634 — a
+    // mid-tone that is a poor text background (brand_ink Lc 41.5 < 45 floor).
+    // Darkened one notch so the reflected solid lifts to L≈0.70 (polished
+    // forge-gold), where near-black ink reads at Lc≈51. Same amber hue, so
+    // the brand-tinted neutrals are unchanged.
+    brand: "#63401D",
     accent: "#C0B000",
     polarity: "dark",
     neutralHueFrom: "brand",
