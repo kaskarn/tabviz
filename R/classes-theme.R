@@ -54,6 +54,33 @@ validate_oklch_triple <- function(self, prefix, required = TRUE) {
   NULL
 }
 
+#' Spacing-token roster (D42 — the per-token Spacing tab).
+#'
+#' The camelCase names a `spacing_overrides` input may carry. MUST match the TS
+#' `SPACING_TOKEN_KEYS` (`srcjs/src/lib/theme/spacing-tokens.ts`) and the
+#' snake_case `SpacingTokens` S7 properties (`snake_to_camel`). Sync-gated by
+#' `test-spacing-roster-sync.R`. Wire keys are camelCase (the WebTheme surface),
+#' so the `spacing_overrides` list is stored camelCase-keyed — no conversion on
+#' serialize.
+#' @noRd
+TABVIZ_SPACING_TOKENS <- c(
+  "rowHeight", "headerHeight", "padding", "containerPadding", "axisGap",
+  "columnGroupPadding", "rowGroupPadding", "cellPaddingX", "cellPaddingY",
+  "groupPadding", "footerGap", "titleSubtitleGap", "headerGap",
+  "bottomMargin", "indentPerLevel"
+)
+
+#' Per-token spacing override bounds `[min, max]` (px), keyed by camelCase token.
+#' Mirrors TS `SPACING_TOKEN_BOUNDS`. Used by the ThemeInputs validator.
+#' @noRd
+TABVIZ_SPACING_BOUNDS <- list(
+  rowHeight = c(8, 120), headerHeight = c(16, 120), padding = c(0, 80),
+  containerPadding = c(0, 80), axisGap = c(0, 60), columnGroupPadding = c(0, 40),
+  rowGroupPadding = c(0, 60), cellPaddingX = c(0, 40), cellPaddingY = c(0, 30),
+  groupPadding = c(0, 60), footerGap = c(0, 80), titleSubtitleGap = c(0, 60),
+  headerGap = c(0, 60), bottomMargin = c(0, 80), indentPerLevel = c(0, 48)
+)
+
 #' ThemeInputs: customer-facing theme authoring surface (V4 anchors).
 #'
 #' The entire user authoring surface. V4 vocabulary (Stage 1 §22): identity
@@ -281,7 +308,17 @@ ThemeInputs <- new_class(
     # lib/interaction-resolve.ts (explicit > theme > global > baked).
     # Serializes onto the inputs wire as `interaction_defaults`. Empty =
     # no opinions.
-    interaction_defaults = new_property(class_list, default = quote(list()))
+    interaction_defaults = new_property(class_list, default = quote(list())),
+
+    # Per-token spacing OVERRIDES (D42 — the Spacing tab). Sparse named list of
+    # ABSOLUTE px values keyed by camelCase spacing token (TABVIZ_SPACING_TOKENS),
+    # e.g. `list(rowHeight = 44, footerGap = 4)`. The resolver applies them AFTER
+    # `density × density_factor` (TS applySpacingOverrides); an absent token
+    # inherits `preset × factor`. Stored as ONE list slot (mirrors type_roles);
+    # serializes to the inputs wire as `spacing_overrides`. camelCase-keyed to
+    # match the wire 1:1 (no conversion). UNTRUSTED on import (token names +
+    # finite/in-bounds gated). Empty = no overrides.
+    spacing_overrides = new_property(class_list, default = quote(list()))
   ),
   validator = function(self) {
     for (anchor in c("anchors_paper", "anchors_ink", "anchors_brand")) {
@@ -306,6 +343,30 @@ ThemeInputs <- new_class(
     }
     if (!self@density %in% c("compact", "comfortable", "spacious")) {
       return("density must be 'compact', 'comfortable', or 'spacious'")
+    }
+    # D42 — per-token spacing overrides: known token names, finite + in-bounds.
+    if (length(self@spacing_overrides) > 0L) {
+      nm <- names(self@spacing_overrides)
+      if (is.null(nm) || any(nm == "")) {
+        return("spacing_overrides must be a fully-named list keyed by spacing token")
+      }
+      bad <- setdiff(nm, TABVIZ_SPACING_TOKENS)
+      if (length(bad) > 0L) {
+        return(paste0("spacing_overrides has unknown token(s): ",
+                      paste(bad, collapse = ", "), " (one of ",
+                      paste(TABVIZ_SPACING_TOKENS, collapse = ", "), ")"))
+      }
+      for (tok in nm) {
+        v <- self@spacing_overrides[[tok]]
+        if (length(v) != 1 || !is.numeric(v) || !is.finite(v)) {
+          return(paste0("spacing_overrides$", tok, " must be a single finite number"))
+        }
+        b <- TABVIZ_SPACING_BOUNDS[[tok]]
+        if (v < b[1] || v > b[2]) {
+          return(paste0("spacing_overrides$", tok, " must be in [", b[1], ", ",
+                        b[2], "], got ", v))
+        }
+      }
     }
     # Phase D — geometry numeric ranges (px).
     for (slot in c("geometry_radius_sm", "geometry_radius_md",
@@ -614,6 +675,8 @@ SpacingTokens <- new_class(
     column_group_padding = new_property(class_numeric, default = NA_real_),
     row_group_padding    = new_property(class_numeric, default = NA_real_),
     cell_padding_x       = new_property(class_numeric, default = NA_real_),
+    cell_padding_y       = new_property(class_numeric, default = NA_real_),
+    group_padding        = new_property(class_numeric, default = NA_real_),
     footer_gap           = new_property(class_numeric, default = NA_real_),
     title_subtitle_gap   = new_property(class_numeric, default = NA_real_),
     header_gap           = new_property(class_numeric, default = NA_real_),

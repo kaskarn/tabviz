@@ -20,9 +20,9 @@
   (tests/browser/settings-consequence.browser.ts) walks every [data-vt]
   control and asserts a visible-pixel delta in the widget.
 
-  The density "advanced control in Styling" signpost caption arrives
-  with Phase 5 (pointing at a tab that doesn't exist yet would be a
-  broken signpost).
+  The density signpost caption points at Edit theme → Spacing, which
+  owns the fine dial and every per-token spacing override (D42; the
+  coarse PRESET stays here as an L1 theme-blessed flip).
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
@@ -130,7 +130,7 @@
       <EnumRow label="Density" value={inputs.density ?? "comfortable"}
                segments={describedSegments("density", DENSITY)}
                onchange={(v) => patch("density", v as ThemeInputs["density"])} />
-      <p class="signpost">Fine dial in Edit theme → Styling.</p>
+      <p class="signpost">Fine dial and per-token spacing in Edit theme → Spacing.</p>
     </div>
     <div data-vt="banding">
       <EnumRow label="Banding" value={bandingValue}

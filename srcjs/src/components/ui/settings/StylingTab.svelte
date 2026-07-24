@@ -1,19 +1,22 @@
 <!--
   StylingTab — Layer 4 of the settings redesign (D21; canonical plan:
   docs/dev/settings-redesign.md). EXPERT WIRING: the deepest theme
-  surface. Spacing FIRST (the Variations density signpost points here),
-  then color-role remapping (the FULL kind-filtered roster — answering
-  the review's "why those 4 role tones?"), then text-role rebinds, then
-  the carried-overrides release list.
+  surface. Color-role remapping first (the FULL kind-filtered roster —
+  answering the review's "why those 4 role tones?"), then text-role
+  rebinds, then the carried-overrides release list.
+
+  Spacing left this tab in D42: the density dial and every per-token
+  spacing control now live in the sibling SPACING tab (one canonical
+  home for the spacing concern; the Variations density signpost points
+  there).
 
   DT-11 boundary (still-true, CLAUDE.md): this tab writes ONLY through
-  SANCTIONED channels — setAuthoringInputs (density_factor, type_roles),
+  SANCTIONED channels — setAuthoringInputs (type_roles),
   setThemeRoleOverride / clearThemeRoleOverride (the safe middle rung),
   and the pin/override RELEASE verbs. NEVER setThemeField / writeThemePath
-  (gate: settings-band-contract.test.ts). Per-token spacing + pin
-  CREATION + component re-routing are sanctioned-verb gaps tracked as
-  D25 + Phase-5 follow-ups; they stay R/`set_spacing()`/`set_pin()`
-  territory for now.
+  (gate: settings-band-contract.test.ts). Pin CREATION and component
+  re-routing remain sanctioned-verb gaps (D25's surviving half); they
+  stay R/`set_pin()` territory for now.
 
   Travel: every write lands on the theme → Reset theme.
 -->
@@ -39,11 +42,7 @@
   const ti = useThemeInputs(() => store);
   const theme = $derived(ti.theme);
   const inputs = $derived(ti.inputs);
-  const { commit, preview } = ti;
-
-  // ── Spacing — the continuous density dial (Variations density signposts
-  // here). density_factor is a theme INPUT → DT-11-clean. ───────────────
-  const densityFactor = $derived(inputs?.density_factor ?? 1);
+  const { commit } = ti;
 
   // ── Color-role remapping (the sanctioned middle rung) ────────────────
   // The FULL roster, filtered by KIND (principle 6) — not an arbitrary
@@ -149,18 +148,6 @@
 
 {#if inputs}
   <div class="styling-tab">
-    <!-- ── Spacing ──────────────────────────────────────────────────── -->
-    <div class="strata">spacing</div>
-    <div data-st="density-factor">
-      <Field label="Density" hint="Fine dial over the Variations density preset. 1.0 = the preset unchanged.">
-        <Slider value={densityFactor} min={0.5} max={2} step={0.01}
-                valueText={`×${densityFactor.toFixed(2)}`}
-                ariaLabel="Density factor"
-                onchange={(v) => preview({ ...inputs, density_factor: v })}
-                oncommit={(v) => commit({ ...inputs, density_factor: v })} />
-      </Field>
-    </div>
-
     <!-- ── Color roles ──────────────────────────────────────────────── -->
     <div class="strata">color roles</div>
     <p class="lede">Re-route any role to a ramp + grade. The cascade re-resolves;

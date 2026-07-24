@@ -1,28 +1,31 @@
 <!--
-  EditThemeCluster — the "Edit theme" top-tab's inner cluster (D21 IA:
-  {Edit theme: Identity | Plots | Styling}). Holds the inner tab row +
-  the Identity / Plots panes (Styling lands Phase 5). The inner chrome
-  appears only because a SECOND inner tab now exists (Phase 4) — one
-  inner tab would need none.
+  EditThemeCluster — the "Edit theme" top-tab's inner cluster (D21 IA,
+  extended by D42: {Edit theme: Identity | Plots | Styling | Spacing}).
+  Holds the inner tab row + the panes. The inner chrome appears only
+  because a SECOND inner tab exists — one inner tab would need none.
 
-  All three inner surfaces write THEME inputs (travel: Reset theme), so
-  the cluster is a pure navigation shell over store-wired tabs.
+  All four inner surfaces write THEME inputs (travel: Reset theme), so
+  the cluster is a pure navigation shell over store-wired tabs. The one
+  figure-tier exception — Spacing's relocated row-height pins — is
+  visually seamed off inside that tab and resets with Reset figure.
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import IdentityTab from "./IdentityTab.svelte";
   import PlotsTab from "./PlotsTab.svelte";
   import StylingTab from "./StylingTab.svelte";
+  import SpacingTab from "./SpacingTab.svelte";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
 
-  type Inner = "identity" | "plots" | "styling";
+  type Inner = "identity" | "plots" | "styling" | "spacing";
   let inner = $state<Inner>("identity");
   const INNER: ReadonlyArray<{ id: Inner; label: string }> = [
     { id: "identity", label: "identity" },
     { id: "plots", label: "plots" },
     { id: "styling", label: "styling" },
+    { id: "spacing", label: "spacing" },
   ];
 </script>
 
@@ -40,8 +43,10 @@
     <IdentityTab {store} />
   {:else if inner === "plots"}
     <PlotsTab {store} />
-  {:else}
+  {:else if inner === "styling"}
     <StylingTab {store} />
+  {:else}
+    <SpacingTab {store} />
   {/if}
 </div>
 

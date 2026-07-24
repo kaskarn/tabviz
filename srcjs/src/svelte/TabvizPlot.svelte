@@ -1576,8 +1576,10 @@
                 y: anchor.getBoundingClientRect().top,
               })}
               titleSubtitleGap={theme?.spacing.titleSubtitleGap ?? 13}
-              onpreviewgap={(v) => store.previewThemeField("spacing", "titleSubtitleGap", v)}
-              oncommitgap={(v) => store.setThemeField("spacing", "titleSubtitleGap", v)}
+              onpreviewgap={(v) => store.previewSpacingOverride("titleSubtitleGap", v)}
+              oncommitgap={(v) => store.setSpacingOverride("titleSubtitleGap", v)}
+              oncancelgap={() => store.cancelPreviewSpacingOverride("titleSubtitleGap")}
+              onresetgap={() => store.clearSpacingOverride("titleSubtitleGap")}
               {arrangeArmed}
             />
           {/if}
@@ -2573,7 +2575,11 @@
              every seam with a visible handle + px readout. Two gesture
              families share the seam grammar but write different tiers:
                · structural spacing (header height, group gaps) → THEME
-                 spacing (travels with the theme)
+                 spacing, as a per-token `spacing_overrides` authoring
+                 input (D42 S-2: the canvas seams and the Spacing tab
+                 write the SAME thing, so a drag travels with the theme
+                 and survives a density change). Bounds mirror
+                 SPACING_TOKEN_BOUNDS — keep them in step.
                · row body heights → per-KIND figure pins (RowEdgeHandles
                  below; figure state, rides spec.figureLayout)
              The old per-row `spacing.rowHeight` seam is gone — overall
@@ -2584,11 +2590,13 @@
           <!-- Header height: bottom edge of the column-header band -->
           <EdgeResize
             value={theme.spacing.headerHeight}
-            min={0}
+            min={16}
             max={120}
             armed
-            onpreview={(v) => store.previewThemeField("spacing", "headerHeight", v)}
-            oncommit={(v) => store.setThemeField("spacing", "headerHeight", v)}
+            onpreview={(v) => store.previewSpacingOverride("headerHeight", v)}
+            oncommit={(v) => store.setSpacingOverride("headerHeight", v)}
+            oncancel={() => store.cancelPreviewSpacingOverride("headerHeight")}
+            onreset={() => store.clearSpacingOverride("headerHeight")}
             label="Header height"
             top={`${headerHeightPx}px`}
           />
@@ -2603,8 +2611,10 @@
                 min={0}
                 max={60}
                 armed
-                onpreview={(v) => store.previewThemeField("spacing", "rowGroupPadding", v)}
-                oncommit={(v) => store.setThemeField("spacing", "rowGroupPadding", v)}
+                onpreview={(v) => store.previewSpacingOverride("rowGroupPadding", v)}
+                oncommit={(v) => store.setSpacingOverride("rowGroupPadding", v)}
+                oncancel={() => store.cancelPreviewSpacingOverride("rowGroupPadding")}
+                onreset={() => store.clearSpacingOverride("rowGroupPadding")}
                 label="Row group padding"
                 top={`${groupTop}px`}
               />
@@ -2713,8 +2723,10 @@
           y: anchor.getBoundingClientRect().top,
         })}
         footerGap={theme?.spacing.footerGap ?? 8}
-        onpreviewfootergap={(v) => store.previewThemeField("spacing", "footerGap", v)}
-        oncommitfootergap={(v) => store.setThemeField("spacing", "footerGap", v)}
+        onpreviewfootergap={(v) => store.previewSpacingOverride("footerGap", v)}
+        oncommitfootergap={(v) => store.setSpacingOverride("footerGap", v)}
+        oncancelfootergap={() => store.cancelPreviewSpacingOverride("footerGap")}
+        onresetfootergap={() => store.clearSpacingOverride("footerGap")}
         {arrangeArmed}
       />
     </div><!-- /.tabviz-scalable -->

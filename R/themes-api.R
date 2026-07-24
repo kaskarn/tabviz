@@ -134,6 +134,12 @@ theme_inputs_to_json <- function(inputs) {
   interaction_defaults_out <-
     if (length(inputs@interaction_defaults) > 0L) inputs@interaction_defaults else NULL
 
+  # Per-token spacing overrides (D42). Sparse named list of camelCase token →
+  # absolute px; emit verbatim (omit when empty). The resolver applies them
+  # after density × density_factor.
+  spacing_overrides_out <-
+    if (length(inputs@spacing_overrides) > 0L) inputs@spacing_overrides else NULL
+
   marks_out <- drop_null(list(
     point_shape     = na_to_null(inputs@marks_point_shape),
     interval_weight = na_to_null(inputs@marks_interval_weight)
@@ -196,7 +202,8 @@ theme_inputs_to_json <- function(inputs) {
     row_kinds             = if (length(row_kinds_out) > 0L) row_kinds_out else NULL,
     column_defaults       = column_defaults_out,
     series_overrides      = series_overrides_out,
-    interaction_defaults  = interaction_defaults_out
+    interaction_defaults  = interaction_defaults_out,
+    spacing_overrides     = spacing_overrides_out
   )
   out[!vapply(out, is.null, logical(1))]
 }
@@ -378,6 +385,14 @@ set_anchor_on_inputs <- function(inputs, prefix, triple) {
 #'   and the author's explicit `web_interaction()` settings: an explicit
 #'   author setting always wins; the theme opinion fills unset flags. NULL =
 #'   no opinions.
+#' @param spacing_overrides Per-token spacing overrides: a named list of
+#'   absolute px values keyed by camelCase spacing token (e.g.
+#'   `list(rowHeight = 44, footerGap = 4)`). Applied after the density preset
+#'   and `density_factor`; an unset token inherits `preset x factor`. Tokens:
+#'   `rowHeight`, `headerHeight`, `padding`, `containerPadding`, `axisGap`,
+#'   `columnGroupPadding`, `rowGroupPadding`, `cellPaddingX`, `cellPaddingY`,
+#'   `groupPadding`, `footerGap`, `titleSubtitleGap`, `headerGap`,
+#'   `bottomMargin`, `indentPerLevel`. NULL = no overrides.
 #' @param header_style Header chrome treatment (a structural variant
 #'   input): `"light"`, `"tint"`, or
 #'   `"bold"`. Default `"light"`.
@@ -436,6 +451,7 @@ web_theme <- function(
     column_defaults = NULL,
     series_overrides = NULL,
     interaction_defaults = NULL,
+    spacing_overrides = NULL,
     header_style = NULL,
     border_preset = NULL,
     banding = NULL,
@@ -469,6 +485,7 @@ web_theme <- function(
   checkmate::assert_list(column_defaults, null.ok = TRUE, names = "named")
   checkmate::assert_list(series_overrides, null.ok = TRUE)
   checkmate::assert_list(interaction_defaults, null.ok = TRUE, names = "named")
+  checkmate::assert_list(spacing_overrides, null.ok = TRUE, names = "named")
 
   paper_t  <- coerce_anchor(paper, "paper")  %||% DEFAULT_PAPER_ANCHOR
   ink_t    <- coerce_anchor(ink,   "ink")    %||% DEFAULT_INK_ANCHOR
@@ -553,7 +570,8 @@ web_theme <- function(
     row_kinds_panel_height_ratio        = row_kinds$panel$heightRatio        %||% NA_real_,
     column_defaults                     = column_defaults %||% list(),
     series_overrides                    = series_overrides %||% list(),
-    interaction_defaults                = interaction_defaults %||% list()
+    interaction_defaults                = interaction_defaults %||% list(),
+    spacing_overrides                   = spacing_overrides %||% list()
   )
   theme <- resolve_from_inputs(inputs, name = name)
   if (!is.null(web_fonts)) theme@web_fonts <- web_fonts
@@ -1650,21 +1668,65 @@ set_inputs <- function(theme, ...) {
 #' Override density-derived spacing tokens.
 #'
 #' Per-token spacing overrides on top of the active density preset — set the
-#' tokens you care about; the rest keep their density-preset values. `spacing`
-#' is a post-resolution token block (not a Tier-1 input), so this assigns
-#' directly without re-resolving the cascade.
+#' tokens you care about; the rest keep their `preset x density_factor` values.
+#'
+#' Overrides are absolute px and land on the Tier-1 `spacing_overrides` INPUT
+#' (D42), so they travel inside the portable theme artifact, survive a later
+#' density change, and are exactly what the settings panel's Spacing tab and
+#' the arrange-tool canvas seams write — one mechanism, one travel path. The
+#' cascade re-resolves on each call.
 #'
 #' @param theme A [WebTheme].
-#' @param ... Named numeric arguments matching [SpacingTokens] property names
-#'   (`row_height`, `header_height`, `padding`, `axis_gap`, ...).
-#' @return The [WebTheme] with spacing overrides applied.
+#' @param ... Named numeric arguments naming spacing tokens, in either
+#'   snake_case ([SpacingTokens] property names: `row_height`, `header_height`,
+#'   `axis_gap`, ...) or the camelCase wire names (`rowHeight`, ...). `NULL`
+#'   releases an override, returning the token to its density-derived value.
+#'   Values outside a token's bounds are an error (see [ThemeInputs]).
+#' @return The re-resolved [WebTheme].
+#' @examples
+#' \dontrun{
+#'   web_theme_nejm() |> set_spacing(row_height = 44, footer_gap = 4)
+#'   # release one override, keeping the rest
+#'   web_theme_nejm() |> set_spacing(row_height = 44) |> set_spacing(row_height = NULL)
+#' }
 #' @export
 set_spacing <- function(theme, ...) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
-  theme@spacing <- apply_named_props(theme@spacing, list(...))
-  theme
+  args <- list(...)
+  if (length(args) == 0L) return(theme)
+  nms <- names(args)
+  if (is.null(nms) || any(!nzchar(nms))) {
+    cli::cli_abort("All {.fun set_spacing} arguments must be named spacing tokens.")
+  }
+  # Accept snake_case (the SpacingTokens property names users know) or the
+  # camelCase wire names; the override map is camelCase-keyed like the wire.
+  keys <- vapply(nms, function(k) {
+    if (k %in% TABVIZ_SPACING_TOKENS) return(k)
+    parts <- strsplit(k, "_", fixed = TRUE)[[1]]
+    paste0(parts[1], paste0(toupper(substring(parts[-1], 1, 1)),
+                            substring(parts[-1], 2), collapse = ""))
+  }, character(1), USE.NAMES = FALSE)
+  bad <- nms[!keys %in% TABVIZ_SPACING_TOKENS]
+  if (length(bad) > 0L) {
+    cli::cli_abort(c(
+      "Unknown spacing token{?s}: {.field {bad}}.",
+      i = "One of: {.field {TABVIZ_SPACING_TOKENS}}."
+    ))
+  }
+  overrides <- theme@inputs@spacing_overrides
+  for (i in seq_along(args)) {
+    v <- args[[i]]
+    if (is.null(v)) {
+      overrides[[keys[i]]] <- NULL          # release: rejoin the preset
+    } else {
+      overrides[[keys[i]]] <- as.numeric(v) # validated by ThemeInputs
+    }
+  }
+  inputs <- theme@inputs
+  inputs@spacing_overrides <- overrides
+  re_resolve(theme, inputs)
 }
 
 #' Set a single theme field by path (generic deep setter).

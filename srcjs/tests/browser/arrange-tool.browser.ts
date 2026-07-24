@@ -298,6 +298,29 @@ async function run() {
   }
   ok(`group-gap seam draggable: ${gapBefore}px → ${gapAfter}px`);
 
+  // ── 7c. Escape on a SPACING seam restores the value (D42: these seams
+  //        now commit a `spacing_overrides` authoring input, so cancel goes
+  //        through the store's cancelPreviewSpacingOverride — which restores
+  //        the committed value AND the token's override state, not just the
+  //        number the seam was showing). ─────────────────────────────────
+  const gapSeam2 = (await page.$('.edge-resize.armed[aria-label="Row group padding"]'))!;
+  const gapBox2 = (await gapSeam2.boundingBox())!;
+  await page.mouse.move(gapBox2.x + 150, gapBox2.y + gapBox2.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(gapBox2.x + 150, gapBox2.y + gapBox2.height / 2 + 14, { steps: 4 });
+  await new Promise((r) => setTimeout(r, 150));
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  await new Promise((r) => setTimeout(r, 300));
+  const gapCancelled = await page.$eval(
+    '.edge-resize.armed[aria-label="Row group padding"]',
+    (el) => Number(el.getAttribute("aria-valuenow")),
+  );
+  if (gapCancelled !== gapAfter) {
+    fail(`Escape on the group-gap seam did not restore the value (${gapAfter} → ${gapCancelled})`);
+  }
+  ok(`Escape mid-drag on the group-gap seam restored ${gapCancelled}px`);
+
   // ── 8. Disarm via toolbar; seams disappear ──────────────────────────────
   await page.$eval(".arrange-btn", (el) => (el as HTMLElement).click());
   await new Promise((r) => setTimeout(r, 200));

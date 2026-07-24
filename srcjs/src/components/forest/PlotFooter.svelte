@@ -20,6 +20,10 @@
     onpreviewfootergap?: (value: number) => void;
     /** Commit on pointerup (records + re-measures). */
     oncommitfootergap?: (value: number) => void;
+    /** Escape during the drag — restores value AND override state. */
+    oncancelfootergap?: () => void;
+    /** Double-click the seam: drop the override, rejoin the density preset. */
+    onresetfootergap?: () => void;
     /** Arrange tool armed — gates the gap seam (P2: layout gestures live
      *  behind arrange, not behind content-edit). */
     arrangeArmed?: boolean;
@@ -33,6 +37,8 @@
     footerGap,
     onpreviewfootergap,
     oncommitfootergap,
+    oncancelfootergap,
+    onresetfootergap,
     arrangeArmed = false,
   }: Props = $props();
 
@@ -74,6 +80,8 @@
         armed
         onpreview={(v) => onpreviewfootergap!(v)}
         oncommit={(v) => oncommitfootergap!(v)}
+        oncancel={oncancelfootergap}
+        onreset={onresetfootergap}
         label="Footer gap"
       />
     {/if}

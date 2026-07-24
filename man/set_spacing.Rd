@@ -9,15 +9,30 @@ set_spacing(theme, ...)
 \arguments{
 \item{theme}{A \link{WebTheme}.}
 
-\item{...}{Named numeric arguments matching \link{SpacingTokens} property names
-(\code{row_height}, \code{header_height}, \code{padding}, \code{axis_gap}, ...).}
+\item{...}{Named numeric arguments naming spacing tokens, in either
+snake_case (\link{SpacingTokens} property names: \code{row_height}, \code{header_height},
+\code{axis_gap}, ...) or the camelCase wire names (\code{rowHeight}, ...). \code{NULL}
+releases an override, returning the token to its density-derived value.
+Values outside a token's bounds are an error (see \link{ThemeInputs}).}
 }
 \value{
-The \link{WebTheme} with spacing overrides applied.
+The re-resolved \link{WebTheme}.
 }
 \description{
 Per-token spacing overrides on top of the active density preset — set the
-tokens you care about; the rest keep their density-preset values. \code{spacing}
-is a post-resolution token block (not a Tier-1 input), so this assigns
-directly without re-resolving the cascade.
+tokens you care about; the rest keep their \verb{preset x density_factor} values.
+}
+\details{
+Overrides are absolute px and land on the Tier-1 \code{spacing_overrides} INPUT
+(D42), so they travel inside the portable theme artifact, survive a later
+density change, and are exactly what the settings panel's Spacing tab and
+the arrange-tool canvas seams write — one mechanism, one travel path. The
+cascade re-resolves on each call.
+}
+\examples{
+\dontrun{
+  web_theme_nejm() |> set_spacing(row_height = 44, footer_gap = 4)
+  # release one override, keeping the rest
+  web_theme_nejm() |> set_spacing(row_height = 44) |> set_spacing(row_height = NULL)
+}
 }

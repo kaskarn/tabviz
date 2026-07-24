@@ -37,8 +37,18 @@
     direction?: 1 | -1;
     /** Live update on each pointermove. Must not record / re-measure. */
     onpreview: (value: number) => void;
-    /** Final value at pointerup. Records + re-measures via setThemeField. */
+    /** Final value at pointerup. Records + re-measures via the caller's
+     *  commit verb. */
     oncommit: (value: number) => void;
+    /**
+     * Escape / pointercancel handler. Optional: without it a cancel just
+     * previews the drag-start value back, which restores the NUMBER but
+     * not the caller's override bookkeeping — a seam whose commit CREATES
+     * an override (spacing tokens) must pass this so a cancelled drag
+     * leaves an auto token auto (seam grammar: Escape restores value AND
+     * pin state).
+     */
+    oncancel?: () => void;
     /** Double-click: reset the knob to its auto/default value. Optional —
      *  seams without a meaningful default simply don't reset. */
     onreset?: () => void;
@@ -63,6 +73,7 @@
     direction = 1,
     onpreview,
     oncommit,
+    oncancel,
     onreset,
     label,
     top,
@@ -109,7 +120,7 @@
       // Escape / pointercancel = cancel: restore the drag-start value, no
       // commit (and no op-log entry — the gesture never happened).
       lastValue = startValue;
-      onpreview(startValue);
+      if (oncancel) oncancel(); else onpreview(startValue);
     }
   }
 

@@ -251,6 +251,15 @@ is a liveness audit across ALL surfaces.
       walks; the zoom dropdown's missing Escape was the one breach
       found and is fixed (preventDefault-consuming, per the Escape
       priority convention).
+- [x] 2026-07-24 (D42, Spacing tab) — the grammar gained a rule and the
+      panel gained a surface. Rule: a seam whose COMMIT CREATES state
+      needs `oncancel`, not just `onpreview(startValue)` (Escape must
+      restore pin state too). Surface: Edit theme → Spacing, 11 per-token
+      overrides + the density dial + the relocated row-height pins, all
+      consequence-gated. The four arrange canvas seams now write the same
+      authoring input, retiring the last DT-11 canvas exemption. The
+      consequence gate rejected one control the design doc had blessed
+      (`group_padding` — no renderer), which is the gate working.
 
 ### G. WYSIWYG as a contract
 **Exit criteria:**
@@ -427,6 +436,13 @@ Clinical/regulatory audience makes this table stakes.
 
 ## Status log
 
+- 2026-07-24 — **D42 shipped (area F — per-token spacing).** Overrules D25:
+  `inputs.spacing_overrides` (Tier-1, absolute px, applied after
+  `density x density_factor`) + the Spacing inner tab + sanctioned verbs;
+  R `set_spacing()` and the arrange canvas seams rewritten onto the same
+  input, so the last DT-11 canvas exemption is gone. Fixed a real serialize
+  bug on the way (R dropped `cellPaddingY`/`groupPadding`). Plan +
+  phase log: `docs/dev/spacing-tab-plan.md`.
 - 2026-06-16 — **D31 decided + executed (area B / E — dead-API honesty).**
   Wired the 3 real interaction flags (show_legend / enable_collapse /
   enable_hover) as default-ON opt-outs in BOTH render paths + deleted the

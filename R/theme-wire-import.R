@@ -242,6 +242,22 @@ theme_inputs_from_wire <- function(wire_inputs) {
     if (length(clean_idf) > 0L) v$interaction_defaults <- clean_idf
   }
 
+  # Per-token spacing overrides (D42). UNTRUSTED wire: keep only known camelCase
+  # tokens whose value is a single finite number; clamp to per-token bounds.
+  # Mirrors sanitizeSpacingOverrides in lib/theme/spacing-tokens.ts.
+  spo <- w[["spacing_overrides"]] %||% list()
+  if (length(spo) > 0L && !is.null(names(spo))) {
+    clean_spo <- list()
+    for (tok in names(spo)) {
+      if (!nzchar(tok) || !tok %in% TABVIZ_SPACING_TOKENS) next
+      val <- spo[[tok]]
+      if (!is.numeric(val) || length(val) != 1L || !is.finite(val)) next
+      b <- TABVIZ_SPACING_BOUNDS[[tok]]
+      clean_spo[[tok]] <- min(b[2], max(b[1], val))
+    }
+    if (length(clean_spo) > 0L) v$spacing_overrides <- clean_spo
+  }
+
   # Curves.
   cv <- w[["curves"]] %||% list()
   v$curves_neutral <- .wire_chr(cv[["neutral"]])

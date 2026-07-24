@@ -10,10 +10,12 @@
  *
  * Method: mount a fixture armed for every control across all five
  * surfaces (groups → banding, 2-effect forest → series + scheme, title +
- * tag → chrome rows; theme baked raised + boxed + chip so geometry/label
+ * subtitle + tag + footnote + a column group → chrome rows and every gap
+ * seam; theme baked raised + boxed + chip so geometry/label
  * controls are consequential after reset). Open the cog, walk every
  * marked control per tab in DOM order (data-vt Variations · data-lt
- * Labels · data-it Identity · data-pt Plots · data-st Styling;
+ * Labels · data-it Identity · data-pt Plots · data-st Styling ·
+ * data-spt Spacing;
  * re-queried each step — conditionals mount mid-walk), operate with REAL
  * input (segment click / range End-Home / dropdown End-Home / hex type),
  * and pixel-diff the FIGURE region (left of the 400px panel) before/after
@@ -43,7 +45,7 @@ import pixelmatch from "pixelmatch";
 import { buildTheme } from "../../src/lib/theme/theme-adapter";
 import { NEJM } from "../../src/lib/theme/theme-presets-inputs";
 import { tabviz } from "../../src/authoring/tabviz";
-import { colNumeric, colPvalue } from "../../src/authoring/columns";
+import { colGroup, colNumeric, colPvalue } from "../../src/authoring/columns";
 import { vizForest, effectForest } from "../../src/authoring/viz";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -91,6 +93,14 @@ const LIVENESS_VERIFIED = new Set([
   // "small/conditional" while actually DEAD (drove only the panel preview);
   // that's the bug D28 fixed, so this exemption is now honest, not a mask.
   "corners", "rules",
+  // D42 Spacing tab: bottomMargin is figure-BOTTOM air, which falls outside
+  // the fixed pixel clip (WIDGET_H tall, anchored at the widget's top) — it
+  // moves the figure honestly, just not inside what this harness photographs.
+  // Its CONSUMPTION proof is layout-metrics.test.ts (the box-model snapshot
+  // records chrome dims), per D28: liveness proves reach, snapshots prove
+  // consumption. Do NOT enlarge the clip to chase it — the clip width is what
+  // keeps the panel out of the diff.
+  "bottomMargin",
 ]);
 
 const WIDGET_W = 950;
@@ -125,8 +135,17 @@ function buildSpec(): unknown {
     // (tag row), forest column (series row), groups (banding group seg).
     title: "Consequence fixture",
     tag: "TABLE 1",
+    // Spacing-tab gaps need geometry to move (D42): a subtitle arms
+    // titleSubtitleGap, a footnote arms footerGap, and the colGroup below
+    // arms columnGroupPadding. Without them those three sliders would move
+    // a figure that has no such seam and read as dead.
+    subtitle: "Every gap token needs a seam to move",
+    footnote: "Footnote arms the footer gap.",
     columns: [
-      colNumeric({ field: "n", header: "N", decimals: 0 }),
+      colGroup({
+        header: "Cohort",
+        children: [colNumeric({ field: "n", header: "N", decimals: 0 })],
+      }),
       // TWO effects → series slots 0 AND 1, so the Identity scheme picker
       // is present and consequential (slot 1+ takes the categorical
       // palette). A single-effect forest would correctly HIDE the scheme.
@@ -243,7 +262,14 @@ async function main(): Promise<void> {
   // angle, watermark color/opacity) mount only after their parent is
   // switched on. `attr` selects the tab's control marker (data-vt for
   // Variations, data-lt for Labels).
-  async function walk(attr = "data-vt"): Promise<void> {
+  //
+  // `beforeEach` (optional) runs immediately before each control's BEFORE
+  // shot. The Spacing tab needs it: its controls all inflate the SAME
+  // geometry, so by mid-walk the figure is at max row height / header
+  // height / gaps and the footer has been pushed clean out of the clip —
+  // a live control then measures 0px. Same accumulated-state disease the
+  // per-tab baseline reset cures between tabs, just within one.
+  async function walk(attr = "data-vt", beforeEach?: () => Promise<void>): Promise<void> {
   for (let round = 0; round < 6; round++) {
     // Open collapsed disclosures so their [data-*] controls are walkable
     // (geometry, status colors). Anchor-row carets stay closed — anchors
@@ -293,6 +319,7 @@ async function main(): Promise<void> {
         skippedNote.push(`${id}: liveness-verified (offline pixel-consequence not deterministic)`);
         continue;
       }
+      if (beforeEach) await beforeEach();
       const before = await shotQuiescent(page);
 
       if (kind === "pill") {
@@ -539,6 +566,23 @@ async function main(): Promise<void> {
   await settle(page, 250);
   if (!(await page.$("[data-st]"))) throw new Error("Styling tab has no [data-st] controls");
   await walk("data-st");
+
+  // ── SPACING inner tab (D42) — per-token overrides, theme travel ────
+  // Baseline first: the Styling walk leaves role re-routes that shift the
+  // figure's colors, and a gap slider's consequence is pure geometry —
+  // measuring it against a clean figure keeps the deltas honest.
+  await resetThemeToBaseline();
+  const wentSpacing = await page.evaluate(() => {
+    const t = [...document.querySelectorAll<HTMLElement>(".settings-panel .inner-strip [role=tab]")]
+      .find((b) => (b.textContent || "").trim() === "spacing");
+    if (!t) return false;
+    t.click();
+    return true;
+  });
+  if (!wentSpacing) throw new Error("Spacing inner tab not found under edit theme");
+  await settle(page, 250);
+  if (!(await page.$("[data-spt]"))) throw new Error("Spacing tab has no [data-spt] controls");
+  await walk("data-spt", resetThemeToBaseline);
 
   // Reset-figure travel: every Labels write is FIGURE state — the scoped
   // reset (on the this-figure tab) must revert the typed labels +

@@ -33,6 +33,7 @@ import type { ThemeInputs } from "$types/theme-inputs";
 import type { RampName } from "$types/theme-roles";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme/theme-presets";
 import { buildTheme } from "$lib/theme/theme-adapter";
+import { clampSpacing, SPACING_TOKEN_KEYS, type SpacingToken } from "$lib/theme/spacing-tokens";
 import { ops, type OpRecord } from "$lib/op-recorder";
 
 /** Sections whose edits change text metrics or cell geometry; changing any
@@ -152,6 +153,24 @@ export interface ThemeSlice {
   previewThemeRoleOverride: (role: string, ramp: RampName, grade: number) => void;
   /** Release one Tier-2 role override from the theme artifact. */
   clearThemeRoleOverride: (role: string) => void;
+  /** Set one per-token spacing override (D42 — the Spacing tab). Absolute px,
+   *  clamped to the token's bounds; `null` clears it. Routes through the
+   *  sanctioned `setAuthoringInputs` channel (re-resolves; theme-portable;
+   *  survives density changes) — NOT a raw T3 spacing-cluster write, so it's
+   *  DT-11-clean. Commit path (remeasures for width-affecting tokens). */
+  setSpacingOverride: (token: SpacingToken, value: number | null) => void;
+  /** Drag-tick PREVIEW for setSpacingOverride — skips remeasure + contrast. */
+  previewSpacingOverride: (token: SpacingToken, value: number) => void;
+  /** Escape/cancel for a preview drag: restores the token's committed value
+   *  AND its override state (an auto token goes back to auto). No-op when no
+   *  preview session is open. */
+  cancelPreviewSpacingOverride: (token: SpacingToken) => void;
+  /** Clear one per-token spacing override (reset-to-auto). */
+  clearSpacingOverride: (token: SpacingToken) => void;
+  /** Clear ALL per-token spacing overrides (the tab's "Reset spacing"). */
+  resetSpacingOverrides: () => void;
+  /** The Spacing tab's control model: resolved px + override state per token. */
+  spacingRoster: () => Array<{ token: SpacingToken; px: number; overridden: boolean; widthAffecting: boolean }>;
   resetThemeEdits: () => void;
   resetWatermark: () => void;
   captureThemeSnapshot: () => ThemeSnapshot | null;
@@ -389,6 +408,90 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     const g = Math.max(1, Math.min(11, Math.round(grade)));
     const ro = { ...(carried.roleOverrides ?? {}), [role]: { ramp, grade: g } };
     rebuild({ roleOverrides: ro as WebTheme["roleOverrides"], skipValidation: true });
+  }
+
+  // Per-token spacing overrides (D42 — the Spacing tab). Thin wrappers over the
+  // sanctioned authoring channel: the override rides `authoringInputs.
+  // spacing_overrides`, so it re-resolves through the cascade (theme-portable,
+  // survives density/factor changes) and is DT-11-clean — the panel never
+  // writes the resolved T3 spacing cluster. Absolute px, clamped; a non-finite
+  // value is a no-op. Empty map → undefined so the dirty flag clears cleanly.
+  function nextSpacingMap(
+    token: SpacingToken,
+    value: number | null,
+  ): { next: Partial<Record<SpacingToken, number>>; ok: boolean } | null {
+    const current = deps.getSpec()?.theme?.authoringInputs;
+    if (!current) return null;
+    const next: Partial<Record<SpacingToken, number>> = { ...(current.spacing_overrides ?? {}) };
+    if (value == null) {
+      delete next[token];
+      return { next, ok: true };
+    }
+    const clamped = clampSpacing(token, value);
+    if (clamped == null) return { next, ok: false }; // non-finite → no-op
+    next[token] = clamped;
+    return { next, ok: true };
+  }
+
+  // Drag-session base: the COMMITTED override value (or `null` for "no
+  // override") captured at the first preview tick, so Escape can restore the
+  // pin STATE and not just the number. Without it, cancelling a drag on an
+  // auto token would leave a preview-written override key behind — visually
+  // identical but no longer tracking the density preset (seam grammar: Escape
+  // restores value AND pin state; cf. cancelPreviewColumnWidth).
+  let spacingPreviewBase: Partial<Record<SpacingToken, number | null>> = {};
+
+  /** Empty map → `undefined`, so a cleared override compares equal to a theme
+   *  that never had one (the dirty flag would otherwise stick on `{}`). */
+  function spacingInput(next: Partial<Record<SpacingToken, number>>) {
+    return Object.keys(next).length ? next : undefined;
+  }
+
+  function setSpacingOverride(token: SpacingToken, value: number | null): void {
+    const r = nextSpacingMap(token, value);
+    if (!r || !r.ok) return;
+    delete spacingPreviewBase[token];
+    setAuthoringInputs({ spacing_overrides: spacingInput(r.next) });
+  }
+
+  function previewSpacingOverride(token: SpacingToken, value: number): void {
+    const r = nextSpacingMap(token, value);
+    if (!r || !r.ok) return;
+    if (!(token in spacingPreviewBase)) {
+      const committed = deps.getSpec()?.theme?.authoringInputs?.spacing_overrides ?? {};
+      spacingPreviewBase[token] = committed[token] ?? null;
+    }
+    previewAuthoringInputs({ spacing_overrides: spacingInput(r.next) });
+  }
+
+  function cancelPreviewSpacingOverride(token: SpacingToken): void {
+    if (!(token in spacingPreviewBase)) return; // no live preview session
+    const base = spacingPreviewBase[token] ?? null;
+    delete spacingPreviewBase[token];
+    const r = nextSpacingMap(token, base);
+    if (!r) return;
+    previewAuthoringInputs({ spacing_overrides: spacingInput(r.next) });
+  }
+
+  function clearSpacingOverride(token: SpacingToken): void {
+    setSpacingOverride(token, null);
+  }
+
+  function resetSpacingOverrides(): void {
+    spacingPreviewBase = {};
+    setAuthoringInputs({ spacing_overrides: undefined });
+  }
+
+  function spacingRoster(): Array<{ token: SpacingToken; px: number; overridden: boolean; widthAffecting: boolean }> {
+    const theme = deps.getSpec()?.theme;
+    const resolved = theme?.spacing as Record<string, number> | undefined;
+    const overrides = theme?.authoringInputs?.spacing_overrides ?? {};
+    return SPACING_TOKEN_KEYS.map((token) => ({
+      token,
+      px: resolved?.[token] ?? NaN,
+      overridden: overrides[token] !== undefined,
+      widthAffecting: SPACING_WIDTH_FIELDS.has(token),
+    }));
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -667,6 +770,8 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     setComponentChannel, clearComponentChannel,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
     clearThemePin, setThemeRoleOverride, previewThemeRoleOverride, clearThemeRoleOverride,
+    setSpacingOverride, previewSpacingOverride, cancelPreviewSpacingOverride,
+    clearSpacingOverride, resetSpacingOverrides, spacingRoster,
     resetThemeEdits, resetWatermark, captureThemeSnapshot, applyThemeSnapshot,
     reset,
   };

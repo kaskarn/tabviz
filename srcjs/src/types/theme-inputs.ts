@@ -177,6 +177,23 @@ export interface ThemeInputs {
    *  comfortable). 1 = the profile unchanged. Clamped to [0.5, 2]. */
   density_factor?: number;
 
+  /** Per-token spacing OVERRIDES (D42 — the Spacing tab). Sparse map of
+   *  ABSOLUTE px values keyed by the camelCase spacing token
+   *  (`SPACING_TOKEN_KEYS` in `lib/theme/spacing-tokens.ts`). Applied by the
+   *  resolver AFTER `density × density_factor` — a set token replaces its
+   *  density-derived base; an absent token inherits `preset × factor`. Rides
+   *  the inputs channel so it travels with the theme and survives
+   *  re-resolution. UNTRUSTED ingress: spacing reaches SVG coords/sizes, so
+   *  every ingress gates values through `clampSpacing` (finite guard +
+   *  per-token bounds) and drops unknown keys. */
+  spacing_overrides?: Partial<Record<
+    "rowHeight" | "headerHeight" | "padding" | "containerPadding" | "axisGap"
+    | "columnGroupPadding" | "rowGroupPadding" | "cellPaddingX" | "cellPaddingY"
+    | "groupPadding" | "footerGap" | "titleSubtitleGap" | "headerGap"
+    | "bottomMargin" | "indentPerLevel",
+    number
+  >>;
+
   /** Per-ramp curve shape (linear / ease / smooth / log / exp). Reshapes
    *  the lightness progression across the 11 ramp grades. Defaults per
    *  `DEFAULT_RAMP_CURVES` in `lib/theme/curves.ts`:

@@ -26,10 +26,33 @@ test_that("set_inputs updates inputs and re-resolves", {
   expect_true(S7::S7_inherits(t2, WebTheme))
 })
 
-test_that("set_spacing overrides a token without re-resolving", {
+test_that("set_spacing overrides a token via the spacing_overrides input (D42)", {
   t <- web_theme_nejm()
   t2 <- set_spacing(t, row_height = 40)
   expect_equal(t2@spacing@row_height, 40)
+  # S-2 (one mechanism): the override lands on the Tier-1 input, so it rides
+  # the portable theme artifact exactly like a panel/canvas-seam edit.
+  expect_equal(t2@inputs@spacing_overrides$rowHeight, 40)
+})
+
+test_that("set_spacing accepts camelCase, survives density, and releases with NULL", {
+  t <- set_spacing(web_theme_nejm(), rowHeight = 40)
+  expect_equal(t@spacing@row_height, 40)
+
+  # An override is absolute: changing the density preset re-bases every other
+  # token but leaves the pinned one alone.
+  dense <- set_density(t, "compact")
+  expect_equal(dense@spacing@row_height, 40)
+
+  released <- set_spacing(t, row_height = NULL)
+  expect_null(released@inputs@spacing_overrides$rowHeight)
+  expect_equal(released@spacing@row_height, web_theme_nejm()@spacing@row_height)
+})
+
+test_that("set_spacing rejects unknown tokens and out-of-bounds values", {
+  t <- web_theme_nejm()
+  expect_error(set_spacing(t, bogus_token = 4), "Unknown spacing token")
+  expect_error(set_spacing(t, row_height = 9999), "must be in")
 })
 
 test_that("set_theme_field walks nested S7 paths", {

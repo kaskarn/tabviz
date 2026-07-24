@@ -38,6 +38,7 @@ web_theme(
   column_defaults = NULL,
   series_overrides = NULL,
   interaction_defaults = NULL,
+  spacing_overrides = NULL,
   header_style = NULL,
   border_preset = NULL,
   banding = NULL,
@@ -160,6 +161,15 @@ Sits between the global tier (\code{options(tabviz.interaction_defaults=)})
 and the author's explicit \code{web_interaction()} settings: an explicit
 author setting always wins; the theme opinion fills unset flags. NULL =
 no opinions.}
+
+\item{spacing_overrides}{Per-token spacing overrides: a named list of
+absolute px values keyed by camelCase spacing token (e.g.
+\code{list(rowHeight = 44, footerGap = 4)}). Applied after the density preset
+and \code{density_factor}; an unset token inherits \verb{preset x factor}. Tokens:
+\code{rowHeight}, \code{headerHeight}, \code{padding}, \code{containerPadding}, \code{axisGap},
+\code{columnGroupPadding}, \code{rowGroupPadding}, \code{cellPaddingX}, \code{cellPaddingY},
+\code{groupPadding}, \code{footerGap}, \code{titleSubtitleGap}, \code{headerGap},
+\code{bottomMargin}, \code{indentPerLevel}. NULL = no overrides.}
 
 \item{header_style}{Header chrome treatment (a structural variant
 input): \code{"light"}, \code{"tint"}, or

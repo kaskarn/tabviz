@@ -1298,6 +1298,14 @@ export function createTabvizStore() {
     setThemeRoleOverride: theme.setThemeRoleOverride,
     previewThemeRoleOverride: theme.previewThemeRoleOverride,
     clearThemeRoleOverride: theme.clearThemeRoleOverride,
+    // Per-token spacing overrides (D42) — the Spacing tab + the arrange-tool
+    // canvas seams both write through these (S-2: one mechanism).
+    setSpacingOverride: theme.setSpacingOverride,
+    previewSpacingOverride: theme.previewSpacingOverride,
+    cancelPreviewSpacingOverride: theme.cancelPreviewSpacingOverride,
+    clearSpacingOverride: theme.clearSpacingOverride,
+    resetSpacingOverrides: theme.resetSpacingOverrides,
+    spacingRoster: theme.spacingRoster,
     captureThemeSnapshot: theme.captureThemeSnapshot,
     applyThemeSnapshot: theme.applyThemeSnapshot,
     // Zoom & auto-fit actions — layout-zoom slice passthrough.

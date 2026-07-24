@@ -42,6 +42,7 @@ import type {
 // truth; both the v3 adapter (this file) and the v4 resolver
 // (resolve-theme.ts) project from there so they can't drift.
 import { densityPresetAsSpacingTokens, type DensityPreset } from "./density-presets";
+import { applySpacingOverrides } from "./spacing-tokens";
 
 const DENSITY_SPACING: Record<DensityPreset, SpacingTokens> = {
   compact:     densityPresetAsSpacingTokens("compact")     as unknown as SpacingTokens,
@@ -260,7 +261,17 @@ export function buildTheme(
     numeric:  textRoleBody(fontBody, t.ink),
   };
 
-  const spacing = scaleSpacing(DENSITY_SPACING[inputs.density ?? "comfortable"], inputs.density_factor);
+  // Per-token overrides (D42) replace the density-derived base after
+  // `preset × density_factor`. They ride `inputs`, so they survive
+  // re-resolution; applySpacingPins (the final cssVars overlay in every
+  // emitter — getCssVars + _emitV4CssVarsBody) and object-path consumers
+  // (groupPadding, rowGroup.indentPerLevel) all read this one cluster, so this
+  // is the single injection point. Non-finite values are filtered here;
+  // bounds are an ingress concern (sanitizeSpacingOverrides / clampSpacing).
+  const spacing = applySpacingOverrides(
+    scaleSpacing(DENSITY_SPACING[inputs.density ?? "comfortable"], inputs.density_factor),
+    inputs.spacing_overrides,
+  );
 
   const header: HeaderCluster = {
     light: { bg: t.paper, fg: t.ink, rule: t.rule_strong },

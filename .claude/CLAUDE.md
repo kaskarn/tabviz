@@ -155,14 +155,33 @@ interactivity-ux-plan,spec-first-1.0-plan,settings-overhaul-plan}.md`.
   never load on file://; corner-radius/rule-width/type-size are real but
   tiny) — those are wiring-verified by panel-liveness instead; add to the
   set with a reason, never raise the floor. Extending a tab = extend this
-  harness. Still-true substrate rules:
+  harness. Its `walk()` takes an optional `beforeEach` — pass a baseline
+  reset when a tab's controls all inflate the SAME geometry, or mid-walk
+  accumulation pushes a seam out of the pixel clip and a LIVE control reads
+  0px (D42; accumulation suppresses as well as inflates).
+  **SPACING is the 4th "edit theme" inner tab (D42, 2026-07-24)** —
+  `identity | plots | styling | spacing`. Per-token overrides ride a Tier-1
+  input (`inputs.spacing_overrides`; absolute px, sparse, applied AFTER
+  `density x density_factor` at the ONE cluster source in
+  `theme-adapter.ts` — `applySpacingPins` propagates it to every emitter, so
+  `resolve-theme.ts` needs no change), written by the sanctioned
+  setSpacingOverride / preview / cancelPreview / clear / reset verbs.
+  `density_factor` MOVED here from Styling; the row-kind height pins moved
+  here from FigureBand (figure state — they still reset with Reset figure).
+  **R `set_spacing()` and the four arrange canvas seams write the SAME
+  input** (one mechanism), so the last DT-11 canvas exemption is retired:
+  NO `.svelte` may call setThemeField/writeThemePath again. Roster + bounds
+  (`SPACING_TOKEN_KEYS`, `SPACING_TOKEN_BOUNDS`) are R↔TS sync-gated
+  (`test-spacing-roster-sync.R`). A verb whose commit CREATES state needs a
+  real cancel: `onpreview(startValue)` restores the number but leaves the
+  override key behind — hence `EdgeResize.oncancel` +
+  `cancelPreviewSpacingOverride`. Still-true substrate rules:
   tier-gated writes (panel never calls setThemeField/writeThemePath for
-  T2/3 — gate: `settings-band-contract.test.ts`, 23 tests; sanctioned
-  verbs only: setAuthoringInputs / setThemeRoleOverride / clear*);
-  artifact-typed travel; the store verbs + wire envelope are the stable
-  layer. OPEN (D25): per-token spacing / pin-creation / component
-  re-routing need new sanctioned verbs (post-1.0; R/set_spacing/set_pin
-  meanwhile).
+  T2/3 — gate: `settings-band-contract.test.ts`, 24 tests; sanctioned
+  verbs only: setAuthoringInputs / setThemeRoleOverride / setSpacingOverride
+  / clear*); artifact-typed travel; the store verbs + wire envelope are the
+  stable layer. OPEN (D25's surviving half): pin-creation + component
+  re-routing still need sanctioned verbs (post-1.0; R `set_pin()` meanwhile).
 
 ### Interactivity
 
@@ -371,6 +390,12 @@ One line each; the cost of ignoring these has already been paid once.
   glyph-cell-parity, wysiwyg-diff), which a stray token can't fool. When
   adding a theme token, confirm a renderer reads it (not just the panel
   preview).
+- A LOCAL VARIABLE NAMED AFTER A TOKEN IS NOT EVIDENCE THE TOKEN IS
+  CONSUMED (D42, 2026-07-24): `columns.svelte`/`svg-generator` both declare
+  `const groupPadding = readVarPx(cssVars, "--tv-spacing-COLUMN-group-padding")`
+  — a design doc read those as `groupPadding`'s consumers and blessed a slider
+  for a token that has no cssVar and no reader at all. Grep the `--tv-*` NAME
+  (both the pin site and the read site), never the variable.
 - Docs screenshots MUST be over HTTP — `file://` CORS breaks Quarto
   module scripts and fakes layout regressions.
 - systemfonts (R `.inject_systemfonts_widths`) measures a hair narrower than

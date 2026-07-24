@@ -105,6 +105,7 @@ describe("DT-11: the settings tree writes no Tier-2/3 theme paths", () => {
     expect(names).toContain("VariationsTab.svelte");
     expect(names).toContain("LabelsTab.svelte");
     expect(names).toContain("IdentityTab.svelte");
+    expect(names).toContain("SpacingTab.svelte");
     expect(names).toContain("FigureBand.svelte");
     // The shared write conduit (rune module) must be in the walk — every
     // tab commits through it, so it's load-bearing for the boundary.

@@ -554,6 +554,23 @@ async function run(): Promise<void> {
       skipped.push("styling inner tab: not present");
     }
 
+    // Spacing inner tab (D42): the per-token override sliders + the density
+    // dial + the relocated figure-scoped row-height pins.
+    const wentSpacing = await page.evaluate(() => {
+      const t = [...document.querySelectorAll<HTMLElement>(".settings-panel .inner-strip [role=tab]")]
+        .find((b) => (b.textContent || "").trim() === "spacing");
+      if (!t) return false;
+      t.click();
+      return true;
+    });
+    if (wentSpacing) {
+      await settle(250);
+      await expandDisclosures(page);
+      await walkControls(".settings-panel .panel-body", "spacing");
+    } else {
+      skipped.push("spacing inner tab: not present");
+    }
+
     // Action buttons (external effect): export / import / handoff / close.
     // Not operated (they download files, open dialogs, or close the panel) —
     // but a present-yet-DISABLED action is a dead affordance, and an action

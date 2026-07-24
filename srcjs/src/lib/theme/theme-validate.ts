@@ -20,6 +20,7 @@
 
 import { contrastRatio, isValidHex } from "../oklch";
 import { INTERACTION_FLAG_KEYS } from "../interaction-resolve";
+import { isSpacingToken, SPACING_TOKEN_BOUNDS, SPACING_TOKEN_KEYS } from "./spacing-tokens";
 import type { WebTheme } from "../../types/theme-resolved";
 import type { ThemeInputs, OklchTriple } from "../../types/theme-inputs";
 import { getCssVars, readVar, readSurfaceBg, readContentPrimary } from "./consumer-bridge";
@@ -368,6 +369,26 @@ export function validateThemeInputs(inputs: ThemeInputs): void {
         checkEnum((ov as { shape?: string }).shape as (typeof POINT_SHAPE_VALUES)[number] | undefined,
           POINT_SHAPE_VALUES, `series_overrides[${i}].shape`, p);
       });
+    }
+  }
+
+  // Per-token spacing overrides (D42): sparse map of absolute-px values keyed
+  // by a known spacing token. UNTRUSTED — spacing reaches SVG coords/sizes, so
+  // unknown keys and non-finite / out-of-bounds values are flagged here; the
+  // resolver's applySpacingOverrides ALSO filters non-finite defensively, and
+  // the store verb clamps, but a shareable artifact shouldn't carry garbage.
+  if (inputs.spacing_overrides !== undefined) {
+    if (typeof inputs.spacing_overrides !== "object" || inputs.spacing_overrides === null || Array.isArray(inputs.spacing_overrides)) {
+      p.push({ path: "spacing_overrides", code: "shape", message: `spacing_overrides must be an object keyed by spacing token (one of [${SPACING_TOKEN_KEYS.join(", ")}])` });
+    } else {
+      for (const [token, v] of Object.entries(inputs.spacing_overrides as Record<string, unknown>)) {
+        if (!isSpacingToken(token)) {
+          p.push({ path: `spacing_overrides.${token}`, code: "unknown", message: `spacing_overrides: '${token}' is not a spacing token (one of [${SPACING_TOKEN_KEYS.join(", ")}])` });
+          continue;
+        }
+        const [min, max] = SPACING_TOKEN_BOUNDS[token];
+        checkRange(v as number | undefined, min, max, `spacing_overrides.${token}`, p);
+      }
     }
   }
 

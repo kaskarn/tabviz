@@ -11,6 +11,55 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-07-24 — Per-token spacing: the Spacing tab (D42, overruling D25)
+
+Maintainer hit the gap D25 had punted (a row-height floor question with no
+per-token control anywhere but R). D42 overrules it: per-token spacing is a
+Tier-1 authoring input, `spacing_overrides: Partial<Record<SpacingToken,
+number>>`, applied by the resolver AFTER `density × density_factor`. Full
+design + phase log: `docs/dev/spacing-tab-plan.md`.
+
+What landed, in order: (1) substrate — `lib/theme/spacing-tokens.ts` (the
+15-key roster, `clampSpacing`, `sanitize`, `applyOverrides`), the resolver
+merge at the SINGLE cluster source in `theme-adapter.ts` (`applySpacingPins`
+is the final cssVars overlay in every emitter, so `resolve-theme.ts` needed no
+change), ingress validation on both sides, and the R mirror (S7 field +
+validator + wire import/export + `web_theme(spacing_overrides=)`), R↔TS
+sync-gated by `test-spacing-roster-sync.R`. It also fixed a REAL bug: the R
+serialize map had been dropping `cellPaddingY` + `groupPadding`. (2) sanctioned
+store verbs. (3) the UI — `SpacingTab.svelte` as the 4th Edit-theme inner tab,
+`density_factor` MOVED there from Styling, the row-kind height pins relocated
+out of FigureBand, and **the four arrange-tool canvas seams repointed onto the
+same input — retiring the last DT-11 canvas exemption** (no `.svelte` in the
+repo calls `setThemeField` any more). R `set_spacing()` was rewritten onto the
+input too, so R, panel and canvas are one mechanism with one travel path.
+
+Three things worth keeping:
+
+- **A commit that CREATES an override needs a real cancel.** The seam grammar's
+  "Escape restores the drag-start value" was implemented as `onpreview(start)`,
+  which restores the NUMBER but leaves an override key on a token that was auto
+  before the drag — it silently stops tracking the density preset. Added
+  `EdgeResize.oncancel` + `cancelPreviewSpacingOverride`, which snapshots the
+  committed value (or its absence) at the first preview tick. Any future verb
+  whose commit creates state, not just sets a value, needs the same pair.
+- **The consequence gate caught a dead control the design doc had blessed.**
+  The plan listed `group_padding` as live, citing `columns.svelte:766` and
+  `svg-generator.ts:630` — but both are LOCAL variables named `groupPadding`
+  that read `--tv-spacing-column-group-padding`. The token itself has no CSS
+  var and no reader anywhere. Its slider measured 0px and was pulled. Reading a
+  variable NAME as evidence of a token consumer is a trap; grep the cssVar.
+- **Accumulated state can suppress consequence, not just inflate it.** Every
+  Spacing control inflates the same geometry, so by mid-walk the footer had
+  been pushed out of the harness's fixed pixel clip and a live `footerGap`
+  measured 0px. `walk()` grew an optional `beforeEach`; the Spacing tab passes
+  `resetThemeToBaseline`. The harness's existing per-tab reset was the same
+  medicine for the opposite symptom.
+
+Validated: bun 1586 + vitest 334, lint/svelte-check clean, arrange-tool +
+panel-liveness (98 controls live) + settings-consequence (51 controls, all 11
+spacing tokens moving real pixels) green, R suite + visual smoke green.
+
 ## 2026-07-22 — Functional Brand/Accent lightness (anchored chromatic ramps)
 
 Maintainer report: "light/dark slider doesn't work as intended in the

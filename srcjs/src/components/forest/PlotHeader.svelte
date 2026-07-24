@@ -23,6 +23,10 @@
     titleSubtitleGap?: number;
     onpreviewgap?: (value: number) => void;
     oncommitgap?: (value: number) => void;
+    /** Escape during the gap drag — restores value AND override state. */
+    oncancelgap?: () => void;
+    /** Double-click the seam: drop the override, rejoin the density preset. */
+    onresetgap?: () => void;
     /** Arrange tool armed — gates the gap seam (P2: layout gestures live
      *  behind arrange, not behind content-edit). */
     arrangeArmed?: boolean;
@@ -37,6 +41,8 @@
     titleSubtitleGap,
     onpreviewgap,
     oncommitgap,
+    oncancelgap,
+    onresetgap,
     arrangeArmed = false,
   }: Props = $props();
 
@@ -104,6 +110,8 @@
               armed
               onpreview={(v) => onpreviewgap!(v)}
               oncommit={(v) => oncommitgap!(v)}
+              oncancel={oncancelgap}
+              onreset={onresetgap}
               label="Title-subtitle gap"
             />
           {/if}

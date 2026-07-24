@@ -1,9 +1,10 @@
 <!--
   FigureBand — the THIS-FIGURE half of the rebuilt settings panel
-  (settings-overhaul P2). Per-spec state that does NOT travel with the
-  theme: banding override, watermark, row-height pins. Sits on recessed
-  paper with its own scoped reset — the seam is structural, not
-  typographic (the one thing a pure visual refresh would have skipped).
+  (settings-overhaul P2). It OWNS the scoped reset for per-spec state that
+  does NOT travel with the theme — banding override, watermark, labels,
+  row-height pins — even though each of those controls now lives on the
+  tab that best fits it. Sits on recessed paper: the seam is structural,
+  not typographic (the one thing a pure visual refresh would have skipped).
 
   Title/caption/footnote text fields are deliberately ABSENT (T3
   decision): content is edited inline on the canvas (PlotHeader /
@@ -11,9 +12,6 @@
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import Field from "$components/primitives/v2/Field.svelte";
-  import Slider from "$components/primitives/v2/Slider.svelte";
-  import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
 
   interface Props { store: TabvizStore; }
   const { store }: Props = $props();
@@ -23,19 +21,10 @@
   // still participates in figure dirty/reset below. The Contrast row left
   // too — it duplicated the toolbar's ContrastButton (view state belongs
   // to the toolbar, D21 ruling 10). Watermark moved to the LABELS tab
-  // (Phase 2); this band keeps the row pins + the scoped figure reset
-  // until Styling absorbs the pins.
-
-  // ── Row-height pins ─────────────────────────────────────────────────
-  // The roster lists every pinnable kind in the figure (not just pinned
-  // ones), so the panel can CREATE a first pin — pre-arc the section only
-  // appeared once a pin already existed, and nothing else in the widget
-  // could make one (interactivity-UX arc P0).
-  let pinsOpen = $state(false);
-  const rowKinds = $derived(store.rowKindRoster);
-  const pinnedCount = $derived(rowKinds.filter((r) => r.pinned).length);
-  const pinsSummary = $derived(pinnedCount ? `${pinnedCount} pinned` : "default");
-
+  // (Phase 2). The row-height pins moved to Edit theme → SPACING (D42
+  // S-5: all height control in one place); they remain FIGURE state and
+  // still reset from here — `resetFigure` below is the scoped reset for
+  // every figure-tier edit, wherever its control now lives.
   const figureDirty = $derived(store.hasFigureEdits);
 
   function resetFigure(): void {
@@ -54,27 +43,8 @@
     <span class="seam-sub">stays with this figure · not exported with the theme</span>
   </div>
 
-  {#if rowKinds.length > 0}
-    <DisclosureField label="Row heights" summary={pinsSummary} bind:open={pinsOpen}>
-      {#each rowKinds as { kind, px, pinned } (kind)}
-        <Field label={kind.replace("_", " ")}>
-          <span class="pin-row">
-            <Slider value={px} min={12} max={120} step={1} suffix="px"
-                    ariaLabel="{kind} row height"
-                    onchange={(v) => store.setRowKindHeight(kind, v)}
-                    oncommit={(v) => store.setRowKindHeight(kind, v)} />
-            {#if pinned}
-              <button type="button" class="pin-clear" title="Release pin"
-                      onclick={() => store.setRowKindHeight(kind, null)}>↻</button>
-            {:else}
-              <!-- keep the slider track width stable between states -->
-              <span class="pin-clear-spacer" aria-hidden="true"></span>
-            {/if}
-          </span>
-        </Field>
-      {/each}
-    </DisclosureField>
-  {/if}
+  <p class="seam-note">Row heights by type are in Edit theme → Spacing; they
+    stay figure state and reset here.</p>
 
   <div class="figure-foot">
     <button
@@ -117,29 +87,12 @@
        drops below readable contrast (a11y review). */
     color: var(--v2-ink-2, #4a463c);
   }
-  .pin-row {
-    display: flex;
-    align-items: center;
-    gap: var(--v2-gap-small, 6px);
-    width: 100%;
-    min-width: 0;
-  }
-  .pin-clear {
-    flex: none;
-    width: 24px;
-    height: var(--v2-control-h, 22px);
-    border: 0;
-    background: transparent;
+  .seam-note {
+    margin: 0;
+    font-size: var(--v2-text-small, 10.5px);
+    line-height: 1.4;
+    /* ink-2 for the same recessed-paper contrast reason as .seam-sub. */
     color: var(--v2-ink-2, #4a463c);
-    cursor: pointer;
-    border-radius: var(--v2-r-hair, 2px);
-    padding: 0;
-  }
-  .pin-clear:hover { color: var(--v2-ink, #15140e); background: var(--v2-hover-tint, rgba(21,20,14,0.05)); }
-  .pin-clear-spacer {
-    flex: none;
-    width: 24px;
-    height: var(--v2-control-h, 22px);
   }
   .figure-foot {
     display: flex;

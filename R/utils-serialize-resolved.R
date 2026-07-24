@@ -107,6 +107,8 @@ serialize_theme <- function(theme) {
     columnGroupPadding = theme@spacing@column_group_padding,
     rowGroupPadding    = theme@spacing@row_group_padding,
     cellPaddingX       = theme@spacing@cell_padding_x,
+    cellPaddingY       = theme@spacing@cell_padding_y,
+    groupPadding       = theme@spacing@group_padding,
     footerGap          = theme@spacing@footer_gap,
     titleSubtitleGap   = theme@spacing@title_subtitle_gap,
     headerGap          = theme@spacing@header_gap,
