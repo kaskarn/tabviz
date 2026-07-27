@@ -132,6 +132,36 @@ describe("columns slice — edits", () => {
     expect(h.slice.allColumns.map((c) => c.id)).toEqual(["a"]);
   });
 
+  // An insert is anchored to the column you right-clicked. Hiding THAT column
+  // used to take the inserted column down with it: applyColumnEdits filtered
+  // hidden defs out before looking for anchors, so the anchor disappeared and
+  // the insert was swallowed silently — the user's new column just vanished.
+  // A hidden anchor still positions its inserts.
+  test("an inserted column survives its ANCHOR being hidden", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
+    h.slice.insertColumn(textCol("inserted"), "a");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["a", "inserted", "b"]);
+    h.slice.hideColumn("a");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["inserted", "b"]);
+  });
+
+  test("two inserts sharing a hidden anchor both survive, in order", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
+    h.slice.insertColumn(textCol("i1"), "a");
+    h.slice.insertColumn(textCol("i2"), "a");
+    h.slice.hideColumn("a");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["i1", "i2", "b"]);
+  });
+
+  // Orphan net: an anchor that is nowhere in the tree (it left the spec on a
+  // data update) must not swallow the column — append rather than vanish.
+  test("an insert whose anchor no longer exists is appended, not dropped", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
+    h.slice.insertColumn(textCol("orphan"), "a");
+    h.setSpec(buildHarnessSpec([textCol("b"), textCol("c")]));
+    expect(h.slice.allColumns.map((c) => c.id)).toContain("orphan");
+  });
+
   test("updateColumn replaces in place + records a thin patch", () => {
     const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
     h.slice.updateColumn("a", { ...textCol("a"), header: "AA" });

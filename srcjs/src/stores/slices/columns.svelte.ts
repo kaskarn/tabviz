@@ -204,35 +204,31 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
   //   2. drop anything the user Hide'd
   //   3. insert user-added columns after their anchor id
   function applyColumnEdits(defs: ColumnDef[], isRoot: boolean): ColumnDef[] {
-    const swappedOrHidden: ColumnDef[] = [];
-    for (const def of defs) {
-      if (hiddenColumnIds.has(def.id)) continue;
-      if (!def.isGroup) {
-        const override = columnSpecOverrides[def.id];
-        if (override) {
-          swappedOrHidden.push(override);
-          continue;
-        }
+    const out: ColumnDef[] = [];
+    // Emit every insert anchored to `anchorId`, in insertion order.
+    // User-inserted columns also honor hiddenColumnIds — without this check,
+    // `hideColumn(insertedId)` adds the id to the set but the inserted column
+    // still appears in the rendered output (GH #7).
+    function emitInsertsAfter(anchorId: string): void {
+      for (const ins of userInsertedColumns) {
+        if (hiddenColumnIds.has(ins.def.id)) continue;
+        if (ins.afterId === anchorId) out.push(ins.def as ColumnDef);
       }
-      swappedOrHidden.push(def);
     }
 
-    const out: ColumnDef[] = [];
-    if (isRoot) {
-      for (const ins of userInsertedColumns) {
-        // User-inserted columns also honor hiddenColumnIds — without this
-        // check, `hideColumn(insertedId)` adds the id to the set but the
-        // inserted column still appears in the rendered output (GH #7).
-        if (hiddenColumnIds.has(ins.def.id)) continue;
-        if (ins.afterId === "__start__") out.push(ins.def as ColumnDef);
+    if (isRoot) emitInsertsAfter("__start__");
+    for (const def of defs) {
+      if (!hiddenColumnIds.has(def.id)) {
+        const override = def.isGroup ? undefined : columnSpecOverrides[def.id];
+        out.push(override ?? def);
       }
-    }
-    for (const def of swappedOrHidden) {
-      out.push(def);
-      for (const ins of userInsertedColumns) {
-        if (hiddenColumnIds.has(ins.def.id)) continue;
-        if (ins.afterId === def.id) out.push(ins.def as ColumnDef);
-      }
+      // A HIDDEN anchor still POSITIONS its inserts. Walking the original
+      // defs (rather than the hide-filtered list) is what makes that work:
+      // hiding column X must not silently delete the unrelated column the
+      // user inserted after X. The old code filtered hidden defs out first,
+      // so the anchor vanished and the insert was swallowed with no error —
+      // the user's work simply disappeared.
+      emitInsertsAfter(def.id);
     }
     return out;
   }
@@ -251,7 +247,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const baseColumns = labelCol ? [labelCol, ...spec.columns] : spec.columns;
     const merged = applyColumnEdits(baseColumns, true);
     const topOrdered = applyColumnOrder(merged, columnOrderOverrides.topLevel);
-    return topOrdered.map((def) => {
+    const tree = topOrdered.map((def) => {
       if (def.isGroup) {
         const mergedChildren = applyColumnEdits(def.columns, false);
         const reorderedChildren = applyColumnOrder(
@@ -262,6 +258,18 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       }
       return def;
     });
+
+    // ORPHAN NET: an insert whose anchor is nowhere in the tree (the anchor
+    // column left the spec on a data update, say) would otherwise be dropped
+    // SILENTLY — stored in userInsertedColumns but never emitted, so the user
+    // sees their new column simply not appear. Append it at the end instead:
+    // a column in a surprising position is recoverable (drag it), an invisible
+    // one is not.
+    const present = new Set(flattenAllColumns(tree).map((c) => c.id));
+    const orphans = userInsertedColumns
+      .filter((ins) => !present.has(ins.def.id) && !hiddenColumnIds.has(ins.def.id))
+      .map((ins) => ins.def as ColumnDef);
+    return orphans.length ? [...tree, ...orphans] : tree;
   });
 
   const allColumns = $derived.by((): ColumnSpec[] => {
