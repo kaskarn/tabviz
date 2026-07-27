@@ -130,34 +130,33 @@
   // renderers read these via ctx.columnSummary. Memoized once per
   // render so a 1k-row × 10-column table costs O(N) per render, not
   // O(N × cells) (schema-sprint Phase 4c).
+  // Reads the EFFECTIVE column list (store.allColumns — already flattened to
+  // leaves, with runtime inserts / hides / configures applied), NOT spec.columns.
+  // Walking the wire meant a runtime-INSERTED bar/heatmap column had no entry
+  // here, so its renderer fell back to a degenerate domain and every bar
+  // painted at 100% (2026-07-27 audit) — the same wire-vs-effective blindness
+  // that made an inserted column measure 0px wide.
   const columnSummaries = $derived.by((): Map<string, { min: number; max: number }> => {
     const map = new Map<string, { min: number; max: number }>();
     const rows = spec?.data.rows;
     if (!rows) return map;
     const canonicalRows = rows;
-    const cols = spec?.columns ?? [];
-    function walk(defs: typeof cols): void {
-      for (const d of defs) {
-        const grp = d as { isGroup?: boolean; columns?: typeof cols };
-        if (grp.isGroup && grp.columns) { walk(grp.columns); continue; }
-        const col = d as ColumnSpec;
-        if (col.type !== "bar" && col.type !== "heatmap") continue;
-        let min = Infinity;
-        let max = -Infinity;
-        for (const i of visibleIndices) {
-          const v = canonicalRows[i].metadata[col.field];
-          if (typeof v === "number" && Number.isFinite(v)) {
-            if (v < min) min = v;
-            if (v > max) max = v;
-          }
+    for (const col of store.allColumns) {
+      if (col.type !== "bar" && col.type !== "heatmap") continue;
+      let min = Infinity;
+      let max = -Infinity;
+      for (const i of visibleIndices) {
+        const v = canonicalRows[i].metadata[col.field];
+        if (typeof v === "number" && Number.isFinite(v)) {
+          if (v < min) min = v;
+          if (v > max) max = v;
         }
-        map.set(col.id, {
-          min: min === Infinity ? 0 : min,
-          max: max === -Infinity ? 0 : max,
-        });
       }
+      map.set(col.id, {
+        min: min === Infinity ? 0 : min,
+        max: max === -Infinity ? 0 : max,
+      });
     }
-    walk(cols);
     return map;
   });
 

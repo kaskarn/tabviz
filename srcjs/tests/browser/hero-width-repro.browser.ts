@@ -24,6 +24,10 @@ await page.evaluate((s) => {
   const w = window as never as { HTMLWidgets: { find: (n: string) => { factory: (el: HTMLElement, a: number, b: number) => { renderValue: (x: unknown) => void } } } };
   const host = document.getElementById("widget")!;
   const inner = document.createElement("div");
+  // The store registry (and the __tabvizStoreRegistry dev hook the insert
+  // check below reads) is keyed by element id — an id-less mount is invisible
+  // to it.
+  inner.id = "hero-widget";
   inner.style.width = "799px"; inner.style.height = "900px";
   host.appendChild(inner);
   w.HTMLWidgets.find("tabviz").factory(inner, 799, 900).renderValue(s);
@@ -88,4 +92,60 @@ if (verdict.bad.length > 0) {
   process.exit(1);
 }
 console.log("✓ hero cells fit their column boxes (intervals strict 0.5px, others ≤3px tabular residual)");
+
+// ── Inserted columns get a REAL width (2026-07-27) ────────────────────
+// A runtime-inserted column was never measured: `doMeasurement` iterated
+// `spec.columns` (the wire), which by definition excludes runtime inserts, and
+// `insertColumn` never triggered a measure pass at all. On a narrow table the
+// leftover slack hid it; on THIS table — every column measured, no slack — the
+// newcomer's grid track resolved to 0px, so the column was in the DOM and in
+// allColumns but INVISIBLE. It read as "insert did nothing".
+//
+// This lives here rather than in interaction-qa because the bug needs a
+// WIDTH-SATURATED table to appear, and that is exactly what the hero is. Note
+// the assertion is on the rendered TRACK, not on a header-cell count — counting
+// cells is what let this ship (interaction-qa counted +1 header and passed
+// while the column was 0px wide). Insert via the store: the menu→editor→commit
+// path is interaction-qa's job; what is gated here is the WIDTH.
+type HeroStore = {
+  allColumns: { id: string }[];
+  columnWidths: Record<string, number>;
+  insertColumn: (def: unknown, afterId: string) => void;
+};
+const beforeIds = await page.evaluate(() => {
+  const reg = (window as unknown as { __tabvizStoreRegistry?: Map<string, HeroStore> }).__tabvizStoreRegistry;
+  if (!reg || reg.size === 0) return null;
+  return [...reg.values()][0]!.allColumns.map((c) => c.id);
+});
+if (!beforeIds) { console.error("no store registry — dev hook missing"); process.exit(1); }
+const anchor = beforeIds[1] ?? beforeIds[0]!;
+await page.evaluate((a: string) => {
+  const reg = (window as unknown as { __tabvizStoreRegistry?: Map<string, HeroStore> }).__tabvizStoreRegistry!;
+  // Give the probe an explicit id + a real field: insertColumn mints from
+  // `def.id || def.field`, so a def with neither yields an id-less column.
+  [...reg.values()][0]!.insertColumn(
+    { id: "inserted_probe", type: "text", header: "Inserted", field: "drug" }, a);
+}, anchor);
+// Let the derived column list + the measure pass settle before reading back.
+await new Promise((r) => setTimeout(r, 800));
+const insertVerdict = await page.evaluate((before: string[]) => {
+  const reg = (window as unknown as { __tabvizStoreRegistry?: Map<string, HeroStore> }).__tabvizStoreRegistry!;
+  const store = [...reg.values()][0]!;
+  const added = store.allColumns.map((c) => c.id).find((id) => !before.includes(id));
+  return { added, width: added ? store.columnWidths[added] : undefined };
+}, beforeIds);
+if (!insertVerdict.added) {
+  console.error(`insert after "${anchor}" produced no column`);
+  process.exit(1);
+}
+const track = await page.evaluate((id: string) => {
+  const cell = document.querySelector<HTMLElement>(`[data-header-id="${CSS.escape(id)}"]`);
+  return cell ? cell.getBoundingClientRect().width : -1;
+}, insertVerdict.added);
+if (!(insertVerdict.width! > 0) || !(track > 1)) {
+  console.error(`inserted column ${insertVerdict.added}: columnWidths=${insertVerdict.width}, rendered=${track}px `
+    + `— an unmeasured insert collapses to a 0px track (invisible column)`);
+  process.exit(1);
+}
+console.log(`✓ inserted column is measured + visible (width ${insertVerdict.width}px, rendered ${Math.round(track)}px)`);
 await browser.close();

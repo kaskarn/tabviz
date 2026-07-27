@@ -111,9 +111,18 @@ export function createSortFilterSlice(deps: SortFilterSliceDeps): SortFilterSlic
       indices = applyFilters(rows, indices, filters);
     }
     if (sortConfig) {
-      const sortCol = spec.columns
-        ? findColumnByKey(spec.columns, sortConfig.column)
-        : undefined;
+      // EFFECTIVE columns, not spec.columns: a runtime-inserted column is
+      // absent from the wire, so the wire lookup returned undefined and the
+      // sort silently fell back to a generic value compare — losing the
+      // column type's sortKey behavior (pvalue "<0.001", interval, etc.).
+      // Ordinary sorting still worked, which is why this hid; `getAllColumns`
+      // was already a dep of this slice for exactly this purpose.
+      // Bind before the closure: the `if (sortConfig)` narrowing doesn't
+      // survive into the callback body.
+      const sc = sortConfig;
+      const sortCol =
+        deps.getAllColumns().find((c) => c.id === sc.column || c.field === sc.column)
+        ?? (spec.columns ? findColumnByKey(spec.columns, sc.column) : undefined);
       indices = applySortWithinGroups(rows, indices, sortConfig, sortCol);
     }
     return indices;

@@ -390,6 +390,15 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const after = afterId === "__start__" ? "__start__" : afterId;
     deps.appendOp(ops.addColumn(renderColumnBuilder(def), after));
     deps.markSource("column_order");
+    // MEASURE THE NEWCOMER — without this the column has no entry in
+    // columnWidths, and a table whose other columns are all measured has no
+    // slack left to give it: its grid track resolves to 0px, so the column is
+    // in the DOM and in allColumns but INVISIBLE. That reads as "insert did
+    // nothing" (docs hero, 2026-07-27), and it only shows up on a table that
+    // is already width-saturated — a narrow one has slack and looks fine,
+    // which is why the harnesses (header-cell COUNTS, narrow fixtures) missed
+    // it. updateColumn has always ended this way; insert never did.
+    measureAutoColumns();
   }
 
   function hideColumn(id: string) {
@@ -796,7 +805,17 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       measureLeafColumn(columnSpecOverrides[col.id] ?? col);
     }
 
-    for (const colDef of spec.columns) {
+    // Measure the EFFECTIVE column tree, not the wire spec. A runtime-inserted
+    // column is absent from `spec.columns`, so iterating the wire meant it was
+    // NEVER measured — no entry in columnWidths, and on a table whose other
+    // columns are all measured there is no slack left, so its grid track
+    // resolved to 0px: the column existed in the DOM and in allColumns but was
+    // invisible ("insert did nothing", docs hero 2026-07-27). The label column
+    // keeps its own richer pass below (indent / badges / group headers), so
+    // skip it here exactly as the wire loop did.
+    const labelSlotId = spec.labelColumn?.id;
+    for (const colDef of effectiveColumnDefs) {
+      if (labelSlotId && colDef.id === labelSlotId) continue;
       processColumn(colDef);
     }
 
