@@ -577,9 +577,56 @@
       if (!containerRef) return;
       const cells = containerRef.querySelectorAll<HTMLElement>("[data-row-id]");
       const measured: Record<string, number> = {};
+      // ── Shrink-back (2026-07-27) ────────────────────────────────────
+      // Growth is sticky by construction: a row that no longer needs to wrap
+      // (column widened, text shortened) simply stops OVERFLOWING, so it goes
+      // absent from this report and grow-merge keeps its old tall value
+      // forever — resizing the column didn't help either, because that also
+      // produces no overflow.
+      //
+      // The fix needs a height that does NOT depend on the pinned track (the
+      // metric that caused the B2 ratchet did, and re-fed itself). A cell's
+      // CONTENT CHILD is exactly that: measured at 21px while its track sat at
+      // 124px in the un-wrap case. We only offer a row for shrinking when its
+      // tallest content child is clearly shorter than the track, so a child
+      // that stretches (≈ track) is never listed and the row just stays tall.
+      const naturalOf = (cell: HTMLElement): number => {
+        let tallest = 0;
+        for (const kid of cell.children) {
+          if (!(kid instanceof HTMLElement)) continue;
+          if (getComputedStyle(kid).position === "absolute") continue; // affordances
+          if (kid.scrollHeight > tallest) tallest = kid.scrollHeight;
+        }
+        if (tallest === 0) return 0;
+        // Add the CELL's own vertical padding: the grow metric above is
+        // `cell.scrollHeight`, which includes it, and the committed number
+        // becomes the row's track. Reporting a bare content height instead
+        // under-sizes the row by exactly the padding — the track lands a hair
+        // too short, the content then overflows, the grow path raises it, and
+        // the next pass shrinks it again: a 2-3px flip-flop (caught by the
+        // WYSIWYG gate as a group-span divergence, not by the row gates).
+        const cs = getComputedStyle(cell);
+        return tallest + parseFloat(cs.paddingTop || "0") + parseFloat(cs.paddingBottom || "0");
+      };
+      /** Per row: tallest natural content, and the tallest pinned track. */
+      const natural: Record<string, number> = {};
+      const tracks: Record<string, number> = {};
+      const SHRINK_SLACK = 2; // ignore sub-pixel / rounding noise
+
       for (const cell of cells) {
         const id = cell.dataset.rowId;
         if (!id) continue;
+        // `.row-padded-after` tracks include the TRAILING group padding, which
+        // is layout chrome the content measure cannot see: natural would sit a
+        // whole rowGroupPadding below the track and look "clearly shorter"
+        // every pass, so the row would be offered for shrinking forever. That
+        // is the B2 padded-row trap wearing a different hat — exclude them and
+        // let those rows stay grow-only.
+        const padded = cell.classList.contains("row-padded-after");
+        const nat = padded ? 0 : naturalOf(cell);
+        if (nat > 0) natural[id] = Math.max(natural[id] ?? 0, nat);
+        if (padded) delete natural[id];
+        tracks[id] = Math.max(tracks[id] ?? 0, cell.clientHeight);
         // B2 FIX (wire-audit, 2026-06-05): commit ONLY when content truly
         // OVERFLOWS the pinned track (scrollHeight > clientHeight). For a
         // non-overflowing cell, scrollHeight just reports the track back —
@@ -606,7 +653,16 @@
           measured[key] = Math.max(measured[key] ?? 0, h);
         }
       }
-      store.setMeasuredRowHeights(measured);
+      // Offer the un-wrapped rows their natural height. A row that OVERFLOWED
+      // this pass is excluded — it is growing, and its grow value wins.
+      const shrinkable = new Set<string>();
+      for (const [id, nat] of Object.entries(natural)) {
+        if (measured[id] !== undefined) continue;              // growing
+        if (nat + SHRINK_SLACK >= (tracks[id] ?? 0)) continue; // fits its track
+        measured[id] = nat;
+        shrinkable.add(id);
+      }
+      store.setMeasuredRowHeights(measured, shrinkable);
     });
     return () => window.cancelAnimationFrame(handle);
   });

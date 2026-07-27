@@ -108,12 +108,33 @@ function mergeMeasuredHeights(
 export function growMergeHeights(
   prev: Record<string, number> | null,
   report: Record<string, number>,
+  /** Rows the measure loop has a TRUSTWORTHY smaller natural height for, and
+   *  which may therefore shrink. Everything else stays grow-only.
+   *
+   *  Shrinking is opt-in per row because the ratchet this merge exists to
+   *  prevent (B2) came from a metric that depended on the pinned track:
+   *  committing it re-fed the track back in, +12px a frame. The caller only
+   *  lists a row here when it measured the CONTENT (a cell child, which does
+   *  not stretch with the track) and found it clearly shorter — the un-wrap
+   *  case. A stretched child measures ≈ the track, fails the caller's margin
+   *  test, and is simply never listed, so the failure mode is "row stays
+   *  tall", never "row collapses". */
+  shrinkable?: ReadonlySet<string>,
 ): Record<string, number> | null {
   const base = prev ?? {};
   let changed = false;
   const merged: Record<string, number> = { ...base };
   for (const [k, v] of Object.entries(report)) {
-    if ((merged[k] ?? 0) < v) {
+    const cur = merged[k] ?? 0;
+    // Shrinking may only UNDO GROWTH — the key must already be committed.
+    // A row that never grew has no business being pinned to a measured
+    // height at all: its track comes from the layout cascade, which is what
+    // the SVG export estimates too. Committing a measured height for such a
+    // row pins the DOM to a number the export never sees and opens a
+    // DOM↔export divergence (the WYSIWYG gate caught exactly that: group
+    // spans drifting 3-9px on nejm-compact / dwarven).
+    const committed = Object.prototype.hasOwnProperty.call(base, k);
+    if (cur < v || (shrinkable?.has(k) && committed && v < cur)) {
       merged[k] = v;
       changed = true;
     }
@@ -187,7 +208,11 @@ export interface LayoutZoomSlice {
   setPlotWidth: (newWidth: number | null) => void;
   getPlotWidth: () => number | null;
   /** Commit measured per-row content heights (rowId → px) from the DOM. */
-  setMeasuredRowHeights: (heights: Record<string, number> | null) => void;
+  setMeasuredRowHeights: (
+    heights: Record<string, number> | null,
+    /** Rows allowed to shrink this pass (see growMergeHeights). */
+    shrinkable?: ReadonlySet<string>,
+  ) => void;
   /** Per-row-kind height overrides (the pin layer). */
   readonly rowKindHeights: Partial<Record<RowKind, number>>;
   /** Every pinnable row kind present in the current figure with its
@@ -693,12 +718,15 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
   // oscillation. Merging with per-key Math.max keeps the documented
   // "rows only grow" invariant and settles in one pass. `null` still
   // clears everything (resetState path).
-  function setMeasuredRowHeights(heights: Record<string, number> | null): void {
+  function setMeasuredRowHeights(
+    heights: Record<string, number> | null,
+    shrinkable?: ReadonlySet<string>,
+  ): void {
     if (heights === null) {
       if (measuredRowHeights !== null) measuredRowHeights = null;
       return;
     }
-    const merged = growMergeHeights(measuredRowHeights, heights);
+    const merged = growMergeHeights(measuredRowHeights, heights, shrinkable);
     if (merged === measuredRowHeights) return;
     measuredRowHeights = merged;
   }

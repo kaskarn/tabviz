@@ -88,6 +88,10 @@ async function mountAndSample(page: Page, spec: unknown, samples: number, settle
     const host = document.getElementById("widget")!;
     host.innerHTML = "";
     const inner = document.createElement("div");
+    // Give the mount an id so window.__tabvizStoreRegistry (keyed by element
+    // id) can reach this widget's store — the shrink leg below drives
+    // setColumnWidth through it.
+    inner.id = "measure-widget";
     inner.style.width = "900px";
     inner.style.height = "600px";
     host.appendChild(inner);
@@ -225,6 +229,59 @@ async function main() {
       fail(`B2 ratchet: max grid track ${final.maxTrack}px (expected ≲ 36px + slack)`);
     }
     console.log("✓ B2 gate: padded group tracks stable, no measure ratchet");
+
+    // ── Shrink-back gate (2026-07-27) ────────────────────────────────────
+    // Growth used to be permanent: once a row grew to fit wrapped text it kept
+    // that height forever, because an un-wrapped row stops OVERFLOWING and so
+    // is absent from the measure report — and resizing the column produced no
+    // overflow either, so it could not be undone from the UI. The loop now
+    // offers a natural content height for rows that clearly fit.
+    const wrapHeights = await mountAndSample(page, buildSpec(), 1, 700);
+    const grown = wrapHeights[0]!;
+    if (!(grown.r1 > grown.r0 + 20)) {
+      fail(`shrink-back setup: r1 (${grown.r1}) should tower over r0 (${grown.r0}) while wrapped`);
+    }
+    // Widen the wrapping column well past the text: no wrap needed any more.
+    const widened = await page.evaluate(() => {
+      const reg = (window as unknown as { __tabvizStoreRegistry?: Map<string, {
+        setColumnWidth: (id: string, w: number) => void }> }).__tabvizStoreRegistry;
+      if (!reg || reg.size === 0) return false;
+      [...reg.values()][0]!.setColumnWidth("notes", 1200);
+      return true;
+    });
+    if (!widened) fail("shrink-back: no store registry (dev hook missing / mount has no id)");
+    await new Promise((r) => setTimeout(r, 1200));
+    const after = await page.evaluate(() => {
+      const out: Record<string, number> = {};
+      for (const c of document.querySelectorAll<HTMLElement>("[data-row-id]")) {
+        const id = c.dataset.rowId;
+        if (!id) continue;
+        out[id] = Math.max(out[id] ?? 0, Math.round(c.getBoundingClientRect().height));
+      }
+      return out;
+    });
+    if (after.r1 > grown.r0 + 20) {
+      fail(`row did not shrink back: r1 was ${grown.r1} while wrapped, still ${after.r1} `
+        + `after widening (r0 baseline ${after.r0}) — growth is stuck`);
+    }
+    // And it must SETTLE there: shrinking narrows the track, which can push
+    // content back into overflow and re-grow it — a flip-flop. Sample again.
+    await new Promise((r) => setTimeout(r, 900));
+    const settled = await page.evaluate(() => {
+      const out: Record<string, number> = {};
+      for (const c of document.querySelectorAll<HTMLElement>("[data-row-id]")) {
+        const id = c.dataset.rowId;
+        if (!id) continue;
+        out[id] = Math.max(out[id] ?? 0, Math.round(c.getBoundingClientRect().height));
+      }
+      return out;
+    });
+    for (const id of Object.keys(after)) {
+      if (Math.abs((settled[id] ?? 0) - (after[id] ?? 0)) > 1) {
+        fail(`shrink oscillation on ${id}: ${after[id]} → ${settled[id]} after settling`);
+      }
+    }
+    console.log(`✓ shrink-back: r1 ${grown.r1}px (wrapped) → ${after.r1}px once the column fits, and holds`);
   } finally {
     await browser.close();
   }

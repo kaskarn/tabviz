@@ -43,3 +43,39 @@ describe("growMergeHeights (B2 commit semantics)", () => {
     expect(out).not.toBe(prev);
   });
 });
+
+// Opt-in shrink (2026-07-27). Growth being sticky meant a row that no longer
+// needed to wrap kept its tall height forever — it stops overflowing, so it is
+// absent from the report and nothing ever lowers it. The measure loop now
+// offers a row for shrinking ONLY when it measured the cell's CONTENT CHILD
+// (a height that does not depend on the pinned track, unlike the metric that
+// caused the B2 ratchet) and found it clearly shorter.
+describe("growMergeHeights — opt-in shrink", () => {
+  it("lowers a height when the row is listed as shrinkable", () => {
+    const prev = { r1: 188 };
+    const out = growMergeHeights(prev, { r1: 24 }, new Set(["r1"]));
+    expect(out).toEqual({ r1: 24 });
+  });
+
+  it("still refuses to shrink a row that is NOT listed", () => {
+    const prev = { r1: 188 };
+    expect(growMergeHeights(prev, { r1: 24 }, new Set(["other"]))).toBe(prev);
+  });
+
+  it("shrink is per-row: an unlisted neighbour keeps its height", () => {
+    const prev = { r1: 188, r2: 150 };
+    const out = growMergeHeights(prev, { r1: 24, r2: 24 }, new Set(["r1"]));
+    expect(out).toEqual({ r1: 24, r2: 150 });
+  });
+
+  it("growth still wins for a listed row whose report is LARGER", () => {
+    const prev = { r1: 100 };
+    const out = growMergeHeights(prev, { r1: 220 }, new Set(["r1"]));
+    expect(out).toEqual({ r1: 220 });
+  });
+
+  it("a shrink to the same value is still a no-op (loop-settle guard)", () => {
+    const prev = { r1: 24 };
+    expect(growMergeHeights(prev, { r1: 24 }, new Set(["r1"]))).toBe(prev);
+  });
+});
