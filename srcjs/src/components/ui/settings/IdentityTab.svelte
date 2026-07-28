@@ -29,6 +29,9 @@
   import DisclosureField from "$components/primitives/v2/DisclosureField.svelte";
   import { hexToOklch } from "$lib/oklch";
   import { reflectL } from "$lib/theme/polarity";
+  import { anchorLRange } from "$lib/theme/anchor-ranges";
+  import { CURVE_LABELS, IMPLICIT_RAMP_CURVE } from "$lib/theme/curves";
+  import { ALL_CURVES, type CurveName } from "$types/theme-roles";
   import { getCssVars } from "$lib/theme/consumer-bridge";
   import { CATEGORICAL_SCHEMES } from "$lib/data-schemes";
   import { CORNER_SLOTS, RULE_SLOTS, type CornerSlot, type RuleSlot } from "$lib/theme/scale-roles";
@@ -98,6 +101,55 @@
     else next[key] = init[key];
     commit({ ...inputs!, anchors: next });
   }
+
+  // ── Ramp shape (Tier-1 `inputs.curves`) ──────────────────────────────
+  // The curve reshapes how a ramp's 11 grades distribute their lightness
+  // — the substrate has carried it since Q-P4.3 and every preset sets it,
+  // but nothing surfaced it. Sibling of the anchors: the anchor picks the
+  // ramp's color, the curve picks how it walks.
+  //
+  // NEUTRAL + BRAND only — the ACCENT curve is deliberately absent
+  // (consequence-or-absence, D21 first principle). A curve reshapes ramp
+  // grades 2..8, and measured across all 9 presets those grades reach 36
+  // emitted tokens on neutral, 3 on brand (row-emphasis bar, focus ring,
+  // glass blobs) and exactly ONE on accent — `--tv-accent-fill`, which
+  // sits in KNOWN_UNCONSUMED (no renderer reads it). An accent row would
+  // move zero pixels in any figure. It joins when a consumer does.
+  type RampKey = "neutral" | "brand";
+  const CURVE_ROWS: ReadonlyArray<{ key: RampKey; label: string; hint: string }> = [
+    { key: "neutral", label: "Neutral", hint: "Surfaces, rules, body text — the paper→ink walk." },
+    { key: "brand",   label: "Brand",   hint: "Brand tint grades: the emphasis rail and focus ring." },
+  ];
+  const CURVE_OPTIONS = ALL_CURVES.map((c) => ({ value: c, label: CURVE_LABELS[c] }));
+  let curvesOpen = $state(false);
+
+  // Unset === linear (see IMPLICIT_RAMP_CURVE) — show the EFFECTIVE curve
+  // so the picker never reads as empty on a theme that just didn't set one.
+  function curveOf(key: RampKey): CurveName {
+    return inputs!.curves?.[key] ?? IMPLICIT_RAMP_CURVE;
+  }
+  function setCurve(key: RampKey, value: CurveName): void {
+    commit({ ...inputs!, curves: { ...inputs!.curves, [key]: value } });
+  }
+  // Pinned/reset mirror the anchors above: baseline is the theme as it
+  // arrived (store.initialTheme), not "explicitly set" — every preset
+  // ships curves, so the latter would dot three rows on load.
+  function initialCurve(key: RampKey): CurveName | undefined {
+    return store.initialTheme?.authoringInputs?.curves?.[key];
+  }
+  function curvePinned(key: RampKey): boolean {
+    return inputs!.curves?.[key] !== initialCurve(key);
+  }
+  function resetCurve(key: RampKey): void {
+    const next = { ...inputs!.curves };
+    const init = initialCurve(key);
+    if (init === undefined) delete (next as Record<string, unknown>)[key];
+    else next[key] = init;
+    commit({ ...inputs!, curves: next });
+  }
+  const curvesSummary = $derived(
+    inputs ? CURVE_ROWS.map((r) => curveOf(r.key)).join(" · ") : "",
+  );
 
   // ── Status anchors ───────────────────────────────────────────────────
   type StatusKey = "positive" | "negative" | "warning" | "info";
@@ -220,10 +272,12 @@
 
     <!-- ── Color identity ──────────────────────────────────────────── -->
     {#each ANCHOR_ROWS as row (row.key)}
+      {@const triple = anchorTriple(row.key)}
       <div data-it="anchor-{row.key}">
         <AnchorRow
           label={row.label}
-          triple={anchorTriple(row.key)}
+          {triple}
+          lRange={anchorLRange(row.key, { dark: isDark, currentL: triple.L })}
           layout="compact"
           expanded={openAnchor === row.key}
           onexpand={(o) => (openAnchor = o ? row.key : null)}
@@ -270,6 +324,20 @@
                segments={[{ value: "off", label: "off" }, { value: "on", label: "on" }]}
                onchange={(v) => patch("monochrome", v === "on")} />
     </div>
+    <DisclosureField label="Ramp shape" summary={curvesSummary} bind:open={curvesOpen}>
+      {#each CURVE_ROWS as row (row.key)}
+        <div data-it="curve-{row.key}">
+          <Field label={row.label} hint={row.hint}
+                 pinned={curvePinned(row.key)}
+                 onreset={curvePinned(row.key) ? () => resetCurve(row.key) : undefined}>
+            <Dropdown value={curveOf(row.key)}
+                      ariaLabel="{row.label} ramp shape"
+                      onchange={(v) => setCurve(row.key, v)}
+                      options={CURVE_OPTIONS} />
+          </Field>
+        </div>
+      {/each}
+    </DisclosureField>
 
     <!-- ── Families ────────────────────────────────────────────────── -->
     <div class="strata">families</div>

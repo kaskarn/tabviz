@@ -133,7 +133,7 @@ interactivity-ux-plan,spec-first-1.0-plan,settings-overhaul-plan}.md`.
   inner cluster (`EditThemeCluster`: identity | plots | styling). Tabs:
   `VariationsTab` (L1 theme-blessed mode flips) · `LabelsTab` (L1b
   figure content + watermark) · `IdentityTab` (L2 anchors/families/
-  geometry/scheme) · `PlotsTab` (L3 per-series shape/fill/stroke via
+  geometry/scheme + ramp shape) · `PlotsTab` (L3 per-series shape/fill/stroke via
   `series_overrides`) · `StylingTab` (L4 density_factor + role/text-role
   remapping + override release). The pre-redesign panel (two-band, quick
   strip, role tones, components band) is SUPERSEDED for editing — the live
@@ -312,6 +312,19 @@ One line each; the cost of ignoring these has already been paid once.
   polarity-reflected (`buildRamps` runs post-`applyPolarityToInputs`) — the ramp
   must NOT re-reflect. A mid-tone brand solid (L≈0.6) is a poor text bg; the
   brand_ink APCA≥45 preset gate catches it (dwarven needed a darker seed).
+- A ramp CURVE (`inputs.curves`) reshapes only grades 2..8 — grade 1 and the
+  anchor (9) are fixed endpoints. MEASURED reach across all 9 presets (D43,
+  2026-07-27): neutral 36 emitted tokens, brand 3 (emphasis bar / focus ring /
+  glass blobs), accent 1 (`--tv-accent-fill`, KNOWN_UNCONSUMED → zero pixels).
+  That's why the Identity "Ramp shape" picker has neutral+brand rows only.
+  Binding more chromatic grades in `role-bindings.ts` is what would make the
+  brand/accent curve matter.
+- Per-anchor SLIDER DOMAINS live in `lib/theme/anchor-ranges.ts`, not inline in
+  the control: `paper` edits over L 0.9–1 (all 9 presets sit at 0.987), every
+  other anchor keeps [0,1]. The table is authoring-space — `anchorLRange`
+  reflects it for dark polarity (the editor displays reflected L) and WIDENS it
+  to contain an out-of-envelope current value, so the track can never misreport
+  where the thumb is.
 - NON-FINITE NUMERICS are a recurring poison class: `Number.isNaN(x)` guards
   catch NaN but NOT ±Infinity, which then renders as the raw `"Infinity"`
   string (formatters) or NaN tick/scale positions (axis). Guard numeric

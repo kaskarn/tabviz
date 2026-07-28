@@ -47,6 +47,23 @@ export function curveFn(name: CurveName | undefined): CurveFn {
   return CURVES[name] ?? CURVES.ease;
 }
 
+/** Picker copy for the five curves — the roster and the words a user
+ *  reads for it live together (settings → edit theme → identity →
+ *  "Ramp shape"). Keep them short enough for a panel dropdown. */
+export const CURVE_LABELS: Readonly<Record<CurveName, string>> = Object.freeze({
+  linear: "linear — even steps",
+  ease: "ease — s-curve",
+  smooth: "smooth — soft midpoint",
+  log: "log — airier, more light grades",
+  exp: "exp — moodier, more dark grades",
+});
+
+/** The curve an UNSET `inputs.curves.<ramp>` behaves as. Both ramp
+ *  builders (`oklchInterpolateRamp`, `anchoredChromaticRamp`) default to
+ *  an identity remap when no curve is supplied, so "unset" is linear —
+ *  which is what the picker must show for an un-curved ramp. */
+export const IMPLICIT_RAMP_CURVE: CurveName = "linear";
+
 /** Per-ramp default curve choices. Per Stage 1 §25b. */
 export const DEFAULT_RAMP_CURVES = Object.freeze({
   neutral: "ease" as CurveName,

@@ -321,6 +321,19 @@ The final tab. Exit gate:
 Validation cadence per tab: screenshot battery across ≥3 presets +
 the consequence harness + the standing gates (wysiwyg, interaction-qa).
 
+### Post-ship additions
+
+- **2026-07-27 — Identity: "Ramp shape" + a bounded paper L axis.**
+  `inputs.curves` (Tier-1 since the substrate sprint, set by every preset,
+  reachable from R via `set_curves()`) had no widget surface; it's now a
+  disclosure under Identity with the five curves. NEUTRAL + BRAND rows only —
+  the accent curve's single token is unconsumed, so it would be a dead control
+  (measurements + rationale: register D43). The consequence fixture gained
+  `rowEmphasis` because the emphasis rail is the brand ramp's only rendered
+  consumer. Alongside it, the anchor editor's L slider is now domain-bounded
+  per anchor (`lib/theme/anchor-ranges.ts`): paper edits over 0.9–1 instead of
+  spending 90% of its track on lightnesses no sheet uses.
+
 ## What this supersedes
 
 The settings-overhaul plan (two-band panel), D16 single-scroll, the

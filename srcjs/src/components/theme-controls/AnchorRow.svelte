@@ -16,6 +16,12 @@
   — with the resolved anchor color on every thumb. Drag previews through
   the C53 channel (onpreview, no history); release commits (oncommit).
 
+  The L axis is domain-BOUNDED per anchor (`lRange`, from
+  `lib/theme/anchor-ranges.ts`): paper spends its whole track in the
+  0.9–1 sliver where paper actually lives instead of across a mostly
+  unusable [0, 1]. The track gradient repaints across the same domain,
+  so the track keeps teaching what the positions mean.
+
   Optional-anchor affordances: `mirrored` shows the inherits-tag; a set
   optional anchor gets the clear-↻ (onclear).
 -->
@@ -23,6 +29,7 @@
   import type { ControlLayout } from "./index";
   import type { OklchTriple } from "$types/theme-inputs";
   import { oklchToHex, hexToOklch, isValidHex } from "$lib/oklch";
+  import { FULL_L_RANGE, anchorLStep, type LRange } from "$lib/theme/anchor-ranges";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import TextInput from "$components/primitives/v2/TextInput.svelte";
@@ -45,6 +52,9 @@
     onreset?: () => void;
     /** Clear an optional anchor back to inheriting. */
     onclear?: () => void;
+    /** L-axis domain for this anchor. Defaults to the full [0, 1];
+     *  hosts pass a narrowed envelope via `anchorLRange(key, …)`. */
+    lRange?: LRange;
     /** Commit (history step). */
     oncommit: (next: OklchTriple) => void;
     /** Drag-tick preview (C53 — no history, no re-measure). */
@@ -62,6 +72,7 @@
     pinned = false,
     onreset,
     onclear,
+    lRange,
     oncommit,
     onpreview,
   }: Props = $props();
@@ -69,13 +80,20 @@
   const open = $derived(layout === "roomy" || expanded);
   const hex = $derived(oklchToHex(triple));
 
+  // The L domain this row edits over (default = the full OKLCH range).
+  const lDomain = $derived(lRange ?? FULL_L_RANGE);
+
   // ── Axis gradients: the track teaches what each position means. ─────
   function stops(make: (t: number) => OklchTriple, n = 9): string {
     const out: string[] = [];
     for (let i = 0; i < n; i++) out.push(oklchToHex(make(i / (n - 1))));
     return `linear-gradient(to right, ${out.join(", ")})`;
   }
-  const trackL = $derived(stops((t) => ({ L: t, C: triple.C, H: triple.H })));
+  // Painted across lDomain, not [0,1] — a narrowed track that still
+  // showed the full sweep would misreport where the thumb lands.
+  const trackL = $derived(stops(
+    (t) => ({ L: lDomain.min + t * (lDomain.max - lDomain.min), C: triple.C, H: triple.H }),
+  ));
   const trackC = $derived(stops((t) => ({ L: triple.L, C: t * 0.4, H: triple.H })));
   const trackH = $derived(stops(
     (t) => ({ L: triple.L, C: Math.max(triple.C, 0.08), H: t * 360 }),
@@ -110,7 +128,11 @@
   }
 
   function fmt(axis: "L" | "C" | "H", v: number): string {
-    return axis === "H" ? `${Math.round(v)}°` : axis === "L" ? v.toFixed(2) : v.toFixed(3);
+    if (axis === "H") return `${Math.round(v)}°`;
+    if (axis === "C") return v.toFixed(3);
+    // A narrowed L envelope (paper: 0.9–1) needs the third decimal, or
+    // the readout sits still for several steps of thumb travel.
+    return v.toFixed(lDomain.max - lDomain.min <= 0.25 ? 3 : 2);
   }
 
   // The live OKLCH triple as rgc-style mono coordinates ("0.49 0.09 195°").
@@ -160,7 +182,7 @@
     <div class="lch" class:dim={mirrored}>
       <div class="coords" aria-hidden="true">oklch <b>{coords}</b></div>
       {#each [
-        { axis: "L", min: 0, max: 1, step: 0.005, track: trackL },
+        { axis: "L", min: lDomain.min, max: lDomain.max, step: anchorLStep(lDomain), track: trackL },
         { axis: "C", min: 0, max: 0.4, step: 0.002, track: trackC },
         { axis: "H", min: 0, max: 360, step: 1, track: trackH },
       ] as const as ax (ax.axis)}

@@ -122,15 +122,23 @@ function buildSpec(): unknown {
   // measured them off-screen (1px). The axis is pinned [0,1] to keep the
   // mapping stable.
   const rows = [
-    { study: "Alpha One", grp: "Group A", n: 240, hr: 0.24, lo: 0.16, hi: 0.34, hr2: 0.31, lo2: 0.22, hi2: 0.42, p: 0.004 },
+    { emph: true, study: "Alpha One", grp: "Group A", n: 240, hr: 0.24, lo: 0.16, hi: 0.34, hr2: 0.31, lo2: 0.22, hi2: 0.42, p: 0.004 },
     { study: "Alpha Two", grp: "Group A", n: 410, hr: 0.30, lo: 0.21, hi: 0.40, hr2: 0.37, lo2: 0.27, hi2: 0.48, p: 0.21 },
-    { study: "Beta One", grp: "Group B", n: 150, hr: 0.20, lo: 0.12, hi: 0.30, hr2: 0.27, lo2: 0.18, hi2: 0.37, p: 0.04 },
+    { emph: true, study: "Beta One", grp: "Group B", n: 150, hr: 0.20, lo: 0.12, hi: 0.30, hr2: 0.27, lo2: 0.18, hi2: 0.37, p: 0.04 },
     { study: "Beta Two", grp: "Group B", n: 380, hr: 0.28, lo: 0.19, hi: 0.38, hr2: 0.34, lo2: 0.24, hi2: 0.45, p: 0.05 },
   ];
   return tabviz({
     data: rows,
     label: "study",
     group: "grp",
+    // Emphasis rows arm the brand ramp's ONLY rendered consumer:
+    // `--tv-row-emphasis-bar` (the 3px first-cell rail). Identity's
+    // brand ramp-SHAPE picker reshapes grades 2..8, and across all 9
+    // presets those grades reach just three emitted tokens — the rail,
+    // the focus ring (needs focus) and glass blobs (browser-only). With
+    // no emphasis row the control measured 0px and read as dead; with
+    // one it measures ~109px, which is honest, not inflated.
+    rowEmphasis: "emph",
     // Every Variations consequence gate armed: title (title row), tag
     // (tag row), forest column (series row), groups (banding group seg).
     title: "Consequence fixture",
