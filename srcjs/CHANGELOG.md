@@ -6,6 +6,29 @@ Wire-format versioning policy lives in
 
 ## [Unreleased]
 
+### Added
+
+* **"Ramp shape" picker** in the settings panel's Identity tab, exposing
+  the Tier-1 `inputs.curves` axis (`linear` / `ease` / `smooth` / `log` /
+  `exp`) that shapes how a ramp's grades distribute their lightness. The
+  control shows the EFFECTIVE curve, since an unset ramp behaves as linear
+  in both builders (`oklchInterpolateRamp`, `anchoredChromaticRamp`).
+  Neutral + brand rows only — a curve reshapes grades 2..8, and across all
+  9 presets those grades reach 36 emitted tokens on neutral, 3 on brand,
+  and 1 on accent (`--tv-accent-fill`, in `KNOWN_UNCONSUMED`), so an accent
+  row would be a dead control. Decision register D43.
+
+### Changed
+
+* **Per-anchor lightness ENVELOPES** (`lib/theme/anchor-ranges.ts`): the
+  LCH editor's L slider is now domain-bounded per anchor instead of always
+  spanning `[0, 1]`. `paper` edits over 0.9–1 (every preset sits at 0.987)
+  with a finer step and a third decimal in the readout; all other anchors
+  are unchanged. The table is authoring-space — `anchorLRange` reflects it
+  for dark polarity and widens it to contain an out-of-envelope value, so
+  the repainted track can never misreport where the thumb sits.
+  `AnchorRow` takes an optional `lRange` prop (default: the full range).
+
 ### Fixed
 
 * **Theme switch no longer crashes** with `Cannot read properties of

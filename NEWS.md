@@ -1,3 +1,28 @@
+# tabviz 0.38.1 (dev) — theme-editor instruments
+
+Two settings-panel affordances on the Identity tab. No wire change
+(still 1.10); nothing in the R authoring API moved.
+
+* **Ramp shape is pickable** (Edit theme → Identity → "Ramp shape").
+  The per-ramp lightness curve — `linear` / `ease` / `smooth` / `log` /
+  `exp`, the same axis `set_curves()` writes from R — had been a Tier-1
+  input since the V4 substrate and was set by every preset, but no
+  widget control exposed it. The picker shows the *effective* curve (an
+  unset ramp behaves as linear) and carries the usual override dot +
+  reset. **Neutral and brand only**: measured across all nine presets, a
+  curve reaches 36 emitted tokens on the neutral ramp, 3 on brand, and
+  exactly one on accent — `--tv-accent-fill`, which no renderer reads.
+  An accent row would move zero pixels in any figure, so it waits for a
+  consumer (decision register D43).
+* **The paper anchor's lightness slider is bounded** to L 0.9–1 instead
+  of the full 0–1. Paper is the figure's sheet — all nine presets sit at
+  0.987 — so nine tenths of that track was lightness no sheet uses and
+  the real choices were a few pixels wide. Per-anchor envelopes live in
+  one table; every other anchor keeps the full range, dark themes get
+  the polarity-reflected envelope, and a theme or typed hex that falls
+  outside widens the track rather than misreporting the thumb. This is a
+  UI affordance only: `set_anchor()` from R is unrestricted.
+
 # tabviz 0.38.0 (dev, wire 1.10 FROZEN) — the ship-readiness sweep
 
 The pre-1.0 hardening arc: the wire format is **frozen at 1.10**
