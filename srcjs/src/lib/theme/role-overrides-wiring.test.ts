@@ -181,3 +181,58 @@ describe("isValidPinValue (the shared ingress gate)", () => {
     expect(isValidPinValue(42)).toBe(false);
   });
 });
+
+describe("paint block ≡ consumer map (the lockstep invariant, made structural)", () => {
+  // `buildThemeCSS` and `getCssVars` used to be two independent compositions
+  // of the same thing: the emitter did cascade + spacing pins and separately
+  // appended live-config, while getCssVars did cascade + live-config +
+  // spacing pins in a different order. They agreed only because reviewers
+  // kept them agreeing. Both now read `composeCssVars`, so agreement is
+  // structural — this gate exists so a future edit that reintroduces a second
+  // composition fails loudly instead of drifting.
+  //
+  // The literal utility constants are emitted by the CSS block alone (they're
+  // not theme-derived and never reach the cascade), so they're exempt.
+  const LITERAL_ONLY = new Set([
+    "--tv-font-weight-normal",
+    "--tv-font-weight-bold",
+    "--tv-header-font-scale",
+    "--tv-viz-margin",
+  ]);
+
+  function declarations(css: string): Record<string, string> {
+    const out: Record<string, string> = {};
+    for (const line of css.split("\n")) {
+      const m = line.match(/^\s*(--[\w-]+):\s*(.*?);\s*$/);
+      if (m) out[m[1]!] = m[2]!;
+    }
+    return out;
+  }
+
+  // Cover the axes that historically diverged: density (spacing pins), mode
+  // (the HC/RT ratchet that beats token pins), and a live artifact.
+  for (const preset of Object.keys(PRESETS)) {
+    for (const density of ["compact", "spacious"] as const) {
+      it(`${preset}/${density}: every emitted var matches getCssVars`, () => {
+        const theme = buildTheme({ ...PRESETS[preset]!, density }, {
+          name: preset,
+          roleOverrides: { "text-muted": { ramp: "brand", grade: 8 } },
+          pins: { "--tv-text-footnote-size": "0.7rem" },
+        });
+        const css = declarations(buildThemeCSS(theme));
+        const vars = getCssVars(theme);
+
+        for (const [name, value] of Object.entries(css)) {
+          if (LITERAL_ONLY.has(name)) continue;
+          expect(`${name}=${value}`).toBe(`${name}=${vars[name]}`);
+        }
+        // ...and nothing the consumers can read is missing from the paint
+        // block (sentinels are deliberately skipped by the emitter).
+        const missing = Object.entries(vars)
+          .filter(([n, v]) => !v.startsWith("<") && !(n in css))
+          .map(([n]) => n);
+        expect(missing).toEqual([]);
+      });
+    }
+  }
+});

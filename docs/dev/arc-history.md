@@ -11,6 +11,111 @@ promote it.
 
 Newest first within each block, as originally accreted.
 
+## 2026-07-28 — The brand-color brick: one bad value, and the dead guard
+
+Reported as "it is possible to crash the widget by rapidly changing the brand
+color in the interactive setter". "Rapidly" turned out to be a red herring —
+there is no race. It just describes how you overshoot to the end of a slider
+track.
+
+**The value.** The LCH editor's hue slider ran `min={0} max={360}`, but hue is
+circular and `validateThemeInputs` accepts the half-open `[0, 360)` — 360° and
+0° are the same hue, and a closed domain would admit two spellings of one
+value. Drag to the far right, emit `H=360`, resolver throws. Fixed by moving
+the domain to `lib/theme/anchor-ranges.ts` as `HUE_MAX`/`HUE_STEP` — that
+module already owned per-anchor slider domains by convention, and an inline
+`max={360}` in the control was the convention being broken. Nothing is lost:
+359 and 0 are adjacent on the wheel.
+
+I then swept every other settings slider against its validator. Hue was the
+only offender. Worth internalizing WHY: the spacing sliders read their bounds
+from the same `SPACING_TOKEN_BOUNDS` table the validator reads, so they are
+correct by construction and cannot drift. The hue slider carried a literal.
+
+**Why a bad value BRICKED the widget.** The throw came from the widget PAINT
+path (`_emitV4CssVarsBody` -> `getCssVarsRaw` -> `resolveTheme` ->
+`validateThemeInputs`), which runs inside a Svelte effect flush. An exception
+there kills the reactive graph outright — I verified the figure AND the
+settings panel both stop updating permanently; tab switches die too. Nothing
+short of a reload recovers.
+
+But the code already had exactly the right guard: a tiered failure policy,
+dev throws / production logs and degrades. It was UNREACHABLE CODE in every
+shipped bundle. Both gates ask `import.meta.env.PROD !== true`; the configs
+declared `"import.meta.env.SSR": "false"`, and declaring a SUB-KEY of
+`import.meta.env` makes Vite substitute the whole object with one built from
+the declared keys only. `PROD` came back `undefined`, `undefined !== true`
+folded to `true`, and both checks minified to a literal `return !0`:
+
+    function E8(){try{return!0}catch{return!0}}
+
+Five bundles, all convinced they were dev builds. In V8 the same hole meant a
+resolver throw aborted an entire `save_plot`. Fixed with one shared
+`vite.env-defines.ts` spread by every config.
+
+**Method note, because it cost time.** My first containment attempt was in the
+wrong layer. I assumed the throw escaped from the store's theme `rebuild()` and
+put a try/catch there — then tested it by reintroducing the bad value, and the
+widget bricked anyway. `buildTheme` does not validate (it goes through
+`buildThemeStructure`); only the RENDER path does. Sourcemapping the minified
+stack is what actually located it. Reverting the wrong fix mattered as much as
+landing the right one: a try/catch in a path that provably never throws is
+worse than nothing, because the next reader believes it.
+
+**Adjacent review turned up three more of the same family.**
+
+- A THIRD dev-detection idiom in `theme-adapter.ts`'s contrast guard:
+  `typeof process === "undefined" || process.env?.NODE_ENV !== "production"`.
+  `process` is undefined in BOTH the browser and V8, so the gate never
+  engaged in either — a second half-cascade over every role ran on every
+  theme commit in the widget and every `buildTheme` in the export. Its
+  `console.warn`s were surfacing as SEVEN spurious warnings in the R suite
+  (V8 bridges `console.warn` to R `warning()`; verified with a direct probe).
+  Consolidating all three onto `lib/build-env.ts::isDevBuild()` dropped the R
+  suite to 0 warnings. Real contrast regressions are still caught by the
+  throw-mode preset gate in `theme-validate.test.ts`.
+- `getCssVars`'s bare `catch {}`, justified by "consumers fall back to v3
+  reads" — a rationale that expired when the v3 bridge was deleted in W4.
+  There is no second source any more, so `{}` had silently come to mean
+  "render everything unstyled". Degrade, but degrade LOUDLY.
+- `AnchorRow`'s invalid-hex flash timer was never cleared on destroy, and the
+  panel unmounts on close.
+
+**Then the consolidation.** `buildThemeCSS` and `getCssVars` were three
+separately-assembled spellings of one composition: the emitter did cascade +
+spacing pins, `_buildThemeCSSImpl` separately appended live-config, and
+`getCssVars` did cascade + live-config + spacing pins in a different order.
+They agreed only because reviewers kept them agreeing — and CLAUDE.md said so
+in as many words ("keep the two in lockstep").
+
+Before touching it I checked the thing that made unification risky: the two
+overlays write DISJOINT key sets (live-config -> 4 summary/container vars;
+spacing pins -> `--tv-spacing-*`/`--tv-plot-*`), and live-config reads only
+`--tv-accent`, which neither modifies. So the differing orders were provably
+equivalent. Then I captured a characterization baseline BEFORE refactoring — 9
+presets x 3 densities x 2 modes, roleOverrides and token pins active,
+snapshotting both the parsed CSS declarations and the getCssVars map — and
+confirmed 0 declaration diffs across 54 configs afterwards. That is also why
+the unchanged wysiwyg numbers are a consequence rather than a coincidence.
+
+Now `consumer-bridge.ts::composeCssVars` owns the composition, with two callers
+that differ ONLY in failure policy — which is the genuine reason they are still
+two functions: `getCssVars` must never throw (it is R's introspection entry
+point, called on partial hand-built themes), the CSS emitter must throw in dev.
+The degrade path seeds the bridge cache with the cascade-less overlay so a
+broken theme resolves and logs ONCE rather than on each of 50+ call sites, and
+the retry is a guaranteed cache hit, so it cannot recurse.
+
+**One gate needed a shape, not just a test.** The artifact check could not be a
+unit test: `npm test` runs BEFORE `npm run build` in CI, and `inst/` bundles are
+committed — so it would have asserted against the STALE committed bundle and a
+vite-config regression would have passed. It is now
+`scripts/check-prod-bundles.mjs` / `npm run check:prod-bundles`, wired into
+js-ci after the build, next to `check:size`. It also asserts the folded-to-FALSE
+form is PRESENT, so a refactor that renames or drops the check can't make the
+negative assertion vacuously pass. I verified it fails (exit 1) by
+reintroducing the original config regression.
+
 ## 2026-07-24 — Per-token spacing: the Spacing tab (D42, overruling D25)
 
 Maintainer hit the gap D25 had punted (a row-height floor question with no

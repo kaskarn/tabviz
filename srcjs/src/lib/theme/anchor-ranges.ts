@@ -76,3 +76,24 @@ export function anchorLRange(
 export function anchorLStep(range: LRange): number {
   return range.max - range.min <= 0.25 ? 0.002 : 0.005;
 }
+
+/**
+ * Highest hue the H slider may emit.
+ *
+ * Hue is CIRCULAR and its canonical domain is the HALF-OPEN `[0, 360)` —
+ * `validateThemeInputs` rejects exactly 360, because 360° ≡ 0° and a closed
+ * domain would admit two spellings of one hue. The track therefore tops out
+ * at 359; nothing is lost, since 359 and 0 are adjacent on the wheel.
+ *
+ * Regression (2026-07-28): the control ran to 360 while the validator
+ * rejected it, so dragging any anchor's hue to the end of the track emitted
+ * an out-of-contract theme. The resolver threw from inside the widget's
+ * paint path, mid-Svelte-effect-flush, and killed the reactive graph —
+ * figure and settings panel both frozen until reload.
+ *
+ * Gate: `anchor-ranges.test.ts` pins this against the validator's contract.
+ */
+export const HUE_MAX = 359;
+
+/** Slider step for the H axis (whole degrees). */
+export const HUE_STEP = 1;

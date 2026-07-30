@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import path from "path";
+import { PROD_ENV_DEFINES } from "./vite.env-defines";
 
 /**
  * Vite config for building the V8 bundle
@@ -8,6 +9,7 @@ import path from "path";
  * It contains only the svg-generator and its dependencies, no Svelte or browser code.
  */
 export default defineConfig({
+  define: { ...PROD_ENV_DEFINES },
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/export/v8-entry.ts"),

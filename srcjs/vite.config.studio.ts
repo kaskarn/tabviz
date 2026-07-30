@@ -1,15 +1,14 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
+import { PROD_ENV_DEFINES } from "./vite.env-defines";
 
 // Stage 3 — tabviz_studio bundle. Mounted inside a Shiny gadget served
 // from inst/studio/. Auto-bootstraps from a #tabviz-studio-mount element
 // reading data-initial-spec and data-initial-theme attributes.
 export default defineConfig({
   plugins: [svelte()],
-  define: {
-    "import.meta.env.SSR": "false",
-  },
+  define: { ...PROD_ENV_DEFINES },
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/studio/index.ts"),

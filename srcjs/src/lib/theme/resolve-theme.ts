@@ -64,6 +64,7 @@ import { effectiveTypeRoles } from "./scale-roles";
 import { resolveShellPaper, shellPaperKeyForCssVar } from "./shell-paper";
 import { resolveTextureColors, textureKeyForCssVar, resolveTextureKnockoutBg } from "./textures";
 import { validateThemeInputs } from "./theme-validate";
+import { isDevBuild } from "../build-env";
 import {
   COMPONENT_TOKENS,
   isLiveConfigToken,
@@ -315,19 +316,6 @@ const TOKEN_RESOLVE_BUG_SENTINEL = "";
  *  real value on every read path. */
 const LIVE_CONFIG_SENTINEL = "<live-config>";
 
-/** True under `vite dev`, vitest, bun:test, and any other non-PROD bundle.
- *  Vite inlines `import.meta.env.PROD` to a literal at build time; under
- *  bun/V8 / other runtimes that don't define `import.meta.env`, the
- *  optional chain returns undefined and we treat that as "not production"
- *  so the dev-throw fires there too (which is what we want for tests). */
-function isDev(): boolean {
-  try {
-    return (import.meta as { env?: { PROD?: boolean } }).env?.PROD !== true;
-  } catch {
-    return true;
-  }
-}
-
 /** Called when resolveTokenValue's dispatch fell through to a placeholder
  *  branch — always a bug in the manifest, the resolver, or both. In dev
  *  we throw loudly so CI / the failing test makes the bug visible; in
@@ -342,7 +330,7 @@ function tokenResolveBug(
     `resolveTokenValue: no resolver matched for ${cssVar} ` +
     `(tier=${tier}, ${detail}). ` +
     `Either the manifest entry's source.tier is wrong or a resolver is missing.`;
-  if (isDev()) throw new Error(msg);
+  if (isDevBuild()) throw new Error(msg);
   // eslint-disable-next-line no-console
   console.error(msg);
   return TOKEN_RESOLVE_BUG_SENTINEL;
@@ -1017,7 +1005,7 @@ function tokenDensityPx(
     // table mismatch. Pre-0d this silently emitted "0px" (collapsed
     // spacing with no error anywhere); now it dev-throws. Prod keeps the
     // historical "0px" so a single bad token can't take down a render.
-    if (isDev()) {
+    if (isDevBuild()) {
       throw new Error(
         `tokenDensityPx: ${cssVar} is resolverGroup="density" but has no ` +
         `entry in density-presets.ts (density=${density}). Add the px ` +

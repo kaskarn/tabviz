@@ -15,12 +15,11 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
+import { PROD_ENV_DEFINES } from "./vite.env-defines";
 
 export default defineConfig({
   plugins: [svelte()],
-  define: {
-    "import.meta.env.SSR": "false",
-  },
+  define: { ...PROD_ENV_DEFINES },
   build: {
     lib: {
       entry: {

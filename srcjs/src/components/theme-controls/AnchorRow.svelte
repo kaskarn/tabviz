@@ -26,10 +26,11 @@
   optional anchor gets the clear-↻ (onclear).
 -->
 <script lang="ts">
+  import { onDestroy } from "svelte";
   import type { ControlLayout } from "./index";
   import type { OklchTriple } from "$types/theme-inputs";
   import { oklchToHex, hexToOklch, isValidHex } from "$lib/oklch";
-  import { FULL_L_RANGE, anchorLStep, type LRange } from "$lib/theme/anchor-ranges";
+  import { FULL_L_RANGE, anchorLStep, HUE_MAX, HUE_STEP, type LRange } from "$lib/theme/anchor-ranges";
   import Field from "$components/primitives/v2/Field.svelte";
   import Slider from "$components/primitives/v2/Slider.svelte";
   import TextInput from "$components/primitives/v2/TextInput.svelte";
@@ -96,7 +97,7 @@
   ));
   const trackC = $derived(stops((t) => ({ L: triple.L, C: t * 0.4, H: triple.H })));
   const trackH = $derived(stops(
-    (t) => ({ L: triple.L, C: Math.max(triple.C, 0.08), H: t * 360 }),
+    (t) => ({ L: triple.L, C: Math.max(triple.C, 0.08), H: t * HUE_MAX }),
     13,
   ));
 
@@ -113,6 +114,9 @@
   let hexKey = $state(0);
   let hexInvalid = $state(false);
   let invalidTimer: ReturnType<typeof setTimeout> | null = null;
+  // The panel unmounts on close; a pending flash-timer would otherwise
+  // outlive the component.
+  onDestroy(() => { if (invalidTimer) clearTimeout(invalidTimer); });
 
   function commitHex(h: string): void {
     // hexToOklch never returns null — it NaN-poisons on garbage; gate
@@ -184,7 +188,7 @@
       {#each [
         { axis: "L", min: lDomain.min, max: lDomain.max, step: anchorLStep(lDomain), track: trackL },
         { axis: "C", min: 0, max: 0.4, step: 0.002, track: trackC },
-        { axis: "H", min: 0, max: 360, step: 1, track: trackH },
+        { axis: "H", min: 0, max: HUE_MAX, step: HUE_STEP, track: trackH },
       ] as const as ax (ax.axis)}
         <div class="lch-row">
           <span class="axis-name">{ax.axis}</span>

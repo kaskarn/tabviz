@@ -65,6 +65,12 @@ jobs:
       - name: Bundle-size budget
         run: npm run check:size
 
+      # Must run AFTER the build: inst/ bundles are committed, so a
+      # pre-build check would assert against the stale committed artifact
+      # and a vite-config regression would sail through (2026-07-28).
+      - name: Production posture of built bundles
+        run: npm run check:prod-bundles
+
       # Perf regression gate (M0-A last criterion): bun bench medians vs
       # the checked-in baseline, normalized by a runtime calibration so
       # laptop-recorded baselines transfer to CI runners. Re-baseline with

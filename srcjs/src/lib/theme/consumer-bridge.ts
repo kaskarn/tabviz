@@ -166,31 +166,73 @@ export function getCssVarsRaw(theme: WebTheme): Record<string, string> {
  *  per call because callers mutate the returned map. */
 const cssVarsBridgeCache = new WeakMap<WebTheme, Record<string, string>>();
 
+/** Cached cascade + live-config overlay — everything that depends only on
+ *  theme IDENTITY. THROWS on resolver error (see `composeCssVars`).
+ *
+ *  The overlay puts the v3 user-config bridge values over their
+ *  "<v3-bridge>" sentinels so every consumer sees the SAME values the
+ *  painted CSS uses. Before it, 16 tokens round-tripped as the literal
+ *  sentinel and --tv-text-title-fg diverged between studio preview and R
+ *  render (R3 studio F3/F4). */
+function bridgedCssVars(theme: WebTheme): Record<string, string> {
+  const hit = cssVarsBridgeCache.get(theme);
+  if (hit) return hit;
+  const base = getCssVarsRaw(theme);
+  const withBridge = Object.assign({ ...base }, computeLiveConfigVars(theme, base));
+  cssVarsBridgeCache.set(theme, withBridge);
+  return withBridge;
+}
+
+/**
+ * THE consumer cssVars map: cascade + token pins + live-config overlay +
+ * spacing pins. Every surface that paints a tabviz theme — the widget's
+ * CSS block, the SVG export, every `readVar` call site — resolves through
+ * exactly this composition.
+ *
+ * THROWS on resolver error; the caller chooses the failure policy
+ * (`getCssVars` degrades loudly; the CSS emitter re-throws under dev so CI
+ * surfaces the bug at the moment of introduction). That split is the whole
+ * reason this is separate from `getCssVars` rather than folded into it.
+ *
+ * Spacing pins are applied HERE, per call, onto a fresh copy — never baked
+ * into the cache: the v3-era `spec.theme.spacing.X = value` pattern mutates
+ * the theme in place (same identity), so a cached pinned map goes stale
+ * (caught by svg-centering.test.ts's rowGroupPadding gate), and callers
+ * mutate the map they get back.
+ */
+export function composeCssVars(theme: WebTheme): Record<string, string> {
+  return applySpacingPins({ ...bridgedCssVars(theme) }, theme);
+}
+
 export function getCssVars(theme: WebTheme | undefined | null): Record<string, string> {
   if (!theme?.authoringInputs) return {};
-  let withBridge = cssVarsBridgeCache.get(theme);
-  if (!withBridge) {
-    let base: Record<string, string>;
-    try {
-      base = getCssVarsRaw(theme);
-    } catch {
-      // Resolver errors during the sprint are tolerated; consumers fall
-      // back to v3 reads. Drift gates + visual regression catch silent
-      // mismatches.
-      base = {};
-    }
-    // Overlay the v3 user-config bridge values over their "<v3-bridge>"
-    // sentinels so every consumer of getCssVars (TS readers, R's
-    // theme_css_vars/diff_themes/inspect_token via V8, the studio) sees
-    // the SAME values the painted CSS uses. Before this, 16 tokens
-    // round-tripped as the literal sentinel and --tv-text-title-fg
-    // diverged between studio preview and R render (R3 studio F3/F4).
-    withBridge = Object.assign({ ...base }, computeLiveConfigVars(theme, base));
-    cssVarsBridgeCache.set(theme, withBridge);
+  try {
+    return composeCssVars(theme);
+  } catch (e) {
+    // Degrade rather than throw: this runs inside Svelte derivations, and an
+    // escaping error there kills the reactive graph outright. But degrade
+    // LOUDLY — the original rationale ("consumers fall back to v3 reads")
+    // expired with the v3 bridge (W4). There is no second source any more,
+    // so a bare `catch {}` made "the cascade failed and everything is
+    // unstyled" indistinguishable from "this theme had nothing to say".
+    //
+    // Unlike the CSS emitter this never re-throws in dev: getCssVars is also
+    // the introspection entry point (R's theme_css_vars / diff_themes /
+    // inspect_token via V8), legitimately called on partial hand-built
+    // themes.
+    // eslint-disable-next-line no-console
+    console.error(
+      `[tabviz] theme "${theme.name ?? "custom"}" failed to resolve; ` +
+      `rendering with unstyled fallbacks.`,
+      e,
+    );
+    // Seed the cache with the cascade-less overlay so the failing resolve
+    // runs — and logs — ONCE, not on each of the 50+ call sites (several
+    // per cell). The retry is then a guaranteed cache hit, so it cannot
+    // throw and cannot recurse.
+    cssVarsBridgeCache.set(theme, { ...computeLiveConfigVars(theme, {}) });
+    return composeCssVars(theme);
   }
-  // Fresh copy per call: callers mutate the result, and applySpacingPins
-  // writes in place — never let either touch the cached overlay.
-  return applySpacingPins({ ...withBridge }, theme);
 }
 
 /** Apply theme.spacing.* + theme.plot.* + theme.row.borderWidth as override

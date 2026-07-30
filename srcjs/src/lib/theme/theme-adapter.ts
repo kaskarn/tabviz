@@ -43,6 +43,7 @@ import type {
 // (resolve-theme.ts) project from there so they can't drift.
 import { densityPresetAsSpacingTokens, type DensityPreset } from "./density-presets";
 import { applySpacingOverrides } from "./spacing-tokens";
+import { isDevBuild } from "../build-env";
 
 const DENSITY_SPACING: Record<DensityPreset, SpacingTokens> = {
   compact:     densityPresetAsSpacingTokens("compact")     as unknown as SpacingTokens,
@@ -399,8 +400,11 @@ export function buildTheme(
   // still build; they just complain), throw-mode in the CI preset gate
   // (theme-validate.test.ts). The validator was dead code until the
   // adversarial color review (H4) noticed nothing ever called it.
-  if (!opts.skipValidation &&
-      (typeof process === "undefined" || process.env?.NODE_ENV !== "production")) {
+  // Dev-only: this is a second half-cascade over every role. The gate used
+  // to read `process.env.NODE_ENV`, which is undefined in BOTH the browser
+  // and V8 — so it never skipped in either, and the check ran on every theme
+  // commit in the widget and every buildTheme in the R-side export.
+  if (!opts.skipValidation && isDevBuild()) {
     try {
       validateResolvedTheme(built);
     } catch (e) {

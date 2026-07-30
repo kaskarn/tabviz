@@ -105,9 +105,17 @@ interactivity-ux-plan,spec-first-1.0-plan,settings-overhaul-plan}.md`.
   re-routed tokens suppress their v3-bridge stamp (full retirement = W4).
   Design: `docs/dev/component-model.md`.
   Token pins (`set_pin`) overlay AFTER resolve, BEFORE contrast
-  validation; pins + roleOverrides + components ride `WebTheme` and MUST reach
-  both resolve paths (`getCssVars` and `_emitV4CssVarsBody` stay in
-  lockstep — gate: `role-overrides-wiring.test.ts`). The v3 BRIDGE IS
+  validation; pins + roleOverrides + components ride `WebTheme` and reach
+  every consumer through **`consumer-bridge.ts::composeCssVars`** — the ONE
+  composition (cascade + token pins + live-config overlay + spacing pins).
+  Its two callers differ only in FAILURE POLICY: `getCssVars` degrades
+  loudly (it's also R's introspection entry point, called on partial
+  themes), `theme-css.ts::_emitV4CssVarsBody` re-throws under dev. Before
+  2026-07-28 these were three separately-assembled, differently-ordered
+  spellings kept in step by review; consolidating them was verified
+  declaration-identical across 9 presets × 3 densities × 2 modes. Gate:
+  `role-overrides-wiring.test.ts` (now asserts paint-block ≡ consumer map,
+  not just that overrides arrive). The v3 BRIDGE IS
   GONE (W4, 2026-06-11; wire 1.10): the only non-cascade emission is
   `computeLiveConfigVars` (series slot 0 + layout). Border tokens +
   export share lib/theme/borders.ts::resolveBorders. header_style and
@@ -305,6 +313,54 @@ One line each; the cost of ignoring these has already been paid once.
   across every comfortable theme; one mutation restyled them all —
   js-ci's maiden run caught it via Linux test-file order).
 - `hexToOklch` NaN-poisons on garbage — gate user input with `isValidHex`.
+- A THEME-RESOLVER THROW IS FATAL TO THE WHOLE WIDGET, and the guard against
+  that was dead in every shipped bundle (2026-07-28). Two halves, both fixed:
+  (1) the LCH hue slider ran to 360 while `validateThemeInputs` accepts the
+  half-open `[0, 360)` — dragging any anchor's hue to the end of its track
+  emitted an out-of-contract theme. Slider domains are single-sourced in
+  `lib/theme/anchor-ranges.ts` (`HUE_MAX`/`HUE_STEP` beside the L envelopes),
+  never inline in the control. (2) The resolver threw from the widget PAINT
+  path (`theme-css.ts::_emitV4CssVarsBody` → `getCssVarsRaw` → `resolveTheme`
+  → `validateThemeInputs`) *mid-Svelte-effect-flush*, which kills the reactive
+  graph — figure AND settings panel frozen until reload, no recovery. The
+  tiered failure policy (dev throws, prod logs+degrades) exists for exactly
+  this, but `isDev()`/`_isDevBuild()` test `import.meta.env.PROD !== true`, and
+  declaring a SUB-KEY of `import.meta.env` in a vite `define` (we set `SSR`)
+  makes Vite replace the whole env object with only the declared keys — `PROD`
+  came back `undefined`, both gates minified to a literal `return !0`, and the
+  degrade path was unreachable in ALL five bundles (widget/split/v8/npm/studio;
+  in V8 it aborted the whole `save_plot`). Every config now spreads
+  `srcjs/vite.env-defines.ts::PROD_ENV_DEFINES` — declare any
+  `import.meta.env.*` key and you MUST declare these too. Source-level tests
+  (vitest/bun import TS directly, never see the defines) still get dev-throw,
+  which is where the loud behavior belongs. Gates:
+  `lib/theme/prod-degrade.test.ts` (config spread + no always-true dev check in
+  built bundles) and the `HUE_MAX` block in `anchor-ranges.test.ts` (asserts
+  against the VALIDATOR, not a copied literal). LESSON: any panel control whose
+  domain can exceed a Tier-1 validator range is a widget-killer, not a bad
+  pixel — check the two ends of every new slider against its validator. (Swept
+  2026-07-28: hue was the ONLY offender — the spacing sliders and the validator
+  share one `SPACING_TOKEN_BOUNDS` table, which is the pattern to copy.)
+- "Am I a dev build?" has ONE answer: `lib/build-env.ts::isDevBuild()`. It was
+  three (2026-07-28): two byte-identical private copies in `resolve-theme.ts` +
+  `theme-css.ts` (so the PROD-define bug above had to be diagnosed twice), and
+  `theme-adapter.ts`'s contrast guard reading `process.env.NODE_ENV` — which is
+  undefined in BOTH the browser and V8, so its "skip in production" gate never
+  engaged in either: a second half-cascade over every role ran on every theme
+  commit in the widget AND every `buildTheme` in the export, and its
+  `console.warn`s surfaced as SEVEN spurious R warnings (V8 bridges
+  console.warn → R `warning()` — verified). Real contrast regressions are still
+  caught by the throw-mode preset gate in `theme-validate.test.ts`. Gate:
+  prod-degrade.test.ts fails any theme module that re-derives PROD privately or
+  mentions NODE_ENV.
+- `composeCssVars` throws by contract; its two consumers differ ONLY in failure
+  policy (see the Theme-system map above). `getCssVars` had a bare `catch {}`
+  justified by "consumers fall back to v3 reads" — a rationale that expired
+  with the v3 bridge (W4), so `{}` had silently come to mean "render
+  unstyled". Degrade, but degrade LOUDLY. Its catch seeds the bridge cache
+  with the cascade-less overlay so a broken theme resolves (and logs) ONCE
+  rather than on each of the 50+ call sites, and the retry is a guaranteed
+  cache hit — it cannot recurse.
 - Brand/accent ramps use `anchoredChromaticRamp` (oklch.ts): step 9 === the
   EXACT anchor, whole L progression derived from `seed.L` — so the Brand/Accent
   lightness slider moves the figure (D41, 2026-07-22). Do NOT revert to a
@@ -689,6 +745,12 @@ Inline `*.test.ts` next to source; `npm test` runs both bun and vitest.
 Additional gates from `srcjs/`:
 - `npm run check` — svelte-check type-check
 - `npm run check:size` — bundle-size budget (`bundle-size-budget.json`)
+- `npm run check:prod-bundles` — PRODUCTION-POSTURE gate on the BUILT bundles:
+  every one must fold its `isDevBuild()` check to false (and must still
+  CONTAIN a folded check, so a rename can't make the assertion vacuous).
+  MUST run after `npm run build` — `npm test` runs before the build in CI and
+  `inst/` bundles are committed, so a unit-test version would assert against
+  the stale committed artifact. Source-level half: `prod-degrade.test.ts`.
 - `npm run check:lockfiles` — npm + bun lockfile parity
 - `npm run knip` — DEAD-CODE harness (`knip.json`). Models the REAL entry
   graph (the 5 npm barrels + 4 runtime boots + tests) so it reports only

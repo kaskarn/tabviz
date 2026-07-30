@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
+import { PROD_ENV_DEFINES } from "./vite.env-defines";
 
 // Build configuration for the split forest widget. (No tailwindcss() plugin:
 // there are zero @tailwind/@apply directives in src — it was vestigial config
@@ -8,10 +9,7 @@ import path from "path";
 // can be dropped in a separate lockfile-parity-safe pass.)
 export default defineConfig({
   plugins: [svelte()],
-  define: {
-    // Force client-side mode (not SSR)
-    "import.meta.env.SSR": "false",
-  },
+  define: { ...PROD_ENV_DEFINES },
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/htmlwidgets/index-split.svelte.ts"),

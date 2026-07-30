@@ -54,6 +54,15 @@ Every other area on this roadmap decays invisibly without this one.
       region-tree budget gate in CI; browser bench weekly
       (perf-weekly.yaml, informational artifacts). The bench itself had
       ROTTED (culled-preset import) — repaired same day (2026-06-11).
+- [x] The BUILT ARTIFACT is gated, not just the source: `npm run
+      check:prod-bundles` asserts every shipped bundle folds its dev check
+      to false, wired into js-ci AFTER the build step (2026-07-28). A new
+      gate CLASS — the bug it exists for was invisible to every
+      source-level suite, because the defect was in the vite `define` and
+      only existed in the emitted bundle. Note the ordering trap it
+      encodes: `npm test` runs BEFORE `npm run build` in CI and `inst/`
+      bundles are committed, so a unit-test version of this check would
+      have asserted against the stale committed artifact and passed.
 - [ ] A gate failure blocks merge (configure branch protection once CI is
       green on main). Known-failure allowance: NONE — the long-standing
       vitest "jsdom canvas" failure was a test-harness bug (`?? null`
@@ -435,6 +444,44 @@ Clinical/regulatory audience makes this table stakes.
 ---
 
 ## Status log
+
+- 2026-07-28 — **A user-reachable widget-BRICKING bug, and the dead guard
+  that let it brick (areas A + F).** Reported as "rapidly changing the brand
+  color crashes the widget"; it is deterministic — dragging any anchor's HUE
+  slider to the end of its track emitted `H=360`, which
+  `validateThemeInputs` rejects (hue is circular; the canonical domain is the
+  half-open `[0, 360)`). The resolver threw from the widget PAINT path
+  mid-Svelte-effect-flush, which kills the reactive graph: figure AND settings
+  panel frozen until reload. Fixed at the control — slider domains are
+  single-sourced in `lib/theme/anchor-ranges.ts` (`HUE_MAX`/`HUE_STEP` beside
+  the L envelopes), never inline. Swept every other settings slider against
+  its validator: hue was the ONLY offender (the spacing sliders share one
+  `SPACING_TOKEN_BOUNDS` table with the validator — that is the pattern).
+  THE DEEPER FIND: the tiered failure policy that exists precisely for this
+  (dev throws, prod logs + degrades) was UNREACHABLE CODE in all five
+  bundles. Both gates ask `import.meta.env.PROD !== true`, and declaring a
+  sub-key of `import.meta.env` in a vite `define` (we set `SSR`) makes Vite
+  replace the whole env object with only the declared keys — `PROD` came back
+  `undefined` and both checks minified to a literal `return !0`. So ANY
+  resolver throw escaped, in the widget and in V8 (`save_plot` aborted
+  wholesale). Every config now spreads `srcjs/vite.env-defines.ts`.
+  Adjacent review found and fixed three more of the same family: a THIRD
+  dev-detection idiom (`process.env.NODE_ENV`, undefined in both browser and
+  V8, so its "skip in production" gate never engaged — the contrast validator
+  ran on every theme commit AND every export `buildTheme`, and its
+  `console.warn`s were surfacing as 7 spurious R warnings, since V8 bridges
+  console.warn to R `warning()`); `getCssVars`'s bare `catch {}` whose
+  "fall back to v3 reads" rationale expired with the v3 bridge (W4), so `{}`
+  had come to mean "render unstyled, silently"; and an uncleared flash-timer
+  in AnchorRow. Then CONSOLIDATED the three separately-assembled spellings of
+  the cssVars composition into `consumer-bridge.ts::composeCssVars` — verified
+  declaration-identical across 9 presets x 3 densities x 2 modes before/after,
+  so lockstep is now structural rather than a review promise.
+  New gates: `check:prod-bundles` (post-build, CI — a unit test could not do
+  this job, see below), the `HUE_MAX` block in `anchor-ranges.test.ts`
+  (asserts against the VALIDATOR, not a copied literal), single-sourcing
+  checks in `prod-degrade.test.ts`, and paint-block-equals-consumer-map in
+  `role-overrides-wiring.test.ts`.
 
 - 2026-07-24 — **D42 shipped (area F — per-token spacing).** Overrules D25:
   `inputs.spacing_overrides` (Tier-1, absolute px, applied after

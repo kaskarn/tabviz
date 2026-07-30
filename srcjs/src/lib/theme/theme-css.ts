@@ -19,9 +19,9 @@
  */
 
 import type { WebTheme } from "../../types/theme-resolved";
-import { computeLiveConfigVars } from "./v3-bridge-vars";
-import { getCssVars, getCssVarsRaw, applySpacingPins } from "./consumer-bridge";
+import { composeCssVars } from "./consumer-bridge";
 import { VIZ_MARGIN } from "../axis-utils";
+import { isDevBuild } from "../build-env";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Caches
@@ -100,97 +100,68 @@ export function buildWidgetCSS(
 
 function _buildThemeCSSImpl(theme: WebTheme): string {
   // ───────────────────────────────────────────────────────────────────────
-  // SINGLE V4 EMISSION (W4 complete, 2026-06-11). This function now emits ONLY:
-  //   1. `_emitV4CssVarsBody` — the v4 manifest cssVars (canonical source).
+  // SINGLE V4 EMISSION (W4 complete, 2026-06-11). This function emits ONLY:
+  //   1. `_emitV4CssVarsBody` — the composed cssVars map (canonical source;
+  //      cascade + token pins + live-config + spacing pins, all of it owned
+  //      by consumer-bridge's composeCssVars).
   //   2. A handful of literal utility constants (font weights, header scale,
   //      viz margin) that aren't theme-derived.
-  //   3. `computeLiveConfigVars` (v3-bridge-vars.ts) — the ONE remaining
-  //      non-cascade emission (series slot 0 + layout live-config), single-
-  //      sourced so it matches getCssVars' overlay by construction.
   // There is NO v3-alias block and NO v3-tail computation anymore: W4 ported
   // header/first-column/border/italic/numeric-figures/row-group/semantic vars
-  // into real v4 resolver groups (computeV3BridgeVars was deleted). Keep this
-  // in lockstep with getCssVars (gate: role-overrides-wiring.test.ts).
+  // into real v4 resolver groups (computeV3BridgeVars was deleted). Lockstep
+  // with getCssVars is now STRUCTURAL — both read composeCssVars — rather
+  // than a review promise (gate: role-overrides-wiring.test.ts).
   // ───────────────────────────────────────────────────────────────────────
 
-  const v4Body = _emitV4CssVarsBody(theme);
-  // The resolved cssVars, fed to computeLiveConfigVars so its live-config
-  // output is single-sourced against the same map consumers read (avoids the
-  // 4th-decimal-OKLCH drift two independent resolvers once produced).
-  const cv = getCssVars(theme);
-
-  // Live-config bridge (series slot 0 + layout) — single-sourced from
-  // computeLiveConfigVars (v3-bridge-vars.ts) so this emission and
-  // getCssVars' overlay agree by construction (R3 studio F3/F4: the
-  // inline duplicates here diverged from what consumers read).
-  const bridgeVars = computeLiveConfigVars(theme, cv);
-  const bridgeBody = Object.entries(bridgeVars)
-    .map(([k, v]) => `      ${k}: ${v};`)
-    .join("\n");
-
   return `
-      /* ── V4 manifest cssVars — canonical source of theme values. */
-${v4Body}
+      /* ── V4 manifest cssVars — canonical source of theme values.
+            Includes the live-config bridge (series slot 0 + layout), which
+            composeCssVars overlays: this block and what every consumer
+            reads through getCssVars are now the SAME map by construction,
+            not two compositions kept in step by review. */
+${_emitV4CssVarsBody(theme)}
       /* Literal font-weight constants — utility classes read these. */
       --tv-font-weight-normal:  400;
       --tv-font-weight-bold:    600;
       --tv-header-font-scale:   1.05;
       --tv-viz-margin:          ${VIZ_MARGIN}px;
-
-      /* ── V3 user-config bridges (single source: v3-bridge-vars.ts).
-            Each cluster has a follow-up task (#72-#74) to become a
-            manifest entry. */
-${bridgeBody}
     `.trim();
 }
 
-/** Append v4 cssVars from theme.authoringInputs. Empty when authoringInputs
- *  is unavailable (legacy / programmatic themes); v3 path continues to work
- *  unchanged in that case.
+/** Emit the theme's cssVars as CSS declarations. Empty when authoringInputs
+ *  is unavailable (legacy / programmatic themes).
  *
- *  Failure policy (unified in Pass 0d-ii): a resolver throw here used to be
- *  swallowed silently — the ENTIRE v4 var block vanished and every theme
- *  value fell back to the v3 tail with zero observability. Now dev
- *  re-throws (CI/tests surface the bug at the moment of introduction) and
- *  prod logs loudly before degrading to the v3-tail fallback. */
+ *  Composition is NOT done here — `composeCssVars` owns it, and this is one
+ *  of its two consumers (the other is `getCssVars`). Until 2026-07-28 this
+ *  function assembled its own map (cascade + spacing pins) while
+ *  `_buildThemeCSSImpl` separately appended the live-config vars and
+ *  `getCssVars` assembled a third, differently-ordered variant — three
+ *  spellings of one composition, held in step only by review and the
+ *  role-overrides-wiring gate. Now the paint block and every consumer read
+ *  the same function.
+ *
+ *  What DOES live here is the failure POLICY, which is genuinely different
+ *  from getCssVars': dev re-throws so CI surfaces a resolver bug at the
+ *  moment of introduction; production logs loudly and drops the block. */
 function _emitV4CssVarsBody(theme: WebTheme): string {
   if (!theme.authoringInputs) return "";
   try {
-    // roleOverrides + pins ride this resolve too (P0 review finding #1 /
-    // the P0.1 lesson): this is the WIDGET PAINT path. It shares the
-    // CACHED getCssVarsRaw with the export path (one cascade per paint),
-    // then overlays spacing pins — which live OUTSIDE the cache key
-    // (theme.spacing is per-figure, not cascade-derived). Without the
-    // overlay the painted CSS padding diverged from both the JS layout
-    // and the SVG export, which read the full getCssVars (round-2
-    // cross-runtime review P1). The v3-bridge vars are emitted separately
-    // by _buildThemeCSSImpl, so only spacing is overlaid here.
-    const varsWithPins = applySpacingPins({ ...getCssVarsRaw(theme) }, theme);
     const lines: string[] = [];
-    for (const [name, value] of Object.entries(varsWithPins)) {
+    for (const [name, value] of Object.entries(composeCssVars(theme))) {
       // Skip placeholder values (TBD / input / computed sentinels).
       if (value.startsWith("<")) continue;
       lines.push(`      ${name}: ${value};`);
     }
     return lines.join("\n");
   } catch (e) {
-    if (_isDevBuild()) throw e;
+    if (isDevBuild()) throw e;
     // eslint-disable-next-line no-console
     console.error(
       `tabviz: v4 cssVars emission failed for theme "${theme.name ?? "custom"}"; ` +
-      `rendering on v3 fallbacks only.`,
+      `theme values dropped from this block.`,
       e,
     );
     return "";
-  }
-}
-
-/** True under vite dev / vitest / bun:test (mirrors resolve-theme's isDev). */
-function _isDevBuild(): boolean {
-  try {
-    return (import.meta as { env?: { PROD?: boolean } }).env?.PROD !== true;
-  } catch {
-    return true;
   }
 }
 
