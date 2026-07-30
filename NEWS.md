@@ -1,3 +1,42 @@
+# tabviz 0.38.2 (dev) — a widget-freezing crash, and the guard that was missing
+
+Bug-fix release. No wire change (still 1.10); nothing in the R authoring
+API moved.
+
+* **Fixed: dragging a color anchor's hue slider to the end of its track
+  froze the widget.** Reported as "rapidly changing the brand color
+  crashes the widget" — but there was no race; that just describes how you
+  overshoot to the end of a track. Hue is circular, so its valid domain is
+  the half-open `[0, 360)` (360° and 0° are the same hue), while the slider
+  ran to 360 inclusive. The resulting theme was rejected by the resolver
+  *from inside the widget's paint path*, which took the whole interactive
+  surface down with it: the figure and the settings panel both stopped
+  responding until the page was reloaded. Affected every anchor row —
+  brand, ink, paper, accent and the status colors — in both the settings
+  panel and the studio. The slider now stops at 359, which costs nothing:
+  359 and 0 are adjacent on the wheel.
+* **Fixed: `save_plot()` could abort entirely on a theme it could not
+  resolve**, instead of rendering with fallbacks and reporting the problem.
+  Same root cause as above, and the more consequential half of it: the
+  engine has always had a tiered failure policy — fail loudly in
+  development, degrade and report in production — but a build-configuration
+  fault meant every shipped bundle believed it was a development build, so
+  the degrade path was unreachable. One bad token could therefore take down
+  a whole render or a whole export. Both halves are now gated in CI,
+  including a check on the built artifacts themselves, since this fault was
+  invisible to every source-level test.
+* **Fixed: theme resolution no longer emits spurious warnings.** A
+  development-only contrast diagnostic was running in the R export path and
+  surfacing as warnings during ordinary rendering (seven of them across the
+  test suite). Genuine contrast problems are still caught — the check that
+  guards the shipped themes is unchanged.
+* Internal: the widget's CSS custom properties and everything read through
+  `theme_css_vars()` / `diff_themes()` / `inspect_token()` are now composed
+  by a single function rather than three separately-assembled variants.
+  Verified byte-identical across all nine presets in three densities and
+  two contrast modes, so no output changes — but the three copies can no
+  longer drift apart.
+
 # tabviz 0.38.1 (dev) — theme-editor instruments
 
 Two settings-panel affordances on the Identity tab. No wire change

@@ -6,30 +6,40 @@ Wire-format versioning policy lives in
 
 ## [Unreleased]
 
-### Added
-
-* **"Ramp shape" picker** in the settings panel's Identity tab, exposing
-  the Tier-1 `inputs.curves` axis (`linear` / `ease` / `smooth` / `log` /
-  `exp`) that shapes how a ramp's grades distribute their lightness. The
-  control shows the EFFECTIVE curve, since an unset ramp behaves as linear
-  in both builders (`oklchInterpolateRamp`, `anchoredChromaticRamp`).
-  Neutral + brand rows only — a curve reshapes grades 2..8, and across all
-  9 presets those grades reach 36 emitted tokens on neutral, 3 on brand,
-  and 1 on accent (`--tv-accent-fill`, in `KNOWN_UNCONSUMED`), so an accent
-  row would be a dead control. Decision register D43.
-
-### Changed
-
-* **Per-anchor lightness ENVELOPES** (`lib/theme/anchor-ranges.ts`): the
-  LCH editor's L slider is now domain-bounded per anchor instead of always
-  spanning `[0, 1]`. `paper` edits over 0.9–1 (every preset sits at 0.987)
-  with a finer step and a third decimal in the readout; all other anchors
-  are unchanged. The table is authoring-space — `anchorLRange` reflects it
-  for dark polarity and widens it to contain an out-of-envelope value, so
-  the repainted track can never misreport where the thumb sits.
-  `AnchorRow` takes an optional `lRange` prop (default: the full range).
-
 ### Fixed
+
+* **The LCH hue slider could brick the widget.** `AnchorRow`'s H axis ran
+  `min={0} max={360}`, but hue is circular and `validateThemeInputs` accepts
+  the half-open `[0, 360)` (360° ≡ 0°, so a closed domain admits two
+  spellings of one hue). Dragging any anchor's hue to the end of its track
+  emitted `H=360`; the resolver threw from the widget PAINT path
+  (`_emitV4CssVarsBody` → `getCssVarsRaw` → `resolveTheme` →
+  `validateThemeInputs`) inside a Svelte effect flush, which kills the
+  reactive graph — figure AND settings panel frozen until reload. The domain
+  now lives beside the L envelopes as `HUE_MAX`/`HUE_STEP` in
+  `lib/theme/anchor-ranges.ts`, never inline in a control. Every other
+  settings slider was swept against its validator; hue was the only offender.
+* **Every shipped bundle believed it was a dev build**, so the tiered failure
+  policy (dev throws / production logs + degrades) was UNREACHABLE CODE and
+  any resolver throw escaped — bricking the widget as above, and aborting
+  `save_plot` wholesale in V8. Cause: declaring a sub-key of
+  `import.meta.env` in a vite `define` (we set `SSR` to force client mode)
+  makes Vite substitute the whole env object with one built from the declared
+  keys only, so `PROD` came back `undefined` and both checks minified to a
+  literal `return !0`. All five configs now spread the shared
+  `vite.env-defines.ts::PROD_ENV_DEFINES`.
+* **The contrast guard never skipped in production.** `theme-adapter.ts`
+  gated on `process.env.NODE_ENV`, which is undefined in both the browser and
+  V8 — so a second half-cascade over every role ran on every theme commit in
+  the widget and every `buildTheme` in the export, and its `console.warn`s
+  surfaced as seven spurious R warnings (V8 bridges `console.warn` to R
+  `warning()`). Preset contrast regressions are still caught by the
+  throw-mode gate in `theme-validate.test.ts`.
+* `getCssVars` swallowed resolver errors with a bare `catch {}` whose "fall
+  back to v3 reads" rationale expired with the v3 bridge (W4) — `{}` had come
+  to mean "render unstyled, silently". It now degrades loudly.
+* `AnchorRow`'s invalid-hex flash timer is cleared on destroy (the panel
+  unmounts on close).
 
 * **Theme switch no longer crashes** with `Cannot read properties of
   undefined (reading 'containerBorder')`. `computeLiveConfigVars` read
@@ -42,6 +52,25 @@ Wire-format versioning policy lives in
   `buildTheme` all call — robust to absent layout, no drift.
 
 ### Changed
+
+* **One composition for the cssVars map**: `consumer-bridge.ts::composeCssVars`
+  (cascade + token pins + live-config overlay + spacing pins). `buildThemeCSS`
+  and `getCssVars` were three separately-assembled, differently-ordered
+  spellings held in step by review; both now read the shared function and
+  differ ONLY in failure policy (`getCssVars` never throws — it is also R's
+  introspection entry point; the CSS emitter re-throws under dev). Verified
+  declaration-identical across 9 presets × 3 densities × 2 modes.
+* Dev-build detection is single-sourced in `lib/build-env.ts::isDevBuild()`;
+  it was three idioms in three modules, one of them wrong off Node.
+
+* **Per-anchor lightness ENVELOPES** (`lib/theme/anchor-ranges.ts`): the
+  LCH editor's L slider is now domain-bounded per anchor instead of always
+  spanning `[0, 1]`. `paper` edits over 0.9–1 (every preset sits at 0.987)
+  with a finer step and a third decimal in the readout; all other anchors
+  are unchanged. The table is authoring-space — `anchorLRange` reflects it
+  for dark polarity and widens it to contain an out-of-envelope value, so
+  the repainted track can never misreport where the thumb sits.
+  `AnchorRow` takes an optional `lRange` prop (default: the full range).
 
 * **Interaction defaults are now MAXIMAL** (`BAKED_INTERACTION_DEFAULTS`).
   Author-grade affordances — `enableEdit`, `enableReorderRows`,
@@ -70,6 +99,25 @@ Wire-format versioning policy lives in
   their visual-min floor like the DOM. Closes the long-standing
   WYSIWYG flex-parity gap: the raw `generateSVG` path now matches the DOM
   layout (gate at 0 breaches). No wire or API change.
+
+### Added
+
+* `npm run check:prod-bundles` — production-posture gate on the BUILT bundles,
+  wired into js-ci AFTER the build. It cannot be a unit test: `npm test` runs
+  before the build in CI and `inst/` bundles are committed, so a test would
+  assert against the stale committed artifact. Source-level half:
+  `src/lib/theme/prod-degrade.test.ts`.
+* `role-overrides-wiring.test.ts` now asserts paint-block ≡ consumer map, so a
+  reintroduced second composition fails instead of drifting.
+* **"Ramp shape" picker** in the settings panel's Identity tab, exposing
+  the Tier-1 `inputs.curves` axis (`linear` / `ease` / `smooth` / `log` /
+  `exp`) that shapes how a ramp's grades distribute their lightness. The
+  control shows the EFFECTIVE curve, since an unset ramp behaves as linear
+  in both builders (`oklchInterpolateRamp`, `anchoredChromaticRamp`).
+  Neutral + brand rows only — a curve reshapes grades 2..8, and across all
+  9 presets those grades reach 36 emitted tokens on neutral, 3 on brand,
+  and 1 on accent (`--tv-accent-fill`, in `KNOWN_UNCONSUMED`), so an accent
+  row would be a dead control. Decision register D43.
 
 ## 0.7.0 — 2026-06-13 — ship-readiness sweep + settings substrate
 
