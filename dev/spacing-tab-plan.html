@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>spacing-tab-plan – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bb62276ab45c84d9efd712f51ff97b5a.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8a0d7907e3c5b26acdd7ef165ad56541.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/schema-system.html">
+ <span class="dropdown-text">Schema System</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/presets.html">
+ <span class="dropdown-text">The Preset Gallery</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/genetic-association.html">
+ <span class="dropdown-text">Genetic Association (R + TS)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/bilingual-dashboard.html">
+ <span class="dropdown-text">Bilingual Dashboard (R + TS)</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#spacing-tab-design-implementation-plan" id="toc-spacing-tab-design-implementation-plan" class="nav-link active" data-scroll-target="#spacing-tab-design-implementation-plan">Spacing tab — design &amp; implementation plan</a>
+  <ul class="collapse">
+  <li><a href="#locked-decisions" id="toc-locked-decisions" class="nav-link" data-scroll-target="#locked-decisions">1. Locked decisions</a></li>
+  <li><a href="#token-verdicts-evidence-based" id="toc-token-verdicts-evidence-based" class="nav-link" data-scroll-target="#token-verdicts-evidence-based">2. Token verdicts (evidence-based)</a></li>
+  <li><a href="#wire-roster-gaps-to-fix" id="toc-wire-roster-gaps-to-fix" class="nav-link" data-scroll-target="#wire-roster-gaps-to-fix">3. Wire &amp; roster gaps to fix</a></li>
+  <li><a href="#architecture-injection-points" id="toc-architecture-injection-points" class="nav-link" data-scroll-target="#architecture-injection-points">4. Architecture / injection points</a></li>
+  <li><a href="#sanctioned-store-verbs-theme-slice" id="toc-sanctioned-store-verbs-theme-slice" class="nav-link" data-scroll-target="#sanctioned-store-verbs-theme-slice">5. Sanctioned store verbs (theme slice)</a></li>
+  <li><a href="#ia-sections-controls-labels" id="toc-ia-sections-controls-labels" class="nav-link" data-scroll-target="#ia-sections-controls-labels">6. IA — sections, controls, labels</a></li>
+  <li><a href="#harness-plan" id="toc-harness-plan" class="nav-link" data-scroll-target="#harness-plan">7. Harness plan</a></li>
+  <li><a href="#phased-implementation" id="toc-phased-implementation" class="nav-link" data-scroll-target="#phased-implementation">8. Phased implementation</a></li>
+  <li><a href="#open-items" id="toc-open-items" class="nav-link" data-scroll-target="#open-items">9. Open items</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="spacing-tab-design-implementation-plan" class="level1">
+<h1>Spacing tab — design &amp; implementation plan</h1>
+<p>Status: <strong>phases 1–4 landed</strong> (2026-07-24). Synthesised from a four-agent design fan-out (IA · tier/persistence · verb+harness · overlap-reconciliation). Supersedes the <code>set_spacing</code>-only posture of <strong>decision D25</strong> (see decision-register: D25 is overruled by this arc).</p>
+<p>Goal: a new <strong>Spacing</strong> surface in the interactive settings panel giving well-organised, extensive per-token control over spacing (padding, gaps, row / header heights) — in accordance with package idioms (sanctioned-verb writes, seam grammar, consequence/liveness harness coverage, theme-portable travel).</p>
+<hr>
+<section id="locked-decisions" class="level2">
+<h2 class="anchored" data-anchor-id="locked-decisions">1. Locked decisions</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>S-1</td>
+<td><strong>Overrides are a Tier-1 authoring input</strong> <code>spacing_overrides: Partial&lt;Record&lt;SpacingToken, number&gt;&gt;</code>, applied by the resolver <strong>after</strong> <code>density × density_factor</code>, then flowing through the existing <code>applySpacingPins</code> overlay.</td>
+<td>Routes through the already-blessed <code>setAuthoringInputs</code>/<code>previewAuthoringInputs</code> channel → tier-gate clean (panel never writes a raw T3 path), dirty-tracked, portable (rides the <code>inputs</code> envelope), survives re-resolution. The overlay mechanism already exists.</td>
+</tr>
+<tr class="even">
+<td>S-2</td>
+<td><strong>One mechanism.</strong> <code>R set_spacing()</code> and the four arrange-tool canvas seams (header-height / group-gap / footer-gap / title-gap) redirect onto <code>spacing_overrides</code> too.</td>
+<td>Avoids two divergent paths writing the same tokens with different keys/travel. Retires the last DT-11 canvas exemption (net cleanup).</td>
+</tr>
+<tr class="odd">
+<td>S-3</td>
+<td><strong>Placement:</strong> a <code>spacing</code> <strong>inner tab under “Edit theme”</strong> → spine <code>Identity \| Plots \| Styling \| Spacing</code>. Not a top-level tab.</td>
+<td>Content is overwhelmingly theme-tier editing (reverts under <em>Reset theme</em>) → definitionally Edit-theme cluster material; a top-level tab over-promotes an expert concern (D21 demoted spacing L2→L4).</td>
+</tr>
+<tr class="even">
+<td>S-4</td>
+<td><strong><code>density_factor</code> moves</strong> Styling → Spacing (consolidate, not mirror). Variations density <strong>preset</strong> stays put (maintainer constraint); its signpost repoints to Spacing.</td>
+<td>One canonical home for the coarse dial; anti-redundancy per D21.</td>
+</tr>
+<tr class="odd">
+<td>S-5</td>
+<td><strong>Row heights: relocate</strong> FigureBand’s per-kind height sliders into a <strong>figure-scoped sub-band</strong> inside the Spacing tab (maintainer choice). Theme-tier <code>rowHeight</code> (base) and figure-tier per-kind pins coexist; per-kind pin wins at display.</td>
+<td>All height control in one place. Requires careful dual reset-scope handling (see §5, §7).</td>
+</tr>
+<tr class="even">
+<td>S-6</td>
+<td><strong>Overrides are absolute px, sparse, reset-to-auto by dropping the key.</strong> Resolution order: <code>preset → density_factor → per-token override</code>. Changing preset/factor re-bases every non-overridden token live; pinned tokens hold.</td>
+<td>Matches <code>set_pin</code> overlay semantics and cascade “pins survive re-resolution”. A per-token <em>relative</em> mode, if ever wanted, is a separate <code>spacingScale</code> field — never overload the px field.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="token-verdicts-evidence-based" class="level2">
+<h2 class="anchored" data-anchor-id="token-verdicts-evidence-based">2. Token verdicts (evidence-based)</h2>
+<p>Canonical roster = the <strong>15 <code>DENSITY_PX</code> keys</strong> (<code>density-presets.ts</code>). Verdicts below from a reader trace (2026-07-24).</p>
+<p><strong>Expose — first cut (11 shipped):</strong> <code>row_height</code>, <code>cell_padding_x</code>, <code>column_group_padding</code>, <code>row_group_padding</code>, <code>header_height</code>, <code>header_gap</code>, <code>title_subtitle_gap</code>, <code>axis_gap</code>, <code>footer_gap</code>, <code>bottom_margin</code> — plus <code>density_factor</code> as the section’s coarse dial. (<code>padding</code> is live but not surfaced in the first cut; see below.)</p>
+<p><strong>CORRECTION — <code>group_padding</code> is NOT live (found by the consequence gate, 2026-07-24).</strong> The verdict below was a misread: <code>columns.svelte:766</code> and <code>svg-generator.ts:630</code> both use a LOCAL variable named <code>groupPadding</code> that reads <code>--tv-spacing-column-group-padding</code> — i.e.&nbsp;<code>column_group_padding</code>, a different token. The <code>group_padding</code> token has <strong>no CSS var</strong> (<code>applySpacingPins</code> never pins it) and <strong>no reader</strong> in either runtime; only a stale doc comment in <code>rendering-constants.ts</code> describes it. Its slider measured 0px in <code>settings-consequence</code> and was pulled from the tab — exactly the D28 “reaches the theme, nothing renders it” class the gate exists to catch. It rejoins the tab when a renderer consumes it. It stays in <code>SPACING_TOKEN_KEYS</code> (the roster is the full 15 <code>DENSITY_PX</code> keys).</p>
+<ul>
+<li><code>padding</code> — <strong>live</strong> in auto-fit layout math (<code>layout-zoom.svelte.ts</code> ×5, <code>svg-generator.ts</code>); width-affecting. Not “ambiguous-dead”. Label as the outer table inset (see §6).</li>
+<li><del><code>group_padding</code> — live via object-path reads</del> — <strong>WRONG, see the correction above.</strong> Those sites read <code>column_group_padding</code>. Deferred.</li>
+<li><code>bottom_margin</code> — live (<code>TabvizPlot.svelte</code> container <code>padding-bottom</code>), but its consequence is figure-bottom air that falls <strong>outside</strong> the settings-consequence pixel clip → harness exemption + box-model snapshot as the consumption proof (§7).</li>
+</ul>
+<p><strong>Defer — needs upstream work before exposing (3):</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Token</th>
+<th>Why deferred</th>
+<th>Unblock</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>indent_per_level</code></td>
+<td><strong>Triple-sourced.</strong> DOM row indent uses <code>theme.rowGroup.indentPerLevel</code> (default 16, <code>TabvizPlot.svelte:1963</code>), NOT <code>--tv-spacing-indent-per-level</code>. Export mixes both (<code>svg-generator.ts:403/1861</code> token vs <code>:3269</code> rowGroup). A spacing-token slider wouldn’t move the DOM → false-live (D28 class).</td>
+<td>Unify indent sources (own arc, sizing-model §1.2), or wire the control to <code>rowGroup.indentPerLevel</code>.</td>
+</tr>
+<tr class="even">
+<td><code>cell_padding_y</code></td>
+<td>Deprecated for body/header cells (<code>svg-generator.ts:757</code> “header-cell uses 0 vertical padding now”; schema default 0, historically faked by <code>+6</code>, sizing-model §1.2). Only <code>heatmap-svg-renderer.ts:113</code> honestly reads it.</td>
+<td>Wire honest vertical cell padding for regular rows first.</td>
+</tr>
+<tr class="odd">
+<td><code>container_padding</code></td>
+<td><strong>Live</strong> (<code>TabvizPlot.svelte:2964</code> container padding) but 0 across all presets and overlaps <code>padding</code>. Low value, confusing pair.</td>
+<td>Expert-only disclosure later, if a real use emerges.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Separate system — Phase 2:</strong> shell/paper pads (<code>shell-paper.ts</code>, mode-gated, scale with <code>density_factor</code>). Not in the <code>DENSITY_PX</code> roster; a conditional “Page frame” section writing their own inputs. Deferred to keep the first cut to the 12 core tokens.</p>
+<hr>
+</section>
+<section id="wire-roster-gaps-to-fix" class="level2">
+<h2 class="anchored" data-anchor-id="wire-roster-gaps-to-fix">3. Wire &amp; roster gaps to fix</h2>
+<ol type="1">
+<li><strong>R serialize map</strong> (<code>R/utils-serialize-resolved.R:102–114</code>) emits <strong>13</strong> tokens — <strong><code>cellPaddingY</code> and <code>groupPadding</code> are dropped</strong>. Add both (also verify the S7 <code>SpacingTokens</code> class at <code>R/classes-theme.R:606</code> carries all 15 fields).</li>
+<li><strong>New <code>SPACING_TOKEN_KEYS</code> roster</strong> in <code>srcjs/src/lib/theme/spacing-tokens.ts</code> (single source), sync-gated R↔︎TS via <code>test-spacing-roster-sync.R</code> (source-parse gate → keep in the in-tree <code>R-CMD-check.yaml</code> filter, it reads <code>../../srcjs</code> and skips in the tarball).</li>
+<li>The verb-agent’s draft union omitted <code>groupPadding</code> — exactly what the sync gate exists to catch.</li>
+</ol>
+<hr>
+</section>
+<section id="architecture-injection-points" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-injection-points">4. Architecture / injection points</h2>
+<ul>
+<li><strong>Input type:</strong> add <code>spacing_overrides?: Partial&lt;Record&lt;SpacingToken, number&gt;&gt;</code> to <code>srcjs/src/types/theme-inputs.ts</code> (beside <code>density_factor</code> :178 / <code>series_overrides</code> :213).</li>
+<li><strong>Resolver merge — ONE injection point</strong> (verified 2026-07-24): merge into the resolved <code>theme.spacing</code> cluster at its source, <code>theme-adapter.ts:263</code> (<code>applySpacingOverrides(scaleSpacing(...), inputs.spacing_overrides)</code>). This is sufficient because <code>applySpacingPins</code> is the <strong>final cssVars overlay in every emitter</strong> — <code>getCssVars</code> returns <code>applySpacingPins({...withBridge}, theme)</code> (widget + export via <code>svg-generator</code>’s <code>getCssVars</code>) and <code>theme-css.ts</code>’s <code>_emitV4CssVarsBody:168</code> also calls it — and it reads <code>theme.spacing.*</code>, so it wins over whatever <code>tokenDensityPx</code> emitted. Object-path consumers (<code>groupPadding</code> in <code>columns.svelte</code>; <code>rowGroup.indentPerLevel = spacing.indentPerLevel</code>) read the same cluster. <strong><code>tokenDensityPx</code> / <code>resolve-theme.ts</code> need NO change.</strong> DONE. Proof: <code>theme-spacing-overrides.test.ts</code> (7 cases). NOTE: the test also shows <code>indentPerLevel</code> → <code>rowGroup.indentPerLevel</code> (the DOM indent source) DOES respond — the §2 indent-deferral is softer than first thought; revisit after an export-path check.</li>
+<li><strong>Ingress validation:</strong> spacing reaches geometry (SVG coords/sizes) → validate at every ingress like <code>series_overrides</code> — <code>parseThemeWire</code> / <code>validateThemeInputs</code> (TS) + R <code>theme_inputs_from_wire</code>. <code>clampSpacing(token, v)</code>: finite-guard (<code>Number.isFinite</code>, rejects NaN/±Inf — the poison class), per-token <code>[min,max]</code> bounds. Garbage token keys dropped.</li>
+</ul>
+<hr>
+</section>
+<section id="sanctioned-store-verbs-theme-slice" class="level2">
+<h2 class="anchored" data-anchor-id="sanctioned-store-verbs-theme-slice">5. Sanctioned store verbs (theme slice)</h2>
+<p>All thin wrappers over <code>setAuthoringInputs</code> / <code>previewAuthoringInputs</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode ts code-with-copy"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setSpacingOverride</span>(token<span class="op">:</span> SpacingToken<span class="op">,</span> value<span class="op">:</span> <span class="dt">number</span> <span class="op">|</span> <span class="dt">null</span>)<span class="op">:</span> <span class="dt">void</span>  <span class="co">// commit; null = clear</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">previewSpacingOverride</span>(token<span class="op">:</span> SpacingToken<span class="op">,</span> value<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">void</span>      <span class="co">// per drag tick; no remeasure/contrast</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">clearSpacingOverride</span>(token<span class="op">:</span> SpacingToken)<span class="op">:</span> <span class="dt">void</span>                       <span class="co">// = setSpacingOverride(t, null)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">resetSpacingOverrides</span>()<span class="op">:</span> <span class="dt">void</span>                                         <span class="co">// spacing_overrides = undefined</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// getter:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">readonly</span> spacingRoster<span class="op">:</span> ReadonlyArray<span class="op">&lt;</span>{ token<span class="op">;</span> px<span class="op">;</span> overridden<span class="op">;</span> widthAffecting }<span class="op">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>$state.raw</code> correctness inherited (the authoring channel reassigns via <code>rebuild()</code> → <code>setSpec</code>). Commit flips <code>authoringEdited</code>; <em>Reset theme</em> (<code>resetThemeEdits</code>) drops the overrides for free.</li>
+<li>Row-kind height relocation keeps its <strong>own</strong> figure-tier verbs (<code>setRowKindHeight</code> / <code>resetRowKindHeights</code>) — the sub-band calls those, not the spacing verbs. Do <strong>not</strong> orphan <code>resetRowKindHeights</code> from a Reset control (FigureBand’s <code>resetFigure</code> owns it today; the relocated sub-band must keep a <em>Reset figure</em> affordance wired to it).</li>
+</ul>
+<hr>
+</section>
+<section id="ia-sections-controls-labels" class="level2">
+<h2 class="anchored" data-anchor-id="ia-sections-controls-labels">6. IA — sections, controls, labels</h2>
+<p>Inner tab, region-grouped outer→in. <code>data-spt</code> marker. Every control a seam-grammar <code>Slider</code> (preview <code>onchange</code> → one <code>oncommit</code>; Escape cancels restoring value <strong>and</strong> pin state; dblclick → auto; px readout; arrow nudge).</p>
+<pre><code>SPACING (inner tab)
+├ lede: "Coarse density is in Variations. Overrides here are absolute and
+│        survive density changes — reset any control to rejoin the preset."
+├ strata DENSITY
+│   • Overall density  (density_factor, ×0.50–2.00 step .01, "×1.00")   [data-spt]
+├ strata ROWS &amp; CELLS            (always open)
+│   • Row height        (row_height, theme base)      12–120
+│   • Cell side padding (cell_padding_x)               0–40
+├ strata GROUPS                  (disclosure, summary "N adjusted")
+│   • Group heading padding (column_group_padding)     0–40
+│   • Group row padding     (row_group_padding)        0–40
+│   • Space between groups  (group_padding)            0–60
+├ strata HEADER &amp; FOOTER         (disclosure)
+│   • Header row height  (header_height)   16–120
+│   • Header-to-body gap (header_gap)       0–60
+│   • Title–subtitle gap (title_subtitle_gap) 0–40
+│   • Axis gap           (axis_gap)         0–60
+│   • Footer gap         (footer_gap)       0–60
+│   • Bottom margin      (bottom_margin)    0–80
+├ strata ROW HEIGHTS BY TYPE     (figure-scoped sub-band — relocated FigureBand)
+│   • per-kind sliders (data / group header / summary / spacer …)  → setRowKindHeight
+│   • "Stays with this figure" note + Reset figure ↻ (→ resetRowKindHeights)
+└ (foot) Reset spacing ↻  → resetSpacingOverrides (theme-tier only)</code></pre>
+<p>Labels (sentence-case, each with a one-line hint): Overall density · Row height · Cell side padding · Group heading padding · Group row padding · Space between groups · Header row height · Header-to-body gap · Title–subtitle gap · Axis gap · Footer gap · Bottom margin. <code>padding</code> (if surfaced) = “Table inset”.</p>
+<p><strong>Override state per slider:</strong> not-overridden shows the resolved base (<code>preset × factor</code>) marked <em>auto</em> (no reset arrow); dragging pins an absolute px override that survives preset/factor changes and shows <code>Field.onreset</code> ✕. Disclosure summaries show an “N adjusted” count.</p>
+<hr>
+</section>
+<section id="harness-plan" class="level2">
+<h2 class="anchored" data-anchor-id="harness-plan">7. Harness plan</h2>
+<ul>
+<li><strong><code>settings-consequence.browser.ts</code></strong>: add a <code>data-spt</code> walk block after the Styling walk (the <code>walk(attr)</code> helper is attribute-parameterised). <strong>Arm the fixture</strong>: add a subtitle (<code>titleSubtitleGap</code>), a footnote (<code>footerGap</code>), and a <code>ColumnGroup</code> (<code>columnGroupPadding</code>) so every gap token has geometry to move.</li>
+<li><strong>Honest ≥floor</strong> (walk for real): row_height, header_height, padding, cell_padding_x, axis_gap, row_group_padding, header_gap, title_subtitle_gap, footer_gap, column_group_padding, group_padding.</li>
+<li><strong>Sub-floor exemptions</strong> (<code>LIVENESS_VERIFIED</code>-style, with reason): <code>bottom_margin</code>, <code>container_padding</code> — consequence falls outside the fixed pixel clip. Cite <code>layout-metrics.test.ts</code> (box-model snapshot records per-row top/height + per-column x/width → the <em>consumption</em> proof) rather than panel-liveness alone (D28: liveness proves reach, not consumption).</li>
+<li><strong><code>panel-liveness.browser.ts</code></strong>: extend the walk topology for the new inner tab; confirm a renderer reads each token (not just the panel preview).</li>
+<li><strong><code>settings-band-contract.test.ts</code></strong>: add <code>expect(names).toContain("SpacingTab.svelte")</code> sanity assertion; the FORBIDDEN list is unchanged (verbs stay in <code>$stores</code>, excluded from the scan) — the transitive import walk auto-scans the new tab, so any future raw-path write there fails the gate.</li>
+<li><strong>Unit</strong>: <code>spacing-tokens.test.ts</code> (bun — roster completeness vs <code>applySpacingPins</code>, <code>clampSpacing</code> bounds + non-finite rejection, widthAffecting vs <code>SPACING_WIDTH_FIELDS</code>); <code>theme-spacing.runes.ts</code> (vitest — set/preview/clear/reset, input-only proof i.e.&nbsp;<code>themeOverrides</code> unchanged, survives re-resolution, composition order, <code>previewSpacingOverride</code> skips remeasure while commit remeasures width-affecting tokens); resolver test (override applies after <code>scaleSpacing</code>); R <code>test-parity-themes.R</code> case + <code>test-spacing-roster-sync.R</code>.</li>
+</ul>
+<hr>
+</section>
+<section id="phased-implementation" class="level2">
+<h2 class="anchored" data-anchor-id="phased-implementation">8. Phased implementation</h2>
+<ol type="1">
+<li><strong>Substrate — DONE (2026-07-24), validated end-to-end.</strong>
+<ul>
+<li>TS: <code>spacing-tokens.ts</code> (roster + <code>clampSpacing</code> + <code>sanitize</code> + <code>applyOverrides</code>); <code>spacing_overrides</code> in <code>theme-inputs.ts</code>; resolver merge at the SINGLE cluster source (<code>theme-adapter.ts</code> — <code>applySpacingPins</code> overlay propagates it to every emitter; <code>resolve-theme</code> untouched); <code>validateThemeInputs</code> ingress block. Tests: <code>spacing-tokens.test.ts</code> + <code>theme-spacing-overrides.test.ts</code> (17, green); <code>npm run check</code> clean; 455 theme tests green (no regression).</li>
+<li>R: S7 <code>SpacingTokens</code> class + serialize map fixed (+<code>cell_padding_y</code>/<code>group_padding</code>, the real dropped-token bug); <code>TABVIZ_SPACING_TOKENS</code> + <code>TABVIZ_SPACING_BOUNDS</code> rosters; <code>spacing_overrides</code> field + validator on <code>ThemeInputs</code>; serialize (<code>theme_inputs_to_json</code>) + untrusted wire-read (<code>theme_inputs_from_wire</code>) + <code>web_theme()</code> param + roxygen. Gate: <code>test-spacing-roster-sync.R</code> (20, green) — R↔︎TS roster sync (camelCase + snake + DENSITY_PX), full wire round-trip, untrusted-wire sanitize, validator rejection, AND V8-resolve parity (<code>over@spacing@row_height == 44</code> end-to-end). Bundles rebuilt.</li>
+</ul></li>
+<li><strong>Verbs — DONE (2026-07-24).</strong> theme-slice <code>setSpacingOverride</code> / <code>previewSpacingOverride</code> / <code>clearSpacingOverride</code> / <code>resetSpacingOverrides</code> + <code>spacingRoster()</code> — all thin wrappers over the sanctioned <code>setAuthoringInputs</code> / <code>previewAuthoringInputs</code> channel (input-only, DT-11-clean, clamped, non-finite no-op, commit-remeasures-width-affecting / preview-skips). Tests: <code>theme-spacing.runes.ts</code> (10, green); type-check clean; 27 theme.runes + 23 band-contract green (no regression, gate still passes).</li>
+<li><strong>UI — DONE (2026-07-24).</strong> <code>SpacingTab.svelte</code> mounted as the 4th inner tab of <code>EditThemeCluster</code> (<code>identity | plots | styling | spacing</code>); <code>density_factor</code> MOVED off Styling (not mirrored); row-kind sub-band relocated out of <code>FigureBand</code> (its disclosure gutter-reset calls <code>resetRowKindHeights</code>, and FigureBand’s <em>Reset figure</em> still clears them — the pins are never orphaned); FigureBand keeps the scoped reset + a pointer note. Variations signpost repointed to Spacing. Arrange seams repointed: all four (<code>headerHeight</code> / <code>rowGroupPadding</code> / <code>titleSubtitleGap</code> / <code>footerGap</code>) now write <code>spacing_overrides</code> through the sanctioned verbs — <strong>the last DT-11 canvas exemption is retired; no <code>.svelte</code> in the repo calls <code>setThemeField</code>/<code>previewThemeField</code> any more.</strong> R <code>set_spacing()</code> rewritten onto the input (accepts snake or camel names, <code>NULL</code> releases, validator enforces bounds) — so R, panel and canvas are ONE mechanism.
+<ul>
+<li><strong>New seam-grammar plumbing:</strong> committing a seam now CREATES an override, so <code>onpreview(startValue)</code> was no longer a sufficient Escape — it restores the number but leaves an override key on a formerly-auto token. Added <code>EdgeResize.oncancel</code> + store <code>cancelPreviewSpacingOverride(token)</code> (snapshots the committed value/absence at the first preview tick). Gates: 4 cases in <code>theme-spacing.runes.ts</code> + a seam Escape case in <code>arrange-tool.browser.ts</code>.</li>
+<li><strong>Bounds widened</strong> for <code>rowGroupPadding</code> (40→60), <code>footerGap</code> (60→80), <code>titleSubtitleGap</code> (40→60) so redirecting the canvas seams didn’t shorten a drag range users already had. R + TS tables move together (sync-gated).</li>
+</ul></li>
+<li><strong>Harness — DONE (2026-07-24).</strong> <code>settings-consequence</code> walks <code>data-spt</code> (fixture armed with a subtitle, a footnote and a <code>colGroup</code>); all 11 tokens
+<ul>
+<li>the density dial move real pixels (footerGap 40903px, rowHeight 164504px). Two harness lessons baked in: (a) the walk now takes an optional <code>beforeEach</code> and the Spacing tab passes <code>resetThemeToBaseline</code> — its controls all inflate the SAME geometry, so mid-walk the footer had been pushed out of the clip and a live control read 0px (accumulated state SUPPRESSING consequence, the mirror of the inflation case); (b) <code>bottomMargin</code> is <code>LIVENESS_VERIFIED</code> — figure-bottom air falls outside the clip, consumption proven by <code>layout-metrics</code>. <code>panel-liveness</code> walks the new inner tab; <code>settings-band-contract</code> asserts the walk reaches <code>SpacingTab.svelte</code>.</li>
+</ul></li>
+<li><strong>Docs</strong> — this file kept current; decision-register D25 overruled by D42; arc-history dated entry at land.</li>
+</ol>
+</section>
+<section id="open-items" class="level2">
+<h2 class="anchored" data-anchor-id="open-items">9. Open items</h2>
+<ul>
+<li>Shell/paper “Page frame” section — Phase 2.</li>
+<li>Deferred quartet — each needs an upstream unblock before exposing (§2): <code>indent_per_level</code> (triple-sourced), <code>cell_padding_y</code> (deprecated for body cells), <code>container_padding</code> (0-default, overlaps <code>padding</code>), and now <code>group_padding</code> (no renderer at all).</li>
+<li><code>padding</code> (“table inset”) is live and width-affecting but unsurfaced — add it when a use case asks; it needs a label that doesn’t read as a synonym of <code>container_padding</code>.</li>
+</ul>
+<p>Settled during implementation: the clamp table (§4, bounds widened as above) and <code>rowHeight</code>-vs-per-kind-pin precedence (per-kind still wins at display — the relocation only moved the control, not the cascade).</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const cellDetails = window.document.querySelectorAll(".cell details.code-fold");
+        for (let i=0; i<cellDetails.length; i++) {
+          const details = cellDetails[i];
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell div.sourceCode.cell-code");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Spacing tab — design &amp; implementation plan</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>Status: **phases 1–4 landed** (2026-07-24). Synthesised from a four-agent design fan-out</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>(IA · tier/persistence · verb+harness · overlap-reconciliation). Supersedes the</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="in">`set_spacing`</span>-only posture of **decision D25** (see decision-register: D25 is</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>overruled by this arc).</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>Goal: a new **Spacing** surface in the interactive settings panel giving</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>well-organised, extensive per-token control over spacing (padding, gaps, row /</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>header heights) — in accordance with package idioms (sanctioned-verb writes,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>seam grammar, consequence/liveness harness coverage, theme-portable travel).</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Locked decisions</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> # <span class="pp">|</span> Decision <span class="pp">|</span> Rationale <span class="pp">|</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S-1 <span class="pp">|</span> **Overrides are a Tier-1 authoring input** `spacing_overrides: Partial&lt;Record&lt;SpacingToken, number&gt;&gt;`, applied by the resolver **after** <span class="in">`density × density_factor`</span>, then flowing through the existing <span class="in">`applySpacingPins`</span> overlay. <span class="pp">|</span> Routes through the already-blessed <span class="in">`setAuthoringInputs`</span>/<span class="in">`previewAuthoringInputs`</span> channel → tier-gate clean (panel never writes a raw T3 path), dirty-tracked, portable (rides the <span class="in">`inputs`</span> envelope), survives re-resolution. The overlay mechanism already exists. <span class="pp">|</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S-2 <span class="pp">|</span> **One mechanism.** <span class="in">`R set_spacing()`</span> and the four arrange-tool canvas seams (header-height / group-gap / footer-gap / title-gap) redirect onto <span class="in">`spacing_overrides`</span> too. <span class="pp">|</span> Avoids two divergent paths writing the same tokens with different keys/travel. Retires the last DT-11 canvas exemption (net cleanup). <span class="pp">|</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S-3 <span class="pp">|</span> **Placement:** a `spacing` **inner tab under "Edit theme"** → spine <span class="in">`Identity \| Plots \| Styling \| Spacing`</span>. Not a top-level tab. <span class="pp">|</span> Content is overwhelmingly theme-tier editing (reverts under *Reset theme*) → definitionally Edit-theme cluster material; a top-level tab over-promotes an expert concern (D21 demoted spacing L2→L4). <span class="pp">|</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S-4 <span class="pp">|</span> **`density_factor` moves** Styling → Spacing (consolidate, not mirror). Variations density **preset** stays put (maintainer constraint); its signpost repoints to Spacing. <span class="pp">|</span> One canonical home for the coarse dial; anti-redundancy per D21. <span class="pp">|</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S-5 <span class="pp">|</span> **Row heights: relocate** FigureBand's per-kind height sliders into a **figure-scoped sub-band** inside the Spacing tab (maintainer choice). Theme-tier <span class="in">`rowHeight`</span> (base) and figure-tier per-kind pins coexist; per-kind pin wins at display. <span class="pp">|</span> All height control in one place. Requires careful dual reset-scope handling (see §5, §7). <span class="pp">|</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S-6 <span class="pp">|</span> **Overrides are absolute px, sparse, reset-to-auto by dropping the key.** Resolution order: <span class="in">`preset → density_factor → per-token override`</span>. Changing preset/factor re-bases every non-overridden token live; pinned tokens hold. <span class="pp">|</span> Matches <span class="in">`set_pin`</span> overlay semantics and cascade "pins survive re-resolution". A per-token *relative* mode, if ever wanted, is a separate <span class="in">`spacingScale`</span> field — never overload the px field. <span class="pp">|</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Token verdicts (evidence-based)</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>Canonical roster = the **15 `DENSITY_PX` keys** (<span class="in">`density-presets.ts`</span>). Verdicts</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>below from a reader trace (2026-07-24).</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>**Expose — first cut (11 shipped):** <span class="in">`row_height`</span>, <span class="in">`cell_padding_x`</span>,</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="in">`column_group_padding`</span>, <span class="in">`row_group_padding`</span>, <span class="in">`header_height`</span>, <span class="in">`header_gap`</span>,</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="in">`title_subtitle_gap`</span>, <span class="in">`axis_gap`</span>, <span class="in">`footer_gap`</span>, <span class="in">`bottom_margin`</span> — plus</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="in">`density_factor`</span> as the section's coarse dial. (<span class="in">`padding`</span> is live but not</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>surfaced in the first cut; see below.)</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>**CORRECTION — <span class="in">`group_padding`</span> is NOT live (found by the consequence gate,</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>2026-07-24).** The verdict below was a misread: <span class="in">`columns.svelte:766`</span> and</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="in">`svg-generator.ts:630`</span> both use a LOCAL variable named <span class="in">`groupPadding`</span> that</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>reads <span class="in">`--tv-spacing-column-group-padding`</span> — i.e. <span class="in">`column_group_padding`</span>, a</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>different token. The <span class="in">`group_padding`</span> token has **no CSS var** (<span class="in">`applySpacingPins`</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>never pins it) and **no reader** in either runtime; only a stale doc comment in</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="in">`rendering-constants.ts`</span> describes it. Its slider measured 0px in</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="in">`settings-consequence`</span> and was pulled from the tab — exactly the D28</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>"reaches the theme, nothing renders it" class the gate exists to catch. It</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>rejoins the tab when a renderer consumes it. It stays in <span class="in">`SPACING_TOKEN_KEYS`</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>(the roster is the full 15 <span class="in">`DENSITY_PX`</span> keys).</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`padding`</span> — **live** in auto-fit layout math (<span class="in">`layout-zoom.svelte.ts`</span> ×5,</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  <span class="in">`svg-generator.ts`</span>); width-affecting. Not "ambiguous-dead". Label as the</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  outer table inset (see §6).</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>~~`group_padding` — live via object-path reads~~ — **WRONG, see the</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  correction above.** Those sites read <span class="in">`column_group_padding`</span>. Deferred.</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`bottom_margin`</span> — live (<span class="in">`TabvizPlot.svelte`</span> container <span class="in">`padding-bottom`</span>), but</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  its consequence is figure-bottom air that falls **outside** the</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  settings-consequence pixel clip → harness exemption + box-model snapshot as</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  the consumption proof (§7).</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>**Defer — needs upstream work before exposing (3):**</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Token <span class="pp">|</span> Why deferred <span class="pp">|</span> Unblock <span class="pp">|</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`indent_per_level`</span> <span class="pp">|</span> **Triple-sourced.** DOM row indent uses <span class="in">`theme.rowGroup.indentPerLevel`</span> (default 16, <span class="in">`TabvizPlot.svelte:1963`</span>), NOT <span class="in">`--tv-spacing-indent-per-level`</span>. Export mixes both (<span class="in">`svg-generator.ts:403/1861`</span> token vs <span class="in">`:3269`</span> rowGroup). A spacing-token slider wouldn't move the DOM → false-live (D28 class). <span class="pp">|</span> Unify indent sources (own arc, sizing-model §1.2), or wire the control to <span class="in">`rowGroup.indentPerLevel`</span>. <span class="pp">|</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`cell_padding_y`</span> <span class="pp">|</span> Deprecated for body/header cells (<span class="in">`svg-generator.ts:757`</span> "header-cell uses 0 vertical padding now"; schema default 0, historically faked by <span class="in">`+6`</span>, sizing-model §1.2). Only <span class="in">`heatmap-svg-renderer.ts:113`</span> honestly reads it. <span class="pp">|</span> Wire honest vertical cell padding for regular rows first. <span class="pp">|</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`container_padding`</span> <span class="pp">|</span> **Live** (<span class="in">`TabvizPlot.svelte:2964`</span> container padding) but 0 across all presets and overlaps <span class="in">`padding`</span>. Low value, confusing pair. <span class="pp">|</span> Expert-only disclosure later, if a real use emerges. <span class="pp">|</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>**Separate system — Phase 2:** shell/paper pads (<span class="in">`shell-paper.ts`</span>, mode-gated,</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>scale with <span class="in">`density_factor`</span>). Not in the <span class="in">`DENSITY_PX`</span> roster; a conditional</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>"Page frame" section writing their own inputs. Deferred to keep the first cut to</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>the 12 core tokens.</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Wire &amp; roster gaps to fix</span></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**R serialize map** (`R/utils-serialize-resolved.R:102–114`) emits **13**</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>   tokens — **`cellPaddingY` and `groupPadding` are dropped**. Add both (also</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>   verify the S7 <span class="in">`SpacingTokens`</span> class at <span class="in">`R/classes-theme.R:606`</span> carries all</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>   15 fields).</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**New `SPACING_TOKEN_KEYS` roster** in <span class="in">`srcjs/src/lib/theme/spacing-tokens.ts`</span></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>   (single source), sync-gated R↔TS via <span class="in">`test-spacing-roster-sync.R`</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>   (source-parse gate → keep in the in-tree <span class="in">`R-CMD-check.yaml`</span> filter, it reads</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>   <span class="in">`../../srcjs`</span> and skips in the tarball).</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>The verb-agent's draft union omitted <span class="in">`groupPadding`</span> — exactly what the sync</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>   gate exists to catch.</span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. Architecture / injection points</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Input type:** add <span class="in">`spacing_overrides?: Partial&lt;Record&lt;SpacingToken, number&gt;&gt;`</span></span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>  to <span class="in">`srcjs/src/types/theme-inputs.ts`</span> (beside <span class="in">`density_factor`</span> :178 /</span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  <span class="in">`series_overrides`</span> :213).</span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Resolver merge — ONE injection point** (verified 2026-07-24): merge into the</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>  resolved <span class="in">`theme.spacing`</span> cluster at its source, <span class="in">`theme-adapter.ts:263`</span></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`applySpacingOverrides(scaleSpacing(...), inputs.spacing_overrides)`</span>). This is</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>  sufficient because <span class="in">`applySpacingPins`</span> is the **final cssVars overlay in every</span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>  emitter** — <span class="in">`getCssVars`</span> returns <span class="in">`applySpacingPins({...withBridge}, theme)`</span></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>  (widget + export via <span class="in">`svg-generator`</span>'s <span class="in">`getCssVars`</span>) and <span class="in">`theme-css.ts`</span>'s</span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>  <span class="in">`_emitV4CssVarsBody:168`</span> also calls it — and it reads <span class="in">`theme.spacing.*`</span>, so it</span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>  wins over whatever <span class="in">`tokenDensityPx`</span> emitted. Object-path consumers</span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`groupPadding`</span> in <span class="in">`columns.svelte`</span>; <span class="in">`rowGroup.indentPerLevel = spacing.indentPerLevel`</span>)</span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>  read the same cluster. **`tokenDensityPx` / `resolve-theme.ts` need NO change.**</span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>  DONE. Proof: <span class="in">`theme-spacing-overrides.test.ts`</span> (7 cases). NOTE: the test also</span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>  shows <span class="in">`indentPerLevel`</span> → <span class="in">`rowGroup.indentPerLevel`</span> (the DOM indent source) DOES</span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>  respond — the §2 indent-deferral is softer than first thought; revisit after an</span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>  export-path check.</span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Ingress validation:** spacing reaches geometry (SVG coords/sizes) → validate</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>  at every ingress like <span class="in">`series_overrides`</span> — <span class="in">`parseThemeWire`</span> /</span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>  <span class="in">`validateThemeInputs`</span> (TS) + R <span class="in">`theme_inputs_from_wire`</span>. <span class="in">`clampSpacing(token, v)`</span>:</span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>  finite-guard (<span class="in">`Number.isFinite`</span>, rejects NaN/±Inf — the poison class),</span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>  per-token <span class="in">`[min,max]`</span> bounds. Garbage token keys dropped.</span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Sanctioned store verbs (theme slice)</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>All thin wrappers over <span class="in">`setAuthoringInputs`</span> / <span class="in">`previewAuthoringInputs`</span>:</span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a><span class="in">```ts</span></span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a><span class="fu">setSpacingOverride</span>(token<span class="op">:</span> SpacingToken<span class="op">,</span> value<span class="op">:</span> <span class="dt">number</span> <span class="op">|</span> <span class="dt">null</span>)<span class="op">:</span> <span class="dt">void</span>  <span class="co">// commit; null = clear</span></span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a><span class="fu">previewSpacingOverride</span>(token<span class="op">:</span> SpacingToken<span class="op">,</span> value<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">void</span>      <span class="co">// per drag tick; no remeasure/contrast</span></span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a><span class="fu">clearSpacingOverride</span>(token<span class="op">:</span> SpacingToken)<span class="op">:</span> <span class="dt">void</span>                       <span class="co">// = setSpacingOverride(t, null)</span></span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a><span class="fu">resetSpacingOverrides</span>()<span class="op">:</span> <span class="dt">void</span>                                         <span class="co">// spacing_overrides = undefined</span></span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a><span class="co">// getter:</span></span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a><span class="kw">readonly</span> spacingRoster<span class="op">:</span> ReadonlyArray<span class="op">&lt;</span>{ token<span class="op">;</span> px<span class="op">;</span> overridden<span class="op">;</span> widthAffecting }<span class="op">&gt;</span></span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`$state.raw`</span> correctness inherited (the authoring channel reassigns via</span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>  <span class="in">`rebuild()`</span> → <span class="in">`setSpec`</span>). Commit flips <span class="in">`authoringEdited`</span>; *Reset theme*</span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`resetThemeEdits`</span>) drops the overrides for free.</span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Row-kind height relocation keeps its **own** figure-tier verbs</span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`setRowKindHeight`</span> / <span class="in">`resetRowKindHeights`</span>) — the sub-band calls those, not</span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>  the spacing verbs. Do **not** orphan <span class="in">`resetRowKindHeights`</span> from a Reset</span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>  control (FigureBand's <span class="in">`resetFigure`</span> owns it today; the relocated sub-band must</span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>  keep a *Reset figure* affordance wired to it).</span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. IA — sections, controls, labels</span></span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>Inner tab, region-grouped outer→in. <span class="in">`data-spt`</span> marker. Every control a</span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>seam-grammar <span class="in">`Slider`</span> (preview <span class="in">`onchange`</span> → one <span class="in">`oncommit`</span>; Escape cancels</span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>restoring value **and** pin state; dblclick → auto; px readout; arrow nudge).</span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a><span class="in">SPACING (inner tab)</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a><span class="in">├ lede: "Coarse density is in Variations. Overrides here are absolute and</span></span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a><span class="in">│        survive density changes — reset any control to rejoin the preset."</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a><span class="in">├ strata DENSITY</span></span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Overall density  (density_factor, ×0.50–2.00 step .01, "×1.00")   [data-spt]</span></span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a><span class="in">├ strata ROWS &amp; CELLS            (always open)</span></span>
+<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Row height        (row_height, theme base)      12–120</span></span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Cell side padding (cell_padding_x)               0–40</span></span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a><span class="in">├ strata GROUPS                  (disclosure, summary "N adjusted")</span></span>
+<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Group heading padding (column_group_padding)     0–40</span></span>
+<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Group row padding     (row_group_padding)        0–40</span></span>
+<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Space between groups  (group_padding)            0–60</span></span>
+<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a><span class="in">├ strata HEADER &amp; FOOTER         (disclosure)</span></span>
+<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Header row height  (header_height)   16–120</span></span>
+<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Header-to-body gap (header_gap)       0–60</span></span>
+<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Title–subtitle gap (title_subtitle_gap) 0–40</span></span>
+<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Axis gap           (axis_gap)         0–60</span></span>
+<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Footer gap         (footer_gap)       0–60</span></span>
+<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a><span class="in">│   • Bottom margin      (bottom_margin)    0–80</span></span>
+<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a><span class="in">├ strata ROW HEIGHTS BY TYPE     (figure-scoped sub-band — relocated FigureBand)</span></span>
+<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a><span class="in">│   • per-kind sliders (data / group header / summary / spacer …)  → setRowKindHeight</span></span>
+<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a><span class="in">│   • "Stays with this figure" note + Reset figure ↻ (→ resetRowKindHeights)</span></span>
+<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a><span class="in">└ (foot) Reset spacing ↻  → resetSpacingOverrides (theme-tier only)</span></span>
+<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a>Labels (sentence-case, each with a one-line hint): Overall density · Row height ·</span>
+<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a>Cell side padding · Group heading padding · Group row padding · Space between</span>
+<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a>groups · Header row height · Header-to-body gap · Title–subtitle gap · Axis gap ·</span>
+<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a>Footer gap · Bottom margin. <span class="in">`padding`</span> (if surfaced) = "Table inset".</span>
+<span id="cb3-178"><a href="#cb3-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-179"><a href="#cb3-179" aria-hidden="true" tabindex="-1"></a>**Override state per slider:** not-overridden shows the resolved base (`preset ×</span>
+<span id="cb3-180"><a href="#cb3-180" aria-hidden="true" tabindex="-1"></a>factor`) marked *auto* (no reset arrow); dragging pins an absolute px override</span>
+<span id="cb3-181"><a href="#cb3-181" aria-hidden="true" tabindex="-1"></a>that survives preset/factor changes and shows <span class="in">`Field.onreset`</span> ✕. Disclosure</span>
+<span id="cb3-182"><a href="#cb3-182" aria-hidden="true" tabindex="-1"></a>summaries show an "N adjusted" count.</span>
+<span id="cb3-183"><a href="#cb3-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-184"><a href="#cb3-184" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-185"><a href="#cb3-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-186"><a href="#cb3-186" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Harness plan</span></span>
+<span id="cb3-187"><a href="#cb3-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-188"><a href="#cb3-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`settings-consequence.browser.ts`**: add a <span class="in">`data-spt`</span> walk block after the</span>
+<span id="cb3-189"><a href="#cb3-189" aria-hidden="true" tabindex="-1"></a>  Styling walk (the <span class="in">`walk(attr)`</span> helper is attribute-parameterised). **Arm the</span>
+<span id="cb3-190"><a href="#cb3-190" aria-hidden="true" tabindex="-1"></a>  fixture**: add a subtitle (<span class="in">`titleSubtitleGap`</span>), a footnote (<span class="in">`footerGap`</span>), and</span>
+<span id="cb3-191"><a href="#cb3-191" aria-hidden="true" tabindex="-1"></a>  a <span class="in">`ColumnGroup`</span> (<span class="in">`columnGroupPadding`</span>) so every gap token has geometry to move.</span>
+<span id="cb3-192"><a href="#cb3-192" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Honest ≥floor** (walk for real): row_height, header_height, padding,</span>
+<span id="cb3-193"><a href="#cb3-193" aria-hidden="true" tabindex="-1"></a>  cell_padding_x, axis_gap, row_group_padding, header_gap, title_subtitle_gap,</span>
+<span id="cb3-194"><a href="#cb3-194" aria-hidden="true" tabindex="-1"></a>  footer_gap, column_group_padding, group_padding.</span>
+<span id="cb3-195"><a href="#cb3-195" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Sub-floor exemptions** (<span class="in">`LIVENESS_VERIFIED`</span>-style, with reason):</span>
+<span id="cb3-196"><a href="#cb3-196" aria-hidden="true" tabindex="-1"></a>  <span class="in">`bottom_margin`</span>, <span class="in">`container_padding`</span> — consequence falls outside the fixed</span>
+<span id="cb3-197"><a href="#cb3-197" aria-hidden="true" tabindex="-1"></a>  pixel clip. Cite <span class="in">`layout-metrics.test.ts`</span> (box-model snapshot records per-row</span>
+<span id="cb3-198"><a href="#cb3-198" aria-hidden="true" tabindex="-1"></a>  top/height + per-column x/width → the *consumption* proof) rather than</span>
+<span id="cb3-199"><a href="#cb3-199" aria-hidden="true" tabindex="-1"></a>  panel-liveness alone (D28: liveness proves reach, not consumption).</span>
+<span id="cb3-200"><a href="#cb3-200" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`panel-liveness.browser.ts`**: extend the walk topology for the new inner</span>
+<span id="cb3-201"><a href="#cb3-201" aria-hidden="true" tabindex="-1"></a>  tab; confirm a renderer reads each token (not just the panel preview).</span>
+<span id="cb3-202"><a href="#cb3-202" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`settings-band-contract.test.ts`**: add <span class="in">`expect(names).toContain("SpacingTab.svelte")`</span></span>
+<span id="cb3-203"><a href="#cb3-203" aria-hidden="true" tabindex="-1"></a>  sanity assertion; the FORBIDDEN list is unchanged (verbs stay in <span class="in">`$stores`</span>,</span>
+<span id="cb3-204"><a href="#cb3-204" aria-hidden="true" tabindex="-1"></a>  excluded from the scan) — the transitive import walk auto-scans the new tab,</span>
+<span id="cb3-205"><a href="#cb3-205" aria-hidden="true" tabindex="-1"></a>  so any future raw-path write there fails the gate.</span>
+<span id="cb3-206"><a href="#cb3-206" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Unit**: <span class="in">`spacing-tokens.test.ts`</span> (bun — roster completeness vs</span>
+<span id="cb3-207"><a href="#cb3-207" aria-hidden="true" tabindex="-1"></a>  <span class="in">`applySpacingPins`</span>, <span class="in">`clampSpacing`</span> bounds + non-finite rejection,</span>
+<span id="cb3-208"><a href="#cb3-208" aria-hidden="true" tabindex="-1"></a>  widthAffecting vs <span class="in">`SPACING_WIDTH_FIELDS`</span>); <span class="in">`theme-spacing.runes.ts`</span> (vitest —</span>
+<span id="cb3-209"><a href="#cb3-209" aria-hidden="true" tabindex="-1"></a>  set/preview/clear/reset, input-only proof i.e. <span class="in">`themeOverrides`</span> unchanged,</span>
+<span id="cb3-210"><a href="#cb3-210" aria-hidden="true" tabindex="-1"></a>  survives re-resolution, composition order, <span class="in">`previewSpacingOverride`</span> skips</span>
+<span id="cb3-211"><a href="#cb3-211" aria-hidden="true" tabindex="-1"></a>  remeasure while commit remeasures width-affecting tokens); resolver test</span>
+<span id="cb3-212"><a href="#cb3-212" aria-hidden="true" tabindex="-1"></a>  (override applies after <span class="in">`scaleSpacing`</span>); R <span class="in">`test-parity-themes.R`</span> case +</span>
+<span id="cb3-213"><a href="#cb3-213" aria-hidden="true" tabindex="-1"></a>  <span class="in">`test-spacing-roster-sync.R`</span>.</span>
+<span id="cb3-214"><a href="#cb3-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-215"><a href="#cb3-215" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-216"><a href="#cb3-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-217"><a href="#cb3-217" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Phased implementation</span></span>
+<span id="cb3-218"><a href="#cb3-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-219"><a href="#cb3-219" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Substrate — DONE (2026-07-24), validated end-to-end.**</span>
+<span id="cb3-220"><a href="#cb3-220" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>TS: <span class="in">`spacing-tokens.ts`</span> (roster + <span class="in">`clampSpacing`</span> + <span class="in">`sanitize`</span> + <span class="in">`applyOverrides`</span>);</span>
+<span id="cb3-221"><a href="#cb3-221" aria-hidden="true" tabindex="-1"></a>     <span class="in">`spacing_overrides`</span> in <span class="in">`theme-inputs.ts`</span>; resolver merge at the SINGLE cluster</span>
+<span id="cb3-222"><a href="#cb3-222" aria-hidden="true" tabindex="-1"></a>     source (<span class="in">`theme-adapter.ts`</span> — <span class="in">`applySpacingPins`</span> overlay propagates it to every</span>
+<span id="cb3-223"><a href="#cb3-223" aria-hidden="true" tabindex="-1"></a>     emitter; <span class="in">`resolve-theme`</span> untouched); <span class="in">`validateThemeInputs`</span> ingress block.</span>
+<span id="cb3-224"><a href="#cb3-224" aria-hidden="true" tabindex="-1"></a>     Tests: <span class="in">`spacing-tokens.test.ts`</span> + <span class="in">`theme-spacing-overrides.test.ts`</span> (17, green);</span>
+<span id="cb3-225"><a href="#cb3-225" aria-hidden="true" tabindex="-1"></a>     <span class="in">`npm run check`</span> clean; 455 theme tests green (no regression).</span>
+<span id="cb3-226"><a href="#cb3-226" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>R: S7 <span class="in">`SpacingTokens`</span> class + serialize map fixed (+<span class="in">`cell_padding_y`</span>/<span class="in">`group_padding`</span>,</span>
+<span id="cb3-227"><a href="#cb3-227" aria-hidden="true" tabindex="-1"></a>     the real dropped-token bug); <span class="in">`TABVIZ_SPACING_TOKENS`</span> + <span class="in">`TABVIZ_SPACING_BOUNDS`</span></span>
+<span id="cb3-228"><a href="#cb3-228" aria-hidden="true" tabindex="-1"></a>     rosters; <span class="in">`spacing_overrides`</span> field + validator on <span class="in">`ThemeInputs`</span>; serialize</span>
+<span id="cb3-229"><a href="#cb3-229" aria-hidden="true" tabindex="-1"></a>     (<span class="in">`theme_inputs_to_json`</span>) + untrusted wire-read (<span class="in">`theme_inputs_from_wire`</span>) +</span>
+<span id="cb3-230"><a href="#cb3-230" aria-hidden="true" tabindex="-1"></a>     <span class="in">`web_theme()`</span> param + roxygen. Gate: <span class="in">`test-spacing-roster-sync.R`</span> (20, green) —</span>
+<span id="cb3-231"><a href="#cb3-231" aria-hidden="true" tabindex="-1"></a>     R↔TS roster sync (camelCase + snake + DENSITY_PX), full wire round-trip,</span>
+<span id="cb3-232"><a href="#cb3-232" aria-hidden="true" tabindex="-1"></a>     untrusted-wire sanitize, validator rejection, AND V8-resolve parity</span>
+<span id="cb3-233"><a href="#cb3-233" aria-hidden="true" tabindex="-1"></a>     (<span class="in">`over@spacing@row_height == 44`</span> end-to-end). Bundles rebuilt.</span>
+<span id="cb3-234"><a href="#cb3-234" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Verbs — DONE (2026-07-24).** theme-slice <span class="in">`setSpacingOverride`</span> /</span>
+<span id="cb3-235"><a href="#cb3-235" aria-hidden="true" tabindex="-1"></a>   <span class="in">`previewSpacingOverride`</span> / <span class="in">`clearSpacingOverride`</span> / <span class="in">`resetSpacingOverrides`</span> +</span>
+<span id="cb3-236"><a href="#cb3-236" aria-hidden="true" tabindex="-1"></a>   <span class="in">`spacingRoster()`</span> — all thin wrappers over the sanctioned <span class="in">`setAuthoringInputs`</span></span>
+<span id="cb3-237"><a href="#cb3-237" aria-hidden="true" tabindex="-1"></a>   / <span class="in">`previewAuthoringInputs`</span> channel (input-only, DT-11-clean, clamped,</span>
+<span id="cb3-238"><a href="#cb3-238" aria-hidden="true" tabindex="-1"></a>   non-finite no-op, commit-remeasures-width-affecting / preview-skips). Tests:</span>
+<span id="cb3-239"><a href="#cb3-239" aria-hidden="true" tabindex="-1"></a>   <span class="in">`theme-spacing.runes.ts`</span> (10, green); type-check clean; 27 theme.runes +</span>
+<span id="cb3-240"><a href="#cb3-240" aria-hidden="true" tabindex="-1"></a>   23 band-contract green (no regression, gate still passes).</span>
+<span id="cb3-241"><a href="#cb3-241" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**UI — DONE (2026-07-24).** <span class="in">`SpacingTab.svelte`</span> mounted as the 4th inner tab</span>
+<span id="cb3-242"><a href="#cb3-242" aria-hidden="true" tabindex="-1"></a>   of <span class="in">`EditThemeCluster`</span> (<span class="in">`identity | plots | styling | spacing`</span>);</span>
+<span id="cb3-243"><a href="#cb3-243" aria-hidden="true" tabindex="-1"></a>   <span class="in">`density_factor`</span> MOVED off Styling (not mirrored); row-kind sub-band</span>
+<span id="cb3-244"><a href="#cb3-244" aria-hidden="true" tabindex="-1"></a>   relocated out of <span class="in">`FigureBand`</span> (its disclosure gutter-reset calls</span>
+<span id="cb3-245"><a href="#cb3-245" aria-hidden="true" tabindex="-1"></a>   <span class="in">`resetRowKindHeights`</span>, and FigureBand's *Reset figure* still clears them —</span>
+<span id="cb3-246"><a href="#cb3-246" aria-hidden="true" tabindex="-1"></a>   the pins are never orphaned); FigureBand keeps the scoped reset + a pointer</span>
+<span id="cb3-247"><a href="#cb3-247" aria-hidden="true" tabindex="-1"></a>   note. Variations signpost repointed to Spacing. Arrange seams repointed:</span>
+<span id="cb3-248"><a href="#cb3-248" aria-hidden="true" tabindex="-1"></a>   all four (<span class="in">`headerHeight`</span> / <span class="in">`rowGroupPadding`</span> / <span class="in">`titleSubtitleGap`</span> /</span>
+<span id="cb3-249"><a href="#cb3-249" aria-hidden="true" tabindex="-1"></a>   <span class="in">`footerGap`</span>) now write <span class="in">`spacing_overrides`</span> through the sanctioned verbs —</span>
+<span id="cb3-250"><a href="#cb3-250" aria-hidden="true" tabindex="-1"></a>   **the last DT-11 canvas exemption is retired; no <span class="in">`.svelte`</span> in the repo calls</span>
+<span id="cb3-251"><a href="#cb3-251" aria-hidden="true" tabindex="-1"></a>   <span class="in">`setThemeField`</span>/<span class="in">`previewThemeField`</span> any more.** R <span class="in">`set_spacing()`</span> rewritten</span>
+<span id="cb3-252"><a href="#cb3-252" aria-hidden="true" tabindex="-1"></a>   onto the input (accepts snake or camel names, <span class="in">`NULL`</span> releases, validator</span>
+<span id="cb3-253"><a href="#cb3-253" aria-hidden="true" tabindex="-1"></a>   enforces bounds) — so R, panel and canvas are ONE mechanism.</span>
+<span id="cb3-254"><a href="#cb3-254" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**New seam-grammar plumbing:** committing a seam now CREATES an override,</span>
+<span id="cb3-255"><a href="#cb3-255" aria-hidden="true" tabindex="-1"></a>     so <span class="in">`onpreview(startValue)`</span> was no longer a sufficient Escape — it restores</span>
+<span id="cb3-256"><a href="#cb3-256" aria-hidden="true" tabindex="-1"></a>     the number but leaves an override key on a formerly-auto token. Added</span>
+<span id="cb3-257"><a href="#cb3-257" aria-hidden="true" tabindex="-1"></a>     <span class="in">`EdgeResize.oncancel`</span> + store <span class="in">`cancelPreviewSpacingOverride(token)`</span></span>
+<span id="cb3-258"><a href="#cb3-258" aria-hidden="true" tabindex="-1"></a>     (snapshots the committed value/absence at the first preview tick).</span>
+<span id="cb3-259"><a href="#cb3-259" aria-hidden="true" tabindex="-1"></a>     Gates: 4 cases in <span class="in">`theme-spacing.runes.ts`</span> + a seam Escape case in</span>
+<span id="cb3-260"><a href="#cb3-260" aria-hidden="true" tabindex="-1"></a>     <span class="in">`arrange-tool.browser.ts`</span>.</span>
+<span id="cb3-261"><a href="#cb3-261" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**Bounds widened** for <span class="in">`rowGroupPadding`</span> (40→60), <span class="in">`footerGap`</span> (60→80),</span>
+<span id="cb3-262"><a href="#cb3-262" aria-hidden="true" tabindex="-1"></a>     <span class="in">`titleSubtitleGap`</span> (40→60) so redirecting the canvas seams didn't shorten</span>
+<span id="cb3-263"><a href="#cb3-263" aria-hidden="true" tabindex="-1"></a>     a drag range users already had. R + TS tables move together (sync-gated).</span>
+<span id="cb3-264"><a href="#cb3-264" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Harness — DONE (2026-07-24).** <span class="in">`settings-consequence`</span> walks <span class="in">`data-spt`</span></span>
+<span id="cb3-265"><a href="#cb3-265" aria-hidden="true" tabindex="-1"></a>   (fixture armed with a subtitle, a footnote and a <span class="in">`colGroup`</span>); all 11 tokens</span>
+<span id="cb3-266"><a href="#cb3-266" aria-hidden="true" tabindex="-1"></a><span class="ss">   + </span>the density dial move real pixels (footerGap 40903px, rowHeight 164504px).</span>
+<span id="cb3-267"><a href="#cb3-267" aria-hidden="true" tabindex="-1"></a>   Two harness lessons baked in: (a) the walk now takes an optional</span>
+<span id="cb3-268"><a href="#cb3-268" aria-hidden="true" tabindex="-1"></a>   <span class="in">`beforeEach`</span> and the Spacing tab passes <span class="in">`resetThemeToBaseline`</span> — its</span>
+<span id="cb3-269"><a href="#cb3-269" aria-hidden="true" tabindex="-1"></a>   controls all inflate the SAME geometry, so mid-walk the footer had been</span>
+<span id="cb3-270"><a href="#cb3-270" aria-hidden="true" tabindex="-1"></a>   pushed out of the clip and a live control read 0px (accumulated state</span>
+<span id="cb3-271"><a href="#cb3-271" aria-hidden="true" tabindex="-1"></a>   SUPPRESSING consequence, the mirror of the inflation case); (b)</span>
+<span id="cb3-272"><a href="#cb3-272" aria-hidden="true" tabindex="-1"></a>   <span class="in">`bottomMargin`</span> is <span class="in">`LIVENESS_VERIFIED`</span> — figure-bottom air falls outside the</span>
+<span id="cb3-273"><a href="#cb3-273" aria-hidden="true" tabindex="-1"></a>   clip, consumption proven by <span class="in">`layout-metrics`</span>. <span class="in">`panel-liveness`</span> walks the new</span>
+<span id="cb3-274"><a href="#cb3-274" aria-hidden="true" tabindex="-1"></a>   inner tab; <span class="in">`settings-band-contract`</span> asserts the walk reaches</span>
+<span id="cb3-275"><a href="#cb3-275" aria-hidden="true" tabindex="-1"></a>   <span class="in">`SpacingTab.svelte`</span>.</span>
+<span id="cb3-276"><a href="#cb3-276" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Docs** — this file kept current; decision-register D25 overruled by D42;</span>
+<span id="cb3-277"><a href="#cb3-277" aria-hidden="true" tabindex="-1"></a>   arc-history dated entry at land.</span>
+<span id="cb3-278"><a href="#cb3-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-279"><a href="#cb3-279" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Open items</span></span>
+<span id="cb3-280"><a href="#cb3-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-281"><a href="#cb3-281" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Shell/paper "Page frame" section — Phase 2.</span>
+<span id="cb3-282"><a href="#cb3-282" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Deferred quartet — each needs an upstream unblock before exposing (§2):</span>
+<span id="cb3-283"><a href="#cb3-283" aria-hidden="true" tabindex="-1"></a>  <span class="in">`indent_per_level`</span> (triple-sourced), <span class="in">`cell_padding_y`</span> (deprecated for body</span>
+<span id="cb3-284"><a href="#cb3-284" aria-hidden="true" tabindex="-1"></a>  cells), <span class="in">`container_padding`</span> (0-default, overlaps <span class="in">`padding`</span>), and now</span>
+<span id="cb3-285"><a href="#cb3-285" aria-hidden="true" tabindex="-1"></a>  <span class="in">`group_padding`</span> (no renderer at all).</span>
+<span id="cb3-286"><a href="#cb3-286" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`padding`</span> ("table inset") is live and width-affecting but unsurfaced — add</span>
+<span id="cb3-287"><a href="#cb3-287" aria-hidden="true" tabindex="-1"></a>  it when a use case asks; it needs a label that doesn't read as a synonym of</span>
+<span id="cb3-288"><a href="#cb3-288" aria-hidden="true" tabindex="-1"></a>  <span class="in">`container_padding`</span>.</span>
+<span id="cb3-289"><a href="#cb3-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-290"><a href="#cb3-290" aria-hidden="true" tabindex="-1"></a>Settled during implementation: the clamp table (§4, bounds widened as above)</span>
+<span id="cb3-291"><a href="#cb3-291" aria-hidden="true" tabindex="-1"></a>and <span class="in">`rowHeight`</span>-vs-per-kind-pin precedence (per-kind still wins at display —</span>
+<span id="cb3-292"><a href="#cb3-292" aria-hidden="true" tabindex="-1"></a>the relocation only moved the control, not the cascade).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
